@@ -1,0 +1,419 @@
+package com.storedobject.core;
+
+import com.storedobject.common.MethodInvoker;
+import com.storedobject.common.StringList;
+import com.storedobject.common.StyledBuilder;
+
+import java.io.File;
+import java.io.InputStream;
+import java.lang.reflect.Method;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Properties;
+
+public final class StoredObjectUtility {
+
+	public static ClassAttribute<? extends StoredObject> classAttribute(int family) {
+		return null;
+	}
+
+	public static <T extends StoredObject> int family(Class<T> objectClass) {
+		return 0;
+	}
+
+	public static <T extends StoredObject> ClassAttribute<T> classAttribute(T object) {
+		return null;
+	}
+
+	public static <T extends StoredObject> ClassAttribute<T> classAttribute(Class<T> objectClass) {
+		return null;
+	}
+
+	public static String[] createDDL(Class<? extends StoredObject> objectClass) throws Exception {
+		return null;
+	}
+
+	public static String[] foreignKeysDDL(Class<? extends StoredObject> objectClass) {
+		return null;
+	}
+
+	public static String[] dropDDL(Class<? extends StoredObject> objectClass) {
+		return null;
+	}
+
+	public static String[] reindex(Class<? extends StoredObject> objectClass) {
+		return null;
+	}
+
+	public static String buildSQL(ClassAttribute<? extends StoredObject> ca, String columns, String condition, String order, boolean header) {
+		return null;
+	}
+	
+	public static Properties initialize(Properties properties) {
+		return null;
+	}
+	
+	public static Properties initialize(Properties properties, Properties variables) {
+		return null;
+    }
+
+
+    public static Properties initialize(InputStream in) {
+		return null;
+    }
+
+    public static Properties initialize(InputStream in, Properties variables) {
+        return null;
+    }
+
+    public static Properties initialize(File properties) {
+		return null;
+    }
+    
+    public static Properties initialize(File properties, Properties variables) {
+        return null;
+    }
+
+    public static Properties initialize(String propertiesFileName) {
+		return null;
+    }
+    
+    public static Properties initialize(String propertiesFileName, Properties variables) {
+		return null;
+    }
+
+    public static int howBig(Class<? extends StoredObject> objectClass, boolean any) {
+		return 0;
+    }
+
+    public static int hints(Class<? extends StoredObject> objectClass) {
+		return 0;
+    }
+
+    public static int statusUI(Class<? extends StoredObject> objectClass) {
+		return 0;
+    }
+
+    public static StringList displayColumns(Class<? extends StoredObject> objectClass) {
+		return null;
+    }
+
+    public static StringList searchColumns(Class<? extends StoredObject> objectClass) {
+		return null;
+    }
+
+    public static StringList protectedColumns(Class<? extends StoredObject> objectClass) {
+		return null;
+    }
+
+    public static StringList browseColumns(Class<? extends StoredObject> objectClass) {
+		return null;
+    }
+
+    public static StringList links(Class<? extends StoredObject> objectClass) {
+		return null;
+    }
+
+    public static String browseOrder(Class<? extends StoredObject> objectClass) {
+		return null;
+    }
+
+    public static Method createMethod(Class<?> objectClass, String attributeName) {
+		return null;
+    }
+
+    public static Method[] createMethods(Class<?> objectClass, String[] attributeNames) {
+		return null;
+    }
+
+    public static MethodList createMethodList(Class<?> objectClass, String attributeName) {
+		return null;
+    }
+
+    public static MethodList[] createMethodLists(Class<?> objectClass, StringList attributeNames) {
+		return null;
+    }
+
+    public static class MethodList implements MethodInvoker {
+
+        public MethodList(Method method) {
+            this(method, true);
+        }
+
+        public MethodList(Method method, boolean logErrors) {
+        }
+
+        public void logErrors(boolean log) {
+        }
+
+        public void add(Method method) {
+        }
+
+        public void add(MethodList list) {
+        }
+
+        @Override
+		public String getAttributeName() {
+    		return null;
+        }
+
+        public String getName() {
+    		return null;
+        }
+
+        public Method getHead() {
+    		return null;
+        }
+
+        public MethodList getNext() {
+    		return null;
+        }
+
+        @Override
+		public Method getTail() {
+    		return null;
+        }
+
+        @Override
+		public Class<?> getReturnType() {
+    		return null;
+        }
+
+        @Override
+		public Object invoke(Object object) {
+    		return null;
+        }
+
+        @Override
+		public Object invoke(Object object, boolean logErrors) {
+    		return null;
+        }
+
+        public boolean stringifyTail() {
+        	return false;
+        }
+    }
+
+    public static class MethodString {
+
+    	public MethodString(String string) {
+    	}
+
+    	public MethodString(Class<?> objectClass, String string) {
+    	}
+
+    	public String execute(Object object) {
+    		return null;
+    	}
+    }
+
+    public static boolean execute(Method method, Object object, String value) {
+    	return false;
+    }
+
+    public static void executeRaw(Method method, Object object, Object objectValue) throws Exception {
+    }
+
+    public static Object emptyValue(Class<?> p) {
+    	return null;
+    }
+
+	public static String toString(StoredObject object) {
+		return null;
+	}
+
+    public static class Link<L extends StoredObject> {
+
+    	public Link() {
+    	}
+
+		public Class<L> getObjectClass() {
+			return null;
+		}
+
+		public void setClassName(String className) {
+		}
+
+		public String getName() {
+			return null;
+		}
+
+		public void setBrowserColumns(String columns) {
+		}
+
+		public void setBrowserColumns(StringList columns) {
+		}
+
+		public StringList getBrowseColumns() {
+			return null;
+		}
+
+		public void setType(int type) {
+		}
+
+		public int getType() {
+			return 0;
+		}
+
+		public int getStyle() {
+			return 0;
+		}
+
+		public String getOrderBy() {
+			return null;
+		}
+
+		public void setAny() {
+		}
+
+		public boolean isAny() {
+			return false;
+		}
+
+		public boolean isDetailOf(Class<? extends StoredObject> parentClass) {
+			return false;
+		}
+
+		public ObjectIterator<L> list(StoredObject parent) {
+			return null;
+		}
+
+		public ObjectIterator<L> list(Id id) {
+			return null;
+		}
+
+		public Query query(StoredObject parent) {
+			return null;
+		}
+		
+		@Override
+		public boolean equals(Object another) {
+			return false;
+		}
+    }
+    
+    public static Link<?> createLink(Class<? extends StoredObject> objectClass, String linkDetails) {
+		return null;
+    }
+
+	public static ArrayList<Link<?>> linkDetails(Class<? extends StoredObject> objectClass) {
+		return null;
+	}
+	
+	public static ArrayList<Link<?>> linkDetails(Class<? extends StoredObject> objectClass, StringList extraLinks) {
+		return null;
+    }
+
+	protected static class IdBox {
+
+		public IdBox(Id id) {
+		}
+
+		public void setId(Id id) {
+		}
+
+		public Id getId() {
+			return null;
+		}
+
+		@Override
+		public boolean equals(Object another) {
+			return false;
+		}
+	}
+
+	protected static class IdLink {
+
+		public IdLink(Id from, Id to, int type) {
+		}
+
+		public IdLink(IdBox from, IdBox to, int type) {
+		}
+
+		public void setFromId(Id id) {
+		}
+
+		public void setToId(Id id) {
+		}
+
+		public IdBox getFrom() {
+			return null;
+		}
+
+		public IdBox getTo() {
+			return null;
+		}
+
+		public Id getFromId() {
+			return null;
+		}
+
+		public Id getToId() {
+			return null;
+		}
+
+		public int getType() {
+			return 0;
+		}
+
+		public String getOriginal() {
+			return null;
+		}
+	}
+
+	public static <T extends StoredObject> T get(Class<T> objectClass, String nameField, String nameValue) {
+		return null;
+	}
+
+	public static <T extends StoredObject> T get(Class<T> objectClass, String nameField, String nameValue, String extraCondition) {
+		return null;
+	}
+
+	public static <T extends StoredObject> ObjectIterator<T> list(Class<T> objectClass, String nameField, String nameValue) {
+		return null;
+	}
+
+	public static <T extends StoredObject> ObjectIterator<T> list(Class<T> objectClass, String nameField, String nameValue, String extraCondition) {
+		return null;
+	}
+
+	public static <T extends StoredObject> T get(Class<T> objectClass, String nameField, String nameValue, boolean any) {
+		return null;
+	}
+
+	public static <T extends StoredObject> T get(Class<T> objectClass, String nameField, String nameValue, String extraCondition, boolean any) {
+		return null;
+	}
+
+	public static <T extends StoredObject> ObjectIterator<T> list(Class<T> objectClass, String nameField, String nameValue, boolean any) {
+		return null;
+	}
+
+	public static <T extends StoredObject> ObjectIterator<T> list(Class<T> objectClass, String nameField, String nameValue, String extraCondition, boolean any) {
+		return null;
+	}
+	
+	public static String stackTrace() {
+		return null;
+	}
+	
+	public static String stackTrace(int count) {
+		return null;
+	}
+	
+	public static String stackTrace(int count, boolean includeCore) {
+		return null;
+	}
+	
+	public static Query getTransactionLog(SystemUser su, Timestamp from, Timestamp to) {
+		return null;
+	}
+	
+	public static boolean sameContent(StoredObject one, StoredObject two) {
+		return false;
+	}
+	
+	public static <T extends StoredObject> boolean changed(T newObject, T oldObject, StyledBuilder changes) {
+		return false;
+	}
+}
