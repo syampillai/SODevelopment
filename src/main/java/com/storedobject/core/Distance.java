@@ -10,7 +10,7 @@ public class Distance extends com.storedobject.core.Quantity {
     public static com.storedobject.core.MeasurementUnit defaultUnit;
 
     public Distance() {
-        super((java.math.BigDecimal) null, (com.storedobject.core.MeasurementUnit) null);
+        super(null, null);
     }
 
     public Distance(double p1, java.lang.String p2) {
@@ -106,7 +106,7 @@ public class Distance extends com.storedobject.core.Quantity {
 
 	/**
 	 * Multiply
-	 * @param multiplicand
+	 * @param multiplicand Multiplicand
 	 * @return Result
 	 */
 	@Override
@@ -116,7 +116,7 @@ public class Distance extends com.storedobject.core.Quantity {
 
 	/**
 	 * Multiply
-	 * @param multiplicand
+	 * @param multiplicand Multiplicand
 	 * @return Result
 	 */
 	@Override
@@ -126,7 +126,7 @@ public class Distance extends com.storedobject.core.Quantity {
 
 	/**
 	 * Divide the quantity with a value
-	 * @param divisor
+	 * @param divisor Divisor
 	 * @return Result
 	 */
 	@Override
@@ -136,7 +136,7 @@ public class Distance extends com.storedobject.core.Quantity {
 
 	/**
 	 * Divide the quantity with a value
-	 * @param divisor
+	 * @param divisor Divisor
 	 * @return Result
 	 */
 	@Override

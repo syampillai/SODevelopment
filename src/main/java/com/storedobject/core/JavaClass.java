@@ -22,6 +22,7 @@ public final class JavaClass extends JavaInnerClass {
 		return null;
 	}
 
+	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
 	public static boolean checkName(String name) {
 		return false;
 	}
@@ -90,5 +91,13 @@ public final class JavaClass extends JavaInnerClass {
 
 	public boolean getGenerated() {
 		return false;
+	}
+
+	public static Package getPackage(String name) {
+		return null;
+	}
+
+	public static Package getPackage(Class<?> clazz) {
+		return null;
 	}
 }

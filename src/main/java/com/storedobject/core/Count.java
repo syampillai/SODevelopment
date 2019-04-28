@@ -9,7 +9,7 @@ public class Count extends com.storedobject.core.Quantity {
     public static com.storedobject.core.MeasurementUnit defaultUnit;
 
     public Count() {
-        super((java.math.BigDecimal) null, (com.storedobject.core.MeasurementUnit) null);
+        super(null, null);
     }
 
     public Count(long p1) {
@@ -121,7 +121,7 @@ public class Count extends com.storedobject.core.Quantity {
 
 	/**
 	 * Multiply
-	 * @param multiplicand
+	 * @param multiplicand Multiplicand
 	 * @return Result
 	 */
 	@Override
@@ -131,7 +131,7 @@ public class Count extends com.storedobject.core.Quantity {
 
 	/**
 	 * Multiply
-	 * @param multiplicand
+	 * @param multiplicand Multiplicand
 	 * @return Result
 	 */
 	@Override
@@ -141,7 +141,7 @@ public class Count extends com.storedobject.core.Quantity {
 
 	/**
 	 * Divide the quantity with a value
-	 * @param divisor
+	 * @param divisor Divisor
 	 * @return Result
 	 */
 	@Override
@@ -151,7 +151,7 @@ public class Count extends com.storedobject.core.Quantity {
 
 	/**
 	 * Divide the quantity with a value
-	 * @param divisor
+	 * @param divisor Divisor
 	 * @return Result
 	 */
 	@Override

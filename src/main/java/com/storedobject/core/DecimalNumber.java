@@ -45,7 +45,6 @@ public class DecimalNumber implements Storable, Comparable<DecimalNumber> {
 	 * Construct a decimal number from another one.
 	 *
 	 * @param number The decimal number to be set.
-	 * @param decimals Number of decimal places
 	 */
 	public DecimalNumber(DecimalNumber number) {
 	}
@@ -90,7 +89,7 @@ public class DecimalNumber implements Storable, Comparable<DecimalNumber> {
 	}
 
 	@Override
-	public int compareTo(DecimalNumber number) {
+	public int compareTo(@SuppressWarnings("NullableProblems") DecimalNumber number) {
 		return 0;
 	}
 	

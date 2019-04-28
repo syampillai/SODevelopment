@@ -8,19 +8,8 @@ import com.storedobject.pdf.PDFImage;
 public final class ApplicationServer {
 	
 	public ApplicationServer(Device device, String link) {
-		this(device, link, true);
-	}
-
-	public ApplicationServer(Device device, String link, boolean downloadPackages) {
 	}
 	
-	public ApplicationServer(Device device, String link, boolean downloadPackages, boolean checkPackages) {
-	}
-	
-	public static boolean reloadRequired() {
-		return false;
-	}
-
 	protected static void revalidateDevice(DeviceLayout layout) {
 	}
 
@@ -148,18 +137,6 @@ public final class ApplicationServer {
 	public synchronized static void initialize(String propertiesFileName, Properties variables) {
 	}
 
-	public synchronized static void initialize(String propertiesFileName, boolean downloadPackages) {
-	}
-
-	public synchronized static void initialize(String propertiesFileName, boolean downloadPackages, boolean checkPackages) {
-	}
-
-	public synchronized static void initialize(String propertiesFileName, Properties variables, boolean downloadPackages) {
-	}
-	
-	public synchronized static void initialize(String propertiesFileName, Properties variables, boolean downloadPackages, boolean checkPackages) {
-	}
-
 	public static String createLogicName(String deviceTag, Class<?> objectClass, String tag, boolean skipTools) {
 		return null;
 	}
@@ -177,10 +154,6 @@ public final class ApplicationServer {
 	}
 	
 	public List<Logic> populateMenu(ApplicationMenu menu, SystemUser menuUser) {
-		return null;
-	}
-
-	public static String getIconName(String imageName) {
 		return null;
 	}
 }

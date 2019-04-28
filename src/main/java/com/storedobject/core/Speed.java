@@ -7,7 +7,7 @@ public class Speed extends com.storedobject.core.Quantity {
     public static com.storedobject.core.MeasurementUnit defaultUnit;
 
     public Speed() {
-        super((java.math.BigDecimal) null, (com.storedobject.core.MeasurementUnit) null);
+        super(null, null);
     }
 
     public Speed(double p1, java.lang.String p2) {
@@ -103,7 +103,7 @@ public class Speed extends com.storedobject.core.Quantity {
 
 	/**
 	 * Multiply
-	 * @param multiplicand
+	 * @param multiplicand Multiplicand
 	 * @return Result
 	 */
 	@Override
@@ -113,7 +113,7 @@ public class Speed extends com.storedobject.core.Quantity {
 
 	/**
 	 * Multiply
-	 * @param multiplicand
+	 * @param multiplicand Multiplicand
 	 * @return Result
 	 */
 	@Override
@@ -123,7 +123,7 @@ public class Speed extends com.storedobject.core.Quantity {
 
 	/**
 	 * Divide the quantity with a value
-	 * @param divisor
+	 * @param divisor Divisor
 	 * @return Result
 	 */
 	@Override
@@ -133,7 +133,7 @@ public class Speed extends com.storedobject.core.Quantity {
 
 	/**
 	 * Divide the quantity with a value
-	 * @param divisor
+	 * @param divisor Divisor
 	 * @return Result
 	 */
 	@Override

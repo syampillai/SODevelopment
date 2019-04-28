@@ -7,7 +7,7 @@ public class FractionalCount extends Quantity {
 	public static MeasurementUnit defaultUnit;
 
 	public FractionalCount() {
-        super((java.math.BigDecimal) null, (com.storedobject.core.MeasurementUnit) null);
+        super(null, null);
 	}
 
 	public FractionalCount(double value, String unit) {
@@ -112,7 +112,7 @@ public class FractionalCount extends Quantity {
 
 	/**
 	 * Multiply
-	 * @param multiplicand
+	 * @param multiplicand Multiplicand
 	 * @return Result
 	 */
 	@Override
@@ -122,7 +122,7 @@ public class FractionalCount extends Quantity {
 
 	/**
 	 * Multiply
-	 * @param multiplicand
+	 * @param multiplicand Multiplicand
 	 * @return Result
 	 */
 	@Override
@@ -132,7 +132,7 @@ public class FractionalCount extends Quantity {
 
 	/**
 	 * Divide the quantity with a value
-	 * @param divisor
+	 * @param divisor Divisor
 	 * @return Result
 	 */
 	@Override
@@ -142,7 +142,7 @@ public class FractionalCount extends Quantity {
 
 	/**
 	 * Divide the quantity with a value
-	 * @param divisor
+	 * @param divisor Divisor
 	 * @return Result
 	 */
 	@Override
