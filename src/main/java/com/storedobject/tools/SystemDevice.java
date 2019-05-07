@@ -102,11 +102,6 @@ public abstract class SystemDevice implements Device {
 	}
 
 	@Override
-	public Class<?> getDefaultLogicClass() {
-		return null;
-	}
-	
-	@Override
 	public String getDevicePackageTag() {
 		return null;
 	}

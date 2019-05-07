@@ -73,7 +73,7 @@ public class StockReportExcel extends ExcelReport {
     }
 
     @Override
-    public void generateContent() {
+    public void generateContent()throws Exception {
         printStock(partNumbers);
     }
 

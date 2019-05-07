@@ -60,7 +60,6 @@ public interface Device {
 	void showNotification(String caption, String text);
 	void showNotification(Throwable error);
 	void showNotification(String caption, Throwable error);
-	Class<?> getDefaultLogicClass();
 	String getDevicePackageTag();
 	MessageViewer getMessageViewer();
 }

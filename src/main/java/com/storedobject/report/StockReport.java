@@ -91,7 +91,7 @@ public class StockReport extends PDFReport {
     }
 
     @Override
-    public void generateContent() {
+    public void generateContent() throws Exception {
         printStock(partNumbers);
     }
 

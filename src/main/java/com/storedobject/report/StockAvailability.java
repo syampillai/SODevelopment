@@ -42,7 +42,7 @@ public class StockAvailability extends PDFReport {
     }
 
     @Override
-    public void generateContent() {
+    public void generateContent() throws Exception {
     	Id storeId;
     	if(store == null) {
     		storeId = document.getStoreId();

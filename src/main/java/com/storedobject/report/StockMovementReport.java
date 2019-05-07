@@ -303,7 +303,7 @@ public class StockMovementReport extends PDFReport {
 	}
 	
 	@Override
-	public void generateContent() {
+	public void generateContent()throws Exception {
 		printStockMovement(partNumbers);
 	}
 	

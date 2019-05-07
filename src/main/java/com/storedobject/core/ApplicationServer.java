@@ -9,6 +9,9 @@ public final class ApplicationServer {
 	
 	public ApplicationServer(Device device, String link) {
 	}
+
+	public void doDeviceLayout() {
+	}
 	
 	protected static void revalidateDevice(DeviceLayout layout) {
 	}
