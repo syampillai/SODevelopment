@@ -1,6 +1,8 @@
 package com.storedobject.core;
 
-public class TransactionControl extends com.storedobject.core.ErrorText {
+import com.storedobject.common.ErrorText;
+
+public class TransactionControl extends ErrorText {
 
     public TransactionControl(com.storedobject.core.TransactionManager p1) {
         this();
