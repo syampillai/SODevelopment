@@ -105,6 +105,13 @@
             <version>4.1.0</version>
         </dependency>
 
+        <!-- Required for Java Reflection -->
+        <dependency>
+            <groupId>com.sun.activation</groupId>
+            <artifactId>javax.activation</artifactId>
+            <version>1.2.0</version>
+        </dependency>
+
     </dependencies>
 
     <scm>
