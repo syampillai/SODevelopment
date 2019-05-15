@@ -9,7 +9,7 @@ import java.util.Locale;
 /**
 * This class represents an person who is also a system user.
 */
-public class SystemUser extends StoredObject {
+public final class SystemUser extends StoredObject {
 
 	public SystemUser(String login, Id personId) {
 		this();

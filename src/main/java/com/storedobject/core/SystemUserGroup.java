@@ -1,60 +1,50 @@
 package com.storedobject.core;
 
-public class SystemUserGroup extends com.storedobject.core.StoredObject {
+public final class SystemUserGroup extends StoredObject {
 
-    protected static java.lang.String SS;
-
-    public SystemUserGroup(java.lang.String p1) {
-        this();
+    /**
+     * Constructs a System User Group
+     *
+     * @param name Name of the System User Group
+     */
+    public SystemUserGroup(String name) {
     }
 
+    /**
+     * Constructor for internal use only
+     */
     public SystemUserGroup() {
     }
 
-    public java.lang.String toString() {
+    public static void columns(Columns columns) {
+    }
+
+    /**
+     * Gets the name of the System User Group
+     *
+     * @return The name
+     */
+    public String getName() {
         return null;
     }
 
-    public java.lang.String getName() {
-        return null;
-    }
-
-    public static com.storedobject.core.SystemUserGroup getDefault() {
-        return null;
-    }
-
-    public void setName(java.lang.String p1) {
-    }
-
-    protected com.storedobject.core.ObjectIterator < com.storedobject.core.Logic > list(int p1, int p2, int p3) {
-        return null;
-    }
-
-    public static void columns(com.storedobject.core.Columns p1) {
-    }
-
-    public static void indices(com.storedobject.core.Indices p1) {
-    }
-
-    public void validateData() throws java.lang.Exception {
-    }
-
-    public void validateDelete() throws java.lang.Exception {
-    }
-
-    public static java.lang.String[] links() {
-        return null;
-    }
-
-    public java.lang.String getUniqueCondition() {
-        return null;
-    }
-
-    public static int hints() {
-        return 0;
+    /**
+     * Sets the name of the System User Group.
+     *
+     * @param name The new name.
+     */
+    public void setName(String name) {
     }
 
     public boolean isSS() {
         return false;
+    }
+
+    public boolean isAppAdmin() {
+        return false;
+    }
+
+    public static SystemUserGroup getDefault() {
+        return null;
     }
 }

@@ -6,11 +6,11 @@
 
     <groupId>com.storedobject</groupId>
     <artifactId>so-development</artifactId>
-    <version>1.0.4</version>
+    <version>1.0.5</version>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <vaadin.version>13.0.6</vaadin.version>
+        <vaadin.version>13.0.7</vaadin.version>
     </properties>
 
     <name>${project.groupId}:${project.artifactId}</name>
@@ -70,7 +70,7 @@
         <dependency>
             <groupId>com.storedobject.vaadin</groupId>
             <artifactId>so-components</artifactId>
-            <version>0.9.10</version>
+            <version>0.9.11</version>
         </dependency>
 
         <!-- Vaadin Pro -->
@@ -87,7 +87,7 @@
         <dependency>
             <groupId>org.vaadin.gatanaso</groupId>
             <artifactId>multiselect-combo-box-flow</artifactId>
-            <version>0.0.8</version>
+            <version>0.1.0</version>
         </dependency>
 
         <!-- Java Servlet -->
