@@ -1,54 +1,67 @@
 package com.storedobject.core;
 
+import java.util.Currency;
 import java.util.Date;
+import java.util.Properties;
 
 public final class TransactionManager {
 
-    public TransactionManager(java.lang.String p1) {
-        this();
+    public TransactionManager(Device device, String login) {
     }
 
-    private TransactionManager() {
+    public void reinit(String password) throws Exception {
     }
 
-    public static com.storedobject.core.TransactionManager create(java.util.Properties p1) {
+    public final Device getDevice() {
         return null;
     }
 
-    public boolean verify(java.lang.String p1) {
+    public static TransactionManager create(Device device, Properties loginProperties) {
+        return null;
+    }
+
+    /**
+     * Start a new transaction.
+     *
+     * @return Newly created transaction.
+     * @throws Exception Any exception.
+     */
+    public Transaction createTransaction() throws Exception {
+        return null;
+    }
+
+    boolean isOTP() {
         return false;
     }
 
-    public java.util.Currency getCurrency() {
+    public boolean verify(String password) {
+        return false;
+    }
+
+    public SystemUser getUser() {
         return null;
     }
 
-    public com.storedobject.core.SystemEntity getEntity() {
+    public void setEntity(SystemEntity entity) {
+    }
+
+    public SystemEntity getEntity() {
         return null;
     }
 
-    public com.storedobject.core.Transaction createTransaction() throws java.lang.Exception {
+    public Currency getCurrency() {
         return null;
     }
 
-    public void setEntity(com.storedobject.core.SystemEntity p1) {
+    @FunctionalInterface
+    public interface Transact {
+        void transact(Transaction transaction) throws Exception;
     }
 
-    public com.storedobject.core.SystemUser getUser() {
+    public void transact(Transact transact) throws Exception {
+    }
+
+    public String format(Date date) {
         return null;
     }
-
-    public void reinit(java.lang.String p1) throws java.lang.Exception {
-    }
-    
-	public static interface Transact {
-		public void transact(Transaction transaction) throws Exception;
-	}
-	
-	public void transact(Transact transact) throws Exception {
-	}
-	
-	public String format(Date date) {
-		return null;
-	}
 }

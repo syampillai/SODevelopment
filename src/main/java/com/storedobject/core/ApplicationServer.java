@@ -107,22 +107,10 @@ public final class ApplicationServer {
     public void close() {
     }
 
-    public static void log(Throwable e) {
+    public static void log(Device device, Object anything) {
     }
 
-    public static void log(String message, Throwable e) {
-    }
-
-    public static void log(String message) {
-    }
-
-    public static void log(Device d, Throwable e) {
-    }
-
-    public static void log(Device d, String message, Throwable e) {
-    }
-
-    public static void log(Device d, String message) {
+    public static void log(Device device, Object anything, Throwable error) {
     }
 
     public TransactionManager getTransactionManager() {
