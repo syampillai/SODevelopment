@@ -113,7 +113,7 @@ public final class StoredObjectUtility {
         return null;
     }
 
-    public static StringList links(Class<? extends StoredObject> objectClass) {
+    public static StringList links(Class<? extends StoredObject> masterClass) {
         return null;
     }
 
@@ -227,10 +227,14 @@ public final class StoredObjectUtility {
 
     public static class Link<L extends StoredObject> {
 
-        public Link() {
+        public Link(Class<? extends StoredObject> masterClass) {
         }
 
         public Class<L> getObjectClass() {
+            return null;
+        }
+
+        public Class<? extends StoredObject> getMasterClass() {
             return null;
         }
 
@@ -273,11 +277,15 @@ public final class StoredObjectUtility {
             return false;
         }
 
-        public boolean isDetailOf(Class<? extends StoredObject> parentClass) {
+        public boolean isDetail() {
             return false;
         }
 
-        public ObjectIterator<L> list(StoredObject parent) {
+        public boolean isDetailOf(Class<? extends StoredObject> masterClass) {
+            return false;
+        }
+
+        public ObjectIterator<L> list(StoredObject master) {
             return null;
         }
 
@@ -285,83 +293,25 @@ public final class StoredObjectUtility {
             return null;
         }
 
-        public Query query(StoredObject parent) {
+        public Query query(StoredObject master) {
             return null;
-        }
-
-        @Override
-        public boolean equals(Object another) {
-            return false;
         }
     }
 
-    public static Link<?> createLink(Class<? extends StoredObject> objectClass, String linkDetails) {
+    public static Link<?> createLink(Class<? extends StoredObject> masterClass, String linkDetails) {
         return null;
     }
 
-    public static ArrayList<Link<?>> linkDetails(Class<? extends StoredObject> objectClass) {
+    public static ArrayList<Link<?>> linkDetails(Class<? extends StoredObject> masterClass) {
         return null;
     }
 
-    public static ArrayList<Link<?>> linkDetails(Class<? extends StoredObject> objectClass, StringList extraLinks) {
+    public static ArrayList<Link<?>> linkDetails(Class<? extends StoredObject> masterClass, StringList extraLinks) {
         return null;
     }
 
-    protected static class IdBox {
-
-        public IdBox(Id id) {
-        }
-
-        public void setId(Id id) {
-        }
-
-        public Id getId() {
-            return null;
-        }
-
-        @Override
-        public boolean equals(Object another) {
-            return false;
-        }
-    }
-
-    protected static class IdLink {
-
-        public IdLink(Id from, Id to, int type) {
-        }
-
-        public IdLink(IdBox from, IdBox to, int type) {
-        }
-
-        public void setFromId(Id id) {
-        }
-
-        public void setToId(Id id) {
-        }
-
-        public IdBox getFrom() {
-            return null;
-        }
-
-        public IdBox getTo() {
-            return null;
-        }
-
-        public Id getFromId() {
-            return null;
-        }
-
-        public Id getToId() {
-            return null;
-        }
-
-        public int getType() {
-            return 0;
-        }
-
-        public String getOriginal() {
-            return null;
-        }
+    public static Class<? extends StoredObject> getObjectClass(String className) {
+        return null;
     }
 
     public static <T extends StoredObject> T get(Class<T> objectClass, String nameField, String nameValue) {

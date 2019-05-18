@@ -1,20 +1,21 @@
 package com.storedobject.core;
 
+import java.math.BigDecimal;
 import java.math.BigInteger;
 
 public final class Id {
 	
 	public final static Id ZERO = new Id(BigInteger.ZERO);
 
-    public Id(java.math.BigInteger p1) {
+    public Id(BigInteger value) {
         this();
     }
 
-    public Id(java.math.BigDecimal p1) {
+    public Id(BigDecimal value) {
         this();
     }
 
-    public Id(java.lang.String p1) {
+    public Id(String value) {
         this();
     }
 
@@ -25,27 +26,8 @@ public final class Id {
         return null;
     }
 
-    @Override
-	public boolean equals(java.lang.Object p1) {
-        return false;
-    }
-
-    @Override
-	public java.lang.String toString() {
-        return null;
-    }
-
-    @Override
-	public int hashCode() {
-        return 0;
-    }
-
     public com.storedobject.core.StoredObject getObject() {
         return null;
-    }
-
-    protected boolean isMinusOne() {
-        return false;
     }
 
     public boolean isDummy() {
@@ -56,11 +38,15 @@ public final class Id {
         return false;
     }
 
-    public static boolean isNull(com.storedobject.core.Id p1) {
+    public static boolean isNull(Id id) {
         return false;
     }
 
-    public java.lang.Class <? extends com.storedobject.core.StoredObject > getObjectClass() {
+	public static boolean isNull(StoredObject object) {
+		return false;
+	}
+
+	public java.lang.Class <? extends com.storedobject.core.StoredObject > getObjectClass() {
         return null;
     }
     
@@ -564,7 +550,7 @@ public final class Id {
 	}
 
 	public final int countLinks(String linkType, Class<? extends StoredObject> objectClass) {
-		return countLinks((Transaction)null, linkType, objectClass, null);
+		return 0;
 	}
 
 	public final int countLinks(Transaction transaction, String linkType, Class<? extends StoredObject> objectClass) {

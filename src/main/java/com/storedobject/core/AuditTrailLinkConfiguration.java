@@ -1,66 +1,71 @@
 package com.storedobject.core;
 
-public class AuditTrailLinkConfiguration extends com.storedobject.core.StoredObject implements com.storedobject.core.Detail {
+import java.math.BigDecimal;
+
+import com.storedobject.core.StoredObjectUtility.Link;
+import com.storedobject.core.annotation.Column;
+
+public class AuditTrailLinkConfiguration extends StoredObject implements Detail {
 
     public AuditTrailLinkConfiguration() {
     }
 
-    public static void columns(com.storedobject.core.Columns p1) {
+    public static void columns(Columns columns) {
     }
 
-    public static java.lang.String[] browseColumns() {
+    public void setAuditTrailConfiguration(Id auditTrailConfigurationId) {
+    }
+
+    public void setAuditTrailConfiguration(BigDecimal idValue) {
+    }
+
+    public void setAuditTrailConfiguration(AuditTrailConfiguration auditTrailConfiguration) {
+    }
+
+    @Column(order = 1)
+    public Id getAuditTrailConfigurationId() {
         return null;
     }
 
-    public void validateData() throws java.lang.Exception {
-    }
-
-    public boolean isDetailOf(java.lang.Class <? extends com.storedobject.core.StoredObject > p1) {
-        return false;
-    }
-
-    public void copyValuesFrom(com.storedobject.core.Detail p1) {
-    }
-
-    public com.storedobject.core.Id getUniqueId() {
+    public AuditTrailConfiguration getAuditTrailConfiguration() {
         return null;
     }
 
-    public void setAuditTrailConfiguration(com.storedobject.core.Id p1) {
+    public void setAllowAny(boolean any) {
     }
 
-    public void setAuditTrailConfiguration(java.math.BigDecimal p1) {
-    }
-
-    public void setAuditTrailConfiguration(com.storedobject.core.AuditTrailConfiguration p1) {
-    }
-
-    @com.storedobject.core.annotation.Column(order = 1, caption = "", required = true, style = "")
-    public com.storedobject.core.Id getAuditTrailConfigurationId() {
-        return null;
-    }
-
-    public com.storedobject.core.AuditTrailConfiguration getAuditTrailConfiguration() {
-        return null;
-    }
-
-    public void setAllowAny(boolean p1) {
-    }
-
-    @com.storedobject.core.annotation.Column(order = 2, caption = "", required = true, style = "")
+    @Column(order = 2)
     public boolean getAllowAny() {
         return false;
     }
 
-    public void setLinkType(int p1) {
+    public void setLinkType(int link) {
     }
 
-    @com.storedobject.core.annotation.Column(order = 3, caption = "", required = true, style = "")
+    @Column(order = 3)
     public int getLinkType() {
         return 0;
     }
 
-    public com.storedobject.core.StoredObjectUtility.Link <?> createLink() {
+    @Override
+    public Id getUniqueId() {
+        return getId();
+    }
+
+    @Override
+    public void copyValuesFrom(Detail detail) {
+    }
+
+    @Override
+    public boolean isDetailOf(Class <? extends StoredObject > masterClass) {
+        return false;
+    }
+
+    public Link<?> createLink(AuditTrailConfiguration masterConfiguration) {
+        return null;
+    }
+
+    public Link<?> createLink(Class <? extends StoredObject > masterClass) {
         return null;
     }
 }
