@@ -165,4 +165,10 @@ public class FileData extends StoredObject implements Detail, HasParents {
     
     public void view(Device device) {
     }
+
+    public void linkTo(Transaction transaction, StoredObject object, String attribute) throws Exception {
+    }
+
+    public void linkTo(Transaction transaction, String link) throws Exception {
+    }
 }

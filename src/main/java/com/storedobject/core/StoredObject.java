@@ -1,5 +1,9 @@
 package com.storedobject.core;
 
+import com.storedobject.common.StringList;
+
+import java.util.Map;
+
 public abstract class StoredObject {
 
     public static java.util.logging.Logger logger;
@@ -215,6 +219,36 @@ public abstract class StoredObject {
     }
 
     public final void save(java.io.Writer p1) throws Exception {
+    }
+
+    public final void save(Map<String, Object> map) throws Throwable {
+    }
+
+    public final void save(Map<String, Object> map, boolean includeReferences) throws Throwable {
+    }
+
+    public final void save(Map<String, Object> map, boolean includeReferences, boolean includeClassInfo) throws Throwable {
+    }
+
+    public final void save(Map<String, Object> map, StringList attributes, boolean includeReferences, boolean includeClassInfo) throws Throwable {
+    }
+
+    public final void save(Map<String, Object> map, String valueName, boolean includeReferences, boolean includeClassInfo) throws Throwable {
+    }
+
+    public final void save(Map<String, Object> map, String valueName, boolean includeReferences) throws Throwable {
+    }
+
+    public final void save(Map<String, Object> map, StringList attributes, String valueName) throws Throwable {
+    }
+
+    public final void save(Map<String, Object> map, StringList attributes) throws Throwable {
+    }
+
+    public final void save(Map<String, Object> map, String valueName) throws Throwable {
+    }
+
+    public final void save(Map<String, Object> map, StringList attributes, String valueName, boolean includeReferences, boolean includeClassInfo) throws Throwable {
     }
 
     public boolean copy(StoredObject p1) throws Exception {

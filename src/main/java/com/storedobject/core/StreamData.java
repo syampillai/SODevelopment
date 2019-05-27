@@ -23,7 +23,14 @@ public class StreamData extends StoredObject {
 	public String getContentType() {
 		return null;
 	}
-	
+
+	public void setContentType(String contentType) {
+	}
+
+	public final String getMimeType() {
+		return null;
+	}
+
 	public boolean isLink() {
 		return false;
 	}
@@ -44,13 +51,14 @@ public class StreamData extends StoredObject {
     	return null;
     }
 	
-	public void setContentType(String contentType) {
-	}
-	
 	public InputStream getContent() {
 		return null;
 	}
-	
+
+	public static StreamData getViaLink(String link) {
+		return null;
+	}
+
 	public final void saved() throws Exception {
 	}
 	
