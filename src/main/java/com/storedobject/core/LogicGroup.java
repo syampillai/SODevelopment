@@ -27,20 +27,6 @@ public class LogicGroup extends StoredObject implements DisplayOrder {
 	public void setTitle(String title) {
 	}
 
-	public void setIconImageName(String iconImageName) {
-	}
-
-	public String getIconImageName() {
-		return null;
-	}
-	
-	public void setImageName(String imageName) {
-	}
-
-	public String getImageName() {
-		return null;
-	}
-
 	public void setDisplayOrder(int displayOrder) {
 	}
 

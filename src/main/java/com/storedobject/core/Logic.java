@@ -40,13 +40,6 @@ public final class Logic extends StoredObject implements DisplayOrder {
 		return null;
 	}
 
-	public void setImageName(String imageName) {
-	}
-
-	public String getImageName() {
-		return null;
-	}
-
 	public void setDisplayOrder(int displayOrder) {
 	}
 
