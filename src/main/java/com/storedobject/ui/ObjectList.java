@@ -1,0 +1,17 @@
+package com.storedobject.ui;
+
+import com.storedobject.core.StoredObject;
+import com.storedobject.ui.util.ObjectListProvider;
+
+import java.util.ArrayList;
+
+public class ObjectList<T extends StoredObject> extends ObjectListProvider<T> {
+
+    public ObjectList(Class<T> objectClass) {
+        this(objectClass, false);
+    }
+
+    public ObjectList(Class<T> objectClass, boolean allowAny) {
+        super(objectClass);
+    }
+}
