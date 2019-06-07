@@ -17,6 +17,7 @@ public class UIFieldMetadata extends StoredObject implements Detail {
 	public void setMetadata(Column column) {
 	}
 
+	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
 	public boolean isFieldOrderBuiltIn() {
 		return false;
 	}
@@ -125,6 +126,13 @@ public class UIFieldMetadata extends StoredObject implements Detail {
 	
 	public MeasurementUnit getUnit(Class<? extends Quantity> quantityClass) {
 		return null;
+	}
+
+	public void setSetAllowed(boolean setAllowed) {
+	}
+
+	public boolean isSetAllowed() {
+		return true;
 	}
 
 	public boolean isMultiline() {

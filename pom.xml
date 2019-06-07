@@ -6,11 +6,11 @@
 
     <groupId>com.storedobject</groupId>
     <artifactId>so-development</artifactId>
-    <version>1.0.10</version>
+    <version>1.0.12</version>
 
     <properties>
         <so-common-version>1.0.7</so-common-version>
-        <so-components-version>0.10.4</so-components-version>
+        <so-components-version>0.10.5</so-components-version>
         <vaadin.version>14.0.0.beta2</vaadin.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
@@ -75,14 +75,10 @@
             <version>${so-components-version}</version>
         </dependency>
 
-        <!-- Vaadin Pro -->
+        <!-- Vaadin -->
         <dependency>
             <groupId>com.vaadin</groupId>
-            <artifactId>vaadin-grid-pro-flow</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.vaadin</groupId>
-            <artifactId>vaadin-charts-flow</artifactId>
+            <artifactId>vaadin</artifactId>
         </dependency>
 
         <!-- Vaadin Add-ons -->
