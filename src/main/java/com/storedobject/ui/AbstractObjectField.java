@@ -2,6 +2,7 @@ package com.storedobject.ui;
 
 import com.storedobject.common.FilterProvider;
 import com.storedobject.core.ObjectIterator;
+import com.storedobject.core.ObjectSearchFilter;
 import com.storedobject.core.StoredObject;
 import com.storedobject.ui.util.ObjectInput;
 import com.storedobject.vaadin.ButtonLayout;
@@ -73,11 +74,46 @@ public abstract class AbstractObjectField<T extends StoredObject> extends Custom
     }
 
     @Override
-    public void setFilterProvider(FilterProvider filterProvider) {
+    public ObjectSearchFilter getFilter(boolean create) {
+        return null;
     }
 
     @Override
-    public void setFilter(Predicate<T> filter) {
+    public void setFilter(FilterProvider filterProvider) {
+    }
+
+    @Override
+    public void setFilter(ObjectSearchFilter filter) {
+    }
+
+    @Override
+    public void setFilter(String filterClause) {
+    }
+
+    @Override
+    public void setFilter(FilterProvider filterProvider, String extraFilterClause) {
+    }
+
+    @Override
+    public void filter(Predicate<T> filter) {
+    }
+
+    @Override
+    public Predicate<T> getFilterPredicate() {
+        return null;
+    }
+
+    @Override
+    public void setLoadFilter(Predicate<T> filter) {
+    }
+
+    @Override
+    public Predicate<T> getLoadFilter() {
+        return null;
+    }
+
+    @Override
+    public void filterChanged() {
     }
 
     protected void doSearch() {

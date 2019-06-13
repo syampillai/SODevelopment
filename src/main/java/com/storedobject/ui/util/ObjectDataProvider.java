@@ -4,13 +4,16 @@ import com.storedobject.common.FilterProvider;
 import com.storedobject.core.ObjectIterator;
 import com.storedobject.core.ObjectSearchFilter;
 import com.storedobject.core.StoredObject;
+import com.storedobject.ui.FilterMethods;
 import com.vaadin.flow.component.ItemLabelGenerator;
 import com.vaadin.flow.data.provider.DataProvider;
 
 import java.io.Closeable;
+import java.util.Objects;
 import java.util.function.Predicate;
+import java.util.stream.Stream;
 
-public interface ObjectDataProvider<T extends StoredObject> extends DataProvider<T, String>, Closeable {
+public interface ObjectDataProvider<T extends StoredObject> extends DataProvider<T, String>, FilterMethods<T>, Closeable {
 
     @Override
     default Object getId(T item) {
@@ -24,18 +27,49 @@ public interface ObjectDataProvider<T extends StoredObject> extends DataProvider
     @Override
     void close();
 
-    void setFilter(Predicate<T> filter);
+    /**
+     * Set a DB filter.
+     *
+     * @param filter Filter
+     */
+    @Override
+    void setFilter(ObjectSearchFilter filter);
 
-    @SuppressWarnings("unchecked")
-    default void setFilter(ObjectSearchFilter filter) {
-        setFilter((Predicate<T>) filter.getPredicate());
-    }
-
+    /**
+     * Set a DB filter.
+     *
+     * @param filter Filter
+     */
+    @Override
     default void setFilter(FilterProvider filter) {
     }
 
+    /**
+     * Set a DB filter.
+     *
+     * @param filter Filter
+     * @param extraFilterClause Extra filter clause
+     */
+    @Override
+    default void setFilter(FilterProvider filter, String extraFilterClause) {
+    }
+
+    /**
+     * Set a DB filter.
+     *
+     * @param filter Filter
+     */
+    @Override
     default void setFilter(String filter) {
     }
+
+    Stream<T> streamAll();
+
+    default Stream<T> streamFiltered() {
+        return null;
+    }
+
+    boolean validateFilterCondition(T value);
 
     default int getObjectCount() {
         return -1;
@@ -48,30 +82,29 @@ public interface ObjectDataProvider<T extends StoredObject> extends DataProvider
     void setItemLabelGenerator(ItemLabelGenerator<T> itemLabelGenerator);
 
     default void load() {
-        load(null, null);
     }
 
     default void load(String condition) {
-        load(condition, null);
     }
 
     void load(String condition, String orderBy);
 
     default void load(int linkType, StoredObject master) {
-        load(linkType, master, null, null);
     }
 
     default void load(int linkType, StoredObject master, String condition) {
-        load(linkType, master, condition, null);
     }
 
     void load(int linkType, StoredObject master, String condition, String orderBy);
 
     void load(ObjectIterator<T> objects);
 
+    default void clear() {
+    }
+
     boolean isFullyLoaded();
 
-    ObjectSearchFilter getFilter();
-
     boolean isFullyCached();
+
+    void filterChanged();
 }

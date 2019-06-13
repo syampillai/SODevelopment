@@ -67,24 +67,38 @@ public class ObjectSupplier<T extends StoredObject> extends CallbackDataProvider
     }
 
     @Override
-    public void setFilter(Predicate<T> filter) {
-    }
-
-    @Override
-    public void setFilter(String filter) {
-    }
-
-    @Override
     public void setItemLabelGenerator(ItemLabelGenerator<T> itemLabelGenerator) {
     }
 
     @Override
-    public void setFilter(FilterProvider filter) {
+    public void filter(Predicate<T> filter) {
     }
 
     @Override
-    public ObjectSearchFilter getFilter() {
+    public Predicate<T> getFilterPredicate() {
         return null;
+    }
+
+    @Override
+    public void setLoadFilter(Predicate<T> filter) {
+    }
+
+    @Override
+    public Predicate<T> getLoadFilter() {
+        return null;
+    }
+
+    @Override
+    public void setFilter(ObjectSearchFilter filter) {
+    }
+
+    @Override
+    public ObjectSearchFilter getFilter(boolean create) {
+        return null;
+    }
+
+    @Override
+    public void filterChanged() {
     }
 
     @Override
@@ -113,6 +127,16 @@ public class ObjectSupplier<T extends StoredObject> extends CallbackDataProvider
     @Override
     public int getObjectCount() {
         return 0;
+    }
+
+    @Override
+    public Stream<T> streamAll() {
+        return null;
+    }
+
+    @Override
+    public boolean validateFilterCondition(T value) {
+        return false;
     }
 
     private static class Supplier<T extends StoredObject> {

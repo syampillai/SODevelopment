@@ -3,7 +3,6 @@ package com.storedobject.ui;
 import com.storedobject.common.FilterProvider;
 import com.storedobject.core.InventoryItem;
 import com.storedobject.core.InventoryStore;
-import com.storedobject.ui.util.ObjectProvider;
 import com.storedobject.vaadin.ButtonLayout;
 import com.vaadin.flow.component.Component;
 

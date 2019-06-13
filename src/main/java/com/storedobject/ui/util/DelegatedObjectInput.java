@@ -22,13 +22,13 @@ public interface DelegatedObjectInput<T extends StoredObject> extends ObjectInpu
     }
 
     @Override
-    default void setFilterProvider(FilterProvider filterProvider) {
-        getObjectInput().setFilterProvider(filterProvider);
+    default void setFilter(FilterProvider filterProvider) {
+        getObjectInput().setFilter(filterProvider);
     }
 
     @Override
-    default void setFilter(Predicate<T> filter) {
-        getObjectInput().setFilter(filter);
+    default void filter(Predicate<T> filter) {
+        getObjectInput().filter(filter);
     }
 
     @Override

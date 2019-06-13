@@ -2,10 +2,7 @@ package com.storedobject.ui.util;
 
 import com.storedobject.common.FilterProvider;
 import com.storedobject.core.*;
-import com.storedobject.ui.ObjectChangedListener;
-import com.storedobject.ui.ObjectEditorListener;
-import com.storedobject.ui.ObjectMasterData;
-import com.storedobject.ui.Transactional;
+import com.storedobject.ui.*;
 import com.storedobject.vaadin.HasColumns;
 import com.storedobject.vaadin.ItemSelectedListener;
 import com.vaadin.flow.component.grid.Grid;
@@ -18,7 +15,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public interface ObjectGridData<T extends StoredObject> extends HasColumns<T>, ObjectChangedListener<T>, ObjectsSetter, ObjectSearcher<T>, Transactional, ObjectEditorListener {
+public interface ObjectGridData<T extends StoredObject> extends HasColumns<T>, ObjectChangedListener<T>, ObjectsSetter, ObjectSearcher<T>, Transactional, ObjectEditorListener, FilterMethods<T> {
 
     ObjectDataProvider<T> getDataProvider();
 
@@ -50,12 +47,7 @@ public interface ObjectGridData<T extends StoredObject> extends HasColumns<T>, O
 
     String getOrderBy();
 
-    void setLoadCondition(String loadCondition);
-
-    String getLoadCondition();
-
     default void load() {
-        load(getLoadCondition(), getOrderBy());
     }
 
     default void load(String filterClause) {
@@ -70,53 +62,75 @@ public interface ObjectGridData<T extends StoredObject> extends HasColumns<T>, O
     }
 
     default void load(StoredObject master, String filterClause, String orderBy) {
-        load(0, master, filterClause, orderBy);
     }
 
     default void load(int linkType, StoredObject master) {
-        load(linkType, master, null, getOrderBy());
     }
 
     default void load(int linkType, StoredObject master, String filterClause, String orderBy) {
     }
 
     default void load(Stream<T> objects) {
-        load(objects.collect(Collectors.toList()));
     }
 
     default void load(Iterator<T> objects) {
-        load(ObjectIterator.create(objects));
     }
 
     default void load(ObjectIterator<T> objects) {
     }
 
     default void load(Iterable<T> objects) {
-        load(objects.iterator());
+    }
+
+    default void clear() {
     }
 
     default boolean isFullyLoaded() {
-        return getDataProvider().isFullyLoaded();
+        return false;
     }
 
+    @Override
+    default Predicate<T> getFilterPredicate() {
+        return null;
+    }
+
+    @Override
+    default void filter(Predicate<T> filter) {
+    }
+
+    @Override
+    default void setLoadFilter(Predicate<T> filter) {
+    }
+
+    @Override
+    default Predicate<T> getLoadFilter() {
+        return null;
+    }
+
+    @Override
     default void setFilter(String filterClause) {
-        setFilter(null, filterClause);
     }
 
+    @Override
     default void setFilter(FilterProvider filterProvider) {
-        setFilter(filterProvider, null);
     }
 
+    @Override
     default void setFilter(FilterProvider filterProvider, String extraFilterClause) {
     }
 
-    default void filter(Predicate<T> filter) {
-        getDataProvider().setFilter(filter);
+    @Override
+    default ObjectSearchFilter getFilter(boolean create) {
+        return null;
     }
 
     @Override
     default ObjectSearchFilter getFilter() {
-        return getDataProvider().getFilter();
+        return null;
+    }
+
+    @Override
+    default void filterChanged() {
     }
 
     default void scrollTo(T object) {
@@ -157,7 +171,7 @@ public interface ObjectGridData<T extends StoredObject> extends HasColumns<T>, O
     }
 
     default boolean isFullyCached() {
-        return getDataProvider().isFullyCached();
+        return false;
     }
 
     default int size() {
@@ -166,12 +180,23 @@ public interface ObjectGridData<T extends StoredObject> extends HasColumns<T>, O
 
     @Override
     default void setFilter(ObjectSearchFilter objectSearchFilter) {
-        getFilter().set(objectSearchFilter);
     }
 
     @Override
     default int getObjectCount() {
         return size();
+    }
+
+    default Stream<T> streamAll() {
+        return null;
+    }
+
+    default Stream<T> streamFiltered() {
+        return null;
+    }
+
+    default boolean validateFilterCondition(T value) {
+        return false;
     }
 
     @Override

@@ -1,5 +1,6 @@
 package com.storedobject.ui;
 
+import com.storedobject.core.ObjectSearchFilter;
 import com.storedobject.core.ObjectSetter;
 import com.storedobject.core.StoredObject;
 import com.storedobject.ui.util.ObjectDataProvider;
@@ -8,6 +9,7 @@ import com.storedobject.vaadin.ItemSelectedListener;
 
 import java.util.List;
 import java.util.function.BiConsumer;
+import java.util.function.Predicate;
 
 public class EditableObjectGrid<T extends StoredObject> extends EditableGrid<T> implements ObjectGridData<T> {
 
@@ -72,15 +74,6 @@ public class EditableObjectGrid<T extends StoredObject> extends EditableGrid<T> 
     }
 
     @Override
-    public void setLoadCondition(String loadCondition) {
-    }
-
-    @Override
-    public String getLoadCondition() {
-        return null;
-    }
-
-    @Override
     public void setObjectSetter(ObjectSetter setter) {
     }
 
@@ -101,5 +94,15 @@ public class EditableObjectGrid<T extends StoredObject> extends EditableGrid<T> 
     }
 
     public void setFromClient(boolean fromClient) {
+    }
+
+    @Override
+    public Predicate<T> getFilterPredicate() {
+        return null;
+    }
+
+    @Override
+    public ObjectSearchFilter getFilter(boolean create) {
+        return null;
     }
 }

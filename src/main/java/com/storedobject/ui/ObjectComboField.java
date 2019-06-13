@@ -1,6 +1,7 @@
 package com.storedobject.ui;
 
 import com.storedobject.common.FilterProvider;
+import com.storedobject.core.ObjectSearchFilter;
 import com.storedobject.core.StoredObject;
 import com.storedobject.ui.util.ObjectDataProvider;
 import com.storedobject.ui.util.ObjectInput;
@@ -99,16 +100,6 @@ public class ObjectComboField<T extends StoredObject> extends ComboField<T> impl
     }
 
     @Override
-    public void setFilterProvider(FilterProvider filterProvider) {
-        objectProvider.setFilter(filterProvider);
-    }
-
-    @Override
-    public void setFilter(Predicate<T> filter) {
-        objectProvider.setFilter(filter);
-    }
-
-    @Override
     public void setDetailComponent(Component detailComponent) {
     }
 
@@ -168,5 +159,44 @@ public class ObjectComboField<T extends StoredObject> extends ComboField<T> impl
     @Override
     public String getInternalLabel() {
         return label;
+    }
+
+    @Override
+    public void filter(Predicate<T> filter) {
+    }
+
+    @Override
+    public Predicate<T> getFilterPredicate() {
+        return null;
+    }
+
+    @Override
+    public void setLoadFilter(Predicate<T> filter) {
+    }
+
+    @Override
+    public Predicate<T> getLoadFilter() {
+        return null;
+    }
+
+    @Override
+    public void setFilter(FilterProvider filterProvider, String extraFilterClause) {
+    }
+
+    @Override
+    public void setFilter(ObjectSearchFilter filter) {
+    }
+
+    @Override
+    public ObjectSearchFilter getFilter(boolean create) {
+        return null;
+    }
+
+    @Override
+    public void setFilter(String filterClause) {
+    }
+
+    @Override
+    public void filterChanged() {
     }
 }

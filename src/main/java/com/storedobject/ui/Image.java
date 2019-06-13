@@ -1,5 +1,6 @@
 package com.storedobject.ui;
 
+import com.storedobject.common.SVG;
 import com.storedobject.core.Id;
 import com.storedobject.core.StreamData;
 import com.vaadin.flow.server.AbstractStreamResource;
@@ -16,6 +17,10 @@ public class Image extends com.vaadin.flow.component.html.Image {
 
     public Image(Id streamDataId) {
         this(new DBResource(streamDataId));
+    }
+
+    public Image(SVG svg) {
+        this(new SVGResource(svg));
     }
 
     public Image(AbstractStreamResource resource) {

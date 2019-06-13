@@ -2,13 +2,15 @@ package com.storedobject.ui.util;
 
 import com.storedobject.common.FilterProvider;
 import com.storedobject.core.*;
+import com.storedobject.ui.FilterMethods;
+import com.storedobject.ui.ObjectProvider;
 import com.storedobject.vaadin.HasElement;
 import com.vaadin.flow.component.Component;
 
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
-public interface AbstractObjectInput<T extends StoredObject> extends ObjectProvider<T>, ObjectSetter, ObjectGetter, HasElement {
+public interface AbstractObjectInput<T extends StoredObject> extends ObjectProvider<T>, ObjectSetter, ObjectGetter, HasElement, FilterMethods<T> {
 
     @Override
     Class<T> getObjectClass();
@@ -73,10 +75,6 @@ public interface AbstractObjectInput<T extends StoredObject> extends ObjectProvi
     default boolean isAllowAny() {
         return false;
     }
-
-    void setFilterProvider(FilterProvider filterProvider);
-
-    void setFilter(Predicate<T> filter);
 
     void setDetailComponent(Component detailComponent);
 

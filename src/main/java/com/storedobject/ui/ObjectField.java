@@ -134,13 +134,38 @@ public class ObjectField<T extends StoredObject> extends CustomField<Id> impleme
     }
 
     @Override
-    public void setFilterProvider(FilterProvider filterProvider) {
-        field.setFilterProvider(filterProvider);
+    public void filter(Predicate<T> filter) {
     }
 
     @Override
-    public void setFilter(Predicate<T> filter) {
-        field.setFilter(filter);
+    public Predicate<T> getFilterPredicate() {
+        return null;
+    }
+
+    @Override
+    public void setLoadFilter(Predicate<T> filter) {
+    }
+
+    @Override
+    public Predicate<T> getLoadFilter() {
+        return null;
+    }
+
+    @Override
+    public void setFilter(FilterProvider filterProvider, String extraFilterClause) {
+    }
+
+    @Override
+    public void setFilter(ObjectSearchFilter filter) {
+    }
+
+    @Override
+    public ObjectSearchFilter getFilter(boolean create) {
+        return null;
+    }
+
+    @Override
+    public void filterChanged() {
     }
 
     @Override

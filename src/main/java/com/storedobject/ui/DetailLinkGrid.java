@@ -7,12 +7,12 @@ import com.storedobject.vaadin.View;
 
 public class DetailLinkGrid<T extends StoredObject> extends EditableObjectGrid<T> implements LinkGrid<T> {
 
-    public DetailLinkGrid(StoredObjectUtility.Link<T> link) {
-        this(link, link.getBrowseColumns());
+    public DetailLinkGrid(ObjectLinkField<T> linkField) {
+        this(linkField, null);
     }
 
-    public DetailLinkGrid(StoredObjectUtility.Link<T> link, Iterable<String> columns) {
-        super(link.getObjectClass(), columns, link.isAny());
+    public DetailLinkGrid(ObjectLinkField<T> linkField, Iterable<String> columns) {
+        super(linkField.getObjectClass(), columns == null ? linkField.getLink().getBrowseColumns() : columns, linkField.isAllowAny());
     }
 
     @Override
@@ -119,5 +119,9 @@ public class DetailLinkGrid<T extends StoredObject> extends EditableObjectGrid<T
 
     @Override
     public void setMaster(StoredObject master, boolean load) {
+    }
+
+    @Override
+    public void clear() {
     }
 }

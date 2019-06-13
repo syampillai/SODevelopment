@@ -50,7 +50,30 @@ public class ObjectListProvider<T extends StoredObject> extends CallbackDataProv
     }
 
     @Override
-    public void setFilter(Predicate<T> filter) {
+    public void setFilter(ObjectSearchFilter filter) {
+    }
+
+    @Override
+    public ObjectSearchFilter getFilter(boolean create) {
+        return null;
+    }
+
+    @Override
+    public void filter(Predicate<T> filter) {
+    }
+
+    @Override
+    public Predicate<T> getFilterPredicate() {
+        return null;
+    }
+
+    @Override
+    public void setLoadFilter(Predicate<T> filter) {
+    }
+
+    @Override
+    public Predicate<T> getLoadFilter() {
+        return null;
     }
 
     @Override
@@ -118,6 +141,10 @@ public class ObjectListProvider<T extends StoredObject> extends CallbackDataProv
     }
 
     @Override
+    public void filterChanged() {
+    }
+
+    @Override
     public boolean isInMemory() {
         return true;
     }
@@ -147,6 +174,11 @@ public class ObjectListProvider<T extends StoredObject> extends CallbackDataProv
 
     public Stream<T> streamFiltered() {
         return null;
+    }
+
+    @Override
+    public boolean validateFilterCondition(T value) {
+        return false;
     }
 
     private static class Supplier<T extends StoredObject> {

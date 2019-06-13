@@ -6,14 +6,16 @@ import com.storedobject.core.StoredObjectUtility;
 import com.storedobject.ui.util.LinkGridButtons;
 import com.storedobject.vaadin.View;
 
+import java.util.stream.Stream;
+
 public class ReferenceLinkGrid<T extends StoredObject> extends ObjectGrid<T> implements LinkGrid<T>, ObjectLinkData<T> {
 
-    public ReferenceLinkGrid(StoredObjectUtility.Link<T> link) {
-        this(link, link.getBrowseColumns());
+    public ReferenceLinkGrid(ObjectLinkField<T> linkField) {
+        this(linkField, null);
     }
 
-    public ReferenceLinkGrid(StoredObjectUtility.Link<T> link, Iterable<String> columns) {
-        super(link.getObjectClass(), columns, new EditableObjectList<>(link.getObjectClass(), link.isAny()));
+    public ReferenceLinkGrid(ObjectLinkField<T> linkField, Iterable<String> columns) {
+        super(linkField.getObjectClass(), columns, new EditableObjectList<>(linkField.getObjectClass(), linkField.isAllowAny()));
     }
 
     @Override
@@ -142,5 +144,14 @@ public class ReferenceLinkGrid<T extends StoredObject> extends ObjectGrid<T> imp
     @Override
     public int size() {
         return 0;
+    }
+
+    @Override
+    public void clear() {
+    }
+
+    @Override
+    public Stream<T> streamAll() {
+        return null;
     }
 }
