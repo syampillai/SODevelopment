@@ -59,12 +59,7 @@ public class ObjectViewer extends Executor implements ObjectSetter, AlertHandler
     }
 
     @Override
-    public String getAlertButtonCaption() {
-        return "View";
-    }
-
-    @Override
-    public Icon getAlertButtonIcon() {
-        return new Icon(VaadinIcon.EYE);
+    public String getAlertIcon() {
+        return null;
     }
 }

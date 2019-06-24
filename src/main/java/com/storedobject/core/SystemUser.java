@@ -162,4 +162,7 @@ public final class SystemUser extends StoredObject {
     public String format(Date date) {
         return null;
     }
+
+    public void unlock(TransactionManager tm) throws Exception {
+    }
 }

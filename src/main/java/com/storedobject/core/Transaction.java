@@ -14,6 +14,10 @@ public final class Transaction {
 		return null;
 	}
 
+	public Id getSession() {
+		return null;
+	}
+
 	public TransactionManager getManager() {
 		return null;
 	}

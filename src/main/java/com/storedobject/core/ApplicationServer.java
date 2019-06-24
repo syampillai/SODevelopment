@@ -89,6 +89,10 @@ public final class ApplicationServer {
         return null;
     }
 
+    public boolean login(String user, String password, boolean lockIfFailed) {
+        return true;
+    }
+
     public boolean login(String user, String password) {
         return true;
     }

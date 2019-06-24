@@ -120,10 +120,19 @@ public class Application extends com.storedobject.vaadin.Application implements 
     public void alert(String caption, String alert) {
     }
 
-    public void alert(String alert, Icon icon) {
+    public void alert(String caption, String alert, String icon) {
     }
 
-    public void alert(String caption, String alert, Icon icon) {
+    public StyledBuilder getAlert() {
+        return getAlert(null, null);
+    }
+
+    public StyledBuilder getAlert(Class<?> alertHandler) {
+        return getAlert(alertHandler, null);
+    }
+
+    public StyledBuilder getAlert(Class<?> alertHandler, Id reference) {
+        return null;
     }
 
     @Override

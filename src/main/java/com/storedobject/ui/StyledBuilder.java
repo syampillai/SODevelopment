@@ -54,6 +54,18 @@ public interface StyledBuilder extends com.storedobject.common.StyledBuilder, HT
         return this;
     }
 
+    default StyledBuilder appendIcon(String icon) {
+        return this;
+    }
+
+    default StyledBuilder appendWithTag(String text, String tag) {
+        return this;
+    }
+
+    default StyledBuilder appendWithTag(String text, String tag, String attributes) {
+        return this;
+    }
+
     default void clear() {
         clearContent();
     }

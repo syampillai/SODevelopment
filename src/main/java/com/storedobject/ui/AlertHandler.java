@@ -14,11 +14,7 @@ public interface AlertHandler {
     default void handleAlert(@SuppressWarnings("unused") StoredObject so) {
     }
 
-    default String getAlertButtonCaption() {
-        return "Process";
-    }
-
-    default Icon getAlertButtonIcon() {
-        return new Icon(VaadinIcon.COG_O);
+    default String getAlertIcon() {
+        return "vaadin:cog_o";
     }
 }

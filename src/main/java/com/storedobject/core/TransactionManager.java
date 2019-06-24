@@ -20,6 +20,10 @@ public final class TransactionManager {
         return null;
     }
 
+    public Id getSession() {
+        return null;
+    }
+
     /**
      * Start a new transaction.
      *
