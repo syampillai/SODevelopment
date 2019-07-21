@@ -139,10 +139,6 @@ public class Application extends com.storedobject.vaadin.Application implements 
     public final void login() {
     }
 
-    public boolean login(String user, String password) {
-        return true;
-    }
-
     public BusyIndicator getProgressBar(boolean indeterminate) {
         return null;
     }

@@ -397,6 +397,10 @@ public abstract class StoredObject {
         return null;
     }
 
+    public String getTransactionIP() {
+        return null;
+    }
+
     public void setTransaction(Transaction p1) throws Exception {
     }
     
