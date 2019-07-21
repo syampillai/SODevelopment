@@ -78,11 +78,6 @@ public class EditableObjectGrid<T extends StoredObject> extends EditableGrid<T> 
     }
 
     @Override
-    public List<ItemSelectedListener<T>> getItemSelectedListeners(boolean create) {
-        return null;
-    }
-
-    @Override
     public List<ObjectEditorListener> getObjectEditorListeners(boolean create) {
         return null;
     }

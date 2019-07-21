@@ -246,23 +246,6 @@ public interface ObjectGridData<T extends StoredObject> extends HasColumns<T>, O
         return null;
     }
 
-    default List<ItemSelectedListener<T>> getItemSelectedListeners() {
-        return null;
-    }
-
-    default List<ItemSelectedListener<T>> getItemSelectedListeners(boolean create) {
-        return null;
-    }
-
-    default void selected(Set<T> selection) {
-    }
-
-    default void addItemSelectedListener(ItemSelectedListener<T> itemSelectedListener) {
-    }
-
-    default void removeItemSelectedListener(ItemSelectedListener<T> itemSelectedListener) {
-    }
-
     default List<ObjectEditorListener> getObjectEditorListeners() {
         return null;
     }

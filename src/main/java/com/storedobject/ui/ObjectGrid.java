@@ -70,9 +70,4 @@ public class ObjectGrid<T extends StoredObject> extends DataGrid<T> implements O
     @Override
     public void setObjectSetter(ObjectSetter setter) {
     }
-
-    @Override
-    public List<ItemSelectedListener<T>> getItemSelectedListeners(boolean create) {
-        return null;
-    }
 }
