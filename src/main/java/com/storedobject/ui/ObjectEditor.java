@@ -283,9 +283,7 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T> 
     protected void attachLinkField(ObjectLinkField<?> field) {
     }
 
-    @Override
-    public boolean isFieldVisible(HasValue<?, ?> field) {
-        return false;
+    public void add(ObjectLinkField.Tab linkFieldTab) {
     }
 
     public ObjectLinkField<?> getLinkField(String fieldName) {

@@ -6,6 +6,7 @@ import com.storedobject.core.StoredObject;
 import com.storedobject.core.StoredObjectUtility;
 import com.storedobject.vaadin.CustomField;
 import com.storedobject.vaadin.View;
+import com.vaadin.flow.component.tabs.Tabs;
 
 import java.util.Iterator;
 import java.util.stream.Stream;
@@ -223,5 +224,14 @@ public final class ObjectLinkField<T extends StoredObject> extends CustomField<O
     }
 
     public void setFromClient(boolean fromClient) {
+    }
+
+    public static class Tab extends Tabs {
+
+        public Tab() {
+        }
+
+        public void addField(ObjectLinkField<?> field) {
+        }
     }
 }
