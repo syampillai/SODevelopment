@@ -1,11 +1,10 @@
 package com.storedobject.ui;
 
+import com.storedobject.ui.util.MultiselectComboBox;
 import com.vaadin.flow.component.ItemLabelGenerator;
 import com.vaadin.flow.data.binder.HasItems;
-import org.vaadin.gatanaso.MultiselectComboBox;
 
-import java.util.Collection;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Stream;
 
 public class TokensField<T> extends MultiselectComboBox<T> implements HasItems<T> {
@@ -81,7 +80,9 @@ public class TokensField<T> extends MultiselectComboBox<T> implements HasItems<T
     public void addItems(Collection<T> items) {
     }
 
-    public void addItems(T... items) {
+    @SafeVarargs
+    public final void addItems(T... items) {
+        this.addItems(Arrays.asList(items));
     }
 
     public void addItems(Stream<T> streamOfItems) {
