@@ -1269,19 +1269,19 @@ public final class Id {
 		return null;
 	}
 
-	public final FileData getFileData(String name) {
+	public final <F extends FileData> F getFileData(String name) {
 		return null;
 	}
 	
-	public final FileData getFileData(String name, Transaction transaction) {
+	public final <F extends FileData> F getFileData(String name, Transaction transaction) {
 		return null;
 	}
 
-	public final ObjectIterator<FileData> listFileData() {
+	public final ObjectIterator<? extends FileData> listFileData() {
         return null;
 	}
 	
-	public final ObjectIterator<FileData> listFileData(Transaction transaction) {
+	public final ObjectIterator<? extends FileData> listFileData(Transaction transaction) {
 		return null;
 	}
 }
