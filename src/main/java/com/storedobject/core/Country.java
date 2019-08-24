@@ -1,5 +1,7 @@
 package com.storedobject.core;
 
+import java.util.List;
+
 public class Country extends StoredObject {
 
     public Country() {
@@ -47,4 +49,19 @@ public class Country extends StoredObject {
 	public String getLocalName() {
 		return null;
 	}
+
+    public void setISDCode(int dialingCode) {
+    }
+
+    public int getISDCode() {
+        return 0;
+    }
+
+    public String getISDPrefix() {
+        return null;
+    }
+
+    public static List<Country> list() {
+        return null;
+    }
 }

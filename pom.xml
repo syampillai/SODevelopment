@@ -6,11 +6,11 @@
 
     <groupId>com.storedobject</groupId>
     <artifactId>so-development</artifactId>
-    <version>1.0.24</version>
+    <version>1.0.25</version>
 
     <properties>
-        <so-common-version>1.0.8</so-common-version>
-        <so-components-version>1.3.0</so-components-version>
+        <so-common-version>1.0.9</so-common-version>
+        <so-components-version>1.4.0</so-components-version>
         <vaadin.version>14.0.1</vaadin.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
@@ -45,6 +45,10 @@
             <id>Vaadin Directory</id>
             <url>http://maven.vaadin.com/vaadin-addons</url>
         </repository>
+        <repository>
+            <id>jitpack.io</id>
+            <url>https://jitpack.io</url>
+        </repository>
     </repositories>
 
     <dependencyManagement>
@@ -63,8 +67,8 @@
 
         <!-- SO Common -->
         <dependency>
-            <groupId>com.storedobject</groupId>
-            <artifactId>so-common</artifactId>
+            <groupId>com.github.syampillai</groupId>
+            <artifactId>SOCommon</artifactId>
             <version>${so-common-version}</version>
         </dependency>
 
