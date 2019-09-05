@@ -68,4 +68,20 @@ public final class TransactionManager {
     public String format(Date date) {
         return null;
     }
+
+    public Id checkType(StoredObject host, Id id, Class<? extends StoredObject> objectClass) throws Exception {
+        return null;
+    }
+
+    public Id checkType(StoredObject host, Id id, Class<? extends StoredObject> objectClass, boolean allowEmpty) throws Exception {
+        return null;
+    }
+
+    public Id checkTypeAny(StoredObject host, Id id, Class<? extends StoredObject> objectClass) throws Exception {
+        return null;
+    }
+
+    public Id checkTypeAny(StoredObject host, Id id, Class<? extends StoredObject> objectClass, boolean allowEmpty) throws Exception {
+        return null;
+    }
 }

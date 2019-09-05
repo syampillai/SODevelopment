@@ -604,12 +604,6 @@ public abstract class StoredObject {
         return null;
     }
 
-    public final void checkTypeAny(Id p1, Class <? extends StoredObject > p2) throws Invalid_Value, Invalid_State {
-    }
-
-    public final void checkTypeAny(Id p1, Class <? extends StoredObject > p2, boolean p3) throws Invalid_Value, Invalid_State {
-    }
-
     public final Id getParentId() {
         return null;
     }
