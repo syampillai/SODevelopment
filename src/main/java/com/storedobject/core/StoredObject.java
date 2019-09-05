@@ -352,17 +352,11 @@ public abstract class StoredObject {
     public final void checkTransaction() throws Exception {
     }
 
-    public void validateData() throws Exception {
+    public void validateData(TransactionManager tm) throws Exception {
     }
 
     public final boolean inserted() {
         return false;
-    }
-
-    public final void checkType(Id p1, Class <? extends StoredObject > p2) throws Invalid_Value, Invalid_State {
-    }
-
-    public final void checkType(Id p1, Class <? extends StoredObject > p2, boolean p3) throws Invalid_Value, Invalid_State {
     }
 
     public final void debit(Account p1, Money p2, int p3) throws Exception {

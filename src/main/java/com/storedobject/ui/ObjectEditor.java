@@ -1,5 +1,6 @@
 package com.storedobject.ui;
 
+import com.storedobject.common.SOException;
 import com.storedobject.core.*;
 import com.storedobject.vaadin.AbstractDataEditor;
 import com.vaadin.flow.component.Focusable;
@@ -112,7 +113,10 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T> 
     public void doCancel() {
     }
 
-    protected void validateData() throws Exception {
+    public void validateData() throws Exception {
+    }
+
+    public void validateAnchorValues(T object) throws SOException {
     }
 
     public void doAdd() {

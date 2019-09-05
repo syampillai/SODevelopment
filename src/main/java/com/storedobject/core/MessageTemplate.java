@@ -50,10 +50,6 @@ public class MessageTemplate extends StoredObject {
         return null;
     }
 
-    @Override
-	public void validateData() throws Exception {
-    }
-    
     public static MessageTemplate get(String code) {
         return null;
     }

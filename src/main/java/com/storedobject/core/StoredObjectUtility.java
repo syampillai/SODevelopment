@@ -362,7 +362,7 @@ public final class StoredObjectUtility {
         return null;
     }
 
-    public static boolean sameContent(StoredObject one, StoredObject two) {
+    public static boolean sameContent(TransactionManager tm, StoredObject one, StoredObject two) {
         return false;
     }
 

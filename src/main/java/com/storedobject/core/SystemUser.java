@@ -135,11 +135,11 @@ public final class SystemUser extends StoredObject {
         return null;
     }
 
-    public ObjectIterator<Logic> getQuickAccessLogic() {
+    public ObjectIterator<Logic> listQuickAccessLogic() {
         return null;
     }
 
-    public ObjectIterator<Logic> getAutoLogic() {
+    public ObjectIterator<Logic> listAutoLogic() {
         return null;
     }
 

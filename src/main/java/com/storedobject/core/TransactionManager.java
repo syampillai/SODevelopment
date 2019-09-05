@@ -34,8 +34,8 @@ public final class TransactionManager {
         return null;
     }
 
-    boolean isOTP() {
-        return false;
+    public PseudoTransaction getPseudoTransaction(Object key, boolean create) {
+        return null;
     }
 
     public boolean verify(String password) {

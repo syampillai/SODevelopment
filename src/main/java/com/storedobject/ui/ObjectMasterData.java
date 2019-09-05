@@ -1,7 +1,9 @@
 package com.storedobject.ui;
 
+import com.storedobject.core.Id;
 import com.storedobject.core.StoredObject;
 import com.storedobject.core.Transaction;
+import com.storedobject.core.TransactionManager;
 
 import java.util.List;
 
@@ -26,6 +28,10 @@ public final class ObjectMasterData<M extends StoredObject> {
     }
 
     public void save(Transaction transaction) throws Exception {
+    }
+
+    public Id savePseudo(TransactionManager tm) throws Exception {
+        return null;
     }
 
     public void setParentObject(StoredObject parentObject, int parentLinkType) {

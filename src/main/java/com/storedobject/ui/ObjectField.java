@@ -6,6 +6,7 @@ import com.storedobject.ui.util.IdInput;
 import com.storedobject.ui.util.ObjectInput;
 import com.storedobject.vaadin.CustomField;
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.ItemLabelGenerator;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,11 +15,7 @@ import java.util.function.Predicate;
 
 public class ObjectField<T extends StoredObject> extends CustomField<Id> implements IdInput<T> {
 
-    public enum Type { AUTO, CHOICE, GET, SEARCH, IMAGE }
-    private final Class<T> objectClass;
-    private final boolean any;
-    private final ObjectInput<T> field;
-    private T cached;
+    public enum Type { AUTO, CHOICE, GET, SEARCH, FORM, IMAGE, FILE, INVENTORY_ITEM, INVENTORY_BIN }
 
     public ObjectField(Class<T> objectClass) {
         this(null, objectClass);
@@ -81,24 +78,28 @@ public class ObjectField<T extends StoredObject> extends CustomField<Id> impleme
     }
 
     protected ObjectField(String label, Class<T> objectClass, boolean any, Type type, ObjectGetField.GetProvider<T> getProvider, boolean addAllowed) {
-        this(label, objectClass, any, createField(objectClass, type, any, getProvider, addAllowed));
+        this(label, objectClass, any, (ObjectInput<T>)null);
+    }
+
+    public ObjectField(String label, List<T> list) {
+        this(label, list, false);
     }
 
     @SuppressWarnings("unchecked")
-    public ObjectField(String label, List<T> list) {
-        this(label, (Class<T>)list.get(0).getClass(), false, new ObjectComboField<>(list));
+    public ObjectField(String label, List<T> list, boolean any) {
+        this(label, (Class<T>)list.get(0).getClass(), any, new ObjectComboField<>(list));
+    }
+
+    public ObjectField(ObjectInput<T> field) {
+        this(null, field);
+    }
+
+    public ObjectField(String label, ObjectInput<T> field) {
+        this(label, field.getObjectClass(), field.isAllowAny(), field);
     }
 
     private ObjectField(String label, Class<T> objectClass, boolean any, ObjectInput<T> field) {
         super(null);
-        this.objectClass = objectClass;
-        this.any = any;
-        this.field = field;
-        add((Component)field);
-        this.setLabel(label);
-        if(field instanceof AbstractObjectField) {
-            ((AbstractObjectField<T>) field).addValueChangeListener(e -> setModelValue(field.getObjectId(), true));
-        }
     }
 
     private static <O extends StoredObject> List<O> list(Iterable<O> iterable) {
@@ -107,30 +108,38 @@ public class ObjectField<T extends StoredObject> extends CustomField<Id> impleme
         return list;
     }
 
-    @Override
-    public void setLabel(String label) {
-        super.setLabel(label);
-        field.setInternalLabel(label);
-    }
-
     public void setPlaceholder(String placeholder) {
-        field.setPlaceholder(placeholder);
     }
 
     @Override
     public T getCached() {
-        return cached == null ? field.getCached() : cached;
+        return null;
     }
 
     @Override
     public void setCached(T object) {
-        cached = object;
-        field.setCached(object);
     }
 
     @Override
     public final Class<T> getObjectClass() {
-        return objectClass;
+        return null;
+    }
+
+    @Override
+    public void setFilter(FilterProvider filterProvider) {
+    }
+
+    @Override
+    public void setFilter(FilterProvider filterProvider, String extraFilterClause) {
+    }
+
+    @Override
+    public void setFilter(ObjectSearchFilter filter) {
+    }
+
+    @Override
+    public ObjectSearchFilter getFilter(boolean create) {
+        return null;
     }
 
     @Override
@@ -152,118 +161,62 @@ public class ObjectField<T extends StoredObject> extends CustomField<Id> impleme
     }
 
     @Override
-    public void setFilter(FilterProvider filterProvider, String extraFilterClause) {
-    }
-
-    @Override
-    public void setFilter(ObjectSearchFilter filter) {
-    }
-
-    @Override
-    public ObjectSearchFilter getFilter(boolean create) {
-        return null;
-    }
-
-    @Override
     public void filterChanged() {
     }
 
     @Override
     public void setDetailComponent(Component detailComponent) {
-        field.setDetailComponent(detailComponent);
     }
 
     @Override
     public Component getDetailComponent() {
-        return field.getDetailComponent();
+        return null;
     }
 
     @Override
     public void setDisplayDetail(Consumer<T> displayDetail) {
-        field.setDisplayDetail(displayDetail);
+
     }
 
     @Override
     public Consumer<T> getDisplayDetail() {
-        return field.getDisplayDetail();
+        return null;
     }
 
     @Override
     public void setPrefixFieldControl(boolean searchFieldControl) {
-        field.setPrefixFieldControl(searchFieldControl);
     }
 
     @Override
     public boolean isAllowAny() {
-        return this.any;
+        return false;
     }
 
     @Override
     public void setReadOnly(boolean readOnly) {
-        super.setReadOnly(readOnly);
-        field.setReadOnly(readOnly);
     }
 
     @Override
     public void setEnabled(boolean enabled) {
-        super.setEnabled(enabled);
-        field.setEnabled(enabled);
-    }
-
-    private static <O extends StoredObject> Type type(Type type, Class<O> objectClass, boolean any) {
-        if(StreamData.class.isAssignableFrom(objectClass)) {
-            return Type.AUTO;
-        }
-        if(InventoryItem.class.isAssignableFrom(objectClass)) {
-            return Type.AUTO;
-        }
-        boolean tryGet = true;
-        if(type == Type.GET && !ObjectGetField.canCreate(objectClass)) {
-            type = Type.AUTO;
-            tryGet = false;
-        }
-        if (type != Type.AUTO) {
-            return type;
-        }
-        if((StoredObjectUtility.hints(objectClass) & 2) == 2 && StoredObjectUtility.howBig(objectClass, any) < 16) {
-            return Type.CHOICE;
-        }
-        if(tryGet && ObjectGetField.canCreate(objectClass)) {
-            return Type.GET;
-        }
-        return Type.SEARCH;
-    }
-
-    @SuppressWarnings("unchecked")
-    private static <O extends StoredObject> ObjectInput<O> createField(Class<O> objectClass, Type type, boolean any,
-                                                                       ObjectGetField.GetProvider<O> getProvider, boolean addAllowed) {
-        if(StreamData.class.isAssignableFrom(objectClass)) {
-            return (ObjectInput<O>) new FileField(null, true, true, type == Type.IMAGE);
-        }
-        if(InventoryItem.class.isAssignableFrom(objectClass)) {
-            Class<? extends InventoryItem> iClass = (Class<? extends InventoryItem>) objectClass;
-            return new InventoryItemField(iClass, any, addAllowed);
-        }
-        switch (type(type, objectClass, any)) {
-            case GET:
-                return new ObjectGetField<>(null, objectClass, any, getProvider);
-            case CHOICE:
-                return new ObjectComboField<>(objectClass, any);
-        }
-        return new ObjectSearchField<>(objectClass, any);
     }
 
     public ObjectInput<T> getField() {
-        return field;
+        return null;
     }
 
     @Override
     protected Id generateModelValue() {
-        return field.getObjectId();
+        return null;
     }
 
     @Override
     protected void setPresentationValue(Id value) {
-        field.setValue(value);
+    }
+
+    public Type getType() {
+        return null;
+    }
+
+    public void setItemLabelGenerator(ItemLabelGenerator<T> itemLabelGenerator) {
     }
 }

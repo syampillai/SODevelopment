@@ -72,8 +72,4 @@ public abstract class Message extends StoredObject {
     public boolean sent(TransactionControl tc, int error) {
     	return false;
     }
-
-    @Override
-	public void validateData() throws Exception {
-    }
 }

@@ -2,11 +2,15 @@ package com.storedobject.core;
 
 public interface OfEntity {
 
-    public com.storedobject.core.Id getSystemEntityId();
+    Id getSystemEntityId();
 
-    public com.storedobject.core.SystemEntity getSystemEntity();
+    SystemEntity getSystemEntity();
     
-	public default Id check(StoredObject object, Id systemEntityId) throws Exception {
+	default Id check(TransactionManager tm, StoredObject object, Id systemEntityId) throws Exception {
+		return null;
+	}
+
+	default Id findSystemEntityId() {
 		return null;
 	}
 }

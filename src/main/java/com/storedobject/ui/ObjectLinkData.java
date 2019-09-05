@@ -1,9 +1,6 @@
 package com.storedobject.ui;
 
-import com.storedobject.core.Detail;
-import com.storedobject.core.StoredObject;
-import com.storedobject.core.StoredObjectUtility;
-import com.storedobject.core.Transaction;
+import com.storedobject.core.*;
 
 import java.util.Collection;
 import java.util.stream.Stream;
@@ -123,6 +120,32 @@ public interface ObjectLinkData<L extends StoredObject> extends EditableList<L> 
         } catch (RuntimeException e) {
             throw (Exception)e.getCause();
         }
+    }
+
+    default void save(PseudoTransaction transaction) {
+        Id masterId = transaction.save(getMaster());
+        save(transaction, masterId);
+    }
+
+    default void save(PseudoTransaction transaction, Id masterId) {
+        streamAll().forEach(o -> {
+            if (isDeleted(o)) {
+                if (isDetail(o)) {
+                    transaction.delete(o);
+                } else {
+                    transaction.removeLink(masterId, o, getLinkType());
+                }
+            } else if (isAdded(o)) {
+                if (isDetail(o)) {
+                    transaction.save(o);
+                }
+                transaction.addLink(masterId, o, getLinkType());
+            } else if (isEdited(o)) {
+                if (isDetail(o)) {
+                    transaction.save(o);
+                }
+            }
+        });
     }
 
     static <O extends StoredObject> ObjectLinkData<O> create(StoredObjectUtility.Link<O> link, StoredObject master) {
