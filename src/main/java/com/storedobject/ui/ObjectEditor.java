@@ -34,6 +34,14 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T> 
         super(objectClass, caption);
     }
 
+    public static <O extends StoredObject> ObjectEditor<O> create(Class<O> objectClass) {
+        return null;
+    }
+
+    public static <O extends StoredObject> ObjectEditor<O> create(Class<O> objectClass, int actions) {
+        return null;
+    }
+
     public static <O extends StoredObject> ObjectEditor<O> create(Class<O> objectClass, int actions, String title) {
         return null;
     }
@@ -285,9 +293,6 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T> 
     }
 
     protected void attachLinkField(ObjectLinkField<?> field) {
-    }
-
-    public void add(ObjectLinkField.Tab linkFieldTab) {
     }
 
     public ObjectLinkField<?> getLinkField(String fieldName) {

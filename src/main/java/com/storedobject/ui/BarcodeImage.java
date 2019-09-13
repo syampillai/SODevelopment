@@ -7,39 +7,30 @@ import java.awt.*;
 
 public class BarcodeImage extends PaintedImage {
 
-    private Barcode barcode;
-
     public BarcodeImage() {
-        this(Barcode.Format.QR_CODE, null);
     }
 
     public BarcodeImage(String value) {
-        this(Barcode.Format.QR_CODE, value);
     }
 
     public BarcodeImage(Barcode.Format format) {
-        this(format, null);
     }
 
     public BarcodeImage(Barcode.Format format, String value) {
-        barcode = new Barcode(format, value);
     }
 
     public String getValue() {
-        return barcode.getData();
+        return null;
     }
 
     public void setValue(String value) {
-        barcode.setData(value);
-        redraw();
     }
 
     public Barcode.Format getFormat() {
-        return barcode.getFormat();
+        return null;
     }
 
     public void setFormat(Barcode.Format format) {
-        barcode.setFormat(format);
     }
 
     @Override
@@ -47,10 +38,9 @@ public class BarcodeImage extends PaintedImage {
     }
 
     public boolean isPrintText() {
-        return barcode.isPrintText();
+        return false;
     }
 
     public void setPrintText(boolean printText) {
-        barcode.setPrintText(printText);
     }
 }

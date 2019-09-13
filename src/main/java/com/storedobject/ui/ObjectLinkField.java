@@ -153,6 +153,9 @@ public final class ObjectLinkField<T extends StoredObject> extends CustomField<O
         return null;
     }
 
+    public void add(T object) {
+    }
+
     public void add(Stream<T> objects) {
     }
 
@@ -226,9 +229,9 @@ public final class ObjectLinkField<T extends StoredObject> extends CustomField<O
     public void setFromClient(boolean fromClient) {
     }
 
-    public static class Tab extends Tabs {
+    public static class Tabs extends com.vaadin.flow.component.tabs.Tabs {
 
-        public Tab() {
+        public Tabs() {
         }
 
         public void addField(ObjectLinkField<?> field) {
