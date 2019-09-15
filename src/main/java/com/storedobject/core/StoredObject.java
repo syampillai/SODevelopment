@@ -600,7 +600,7 @@ public abstract class StoredObject {
     public final void removeLink(Transaction p1, Id p2, String p3) throws Exception {
     }
 
-    public final String checkCurrency(String p1) throws Invalid_Value {
+    public static String checkCurrency(String p1) throws Invalid_Value {
         return null;
     }
 

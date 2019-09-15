@@ -1,66 +1,40 @@
 package com.storedobject.core;
 
-public class ContactType extends com.storedobject.core.StoredObject {
+public class ContactType extends StoredObject {
 
     public ContactType() {
     }
 
-    public java.lang.String toString() {
+    public static void columns(Columns columns) {
+    }
+
+    public void setName(String name) {
+    }
+
+    public String getName() {
         return null;
     }
 
-    public java.lang.String getName() {
-        return null;
+    public void setType(int type) {
     }
 
-    public void setName(java.lang.String p1) {
-    }
-
-    public static void columns(com.storedobject.core.Columns p1) {
-    }
-
-    public static void indices(com.storedobject.core.Indices p1) {
-    }
-
-    public java.lang.String getUniqueCondition() {
-        return null;
-    }
-
-    public static java.lang.String[] browseColumns() {
-        return null;
-    }
-
-    public static java.lang.String[] displayColumns() {
-        return null;
-    }
-
-    public static java.lang.String[] protectedColumns() {
-        return null;
-    }
-
-    public static int hints() {
+    public int getType() {
         return 0;
     }
 
-    public static java.lang.String browseOrder() {
+    public static String[] getTypeValues() {
         return null;
     }
 
-    public void validateData() throws java.lang.Exception {
-    }
-
-    public void setEditor(java.lang.String p1) {
-    }
-
-    public java.lang.String getEditor() {
+    public static String getTypeValue(int value) {
         return null;
     }
 
-    protected static java.math.BigInteger getIdValue(java.lang.String p1, java.lang.String p2) {
+    public String getTypeValue() {
         return null;
     }
 
-    public void setDisplayOrder(int p1) {
+    public void setDisplayOrder(int displayOrder) {
     }
 
     public int getDisplayOrder() {

@@ -98,12 +98,6 @@ public class Mail extends Message {
 		return false;
 	}
 	
-	public static void checkEmail(String email) throws Invalid_Value {
-	}
-	
-	public static void checkEmail(String email, boolean allowEmpty) throws Invalid_Value {
-	}
-	
     public static Mail createAlert() throws SOException {
     	return null;
     }

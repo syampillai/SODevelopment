@@ -17,7 +17,6 @@ public class UIFieldMetadata extends StoredObject implements Detail {
 	public void setMetadata(Column column) {
 	}
 
-	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
 	public boolean isFieldOrderBuiltIn() {
 		return false;
 	}
@@ -160,6 +159,26 @@ public class UIFieldMetadata extends StoredObject implements Detail {
 	}
 
 	public boolean isPopupText() {
+		return false;
+	}
+
+	public boolean isCurrency() {
+		return false;
+	}
+
+	public boolean isCountry() {
+		return false;
+	}
+
+	public boolean isPhone() {
+		return false;
+	}
+
+	public boolean isEmail() {
+		return false;
+	}
+
+	public boolean isAddress() {
 		return false;
 	}
 

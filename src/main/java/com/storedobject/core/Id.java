@@ -22,19 +22,19 @@ public final class Id {
     public Id() {
     }
 
-    public java.math.BigInteger get() {
+    public final java.math.BigInteger get() {
         return null;
     }
 
-    public com.storedobject.core.StoredObject getObject() {
+    public final com.storedobject.core.StoredObject getObject() {
         return null;
     }
 
-    public boolean isDummy() {
+    public final boolean isDummy() {
         return false;
     }
 
-    public boolean isNull() {
+    public final boolean isNull() {
         return false;
     }
 
@@ -46,7 +46,7 @@ public final class Id {
 		return false;
 	}
 
-	public java.lang.Class <? extends com.storedobject.core.StoredObject > getObjectClass() {
+	public final java.lang.Class <? extends com.storedobject.core.StoredObject > getObjectClass() {
         return null;
     }
     
@@ -215,139 +215,139 @@ public final class Id {
         return null;
 	}
 
-	public boolean existsLink(StoredObject link) {
+	public final boolean existsLink(StoredObject link) {
         return false;
 	}
 	
-	public boolean existsLink(int linkType, StoredObject link) {
+	public final boolean existsLink(int linkType, StoredObject link) {
         return false;
 	}
 	
-	public boolean existsLink(Transaction transaction, StoredObject link) {
+	public final boolean existsLink(Transaction transaction, StoredObject link) {
         return false;
 	}
 	
-	public boolean existsLink(Transaction transaction, int linkType, StoredObject link) {
+	public final boolean existsLink(Transaction transaction, int linkType, StoredObject link) {
         return false;
 	}
 	
-	public boolean existsLink(Id linkId) {
+	public final boolean existsLink(Id linkId) {
         return false;
 	}
 
-	public boolean existsLink(int linkType, Id linkId) {
+	public final boolean existsLink(int linkType, Id linkId) {
         return false;
 	}
 
-	public boolean existsLink(Transaction transaction, Id linkId) {
-        return false;
-	}
-	
-	public boolean existsLink(Transaction transaction, int linkType, Id linkId) {
+	public final boolean existsLink(Transaction transaction, Id linkId) {
         return false;
 	}
 	
-	public boolean existsLinks() {
-        return false;
-	}
-
-	public boolean existsLinks(Transaction transaction) {
-        return false;
-	}
-
-	public boolean existsLinks(Class<? extends StoredObject> objectClass) {
-        return false;
-	}
-
-	public boolean existsLinks(Class<? extends StoredObject> objectClass, boolean any) {
-        return false;
-	}
-
-	public boolean existsLinks(Class<? extends StoredObject> objectClass, String condition) {
-        return false;
-	}
-
-	public boolean existsLinks(Class<? extends StoredObject> objectClass, String condition, boolean any) {
-        return false;
-	}
-
-	public boolean existsLinks(String linkType, Class<? extends StoredObject> objectClass) {
-        return false;
-	}
-
-	public boolean existsLinks(String linkType, Class<? extends StoredObject> objectClass, boolean any) {
-        return false;
-	}
-
-	public boolean existsLinks(String linkType, Class<? extends StoredObject> objectClass, String condition) {
-        return false;
-	}
-
-	public boolean existsLinks(String linkType, Class<? extends StoredObject> objectClass, String condition, boolean any) {
-        return false;
-	}
-
-	public boolean existsLinks(int linkType, Class<? extends StoredObject> objectClass) {
-        return false;
-	}
-
-	public boolean existsLinks(int linkType, Class<? extends StoredObject> objectClass, boolean any) {
-        return false;
-	}
-
-	public boolean existsLinks(int linkType, Class<? extends StoredObject> objectClass, String condition) {
-        return false;
-	}
-
-	public boolean existsLinks(int linkType, Class<? extends StoredObject> objectClass, String condition, boolean any) {
+	public final boolean existsLink(Transaction transaction, int linkType, Id linkId) {
         return false;
 	}
 	
-	public boolean existsLinks(Transaction tran, Class<? extends StoredObject> objectClass) {
+	public final boolean existsLinks() {
+        return false;
+	}
+
+	public final boolean existsLinks(Transaction transaction) {
+        return false;
+	}
+
+	public final boolean existsLinks(Class<? extends StoredObject> objectClass) {
+        return false;
+	}
+
+	public final boolean existsLinks(Class<? extends StoredObject> objectClass, boolean any) {
+        return false;
+	}
+
+	public final boolean existsLinks(Class<? extends StoredObject> objectClass, String condition) {
+        return false;
+	}
+
+	public final boolean existsLinks(Class<? extends StoredObject> objectClass, String condition, boolean any) {
+        return false;
+	}
+
+	public final boolean existsLinks(String linkType, Class<? extends StoredObject> objectClass) {
+        return false;
+	}
+
+	public final boolean existsLinks(String linkType, Class<? extends StoredObject> objectClass, boolean any) {
+        return false;
+	}
+
+	public final boolean existsLinks(String linkType, Class<? extends StoredObject> objectClass, String condition) {
+        return false;
+	}
+
+	public final boolean existsLinks(String linkType, Class<? extends StoredObject> objectClass, String condition, boolean any) {
+        return false;
+	}
+
+	public final boolean existsLinks(int linkType, Class<? extends StoredObject> objectClass) {
+        return false;
+	}
+
+	public final boolean existsLinks(int linkType, Class<? extends StoredObject> objectClass, boolean any) {
+        return false;
+	}
+
+	public final boolean existsLinks(int linkType, Class<? extends StoredObject> objectClass, String condition) {
+        return false;
+	}
+
+	public final boolean existsLinks(int linkType, Class<? extends StoredObject> objectClass, String condition, boolean any) {
+        return false;
+	}
+	
+	public final boolean existsLinks(Transaction tran, Class<? extends StoredObject> objectClass) {
 		return false;
 	}
 
-	public boolean existsLinks(Transaction tran, Class<? extends StoredObject> objectClass, boolean any) {
+	public final boolean existsLinks(Transaction tran, Class<? extends StoredObject> objectClass, boolean any) {
 		return false;
 	}
 
-	public boolean existsLinks(Transaction tran, Class<? extends StoredObject> objectClass, String condition) {
+	public final boolean existsLinks(Transaction tran, Class<? extends StoredObject> objectClass, String condition) {
 		return false;
 	}
 
-	public boolean existsLinks(Transaction tran, Class<? extends StoredObject> objectClass, String condition, boolean any) {
+	public final boolean existsLinks(Transaction tran, Class<? extends StoredObject> objectClass, String condition, boolean any) {
 		return false;
 	}
 
-	public boolean existsLinks(Transaction tran, String linkType, Class<? extends StoredObject> objectClass) {
+	public final boolean existsLinks(Transaction tran, String linkType, Class<? extends StoredObject> objectClass) {
 		return false;
 	}
 
-	public boolean existsLinks(Transaction tran, String linkType, Class<? extends StoredObject> objectClass, boolean any) {
+	public final boolean existsLinks(Transaction tran, String linkType, Class<? extends StoredObject> objectClass, boolean any) {
 		return false;
 	}
 
-	public boolean existsLinks(Transaction tran, String linkType, Class<? extends StoredObject> objectClass, String condition) {
+	public final boolean existsLinks(Transaction tran, String linkType, Class<? extends StoredObject> objectClass, String condition) {
 		return false;
 	}
 
-	public boolean existsLinks(Transaction tran, String linkType, Class<? extends StoredObject> objectClass, String condition, boolean any) {
+	public final boolean existsLinks(Transaction tran, String linkType, Class<? extends StoredObject> objectClass, String condition, boolean any) {
 		return false;
 	}
 
-	public boolean existsLinks(Transaction tran, int linkType, Class<? extends StoredObject> objectClass) {
+	public final boolean existsLinks(Transaction tran, int linkType, Class<? extends StoredObject> objectClass) {
 		return false;
 	}
 
-	public boolean existsLinks(Transaction tran, int linkType, Class<? extends StoredObject> objectClass, boolean any) {
+	public final boolean existsLinks(Transaction tran, int linkType, Class<? extends StoredObject> objectClass, boolean any) {
 		return false;
 	}
 
-	public boolean existsLinks(Transaction tran, int linkType, Class<? extends StoredObject> objectClass, String condition) {
+	public final boolean existsLinks(Transaction tran, int linkType, Class<? extends StoredObject> objectClass, String condition) {
 		return false;
 	}
 
-	public boolean existsLinks(Transaction tran, int linkType, Class<? extends StoredObject> objectClass, String condition, boolean any) {
+	public final boolean existsLinks(Transaction tran, int linkType, Class<? extends StoredObject> objectClass, String condition, boolean any) {
 		return false;
 	}
 
@@ -936,63 +936,63 @@ public final class Id {
         return null;
 	}
 
-	public boolean existsMaster(StoredObject master) {
+	public final boolean existsMaster(StoredObject master) {
         return false;
 	}
 
-	public boolean existsMaster(Id masterId) {
+	public final boolean existsMaster(Id masterId) {
         return false;
 	}
 
-	public boolean existsMasters() {
+	public final boolean existsMasters() {
         return false;
 	}
 
-	public boolean existsMasters(Class<? extends StoredObject> objectClass) {
+	public final boolean existsMasters(Class<? extends StoredObject> objectClass) {
         return false;
 	}
 
-	public boolean existsMasters(Class<? extends StoredObject> objectClass, boolean any) {
+	public final boolean existsMasters(Class<? extends StoredObject> objectClass, boolean any) {
         return false;
 	}
 
-	public boolean existsMasters(Class<? extends StoredObject> objectClass, String condition) {
+	public final boolean existsMasters(Class<? extends StoredObject> objectClass, String condition) {
         return false;
 	}
 
-	public boolean existsMasters(Class<? extends StoredObject> objectClass, String condition, boolean any) {
+	public final boolean existsMasters(Class<? extends StoredObject> objectClass, String condition, boolean any) {
         return false;
 	}
 
-	public boolean existsMasters(String linkType, Class<? extends StoredObject> objectClass) {
+	public final boolean existsMasters(String linkType, Class<? extends StoredObject> objectClass) {
         return false;
 	}
 
-	public boolean existsMasters(String linkType, Class<? extends StoredObject> objectClass, boolean any) {
+	public final boolean existsMasters(String linkType, Class<? extends StoredObject> objectClass, boolean any) {
         return false;
 	}
 
-	public boolean existsMasters(String linkType, Class<? extends StoredObject> objectClass, String condition) {
+	public final boolean existsMasters(String linkType, Class<? extends StoredObject> objectClass, String condition) {
         return false;
 	}
 
-	public boolean existsMasters(String linkType, Class<? extends StoredObject> objectClass, String condition, boolean any) {
+	public final boolean existsMasters(String linkType, Class<? extends StoredObject> objectClass, String condition, boolean any) {
         return false;
 	}
 
-	public boolean existsMasters(int linkType, Class<? extends StoredObject> objectClass) {
+	public final boolean existsMasters(int linkType, Class<? extends StoredObject> objectClass) {
         return false;
 	}
 
-	public boolean existsMasters(int linkType, Class<? extends StoredObject> objectClass, boolean any) {
+	public final boolean existsMasters(int linkType, Class<? extends StoredObject> objectClass, boolean any) {
         return false;
 	}
 
-	public boolean existsMasters(int linkType, Class<? extends StoredObject> objectClass, String condition) {
+	public final boolean existsMasters(int linkType, Class<? extends StoredObject> objectClass, String condition) {
         return false;
 	}
 
-	public boolean existsMasters(int linkType, Class<? extends StoredObject> objectClass, String condition, boolean any) {
+	public final boolean existsMasters(int linkType, Class<? extends StoredObject> objectClass, String condition, boolean any) {
         return false;
 	}
 

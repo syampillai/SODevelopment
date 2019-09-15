@@ -1,10 +1,6 @@
 package com.storedobject.core;
 
-import java.math.BigDecimal;
-
 public class Entity extends StoredObject {
-
-	public static Entity dash;
 
 	public Entity(String name, String location) {
 	}
@@ -34,20 +30,10 @@ public class Entity extends StoredObject {
 	public void setLocation(String location) {
 	}
 
-    public void setCountry(Id countryId) {
+    public void setCountry(String country) {
     }
 
-    public void setCountry(BigDecimal idValue) {
-    }
-
-    public void setCountry(Country country) {
-    }
-
-    public Id getCountryId() {
-        return null;
-    }
-
-    public Country getCountry() {
+    public String getCountry() {
         return null;
     }
 
