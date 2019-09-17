@@ -10,6 +10,8 @@ import java.util.Locale;
  */
 public class SystemEntity extends StoredObject {
 
+	public static String systemCountry = "IN";
+
 	public SystemEntity(Id entityId, String currency, Date workingDate) {
 	}
 
