@@ -61,10 +61,6 @@ public class EditableObjectGrid<T extends StoredObject> extends EditableGrid<T> 
     }
 
     @Override
-    public void setKeepCache(boolean keepCache) {
-    }
-
-    @Override
     public void setOrderBy(String orderBy) {
     }
 

@@ -55,10 +55,6 @@ public class ObjectGrid<T extends StoredObject> extends DataGrid<T> implements O
     }
 
     @Override
-    public void setKeepCache(boolean keepCache) {
-    }
-
-    @Override
     public void setOrderBy(String orderBy) {
     }
 
