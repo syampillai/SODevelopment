@@ -6,6 +6,7 @@ import com.storedobject.core.Id;
 import com.storedobject.core.ObjectSearchFilter;
 import com.storedobject.core.StoredObject;
 import com.storedobject.ui.util.ObjectInput;
+import com.storedobject.vaadin.HasContainer;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.customfield.CustomField;
 
@@ -22,11 +23,27 @@ public class ObjectFormField<T extends StoredObject> extends CustomField<T> impl
         this(label, ObjectEditor.create(objectClass, EditorAction.ALL, ""));
     }
 
-    public ObjectFormField(ObjectEditor<T> editor) {
-        this(null, editor);
+    public ObjectFormField(ObjectEditor<T> formEditor) {
+        this(null, formEditor, null);
     }
 
-    public ObjectFormField(String label, ObjectEditor<T> editor) {
+    public ObjectFormField(String label, ObjectEditor<T> formEditor) {
+        this(label, formEditor, null);
+    }
+
+    public ObjectFormField(Class<T> objectClass, HasContainer mergeTo) {
+        this(null, objectClass, mergeTo);
+    }
+
+    public ObjectFormField(String label, Class<T> objectClass, HasContainer mergeTo) {
+        this(label, ObjectEditor.create(objectClass, EditorAction.ALL, ""), mergeTo);
+    }
+
+    public ObjectFormField(ObjectEditor<T> formEditor, HasContainer mergeTo) {
+        this(null, formEditor, mergeTo);
+    }
+
+    public ObjectFormField(String label, ObjectEditor<T> formEditor, HasContainer mergeTo) {
     }
 
     @Override

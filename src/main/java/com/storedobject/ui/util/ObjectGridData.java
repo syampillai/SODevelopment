@@ -31,8 +31,6 @@ public interface ObjectGridData<T extends StoredObject> extends HasColumns<T>, O
         return null;
     }
 
-    void setKeepCache(boolean keepCache);
-
     @Override
     default Class<T> getObjectClass() {
         return getDataClass();
