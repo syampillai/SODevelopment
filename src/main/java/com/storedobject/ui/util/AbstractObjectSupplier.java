@@ -150,4 +150,9 @@ public class AbstractObjectSupplier<T extends StoredObject, M> extends CallbackD
     @Override
     public void deleted(T item) {
     }
+
+    @Override
+    public AutoCloseable getResource() {
+        return null;
+    }
 }

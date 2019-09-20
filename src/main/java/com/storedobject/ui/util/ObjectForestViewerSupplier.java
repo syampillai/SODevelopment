@@ -157,4 +157,9 @@ public class ObjectForestViewerSupplier<T extends StoredObject> implements Abstr
     public Registration addDataProviderListener(DataProviderListener<Object> dataProviderListener) {
         return null;
     }
+
+    @Override
+    public AutoCloseable getResource() {
+        return null;
+    }
 }

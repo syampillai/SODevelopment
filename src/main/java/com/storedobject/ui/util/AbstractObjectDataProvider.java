@@ -1,6 +1,7 @@
 package com.storedobject.ui.util;
 
 import com.storedobject.common.FilterProvider;
+import com.storedobject.common.ResourceHolder;
 import com.storedobject.core.ObjectIterator;
 import com.storedobject.core.ObjectSearchFilter;
 import com.storedobject.core.StoredObject;
@@ -12,7 +13,7 @@ import java.io.Closeable;
 import java.util.Objects;
 import java.util.stream.Stream;
 
-public interface AbstractObjectDataProvider<T extends StoredObject, M> extends DataProvider<M, String>, FilterMethods<T>, Closeable {
+public interface AbstractObjectDataProvider<T extends StoredObject, M> extends DataProvider<M, String>, FilterMethods<T>, Closeable, ResourceHolder {
 
     boolean isAllowAny();
 
