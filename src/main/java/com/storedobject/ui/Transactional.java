@@ -27,12 +27,4 @@ public interface Transactional extends Executable, com.storedobject.vaadin.Execu
     default TransactionManager getTransactionManager() {
         return null;
     }
-
-    default void handleAlert(@SuppressWarnings("unused") Id id) {
-        execute();
-    }
-
-    default void handleAlert(@SuppressWarnings("unused") StoredObject so) {
-        execute();
-    }
 }

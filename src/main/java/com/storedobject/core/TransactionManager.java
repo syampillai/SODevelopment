@@ -12,7 +12,16 @@ public final class TransactionManager {
     public void reinit(String password) throws Exception {
     }
 
-    public final Device getDevice() {
+    /**
+     * Gets Session Id.
+     *
+     * @return Session Id.
+     */
+    public Id getSession() {
+        return null;
+    }
+
+    public Device getDevice() {
         return null;
     }
 
@@ -20,21 +29,22 @@ public final class TransactionManager {
         return null;
     }
 
-    public Id getSession() {
-        return null;
-    }
-
     /**
-     * Start a new transaction.
+     * Create a new DB transaction.
      *
      * @return Newly created transaction.
      * @throws Exception Any exception.
      */
-    public Transaction createTransaction() throws Exception {
+    public DBTransaction createTransaction() throws Exception {
         return null;
     }
 
-    public PseudoTransaction getPseudoTransaction(Object key, boolean create) {
+    /**
+     * Create a new pseudo transaction.
+     *
+     * @return Newly created transaction.
+     */
+    public PseudoTransaction createPseudoTransaction() {
         return null;
     }
 
@@ -63,6 +73,9 @@ public final class TransactionManager {
     }
 
     public void transact(Transact transact) throws Exception {
+    }
+
+    public void transactPsuedo(Transact transact) throws Exception {
     }
 
     public String format(Date date) {

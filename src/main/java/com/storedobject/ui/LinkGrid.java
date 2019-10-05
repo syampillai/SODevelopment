@@ -1,13 +1,14 @@
 package com.storedobject.ui;
 
 import com.storedobject.core.StoredObject;
+import com.storedobject.core.StoredObjectLink;
 import com.storedobject.core.StoredObjectUtility;
 import com.storedobject.ui.util.LinkGridButtons;
 import com.storedobject.vaadin.View;
 
 import java.util.stream.Stream;
 
-public interface LinkGrid<T extends StoredObject> extends ObjectLinkData<T> {
+public interface LinkGrid<T extends StoredObject> extends StoredObjectLink<T> {
 
     Class<T> getObjectClass();
 
@@ -52,20 +53,20 @@ public interface LinkGrid<T extends StoredObject> extends ObjectLinkData<T> {
     default void loadMaster() {
     }
 
-    default void setValue(ObjectLinkData<T> value) {
+    default void setValue(StoredObjectLink<T> value) {
     }
 
-    default ObjectLinkData<T> getOldValue() {
+    default StoredObjectLink<T> getOldValue() {
         return null;
     }
 
     @Override
-    default int getLinkType() {
+    default int getType() {
         return 0;
     }
 
     @Override
-    default String getFieldName() {
+    default String getName() {
         return null;
     }
 

@@ -48,19 +48,4 @@ public class ObjectForest<T extends StoredObject> extends AbstractObjectForest<T
     protected <O extends StoredObject> ObjectSearcher<O> createObjectSearcher(@SuppressWarnings("unused") Class<O> objectClass) {
         return null;
     }
-
-    private class InternalChangedListener<O extends StoredObject> implements ObjectChangedListener<O> {
-
-        @Override
-        public final void updated(ObjectMasterData<O> object) {
-        }
-
-        @Override
-        public final void inserted(ObjectMasterData<O> object) {
-        }
-
-        @Override
-        public final void deleted(ObjectMasterData<O> object) {
-        }
-    }
 }

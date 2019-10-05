@@ -1,111 +1,50 @@
 package com.storedobject.core;
 
-public final class PseudoTransaction {
+public final class PseudoTransaction extends AbstractTransaction {
 
-    PseudoTransaction(TransactionManager tm, Object key) {
+    PseudoTransaction(TransactionManager tm) {
+        super(tm);
     }
 
-    public void commit(Transaction transaction) throws Exception {
-    }
-
-    public void clear() {
-    }
-
-    public Id save(StoredObject object) {
+    @Override
+    public <T extends StoredObject> T get(T object) {
         return null;
     }
 
-    public void delete(StoredObject object) {
+    @Override
+    public <T extends StoredObject> T get(Class<T> objectClass, Id objectId) {
+        return null;
     }
 
-    public void undelete(StoredObject object) {
+    @Override
+    public boolean isInvolved(Id id) {
+        return false;
     }
 
-    public void addLink(Id parentId, Id childId) {
-        addLink(parentId, childId,0);
+    @Override
+    public void commit() throws Exception {
     }
 
-    public void addLink(StoredObject parent, Id childId) {
-        addLink(parent, childId,0);
+    public void commit(DBTransaction transaction) throws Exception {
     }
 
-    public void addLink(StoredObject parent, StoredObject child) {
-        addLink(parent, child,0);
+    @Override
+    public void rollback() {
     }
 
-    public void addLink(Id parentId, StoredObject child) {
-        addLink(parentId, child,0);
-    }
-
-    public void addLink(Id parentId, Id childId, int linkType) {
-    }
-
-    public void addLink(StoredObject parent, Id childId, int linkType) {
-    }
-
-    public void addLink(StoredObject parent, StoredObject child, int linkType) {
-    }
-
-    public void addLink(Id parentId, StoredObject child, int linkType) {
-    }
-
-    public void removeLink(Id parentId, Id childId) {
-        removeLink(parentId, childId,0);
-    }
-
-    public void removeLink(StoredObject parent, Id childId) {
-    }
-
-    public void removeLink(Id parentId, StoredObject child) {
-        removeLink(parentId, child.getId());
-    }
-
-    public void removeLink(StoredObject parent, StoredObject child) {
-        removeLink(parent, child.getId());
-    }
-
-    public void removeLink(Id parentId, Id childId, int linkType) {
-    }
-
-    public void removeLink(StoredObject parent, Id childId, int linkType) {
-    }
-
-    public void removeLink(Id parentId, StoredObject child, int linkType) {
-    }
-
-    public void removeLink(StoredObject parent, StoredObject child, int linkType) {
-    }
-
-    public void removeAllLinks(Id parentId) {
-        removeAllLinks(parentId,0);
-    }
-
-    public void removeAllLinks(StoredObject parent) {
-        removeAllLinks(parent, 0);
-    }
-
-    public void removeAllLinks(Id parentId, Class<? extends StoredObject> linkClass) {
-    }
-
-    public void removeAllLinks(StoredObject parent, Class<? extends StoredObject> linkClass) {
-    }
-
-    public void removeAllLinks(Id parentId, int linkType) {
-    }
-
-    public void removeAllLinks(StoredObject parent, int linkType) {
-    }
-
-    public void removeAllLinks(Id parentId, Class<? extends StoredObject> linkClass, int linkType) {
-    }
-
-    public void removeAllLinks(StoredObject parent, Class<? extends StoredObject> linkClass, int linkType) {
+    @Override
+    public boolean isActive() {
+        return false;
     }
 
     public Id getId(StoredObject object) {
         return null;
     }
 
-    public void replace(Id idToreplace, StoredObject newObject) {
+    public void replace(Id idToReplace, StoredObject newObject) {
+    }
+
+    @Override
+    void credit(StoredObject object, int entrySerial, Account account, Money amount, Money localCurrencyAmount, String narration) {
     }
 }

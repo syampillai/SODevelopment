@@ -3,7 +3,7 @@ package com.storedobject.core;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
-public final class Id {
+public class Id {
 	
 	public final static Id ZERO = new Id(BigInteger.ZERO);
 

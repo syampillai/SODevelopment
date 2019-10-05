@@ -1,17 +1,13 @@
 package com.storedobject.ui;
 
-import com.storedobject.core.ObjectIterator;
-import com.storedobject.core.ObjectsSetter;
-import com.storedobject.core.StoredObject;
-import com.storedobject.core.StoredObjectUtility;
+import com.storedobject.core.*;
 import com.storedobject.vaadin.CustomField;
 import com.storedobject.vaadin.View;
-import com.vaadin.flow.component.tabs.Tabs;
 
 import java.util.Iterator;
 import java.util.stream.Stream;
 
-public final class ObjectLinkField<T extends StoredObject> extends CustomField<ObjectLinkData<T>> implements ObjectsSetter {
+public final class ObjectLinkField<T extends StoredObject> extends CustomField<StoredObjectLink<T>> implements ObjectsSetter {
 
     public ObjectLinkField(String label, StoredObjectUtility.Link<T> link) {
         super(null);
@@ -30,15 +26,15 @@ public final class ObjectLinkField<T extends StoredObject> extends CustomField<O
     }
 
     @Override
-    protected ObjectLinkData<T> generateModelValue() {
+    protected StoredObjectLink<T> generateModelValue() {
         return null;
     }
 
     @Override
-    protected void setPresentationValue(ObjectLinkData<T> value) {
+    protected void setPresentationValue(StoredObjectLink<T> value) {
     }
 
-    public ObjectLinkData<T> getOldValue() {
+    public StoredObjectLink<T> getOldValue() {
         return null;
     }
 
@@ -204,11 +200,11 @@ public final class ObjectLinkField<T extends StoredObject> extends CustomField<O
     }
 
     @Override
-    public void setValue(ObjectLinkData<T> value) {
+    public void setValue(StoredObjectLink<T> value) {
     }
 
     @Override
-    public ObjectLinkData<T> getValue() {
+    public StoredObjectLink<T> getValue() {
         return null;
     }
 

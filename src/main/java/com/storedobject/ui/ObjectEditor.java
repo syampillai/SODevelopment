@@ -9,7 +9,8 @@ import com.vaadin.flow.component.HasValue;
 
 import java.util.function.BiFunction;
 
-public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T> implements Transactional, ObjectSetter, ObjectChangedListener<T>, ObjectEditorListener {
+public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T> implements Transactional, ObjectSetter,
+        ObjectChangedListener<T>, ObjectEditorListener, ObjectProvider<T>, AlertHandler, TransactionCreator {
 
     protected HasComponents buttonPanel;
 
@@ -46,11 +47,11 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T> 
         return null;
     }
 
-    @SuppressWarnings({ "unchecked", "rawtypes" })
     static <O extends StoredObject> ObjectEditor<O> create(Class<O> objectClass, int actions, String title, boolean skipTools) {
         return null;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public Application getApplication() {
         return null;
@@ -187,7 +188,7 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T> 
      * @param object Object being inserted
      */
     @Override
-    public void inserted(ObjectMasterData<T> object) {
+    public void inserted(T object) {
     }
 
     /**
@@ -196,7 +197,7 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T> 
      * @param object Object being updated
      */
     @Override
-    public void updated(ObjectMasterData<T> object) {
+    public void updated(T object) {
     }
 
     /**
@@ -205,7 +206,7 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T> 
      * @param object Object being deleted
      */
     @Override
-    public void deleted(ObjectMasterData<T> object) {
+    public void deleted(T object) {
     }
 
     public void viewObject() {
@@ -263,24 +264,30 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T> 
         return 0;
     }
 
-    public void setSaver(BiFunction<ObjectMasterData<T>, TransactionManager, Boolean> saver) {
+    public void setSaver(BiFunction<T, TransactionManager, Boolean> saver) {
     }
 
-    public void setDeleter(BiFunction<ObjectMasterData<T>, TransactionManager, Boolean> deleter) {
-    }
-
-    public ObjectMasterData<T> getObjectData() {
-        return null;
+    public void setDeleter(BiFunction<T, TransactionManager, Boolean> deleter) {
     }
 
     public final boolean isViewOnly() {
         return false;
     }
 
-    public void setLinkEditing(boolean on) {
+    /**
+     * Allow/disallow link editing.
+     *
+     * @param allowLinkEditing True if link editing needs to be allowed
+     */
+    public void setAllowLinkEditing(boolean allowLinkEditing) {
     }
 
-    public boolean isLinkEditing() {
+    /**
+     * Check whether link editing is allowed or not.
+     *
+     * @return True if link editing is allowed.
+     */
+    public boolean isLinkEditingAllowed() {
         return false;
     }
 
@@ -301,5 +308,14 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T> 
 
     public AttachmentField getAttachmentField(String fieldName) {
         return null;
+    }
+
+    @Override
+    public Transaction getTransaction(boolean create) {
+        return null;
+    }
+
+    @Override
+    public void setTransactionCreator(TransactionCreator transactionCreator) {
     }
 }

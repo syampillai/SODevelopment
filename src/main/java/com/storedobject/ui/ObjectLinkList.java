@@ -1,8 +1,9 @@
 package com.storedobject.ui;
 
 import com.storedobject.core.StoredObject;
+import com.storedobject.core.StoredObjectLink;
 
-public class ObjectLinkList<L extends StoredObject> extends EditableObjectList<L> implements ObjectLinkData<L> {
+public class ObjectLinkList<L extends StoredObject> extends EditableObjectList<L> implements StoredObjectLink<L> {
 
     private final int linkType;
     private final String orderBy;
@@ -21,12 +22,12 @@ public class ObjectLinkList<L extends StoredObject> extends EditableObjectList<L
     }
 
     @Override
-    public String getFieldName() {
+    public String getName() {
         return fieldName;
     }
 
     @Override
-    public int getLinkType() {
+    public int getType() {
         return linkType;
     }
 

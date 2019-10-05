@@ -2,13 +2,14 @@ package com.storedobject.ui;
 
 import com.storedobject.core.ObjectSearcher;
 import com.storedobject.core.StoredObject;
+import com.storedobject.core.StoredObjectLink;
 import com.storedobject.core.StoredObjectUtility;
 import com.storedobject.ui.util.LinkGridButtons;
 import com.storedobject.vaadin.View;
 
 import java.util.stream.Stream;
 
-public class ReferenceLinkGrid<T extends StoredObject> extends ObjectGrid<T> implements LinkGrid<T>, ObjectLinkData<T> {
+public class ReferenceLinkGrid<T extends StoredObject> extends ObjectGrid<T> implements LinkGrid<T>, StoredObjectLink<T> {
 
     public ReferenceLinkGrid(ObjectLinkField<T> linkField) {
         this(linkField, null);

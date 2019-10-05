@@ -1,5 +1,6 @@
 package com.storedobject.ui;
 
+import com.storedobject.core.EditableList;
 import com.storedobject.vaadin.HasColumns;
 import com.vaadin.flow.component.AbstractField;
 import com.vaadin.flow.component.dependency.HtmlImport;

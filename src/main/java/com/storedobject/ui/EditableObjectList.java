@@ -1,5 +1,6 @@
 package com.storedobject.ui;
 
+import com.storedobject.core.EditableList;
 import com.storedobject.core.Id;
 import com.storedobject.core.ObjectIterator;
 import com.storedobject.core.StoredObject;

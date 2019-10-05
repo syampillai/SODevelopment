@@ -1,4 +1,4 @@
-package com.storedobject.ui;
+package com.storedobject.core;
 
 import java.util.stream.Stream;
 

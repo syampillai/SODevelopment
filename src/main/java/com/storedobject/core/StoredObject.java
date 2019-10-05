@@ -2,6 +2,7 @@ package com.storedobject.core;
 
 import com.storedobject.common.StringList;
 
+import java.util.List;
 import java.util.Map;
 
 public abstract class StoredObject {
@@ -11,83 +12,83 @@ public abstract class StoredObject {
     public StoredObject() {
     }
 
-    protected static final < T extends StoredObject > T get(Transaction p1, Class < T > p2, java.sql.ResultSet p3) {
+    protected static < T extends StoredObject > T get(Transaction p1, Class < T > p2, java.sql.ResultSet p3) {
         return null;
     }
 
-    public static final StoredObject get(Id p1) {
+    public static StoredObject get(Id p1) {
         return null;
     }
 
-    public static final StoredObject get(Transaction p1, Id p2) {
+    public static StoredObject get(Transaction p1, Id p2) {
         return null;
     }
 
-    public static final < T extends StoredObject > T get(Class < T > p1, Id p2) {
+    public static < T extends StoredObject > T get(Class < T > p1, Id p2) {
         return null;
     }
 
-    public static final < T extends StoredObject > T get(Transaction p1, Class < T > p2, Id p3) {
+    public static < T extends StoredObject > T get(Transaction p1, Class < T > p2, Id p3) {
         return null;
     }
 
-    public static final < T extends StoredObject > T get(Class < T > p1) {
+    public static < T extends StoredObject > T get(Class < T > p1) {
         return null;
     }
 
-    public static final < T extends StoredObject > T get(Class < T > p1, String p2) {
+    public static < T extends StoredObject > T get(Class < T > p1, String p2) {
         return null;
     }
 
-    public static final < T extends StoredObject > T get(Transaction p1, Class < T > p2, String p3) {
+    public static < T extends StoredObject > T get(Transaction p1, Class < T > p2, String p3) {
         return null;
     }
 
-    public static final < T extends StoredObject > T get(Class < T > p1, String p2, String p3) {
+    public static < T extends StoredObject > T get(Class < T > p1, String p2, String p3) {
         return null;
     }
 
-    public static final < T extends StoredObject > T get(Transaction p1, Class < T > p2, String p3, String p4) {
+    public static < T extends StoredObject > T get(Transaction p1, Class < T > p2, String p3, String p4) {
         return null;
     }
 
-	public final static <T extends StoredObject> T get(ObjectIterator<T> iterator) {
+	public static <T extends StoredObject> T get(ObjectIterator<T> iterator) {
 		return null;
 	}
 
-	public final static <T extends StoredObject> T get(ObjectIterator<T> list, boolean validateOne) {
+	public static <T extends StoredObject> T get(ObjectIterator<T> list, boolean validateOne) {
 		return null;
 	}
 
-    protected static final < T extends StoredObject > T get(Transaction p1, ClassAttribute < T > p2, String p3, String p4) {
+    protected static < T extends StoredObject > T get(Transaction p1, ClassAttribute < T > p2, String p3, String p4) {
         return null;
     }
 
-    public static final < T extends StoredObject, C extends T > C get(Class < T > p1, Id p2, boolean p3) {
+    public static < T extends StoredObject, C extends T > C get(Class < T > p1, Id p2, boolean p3) {
         return null;
     }
 
-    public static final < T extends StoredObject, C extends T > C get(Transaction p1, Class < T > p2, Id p3, boolean p4) {
+    public static < T extends StoredObject, C extends T > C get(Transaction p1, Class < T > p2, Id p3, boolean p4) {
         return null;
     }
 
-    public static final < T extends StoredObject, C extends T > C get(Class < T > p1, boolean p2) {
+    public static < T extends StoredObject, C extends T > C get(Class < T > p1, boolean p2) {
         return null;
     }
 
-    public static final < T extends StoredObject, C extends T > C get(Class < T > p1, String p2, boolean p3) {
+    public static < T extends StoredObject, C extends T > C get(Class < T > p1, String p2, boolean p3) {
         return null;
     }
 
-    public static final < T extends StoredObject, C extends T > C get(Transaction p1, Class < T > p2, String p3, boolean p4) {
+    public static < T extends StoredObject, C extends T > C get(Transaction p1, Class < T > p2, String p3, boolean p4) {
         return null;
     }
 
-    public static final < T extends StoredObject, C extends T > C get(Class < T > p1, String p2, String p3, boolean p4) {
+    public static < T extends StoredObject, C extends T > C get(Class < T > p1, String p2, String p3, boolean p4) {
         return null;
     }
 
-    public static final < T extends StoredObject, C extends T > C get(Transaction p1, Class < T > p2, String p3, String p4, boolean p5) {
+    public static < T extends StoredObject, C extends T > C get(Transaction p1, Class < T > p2, String p3, String p4, boolean p5) {
         return null;
     }
 
@@ -106,27 +107,27 @@ public abstract class StoredObject {
         return 0;
     }
 
-    public static final int count(Class <? extends StoredObject > p1) {
+    public static int count(Class <? extends StoredObject > p1) {
         return 0;
     }
 
-    public static final int count(Class <? extends StoredObject > p1, String p2) {
+    public static int count(Class <? extends StoredObject > p1, String p2) {
         return 0;
     }
 
-    public static final int count(Transaction p1, Class <? extends StoredObject > p2, String p3) {
+    public static int count(Transaction p1, Class <? extends StoredObject > p2, String p3) {
         return 0;
     }
 
-    public static final int count(Class <? extends StoredObject > p1, boolean p2) {
+    public static int count(Class <? extends StoredObject > p1, boolean p2) {
         return 0;
     }
 
-    public static final int count(Class <? extends StoredObject > p1, String p2, boolean p3) {
+    public static int count(Class <? extends StoredObject > p1, String p2, boolean p3) {
         return 0;
     }
 
-    public static final int count(Transaction p1, Class <? extends StoredObject > p2, String p3, boolean p4) {
+    public static int count(Transaction p1, Class <? extends StoredObject > p2, String p3, boolean p4) {
         return 0;
     }
 
@@ -168,43 +169,43 @@ public abstract class StoredObject {
         return null;
     }
 
-    public static final < T extends StoredObject > ObjectIterator < T > list(Class < T > p1) {
+    public static < T extends StoredObject > ObjectIterator < T > list(Class < T > p1) {
         return null;
     }
 
-    public static final < T extends StoredObject > ObjectIterator < T > list(Class < T > p1, String p2) {
+    public static < T extends StoredObject > ObjectIterator < T > list(Class < T > p1, String p2) {
         return null;
     }
 
-    public static final < T extends StoredObject > ObjectIterator < T > list(Transaction p1, Class < T > p2, String p3) {
+    public static < T extends StoredObject > ObjectIterator < T > list(Transaction p1, Class < T > p2, String p3) {
         return null;
     }
 
-    public static final < T extends StoredObject > ObjectIterator < T > list(Class < T > p1, String p2, String p3) {
+    public static < T extends StoredObject > ObjectIterator < T > list(Class < T > p1, String p2, String p3) {
         return null;
     }
 
-    public static final < T extends StoredObject > ObjectIterator < T > list(Transaction p1, Class < T > p2, String p3, String p4) {
+    public static < T extends StoredObject > ObjectIterator < T > list(Transaction p1, Class < T > p2, String p3, String p4) {
         return null;
     }
 
-    public static final < T extends StoredObject > ObjectIterator < T > list(Class < T > p1, boolean p2) {
+    public static < T extends StoredObject > ObjectIterator < T > list(Class < T > p1, boolean p2) {
         return null;
     }
 
-    public static final < T extends StoredObject > ObjectIterator < T > list(Class < T > p1, String p2, boolean p3) {
+    public static < T extends StoredObject > ObjectIterator < T > list(Class < T > p1, String p2, boolean p3) {
         return null;
     }
 
-    public static final < T extends StoredObject > ObjectIterator < T > list(Transaction p1, Class < T > p2, String p3, boolean p4) {
+    public static < T extends StoredObject > ObjectIterator < T > list(Transaction p1, Class < T > p2, String p3, boolean p4) {
         return null;
     }
 
-    public static final < T extends StoredObject > ObjectIterator < T > list(Class < T > p1, String p2, String p3, boolean p4) {
+    public static < T extends StoredObject > ObjectIterator < T > list(Class < T > p1, String p2, String p3, boolean p4) {
         return null;
     }
 
-    public static final < T extends StoredObject > ObjectIterator < T > list(Transaction p1, Class < T > p2, String p3, String p4, boolean p5) {
+    public static < T extends StoredObject > ObjectIterator < T > list(Transaction p1, Class < T > p2, String p3, String p4, boolean p5) {
         return null;
     }
 
@@ -273,67 +274,67 @@ public abstract class StoredObject {
         return null;
     }
     
-	public final static <T extends StoredObject> ObjectIterator<T> list(Transaction transaction, ClassAttribute<T> ca, String condition, String order) {
+	public static <T extends StoredObject> ObjectIterator<T> list(Transaction transaction, ClassAttribute<T> ca, String condition, String order) {
 		return null;
 	}
 
-    public static final boolean exists(Query p1) {
+    public static boolean exists(Query p1) {
         return false;
     }
 
-    public static final boolean exists(Class <? extends StoredObject > p1, String p2) {
+    public static boolean exists(Class <? extends StoredObject > p1, String p2) {
         return false;
     }
 
-    public static final boolean exists(Class <? extends StoredObject > p1, String p2, boolean p3) {
+    public static boolean exists(Class <? extends StoredObject > p1, String p2, boolean p3) {
         return false;
     }
 
-    public static final boolean exists(Transaction p1, Class <? extends StoredObject > p2, String p3) {
+    public static boolean exists(Transaction p1, Class <? extends StoredObject > p2, String p3) {
         return false;
     }
 
-    public static final boolean exists(Transaction p1, Class <? extends StoredObject > p2, String p3, boolean p4) {
+    public static boolean exists(Transaction p1, Class <? extends StoredObject > p2, String p3, boolean p4) {
         return false;
     }
 
-    public static final Query query(Class <? extends StoredObject > p1, String p2) {
+    public static Query query(Class <? extends StoredObject > p1, String p2) {
         return null;
     }
 
-    public static final Query query(Class <? extends StoredObject > p1, String p2, String p3) {
+    public static Query query(Class <? extends StoredObject > p1, String p2, String p3) {
         return null;
     }
 
-    public static final Query query(Transaction p1, Class <? extends StoredObject > p2, String p3, String p4) {
+    public static Query query(Transaction p1, Class <? extends StoredObject > p2, String p3, String p4) {
         return null;
     }
 
-    public static final Query query(Class <? extends StoredObject > p1, String p2, String p3, String p4) {
+    public static Query query(Class <? extends StoredObject > p1, String p2, String p3, String p4) {
         return null;
     }
 
-    public static final Query query(Transaction p1, Class <? extends StoredObject > p2, String p3, String p4, String p5) {
+    public static Query query(Transaction p1, Class <? extends StoredObject > p2, String p3, String p4, String p5) {
         return null;
     }
 
-    public static final Query query(Class <? extends StoredObject > p1, String p2, boolean p3) {
+    public static Query query(Class <? extends StoredObject > p1, String p2, boolean p3) {
         return null;
     }
 
-    public static final Query query(Class <? extends StoredObject > p1, String p2, String p3, boolean p4) {
+    public static Query query(Class <? extends StoredObject > p1, String p2, String p3, boolean p4) {
         return null;
     }
 
-    public static final Query query(Transaction p1, Class <? extends StoredObject > p2, String p3, String p4, boolean p5) {
+    public static Query query(Transaction p1, Class <? extends StoredObject > p2, String p3, String p4, boolean p5) {
         return null;
     }
 
-    public static final Query query(Class <? extends StoredObject > p1, String p2, String p3, String p4, boolean p5) {
+    public static Query query(Class <? extends StoredObject > p1, String p2, String p3, String p4, boolean p5) {
         return null;
     }
 
-    public static final Query query(Transaction p1, Class <? extends StoredObject > p2, String p3, String p4, String p5, boolean p6) {
+    public static Query query(Transaction p1, Class <? extends StoredObject > p2, String p3, String p4, String p5, boolean p6) {
         return null;
     }
 
@@ -807,11 +808,11 @@ public abstract class StoredObject {
         return null;
     }
 
-    public static final < T extends StoredObject > ObjectIterator < T > listViaQuery(Class < T > p1, Query p2) {
+    public static < T extends StoredObject > ObjectIterator < T > listViaQuery(Class < T > p1, Query p2) {
         return null;
     }
 
-    public static final < T extends StoredObject > ObjectIterator < T > listViaQuery(Transaction p1, Class < T > p2, Query p3) {
+    public static < T extends StoredObject > ObjectIterator < T > listViaQuery(Transaction p1, Class < T > p2, Query p3) {
         return null;
     }
 
@@ -1805,4 +1806,23 @@ public abstract class StoredObject {
 	public final ObjectIterator<? extends FileData> listFileData(Transaction transaction) {
 		return null;
 	}
+
+    public final List<StoredObjectLink<?>> objectLinks() {
+        return null;
+    }
+
+    public final List<StoredObjectLink<?>> objectLinks(boolean create) {
+        return null;
+    }
+
+    public final StoredObjectLink<?> objectLink(String name) {
+        return null;
+    }
+
+    public final StoredObjectLink<?> objectLink(String name, boolean create) {
+        return null;
+    }
+
+    public void clearObjectLinks() {
+    }
 }

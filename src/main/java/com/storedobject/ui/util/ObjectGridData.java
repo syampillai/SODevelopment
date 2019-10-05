@@ -2,17 +2,17 @@ package com.storedobject.ui.util;
 
 import com.storedobject.common.FilterProvider;
 import com.storedobject.core.*;
-import com.storedobject.ui.*;
+import com.storedobject.ui.FilterMethods;
+import com.storedobject.ui.ObjectChangedListener;
+import com.storedobject.ui.ObjectEditorListener;
+import com.storedobject.ui.Transactional;
 import com.storedobject.vaadin.HasColumns;
-import com.storedobject.vaadin.ItemSelectedListener;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridSelectionModel;
 
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public interface ObjectGridData<T extends StoredObject> extends HasColumns<T>, ObjectChangedListener<T>, ObjectsSetter, ObjectSearcher<T>, Transactional, ObjectEditorListener, FilterMethods<T> {
@@ -139,15 +139,15 @@ public interface ObjectGridData<T extends StoredObject> extends HasColumns<T>, O
     }
 
     @Override
-    default void updated(ObjectMasterData<T> object) {
+    default void updated(T object) {
     }
 
     @Override
-    default void inserted(ObjectMasterData<T> object) {
+    default void inserted(T object) {
     }
 
     @Override
-    default void deleted(ObjectMasterData<T> object) {
+    default void deleted(T object) {
     }
 
     @Override
