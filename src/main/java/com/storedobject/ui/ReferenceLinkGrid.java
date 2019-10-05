@@ -45,6 +45,11 @@ public class ReferenceLinkGrid<T extends StoredObject> extends ObjectGrid<T> imp
     }
 
     @Override
+    public boolean isAllowAny() {
+        return false;
+    }
+
+    @Override
     public EditableObjectList<T> getEditableList() {
         return null;
     }

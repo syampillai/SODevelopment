@@ -4,9 +4,15 @@ public interface StoredObjectLink<T extends StoredObject> extends EditableList<T
 
     StoredObject getMaster();
 
-    int getType();
+    default int getType() {
+        return 0;
+    }
 
     String getName();
+
+    default boolean isAllowAny() {
+        return false;
+    }
 
     default boolean isDetail(T object) {
         return false;

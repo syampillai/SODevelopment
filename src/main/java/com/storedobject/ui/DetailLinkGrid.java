@@ -12,7 +12,7 @@ public class DetailLinkGrid<T extends StoredObject> extends EditableObjectGrid<T
     }
 
     public DetailLinkGrid(ObjectLinkField<T> linkField, Iterable<String> columns) {
-        super(linkField.getObjectClass(), columns == null ? linkField.getLink().getBrowseColumns() : columns, linkField.isAllowAny());
+        super(linkField.getObjectClass(), null, linkField.isAllowAny());
     }
 
     @Override
@@ -38,6 +38,11 @@ public class DetailLinkGrid<T extends StoredObject> extends EditableObjectGrid<T
     @Override
     public final boolean isDetail() {
         return true;
+    }
+
+    @Override
+    public boolean isAllowAny() {
+        return false;
     }
 
     @Override
