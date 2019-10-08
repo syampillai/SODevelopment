@@ -5,25 +5,25 @@ import com.storedobject.core.Id;
 import com.storedobject.core.StreamData;
 import com.vaadin.flow.server.AbstractStreamResource;
 
-public class Image extends com.storedobject.vaadin.Image {
+public class ImageView extends com.storedobject.vaadin.ImageView {
 
-    public Image(String url) {
+    public ImageView(String url) {
         super(url);
     }
 
-    public Image(StreamData streamData) {
+    public ImageView(StreamData streamData) {
         this(new DBResource(streamData));
     }
 
-    public Image(Id streamDataId) {
+    public ImageView(Id streamDataId) {
         this(new DBResource(streamDataId));
     }
 
-    public Image(SVG svg) {
+    public ImageView(SVG svg) {
         this(new SVGResource(svg));
     }
 
-    public Image(AbstractStreamResource resource) {
+    public ImageView(AbstractStreamResource resource) {
         super(resource);
     }
 }

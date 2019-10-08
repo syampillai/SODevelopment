@@ -7,13 +7,15 @@ import com.storedobject.core.ObjectSearchFilter;
 import com.storedobject.core.StoredObject;
 import com.storedobject.ui.util.ObjectInput;
 import com.storedobject.vaadin.HasContainer;
+import com.storedobject.vaadin.View;
+import com.storedobject.vaadin.ViewDependent;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.customfield.CustomField;
 
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
-public class ObjectFormField<T extends StoredObject> extends CustomField<T> implements ObjectInput<T> {
+public class ObjectFormField<T extends StoredObject> extends CustomField<T> implements ObjectInput<T>, ViewDependent {
 
     public ObjectFormField(Class<T> objectClass) {
         this(null, objectClass);
@@ -24,11 +26,27 @@ public class ObjectFormField<T extends StoredObject> extends CustomField<T> impl
     }
 
     public ObjectFormField(ObjectEditor<T> formEditor) {
-        this(null, formEditor, null);
+        this(null, formEditor, (HasContainer)null);
     }
 
     public ObjectFormField(String label, ObjectEditor<T> formEditor) {
-        this(label, formEditor, null);
+        this(label, formEditor, (HasContainer)null);
+    }
+
+    public ObjectFormField(Class<T> objectClass, ObjectField.Type formType) {
+        this(null, objectClass, formType);
+    }
+
+    public ObjectFormField(String label, Class<T> objectClass, ObjectField.Type formType) {
+        this(label, ObjectEditor.create(objectClass), formType);
+    }
+
+    public ObjectFormField(ObjectEditor<T> formEditor, ObjectField.Type formType) {
+        this(null, formEditor, formType);
+    }
+
+    public ObjectFormField(String label, ObjectEditor<T> formEditor, ObjectField.Type formType) {
+        this(label, formEditor, (HasContainer)null);
     }
 
     public ObjectFormField(Class<T> objectClass, HasContainer mergeTo) {
@@ -36,7 +54,7 @@ public class ObjectFormField<T extends StoredObject> extends CustomField<T> impl
     }
 
     public ObjectFormField(String label, Class<T> objectClass, HasContainer mergeTo) {
-        this(label, ObjectEditor.create(objectClass, EditorAction.ALL, ""), mergeTo);
+        this(label, ObjectEditor.create(objectClass), mergeTo);
     }
 
     public ObjectFormField(ObjectEditor<T> formEditor, HasContainer mergeTo) {
@@ -47,17 +65,16 @@ public class ObjectFormField<T extends StoredObject> extends CustomField<T> impl
     }
 
     @Override
+    protected void updateValue() {
+    }
+
+    @Override
     protected T generateModelValue() {
         return null;
     }
 
     @Override
     protected void setPresentationValue(T object) {
-    }
-
-    @Override
-    protected boolean valueEquals(T value1, T value2) {
-        return value1 == value2;
     }
 
     @Override
@@ -94,12 +111,11 @@ public class ObjectFormField<T extends StoredObject> extends CustomField<T> impl
 
     @Override
     public T getObject() {
-        return getValue();
+        return null;
     }
 
     @Override
     public void setObject(StoredObject object) {
-        setValue(convert(object));
     }
 
     @Override
@@ -109,7 +125,6 @@ public class ObjectFormField<T extends StoredObject> extends CustomField<T> impl
 
     @Override
     public void setObject(Id objectId) {
-        setValue(objectId);
     }
 
     @Override
@@ -198,5 +213,14 @@ public class ObjectFormField<T extends StoredObject> extends CustomField<T> impl
 
     @Override
     public void setEnabled(boolean enabled) {
+    }
+
+    @Override
+    public void setDependentView(View masterView) {
+    }
+
+    @Override
+    public View getDependentView() {
+        return null;
     }
 }
