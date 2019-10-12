@@ -2,6 +2,7 @@ package com.storedobject.ui;
 
 import com.storedobject.common.SVG;
 import com.storedobject.core.Id;
+import com.storedobject.core.MediaFile;
 import com.storedobject.core.StreamData;
 import com.vaadin.flow.server.AbstractStreamResource;
 
@@ -25,5 +26,9 @@ public class ImageView extends com.storedobject.vaadin.ImageView {
 
     public ImageView(AbstractStreamResource resource) {
         super(resource);
+    }
+
+    public ImageView(MediaFile mediaFile) {
+        this("");
     }
 }

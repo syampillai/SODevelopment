@@ -5,6 +5,7 @@ import com.storedobject.core.EditorAction;
 import com.storedobject.core.Id;
 import com.storedobject.core.ObjectSearchFilter;
 import com.storedobject.core.StoredObject;
+import com.storedobject.ui.util.NoDisplayField;
 import com.storedobject.ui.util.ObjectInput;
 import com.storedobject.vaadin.HasContainer;
 import com.storedobject.vaadin.View;
@@ -15,7 +16,7 @@ import com.vaadin.flow.component.customfield.CustomField;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
-public class ObjectFormField<T extends StoredObject> extends CustomField<T> implements ObjectInput<T>, ViewDependent {
+public class ObjectFormField<T extends StoredObject> extends CustomField<T> implements ObjectInput<T>, ViewDependent, NoDisplayField {
 
     public ObjectFormField(Class<T> objectClass) {
         this(null, objectClass);
@@ -222,5 +223,10 @@ public class ObjectFormField<T extends StoredObject> extends CustomField<T> impl
     @Override
     public View getDependentView() {
         return null;
+    }
+
+    @Override
+    public boolean canDisplay() {
+        return false;
     }
 }

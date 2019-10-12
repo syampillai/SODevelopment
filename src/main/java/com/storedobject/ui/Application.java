@@ -84,6 +84,12 @@ public class Application extends com.storedobject.vaadin.Application implements 
     public void setDeviceLayout(DeviceLayout layout) {
     }
 
+    public void view(MediaFile mediaFile) {
+    }
+
+    public void view(String caption, MediaFile mediaFile) {
+    }
+
     public void view(String caption, Id objectId) {
     }
 

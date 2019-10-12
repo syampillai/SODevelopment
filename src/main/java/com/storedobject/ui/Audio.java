@@ -1,6 +1,7 @@
 package com.storedobject.ui;
 
 import com.storedobject.core.Id;
+import com.storedobject.core.MediaFile;
 import com.storedobject.core.StreamData;
 import com.vaadin.flow.server.StreamResource;
 
@@ -43,5 +44,24 @@ public class Audio extends com.storedobject.vaadin.Audio {
      */
     public Audio(String uri, String type) {
         super(uri, type);
+    }
+
+    /**
+     * Constructor.
+     *
+     * @param mediaFile Media file containing the audio
+     */
+    public Audio(MediaFile mediaFile) {
+        this("", "");
+    }
+
+    /**
+     * Create an audio from the media file.
+     *
+     * @param name Name of the media file
+     * @return Audio if exists.
+     */
+    public static Audio createFromMedia(String name) {
+        return null;
     }
 }

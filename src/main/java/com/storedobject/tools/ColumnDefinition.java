@@ -24,7 +24,6 @@ public class ColumnDefinition extends com.storedobject.core.StoredObject impleme
         return null;
     }
 
-    @com.storedobject.core.annotation.Column(order = 0, caption = "", required = false, style = "")
     public java.lang.String getParameters() {
         return null;
     }
@@ -46,7 +45,6 @@ public class ColumnDefinition extends com.storedobject.core.StoredObject impleme
     public void setDisplayOrder(int p1) {
     }
 
-    @com.storedobject.core.annotation.Column(order = 0, caption = "", required = false, style = "")
     public int getDisplayOrder() {
         return 0;
     }
@@ -69,7 +67,6 @@ public class ColumnDefinition extends com.storedobject.core.StoredObject impleme
     public void setCaption(java.lang.String p1) {
     }
 
-    @com.storedobject.core.annotation.Column(order = 0, caption = "", required = false, style = "")
     public java.lang.String getCaption() {
         return null;
     }
@@ -92,28 +89,8 @@ public class ColumnDefinition extends com.storedobject.core.StoredObject impleme
         return null;
     }
 
-    protected java.lang.String getColumnAnnotation() {
-        return null;
-    }
-
     public boolean getEmptyAllowed() {
         return false;
-    }
-
-    protected java.lang.String getIdParam() {
-        return null;
-    }
-
-    protected boolean getIdParam(java.lang.String p1) {
-        return false;
-    }
-
-    protected java.lang.String getJavaName() {
-        return null;
-    }
-
-    protected java.lang.String getJavaType() {
-        return null;
     }
 
     public java.lang.String getInitString() {
@@ -126,14 +103,6 @@ public class ColumnDefinition extends com.storedobject.core.StoredObject impleme
 
     public boolean getSetAllowed() {
         return false;
-    }
-
-    protected boolean getIdParamAny() {
-        return false;
-    }
-
-    protected java.lang.String getObjectTextObject() {
-        return null;
     }
 
     public void setEmptyAllowed(boolean p1) {

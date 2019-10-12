@@ -1,6 +1,7 @@
 package com.storedobject.ui;
 
 import com.storedobject.core.Id;
+import com.storedobject.core.MediaFile;
 import com.storedobject.core.StreamData;
 import com.vaadin.flow.server.StreamResource;
 
@@ -45,4 +46,22 @@ public class Video extends com.storedobject.vaadin.Video {
         super(uri, type);
     }
 
+    /**
+     * Constructor.
+     *
+     * @param mediaFile Media file containing the video
+     */
+    public Video(MediaFile mediaFile) {
+        this("", "");
+    }
+
+    /**
+     * Create a video from the media file.
+     *
+     * @param name Name of the media file
+     * @return Video if exists.
+     */
+    public static Video createFromMedia(String name) {
+        return null;
+    }
 }
