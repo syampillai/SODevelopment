@@ -192,8 +192,7 @@ public final class StoredObjectUtility {
             return null;
         }
 
-        public boolean stringifyTail() {
-            return false;
+        public void stringifyTail() {
         }
     }
 

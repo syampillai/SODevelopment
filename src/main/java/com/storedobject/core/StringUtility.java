@@ -2,6 +2,8 @@ package com.storedobject.core;
 
 import com.storedobject.core.annotation.Table;
 
+import java.math.BigInteger;
+
 public class StringUtility extends com.storedobject.common.StringUtility {
 
     /**
@@ -30,5 +32,35 @@ public class StringUtility extends com.storedobject.common.StringUtility {
         }
         String name = c.getName();
         return StringUtility.makeLabel(name.substring(name.lastIndexOf('.') + 1));
+    }
+
+    /**
+     * Converts a numeric value into words. Negative part will be ignored (If the {@link SystemEntity} is in India, it will
+     * be done in Indian style).
+     *
+     * @param value Value
+     * @return Value in words.
+     */
+    public static String words(BigInteger value) {
+        if("IN".equals(SystemEntity.systemCountry)) {
+            return wordsIndian(value);
+        }
+        return com.storedobject.common.StringUtility.words(value);
+    }
+
+    /**
+     * Formats a string as a numeric string with thousands separation (If the {@link SystemEntity} is in India, it will
+     * be done in Indian style).
+     *
+     * @param s String of digits (can contain a decimal point)
+     * @param decimals Number of decimals required in the output string
+     * @param separated True if thousands separation is needed in the output
+     * @return Formatted value.
+     */
+    public static String format(String s, int decimals, boolean separated) {
+        if("IN".equals(SystemEntity.systemCountry)) {
+            return formatIndian(s, decimals, separated);
+        }
+        return com.storedobject.common.StringUtility.format(s, decimals, separated);
     }
 }

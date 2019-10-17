@@ -14,8 +14,6 @@ public class ObjectData<T extends StoredObject> implements ObjectConverter<T, T>
 	protected final MethodInvoker method;
 	protected final Class<?> methodType;
 	protected final ClassAttribute<T> ca;
-	protected ValueConverter<?> valueConverter = null;
-
 
 	public ObjectData(ClassAttribute<T> ca, String name) {
 		this(ca, name, null);
@@ -163,10 +161,6 @@ public class ObjectData<T extends StoredObject> implements ObjectConverter<T, T>
 	}
 
 	public Iterable<String> getSelectionCriteria() {
-		return null;
-	}
-
-	public static ValueConverter<?> getValueConverter(Method m) {
 		return null;
 	}
 }
