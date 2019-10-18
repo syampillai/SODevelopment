@@ -11,6 +11,7 @@ import com.storedobject.vaadin.DataTreeGrid;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
@@ -140,5 +141,9 @@ public abstract class AbstractObjectForest<T extends StoredObject> extends DataT
 
     public int size() {
         return 0;
+    }
+
+    public Set<StoredObject> getSelectedObjects() {
+        return null;
     }
 }
