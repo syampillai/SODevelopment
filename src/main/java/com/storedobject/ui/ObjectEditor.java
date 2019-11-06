@@ -2,6 +2,7 @@ package com.storedobject.ui;
 
 import com.storedobject.common.SOException;
 import com.storedobject.core.*;
+import com.storedobject.ui.util.AttachmentField;
 import com.storedobject.vaadin.AbstractDataEditor;
 import com.vaadin.flow.component.Focusable;
 import com.vaadin.flow.component.HasComponents;

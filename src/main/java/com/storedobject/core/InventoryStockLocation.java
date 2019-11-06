@@ -125,24 +125,12 @@ public abstract class InventoryStockLocation extends StoredObject {
     	return null;
     }
 
-    public boolean checkServiceability(InventoryItem item) {
-    	return false;
+    public final boolean canStore(InventoryItemType itemType) {
+        return false;
     }
 
-    public final boolean checkStorage(InventoryItem item) {
-    	return false;
-    }
-
-    public boolean checkStorage(InventoryItemType itemType, int serviceabilityStatus) {
-    	return false;
-    }
-
-    public final boolean checkCategory(InventoryItem item) {
-    	return false;
-    }
-
-    public boolean checkCategory(InventoryItemType itemType) {
-    	return true;
+    public final boolean canStore(InventoryItem item) {
+        return false;
     }
 
     public void setCategory(Id category) {

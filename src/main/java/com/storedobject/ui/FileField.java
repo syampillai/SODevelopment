@@ -6,20 +6,16 @@ import com.vaadin.flow.component.Component;
 
 public class FileField extends AbstractObjectField<StreamData> {
 
+    public FileField() {
+        this(null,true, ObjectField.Type.FILE);
+    }
+
     public FileField(String caption) {
-        this(caption, true, true, false);
+        this(caption,true, ObjectField.Type.FILE);
     }
 
-    public FileField(String caption, boolean allowRemove) {
-        this(caption, allowRemove, true, false);
-    }
-
-    public FileField(String caption, boolean allowRemove, boolean allowUpload) {
-        this(caption, allowRemove, allowUpload, false);
-    }
-
-    public FileField(String label, boolean allowRemove, boolean allowUpload, boolean imageOnly) {
-        super(StreamData.class, false);
+    public FileField(String label, boolean allowUpload, ObjectField.Type type) {
+        super(StreamData.class,false);
     }
 
     public static <O extends StoredObject> boolean canCreate(Class<O> objectClass) {
@@ -63,6 +59,14 @@ public class FileField extends AbstractObjectField<StreamData> {
     }
 
     public boolean isImage() {
+        return false;
+    }
+
+    public boolean isAudio() {
+        return false;
+    }
+
+    public boolean isVideo() {
         return false;
     }
 

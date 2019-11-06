@@ -15,7 +15,7 @@ import java.util.function.Predicate;
 
 public class ObjectField<T extends StoredObject> extends CustomField<Id> implements IdInput<T> {
 
-    public enum Type { AUTO, CHOICE, GET, SEARCH, FORM, IMAGE, FILE, INVENTORY_ITEM, INVENTORY_BIN, FORM_BLOCK }
+    public enum Type { AUTO, CHOICE, GET, SEARCH, FORM, IMAGE, FILE, INVENTORY_ITEM, INVENTORY_BIN, FORM_BLOCK, VIDEO, AUDIO, STILL_CAMERA, VIDEO_CAMERA, MIC }
 
     public ObjectField(Class<T> objectClass) {
         this(null, objectClass);

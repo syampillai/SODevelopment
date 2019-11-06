@@ -20,10 +20,4 @@ public class AbstractTextContentEditor<T extends TextContent> extends ObjectEdit
     public AbstractTextContentEditor(String className) throws Exception {
         super(className);
     }
-
-    @Override
-    protected void formConstructed() {
-        super.formConstructed();
-        setFieldReadOnly("Version");
-    }
 }
