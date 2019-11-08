@@ -41,6 +41,23 @@ public class ObjectForest<T extends StoredObject> extends AbstractObjectForest<T
         return null;
     }
 
+    /**
+     * Allow/disallow link editing.
+     *
+     * @param allowLinkEditing True if link editing needs to be allowed
+     */
+    public final void setAllowLinkEditing(boolean allowLinkEditing) {
+    }
+
+    /**
+     * Check whether link editing is allowed or not.
+     *
+     * @return True if link editing is allowed.
+     */
+    public final boolean isLinkEditingAllowed() {
+        return false;
+    }
+
     public final <O extends StoredObject> ObjectSearcher<O> getObjectSearcher(Class<O> objectClass) {
         return null;
     }
