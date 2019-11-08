@@ -3,10 +3,7 @@ package com.storedobject.ui;
 import com.storedobject.common.FilterProvider;
 import com.storedobject.core.ObjectSearchFilter;
 import com.storedobject.core.StoredObject;
-import com.storedobject.ui.util.ObjectDataProvider;
 import com.storedobject.ui.util.ObjectInput;
-import com.storedobject.ui.util.ObjectListProvider;
-import com.storedobject.ui.util.ObjectSupplier;
 import com.storedobject.vaadin.ComboField;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ItemLabelGenerator;
@@ -17,15 +14,16 @@ import java.util.function.Predicate;
 
 public class ObjectComboField<T extends StoredObject> extends ComboField<T> implements ObjectInput<T> {
 
-    private final ObjectDataProvider<T> objectProvider;
-    private String label;
-
     public ObjectComboField(Class<T> objectClass) {
         this(objectClass, false);
     }
 
     public ObjectComboField(Class<T> objectClass, boolean any) {
         this(objectClass, null, any);
+    }
+
+    public ObjectComboField(Class<T> objectClass, boolean any, boolean allowAdd) {
+        this(objectClass, null, any, allowAdd);
     }
 
     public ObjectComboField(Class<T> objectClass, String condition) {
@@ -36,12 +34,20 @@ public class ObjectComboField<T extends StoredObject> extends ComboField<T> impl
         this(objectClass, condition, null, any);
     }
 
+    public ObjectComboField(Class<T> objectClass, String condition, boolean any, boolean allowAdd) {
+        this(objectClass, condition, null, any, allowAdd);
+    }
+
     public ObjectComboField(Class<T> objectClass, String condition, String orderBy) {
         this(objectClass, condition, orderBy, false);
     }
 
     public ObjectComboField(Class<T> objectClass, String condition, String orderBy, boolean any) {
         this(null, objectClass, condition, orderBy, any);
+    }
+
+    public ObjectComboField(Class<T> objectClass, String condition, String orderBy, boolean any, boolean allowAdd) {
+        this(null, objectClass, condition, orderBy, any, allowAdd);
     }
 
     public ObjectComboField(String label, Class<T> objectClass) {
@@ -52,6 +58,10 @@ public class ObjectComboField<T extends StoredObject> extends ComboField<T> impl
         this(label, objectClass, null, any);
     }
 
+    public ObjectComboField(String label, Class<T> objectClass, boolean any, boolean allowAdd) {
+        this(label, objectClass, null, any, allowAdd);
+    }
+
     public ObjectComboField(String label, Class<T> objectClass, String condition) {
         this(label, objectClass, condition, null, false);
     }
@@ -60,12 +70,20 @@ public class ObjectComboField<T extends StoredObject> extends ComboField<T> impl
         this(label, objectClass, condition, null, any);
     }
 
+    public ObjectComboField(String label, Class<T> objectClass, String condition, boolean any, boolean allowAdd) {
+        this(label, objectClass, condition, null, any, allowAdd);
+    }
+
     public ObjectComboField(String label, Class<T> objectClass, String condition, String orderBy) {
-        this(label, objectClass, condition, orderBy, false);
+        this(label, objectClass, condition, orderBy,false);
     }
 
     public ObjectComboField(String label, Class<T> objectClass, String condition, String orderBy, boolean any) {
-        this(label, new ObjectSupplier<>(objectClass, condition, orderBy, any, true));
+        this(label, objectClass, condition, orderBy, any,false);
+    }
+
+    public ObjectComboField(String label, Class<T> objectClass, String condition, String orderBy, boolean any, boolean allowAdd) {
+        super(label);
     }
 
     public ObjectComboField(List<T> list) {
@@ -73,30 +91,29 @@ public class ObjectComboField<T extends StoredObject> extends ComboField<T> impl
     }
 
     public ObjectComboField(String label, List<T> list) {
-        this(label, new ObjectListProvider<>((list)));
+        this(label, list,false);
     }
 
-    private ObjectComboField(String label, ObjectDataProvider<T> objectProvider) {
+    public ObjectComboField(List<T> list, boolean allowAdd) {
+        this(null, list, allowAdd);
+    }
+
+    public ObjectComboField(String label, List<T> list, boolean allowAdd) {
         super(label);
-        this.objectProvider = objectProvider;
-        addDetachListener(e -> this.objectProvider.close());
-        setDataProvider(objectProvider);
     }
 
     @Override
     public void setItemLabelGenerator(ItemLabelGenerator<T> itemLabelGenerator) {
-        objectProvider.setItemLabelGenerator(itemLabelGenerator);
-        super.setItemLabelGenerator(itemLabelGenerator);
     }
 
     @Override
     public Class<T> getObjectClass() {
-        return objectProvider.getObjectClass();
+        return null;
     }
 
     @Override
     public boolean isAllowAny() {
-        return objectProvider.isAllowAny();
+        return false;
     }
 
     @Override
@@ -122,18 +139,14 @@ public class ObjectComboField<T extends StoredObject> extends ComboField<T> impl
     }
 
     public int getObjectCount() {
-        return objectProvider.getObjectCount();
+        return 0;
     }
 
     public T getObject(int index) {
-        return objectProvider.getItem(index);
+        return null;
     }
 
     public void setFirstValue() {
-        if(getObjectCount() > 0) {
-            setValue(getObject(0));
-        }
-        setPlaceholder("");
     }
 
     @Override
@@ -153,12 +166,11 @@ public class ObjectComboField<T extends StoredObject> extends ComboField<T> impl
 
     @Override
     public void setInternalLabel(String label) {
-        this.label = label;
     }
 
     @Override
     public String getInternalLabel() {
-        return label;
+        return null;
     }
 
     @Override

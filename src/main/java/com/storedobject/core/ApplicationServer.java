@@ -81,6 +81,10 @@ public final class ApplicationServer {
         return null;
     }
 
+    public Object execute(String logicName) {
+        return null;
+    }
+
     public Object execute(String logicName, boolean execute) {
         return null;
     }

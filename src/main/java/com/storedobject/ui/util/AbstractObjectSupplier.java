@@ -148,6 +148,10 @@ public class AbstractObjectSupplier<T extends StoredObject, M> extends CallbackD
     }
 
     @Override
+    public void edited(T item) {
+    }
+
+    @Override
     public void deleted(T item) {
     }
 

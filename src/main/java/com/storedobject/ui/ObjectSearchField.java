@@ -17,7 +17,15 @@ public class ObjectSearchField<T extends StoredObject> extends AbstractObjectFie
         this(null, objectClass, allowAny);
     }
 
+    public ObjectSearchField(Class<T> objectClass, boolean allowAny, boolean allowAdd) {
+        this(null, objectClass, allowAny, allowAdd);
+    }
+
     public ObjectSearchField(String label, Class<T> objectClass, boolean allowAny) {
+        this(label, objectClass, allowAny,false);
+    }
+
+    public ObjectSearchField(String label, Class<T> objectClass, boolean allowAny, boolean allowAdd) {
         super(objectClass, allowAny);
     }
 

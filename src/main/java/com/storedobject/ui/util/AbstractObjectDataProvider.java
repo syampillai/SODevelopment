@@ -102,5 +102,7 @@ public interface AbstractObjectDataProvider<T extends StoredObject, M> extends D
 
     void added(T item);
 
+    void edited(T item);
+
     void deleted(T item);
 }

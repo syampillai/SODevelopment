@@ -28,7 +28,15 @@ public class ObjectGetField<T extends StoredObject> extends AbstractObjectField<
         this(label, objectClass, allowAny, null);
     }
 
+    public ObjectGetField(String label, Class<T> objectClass, boolean allowAny, boolean allowAdd) {
+        this(label, objectClass, allowAny, allowAdd,null);
+    }
+
     public ObjectGetField(String label, Class<T> objectClass, boolean allowAny, GetProvider<T> getProvider) {
+        this(label, objectClass, allowAny, false, getProvider);
+    }
+
+    public ObjectGetField(String label, Class<T> objectClass, boolean allowAny, boolean allowAdd, GetProvider<T> getProvider) {
         super(objectClass, allowAny);
     }
 

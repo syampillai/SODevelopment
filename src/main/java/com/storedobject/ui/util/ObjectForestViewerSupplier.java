@@ -121,6 +121,10 @@ public class ObjectForestViewerSupplier<T extends StoredObject> implements Abstr
     }
 
     @Override
+    public void edited(T item) {
+    }
+
+    @Override
     public void deleted(T item) {
     }
 
