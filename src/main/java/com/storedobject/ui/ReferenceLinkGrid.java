@@ -120,6 +120,16 @@ public class ReferenceLinkGrid<T extends StoredObject> extends ObjectGrid<T> imp
         return false;
     }
 
+    @Override
+    public boolean isDirect() {
+        return false;
+    }
+
+    @Override
+    public void setDirect(boolean direct) {
+
+    }
+
     public ObjectSearcher<T> getSearcher() {
         return null;
     }

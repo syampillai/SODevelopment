@@ -21,6 +21,12 @@ public final class ObjectLinkField<T extends StoredObject> extends CustomField<S
         return null;
     }
 
+    public void hideColumn(String columnName) {
+    }
+
+    public void unhideColumn(String columnName) {
+    }
+
     public String getFieldName() {
         return null;
     }
@@ -223,14 +229,5 @@ public final class ObjectLinkField<T extends StoredObject> extends CustomField<S
     }
 
     public void setFromClient(boolean fromClient) {
-    }
-
-    public static class Tabs extends com.vaadin.flow.component.tabs.Tabs {
-
-        public Tabs() {
-        }
-
-        public void addField(ObjectLinkField<?> field) {
-        }
     }
 }

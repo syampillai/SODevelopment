@@ -31,6 +31,20 @@ public class DetailLinkGrid<T extends StoredObject> extends EditableObjectGrid<T
     }
 
     @Override
+    public final void setObjectEditor(ObjectEditor<T> editor) {
+    }
+
+    @Override
+    public final ObjectEditor<T> createObjectEditor() {
+        return null;
+    }
+
+    @Override
+    public ObjectEditor<T> constructObjectEditor() {
+        return null;
+    }
+
+    @Override
     public T getSelected() {
         return super.getSelected();
     }
@@ -100,17 +114,18 @@ public class DetailLinkGrid<T extends StoredObject> extends EditableObjectGrid<T
     }
 
     @Override
-    public final void setObjectEditor(ObjectEditor<T> editor) {
+    public boolean isDirect() {
+        return false;
+    }
+
+    @Override
+    public void setDirect(boolean direct) {
+
     }
 
     @Override
     public boolean isEnabled() {
         return super.isEnabled();
-    }
-
-    @Override
-    public final boolean isReadOnly() {
-        return false;
     }
 
     @Override

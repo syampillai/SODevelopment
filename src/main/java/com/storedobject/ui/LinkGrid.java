@@ -34,6 +34,10 @@ public interface LinkGrid<T extends StoredObject> extends StoredObjectLink<T> {
 
     boolean isEdited();
 
+    boolean isDirect();
+
+    void setDirect(boolean direct);
+
     boolean isReadOnly();
 
     void setReadOnly(boolean readOnly);
@@ -74,6 +78,10 @@ public interface LinkGrid<T extends StoredObject> extends StoredObjectLink<T> {
         return null;
     }
 
+    default boolean isInvalid() {
+        return false;
+    }
+
     default void setObjectEditor(ObjectEditor<T> editor) {
     }
 
@@ -82,6 +90,10 @@ public interface LinkGrid<T extends StoredObject> extends StoredObjectLink<T> {
     }
 
     default ObjectEditor<T> createObjectEditor() {
+        return null;
+    }
+
+    default ObjectEditor<T> constructObjectEditor() {
         return null;
     }
 

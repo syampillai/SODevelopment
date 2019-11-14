@@ -5,7 +5,6 @@ import com.storedobject.core.ObjectSetter;
 import com.storedobject.core.StoredObject;
 import com.storedobject.ui.util.ObjectDataProvider;
 import com.storedobject.ui.util.ObjectGridData;
-import com.storedobject.vaadin.ItemSelectedListener;
 
 import java.util.List;
 import java.util.function.BiConsumer;
@@ -94,6 +93,42 @@ public class EditableObjectGrid<T extends StoredObject> extends EditableGrid<T> 
 
     @Override
     public ObjectSearchFilter getFilter(boolean create) {
+        return null;
+    }
+
+    public final ObjectEditor<T> getRowEditor() {
+        return null;
+    }
+
+    protected ObjectEditor<T> createObjectEditor() {
+        return null;
+    }
+
+    protected ObjectEditor<T> constructObjectEditor() {
+        return null;
+    }
+
+    public final ObjectEditor<T> getObjectEditor() {
+        return null;
+    }
+
+    public void setReadOnly(boolean readOnly) {
+    }
+
+    public final boolean isReadOnly() {
+        return false;
+    }
+
+    public void editItem(T item) {
+    }
+
+    public void cancelEdit() {
+    }
+
+    public void saveEdited() {
+    }
+
+    public final T getEditingItem() {
         return null;
     }
 }
