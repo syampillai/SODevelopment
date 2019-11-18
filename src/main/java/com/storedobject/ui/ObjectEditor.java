@@ -311,6 +311,10 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T> 
         return null;
     }
 
+    public HasValue<?, String> getContactField(String fieldName) {
+        return null;
+    }
+
     @Override
     public Transaction getTransaction(boolean create) {
         return null;

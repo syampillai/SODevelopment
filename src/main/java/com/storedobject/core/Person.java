@@ -152,20 +152,4 @@ public class Person extends StoredObject {
     public static ObjectIterator<Person> list(String name) {
 		return null;
     }
-    
-    public String getContact(String contactType) {
-		return null;
-    }
-    
-    public String getContact(Id contactTypeId) {
-		return null;
-    }
-    
-    public static String getContact(Id personId, String contactType) {
-		return null;
-    }
-    
-    public static String getContact(Id personId, Id contactTypeId) {
-		return null;
-    }
 }

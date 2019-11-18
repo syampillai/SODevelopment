@@ -2,6 +2,11 @@ package com.storedobject.core;
 
 import com.storedobject.common.StringList;
 
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.Reader;
+import java.io.Writer;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
@@ -12,7 +17,7 @@ public abstract class StoredObject {
     public StoredObject() {
     }
 
-    protected static < T extends StoredObject > T get(Transaction p1, Class < T > p2, java.sql.ResultSet p3) {
+    protected static < T extends StoredObject > T get(Transaction transaction, Class < T > p2, java.sql.ResultSet p3) {
         return null;
     }
 
@@ -20,7 +25,7 @@ public abstract class StoredObject {
         return null;
     }
 
-    public static StoredObject get(Transaction p1, Id p2) {
+    public static StoredObject get(Transaction transaction, Id p2) {
         return null;
     }
 
@@ -28,7 +33,7 @@ public abstract class StoredObject {
         return null;
     }
 
-    public static < T extends StoredObject > T get(Transaction p1, Class < T > p2, Id p3) {
+    public static < T extends StoredObject > T get(Transaction transaction, Class < T > p2, Id p3) {
         return null;
     }
 
@@ -40,7 +45,7 @@ public abstract class StoredObject {
         return null;
     }
 
-    public static < T extends StoredObject > T get(Transaction p1, Class < T > p2, String p3) {
+    public static < T extends StoredObject > T get(Transaction transaction, Class < T > p2, String p3) {
         return null;
     }
 
@@ -48,7 +53,7 @@ public abstract class StoredObject {
         return null;
     }
 
-    public static < T extends StoredObject > T get(Transaction p1, Class < T > p2, String p3, String p4) {
+    public static < T extends StoredObject > T get(Transaction transaction, Class < T > p2, String p3, String p4) {
         return null;
     }
 
@@ -60,7 +65,7 @@ public abstract class StoredObject {
 		return null;
 	}
 
-    protected static < T extends StoredObject > T get(Transaction p1, ClassAttribute < T > p2, String p3, String p4) {
+    protected static < T extends StoredObject > T get(Transaction transaction, ClassAttribute < T > p2, String p3, String p4) {
         return null;
     }
 
@@ -68,7 +73,7 @@ public abstract class StoredObject {
         return null;
     }
 
-    public static < T extends StoredObject, C extends T > C get(Transaction p1, Class < T > p2, Id p3, boolean p4) {
+    public static < T extends StoredObject, C extends T > C get(Transaction transaction, Class < T > p2, Id p3, boolean p4) {
         return null;
     }
 
@@ -80,7 +85,7 @@ public abstract class StoredObject {
         return null;
     }
 
-    public static < T extends StoredObject, C extends T > C get(Transaction p1, Class < T > p2, String p3, boolean p4) {
+    public static < T extends StoredObject, C extends T > C get(Transaction transaction, Class < T > p2, String p3, boolean p4) {
         return null;
     }
 
@@ -88,46 +93,36 @@ public abstract class StoredObject {
         return null;
     }
 
-    public static < T extends StoredObject, C extends T > C get(Transaction p1, Class < T > p2, String p3, String p4, boolean p5) {
+    public static < T extends StoredObject, C extends T > C get(Transaction transaction, Class < T > p2, String p3, String p4, boolean p5) {
         return null;
     }
 
     @Override
-	public boolean equals(Object p1) {
+	public boolean equals(Object another) {
         return false;
     }
 
-    @Override
-	public String toString() {
-        return null;
-    }
-
-    @Override
-	public int hashCode() {
+    public static int count(Class<? extends StoredObject> soClass) {
         return 0;
     }
 
-    public static int count(Class <? extends StoredObject > p1) {
+    public static int count(Class<? extends StoredObject> soClass, String condition) {
         return 0;
     }
 
-    public static int count(Class <? extends StoredObject > p1, String p2) {
+    public static int count(Transaction transaction, Class<? extends StoredObject> soClass, String condition) {
         return 0;
     }
 
-    public static int count(Transaction p1, Class <? extends StoredObject > p2, String p3) {
+    public static int count(Class<? extends StoredObject> soClass, boolean p2) {
         return 0;
     }
 
-    public static int count(Class <? extends StoredObject > p1, boolean p2) {
+    public static int count(Class<? extends StoredObject> soClass, String condition, boolean p3) {
         return 0;
     }
 
-    public static int count(Class <? extends StoredObject > p1, String p2, boolean p3) {
-        return 0;
-    }
-
-    public static int count(Transaction p1, Class <? extends StoredObject > p2, String p3, boolean p4) {
+    public static int count(Transaction transaction, Class<? extends StoredObject> soClass, String condition, boolean p4) {
         return 0;
     }
 
@@ -150,14 +145,14 @@ public abstract class StoredObject {
     	return false;
     }
     
-    public void load(java.io.BufferedReader p1) throws Exception {
+    public void load(BufferedReader reader) throws Exception {
     }
 
-    public static int load(TransactionManager p1, java.io.InputStream p2, java.util.Comparator < CharSequence > p3) throws Exception {
+    public static int load(TransactionManager tm, InputStream in, Comparator< CharSequence > comparator) throws Exception {
         return 0;
     }
 
-    public static int load(TransactionManager p1, java.io.Reader p2, java.util.Comparator < CharSequence > p3) throws Exception {
+    public static int load(TransactionManager tm, Reader reader, Comparator < CharSequence > comparator) throws Exception {
         return 0;
     }
 
@@ -177,7 +172,7 @@ public abstract class StoredObject {
         return null;
     }
 
-    public static < T extends StoredObject > ObjectIterator < T > list(Transaction p1, Class < T > p2, String p3) {
+    public static < T extends StoredObject > ObjectIterator < T > list(Transaction transaction, Class < T > p2, String p3) {
         return null;
     }
 
@@ -185,7 +180,7 @@ public abstract class StoredObject {
         return null;
     }
 
-    public static < T extends StoredObject > ObjectIterator < T > list(Transaction p1, Class < T > p2, String p3, String p4) {
+    public static < T extends StoredObject > ObjectIterator < T > list(Transaction transaction, Class < T > p2, String p3, String p4) {
         return null;
     }
 
@@ -197,7 +192,7 @@ public abstract class StoredObject {
         return null;
     }
 
-    public static < T extends StoredObject > ObjectIterator < T > list(Transaction p1, Class < T > p2, String p3, boolean p4) {
+    public static < T extends StoredObject > ObjectIterator < T > list(Transaction transaction, Class < T > p2, String p3, boolean p4) {
         return null;
     }
 
@@ -205,21 +200,21 @@ public abstract class StoredObject {
         return null;
     }
 
-    public static < T extends StoredObject > ObjectIterator < T > list(Transaction p1, Class < T > p2, String p3, String p4, boolean p5) {
+    public static < T extends StoredObject > ObjectIterator < T > list(Transaction transaction, Class < T > p2, String p3, String p4, boolean p5) {
         return null;
     }
 
-    public final void save(Transaction p1) throws Exception {
+    public final void save(Transaction transaction) throws Exception {
     }
 
     public final void save() throws Exception {
     }
 
-    public final boolean save(TransactionControl p1) {
+    public final boolean save(TransactionControl transactionControl) {
         return false;
     }
 
-    public final void save(java.io.Writer p1) throws Exception {
+    public final void save(Writer writer) throws Exception {
     }
 
     public final void save(Map<String, Object> map) throws Throwable {
@@ -260,7 +255,7 @@ public abstract class StoredObject {
         return null;
     }
 
-    public final void delete(Transaction p1) throws Exception {
+    public final void delete(Transaction transaction) throws Exception {
     }
 
     public final void delete() throws Exception {
@@ -270,7 +265,7 @@ public abstract class StoredObject {
         return false;
     }
 
-    public static StoredObject create(java.io.BufferedReader p1) throws Exception {
+    public static StoredObject create(BufferedReader p1) throws Exception {
         return null;
     }
     
@@ -282,59 +277,59 @@ public abstract class StoredObject {
         return false;
     }
 
-    public static boolean exists(Class <? extends StoredObject > p1, String p2) {
+    public static boolean exists(Class<? extends StoredObject> soClass, String condition) {
         return false;
     }
 
-    public static boolean exists(Class <? extends StoredObject > p1, String p2, boolean p3) {
+    public static boolean exists(Class<? extends StoredObject> soClass, String condition, boolean p3) {
         return false;
     }
 
-    public static boolean exists(Transaction p1, Class <? extends StoredObject > p2, String p3) {
+    public static boolean exists(Transaction transaction, Class<? extends StoredObject> soClass, String condition) {
         return false;
     }
 
-    public static boolean exists(Transaction p1, Class <? extends StoredObject > p2, String p3, boolean p4) {
+    public static boolean exists(Transaction transaction, Class<? extends StoredObject> soClass, String condition, boolean p4) {
         return false;
     }
 
-    public static Query query(Class <? extends StoredObject > p1, String p2) {
+    public static Query query(Class<? extends StoredObject> soClass, String condition) {
         return null;
     }
 
-    public static Query query(Class <? extends StoredObject > p1, String p2, String p3) {
+    public static Query query(Class<? extends StoredObject> soClass, String condition, String p3) {
         return null;
     }
 
-    public static Query query(Transaction p1, Class <? extends StoredObject > p2, String p3, String p4) {
+    public static Query query(Transaction transaction, Class<? extends StoredObject> soClass, String condition, String p4) {
         return null;
     }
 
-    public static Query query(Class <? extends StoredObject > p1, String p2, String p3, String p4) {
+    public static Query query(Class<? extends StoredObject> soClass, String condition, String p3, String p4) {
         return null;
     }
 
-    public static Query query(Transaction p1, Class <? extends StoredObject > p2, String p3, String p4, String p5) {
+    public static Query query(Transaction transaction, Class<? extends StoredObject> soClass, String condition, String p4, String p5) {
         return null;
     }
 
-    public static Query query(Class <? extends StoredObject > p1, String p2, boolean p3) {
+    public static Query query(Class<? extends StoredObject> soClass, String condition, boolean p3) {
         return null;
     }
 
-    public static Query query(Class <? extends StoredObject > p1, String p2, String p3, boolean p4) {
+    public static Query query(Class<? extends StoredObject> soClass, String condition, String p3, boolean p4) {
         return null;
     }
 
-    public static Query query(Transaction p1, Class <? extends StoredObject > p2, String p3, String p4, boolean p5) {
+    public static Query query(Transaction transaction, Class<? extends StoredObject> soClass, String condition, String p4, boolean p5) {
         return null;
     }
 
-    public static Query query(Class <? extends StoredObject > p1, String p2, String p3, String p4, boolean p5) {
+    public static Query query(Class<? extends StoredObject> soClass, String condition, String p3, String p4, boolean p5) {
         return null;
     }
 
-    public static Query query(Transaction p1, Class <? extends StoredObject > p2, String p3, String p4, String p5, boolean p6) {
+    public static Query query(Transaction transaction, Class<? extends StoredObject> soClass, String condition, String p4, String p5, boolean p6) {
         return null;
     }
 
@@ -396,7 +391,7 @@ public abstract class StoredObject {
         return null;
     }
 
-    public void setTransaction(Transaction p1) throws Exception {
+    public void setTransaction(Transaction transaction) throws Exception {
     }
     
     public final boolean old() {
@@ -467,46 +462,46 @@ public abstract class StoredObject {
     public final void removeAllLinks() throws Exception {
     }
 
-    public final void removeAllLinks(Transaction p1) throws Exception {
+    public final void removeAllLinks(Transaction transaction) throws Exception {
     }
 
     public final void removeAllLinks(int p1) throws Exception {
     }
 
-    public final void removeAllLinks(Transaction p1, int p2) throws Exception {
+    public final void removeAllLinks(Transaction transaction, int p2) throws Exception {
     }
 
     public final void removeAllLinks(String p1) throws Exception {
     }
 
-    public final void removeAllLinks(Transaction p1, String p2) throws Exception {
+    public final void removeAllLinks(Transaction transaction, String p2) throws Exception {
     }
 
-    public final void removeAllLinks(Class <? extends StoredObject > p1) throws Exception {
+    public final void removeAllLinks(Class<? extends StoredObject> soClass) throws Exception {
     }
 
-    public final void removeAllLinks(Transaction p1, Class <? extends StoredObject > p2) throws Exception {
+    public final void removeAllLinks(Transaction transaction, Class<? extends StoredObject> soClass) throws Exception {
     }
 
-    public final void removeAllLinks(Class <? extends StoredObject > p1, int p2) throws Exception {
+    public final void removeAllLinks(Class<? extends StoredObject> soClass, int p2) throws Exception {
     }
 
-    public final void removeAllLinks(Transaction p1, Class <? extends StoredObject > p2, int p3) throws Exception {
+    public final void removeAllLinks(Transaction transaction, Class<? extends StoredObject> soClass, int p3) throws Exception {
     }
 
-    public final void removeAllLinks(Class <? extends StoredObject > p1, String p2) throws Exception {
+    public final void removeAllLinks(Class<? extends StoredObject> soClass, String condition) throws Exception {
     }
 
-    public final void removeAllLinks(Transaction p1, Class <? extends StoredObject > p2, String p3) throws Exception {
+    public final void removeAllLinks(Transaction transaction, Class<? extends StoredObject> soClass, String condition) throws Exception {
     }
 
     public final void removeReverseLinks() throws Exception {
     }
 
-    public final void removeReverseLinks(Transaction p1) throws Exception {
+    public final void removeReverseLinks(Transaction transaction) throws Exception {
     }
 
-    public final void undelete(Transaction p1) throws Exception {
+    public final void undelete(Transaction transaction) throws Exception {
     }
 
     public final void undelete() throws Exception {
@@ -547,10 +542,10 @@ public abstract class StoredObject {
     public final void addLink(StoredObject p1, int p2) throws Exception {
     }
 
-    public final void addLink(Transaction p1, StoredObject p2) throws Exception {
+    public final void addLink(Transaction transaction, StoredObject p2) throws Exception {
     }
 
-    public final void addLink(Transaction p1, StoredObject p2, int p3) throws Exception {
+    public final void addLink(Transaction transaction, StoredObject p2, int p3) throws Exception {
     }
 
     public final void addLink(Id p1) throws Exception {
@@ -559,46 +554,46 @@ public abstract class StoredObject {
     public final void addLink(Id p1, int p2) throws Exception {
     }
 
-    public final void addLink(Transaction p1, Id p2) throws Exception {
+    public final void addLink(Transaction transaction, Id p2) throws Exception {
     }
 
-    public final void addLink(Transaction p1, Id p2, int p3) throws Exception {
+    public final void addLink(Transaction transaction, Id p2, int p3) throws Exception {
     }
 
     public final void removeLink(StoredObject p1) throws Exception {
     }
 
-    public final void removeLink(Transaction p1, StoredObject p2) throws Exception {
+    public final void removeLink(Transaction transaction, StoredObject p2) throws Exception {
     }
 
     public final void removeLink(Id p1) throws Exception {
     }
 
-    public final void removeLink(Transaction p1, Id p2) throws Exception {
+    public final void removeLink(Transaction transaction, Id p2) throws Exception {
     }
 
     public final void removeLink(StoredObject p1, int p2) throws Exception {
     }
 
-    public final void removeLink(Transaction p1, StoredObject p2, int p3) throws Exception {
+    public final void removeLink(Transaction transaction, StoredObject p2, int p3) throws Exception {
     }
 
     public final void removeLink(Id p1, int p2) throws Exception {
     }
 
-    public final void removeLink(Transaction p1, Id p2, int p3) throws Exception {
+    public final void removeLink(Transaction transaction, Id p2, int p3) throws Exception {
     }
 
     public final void removeLink(StoredObject p1, String p2) throws Exception {
     }
 
-    public final void removeLink(Transaction p1, StoredObject p2, String p3) throws Exception {
+    public final void removeLink(Transaction transaction, StoredObject p2, String p3) throws Exception {
     }
 
     public final void removeLink(Id p1, String p2) throws Exception {
     }
 
-    public final void removeLink(Transaction p1, Id p2, String p3) throws Exception {
+    public final void removeLink(Transaction transaction, Id p2, String p3) throws Exception {
     }
 
     public static String checkCurrency(String p1) throws Invalid_Value {
@@ -609,11 +604,11 @@ public abstract class StoredObject {
         return null;
     }
 
-    public final Id getParentId(Class <? extends StoredObject > p1) {
+    public final Id getParentId(Class<? extends StoredObject> soClass) {
         return null;
     }
 
-    public final Id getParentId(Class <? extends StoredObject > p1, int p2) {
+    public final Id getParentId(Class<? extends StoredObject> soClass, int p2) {
         return null;
     }
 
@@ -625,7 +620,7 @@ public abstract class StoredObject {
         return null;
     }
 
-    public final < T extends StoredObject > ObjectIterator < T > listLinks(Transaction p1, Class < T > p2) {
+    public final < T extends StoredObject > ObjectIterator < T > listLinks(Transaction transaction, Class < T > p2) {
         return null;
     }
 
@@ -633,7 +628,7 @@ public abstract class StoredObject {
         return null;
     }
 
-    public final < T extends StoredObject > ObjectIterator < T > listLinks(Transaction p1, Class < T > p2, String p3) {
+    public final < T extends StoredObject > ObjectIterator < T > listLinks(Transaction transaction, Class < T > p2, String p3) {
         return null;
     }
 
@@ -641,7 +636,7 @@ public abstract class StoredObject {
         return null;
     }
 
-    public final < T extends StoredObject > ObjectIterator < T > listLinks(Transaction p1, Class < T > p2, String p3, String p4) {
+    public final < T extends StoredObject > ObjectIterator < T > listLinks(Transaction transaction, Class < T > p2, String p3, String p4) {
         return null;
     }
 
@@ -649,7 +644,7 @@ public abstract class StoredObject {
         return null;
     }
 
-    public final < T extends StoredObject > ObjectIterator < T > listLinks(Transaction p1, int p2, Class < T > p3) {
+    public final < T extends StoredObject > ObjectIterator < T > listLinks(Transaction transaction, int p2, Class < T > p3) {
         return null;
     }
 
@@ -657,7 +652,7 @@ public abstract class StoredObject {
         return null;
     }
 
-    public final < T extends StoredObject > ObjectIterator < T > listLinks(Transaction p1, int p2, Class < T > p3, String p4) {
+    public final < T extends StoredObject > ObjectIterator < T > listLinks(Transaction transaction, int p2, Class < T > p3, String p4) {
         return null;
     }
 
@@ -665,7 +660,7 @@ public abstract class StoredObject {
         return null;
     }
 
-    public final < T extends StoredObject > ObjectIterator < T > listLinks(Transaction p1, int p2, Class < T > p3, String p4, String p5) {
+    public final < T extends StoredObject > ObjectIterator < T > listLinks(Transaction transaction, int p2, Class < T > p3, String p4, String p5) {
         return null;
     }
 
@@ -673,7 +668,7 @@ public abstract class StoredObject {
         return null;
     }
 
-    public final < T extends StoredObject > ObjectIterator < T > listLinks(Transaction p1, String p2, Class < T > p3) {
+    public final < T extends StoredObject > ObjectIterator < T > listLinks(Transaction transaction, String p2, Class < T > p3) {
         return null;
     }
 
@@ -681,7 +676,7 @@ public abstract class StoredObject {
         return null;
     }
 
-    public final < T extends StoredObject > ObjectIterator < T > listLinks(Transaction p1, String p2, Class < T > p3, String p4) {
+    public final < T extends StoredObject > ObjectIterator < T > listLinks(Transaction transaction, String p2, Class < T > p3, String p4) {
         return null;
     }
 
@@ -689,7 +684,7 @@ public abstract class StoredObject {
         return null;
     }
 
-    public final < T extends StoredObject > ObjectIterator < T > listLinks(Transaction p1, String p2, Class < T > p3, String p4, String p5) {
+    public final < T extends StoredObject > ObjectIterator < T > listLinks(Transaction transaction, String p2, Class < T > p3, String p4, String p5) {
         return null;
     }
 
@@ -697,7 +692,7 @@ public abstract class StoredObject {
         return null;
     }
 
-    public final < T extends StoredObject > ObjectIterator < T > listLinks(Transaction p1, Class < T > p2, boolean p3) {
+    public final < T extends StoredObject > ObjectIterator < T > listLinks(Transaction transaction, Class < T > p2, boolean p3) {
         return null;
     }
 
@@ -705,7 +700,7 @@ public abstract class StoredObject {
         return null;
     }
 
-    public final < T extends StoredObject > ObjectIterator < T > listLinks(Transaction p1, Class < T > p2, String p3, boolean p4) {
+    public final < T extends StoredObject > ObjectIterator < T > listLinks(Transaction transaction, Class < T > p2, String p3, boolean p4) {
         return null;
     }
 
@@ -713,7 +708,7 @@ public abstract class StoredObject {
         return null;
     }
 
-    public final < T extends StoredObject > ObjectIterator < T > listLinks(Transaction p1, Class < T > p2, String p3, String p4, boolean p5) {
+    public final < T extends StoredObject > ObjectIterator < T > listLinks(Transaction transaction, Class < T > p2, String p3, String p4, boolean p5) {
         return null;
     }
 
@@ -721,7 +716,7 @@ public abstract class StoredObject {
         return null;
     }
 
-    public final < T extends StoredObject > ObjectIterator < T > listLinks(Transaction p1, int p2, Class < T > p3, boolean p4) {
+    public final < T extends StoredObject > ObjectIterator < T > listLinks(Transaction transaction, int p2, Class < T > p3, boolean p4) {
         return null;
     }
 
@@ -729,7 +724,7 @@ public abstract class StoredObject {
         return null;
     }
 
-    public final < T extends StoredObject > ObjectIterator < T > listLinks(Transaction p1, int p2, Class < T > p3, String p4, boolean p5) {
+    public final < T extends StoredObject > ObjectIterator < T > listLinks(Transaction transaction, int p2, Class < T > p3, String p4, boolean p5) {
         return null;
     }
 
@@ -737,7 +732,7 @@ public abstract class StoredObject {
         return null;
     }
 
-    public final < T extends StoredObject > ObjectIterator < T > listLinks(Transaction p1, int p2, Class < T > p3, String p4, String p5, boolean p6) {
+    public final < T extends StoredObject > ObjectIterator < T > listLinks(Transaction transaction, int p2, Class < T > p3, String p4, String p5, boolean p6) {
         return null;
     }
 
@@ -745,7 +740,7 @@ public abstract class StoredObject {
         return null;
     }
 
-    public final < T extends StoredObject > ObjectIterator < T > listLinks(Transaction p1, String p2, Class < T > p3, boolean p4) {
+    public final < T extends StoredObject > ObjectIterator < T > listLinks(Transaction transaction, String p2, Class < T > p3, boolean p4) {
         return null;
     }
 
@@ -753,7 +748,7 @@ public abstract class StoredObject {
         return null;
     }
 
-    public final < T extends StoredObject > ObjectIterator < T > listLinks(Transaction p1, String p2, Class < T > p3, String p4, boolean p5) {
+    public final < T extends StoredObject > ObjectIterator < T > listLinks(Transaction transaction, String p2, Class < T > p3, String p4, boolean p5) {
         return null;
     }
 
@@ -761,7 +756,7 @@ public abstract class StoredObject {
         return null;
     }
 
-    public final < T extends StoredObject > ObjectIterator < T > listLinks(Transaction p1, String p2, Class < T > p3, String p4, String p5, boolean p6) {
+    public final < T extends StoredObject > ObjectIterator < T > listLinks(Transaction transaction, String p2, Class < T > p3, String p4, String p5, boolean p6) {
         return null;
     }
 
@@ -812,7 +807,7 @@ public abstract class StoredObject {
         return null;
     }
 
-    public static < T extends StoredObject > ObjectIterator < T > listViaQuery(Transaction p1, Class < T > p2, Query p3) {
+    public static < T extends StoredObject > ObjectIterator < T > listViaQuery(Transaction transaction, Class < T > p2, Query p3) {
         return null;
     }
 
@@ -856,51 +851,51 @@ public abstract class StoredObject {
         return false;
 	}
 
-    public boolean existsLinks(Class <? extends StoredObject > p1) {
+    public boolean existsLinks(Class<? extends StoredObject> soClass) {
         return false;
     }
 
-    public boolean existsLinks(Class <? extends StoredObject > p1, boolean p2) {
+    public boolean existsLinks(Class<? extends StoredObject> soClass, boolean p2) {
         return false;
     }
 
-    public boolean existsLinks(Class <? extends StoredObject > p1, String p2) {
+    public boolean existsLinks(Class<? extends StoredObject> soClass, String condition) {
         return false;
     }
 
-    public boolean existsLinks(Class <? extends StoredObject > p1, String p2, boolean p3) {
+    public boolean existsLinks(Class<? extends StoredObject> soClass, String condition, boolean p3) {
         return false;
     }
 
-    public boolean existsLinks(String p1, Class <? extends StoredObject > p2) {
+    public boolean existsLinks(String p1, Class<? extends StoredObject> soClass) {
         return false;
     }
 
-    public boolean existsLinks(String p1, Class <? extends StoredObject > p2, boolean p3) {
+    public boolean existsLinks(String p1, Class<? extends StoredObject> soClass, boolean p3) {
         return false;
     }
 
-    public boolean existsLinks(String p1, Class <? extends StoredObject > p2, String p3) {
+    public boolean existsLinks(String p1, Class<? extends StoredObject> soClass, String condition) {
         return false;
     }
 
-    public boolean existsLinks(String p1, Class <? extends StoredObject > p2, String p3, boolean p4) {
+    public boolean existsLinks(String p1, Class<? extends StoredObject> soClass, String condition, boolean p4) {
         return false;
     }
 
-    public boolean existsLinks(int p1, Class <? extends StoredObject > p2) {
+    public boolean existsLinks(int p1, Class<? extends StoredObject> soClass) {
         return false;
     }
 
-    public boolean existsLinks(int p1, Class <? extends StoredObject > p2, boolean p3) {
+    public boolean existsLinks(int p1, Class<? extends StoredObject> soClass, boolean p3) {
         return false;
     }
 
-    public boolean existsLinks(int p1, Class <? extends StoredObject > p2, String p3) {
+    public boolean existsLinks(int p1, Class<? extends StoredObject> soClass, String condition) {
         return false;
     }
 
-    public boolean existsLinks(int p1, Class <? extends StoredObject > p2, String p3, boolean p4) {
+    public boolean existsLinks(int p1, Class<? extends StoredObject> soClass, String condition, boolean p4) {
         return false;
     }
     
@@ -952,243 +947,243 @@ public abstract class StoredObject {
 		return false;
 	}
 
-    public final Query queryLinks(Class <? extends StoredObject > p1, String p2) {
+    public final Query queryLinks(Class<? extends StoredObject> soClass, String condition) {
         return null;
     }
 
-    public final Query queryLinks(Transaction p1, Class <? extends StoredObject > p2, String p3) {
+    public final Query queryLinks(Transaction transaction, Class<? extends StoredObject> soClass, String condition) {
         return null;
     }
 
-    public final Query queryLinks(Class <? extends StoredObject > p1, String p2, String p3) {
+    public final Query queryLinks(Class<? extends StoredObject> soClass, String condition, String p3) {
         return null;
     }
 
-    public final Query queryLinks(Transaction p1, Class <? extends StoredObject > p2, String p3, String p4) {
+    public final Query queryLinks(Transaction transaction, Class<? extends StoredObject> soClass, String condition, String p4) {
         return null;
     }
 
-    public final Query queryLinks(Class <? extends StoredObject > p1, String p2, String p3, String p4) {
+    public final Query queryLinks(Class<? extends StoredObject> soClass, String condition, String p3, String p4) {
         return null;
     }
 
-    public final Query queryLinks(Transaction p1, Class <? extends StoredObject > p2, String p3, String p4, String p5) {
+    public final Query queryLinks(Transaction transaction, Class<? extends StoredObject> soClass, String condition, String p4, String p5) {
         return null;
     }
 
-    public final Query queryLinks(int p1, Class <? extends StoredObject > p2, String p3) {
+    public final Query queryLinks(int p1, Class<? extends StoredObject> soClass, String condition) {
         return null;
     }
 
-    public final Query queryLinks(Transaction p1, int p2, Class <? extends StoredObject > p3, String p4) {
+    public final Query queryLinks(Transaction transaction, int p2, Class<? extends StoredObject> soClass, String condition) {
         return null;
     }
 
-    public final Query queryLinks(int p1, Class <? extends StoredObject > p2, String p3, String p4) {
+    public final Query queryLinks(int p1, Class<? extends StoredObject> soClass, String condition, String p4) {
         return null;
     }
 
-    public final Query queryLinks(Transaction p1, int p2, Class <? extends StoredObject > p3, String p4, String p5) {
+    public final Query queryLinks(Transaction transaction, int p2, Class<? extends StoredObject> soClass, String condition, String p5) {
         return null;
     }
 
-    public final Query queryLinks(int p1, Class <? extends StoredObject > p2, String p3, String p4, String p5) {
+    public final Query queryLinks(int p1, Class<? extends StoredObject> soClass, String condition, String p4, String p5) {
         return null;
     }
 
-    public final Query queryLinks(Transaction p1, int p2, Class <? extends StoredObject > p3, String p4, String p5, String p6) {
+    public final Query queryLinks(Transaction transaction, int p2, Class<? extends StoredObject> soClass, String condition, String p5, String p6) {
         return null;
     }
 
-    public final Query queryLinks(String p1, Class <? extends StoredObject > p2, String p3) {
+    public final Query queryLinks(String p1, Class<? extends StoredObject> soClass, String condition) {
         return null;
     }
 
-    public final Query queryLinks(Transaction p1, String p2, Class <? extends StoredObject > p3, String p4) {
+    public final Query queryLinks(Transaction transaction, String p2, Class<? extends StoredObject> soClass, String condition) {
         return null;
     }
 
-    public final Query queryLinks(String p1, Class <? extends StoredObject > p2, String p3, String p4) {
+    public final Query queryLinks(String p1, Class<? extends StoredObject> soClass, String condition, String p4) {
         return null;
     }
 
-    public final Query queryLinks(Transaction p1, String p2, Class <? extends StoredObject > p3, String p4, String p5) {
+    public final Query queryLinks(Transaction transaction, String p2, Class<? extends StoredObject> soClass, String condition, String p5) {
         return null;
     }
 
-    public final Query queryLinks(String p1, Class <? extends StoredObject > p2, String p3, String p4, String p5) {
+    public final Query queryLinks(String p1, Class<? extends StoredObject> soClass, String condition, String p4, String p5) {
         return null;
     }
 
-    public final Query queryLinks(Transaction p1, String p2, Class <? extends StoredObject > p3, String p4, String p5, String p6) {
+    public final Query queryLinks(Transaction transaction, String p2, Class<? extends StoredObject> soClass, String condition, String p5, String p6) {
         return null;
     }
 
-    public final Query queryLinks(Class <? extends StoredObject > p1, String p2, boolean p3) {
+    public final Query queryLinks(Class<? extends StoredObject> soClass, String condition, boolean p3) {
         return null;
     }
 
-    public final Query queryLinks(Transaction p1, Class <? extends StoredObject > p2, String p3, boolean p4) {
+    public final Query queryLinks(Transaction transaction, Class<? extends StoredObject> soClass, String condition, boolean p4) {
         return null;
     }
 
-    public final Query queryLinks(Class <? extends StoredObject > p1, String p2, String p3, boolean p4) {
+    public final Query queryLinks(Class<? extends StoredObject> soClass, String condition, String p3, boolean p4) {
         return null;
     }
 
-    public final Query queryLinks(Transaction p1, Class <? extends StoredObject > p2, String p3, String p4, boolean p5) {
+    public final Query queryLinks(Transaction transaction, Class<? extends StoredObject> soClass, String condition, String p4, boolean p5) {
         return null;
     }
 
-    public final Query queryLinks(Class <? extends StoredObject > p1, String p2, String p3, String p4, boolean p5) {
+    public final Query queryLinks(Class<? extends StoredObject> soClass, String condition, String p3, String p4, boolean p5) {
         return null;
     }
 
-    public final Query queryLinks(Transaction p1, Class <? extends StoredObject > p2, String p3, String p4, String p5, boolean p6) {
+    public final Query queryLinks(Transaction transaction, Class<? extends StoredObject> soClass, String condition, String p4, String p5, boolean p6) {
         return null;
     }
 
-    public final Query queryLinks(int p1, Class <? extends StoredObject > p2, String p3, boolean p4) {
+    public final Query queryLinks(int p1, Class<? extends StoredObject> soClass, String condition, boolean p4) {
         return null;
     }
 
-    public final Query queryLinks(Transaction p1, int p2, Class <? extends StoredObject > p3, String p4, boolean p5) {
+    public final Query queryLinks(Transaction transaction, int p2, Class<? extends StoredObject> soClass, String condition, boolean p5) {
         return null;
     }
 
-    public final Query queryLinks(int p1, Class <? extends StoredObject > p2, String p3, String p4, boolean p5) {
+    public final Query queryLinks(int p1, Class<? extends StoredObject> soClass, String condition, String p4, boolean p5) {
         return null;
     }
 
-    public final Query queryLinks(Transaction p1, int p2, Class <? extends StoredObject > p3, String p4, String p5, boolean p6) {
+    public final Query queryLinks(Transaction transaction, int p2, Class<? extends StoredObject> soClass, String condition, String p5, boolean p6) {
         return null;
     }
 
-    public final Query queryLinks(int p1, Class <? extends StoredObject > p2, String p3, String p4, String p5, boolean p6) {
+    public final Query queryLinks(int p1, Class<? extends StoredObject> soClass, String condition, String p4, String p5, boolean p6) {
         return null;
     }
 
-    public final Query queryLinks(Transaction p1, int p2, Class <? extends StoredObject > p3, String p4, String p5, String p6, boolean p7) {
+    public final Query queryLinks(Transaction transaction, int p2, Class<? extends StoredObject> soClass, String condition, String p5, String p6, boolean p7) {
         return null;
     }
 
-    public final Query queryLinks(String p1, Class <? extends StoredObject > p2, String p3, boolean p4) {
+    public final Query queryLinks(String p1, Class<? extends StoredObject> soClass, String condition, boolean p4) {
         return null;
     }
 
-    public final Query queryLinks(Transaction p1, String p2, Class <? extends StoredObject > p3, String p4, boolean p5) {
+    public final Query queryLinks(Transaction transaction, String p2, Class<? extends StoredObject> soClass, String condition, boolean p5) {
         return null;
     }
 
-    public final Query queryLinks(String p1, Class <? extends StoredObject > p2, String p3, String p4, boolean p5) {
+    public final Query queryLinks(String p1, Class<? extends StoredObject> soClass, String condition, String p4, boolean p5) {
         return null;
     }
 
-    public final Query queryLinks(Transaction p1, String p2, Class <? extends StoredObject > p3, String p4, String p5, boolean p6) {
+    public final Query queryLinks(Transaction transaction, String p2, Class<? extends StoredObject> soClass, String condition, String p5, boolean p6) {
         return null;
     }
 
-    public final Query queryLinks(String p1, Class <? extends StoredObject > p2, String p3, String p4, String p5, boolean p6) {
+    public final Query queryLinks(String p1, Class<? extends StoredObject> soClass, String condition, String p4, String p5, boolean p6) {
         return null;
     }
 
-    public final Query queryLinks(Transaction p1, String p2, Class <? extends StoredObject > p3, String p4, String p5, String p6, boolean p7) {
+    public final Query queryLinks(Transaction transaction, String p2, Class<? extends StoredObject> soClass, String condition, String p5, String p6, boolean p7) {
         return null;
     }
 
-    public final int countLinks(Class <? extends StoredObject > p1) {
+    public final int countLinks(Class<? extends StoredObject> soClass) {
         return 0;
     }
 
-    public final int countLinks(Transaction p1, Class <? extends StoredObject > p2) {
+    public final int countLinks(Transaction transaction, Class<? extends StoredObject> soClass) {
         return 0;
     }
 
-    public final int countLinks(Class <? extends StoredObject > p1, String p2) {
+    public final int countLinks(Class<? extends StoredObject> soClass, String condition) {
         return 0;
     }
 
-    public final int countLinks(Transaction p1, Class <? extends StoredObject > p2, String p3) {
+    public final int countLinks(Transaction transaction, Class<? extends StoredObject> soClass, String condition) {
         return 0;
     }
 
-    public final int countLinks(int p1, Class <? extends StoredObject > p2) {
+    public final int countLinks(int p1, Class<? extends StoredObject> soClass) {
         return 0;
     }
 
-    public final int countLinks(Transaction p1, int p2, Class <? extends StoredObject > p3) {
+    public final int countLinks(Transaction transaction, int p2, Class<? extends StoredObject> soClass) {
         return 0;
     }
 
-    public final int countLinks(int p1, Class <? extends StoredObject > p2, String p3) {
+    public final int countLinks(int p1, Class<? extends StoredObject> soClass, String condition) {
         return 0;
     }
 
-    public final int countLinks(Transaction p1, int p2, Class <? extends StoredObject > p3, String p4) {
+    public final int countLinks(Transaction transaction, int p2, Class<? extends StoredObject> soClass, String condition) {
         return 0;
     }
 
-    public final int countLinks(String p1, Class <? extends StoredObject > p2) {
+    public final int countLinks(String p1, Class<? extends StoredObject> soClass) {
         return 0;
     }
 
-    public final int countLinks(Transaction p1, String p2, Class <? extends StoredObject > p3) {
+    public final int countLinks(Transaction transaction, String p2, Class<? extends StoredObject> soClass) {
         return 0;
     }
 
-    public final int countLinks(String p1, Class <? extends StoredObject > p2, String p3) {
+    public final int countLinks(String p1, Class<? extends StoredObject> soClass, String condition) {
         return 0;
     }
 
-    public final int countLinks(Transaction p1, String p2, Class <? extends StoredObject > p3, String p4) {
+    public final int countLinks(Transaction transaction, String p2, Class<? extends StoredObject> soClass, String condition) {
         return 0;
     }
 
-    public final int countLinks(Class <? extends StoredObject > p1, boolean p2) {
+    public final int countLinks(Class<? extends StoredObject> soClass, boolean p2) {
         return 0;
     }
 
-    public final int countLinks(Transaction p1, Class <? extends StoredObject > p2, boolean p3) {
+    public final int countLinks(Transaction transaction, Class<? extends StoredObject> soClass, boolean p3) {
         return 0;
     }
 
-    public final int countLinks(Class <? extends StoredObject > p1, String p2, boolean p3) {
+    public final int countLinks(Class<? extends StoredObject> soClass, String condition, boolean p3) {
         return 0;
     }
 
-    public final int countLinks(Transaction p1, Class <? extends StoredObject > p2, String p3, boolean p4) {
+    public final int countLinks(Transaction transaction, Class<? extends StoredObject> soClass, String condition, boolean p4) {
         return 0;
     }
 
-    public final int countLinks(int p1, Class <? extends StoredObject > p2, boolean p3) {
+    public final int countLinks(int p1, Class<? extends StoredObject> soClass, boolean p3) {
         return 0;
     }
 
-    public final int countLinks(Transaction p1, int p2, Class <? extends StoredObject > p3, boolean p4) {
+    public final int countLinks(Transaction transaction, int p2, Class<? extends StoredObject> soClass, boolean p4) {
         return 0;
     }
 
-    public final int countLinks(int p1, Class <? extends StoredObject > p2, String p3, boolean p4) {
+    public final int countLinks(int p1, Class<? extends StoredObject> soClass, String condition, boolean p4) {
         return 0;
     }
 
-    public final int countLinks(Transaction p1, int p2, Class <? extends StoredObject > p3, String p4, boolean p5) {
+    public final int countLinks(Transaction transaction, int p2, Class<? extends StoredObject> soClass, String condition, boolean p5) {
         return 0;
     }
 
-    public final int countLinks(String p1, Class <? extends StoredObject > p2, boolean p3) {
+    public final int countLinks(String p1, Class<? extends StoredObject> soClass, boolean p3) {
         return 0;
     }
 
-    public final int countLinks(Transaction p1, String p2, Class <? extends StoredObject > p3, boolean p4) {
+    public final int countLinks(Transaction transaction, String p2, Class<? extends StoredObject> soClass, boolean p4) {
         return 0;
     }
 
-    public final int countLinks(String p1, Class <? extends StoredObject > p2, String p3, boolean p4) {
+    public final int countLinks(String p1, Class<? extends StoredObject> soClass, String condition, boolean p4) {
         return 0;
     }
 
-    public final int countLinks(Transaction p1, String p2, Class <? extends StoredObject > p3, String p4, boolean p5) {
+    public final int countLinks(Transaction transaction, String p2, Class<? extends StoredObject> soClass, String condition, boolean p5) {
         return 0;
     }
 
@@ -1196,7 +1191,7 @@ public abstract class StoredObject {
         return null;
     }
 
-    public final < T extends StoredObject > ObjectIterator < T > listMasters(Transaction p1, Class < T > p2) {
+    public final < T extends StoredObject > ObjectIterator < T > listMasters(Transaction transaction, Class < T > p2) {
         return null;
     }
 
@@ -1204,7 +1199,7 @@ public abstract class StoredObject {
         return null;
     }
 
-    public final < T extends StoredObject > ObjectIterator < T > listMasters(Transaction p1, Class < T > p2, String p3) {
+    public final < T extends StoredObject > ObjectIterator < T > listMasters(Transaction transaction, Class < T > p2, String p3) {
         return null;
     }
 
@@ -1212,7 +1207,7 @@ public abstract class StoredObject {
         return null;
     }
 
-    public final < T extends StoredObject > ObjectIterator < T > listMasters(Transaction p1, Class < T > p2, String p3, String p4) {
+    public final < T extends StoredObject > ObjectIterator < T > listMasters(Transaction transaction, Class < T > p2, String p3, String p4) {
         return null;
     }
 
@@ -1220,7 +1215,7 @@ public abstract class StoredObject {
         return null;
     }
 
-    public final < T extends StoredObject > ObjectIterator < T > listMasters(Transaction p1, int p2, Class < T > p3) {
+    public final < T extends StoredObject > ObjectIterator < T > listMasters(Transaction transaction, int p2, Class < T > p3) {
         return null;
     }
 
@@ -1228,7 +1223,7 @@ public abstract class StoredObject {
         return null;
     }
 
-    public final < T extends StoredObject > ObjectIterator < T > listMasters(Transaction p1, int p2, Class < T > p3, String p4) {
+    public final < T extends StoredObject > ObjectIterator < T > listMasters(Transaction transaction, int p2, Class < T > p3, String p4) {
         return null;
     }
 
@@ -1236,7 +1231,7 @@ public abstract class StoredObject {
         return null;
     }
 
-    public final < T extends StoredObject > ObjectIterator < T > listMasters(Transaction p1, int p2, Class < T > p3, String p4, String p5) {
+    public final < T extends StoredObject > ObjectIterator < T > listMasters(Transaction transaction, int p2, Class < T > p3, String p4, String p5) {
         return null;
     }
 
@@ -1244,7 +1239,7 @@ public abstract class StoredObject {
         return null;
     }
 
-    public final < T extends StoredObject > ObjectIterator < T > listMasters(Transaction p1, String p2, Class < T > p3) {
+    public final < T extends StoredObject > ObjectIterator < T > listMasters(Transaction transaction, String p2, Class < T > p3) {
         return null;
     }
 
@@ -1252,7 +1247,7 @@ public abstract class StoredObject {
         return null;
     }
 
-    public final < T extends StoredObject > ObjectIterator < T > listMasters(Transaction p1, String p2, Class < T > p3, String p4) {
+    public final < T extends StoredObject > ObjectIterator < T > listMasters(Transaction transaction, String p2, Class < T > p3, String p4) {
         return null;
     }
 
@@ -1260,7 +1255,7 @@ public abstract class StoredObject {
         return null;
     }
 
-    public final < T extends StoredObject > ObjectIterator < T > listMasters(Transaction p1, String p2, Class < T > p3, String p4, String p5) {
+    public final < T extends StoredObject > ObjectIterator < T > listMasters(Transaction transaction, String p2, Class < T > p3, String p4, String p5) {
         return null;
     }
 
@@ -1268,7 +1263,7 @@ public abstract class StoredObject {
         return null;
     }
 
-    public final < T extends StoredObject > ObjectIterator < T > listMasters(Transaction p1, Class < T > p2, boolean p3) {
+    public final < T extends StoredObject > ObjectIterator < T > listMasters(Transaction transaction, Class < T > p2, boolean p3) {
         return null;
     }
 
@@ -1276,7 +1271,7 @@ public abstract class StoredObject {
         return null;
     }
 
-    public final < T extends StoredObject > ObjectIterator < T > listMasters(Transaction p1, Class < T > p2, String p3, boolean p4) {
+    public final < T extends StoredObject > ObjectIterator < T > listMasters(Transaction transaction, Class < T > p2, String p3, boolean p4) {
         return null;
     }
 
@@ -1284,7 +1279,7 @@ public abstract class StoredObject {
         return null;
     }
 
-    public final < T extends StoredObject > ObjectIterator < T > listMasters(Transaction p1, Class < T > p2, String p3, String p4, boolean p5) {
+    public final < T extends StoredObject > ObjectIterator < T > listMasters(Transaction transaction, Class < T > p2, String p3, String p4, boolean p5) {
         return null;
     }
 
@@ -1292,7 +1287,7 @@ public abstract class StoredObject {
         return null;
     }
 
-    public final < T extends StoredObject > ObjectIterator < T > listMasters(Transaction p1, int p2, Class < T > p3, boolean p4) {
+    public final < T extends StoredObject > ObjectIterator < T > listMasters(Transaction transaction, int p2, Class < T > p3, boolean p4) {
         return null;
     }
 
@@ -1300,7 +1295,7 @@ public abstract class StoredObject {
         return null;
     }
 
-    public final < T extends StoredObject > ObjectIterator < T > listMasters(Transaction p1, int p2, Class < T > p3, String p4, boolean p5) {
+    public final < T extends StoredObject > ObjectIterator < T > listMasters(Transaction transaction, int p2, Class < T > p3, String p4, boolean p5) {
         return null;
     }
 
@@ -1308,7 +1303,7 @@ public abstract class StoredObject {
         return null;
     }
 
-    public final < T extends StoredObject > ObjectIterator < T > listMasters(Transaction p1, int p2, Class < T > p3, String p4, String p5, boolean p6) {
+    public final < T extends StoredObject > ObjectIterator < T > listMasters(Transaction transaction, int p2, Class < T > p3, String p4, String p5, boolean p6) {
         return null;
     }
 
@@ -1316,7 +1311,7 @@ public abstract class StoredObject {
         return null;
     }
 
-    public final < T extends StoredObject > ObjectIterator < T > listMasters(Transaction p1, String p2, Class < T > p3, boolean p4) {
+    public final < T extends StoredObject > ObjectIterator < T > listMasters(Transaction transaction, String p2, Class < T > p3, boolean p4) {
         return null;
     }
 
@@ -1324,7 +1319,7 @@ public abstract class StoredObject {
         return null;
     }
 
-    public final < T extends StoredObject > ObjectIterator < T > listMasters(Transaction p1, String p2, Class < T > p3, String p4, boolean p5) {
+    public final < T extends StoredObject > ObjectIterator < T > listMasters(Transaction transaction, String p2, Class < T > p3, String p4, boolean p5) {
         return null;
     }
 
@@ -1332,7 +1327,7 @@ public abstract class StoredObject {
         return null;
     }
 
-    public final < T extends StoredObject > ObjectIterator < T > listMasters(Transaction p1, String p2, Class < T > p3, String p4, String p5, boolean p6) {
+    public final < T extends StoredObject > ObjectIterator < T > listMasters(Transaction transaction, String p2, Class < T > p3, String p4, String p5, boolean p6) {
         return null;
     }
 
@@ -1343,7 +1338,7 @@ public abstract class StoredObject {
         return null;
     }
 
-    public final < T extends StoredObject > T getMaster(Transaction p1, Class < T > p2) {
+    public final < T extends StoredObject > T getMaster(Transaction transaction, Class < T > p2) {
         return null;
     }
 
@@ -1351,7 +1346,7 @@ public abstract class StoredObject {
         return null;
     }
 
-    public final < T extends StoredObject > T getMaster(Transaction p1, Class < T > p2, String p3) {
+    public final < T extends StoredObject > T getMaster(Transaction transaction, Class < T > p2, String p3) {
         return null;
     }
 
@@ -1359,7 +1354,7 @@ public abstract class StoredObject {
         return null;
     }
 
-    public final < T extends StoredObject > T getMaster(Transaction p1, Class < T > p2, String p3, String p4) {
+    public final < T extends StoredObject > T getMaster(Transaction transaction, Class < T > p2, String p3, String p4) {
         return null;
     }
 
@@ -1367,7 +1362,7 @@ public abstract class StoredObject {
         return null;
     }
 
-    public final < T extends StoredObject > T getMaster(Transaction p1, int p2, Class < T > p3) {
+    public final < T extends StoredObject > T getMaster(Transaction transaction, int p2, Class < T > p3) {
         return null;
     }
 
@@ -1375,7 +1370,7 @@ public abstract class StoredObject {
         return null;
     }
 
-    public final < T extends StoredObject > T getMaster(Transaction p1, int p2, Class < T > p3, String p4) {
+    public final < T extends StoredObject > T getMaster(Transaction transaction, int p2, Class < T > p3, String p4) {
         return null;
     }
 
@@ -1383,7 +1378,7 @@ public abstract class StoredObject {
         return null;
     }
 
-    public final < T extends StoredObject > T getMaster(Transaction p1, int p2, Class < T > p3, String p4, String p5) {
+    public final < T extends StoredObject > T getMaster(Transaction transaction, int p2, Class < T > p3, String p4, String p5) {
         return null;
     }
 
@@ -1391,7 +1386,7 @@ public abstract class StoredObject {
         return null;
     }
 
-    public final < T extends StoredObject > T getMaster(Transaction p1, String p2, Class < T > p3) {
+    public final < T extends StoredObject > T getMaster(Transaction transaction, String p2, Class < T > p3) {
         return null;
     }
 
@@ -1399,7 +1394,7 @@ public abstract class StoredObject {
         return null;
     }
 
-    public final < T extends StoredObject > T getMaster(Transaction p1, String p2, Class < T > p3, String p4) {
+    public final < T extends StoredObject > T getMaster(Transaction transaction, String p2, Class < T > p3, String p4) {
         return null;
     }
 
@@ -1407,7 +1402,7 @@ public abstract class StoredObject {
         return null;
     }
 
-    public final < T extends StoredObject > T getMaster(Transaction p1, String p2, Class < T > p3, String p4, String p5) {
+    public final < T extends StoredObject > T getMaster(Transaction transaction, String p2, Class < T > p3, String p4, String p5) {
         return null;
     }
 
@@ -1415,7 +1410,7 @@ public abstract class StoredObject {
         return null;
     }
 
-    public final < T extends StoredObject > T getMaster(Transaction p1, Class < T > p2, boolean p3) {
+    public final < T extends StoredObject > T getMaster(Transaction transaction, Class < T > p2, boolean p3) {
         return null;
     }
 
@@ -1423,7 +1418,7 @@ public abstract class StoredObject {
         return null;
     }
 
-    public final < T extends StoredObject > T getMaster(Transaction p1, Class < T > p2, String p3, boolean p4) {
+    public final < T extends StoredObject > T getMaster(Transaction transaction, Class < T > p2, String p3, boolean p4) {
         return null;
     }
 
@@ -1431,7 +1426,7 @@ public abstract class StoredObject {
         return null;
     }
 
-    public final < T extends StoredObject > T getMaster(Transaction p1, Class < T > p2, String p3, String p4, boolean p5) {
+    public final < T extends StoredObject > T getMaster(Transaction transaction, Class < T > p2, String p3, String p4, boolean p5) {
         return null;
     }
 
@@ -1439,7 +1434,7 @@ public abstract class StoredObject {
         return null;
     }
 
-    public final < T extends StoredObject > T getMaster(Transaction p1, int p2, Class < T > p3, boolean p4) {
+    public final < T extends StoredObject > T getMaster(Transaction transaction, int p2, Class < T > p3, boolean p4) {
         return null;
     }
 
@@ -1447,7 +1442,7 @@ public abstract class StoredObject {
         return null;
     }
 
-    public final < T extends StoredObject > T getMaster(Transaction p1, int p2, Class < T > p3, String p4, boolean p5) {
+    public final < T extends StoredObject > T getMaster(Transaction transaction, int p2, Class < T > p3, String p4, boolean p5) {
         return null;
     }
 
@@ -1455,7 +1450,7 @@ public abstract class StoredObject {
         return null;
     }
 
-    public final < T extends StoredObject > T getMaster(Transaction p1, int p2, Class < T > p3, String p4, String p5, boolean p6) {
+    public final < T extends StoredObject > T getMaster(Transaction transaction, int p2, Class < T > p3, String p4, String p5, boolean p6) {
         return null;
     }
 
@@ -1463,7 +1458,7 @@ public abstract class StoredObject {
         return null;
     }
 
-    public final < T extends StoredObject > T getMaster(Transaction p1, String p2, Class < T > p3, boolean p4) {
+    public final < T extends StoredObject > T getMaster(Transaction transaction, String p2, Class < T > p3, boolean p4) {
         return null;
     }
 
@@ -1471,7 +1466,7 @@ public abstract class StoredObject {
         return null;
     }
 
-    public final < T extends StoredObject > T getMaster(Transaction p1, String p2, Class < T > p3, String p4, boolean p5) {
+    public final < T extends StoredObject > T getMaster(Transaction transaction, String p2, Class < T > p3, String p4, boolean p5) {
         return null;
     }
 
@@ -1479,7 +1474,7 @@ public abstract class StoredObject {
         return null;
     }
 
-    public final < T extends StoredObject > T getMaster(Transaction p1, String p2, Class < T > p3, String p4, String p5, boolean p6) {
+    public final < T extends StoredObject > T getMaster(Transaction transaction, String p2, Class < T > p3, String p4, String p5, boolean p6) {
         return null;
     }
 
@@ -1495,291 +1490,291 @@ public abstract class StoredObject {
         return false;
     }
 
-    public boolean existsMasters(Class <? extends StoredObject > p1) {
+    public boolean existsMasters(Class<? extends StoredObject> soClass) {
         return false;
     }
 
-    public boolean existsMasters(Class <? extends StoredObject > p1, boolean p2) {
+    public boolean existsMasters(Class<? extends StoredObject> soClass, boolean p2) {
         return false;
     }
 
-    public boolean existsMasters(Class <? extends StoredObject > p1, String p2) {
+    public boolean existsMasters(Class<? extends StoredObject> soClass, String condition) {
         return false;
     }
 
-    public boolean existsMasters(Class <? extends StoredObject > p1, String p2, boolean p3) {
+    public boolean existsMasters(Class<? extends StoredObject> soClass, String condition, boolean p3) {
         return false;
     }
 
-    public boolean existsMasters(String p1, Class <? extends StoredObject > p2) {
+    public boolean existsMasters(String p1, Class<? extends StoredObject> soClass) {
         return false;
     }
 
-    public boolean existsMasters(String p1, Class <? extends StoredObject > p2, boolean p3) {
+    public boolean existsMasters(String p1, Class<? extends StoredObject> soClass, boolean p3) {
         return false;
     }
 
-    public boolean existsMasters(String p1, Class <? extends StoredObject > p2, String p3) {
+    public boolean existsMasters(String p1, Class<? extends StoredObject> soClass, String condition) {
         return false;
     }
 
-    public boolean existsMasters(String p1, Class <? extends StoredObject > p2, String p3, boolean p4) {
+    public boolean existsMasters(String p1, Class<? extends StoredObject> soClass, String condition, boolean p4) {
         return false;
     }
 
-    public boolean existsMasters(int p1, Class <? extends StoredObject > p2) {
+    public boolean existsMasters(int p1, Class<? extends StoredObject> soClass) {
         return false;
     }
 
-    public boolean existsMasters(int p1, Class <? extends StoredObject > p2, boolean p3) {
+    public boolean existsMasters(int p1, Class<? extends StoredObject> soClass, boolean p3) {
         return false;
     }
 
-    public boolean existsMasters(int p1, Class <? extends StoredObject > p2, String p3) {
+    public boolean existsMasters(int p1, Class<? extends StoredObject> soClass, String condition) {
         return false;
     }
 
-    public boolean existsMasters(int p1, Class <? extends StoredObject > p2, String p3, boolean p4) {
+    public boolean existsMasters(int p1, Class<? extends StoredObject> soClass, String condition, boolean p4) {
         return false;
     }
 
-    public final Query queryMasters(Class <? extends StoredObject > p1, String p2) {
+    public final Query queryMasters(Class<? extends StoredObject> soClass, String condition) {
         return null;
     }
 
-    public final Query queryMasters(Transaction p1, Class <? extends StoredObject > p2, String p3) {
+    public final Query queryMasters(Transaction transaction, Class<? extends StoredObject> soClass, String condition) {
         return null;
     }
 
-    public final Query queryMasters(Class <? extends StoredObject > p1, String p2, String p3) {
+    public final Query queryMasters(Class<? extends StoredObject> soClass, String condition, String p3) {
         return null;
     }
 
-    public final Query queryMasters(Transaction p1, Class <? extends StoredObject > p2, String p3, String p4) {
+    public final Query queryMasters(Transaction transaction, Class<? extends StoredObject> soClass, String condition, String p4) {
         return null;
     }
 
-    public final Query queryMasters(Class <? extends StoredObject > p1, String p2, String p3, String p4) {
+    public final Query queryMasters(Class<? extends StoredObject> soClass, String condition, String p3, String p4) {
         return null;
     }
 
-    public final Query queryMasters(Transaction p1, Class <? extends StoredObject > p2, String p3, String p4, String p5) {
+    public final Query queryMasters(Transaction transaction, Class<? extends StoredObject> soClass, String condition, String p4, String p5) {
         return null;
     }
 
-    public final Query queryMasters(int p1, Class <? extends StoredObject > p2, String p3) {
+    public final Query queryMasters(int p1, Class<? extends StoredObject> soClass, String condition) {
         return null;
     }
 
-    public final Query queryMasters(Transaction p1, int p2, Class <? extends StoredObject > p3, String p4) {
+    public final Query queryMasters(Transaction transaction, int p2, Class<? extends StoredObject> soClass, String condition) {
         return null;
     }
 
-    public final Query queryMasters(int p1, Class <? extends StoredObject > p2, String p3, String p4) {
+    public final Query queryMasters(int p1, Class<? extends StoredObject> soClass, String condition, String p4) {
         return null;
     }
 
-    public final Query queryMasters(Transaction p1, int p2, Class <? extends StoredObject > p3, String p4, String p5) {
+    public final Query queryMasters(Transaction transaction, int p2, Class<? extends StoredObject> soClass, String condition, String p5) {
         return null;
     }
 
-    public final Query queryMasters(int p1, Class <? extends StoredObject > p2, String p3, String p4, String p5) {
+    public final Query queryMasters(int p1, Class<? extends StoredObject> soClass, String condition, String p4, String p5) {
         return null;
     }
 
-    public final Query queryMasters(Transaction p1, int p2, Class <? extends StoredObject > p3, String p4, String p5, String p6) {
+    public final Query queryMasters(Transaction transaction, int p2, Class<? extends StoredObject> soClass, String condition, String p5, String p6) {
         return null;
     }
 
-    public final Query queryMasters(String p1, Class <? extends StoredObject > p2, String p3) {
+    public final Query queryMasters(String p1, Class<? extends StoredObject> soClass, String condition) {
         return null;
     }
 
-    public final Query queryMasters(Transaction p1, String p2, Class <? extends StoredObject > p3, String p4) {
+    public final Query queryMasters(Transaction transaction, String p2, Class<? extends StoredObject> soClass, String condition) {
         return null;
     }
 
-    public final Query queryMasters(String p1, Class <? extends StoredObject > p2, String p3, String p4) {
+    public final Query queryMasters(String p1, Class<? extends StoredObject> soClass, String condition, String p4) {
         return null;
     }
 
-    public final Query queryMasters(Transaction p1, String p2, Class <? extends StoredObject > p3, String p4, String p5) {
+    public final Query queryMasters(Transaction transaction, String p2, Class<? extends StoredObject> soClass, String condition, String p5) {
         return null;
     }
 
-    public final Query queryMasters(String p1, Class <? extends StoredObject > p2, String p3, String p4, String p5) {
+    public final Query queryMasters(String p1, Class<? extends StoredObject> soClass, String condition, String p4, String p5) {
         return null;
     }
 
-    public final Query queryMasters(Transaction p1, String p2, Class <? extends StoredObject > p3, String p4, String p5, String p6) {
+    public final Query queryMasters(Transaction transaction, String p2, Class<? extends StoredObject> soClass, String condition, String p5, String p6) {
         return null;
     }
 
-    public final Query queryMasters(Class <? extends StoredObject > p1, String p2, boolean p3) {
+    public final Query queryMasters(Class<? extends StoredObject> soClass, String condition, boolean p3) {
         return null;
     }
 
-    public final Query queryMasters(Transaction p1, Class <? extends StoredObject > p2, String p3, boolean p4) {
+    public final Query queryMasters(Transaction transaction, Class<? extends StoredObject> soClass, String condition, boolean p4) {
         return null;
     }
 
-    public final Query queryMasters(Class <? extends StoredObject > p1, String p2, String p3, boolean p4) {
+    public final Query queryMasters(Class<? extends StoredObject> soClass, String condition, String p3, boolean p4) {
         return null;
     }
 
-    public final Query queryMasters(Transaction p1, Class <? extends StoredObject > p2, String p3, String p4, boolean p5) {
+    public final Query queryMasters(Transaction transaction, Class<? extends StoredObject> soClass, String condition, String p4, boolean p5) {
         return null;
     }
 
-    public final Query queryMasters(Class <? extends StoredObject > p1, String p2, String p3, String p4, boolean p5) {
+    public final Query queryMasters(Class<? extends StoredObject> soClass, String condition, String p3, String p4, boolean p5) {
         return null;
     }
 
-    public final Query queryMasters(Transaction p1, Class <? extends StoredObject > p2, String p3, String p4, String p5, boolean p6) {
+    public final Query queryMasters(Transaction transaction, Class<? extends StoredObject> soClass, String condition, String p4, String p5, boolean p6) {
         return null;
     }
 
-    public final Query queryMasters(int p1, Class <? extends StoredObject > p2, String p3, boolean p4) {
+    public final Query queryMasters(int p1, Class<? extends StoredObject> soClass, String condition, boolean p4) {
         return null;
     }
 
-    public final Query queryMasters(Transaction p1, int p2, Class <? extends StoredObject > p3, String p4, boolean p5) {
+    public final Query queryMasters(Transaction transaction, int p2, Class<? extends StoredObject> soClass, String condition, boolean p5) {
         return null;
     }
 
-    public final Query queryMasters(int p1, Class <? extends StoredObject > p2, String p3, String p4, boolean p5) {
+    public final Query queryMasters(int p1, Class<? extends StoredObject> soClass, String condition, String p4, boolean p5) {
         return null;
     }
 
-    public final Query queryMasters(Transaction p1, int p2, Class <? extends StoredObject > p3, String p4, String p5, boolean p6) {
+    public final Query queryMasters(Transaction transaction, int p2, Class<? extends StoredObject> soClass, String condition, String p5, boolean p6) {
         return null;
     }
 
-    public final Query queryMasters(int p1, Class <? extends StoredObject > p2, String p3, String p4, String p5, boolean p6) {
+    public final Query queryMasters(int p1, Class<? extends StoredObject> soClass, String condition, String p4, String p5, boolean p6) {
         return null;
     }
 
-    public final Query queryMasters(Transaction p1, int p2, Class <? extends StoredObject > p3, String p4, String p5, String p6, boolean p7) {
+    public final Query queryMasters(Transaction transaction, int p2, Class<? extends StoredObject> soClass, String condition, String p5, String p6, boolean p7) {
         return null;
     }
 
-    public final Query queryMasters(String p1, Class <? extends StoredObject > p2, String p3, boolean p4) {
+    public final Query queryMasters(String p1, Class<? extends StoredObject> soClass, String condition, boolean p4) {
         return null;
     }
 
-    public final Query queryMasters(Transaction p1, String p2, Class <? extends StoredObject > p3, String p4, boolean p5) {
+    public final Query queryMasters(Transaction transaction, String p2, Class<? extends StoredObject> soClass, String condition, boolean p5) {
         return null;
     }
 
-    public final Query queryMasters(String p1, Class <? extends StoredObject > p2, String p3, String p4, boolean p5) {
+    public final Query queryMasters(String p1, Class<? extends StoredObject> soClass, String condition, String p4, boolean p5) {
         return null;
     }
 
-    public final Query queryMasters(Transaction p1, String p2, Class <? extends StoredObject > p3, String p4, String p5, boolean p6) {
+    public final Query queryMasters(Transaction transaction, String p2, Class<? extends StoredObject> soClass, String condition, String p5, boolean p6) {
         return null;
     }
 
-    public final Query queryMasters(String p1, Class <? extends StoredObject > p2, String p3, String p4, String p5, boolean p6) {
+    public final Query queryMasters(String p1, Class<? extends StoredObject> soClass, String condition, String p4, String p5, boolean p6) {
         return null;
     }
 
-    public final Query queryMasters(Transaction p1, String p2, Class <? extends StoredObject > p3, String p4, String p5, String p6, boolean p7) {
+    public final Query queryMasters(Transaction transaction, String p2, Class<? extends StoredObject> soClass, String condition, String p5, String p6, boolean p7) {
         return null;
     }
 
-    public final int countMasters(Class <? extends StoredObject > p1) {
+    public final int countMasters(Class<? extends StoredObject> soClass) {
         return 0;
     }
 
-    public final int countMasters(Transaction p1, Class <? extends StoredObject > p2) {
+    public final int countMasters(Transaction transaction, Class<? extends StoredObject> soClass) {
         return 0;
     }
 
-    public final int countMasters(Class <? extends StoredObject > p1, String p2) {
+    public final int countMasters(Class<? extends StoredObject> soClass, String condition) {
         return 0;
     }
 
-    public final int countMasters(Transaction p1, Class <? extends StoredObject > p2, String p3) {
+    public final int countMasters(Transaction transaction, Class<? extends StoredObject> soClass, String condition) {
         return 0;
     }
 
-    public final int countMasters(int p1, Class <? extends StoredObject > p2) {
+    public final int countMasters(int p1, Class<? extends StoredObject> soClass) {
         return 0;
     }
 
-    public final int countMasters(Transaction p1, int p2, Class <? extends StoredObject > p3) {
+    public final int countMasters(Transaction transaction, int p2, Class<? extends StoredObject> soClass) {
         return 0;
     }
 
-    public final int countMasters(int p1, Class <? extends StoredObject > p2, String p3) {
+    public final int countMasters(int p1, Class<? extends StoredObject> soClass, String condition) {
         return 0;
     }
 
-    public final int countMasters(Transaction p1, int p2, Class <? extends StoredObject > p3, String p4) {
+    public final int countMasters(Transaction transaction, int p2, Class<? extends StoredObject> soClass, String condition) {
         return 0;
     }
 
-    public final int countMasters(String p1, Class <? extends StoredObject > p2) {
+    public final int countMasters(String p1, Class<? extends StoredObject> soClass) {
         return 0;
     }
 
-    public final int countMasters(Transaction p1, String p2, Class <? extends StoredObject > p3) {
+    public final int countMasters(Transaction transaction, String p2, Class<? extends StoredObject> soClass) {
         return 0;
     }
 
-    public final int countMasters(String p1, Class <? extends StoredObject > p2, String p3) {
+    public final int countMasters(String p1, Class<? extends StoredObject> soClass, String condition) {
         return 0;
     }
 
-    public final int countMasters(Transaction p1, String p2, Class <? extends StoredObject > p3, String p4) {
+    public final int countMasters(Transaction transaction, String p2, Class<? extends StoredObject> soClass, String condition) {
         return 0;
     }
 
-    public final int countMasters(Class <? extends StoredObject > p1, boolean p2) {
+    public final int countMasters(Class<? extends StoredObject> soClass, boolean p2) {
         return 0;
     }
 
-    public final int countMasters(Transaction p1, Class <? extends StoredObject > p2, boolean p3) {
+    public final int countMasters(Transaction transaction, Class<? extends StoredObject> soClass, boolean p3) {
         return 0;
     }
 
-    public final int countMasters(Class <? extends StoredObject > p1, String p2, boolean p3) {
+    public final int countMasters(Class<? extends StoredObject> soClass, String condition, boolean p3) {
         return 0;
     }
 
-    public final int countMasters(Transaction p1, Class <? extends StoredObject > p2, String p3, boolean p4) {
+    public final int countMasters(Transaction transaction, Class<? extends StoredObject> soClass, String condition, boolean p4) {
         return 0;
     }
 
-    public final int countMasters(int p1, Class <? extends StoredObject > p2, boolean p3) {
+    public final int countMasters(int p1, Class<? extends StoredObject> soClass, boolean p3) {
         return 0;
     }
 
-    public final int countMasters(Transaction p1, int p2, Class <? extends StoredObject > p3, boolean p4) {
+    public final int countMasters(Transaction transaction, int p2, Class<? extends StoredObject> soClass, boolean p4) {
         return 0;
     }
 
-    public final int countMasters(int p1, Class <? extends StoredObject > p2, String p3, boolean p4) {
+    public final int countMasters(int p1, Class<? extends StoredObject> soClass, String condition, boolean p4) {
         return 0;
     }
 
-    public final int countMasters(Transaction p1, int p2, Class <? extends StoredObject > p3, String p4, boolean p5) {
+    public final int countMasters(Transaction transaction, int p2, Class<? extends StoredObject> soClass, String condition, boolean p5) {
         return 0;
     }
 
-    public final int countMasters(String p1, Class <? extends StoredObject > p2, boolean p3) {
+    public final int countMasters(String p1, Class<? extends StoredObject> soClass, boolean p3) {
         return 0;
     }
 
-    public final int countMasters(Transaction p1, String p2, Class <? extends StoredObject > p3, boolean p4) {
+    public final int countMasters(Transaction transaction, String p2, Class<? extends StoredObject> soClass, boolean p4) {
         return 0;
     }
 
-    public final int countMasters(String p1, Class <? extends StoredObject > p2, String p3, boolean p4) {
+    public final int countMasters(String p1, Class<? extends StoredObject> soClass, String condition, boolean p4) {
         return 0;
     }
 
-    public final int countMasters(Transaction p1, String p2, Class <? extends StoredObject > p3, String p4, boolean p5) {
+    public final int countMasters(Transaction transaction, String p2, Class<? extends StoredObject> soClass, String condition, boolean p5) {
         return 0;
     }
 

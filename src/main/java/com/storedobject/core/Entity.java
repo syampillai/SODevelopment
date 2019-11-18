@@ -48,20 +48,4 @@ public class Entity extends StoredObject {
     public SystemEntity getSystemEntity() {
         return null;
     }
-    
-    public String getContact(String contactType) {
-        return null;
-    }
-    
-    public String getContact(Id contactTypeId) {
-        return null;
-    }
-    
-    public static String getContact(Id entityId, String contactType) {
-        return null;
-    }
-    
-    public static String getContact(Id entityId, Id contactTypeId) {
-        return null;
-    }
 }

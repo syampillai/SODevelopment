@@ -34,6 +34,13 @@ public class ContactType extends StoredObject {
         return null;
     }
 
+    public int getGroupingCode() {
+        return 0;
+    }
+
+    public void setGroupingCode(int groupingCode) {
+    }
+
     public void setDisplayOrder(int displayOrder) {
     }
 

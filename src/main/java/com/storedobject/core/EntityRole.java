@@ -2,7 +2,7 @@ package com.storedobject.core;
 
 import java.math.BigDecimal;
 
-public class EntityRole extends StoredObject implements OfEntity {
+public class EntityRole extends StoredObject implements OfEntity, HasBusinessContacts {
 
     public EntityRole() {
     }
@@ -75,20 +75,8 @@ public class EntityRole extends StoredObject implements OfEntity {
     public static <T extends EntityRole> ObjectIterator<T> listByName(final SystemEntity systemEntity, final Class<T> roleClass, String name, final boolean any) {
         return null;
     }
-    
-    public String getContact(String contactType) {
-        return null;
-    }
-    
-    public String getContact(Id contactTypeId) {
-        return null;
-    }
-    
-    public static String getContact(Id entityId, String contactType) {
-        return null;
-    }
-    
-    public static String getContact(Id entityId, Id contactTypeId) {
+
+    public Id getContactOwnerId() {
         return null;
     }
 }
