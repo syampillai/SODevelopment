@@ -109,21 +109,6 @@ public class DetailLinkGrid<T extends StoredObject> extends EditableObjectGrid<T
     }
 
     @Override
-    public boolean isEdited() {
-        return isReadOnly() && getEditableList().isChanged();
-    }
-
-    @Override
-    public boolean isDirect() {
-        return false;
-    }
-
-    @Override
-    public void setDirect(boolean direct) {
-
-    }
-
-    @Override
     public boolean isEnabled() {
         return super.isEnabled();
     }

@@ -14,27 +14,6 @@ public final class LinkGridButtons<T extends StoredObject> extends ButtonLayout 
     public void changed() {
     }
 
-    public final boolean isAllowDirectAdd() {
-        return false;
-    }
-
-    public void setAllowDirectAdd(boolean allowDirectAdd) {
-    }
-
-    public final boolean isAllowDirectEdit() {
-        return false;
-    }
-
-    public void setAllowDirectEdit(boolean allowDirectEdit) {
-    }
-
-    public final boolean isAllowDirectDelete() {
-        return false;
-    }
-
-    public void setAllowDirectDelete(boolean allowDirectDelete) {
-    }
-
     public final boolean isAllowAdd() {
         return false;
     }

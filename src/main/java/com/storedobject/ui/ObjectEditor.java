@@ -105,10 +105,6 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T> 
     protected void addExtraEditingButtons() {
     }
 
-    public boolean linkFieldEdited() {
-        return true;
-    }
-
     public boolean isEditing() {
         return false;
     }
@@ -298,6 +294,9 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T> 
 
     @Override
     protected void attachField(String fieldName, HasValue<?, ?> field) {
+    }
+
+    protected void customizeLinkField(ObjectLinkField<?> field) {
     }
 
     protected void attachLinkField(ObjectLinkField<?> field) {

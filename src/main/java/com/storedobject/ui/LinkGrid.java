@@ -32,12 +32,6 @@ public interface LinkGrid<T extends StoredObject> extends StoredObjectLink<T> {
 
     void reloadAll();
 
-    boolean isEdited();
-
-    boolean isDirect();
-
-    void setDirect(boolean direct);
-
     boolean isReadOnly();
 
     void setReadOnly(boolean readOnly);
@@ -95,27 +89,6 @@ public interface LinkGrid<T extends StoredObject> extends StoredObjectLink<T> {
 
     default ObjectEditor<T> constructObjectEditor() {
         return null;
-    }
-
-    default boolean isAllowDirectAdd() {
-        return false;
-    }
-
-    default void setAllowDirectAdd(boolean allowDirectAdd) {
-    }
-
-    default boolean isAllowDirectEdit() {
-        return false;
-    }
-
-    default void setAllowDirectEdit(boolean allowDirectEdit) {
-    }
-
-    default boolean isAllowDirectDelete() {
-        return false;
-    }
-
-    default void setAllowDirectDelete(boolean allowDirectDelete) {
     }
 
     default boolean isAllowAdd() {
@@ -205,5 +178,11 @@ public interface LinkGrid<T extends StoredObject> extends StoredObjectLink<T> {
     }
 
     default void clear() {
+    }
+
+    default void saveEdited() {
+    }
+
+    default void cancelEditing() {
     }
 }

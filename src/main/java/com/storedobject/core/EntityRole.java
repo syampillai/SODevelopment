@@ -2,7 +2,7 @@ package com.storedobject.core;
 
 import java.math.BigDecimal;
 
-public class EntityRole extends StoredObject implements OfEntity, HasBusinessContacts {
+public class EntityRole extends StoredObject implements OfEntity, HasContacts {
 
     public EntityRole() {
     }

@@ -1,14 +1,24 @@
 package com.storedobject.core;
 
-public interface HasContacts extends AbstractHasContacts {
+public interface HasContacts {
 
-    @Override
     default ObjectIterator<ContactType> listContactTypes() {
         return null;
     }
 
-    @Override
     default ObjectIterator<Contact> listContacts() {
         return null;
+    }
+
+    default String getContact(String contactType) {
+        return null;
+    }
+
+    default Id getContactOwnerId() {
+        return ((StoredObject)this).getId();
+    }
+
+    default int getContactGroupingCode() {
+        return 0;
     }
 }

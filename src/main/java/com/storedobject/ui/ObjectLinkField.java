@@ -44,10 +44,6 @@ public final class ObjectLinkField<T extends StoredObject> extends CustomField<S
         return null;
     }
 
-    public boolean isEdited() {
-        return false;
-    }
-
     public void edited(T object) {
     }
 
@@ -60,37 +56,12 @@ public final class ObjectLinkField<T extends StoredObject> extends CustomField<S
     public void reloaded(T object) {
     }
 
-    public boolean isEdited(T object) {
-        return false;
-    }
-
     public boolean isAdded(T object) {
         return false;
     }
 
     public boolean isDeleted(T object) {
         return false;
-    }
-
-    public final boolean isAllowDirectAdd() {
-        return false;
-    }
-
-    public void setAllowDirectAdd(boolean allowDirectAdd) {
-    }
-
-    public final boolean isAllowDirectEdit() {
-        return false;
-    }
-
-    public void setAllowDirectEdit(boolean allowDirectEdit) {
-    }
-
-    public final boolean isAllowDirectDelete() {
-        return false;
-    }
-
-    public void setAllowDirectDelete(boolean allowDirectDelete) {
     }
 
     public final boolean isAllowAdd() {
