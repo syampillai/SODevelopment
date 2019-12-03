@@ -5,13 +5,16 @@ import com.storedobject.core.JavaClassLoader;
 import com.storedobject.core.ObjectSearchBuilder;
 import com.storedobject.core.StoredObject;
 import com.storedobject.ui.util.ObjectDataProvider;
+import com.vaadin.flow.component.HasValue;
+import com.vaadin.flow.component.grid.editor.Editor;
 
 import java.util.List;
+import java.util.stream.Stream;
 
 import static com.storedobject.core.EditorAction.ALL;
 import static com.storedobject.core.EditorAction.ALLOW_ANY;
 
-public class ObjectBrowser<T extends StoredObject> extends ObjectGrid<T> {
+public class ObjectBrowser<T extends StoredObject> extends ObjectGrid<T> implements EditableDataGrid {
 
     public ObjectBrowser(Class<T> objectClass) {
         this(objectClass, (String)null);
@@ -133,7 +136,15 @@ public class ObjectBrowser<T extends StoredObject> extends ObjectGrid<T> {
         return null;
     }
 
+    public final ObjectEditor<T> getRowEditor() {
+        return null;
+    }
+
     protected ObjectEditor<T> createObjectEditor() {
+        return null;
+    }
+
+    protected ObjectEditor<T> constructObjectEditor() {
         return null;
     }
 
@@ -144,6 +155,41 @@ public class ObjectBrowser<T extends StoredObject> extends ObjectGrid<T> {
 
     @Override
     public ObjectSearchBuilder<T> getSearchBuilder() {
+        return null;
+    }
+
+    public void setReadOnly(boolean readOnly) {
+    }
+
+    public final boolean isReadOnly() {
+        return false;
+    }
+
+    @Override
+    protected final Editor<T> createEditor() {
+        return null;
+    }
+
+    public void editRow(T item) {
+    }
+
+    public void cancelRowEdit() {
+    }
+
+    public void saveEditedRow() {
+    }
+
+    public final T getEditingItem() {
+        return null;
+    }
+
+    @Override
+    public boolean isColumnEditable(String columnName) {
+        return false;
+    }
+
+    @Override
+    public Stream<HasValue<?, ?>> streamEditableFields() {
         return null;
     }
 }

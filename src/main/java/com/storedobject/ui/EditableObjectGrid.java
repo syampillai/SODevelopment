@@ -5,12 +5,14 @@ import com.storedobject.core.ObjectSetter;
 import com.storedobject.core.StoredObject;
 import com.storedobject.ui.util.ObjectDataProvider;
 import com.storedobject.ui.util.ObjectGridData;
+import com.vaadin.flow.component.HasValue;
 
 import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Predicate;
+import java.util.stream.Stream;
 
-public class EditableObjectGrid<T extends StoredObject> extends EditableGrid<T> implements ObjectGridData<T> {
+public class EditableObjectGrid<T extends StoredObject> extends EditableGrid<T> implements ObjectGridData<T>, EditableDataGrid {
 
     ObjectSetter objectSetter;
 
@@ -119,7 +121,8 @@ public class EditableObjectGrid<T extends StoredObject> extends EditableGrid<T> 
         return false;
     }
 
-    public void editItem(T item) {
+    public boolean editItem(T item) {
+        return false;
     }
 
     public void cancelEdit() {
@@ -129,6 +132,11 @@ public class EditableObjectGrid<T extends StoredObject> extends EditableGrid<T> 
     }
 
     public final T getEditingItem() {
+        return null;
+    }
+
+    @Override
+    public Stream<HasValue<?, ?>> streamEditableFields() {
         return null;
     }
 }

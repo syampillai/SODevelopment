@@ -1,6 +1,5 @@
 package com.storedobject.core;
 
-
 public class LogicGroup extends StoredObject implements DisplayOrder {
 
 	public LogicGroup() {
@@ -10,6 +9,10 @@ public class LogicGroup extends StoredObject implements DisplayOrder {
 	}
 
 	public static LogicGroup get(String name) {
+		return null;
+	}
+
+	public static ObjectIterator<LogicGroup> list(String name) {
 		return null;
 	}
 

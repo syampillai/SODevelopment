@@ -47,4 +47,16 @@ public final class SystemUserGroup extends StoredObject {
     public static SystemUserGroup getDefault() {
         return null;
     }
+
+    public static SystemUserGroup get(String name) {
+        return null;
+    }
+
+    public static ObjectIterator<SystemUserGroup> list(String name) {
+        return null;
+    }
+
+    public ObjectIterator<Logic> listAutoLogic() {
+        return listLinks(1, Logic.class);
+    }
 }

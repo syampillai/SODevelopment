@@ -1,6 +1,7 @@
 package com.storedobject.ui.inventory;
 
 import com.storedobject.core.InventoryItemType;
+import com.storedobject.core.InventoryStore;
 import com.storedobject.core.ObjectIterator;
 import com.storedobject.ui.Application;
 import com.storedobject.vaadin.DataForm;
@@ -41,5 +42,9 @@ public class StockReport extends DataForm {
     }
 
     public void configure(@SuppressWarnings("unused") com.storedobject.report.StockReportExcel report) {
+    }
+
+    public boolean printZeroQuantity(InventoryStore store, InventoryItemType itemType) {
+        return false;
     }
 }
