@@ -1,11 +1,13 @@
 package com.storedobject.ui;
 
 import com.storedobject.common.Geolocation;
-import com.storedobject.vaadin.HasSize;
-import com.vaadin.flow.component.*;
+import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
 import com.vaadin.flow.shared.Registration;
+import com.vaadin.flow.templatemodel.TemplateModel;
 
-public class GoogleMap extends Component implements HasSize {
+import java.util.stream.Stream;
+
+public class GoogleMap extends PolymerTemplate<GoogleMap.Model> {
 
     public GoogleMap() {
         this(null);
@@ -14,26 +16,66 @@ public class GoogleMap extends Component implements HasSize {
     public GoogleMap(Geolocation geolocation) {
     }
 
+    public interface Model extends TemplateModel {
+        void setApiKey(String apiKey);
+        void setApiId(String apiId);
+        void setMapId(String mapId);
+        void setMapSize(String mapSize);
+        void setLatitude(double latitude);
+        double getLatitude();
+        void setLongitude(double longitude);
+        double getLongitude();
+        void setFitToMarkers(boolean fitToMarkers);
+        boolean isFitToMarkers();
+    }
+
     public static void setAPIKey(String apiKey) {
     }
 
-    public void add(Marker... markers) {
+    public void setWidth(int width) {
     }
 
-    public void remove(Marker... markers) {
+    public int getWidth() {
+        return 0;
     }
 
-    public void setLocation(Geolocation geolocation) {
+    public void setHeight(int height) {
     }
 
-    public Geolocation getLocation() {
+    public int getHeight() {
+        return 0;
+    }
+
+    public void setCenter(Geolocation geolocation) {
+    }
+
+    public Geolocation getCenter() {
         return null;
     }
 
-    public void fitToMarkers(boolean fit) {
+    public void setFitToMarkers(boolean fitToMarkers) {
     }
 
-    public static class Marker {
+    public boolean isFitToMarkers() {
+        return false;
+    }
+
+    public Registration addMarkerClickedListener(MarkerClickedListener clickedListener) {
+        return null;
+    }
+
+    public Registration addMarkerPositionedListener(MarkerPositionedListener positionedListener) {
+        return null;
+    }
+
+    public void clearMarkers() {
+    }
+
+    public Stream<Marker> listMarkers() {
+        return null;
+    }
+
+    public class Marker {
 
         public Marker() {
             this(null);
@@ -62,67 +104,47 @@ public class GoogleMap extends Component implements HasSize {
         public Marker(Geolocation geolocation, boolean draggable, String title) {
         }
 
-        public void setDraggable(boolean draggable) {
-        }
-
-        public boolean isDraggable() {
-            return false;
-        }
-
-        public void setTitle(String title) {
-        }
-
-        public String getTitle() {
-            return null;
-        }
-
         public void setVisible(boolean visible) {
         }
 
-        public void setLocation(Geolocation geolocation) {
+        public boolean isVisible() {
+            return true;
+        }
+
+        public void setLocation(Geolocation location) {
         }
 
         public Geolocation getLocation() {
             return null;
         }
 
+        public String getTitle() {
+            return null;
+        }
+
+        public void setTitle(String title) {
+        }
+
+        public void setDraggable(boolean draggable) {
+        }
+
+        public boolean isDraggable() {
+            return true;
+        }
+
+        public void delete() {
+        }
+
         public GoogleMap getMap() {
-            return null;
-        }
-
-        public Registration addClickedListener(ComponentEventListener<MarkerClickedEvent> listener) {
-            return null;
-        }
-
-        public Registration addDraggedListener(ComponentEventListener<MarkerDraggedEvent> listener) {
-            return null;
+            return GoogleMap.this;
         }
     }
 
-    public static abstract class MarkerEvent extends ComponentEvent<Component> {
-
-        public MarkerEvent(Component source, boolean fromClient, double latitude, double longitude) {
-            super(source, fromClient);
-        }
-
-        public Marker getMarker() {
-            return null;
-        }
+    public interface MarkerClickedListener {
+        void markerClicked(Marker maker);
     }
 
-    @DomEvent("google-map-marker-click")
-    public static class MarkerClickedEvent extends MarkerEvent {
-
-        public MarkerClickedEvent(Component source, boolean fromClient, @EventData("element.latitude") double latitude, @EventData("element.longitude") double longitude) {
-            super(source, fromClient, latitude, longitude);
-        }
-    }
-
-    @DomEvent("google-map-marker-dragend")
-    public static class MarkerDraggedEvent extends MarkerEvent {
-
-        public MarkerDraggedEvent(Component source, boolean fromClient, @EventData("element.latitude") double latitude, @EventData("element.longitude") double longitude) {
-            super(source, fromClient, latitude, longitude);
-        }
+    public interface MarkerPositionedListener {
+        void markerPositioned(Marker maker);
     }
 }
