@@ -6,6 +6,7 @@ import com.storedobject.core.StoredObject;
 import com.storedobject.ui.util.ObjectDataProvider;
 import com.storedobject.ui.util.ObjectGridData;
 import com.vaadin.flow.component.HasValue;
+import com.vaadin.flow.shared.Registration;
 
 import java.util.List;
 import java.util.function.BiConsumer;
@@ -50,10 +51,8 @@ public class EditableObjectGrid<T extends StoredObject> extends EditableGrid<T> 
         return null;
     }
 
-    public void addValueChangeTracker(BiConsumer<EditableObjectList<T>, Boolean> tracker) {
-    }
-
-    public void removeValueChangeTracker(BiConsumer<EditableObjectList<T>, Boolean> tracker) {
+    public Registration addValueChangeTracker(BiConsumer<EditableObjectList<T>, Boolean> tracker) {
+        return null;
     }
 
     @Override

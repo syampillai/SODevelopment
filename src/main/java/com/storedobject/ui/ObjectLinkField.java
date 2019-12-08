@@ -1,16 +1,16 @@
 package com.storedobject.ui;
 
 import com.storedobject.core.*;
-import com.storedobject.vaadin.CustomField;
 import com.storedobject.vaadin.View;
+import com.vaadin.flow.component.HasValue;
+import com.vaadin.flow.shared.Registration;
 
 import java.util.Iterator;
 import java.util.stream.Stream;
 
-public final class ObjectLinkField<T extends StoredObject> extends CustomField<StoredObjectLink<T>> implements ObjectsSetter {
+public final class ObjectLinkField<T extends StoredObject> implements HasValue<HasValue.ValueChangeEvent<StoredObjectLink<T>>, StoredObjectLink<T>>, ObjectsSetter {
 
     public ObjectLinkField(String label, StoredObjectUtility.Link<T> link) {
-        super(null);
     }
 
     public StoredObjectUtility.Link<T> getLink() {
@@ -29,15 +29,6 @@ public final class ObjectLinkField<T extends StoredObject> extends CustomField<S
 
     public String getFieldName() {
         return null;
-    }
-
-    @Override
-    protected StoredObjectLink<T> generateModelValue() {
-        return null;
-    }
-
-    @Override
-    protected void setPresentationValue(StoredObjectLink<T> value) {
     }
 
     public StoredObjectLink<T> getOldValue() {
@@ -162,7 +153,18 @@ public final class ObjectLinkField<T extends StoredObject> extends CustomField<S
     }
 
     @Override
-    public void setEnabled(boolean enabled) {
+    public boolean isReadOnly() {
+        return false;
+    }
+
+    @Override
+    public void setRequiredIndicatorVisible(boolean b) {
+
+    }
+
+    @Override
+    public boolean isRequiredIndicatorVisible() {
+        return false;
     }
 
     public StoredObject getMaster() {
@@ -186,7 +188,8 @@ public final class ObjectLinkField<T extends StoredObject> extends CustomField<S
     }
 
     @Override
-    public void setVisible(boolean visible) {
+    public Registration addValueChangeListener(ValueChangeListener<? super ValueChangeEvent<StoredObjectLink<T>>> valueChangeListener) {
+        return null;
     }
 
     public void setObjectEditor(ObjectEditor<T> editor) {

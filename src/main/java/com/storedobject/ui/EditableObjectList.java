@@ -4,6 +4,7 @@ import com.storedobject.core.EditableList;
 import com.storedobject.core.Id;
 import com.storedobject.core.ObjectIterator;
 import com.storedobject.core.StoredObject;
+import com.vaadin.flow.shared.Registration;
 
 import java.util.function.BiConsumer;
 
@@ -33,10 +34,8 @@ public class EditableObjectList<T extends StoredObject> extends ObjectList<T> im
         return false;
     }
 
-    public void addValueChangeTracker(BiConsumer<EditableObjectList<T>, Boolean> tracker) {
-    }
-
-    public void removeValueChangeTracker(BiConsumer<EditableObjectList<T>, Boolean> tracker) {
+    public Registration addValueChangeTracker(BiConsumer<EditableObjectList<T>, Boolean> tracker) {
+        return null;
     }
 
     @Override
