@@ -204,4 +204,8 @@ public final class ObjectLinkField<T extends StoredObject> implements HasValue<H
 
     public void setFromClient(boolean fromClient) {
     }
+
+    public DataGrid<T> getGrid() {
+        return null;
+    }
 }
