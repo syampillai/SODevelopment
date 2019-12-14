@@ -47,10 +47,23 @@ public final class SystemUser extends StoredObject {
     public void setStatus(int status) {
     }
 
-    public static void validatePassword(String password) throws SOException {
+    public void validateNewPassword(String currentPassword, String password) throws SOException {
     }
 
     public void changePassword(String currentPassword, String newPassword) throws SOException {
+    }
+
+
+    public java.sql.Date getPasswordExpiry() {
+        return null;
+    }
+
+    public boolean isPasswordExpired() {
+        return false;
+    }
+
+    public boolean verifyPasswordUpdate() {
+        return false;
     }
 
     public boolean verify(String password) {

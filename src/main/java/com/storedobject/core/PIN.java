@@ -3,10 +3,11 @@ package com.storedobject.core;
 import com.storedobject.common.SOException;
 
 import java.math.BigDecimal;
+import java.sql.Date;
 
 public final class PIN extends StoredObject {
-	
-	public PIN(Id ownerId, String type, String pin) {
+
+	public PIN(Id ownerId, String type) {
 	}
 	
 	public PIN() {
@@ -40,20 +41,41 @@ public final class PIN extends StoredObject {
 	public StoredObject getOwner() {
 		return null;
 	}
-	
+
+	public void setStatus(int status) {
+	}
+
+	public int getStatus() {
+		return 0;
+	}
+
+	public void setExpiry(Date expiry) {
+	}
+
+	public Date getExpiry() {
+		return null;
+	}
+
+	public boolean isExpired() {
+		return false;
+	}
+
 	public String getPIN() {
 		return null;
 	}
 	
 	public void setPIN(String pin) {
 	}
-	
-	public void changePIN(String currentPIN, String newPIN, int minLength) throws SOException {
+
+	public void validateNewPIN(String currentPIN, String newPIN) throws SOException {
 	}
-	
+
 	public void changePIN(String currentPIN, String newPIN) throws SOException {
 	}
-	
+
+	public void resetPIN() throws Exception {
+	}
+
 	public boolean verify(String pin) {
 		return false;
 	}
@@ -62,7 +84,7 @@ public final class PIN extends StoredObject {
 		return false;
 	}
 	
-	public static String getPasswordCondition() {
+	public PasswordPolicy getPolicy() {
 		return null;
 	}
 }

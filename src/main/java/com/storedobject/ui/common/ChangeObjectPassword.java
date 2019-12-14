@@ -1,11 +1,7 @@
 package com.storedobject.ui.common;
 
-import com.storedobject.core.PIN;
+import com.storedobject.core.*;
 import com.storedobject.common.SOException;
-import com.storedobject.core.StoredObject;
-import com.storedobject.core.StringUtility;
-import com.storedobject.core.SystemUser;
-import com.storedobject.core.Transaction;
 import com.storedobject.ui.*;
 import com.storedobject.vaadin.ConfirmButton;
 import com.storedobject.vaadin.DataForm;
@@ -17,7 +13,7 @@ import com.vaadin.flow.component.textfield.PasswordField;
 
 public class ChangeObjectPassword<T extends StoredObject> extends DataForm implements Transactional {
 
-    private ObjectField<T> objectField;
+    private final ObjectField<T> objectField;
     private PasswordField password, newPassword, repeatNewPassword;
     private String pinType;
     private int attempts = 0;
@@ -59,9 +55,7 @@ public class ChangeObjectPassword<T extends StoredObject> extends DataForm imple
     }
 
     private PasswordField createPasswordField(String caption) {
-        PasswordField f = new PasswordField(caption);
-        f.setMaxLength(30);
-        return f;
+        return new PasswordField(caption);
     }
 
     private String value(HasValue<?, String> f) {
@@ -77,7 +71,7 @@ public class ChangeObjectPassword<T extends StoredObject> extends DataForm imple
         password.setVisible(false);
         addField(newPassword = createPasswordField("New Password"));
         addField(repeatNewPassword = createPasswordField("Repeat New Password"));
-        ELabel conditon = new ELabel(PIN.getPasswordCondition(), "orange");
+        ELabel conditon = new ELabel("Policy Description", "orange");
         conditon.setWidth("300px");
         add(conditon);
     }
@@ -135,12 +129,10 @@ public class ChangeObjectPassword<T extends StoredObject> extends DataForm imple
         }
         if(c == deletePassword) {
             if(!delete()) {
-                if(++attempts > 2) {
-                    abort();
-                } else {
-                    return;
-                }
+                error("Password removal failed, please contact Technical Support!");
+                abort();
             }
+            pin = null;
             message("Password removed successfully");
             close();
             return;
@@ -160,16 +152,23 @@ public class ChangeObjectPassword<T extends StoredObject> extends DataForm imple
         if(isCurrentInvalid()) {
             return false;
         }
-        return transact(t -> pin.delete(t));
+        if(!transact(t -> {
+            pin.setTransaction(t);
+            pin.resetPIN();
+        })) {
+            return false;
+        }
+        return pin.getStatus() == 0;
     }
 
     protected boolean change() {
-        if(isCurrentInvalid()) {
-            return false;
+        PIN tpin = pin;
+        if(tpin == null) {
+            tpin = new PIN(objectField.getObjectId(), pinType);
         }
         String p = value(newPassword);
         try {
-            SystemUser.validatePassword(p);
+            tpin.validateNewPIN(value(password), p);
         } catch (SOException e) {
             warning(e);
             return false;
@@ -180,16 +179,20 @@ public class ChangeObjectPassword<T extends StoredObject> extends DataForm imple
         }
         attempts = 0;
         Transaction t = null;
-        PIN tpin = pin;
         try {
             t = getTransactionManager().createTransaction();
-            if(tpin == null) {
-                tpin = new PIN(objectField.getObjectId(), pinType, p);
+            if(pin == null) {
+                tpin.setTransaction(t);
             } else {
+                tpin.setTransaction(t);
                 tpin.changePIN(value(password), p);
             }
             tpin.save(t);
+            assert t != null;
             t.commit();
+            if(tpin.getStatus() != 0) {
+                throw new SOException("Password update failed, please contact Technical Support!");
+            }
             message("Password set successfully");
         } catch(Exception e) {
             try {
