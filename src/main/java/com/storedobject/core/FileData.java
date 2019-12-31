@@ -63,20 +63,6 @@ public class FileData extends StoredObject implements Detail, HasParents {
 		return true;
 	}
 	
-	@Override
-	public final void loaded() {
-	}
-
-	public void loadedCustom() {
-	}
-	
-	@Override
-	public final void saved() throws Exception {
-	}
-	
-	public void savedCustom() throws Exception {
-	}
-	
 	public boolean isLink() {
 		return false;
 	}

@@ -336,6 +336,22 @@ public abstract class PDF implements java.io.Closeable, com.storedobject.core.Co
      */
     public abstract void generateContent() throws java.lang.Exception;
 
+
+    /**
+     * Add an image to the next page as the content. The image will fill the page 100%.
+     * @param image Image to be added.
+     */
+    public void addContent(PDFImage image) {
+    }
+
+    /**
+     * Add an image to the next page as the content. The image will be added at the center of the page.
+     * @param image Image to be added.
+     * @param scalePercentage Scale percentage within the page. Use 100 for filling 100%.
+     */
+    public void addContent(PDFImage image, float scalePercentage) {
+    }
+
     /**
      * Add content from another PDF content producer. The method addingExternalContent will be invoked before adding each page image.
      * @param externalPDF External PDF to add.
@@ -841,6 +857,15 @@ public abstract class PDF implements java.io.Closeable, com.storedobject.core.Co
      * @throws Exception Any exception.
      */
     public void addTable(PDFTable table) throws java.lang.Exception {
+    }
+
+    /**
+     * Add an image at position (0, 0) in the current page.
+     *
+     * @param image Image to add.
+     * @throws PDFException Exception if not successful.
+     */
+    public void addImage(PDFImage image) throws PDFException {
     }
 
     /**
