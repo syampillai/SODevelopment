@@ -387,7 +387,7 @@ public abstract class StoredObject {
         return null;
     }
 
-    public String getTransactionIP() {
+    public final String getTransactionIP() {
         return null;
     }
 

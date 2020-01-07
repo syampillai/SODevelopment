@@ -140,6 +140,9 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T> 
     public void doReport() {
     }
 
+    public void doAudit() {
+    }
+
     public ObjectSearcher<T> getSearcher() {
         return null;
     }

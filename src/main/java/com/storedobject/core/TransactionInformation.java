@@ -45,7 +45,7 @@ public final class TransactionInformation {
     /**
      * Get the user who created this transaction.
      *
-     * @return User.
+     * @return User. (This will return <code>null</code> if the transaction was aborted by the system).
      */
     public SystemUser getUser() {
         return null;
@@ -59,6 +59,24 @@ public final class TransactionInformation {
      */
     public Id getUserId() {
         return null;
+    }
+
+    /**
+     * Check whether this is an abandoned transaction or not.
+     *
+     * @return True or false.
+     */
+    public boolean isAbandoned() {
+        return false;
+    }
+
+    /**
+     * Check whether this transaction is in progress or not.
+     *
+     * @return True or false.
+     */
+    public boolean inProgress() {
+        return true;
     }
 
     /**

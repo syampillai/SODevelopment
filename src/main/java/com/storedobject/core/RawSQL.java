@@ -9,22 +9,19 @@ public final class RawSQL {
     public static int COMPILE = 0;
     public static int CLOSED = 0;
 
-    protected RawSQL() {
+    RawSQL() {
     }
 
-    protected RawSQL(java.lang.String p1) {
+    RawSQL(java.lang.String p1) {
         this();
     }
 
-    protected RawSQL(com.storedobject.core.RawSQL p1) {
+    RawSQL(com.storedobject.core.RawSQL p1) {
         this();
     }
 
-    protected RawSQL(java.lang.String p1, com.storedobject.core.RawSQL p2) {
+    RawSQL(java.lang.String p1, com.storedobject.core.RawSQL p2) {
         this();
-    }
-
-    protected void finalize() {
     }
 
     public boolean next() {
