@@ -48,10 +48,6 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T> 
         return null;
     }
 
-    static <O extends StoredObject> ObjectEditor<O> create(Class<O> objectClass, int actions, String title, boolean skipTools) {
-        return null;
-    }
-
     @SuppressWarnings("unchecked")
     @Override
     public Application getApplication() {

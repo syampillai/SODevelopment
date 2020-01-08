@@ -1,11 +1,9 @@
 package com.storedobject.core;
 
-import java.io.File;
+import com.storedobject.pdf.PDFImage;
+
 import java.util.List;
 import java.util.Properties;
-
-import com.storedobject.pdf.PDFImage;
-import com.storedobject.tools.JavaTool;
 
 public final class ApplicationServer {
 
@@ -140,10 +138,6 @@ public final class ApplicationServer {
     }
 
     public synchronized static void initialize(String propertiesFileName, Properties variables) {
-    }
-
-    public static String createLogicName(String deviceTag, Class<?> objectClass, String tag, boolean skipTools) {
-        return null;
     }
 
     public static String createLogicName(String deviceTag, Class<?> objectClass, String tag) {
