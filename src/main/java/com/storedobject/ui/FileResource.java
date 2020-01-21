@@ -9,14 +9,6 @@ import java.io.InputStream;
 
 public class FileResource extends StreamResource {
 
-    public FileResource(String fileName) {
-        this(fileName == null ? null : new File(fileName), null);
-    }
-
-    public FileResource(File file) {
-        this(file, null);
-    }
-
     public FileResource(String fileName, String contentType) {
         this(fileName == null ? null : new File(fileName), contentType);
     }

@@ -98,8 +98,13 @@ public abstract class StoredObject {
     }
 
     @Override
-	public boolean equals(Object another) {
+	public final boolean equals(Object another) {
         return false;
+    }
+
+    @Override
+    public final int hashCode() {
+        return getId().hashCode();
     }
 
     public static int count(Class<? extends StoredObject> soClass) {
@@ -161,7 +166,7 @@ public abstract class StoredObject {
     }
 
     public final Id getId() {
-        return null;
+        return Id.ZERO;
     }
 
     public static < T extends StoredObject > ObjectIterator < T > list(Class < T > p1) {
