@@ -6,12 +6,12 @@
 
     <groupId>com.storedobject</groupId>
     <artifactId>so-development</artifactId>
-    <version>1.5.2</version>
+    <version>1.5.4</version>
 
     <properties>
         <so-common-version>1.2.3</so-common-version>
-        <so-components-version>3.2.0</so-components-version>
-        <vaadin.version>14.1.5</vaadin.version>
+        <so-components-version>3.3.0</so-components-version>
+        <vaadin.version>14.1.16</vaadin.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
