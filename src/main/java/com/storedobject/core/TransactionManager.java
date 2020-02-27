@@ -9,7 +9,7 @@ public final class TransactionManager {
     public TransactionManager(Device device, String login) {
     }
 
-    public void reinit(String password) throws Exception {
+    public void reinit(char[] password) throws Exception {
     }
 
     /**
@@ -48,7 +48,7 @@ public final class TransactionManager {
         return null;
     }
 
-    public boolean verify(String password) {
+    public boolean verify(char[] password) {
         return false;
     }
 

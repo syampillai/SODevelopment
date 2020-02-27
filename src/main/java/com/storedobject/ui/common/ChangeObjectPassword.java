@@ -141,7 +141,7 @@ public class ChangeObjectPassword<T extends StoredObject> extends DataForm imple
     }
 
     private boolean isCurrentInvalid() {
-        if(pin != null && !pin.verify(value(password))) {
+        if(pin != null && !pin.verify(value(password).toCharArray())) {
             error("Current password is incorrect!");
             return true;
         }
@@ -168,7 +168,7 @@ public class ChangeObjectPassword<T extends StoredObject> extends DataForm imple
         }
         String p = value(newPassword);
         try {
-            tpin.validateNewPIN(value(password), p);
+            tpin.validateNewPIN(value(password).toCharArray(), p.toCharArray());
         } catch (SOException e) {
             warning(e);
             return false;
@@ -185,7 +185,7 @@ public class ChangeObjectPassword<T extends StoredObject> extends DataForm imple
                 tpin.setTransaction(t);
             } else {
                 tpin.setTransaction(t);
-                tpin.changePIN(value(password), p);
+                tpin.changePIN(value(password).toCharArray(), p.toCharArray());
             }
             tpin.save(t);
             assert t != null;

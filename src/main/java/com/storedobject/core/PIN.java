@@ -60,27 +60,20 @@ public final class PIN extends StoredObject {
 		return false;
 	}
 
-	public String getPIN() {
-		return null;
-	}
-	
-	public void setPIN(String pin) {
+	public void validateNewPIN(char[] currentPIN, char[] newPIN) throws SOException {
 	}
 
-	public void validateNewPIN(String currentPIN, String newPIN) throws SOException {
-	}
-
-	public void changePIN(String currentPIN, String newPIN) throws SOException {
+	public void changePIN(char[] currentPIN, char[] newPIN) throws SOException {
 	}
 
 	public void resetPIN() throws Exception {
 	}
 
-	public boolean verify(String pin) {
+	public boolean verify(char[] pin) {
 		return false;
 	}
 	
-	public static boolean verify(Id ownerId, String type, String pin) {
+	public static boolean verify(Id ownerId, String type, char[] pin) {
 		return false;
 	}
 	

@@ -47,10 +47,10 @@ public final class SystemUser extends StoredObject {
     public void setStatus(int status) {
     }
 
-    public void validateNewPassword(String currentPassword, String password) throws SOException {
+    public void validateNewPassword(char[] currentPassword, char[] password) throws SOException {
     }
 
-    public void changePassword(String currentPassword, String newPassword) throws SOException {
+    public void changePassword(char[] currentPassword, char[] newPassword) throws SOException {
     }
 
 
@@ -66,7 +66,7 @@ public final class SystemUser extends StoredObject {
         return false;
     }
 
-    public boolean verify(String password) {
+    public boolean verify(char[] password) {
         return false;
     }
 

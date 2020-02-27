@@ -73,7 +73,7 @@ public class PasswordPolicy extends StoredObject {
         return null;
     }
 
-    public String apply(String password) {
+    public String apply(char[] password) {
         return null;
     }
 

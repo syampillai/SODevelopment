@@ -91,11 +91,11 @@ public final class ApplicationServer {
         return null;
     }
 
-    public boolean login(String user, String password, boolean lockIfFailed) {
+    public boolean login(String user, char[] password, boolean lockIfFailed) {
         return true;
     }
 
-    public boolean login(String user, String password) {
+    public boolean login(String user, char[] password) {
         return true;
     }
 
