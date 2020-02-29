@@ -103,6 +103,14 @@ public class Quantity implements Storable, Comparable<Quantity> {
         return false;
 	}
 
+	public boolean canConvert(Quantity another) throws Invalid_State {
+		return true;
+	}
+
+	public boolean canConvert(MeasurementUnit toUnit) throws Invalid_State {
+		return true;
+	}
+
 	public Quantity zero() {
 		return null;
 	}

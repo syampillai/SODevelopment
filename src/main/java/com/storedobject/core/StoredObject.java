@@ -149,7 +149,10 @@ public abstract class StoredObject {
     public final boolean checkForDuplicate() {
     	return false;
     }
-    
+
+    public final void checkForDuplicate(String... attributes) throws Invalid_State {
+    }
+
     public void load(BufferedReader reader) throws Exception {
     }
 
