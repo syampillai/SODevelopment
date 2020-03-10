@@ -1,6 +1,7 @@
 package com.storedobject.ui;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.upload.Upload;
 
 import java.io.InputStream;
 import java.util.function.BiConsumer;
@@ -23,6 +24,10 @@ public class UploadProcessorView extends TextView {
         super(caption);
     }
 
+    public Upload getUploadComponent() {
+        return null;
+    }
+
     @Override
     protected Component getTopComponent() {
         return null;
@@ -37,6 +42,9 @@ public class UploadProcessorView extends TextView {
     }
 
     protected void process(InputStream content, String mimeType) {
+    }
+
+    protected void uploadAborted() {
     }
 
     public String getFileName() {

@@ -2,96 +2,96 @@ package com.storedobject.core;
 
 import com.storedobject.common.StringList;
 
-public class ClassAttribute < T extends com.storedobject.core.StoredObject > {
+import java.lang.reflect.Method;
 
-    protected java.lang.String moduleName;
-    protected java.lang.String tableName;
-    protected java.lang.String[] attributes;
-    protected StringList displayColumns;
-    protected StringList protectedColumns;
-    protected StringList browseColumns;
-    protected StringList searchColumns;
-    protected StringList links;
-    protected java.lang.String browseOrder;
+/**
+ * For internal use only.
+ */
+public class ClassAttribute<T extends StoredObject> {
+
+    protected String moduleName, tableName;
+    protected String[] attributes;
+    protected StringList displayColumns, protectedColumns, browseColumns, searchColumns, links;
+    private StringList extraFields;
+    protected String browseOrder;
     protected boolean[] writeAllowed;
-    protected java.lang.reflect.Method[] setMethods;
-    protected java.lang.reflect.Method[] getMethods;
-    protected int family;
-    protected int hints;
+    protected Method[] setMethods, getMethods, fileMethods;
+    protected int family, hints = -1;
     protected boolean saveAllowed;
-    protected java.lang.Class < T > objectClass;
-    protected int statusUI;
+    protected Class<T> objectClass;
+    protected int statusUI = 0;
 
     protected ClassAttribute() {
     }
 
-    public java.lang.reflect.Method getMethod(java.lang.String p1) {
+    public boolean writeAllowed(String attributeName) {
+        return false;
+    }
+
+    public UIFieldMetadata getFieldMetadata(String fieldName) {
         return null;
     }
 
-    public com.storedobject.core.ClassAttribute <?> getParent() {
+    public UIFieldMetadata getFieldMetadata(String fieldName, boolean external) {
         return null;
+    }
+
+    public Method getMethod(String attributeName) {
+        return null;
+    }
+
+    public Method setMethod(String attributeName) {
+        return null;
+    }
+
+    public Method[] fileMethods() {
+        return null;
+    }
+
+    public StringList getAttributes() {
+        return new StringList(attributes);
+    }
+
+    public String getModuleName() {
+        return moduleName;
+    }
+
+    public String getTableName() {
+        return tableName;
+    }
+
+    public Class<T> getObjectClass() {
+        return objectClass;
     }
 
     public void unload() {
     }
 
-    public StringList getAttributes() {
+    public ClassAttribute<?> getParent() {
         return null;
-    }
-
-    public java.lang.reflect.Method setMethod(java.lang.String p1) {
-        return null;
-    }
-
-    public java.lang.String getTitle() {
-        return null;
-    }
-
-    public boolean writeAllowed(java.lang.String p1) {
-        return false;
-    }
-
-    public java.lang.Class < T > getObjectClass() {
-        return null;
-    }
-
-    protected void loadMetaData() {
     }
 
     public int getFormStyle() {
         return 0;
     }
 
-    public java.lang.String getFormLayout() {
+    public String getTitle() {
         return null;
     }
 
-    public com.storedobject.core.UIFieldMetadata getFieldMetadata(java.lang.String p1) {
-        return null;
-    }
-
-    public com.storedobject.core.UIFieldMetadata getFieldMetadata(java.lang.String p1, boolean p2) {
-        return null;
-    }
-
-    public java.lang.String getModuleName() {
-        return null;
-    }
-
-    public java.lang.String getTableName() {
+    public String getFormLayout() {
         return null;
     }
 
     public StringList getExtraFields() {
         return null;
     }
-    
-	public int howBig(boolean any) {
-		return 0;
-	}
-	
-	public StringList getAnchors() {
-		return null;
-	}
+
+    public int howBig(boolean any) {
+        return 0;
+    }
+
+    public StringList getAnchors() {
+        return null;
+    }
 }

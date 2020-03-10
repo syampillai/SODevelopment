@@ -26,6 +26,10 @@ public class ObjectForestViewerSupplier<T extends StoredObject> implements Abstr
     }
 
     @Override
+    public void setListLinks(ListLinks listLinks) {
+    }
+
+    @Override
     public boolean isAllowAny() {
         return false;
     }

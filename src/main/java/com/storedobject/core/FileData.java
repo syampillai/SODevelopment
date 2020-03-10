@@ -43,6 +43,10 @@ public class FileData extends StoredObject implements Detail, HasParents {
 		return null;
     }
 
+    public boolean isEmpty() {
+        return false;
+    }
+
     public void restore(Transaction transaction) throws Exception {
     }
     

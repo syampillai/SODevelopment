@@ -17,12 +17,17 @@ public class ObjectForestSupplier<T extends StoredObject> extends AbstractObject
 
     @SuppressWarnings("unchecked")
     public ObjectForestSupplier(int linkType, StoredObject master, Class<T> objectClass, String condition, String orderBy, boolean any) {
+        //noinspection rawtypes
         super(new ObjectsCached(linkType, master, objectClass, condition, orderBy, any), false);
     }
 
     @Override
     public List<T> listRoots() {
         return null;
+    }
+
+    @Override
+    public void setListLinks(ListLinks listLinks) {
     }
 
     @Override
@@ -52,7 +57,7 @@ public class ObjectForestSupplier<T extends StoredObject> extends AbstractObject
 
     public static class LinkNode {
 
-        private LinkNode(StoredObjectUtility.Link<?> link, StoredObject parent) {
+        private LinkNode(StoredObjectUtility.Link<?> link, StoredObject parent, ListLinks listLinks) {
         }
 
         public StoredObject getParent() {

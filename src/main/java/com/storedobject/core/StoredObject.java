@@ -399,6 +399,14 @@ public abstract class StoredObject {
         return null;
     }
 
+    public final boolean isVirtual() {
+        return false;
+    }
+
+    public final boolean makeVirtual() {
+        return false;
+    }
+
     public void setTransaction(Transaction transaction) throws Exception {
     }
     
@@ -1809,6 +1817,10 @@ public abstract class StoredObject {
 	public final ObjectIterator<? extends FileData> listFileData(Transaction transaction) {
 		return null;
 	}
+
+    public final boolean existsFileData() {
+        return true;
+    }
 
     public final List<StoredObjectLink<?>> objectLinks() {
         return null;

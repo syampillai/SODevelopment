@@ -48,7 +48,7 @@ public final class FileFolder extends StoredObject implements Detail, HasChildre
         return null;
 	}
 
-	public static FileFolder get(FileFolder folder, String path) {
+	public static FileFolder get(String path, FileFolder parent) {
         return null;
 	}
 	
@@ -93,10 +93,6 @@ public final class FileFolder extends StoredObject implements Detail, HasChildre
     
     public ObjectIterator<FileData> listFiles(String condition, String orderBy) {
     	return null;
-    }
-    
-    public boolean isVirtual() {
-    	return false;
     }
     
     public boolean isRoot() {

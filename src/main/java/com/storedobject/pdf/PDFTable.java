@@ -1,7 +1,7 @@
 package com.storedobject.pdf;
 
 /**
- * Table than can be added to PDF document.
+ * Table object that can be added to PDF document.
  */
 public class PDFTable implements PDFElement {
 

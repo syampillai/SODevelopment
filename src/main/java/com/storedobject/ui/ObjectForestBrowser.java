@@ -81,15 +81,15 @@ public class ObjectForestBrowser<T extends StoredObject> extends ObjectForest<T>
     protected void addExtraButtons() {
     }
 
-    protected boolean canDelete(@SuppressWarnings("unused") T object) {
+    protected boolean canDelete(@SuppressWarnings("unused") StoredObject object) {
         return true;
     }
 
-    protected boolean canEdit(@SuppressWarnings("unused") T object) {
+    protected boolean canEdit(@SuppressWarnings("unused") StoredObject object) {
         return true;
     }
 
-    protected boolean canAdd(@SuppressWarnings("unused") T parentObject) {
+    protected boolean canAdd(@SuppressWarnings("unused") StoredObject parentObject) {
         return true;
     }
 }
