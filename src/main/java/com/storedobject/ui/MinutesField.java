@@ -23,6 +23,13 @@ public class MinutesField extends CustomTextField<Integer> {
         return false;
     }
 
+    public void setFreeFormat(boolean freeFormat) {
+    }
+
+    public boolean isFreeFormat() {
+        return false;
+    }
+
     @Override
     protected Integer getModelValue(String string) {
         return null;

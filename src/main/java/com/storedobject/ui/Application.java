@@ -17,6 +17,14 @@ public class Application extends com.storedobject.vaadin.Application implements 
         return (Application) com.storedobject.vaadin.Application.get();
     }
 
+    public boolean isBiometricAvailable() {
+        return false;
+    }
+
+    public boolean isBiometricRegistered() {
+        return false;
+    }
+
     public TransactionManager getTransactionManager() {
         return null;
     }
@@ -130,14 +138,18 @@ public class Application extends com.storedobject.vaadin.Application implements 
     }
 
     public StyledBuilder getAlert() {
-        return getAlert(null, null);
+        return null;
     }
 
-    public StyledBuilder getAlert(Class<?> alertHandler) {
-        return getAlert(alertHandler, null);
+    public StyledBuilder getAlert(Object alertHandler) {
+        return null;
     }
 
-    public StyledBuilder getAlert(Class<?> alertHandler, Id reference) {
+    public StyledBuilder getAlert(Object alertHandler, Id reference) {
+        return null;
+    }
+
+    public StyledBuilder getAlert(Id reference) {
         return null;
     }
 

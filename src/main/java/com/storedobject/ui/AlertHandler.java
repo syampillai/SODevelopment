@@ -17,4 +17,8 @@ public interface AlertHandler {
     default String getAlertIcon() {
         return "vaadin:cog_o";
     }
+
+    default String getAlertCaption() {
+        return "Process";
+    }
 }
