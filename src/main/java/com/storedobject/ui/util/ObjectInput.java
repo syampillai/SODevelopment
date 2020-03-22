@@ -24,7 +24,7 @@ public interface ObjectInput<T extends StoredObject> extends AbstractObjectInput
     }
 
     @Override
-    default void setObject(StoredObject object) {
+    default void setObject(T object) {
     }
 
     default void setPlaceholder(String placeholder) {

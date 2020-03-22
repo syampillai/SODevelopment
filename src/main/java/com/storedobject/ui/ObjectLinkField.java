@@ -8,7 +8,7 @@ import com.vaadin.flow.shared.Registration;
 import java.util.Iterator;
 import java.util.stream.Stream;
 
-public final class ObjectLinkField<T extends StoredObject> implements HasValue<HasValue.ValueChangeEvent<StoredObjectLink<T>>, StoredObjectLink<T>>, ObjectsSetter {
+public final class ObjectLinkField<T extends StoredObject> implements HasValue<HasValue.ValueChangeEvent<StoredObjectLink<T>>, StoredObjectLink<T>>, ObjectsSetter<T> {
 
     public ObjectLinkField(String label, StoredObjectUtility.Link<T> link) {
     }
@@ -136,11 +136,11 @@ public final class ObjectLinkField<T extends StoredObject> implements HasValue<H
     }
 
     @Override
-    public void setObject(StoredObject object) {
+    public void setObject(T object) {
     }
 
     @Override
-    public void setObjects(Iterable<? extends StoredObject> objects) {
+    public void setObjects(Iterable<T> objects) {
     }
 
     @Override

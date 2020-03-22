@@ -1,5 +1,5 @@
 package com.storedobject.core;
 
-public interface ObjectsSetter extends ObjectSetter {
-    void setObjects(Iterable<? extends StoredObject> object);
+public interface ObjectsSetter<T extends StoredObject> extends ObjectSetter<T> {
+    void setObjects(Iterable<T> objects);
 }

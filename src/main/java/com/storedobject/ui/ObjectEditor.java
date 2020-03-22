@@ -10,7 +10,7 @@ import com.vaadin.flow.component.HasValue;
 
 import java.util.function.BiFunction;
 
-public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T> implements Transactional, ObjectSetter,
+public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T> implements Transactional, ObjectSetter<T>,
         ObjectChangedListener<T>, ObjectEditorListener, ObjectProvider<T>, AlertHandler, TransactionCreator {
 
     protected HasComponents buttonPanel;

@@ -14,8 +14,6 @@ import java.util.function.Predicate;
 
 public class ObjectGrid<T extends StoredObject> extends DataGrid<T> implements ObjectGridData<T> {
 
-    ObjectSetter objectSetter;
-
     public ObjectGrid(Class<T> objectClass) {
         this(objectClass, false);
     }
@@ -64,6 +62,6 @@ public class ObjectGrid<T extends StoredObject> extends DataGrid<T> implements O
     }
 
     @Override
-    public void setObjectSetter(ObjectSetter setter) {
+    public void setObjectSetter(ObjectSetter<T> setter) {
     }
 }

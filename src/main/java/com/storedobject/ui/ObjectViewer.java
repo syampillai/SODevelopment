@@ -6,7 +6,7 @@ import com.storedobject.core.StoredObject;
 import com.storedobject.vaadin.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 
-public class ObjectViewer extends Executor implements ObjectSetter, AlertHandler {
+public class ObjectViewer extends Executor implements ObjectSetter<StoredObject>, AlertHandler {
 
     public ObjectViewer(Application a) {
         super(a);

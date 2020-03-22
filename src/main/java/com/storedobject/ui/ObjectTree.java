@@ -8,7 +8,7 @@ import com.storedobject.vaadin.DataTreeGrid;
 
 import java.util.List;
 
-public class ObjectTree<T extends StoredObject> extends DataTreeGrid<T> implements Transactional, ObjectsSetter {
+public class ObjectTree<T extends StoredObject> extends DataTreeGrid<T> implements Transactional, ObjectsSetter<T> {
 
     ObjectTreeListProvider<T> dataProvider;
 
@@ -67,11 +67,11 @@ public class ObjectTree<T extends StoredObject> extends DataTreeGrid<T> implemen
     }
 
     @Override
-    public void setObject(StoredObject object) {
+    public void setObject(T object) {
     }
 
     @Override
-    public void setObjects(Iterable<? extends StoredObject> objects) {
+    public void setObjects(Iterable<T> objects) {
     }
 
     public T getRoot() {

@@ -6,7 +6,7 @@ import com.storedobject.common.StringList;
 import java.math.BigDecimal;
 import java.sql.Date;
 
-public class InventoryItem extends StoredObject {
+public class InventoryItem extends StoredObject implements HasParents {
 
     public InventoryItem() {
     }
@@ -53,6 +53,27 @@ public class InventoryItem extends StoredObject {
 
     public String getSerialNumber() {
     	return null;
+    }
+
+    public void setAssembly(Id assemblyId) {
+    }
+
+    public void setAssembly(BigDecimal idValue) {
+    }
+
+    public void setAssembly(InventoryAssembly assembly) {
+    }
+
+    public Id getAssemblyId() {
+        return null;
+    }
+
+    public InventoryAssembly getAssembly() {
+        return null;
+    }
+
+    public final boolean isAssembly() {
+        return false;
     }
 
     public void setQuantity(Quantity quantity) {

@@ -3,30 +3,31 @@ package com.storedobject.core;
 import java.util.function.Consumer;
 
 @FunctionalInterface
-public interface ObjectSetter extends Consumer<StoredObject> {
+public interface ObjectSetter<T extends StoredObject> extends Consumer<T> {
 
-	void setObject(StoredObject object);
+	void setObject(T object);
+
+	@Override
+	default void accept(T object) {
+		setObject(object);
+	}
 
 	default void setObject(Id objectId) {
-		Class<? extends StoredObject> klass = getObjectClass();
+		Class<T> klass = getObjectClass();
 		if(klass != null) {
-			StoredObject object = StoredObject.get(klass, objectId, isAllowAny());
+			T object = StoredObject.get(klass, objectId, isAllowAny());
 			setObject(object);
 		} else {
-			setObject(StoredObject.get(objectId));
+			//noinspection unchecked
+			setObject((T)StoredObject.get(objectId));
 		}
 	}
 
-	default Class<? extends StoredObject> getObjectClass() {
+	default Class<T> getObjectClass() {
 		return null;
 	}
 
 	default boolean isAllowAny() {
 		return false;
-	}
-
-	@Override
-	default void accept(StoredObject object) {
-		setObject(object);
 	}
 }

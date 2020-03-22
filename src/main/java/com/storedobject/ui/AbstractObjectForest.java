@@ -15,7 +15,7 @@ import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
-public abstract class AbstractObjectForest<T extends StoredObject> extends DataTreeGrid<Object> implements ObjectsSetter, Transactional {
+public abstract class AbstractObjectForest<T extends StoredObject> extends DataTreeGrid<Object> implements ObjectsSetter<T>, Transactional {
 
     protected AbstractObjectForestSupplier<T> dataProvider;
 
@@ -128,11 +128,11 @@ public abstract class AbstractObjectForest<T extends StoredObject> extends DataT
     }
 
     @Override
-    public void setObject(StoredObject object) {
+    public void setObject(T object) {
     }
 
     @Override
-    public void setObjects(Iterable<? extends StoredObject> objects) {
+    public void setObjects(Iterable<T> objects) {
     }
 
     public final boolean isFullyCached() {

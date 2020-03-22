@@ -1,16 +1,17 @@
 package com.storedobject.ui.util;
 
-import com.storedobject.common.FilterProvider;
-import com.storedobject.core.*;
+import com.storedobject.core.Id;
+import com.storedobject.core.ObjectGetter;
+import com.storedobject.core.ObjectSetter;
+import com.storedobject.core.StoredObject;
 import com.storedobject.ui.FilterMethods;
 import com.storedobject.ui.ObjectProvider;
 import com.storedobject.vaadin.HasElement;
 import com.vaadin.flow.component.Component;
 
 import java.util.function.Consumer;
-import java.util.function.Predicate;
 
-public interface AbstractObjectInput<T extends StoredObject> extends ObjectProvider<T>, ObjectSetter, ObjectGetter, HasElement, FilterMethods<T> {
+public interface AbstractObjectInput<T extends StoredObject> extends ObjectProvider<T>, ObjectSetter<T>, ObjectGetter<T>, HasElement, FilterMethods<T> {
 
     @Override
     Class<T> getObjectClass();
@@ -19,7 +20,7 @@ public interface AbstractObjectInput<T extends StoredObject> extends ObjectProvi
     T getObject();
 
     @Override
-    void setObject(StoredObject object);
+    void setObject(T object);
 
     @SuppressWarnings("unchecked")
     default T convert(StoredObject object) {
