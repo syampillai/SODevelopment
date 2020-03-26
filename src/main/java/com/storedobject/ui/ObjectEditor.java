@@ -242,10 +242,6 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T> 
     }
 
     @Override
-    public void setObject(StoredObject object) {
-    }
-
-    @Override
     public void setObject(T object, boolean load) {
     }
 

@@ -12,6 +12,7 @@ import com.vaadin.flow.component.grid.GridSelectionModel;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -237,6 +238,14 @@ public interface ObjectGridData<T extends StoredObject> extends HasColumns<T>, O
     GridSelectionModel<T> getSelectionModel();
 
     void setObjectSetter(ObjectSetter<T> setter);
+
+    default void setObjectConsumer(ObjectSetter<T> objectConsumer) {
+        setObjectSetter(objectConsumer);
+    }
+
+    default void setObjectConsumer(Consumer<T> objectConsumer) {
+        setObjectSetter(objectConsumer::accept);
+    }
 
     @Override
     default void populate(SystemEntity systemEntity) {

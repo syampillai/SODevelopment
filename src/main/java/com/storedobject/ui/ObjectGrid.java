@@ -1,16 +1,13 @@
 package com.storedobject.ui;
 
-import com.storedobject.core.ObjectSearchFilter;
 import com.storedobject.core.ObjectSetter;
 import com.storedobject.core.StoredObject;
 import com.storedobject.ui.util.ObjectDataProvider;
 import com.storedobject.ui.util.ObjectGridData;
 import com.storedobject.ui.util.ObjectSupplier;
-import com.storedobject.vaadin.ItemSelectedListener;
 import com.vaadin.flow.data.provider.DataProvider;
 
 import java.util.List;
-import java.util.function.Predicate;
 
 public class ObjectGrid<T extends StoredObject> extends DataGrid<T> implements ObjectGridData<T> {
 
@@ -63,5 +60,8 @@ public class ObjectGrid<T extends StoredObject> extends DataGrid<T> implements O
 
     @Override
     public void setObjectSetter(ObjectSetter<T> setter) {
+    }
+
+    public void search() {
     }
 }

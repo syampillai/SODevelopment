@@ -2,7 +2,7 @@ package com.storedobject.core;
 
 import java.math.BigDecimal;
 
-public class InventoryItemType extends StoredObject {
+public class InventoryItemType extends StoredObject implements HasChildren {
 
     public InventoryItemType() {
     }
@@ -133,6 +133,10 @@ public class InventoryItemType extends StoredObject {
 
     public boolean isSerialized() {
     	return false;
+    }
+
+    public boolean isExpendable() {
+        return false;
     }
 
     public Id getCategoryId() {

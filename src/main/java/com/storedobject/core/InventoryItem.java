@@ -188,6 +188,10 @@ public class InventoryItem extends StoredObject implements HasParents {
     	return false;
     }
 
+    public final boolean isExpendable() {
+        return false;
+    }
+
     public static Class<? extends InventoryItemType> getPartNumberType() {
     	return null;
     }

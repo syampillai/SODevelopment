@@ -34,6 +34,23 @@ public final class InventoryAssembly extends StoredObject implements Detail {
         return null;
     }
 
+    public void setParentItemType(Id parentItemTypeId) {
+    }
+
+    public void setParentItemType(BigDecimal idValue) {
+    }
+
+    public void setParentItemType(InventoryItemType itemType) {
+    }
+
+    public Id getParentItemTypeId() {
+        return null;
+    }
+
+    public InventoryItemType getParentItemType() {
+        return null;
+    }
+
     public void setQuantity(Quantity quantity) {
     }
 
