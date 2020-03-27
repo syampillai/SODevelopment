@@ -139,6 +139,10 @@ public class InventoryItemType extends StoredObject implements HasChildren {
         return false;
     }
 
+    public boolean isConsumable() {
+        return false;
+    }
+
     public Id getCategoryId() {
     	return null;
     }
