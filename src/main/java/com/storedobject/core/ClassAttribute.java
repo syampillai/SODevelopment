@@ -1,13 +1,15 @@
 package com.storedobject.core;
 
+import com.storedobject.common.SORuntimeException;
 import com.storedobject.common.StringList;
 
 import java.lang.reflect.Method;
+import java.sql.SQLException;
 
 /**
  * For internal use only.
  */
-public class ClassAttribute<T extends StoredObject> {
+public final class ClassAttribute<T extends StoredObject> {
 
     protected String moduleName, tableName;
     protected String[] attributes;
@@ -21,7 +23,7 @@ public class ClassAttribute<T extends StoredObject> {
     protected Class<T> objectClass;
     protected int statusUI = 0;
 
-    protected ClassAttribute() {
+    private ClassAttribute() {
     }
 
     public boolean writeAllowed(String attributeName) {
@@ -49,7 +51,7 @@ public class ClassAttribute<T extends StoredObject> {
     }
 
     public StringList getAttributes() {
-        return new StringList(attributes);
+        return null;
     }
 
     public String getModuleName() {
@@ -92,6 +94,18 @@ public class ClassAttribute<T extends StoredObject> {
     }
 
     public StringList getAnchors() {
+        return null;
+    }
+
+    public static ClassAttribute<?> get(int family) {
+        return null;
+    }
+
+    public static <O extends StoredObject> ClassAttribute<O> get(O object) {
+        return null;
+    }
+
+    public static <O extends StoredObject> ClassAttribute<O> get(Class<O> objectClass) {
         return null;
     }
 }

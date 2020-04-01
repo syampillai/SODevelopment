@@ -192,6 +192,10 @@ public class InventoryItem extends StoredObject implements HasParents {
         return false;
     }
 
+    public final boolean isConsumable() {
+        return false;
+    }
+
     public static Class<? extends InventoryItemType> getPartNumberType() {
     	return null;
     }

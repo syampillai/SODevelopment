@@ -18,7 +18,7 @@ public class ObjectReport<T extends StoredObject> extends DataForm {
     }
 
     public ObjectReport(Class<T> objectClass, String columns) {
-        this(objectClass, new StringList(columns));
+        this(objectClass, StringList.create(columns));
     }
 
     public ObjectReport(Class<T> objectClass, boolean any) {
@@ -30,7 +30,7 @@ public class ObjectReport<T extends StoredObject> extends DataForm {
     }
 
     public ObjectReport(Class<T> objectClass, boolean any, String columns) {
-        this(objectClass, any, new StringList(columns));
+        this(objectClass, any, StringList.create(columns));
     }
 
     public ObjectReport(ObjectPDF<T> report) throws Exception {

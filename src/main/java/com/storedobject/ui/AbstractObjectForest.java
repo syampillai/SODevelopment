@@ -24,7 +24,7 @@ public abstract class AbstractObjectForest<T extends StoredObject> extends DataT
     }
 
     public AbstractObjectForest(Class<T> objectClass, Iterable<String> columns) {
-        super(Object.class, new StringList(columns));
+        super(Object.class, StringList.create(columns));
     }
 
     public void setKeepCache(boolean keepCache) {

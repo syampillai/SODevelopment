@@ -127,7 +127,7 @@ public class ObjectFilter<T extends StoredObject> extends Form implements Object
             labels[i] = StringUtility.makeLabel(columns[i]);
         }
         ArrayList<Function<T, ?>> functions = new ArrayList<>();
-        StoredObjectUtility.MethodList[] columnMethods = StoredObjectUtility.createMethodLists(objectClass, new StringList(columns));
+        StoredObjectUtility.MethodList[] columnMethods = StoredObjectUtility.createMethodLists(objectClass, StringList.create(columns));
         n = 0;
         Class<?> c;
         for(i = 0; i < columnMethods.length; i++) {

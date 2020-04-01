@@ -546,7 +546,7 @@ public class ObjectPDF<M extends StoredObject> extends PDFReport {
 				deep = true;
 				ArrayList<String> vc = new ArrayList<>();
 				createColumns("", ca, vc, 3);
-				columns = new StringList(vc);
+				columns = StringList.create(vc);
 			} else {
 				deep = false;
 			}

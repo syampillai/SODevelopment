@@ -68,7 +68,7 @@ public class ObjectHistoryGrid<T extends StoredObject> extends DataGrid<T> {
             return null;
         }
         String dfs = atc.getDisplayFields();
-        return StringUtility.isWhite(dfs) ? null : new StringList(dfs);
+        return StringUtility.isWhite(dfs) ? null : StringList.create(dfs);
     }
 
     @Override
