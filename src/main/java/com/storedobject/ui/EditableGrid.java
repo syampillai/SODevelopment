@@ -3,14 +3,12 @@ package com.storedobject.ui;
 import com.storedobject.core.EditableList;
 import com.storedobject.vaadin.HasColumns;
 import com.vaadin.flow.component.AbstractField;
-import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.gridpro.GridPro;
 import com.vaadin.flow.data.provider.DataProvider;
 
 import java.lang.reflect.Method;
 import java.util.stream.Stream;
 
-@HtmlImport("so-editable-grid-styles.html")
 public class EditableGrid<T> extends GridPro<T> implements HasColumns<T>, EditableList<T> {
 
     /**
