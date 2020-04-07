@@ -345,6 +345,10 @@ public abstract class StoredObject {
         return 0;
     }
 
+    public static <O extends StoredObject> int family(Class<O> objectClass) {
+        return -1;
+    }
+
     public Transaction getTransaction() {
         return null;
     }

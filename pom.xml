@@ -6,7 +6,7 @@
 
     <groupId>com.storedobject</groupId>
     <artifactId>so-development</artifactId>
-    <version>1.5.13</version>
+    <version>1.5.14</version>
 
     <properties>
         <so-common-version>1.3.6</so-common-version>
@@ -103,7 +103,7 @@
         <dependency>
             <groupId>com.mlottmann.VStepper</groupId>
             <artifactId>VStepper</artifactId>
-            <version>1.0.5</version>
+            <version>1.0.7</version>
         </dependency>
 
         <!-- Java Servlet -->

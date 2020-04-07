@@ -39,9 +39,6 @@ public interface Transaction {
 		}
 	}
 
-	class Transaction_Closed extends Exception {
-	}
-
 	/**
 	 * Add a commit listener for this transaction.
 	 *

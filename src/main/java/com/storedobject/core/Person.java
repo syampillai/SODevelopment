@@ -2,7 +2,7 @@ package com.storedobject.core;
 
 import java.sql.Date;
 
-public class Person extends StoredObject {
+public class Person extends StoredObject implements Comparable<Person> {
 
 	public Person(String name) {
 	}
@@ -152,4 +152,9 @@ public class Person extends StoredObject {
     public static ObjectIterator<Person> list(String name) {
 		return null;
     }
+
+	@Override
+	public int compareTo(@SuppressWarnings("NullableProblems") Person person) {
+		return 0;
+	}
 }
