@@ -9,7 +9,7 @@ import com.vaadin.flow.component.Component;
  *
  * @author Syam
  */
-public class SteppedView extends View implements Transactional {
+public abstract class SteppedView extends View implements Transactional {
 
     /**
      * Constructor.
@@ -17,16 +17,23 @@ public class SteppedView extends View implements Transactional {
      * @param numberOfSteps Number of steps in the view
      */
     public SteppedView(int numberOfSteps) {
-        this(null, numberOfSteps);
+        this(numberOfSteps, null);
     }
 
     /**
      * Constructor.
      *
-     * @param caption Caption of the view
      * @param numberOfSteps Number of steps in the view
+     * @param caption Caption of the view
      */
-    public SteppedView(String caption, int numberOfSteps) {
+    public SteppedView(int numberOfSteps, String caption) {
+        super(caption);
+    }
+
+    /**
+     * This method will be invoked once forms for all steps are constructed.
+     */
+    protected void formsConstructed() {
     }
 
     /**
@@ -70,20 +77,25 @@ public class SteppedView extends View implements Transactional {
     /**
      * This method is invoked when you complete a step. (From the last step,
      * you typically do the rest of the processing and {@link #close()} the view.
+     * If it raises any error or returns <code>false</code>, forward movement will be stopped.
      *
      * @param step Step
+     * @return True if the operation is successful.
      */
-    protected void complete(int step) {
+    @SuppressWarnings("RedundantThrows")
+    protected boolean complete(int step) throws Exception {
+        return true;
     }
 
     /**
-     * This method is invoked before a forward move happens. If the method doesn't return a <code>true</code> value,
-     * movement will be stopped. So, this can be used to validate the content of the current step.
+     * This method is invoked before invoking {@link #complete(int)} and if it raises any error or
+     * returns <code>false</code>, forward movement will be stopped.
      *
-     * @param step Current step
-     * @return Default implementation returns <code>true</code>.
+     * @param step Step
+     * @return True if the commit operation is successful.
+     * @throws Exception Any exception
      */
-    protected boolean isValid(int step) {
+    protected boolean commit(int step) throws Exception {
         return true;
     }
 
@@ -93,6 +105,14 @@ public class SteppedView extends View implements Transactional {
      */
     public void cancel() {
         abort();
+    }
+
+    /**
+     * This method is invoked when the all steps are successfully completed. The default behaviour is closes the view
+     * by invoking {@link #close()}.
+     */
+    public void complete() {
+        close();
     }
 
     /**
