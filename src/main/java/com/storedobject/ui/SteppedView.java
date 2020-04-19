@@ -1,5 +1,6 @@
 package com.storedobject.ui;
 
+import com.storedobject.vaadin.Button;
 import com.storedobject.vaadin.CSSGrid;
 import com.storedobject.vaadin.View;
 import com.vaadin.flow.component.Component;
@@ -34,6 +35,109 @@ public abstract class SteppedView extends View implements Transactional {
      * This method will be invoked once forms for all steps are constructed.
      */
     protected void formsConstructed() {
+    }
+
+    /**
+     * Got to next step (Equivalent of pressing the "Next" button).
+     *
+     * @return True if successful.
+     */
+    public boolean nextStep() {
+        return false;
+    }
+
+    /**
+     * Got to previous step (Equivalent of pressing the "Back" button).
+     *
+     * @return True if successful.
+     */
+    public boolean previousStep() {
+        return false;
+    }
+
+    /**
+     * Invoke the finish (Equivalent of pressing the "Finish" button). This will not be successful if not called from
+     * the final step.
+     *
+     * @return True if successful.
+     */
+    public boolean finish() {
+        return false;
+    }
+
+    /**
+     * Check if the current step is the first step.
+     *
+     * @return True or false.
+     */
+    public boolean isFirstStep() {
+        return false;
+    }
+
+    /**
+     * Check if the current step is the final step.
+     *
+     * @return True or false.
+     */
+    public boolean isFinalStep() {
+        return false;
+    }
+
+    /**
+     * Add extra button to the footer. Button will be visible in all steps unless its visibility is programmatically
+     * controlled.
+     *
+     * @param button Button to add
+     */
+    public void addExtraButton(Button button) {
+    }
+
+    /**
+     * Hide the "Back" button.
+     */
+    public void hideBackButton() {
+    }
+
+    /**
+     * Hide the "Next" button.
+     */
+    public void hideNextButton() {
+    }
+
+    /**
+     * Hide the "Finish" button.
+     */
+    public void hideFinishButton() {
+    }
+
+    /**
+     * Hide the "Cancel" button.
+     */
+    public void hideCancelButton() {
+    }
+
+    /**
+     * Unhide the "Back" button.
+     */
+    public void unhideBackButton() {
+    }
+
+    /**
+     * Unhide the "Next" button.
+     */
+    public void unhideNextButton() {
+    }
+
+    /**
+     * Unhide the "Finish" button.
+     */
+    public void unhideFinishButton() {
+    }
+
+    /**
+     * Unhide the "Cancel" button.
+     */
+    public void unhideCancelButton() {
     }
 
     /**
@@ -81,6 +185,7 @@ public abstract class SteppedView extends View implements Transactional {
      *
      * @param step Step
      * @return True if the operation is successful.
+     * @throws Exception In case of any error.
      */
     @SuppressWarnings("RedundantThrows")
     protected boolean complete(int step) throws Exception {
@@ -104,7 +209,6 @@ public abstract class SteppedView extends View implements Transactional {
      * the view.
      */
     public void cancel() {
-        abort();
     }
 
     /**
@@ -112,7 +216,6 @@ public abstract class SteppedView extends View implements Transactional {
      * by invoking {@link #close()}.
      */
     public void complete() {
-        close();
     }
 
     /**
