@@ -2,7 +2,7 @@ package com.storedobject.core;
 
 import java.sql.Date;
 
-public class Person extends StoredObject implements Comparable<Person> {
+public final class Person extends StoredObject implements HasContacts, Comparable<Person>, RequiresApproval {
 
 	public Person(String name) {
 	}

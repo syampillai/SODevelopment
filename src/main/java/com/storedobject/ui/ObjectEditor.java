@@ -9,6 +9,7 @@ import com.vaadin.flow.component.HasComponents;
 import com.vaadin.flow.component.HasValue;
 
 import java.util.function.BiFunction;
+import java.util.function.Function;
 
 public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T> implements Transactional, ObjectSetter<T>,
         ObjectChangedListener<T>, ObjectEditorListener, ObjectProvider<T>, AlertHandler, TransactionCreator {
@@ -256,10 +257,10 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T> 
         return 0;
     }
 
-    public void setSaver(BiFunction<T, TransactionManager, Boolean> saver) {
+    public void setSaver(Function<ObjectEditor<T>, Boolean> saver) {
     }
 
-    public void setDeleter(BiFunction<T, TransactionManager, Boolean> deleter) {
+    public void setDeleter(Function<ObjectEditor<T>, Boolean> deleter) {
     }
 
     public final boolean isViewOnly() {

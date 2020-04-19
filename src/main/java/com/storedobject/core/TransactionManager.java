@@ -25,8 +25,24 @@ public final class TransactionManager {
         return null;
     }
 
+    public boolean needsApprovals() {
+        return false;
+    }
+
     public static TransactionManager create(Device device, Properties loginProperties) {
         return null;
+    }
+
+    /**
+     * Create a new transaction for a given logic. Depending on the approval count of the logic, either a
+     * DB transaction or a Pseudo-transaction will be created.
+     *
+     * @param logic Logic
+     * @return Newly created transaction.
+     * @throws Exception Any exception.
+     */
+    public Transaction createTransaction(Logic logic) throws Exception {
+        return logic == null || logic.getApprovalCount() == 0 ? createTransaction() : createPseudoTransaction();
     }
 
     /**
@@ -72,10 +88,16 @@ public final class TransactionManager {
         void transact(Transaction transaction) throws Exception;
     }
 
-    public void transact(Transact transact) throws Exception {
+    public int transact(Logic logic, Transact transact) throws Exception {
+        return 0;
     }
 
-    public void transactPsuedo(Transact transact) throws Exception {
+    public int transact(Transact transact) throws Exception {
+        return 0;
+    }
+
+    public int transactPsuedo(Transact transact) throws Exception {
+        return 0;
     }
 
     public String format(Date date) {

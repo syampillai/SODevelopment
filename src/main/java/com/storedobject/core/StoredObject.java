@@ -349,6 +349,10 @@ public abstract class StoredObject {
         return -1;
     }
 
+    public static int family(Id id) {
+        return -1;
+    }
+
     public Transaction getTransaction() {
         return null;
     }

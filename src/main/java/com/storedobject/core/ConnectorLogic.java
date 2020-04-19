@@ -1,6 +1,6 @@
 package com.storedobject.core;
 
-public final class ConnectorLogic extends StoredObject {
+public final class ConnectorLogic extends StoredObject implements RequiresApproval {
 
     public ConnectorLogic() {
     }

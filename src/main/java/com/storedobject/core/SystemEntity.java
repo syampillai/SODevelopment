@@ -8,7 +8,7 @@ import java.util.Locale;
 /**
  * This class represents an entity whose accounting system exists in this server.
  */
-public class SystemEntity extends StoredObject {
+public final class SystemEntity extends StoredObject implements RequiresApproval {
 
 	public static String systemCountry = "IN";
 

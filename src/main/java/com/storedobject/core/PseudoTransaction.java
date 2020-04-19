@@ -25,11 +25,12 @@ public final class PseudoTransaction extends AbstractTransaction {
     public void commit() throws Exception {
     }
 
-    public void commit(DBTransaction transaction) throws Exception {
-    }
-
     @Override
     public void rollback() {
+    }
+
+    public int getApprovalCount() {
+        return 0;
     }
 
     @Override

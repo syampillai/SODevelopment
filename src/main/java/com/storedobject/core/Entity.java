@@ -1,6 +1,6 @@
 package com.storedobject.core;
 
-public class Entity extends StoredObject implements HasContacts {
+public final class Entity extends StoredObject implements HasContacts, RequiresApproval {
 
 	public Entity(String name, String location) {
 	}

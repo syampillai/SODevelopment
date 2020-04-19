@@ -3,12 +3,15 @@ package com.storedobject.core;
 import com.storedobject.common.Storable;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 
 /**
  * Class that represents a decimal number value with a defined number of decimals digits.
  * This class is immutable.
  */
 public class DecimalNumber implements Storable, Comparable<DecimalNumber> {
+
+	public static final DecimalNumber ZERO = new DecimalNumber(0);
 
 	/**
 	 * Create a decimal number of value 0 with 2 decimal digits.
@@ -74,6 +77,10 @@ public class DecimalNumber implements Storable, Comparable<DecimalNumber> {
 	public static DecimalNumber create(Object value, int decimals) {
 		return null;
     }
+
+	public static DecimalNumber zero(int decimals) {
+		return null;
+	}
 
 	/**
 	 * Get the decimal number as BigDecimal.

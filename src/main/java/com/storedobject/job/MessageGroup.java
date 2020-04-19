@@ -2,16 +2,9 @@ package com.storedobject.job;
 
 import java.math.BigDecimal;
 
-import com.storedobject.core.Columns;
-import com.storedobject.core.Id;
-import com.storedobject.core.MessageTemplate;
-import com.storedobject.core.ObjectIterator;
-import com.storedobject.core.Person;
-import com.storedobject.core.StoredObject;
-import com.storedobject.core.TransactionControl;
-import com.storedobject.core.TransactionManager;
+import com.storedobject.core.*;
 
-public class MessageGroup extends StoredObject {
+public class MessageGroup extends StoredObject implements RequiresApproval {
 
     public MessageGroup() {
     }

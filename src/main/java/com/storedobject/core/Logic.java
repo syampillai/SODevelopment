@@ -15,6 +15,13 @@ public final class Logic extends StoredObject implements DisplayOrder {
 	public static void columns(Columns columns) {
 	}
 
+	public int getApprovalCount() {
+		return 0;
+	}
+
+	public void setApprovalCount() {
+	}
+
 	public String getClassName() {
 		return null;
 	}
@@ -36,10 +43,6 @@ public final class Logic extends StoredObject implements DisplayOrder {
 		return null;
 	}
 	
-	public static String packImageName(String imageName) {
-		return null;
-	}
-
 	public void setDisplayOrder(int displayOrder) {
 	}
 
