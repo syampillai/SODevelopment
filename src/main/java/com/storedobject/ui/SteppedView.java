@@ -37,8 +37,20 @@ public abstract class SteppedView extends View implements Transactional {
     protected void formsConstructed() {
     }
 
+
     /**
-     * Got to next step (Equivalent of pressing the "Next" button).
+     * Traverse to a particular step from the current step. Traversal may not be successful depending on the
+     * conditions and validations at the intermediary steps.
+     *
+     * @param step Step to jump to
+     * @return The step up to which traversal is successful.
+     */
+    public int goToStep(int step) {
+        return 0;
+    }
+
+    /**
+     * Go to the next step (Equivalent of pressing the "Next" button).
      *
      * @return True if successful.
      */
@@ -47,7 +59,7 @@ public abstract class SteppedView extends View implements Transactional {
     }
 
     /**
-     * Got to previous step (Equivalent of pressing the "Back" button).
+     * Go to the previous step (Equivalent of pressing the "Back" button).
      *
      * @return True if successful.
      */
