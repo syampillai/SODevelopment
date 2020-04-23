@@ -35,14 +35,14 @@ public final class Logic extends StoredObject implements DisplayOrder {
 
 	public void setTitle(String title) {
 	}
-	
+
 	public void setIconImageName(String iconImageName) {
 	}
 
 	public String getIconImageName() {
 		return null;
 	}
-	
+
 	public void setDisplayOrder(int displayOrder) {
 	}
 
@@ -50,52 +50,52 @@ public final class Logic extends StoredObject implements DisplayOrder {
 		return 0;
 	}
 
-    public void setDevice(int device) {
-    }
+	public void setDevice(int device) {
+	}
 
-    public int getDevice() {
+	public int getDevice() {
 		return 0;
-    }
+	}
 
-    public static String[] getDeviceBitValues() {
+	public static String[] getDeviceBitValues() {
 		return null;
-    }
+	}
 
-    public static String getDeviceValue(int value) {
+	public static String getDeviceValue(int value) {
 		return null;
-    }
+	}
 
-    public String getDeviceValue() {
+	public String getDeviceValue() {
 		return null;
-    }
+	}
 
-    public void setMinimumDeviceHeight(int minimumDeviceHeight) {
-    }
+	public void setMinimumDeviceHeight(int minimumDeviceHeight) {
+	}
 
-    public int getMinimumDeviceHeight() {
-        return 0;
-    }
+	public int getMinimumDeviceHeight() {
+		return 0;
+	}
 
-    public void setMaximumDeviceHeight(int maximumDeviceHeight) {
-    }
+	public void setMaximumDeviceHeight(int maximumDeviceHeight) {
+	}
 
-    public int getMaximumDeviceHeight() {
-        return 0;
-    }
+	public int getMaximumDeviceHeight() {
+		return 0;
+	}
 
-    public void setMinimumDeviceWidth(int minimumDeviceWidth) {
-    }
+	public void setMinimumDeviceWidth(int minimumDeviceWidth) {
+	}
 
-    public int getMinimumDeviceWidth() {
-        return 0;
-    }
+	public int getMinimumDeviceWidth() {
+		return 0;
+	}
 
-    public void setMaximumDeviceWidth(int maximumDeviceWidth) {
-    }
+	public void setMaximumDeviceWidth(int maximumDeviceWidth) {
+	}
 
-    public int getMaximumDeviceWidth() {
-        return 0;
-    }
+	public int getMaximumDeviceWidth() {
+		return 0;
+	}
 
 	public Executable getExecutable() {
 		return null;
@@ -103,16 +103,24 @@ public final class Logic extends StoredObject implements DisplayOrder {
 
 	public void setExecutable(Executable executable) {
 	}
-	
+
 	public static Logic getRunningLogic(Device device) {
 		return null;
 	}
-	
+
 	public static String getRunningLogicTitle(Device device, String defaultTitle) {
 		return null;
 	}
-	
+
 	public boolean isApplicableTo(String deviceName) {
 		return false;
+	}
+
+	public static Logic get(String title) {
+		return null;
+	}
+
+	public static ObjectIterator<Logic> list(String title) {
+		return null;
 	}
 }

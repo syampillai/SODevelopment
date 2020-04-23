@@ -113,6 +113,9 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T> 
         return true;
     }
 
+    protected void save(Transaction t) throws Exception {
+    }
+
     public void doCancel() {
     }
 
