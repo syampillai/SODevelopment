@@ -3,8 +3,10 @@ package com.storedobject.ui;
 import com.storedobject.core.*;
 import com.storedobject.ui.util.AbstractContentGenerator;
 import com.storedobject.vaadin.ApplicationLayout;
+import com.storedobject.vaadin.BrowserResizedListener;
 import com.storedobject.vaadin.Icon;
 import com.vaadin.flow.component.progressbar.ProgressBar;
+import com.vaadin.flow.shared.Registration;
 
 public class Application extends com.storedobject.vaadin.Application implements Device, RunningLogic {
 
@@ -90,6 +92,10 @@ public class Application extends com.storedobject.vaadin.Application implements 
 
     @Override
     public void setDeviceLayout(DeviceLayout layout) {
+    }
+
+    public boolean isMenuOpened() {
+        return true;
     }
 
     public void view(MediaFile mediaFile) {
@@ -193,5 +199,9 @@ public class Application extends com.storedobject.vaadin.Application implements 
     }
 
     public void addMultiContent(long fileId, AbstractContentGenerator content) {
+    }
+
+    public Registration addContentResizedListener(BrowserResizedListener listener) {
+        return null;
     }
 }

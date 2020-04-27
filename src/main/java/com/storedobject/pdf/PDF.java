@@ -2,6 +2,7 @@ package com.storedobject.pdf;
 
 import com.storedobject.common.*;
 import com.storedobject.core.*;
+import com.storedobject.core.StringUtility;
 
 import java.awt.*;
 import java.io.IOException;
@@ -1246,18 +1247,132 @@ public abstract class PDF implements java.io.Closeable, com.storedobject.core.Co
      * @param opacity Opacity to be used. (A value between 0.0 to 1.0).
      */
     public void showText(String text, int x, int y, int alignment, float rotation, PDFFont font, float fontSize, PDFColor color, float opacity) {
+        new ObjectTable<>(null);
+    }
+
+    /**
+     * Define a table where {@link StoredObject} instances can be added as rows.
+     *
+     * @param <T> Class type of the {@link StoredObject} instance
+     */
+    public class ObjectTable<T extends StoredObject> extends PDFTable {
+
+        /**
+         * Create a table for the given type of {@link StoredObject} class.
+         *
+         * @param objectClass Object class
+         * @param attributes List of attributes to be reported
+         */
+        public ObjectTable(Class<T> objectClass, String... attributes) {
+            this(objectClass, true, attributes);
+        }
+
+        /**
+         * Create a table for the given type of {@link StoredObject} class.
+         *
+         * @param objectClass Object class
+         * @param withHeadings Whether header columns to be created automatically or not
+         * @param attributes List of attributes to be reported
+         */
+        public ObjectTable(Class<T> objectClass, boolean withHeadings, String... attributes) {
+            super(attributes.length);
+        }
+
+        /**
+         * Generate the header row.
+         */
+        public void generateHeaderRow() {
+        }
+
+        /**
+         * Add an object instance to the table. This will create one row.
+         *
+         * @param object Object to be added.
+         */
+        public void addObject(T object) {
+        }
+
+        /**
+         * Create the header cell. Override this method if you want a customized cell.
+         *
+         * @param attribute Attribute for which cell to be created
+         * @return The cell that is created.
+         */
+        protected PDFCell createHeaderCell(String attribute) {
+            return createCell(createTitleText(StringUtility.makeLabel(attribute)));
+        }
+
+        /**
+         * Create the value cell. Override this method if you want a customized cell.
+         *
+         * @param attribute Attribute for which cell to be created
+         * @param value Value of the cell
+         * @return The cell that is created.
+         */
+        protected PDFCell createValueCell(@SuppressWarnings("unused") String attribute, Object value) {
+            return createCell(createCell(value));
+        }
+    }
+
+    /**
+     * Define a table where {@link StoredObject} instances can be added in a "form" style (Each attribute is printed
+     * in a separate row).
+     *
+     * @param <T> Class type of the {@link StoredObject} instance
+     */
+    public class ObjectFormTable<T extends StoredObject> extends PDFTable {
+
+        /**
+         * Create a table for the given type of {@link StoredObject} class.
+         *
+         * @param objectClass Object class
+         * @param attributes List of attributes to be reported
+         */
+        public ObjectFormTable(Class<T> objectClass, String... attributes) {
+            super(2);
+        }
+
+        /**
+         * Add an object instance to the table. This will create one row for each attribute.
+         *
+         * @param object Object to be added.
+         */
+        public void addObject(T object) {
+        }
+
+        /**
+         * Create the label cell. Override this method if you want a customized cell.
+         *
+         * @param attribute Attribute for which cell to be created
+         * @param label Label to be printed (Label is automatically generated from the attribute)
+         * @return The cell that is created.
+         */
+        protected PDFCell createLabelCell(@SuppressWarnings("unused") String attribute, String label) {
+            return createCell(label);
+        }
+
+        /**
+         * Create the value cell. Override this method if you want a customized cell.
+         *
+         * @param attribute Attribute for which cell to be created
+         * @param value Value of the cell
+         * @return The cell that is created.
+         */
+        protected PDFCell createValueCell(@SuppressWarnings("unused") String attribute, Object value) {
+            return createCell(createCell(value));
+        }
     }
 
     /**
      * Used to define text to include in the PDF document.
      */
-    @SuppressWarnings("serial")
     public class Text extends PDFPhrase implements StyledBuilder {
 
         /**
          * Creates an empty text string.
          */
         public Text() {
+            createCell(null);
         }
 
         /**
@@ -1502,6 +1617,7 @@ public abstract class PDF implements java.io.Closeable, com.storedobject.core.Co
          * @throws Exception Any exception.
          */
         public PDFImage getPageImage(int page) throws Exception {
+            new Text();
             return null;
         }
 

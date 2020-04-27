@@ -2,9 +2,9 @@ package com.storedobject.ui;
 
 import com.storedobject.common.HTMLText;
 import com.storedobject.vaadin.StyledText;
+import com.vaadin.flow.component.HasText;
 
-@SuppressWarnings("serial")
-public class ELabel extends StyledText implements StyledBuilder {
+public class ELabel extends StyledText implements StyledBuilder, HasText {
 
     protected final HTMLText label = null;
 

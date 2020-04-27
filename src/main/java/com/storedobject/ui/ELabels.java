@@ -1,9 +1,10 @@
 package com.storedobject.ui;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.HasText;
 import com.vaadin.flow.component.html.Div;
 
-public class ELabels extends Div implements StyledBuilder {
+public class ELabels extends Div implements StyledBuilder, HasText {
 
     public ELabels() {
         this(null);
@@ -25,6 +26,11 @@ public class ELabels extends Div implements StyledBuilder {
     @Override
     public void setText(String text) {
         setValue((Object)text);
+    }
+
+    @Override
+    public String getText() {
+        return getValue();
     }
 
     @Override

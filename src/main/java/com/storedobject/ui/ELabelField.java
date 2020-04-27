@@ -1,8 +1,9 @@
 package com.storedobject.ui;
 
 import com.storedobject.vaadin.CustomField;
+import com.vaadin.flow.component.HasText;
 
-public class ELabelField extends CustomField<String> implements StyledBuilder {
+public class ELabelField extends CustomField<String> implements StyledBuilder, HasText {
 
     public ELabelField() {
         this(null);
@@ -27,6 +28,16 @@ public class ELabelField extends CustomField<String> implements StyledBuilder {
 
     @Override
     public void setValue(String value) {
+    }
+
+    @Override
+    public void setText(String text) {
+        setValue(text);
+    }
+
+    @Override
+    public String getText() {
+        return getValue();
     }
 
     @Override
