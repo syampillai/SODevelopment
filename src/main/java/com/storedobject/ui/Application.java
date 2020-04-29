@@ -3,10 +3,7 @@ package com.storedobject.ui;
 import com.storedobject.core.*;
 import com.storedobject.ui.util.AbstractContentGenerator;
 import com.storedobject.vaadin.ApplicationLayout;
-import com.storedobject.vaadin.BrowserResizedListener;
-import com.storedobject.vaadin.Icon;
 import com.vaadin.flow.component.progressbar.ProgressBar;
-import com.vaadin.flow.shared.Registration;
 
 public class Application extends com.storedobject.vaadin.Application implements Device, RunningLogic {
 
@@ -168,7 +165,7 @@ public class Application extends com.storedobject.vaadin.Application implements 
     }
 
     public BusyIndicator getBusyIndicator() {
-        return null;
+        return new BusyIndicator((this));
     }
 
     public class BusyIndicator extends ProgressBar {
@@ -185,6 +182,7 @@ public class Application extends com.storedobject.vaadin.Application implements 
 
         @Override
         public void setVisible(boolean visible) {
+            view();
         }
 
         @Override
@@ -199,9 +197,5 @@ public class Application extends com.storedobject.vaadin.Application implements 
     }
 
     public void addMultiContent(long fileId, AbstractContentGenerator content) {
-    }
-
-    public Registration addContentResizedListener(BrowserResizedListener listener) {
-        return null;
     }
 }

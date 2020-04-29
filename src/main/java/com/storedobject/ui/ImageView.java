@@ -8,6 +8,10 @@ import com.vaadin.flow.server.AbstractStreamResource;
 
 public class ImageView extends com.storedobject.vaadin.ImageView {
 
+    public ImageView() {
+        this((String)null);
+    }
+
     public ImageView(String url) {
         super(url);
     }
