@@ -6,6 +6,10 @@ import java.util.function.Predicate;
 
 public class ObjectSearchFilter {
 
+	public String getFilter() {
+		return null;
+	}
+
 	public String getFilter(String extraCondition) {
 		return null;
 	}
@@ -34,12 +38,12 @@ public class ObjectSearchFilter {
 	public Predicate<StoredObject> getPredicate(String extraCondition) {
 		return null;
 	}
-	
-	public StoredObject filter(StoredObject object) {
+
+	public <T extends StoredObject> T filter(T object) {
 		return null;
-	}	
-	
-	public StoredObject filter(StoredObject object, String extraCondition) {
+	}
+
+	public <T extends StoredObject> T filter(T object, String extraCondition) {
 		return null;
 	}
 }

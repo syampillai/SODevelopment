@@ -64,4 +64,7 @@ public class ObjectGrid<T extends StoredObject> extends DataGrid<T> implements O
 
     public void search() {
     }
+
+    public void loaded() {
+    }
 }

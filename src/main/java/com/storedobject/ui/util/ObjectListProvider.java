@@ -5,9 +5,8 @@ import com.storedobject.core.ObjectSearchFilter;
 import com.storedobject.core.StoredObject;
 import com.vaadin.flow.component.ItemLabelGenerator;
 import com.vaadin.flow.data.provider.CallbackDataProvider;
-import com.vaadin.flow.data.provider.Query;
+import com.vaadin.flow.shared.Registration;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
@@ -15,15 +14,16 @@ import java.util.stream.Stream;
 public class ObjectListProvider<T extends StoredObject> extends CallbackDataProvider<T, String> implements ObjectDataProvider<T> {
 
     public ObjectListProvider(Class<T> objectClass) {
-        this(new ArrayList<>());
+        this();
     }
 
     public ObjectListProvider(List<T> list) {
-        this(new Supplier<>(list));
+        this();
     }
 
-    private ObjectListProvider(Supplier<T> supplier) {
-        super(supplier.new Fetcher(), supplier.new Counter(), StoredObject::getId);
+    private ObjectListProvider() {
+        //noinspection ConstantConditions
+        super(null, null);
     }
 
     @Override
@@ -46,34 +46,10 @@ public class ObjectListProvider<T extends StoredObject> extends CallbackDataProv
 
     @Override
     public void close() {
-        clear();
-    }
-
-    @Override
-    public void setFilter(ObjectSearchFilter filter) {
-    }
-
-    @Override
-    public ObjectSearchFilter getFilter(boolean create) {
-        return null;
     }
 
     @Override
     public void filter(Predicate<T> filter) {
-    }
-
-    @Override
-    public Predicate<T> getFilterPredicate() {
-        return null;
-    }
-
-    @Override
-    public void setLoadFilter(Predicate<T> filter) {
-    }
-
-    @Override
-    public Predicate<T> getLoadFilter() {
-        return null;
     }
 
     @Override
@@ -89,11 +65,44 @@ public class ObjectListProvider<T extends StoredObject> extends CallbackDataProv
     }
 
     @Override
+    public Predicate<T> getFilterPredicate() {
+        return null;
+    }
+
+    @Override
     public void load(ObjectIterator<T> objects) {
+    }
+
+    @Override
+    public boolean validateFilterCondition(T value) {
+        return false;
     }
 
     public boolean contains(T item) {
         return false;
+    }
+
+    @Override
+    public void filterChanged() {
+        refreshAll();
+    }
+
+    @Override
+    public void setLoadFilter(Predicate<T> loadFilter) {
+    }
+
+    @Override
+    public Predicate<T> getLoadFilter() {
+        return null;
+    }
+
+    @Override
+    public void setFilter(ObjectSearchFilter filter) {
+    }
+
+    @Override
+    public ObjectSearchFilter getFilter(boolean create) {
+        return null;
     }
 
     public final boolean add(T item) {
@@ -106,6 +115,10 @@ public class ObjectListProvider<T extends StoredObject> extends CallbackDataProv
 
     public boolean update(T item) {
         return true;
+    }
+
+    @Override
+    public void edited(T item) {
     }
 
     public boolean delete(T item) {
@@ -141,10 +154,6 @@ public class ObjectListProvider<T extends StoredObject> extends CallbackDataProv
     }
 
     @Override
-    public void filterChanged() {
-    }
-
-    @Override
     public boolean isInMemory() {
         return true;
     }
@@ -177,29 +186,20 @@ public class ObjectListProvider<T extends StoredObject> extends CallbackDataProv
     }
 
     @Override
-    public boolean validateFilterCondition(T value) {
-        return false;
+    public void added(T item) {
     }
 
-    private static class Supplier<T extends StoredObject> {
+    @Override
+    public void deleted(T item) {
+    }
 
-        private Supplier(List<T> list) {
-        }
+    @Override
+    public Registration addObjectDataLoadedListener(ObjectDataLoadedListener listener) {
+        return null;
+    }
 
-        private class Fetcher implements CallbackDataProvider.FetchCallback<T, String> {
-
-            @Override
-            public Stream<T> fetch(Query<T, String> query) {
-                return null;
-            }
-        }
-
-        private class Counter implements CallbackDataProvider.CountCallback<T, String> {
-
-            @Override
-            public int count(Query<T, String> query) {
-                return 0;
-            }
-        }
+    @Override
+    public AutoCloseable getResource() {
+        return null;
     }
 }

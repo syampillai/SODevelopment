@@ -18,7 +18,7 @@ public class ObjectForestSupplier<T extends StoredObject> extends AbstractObject
     @SuppressWarnings("unchecked")
     public ObjectForestSupplier(int linkType, StoredObject master, Class<T> objectClass, String condition, String orderBy, boolean any) {
         //noinspection rawtypes
-        super(new ObjectsCached(linkType, master, objectClass, condition, orderBy, any), false);
+        super(new ObjectsCached(linkType, master, objectClass, condition, orderBy, any, false), false);
     }
 
     @Override

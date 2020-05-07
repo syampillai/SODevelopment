@@ -5,6 +5,8 @@ import com.storedobject.core.JavaClassLoader;
 import com.storedobject.core.ObjectSearchBuilder;
 import com.storedobject.core.StoredObject;
 import com.storedobject.ui.util.ObjectDataProvider;
+import com.storedobject.vaadin.Button;
+import com.storedobject.vaadin.ButtonLayout;
 import com.vaadin.flow.component.HasValue;
 import com.vaadin.flow.component.grid.editor.Editor;
 
@@ -15,6 +17,9 @@ import static com.storedobject.core.EditorAction.ALL;
 import static com.storedobject.core.EditorAction.ALLOW_ANY;
 
 public class ObjectBrowser<T extends StoredObject> extends ObjectGrid<T> implements EditableDataGrid {
+
+    protected final ButtonLayout buttonPanel = new ButtonLayout();
+    protected Button add, edit, delete, search, filter, load, view, report, excel, audit, exit, save, cancel;
 
     public ObjectBrowser(Class<T> objectClass) {
         this(objectClass, (String)null);

@@ -10,7 +10,7 @@ import java.util.stream.Stream;
 
 public class ObjectsCached<T extends StoredObject, M> {
 
-    ObjectsCached(int linkType, StoredObject master, Class<T> objectClass, String condition, String orderBy, boolean any) {
+    ObjectsCached(int linkType, StoredObject master, Class<T> objectClass, String condition, String orderBy, boolean any, boolean allowSorting) {
     }
 
     void load(ObjectIterator<T> objects) {
