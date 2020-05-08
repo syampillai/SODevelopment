@@ -199,7 +199,7 @@ public class ObjectListProvider<T extends StoredObject> extends CallbackDataProv
     }
 
     @Override
-    public AutoCloseable getResource() {
+    public final AutoCloseable getResource() {
         return null;
     }
 }

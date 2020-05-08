@@ -156,7 +156,7 @@ public class AbstractObjectSupplier<T extends StoredObject, M> extends CallbackD
     }
 
     @Override
-    public AutoCloseable getResource() {
+    public final AutoCloseable getResource() {
         return null;
     }
 }

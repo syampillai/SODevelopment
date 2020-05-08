@@ -1,6 +1,7 @@
 package com.storedobject.ui;
 
 import com.storedobject.common.FilterProvider;
+import com.storedobject.common.ResourceOwner;
 import com.storedobject.core.ObjectSearchFilter;
 import com.storedobject.core.StoredObject;
 import com.storedobject.ui.util.ObjectInput;
@@ -12,7 +13,7 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
-public class ObjectComboField<T extends StoredObject> extends ComboField<T> implements ObjectInput<T> {
+public class ObjectComboField<T extends StoredObject> extends ComboField<T> implements ObjectInput<T>, ResourceOwner {
 
     public ObjectComboField(Class<T> objectClass) {
         this(objectClass, false);
@@ -210,5 +211,10 @@ public class ObjectComboField<T extends StoredObject> extends ComboField<T> impl
 
     @Override
     public void filterChanged() {
+    }
+
+    @Override
+    public final AutoCloseable getResource() {
+        return null;
     }
 }

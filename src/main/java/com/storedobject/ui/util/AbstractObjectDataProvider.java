@@ -1,6 +1,7 @@
 package com.storedobject.ui.util;
 
 import com.storedobject.common.FilterProvider;
+import com.storedobject.common.ResourceOwner;
 import com.storedobject.core.ObjectIterator;
 import com.storedobject.core.StoredObject;
 import com.storedobject.ui.FilterMethods;
@@ -10,7 +11,7 @@ import com.vaadin.flow.data.provider.DataProvider;
 import java.io.Closeable;
 import java.util.stream.Stream;
 
-public interface AbstractObjectDataProvider<T extends StoredObject, M> extends DataProvider<M, String>, FilterMethods<T>, Closeable, ResourceHolder {
+public interface AbstractObjectDataProvider<T extends StoredObject, M> extends DataProvider<M, String>, FilterMethods<T>, Closeable, ResourceOwner {
 
     boolean isAllowAny();
 

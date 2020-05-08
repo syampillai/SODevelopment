@@ -1,5 +1,6 @@
 package com.storedobject.ui;
 
+import com.storedobject.common.ResourceOwner;
 import com.storedobject.core.ObjectSetter;
 import com.storedobject.core.StoredObject;
 import com.storedobject.ui.util.ObjectDataProvider;
@@ -9,7 +10,7 @@ import com.vaadin.flow.data.provider.DataProvider;
 
 import java.util.List;
 
-public class ObjectGrid<T extends StoredObject> extends DataGrid<T> implements ObjectGridData<T> {
+public class ObjectGrid<T extends StoredObject> extends DataGrid<T> implements ObjectGridData<T>, ResourceOwner {
 
     public ObjectGrid(Class<T> objectClass) {
         this(objectClass, false);
@@ -66,5 +67,10 @@ public class ObjectGrid<T extends StoredObject> extends DataGrid<T> implements O
     }
 
     public void loaded() {
+    }
+
+    @Override
+    public final AutoCloseable getResource() {
+        return null;
     }
 }

@@ -1,5 +1,7 @@
 package com.storedobject.core;
 
+import javax.annotation.Nonnull;
+
 public class Query implements java.util.Iterator < java.sql.ResultSet >, java.lang.Iterable < java.sql.ResultSet >, java.io.Closeable {
 
     protected Query() {
@@ -14,17 +16,14 @@ public class Query implements java.util.Iterator < java.sql.ResultSet >, java.la
     }
 
     @Override
-	protected void finalize() {
-    }
-
-    @Override
 	public boolean hasNext() {
         return false;
     }
 
+    @Nonnull
     @Override
 	public java.util.Iterator < java.sql.ResultSet > iterator() {
-        return null;
+        return this;
     }
 
     @Override

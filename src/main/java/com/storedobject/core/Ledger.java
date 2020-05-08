@@ -1,5 +1,7 @@
 package com.storedobject.core;
 
+import javax.annotation.Nonnull;
+
 public final class Ledger implements java.util.Iterator < com.storedobject.core.LedgerEntry >, java.lang.Iterable < com.storedobject.core.LedgerEntry >, java.io.Closeable {
 
     public Ledger(com.storedobject.core.Account p1, com.storedobject.core.DatePeriod p2) {
@@ -9,15 +11,13 @@ public final class Ledger implements java.util.Iterator < com.storedobject.core.
     private Ledger() {
     }
 
-    protected void finalize() {
-    }
-
     public boolean hasNext() {
         return false;
     }
 
+    @Nonnull
     public java.util.Iterator < com.storedobject.core.LedgerEntry > iterator() {
-        return null;
+        return this;
     }
 
     public com.storedobject.core.LedgerEntry next() {

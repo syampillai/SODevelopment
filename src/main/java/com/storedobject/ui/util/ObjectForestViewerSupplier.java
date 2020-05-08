@@ -167,7 +167,7 @@ public class ObjectForestViewerSupplier<T extends StoredObject> implements Abstr
     }
 
     @Override
-    public AutoCloseable getResource() {
+    public final AutoCloseable getResource() {
         return null;
     }
 }

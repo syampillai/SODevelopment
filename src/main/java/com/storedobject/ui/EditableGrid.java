@@ -1,5 +1,6 @@
 package com.storedobject.ui;
 
+import com.storedobject.common.ResourceOwner;
 import com.storedobject.core.EditableList;
 import com.storedobject.vaadin.HasColumns;
 import com.vaadin.flow.component.AbstractField;
@@ -9,7 +10,7 @@ import com.vaadin.flow.data.provider.DataProvider;
 import java.lang.reflect.Method;
 import java.util.stream.Stream;
 
-public class EditableGrid<T> extends GridPro<T> implements HasColumns<T>, EditableList<T> {
+public class EditableGrid<T> extends GridPro<T> implements HasColumns<T>, EditableList<T>, ResourceOwner {
 
     /**
      * Constructor that will generate columns from the Bean's properties.
@@ -129,5 +130,10 @@ public class EditableGrid<T> extends GridPro<T> implements HasColumns<T>, Editab
     @Override
     public boolean update(T item) {
         return getEditableList().update(item);
+    }
+
+    @Override
+    public final AutoCloseable getResource() {
+        return null;
     }
 }

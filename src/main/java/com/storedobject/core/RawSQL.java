@@ -1,6 +1,8 @@
 package com.storedobject.core;
 
-public final class RawSQL {
+import com.storedobject.common.ResourceOwner;
+
+public final class RawSQL implements ResourceOwner {
 
     public static boolean debug;
     public static int RUNNING = 0;
@@ -22,6 +24,11 @@ public final class RawSQL {
 
     RawSQL(java.lang.String p1, com.storedobject.core.RawSQL p2) {
         this();
+    }
+
+    @Override
+    public AutoCloseable getResource() {
+        return null;
     }
 
     public boolean next() {
