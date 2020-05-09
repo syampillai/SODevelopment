@@ -7,6 +7,8 @@ import java.io.Writer;
 
 public abstract class StreamContentProducer implements ContentProducer, Closeable {
 
+	protected OutputStream out;
+
 	public StreamContentProducer() {
 	}
 	

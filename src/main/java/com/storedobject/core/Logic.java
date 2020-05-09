@@ -104,6 +104,13 @@ public final class Logic extends StoredObject implements DisplayOrder {
 	public void setExecutable(Executable executable) {
 	}
 
+	public void setAutoExecute(boolean autoExecute) {
+	}
+
+	public boolean getAutoExecute() {
+		return false;
+	}
+
 	public static Logic getRunningLogic(Device device) {
 		return null;
 	}
