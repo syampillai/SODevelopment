@@ -44,6 +44,20 @@ public class ObjectForestViewerSupplier<T extends StoredObject> implements Abstr
     }
 
     @Override
+    public void setViewFilter(ViewFilter<T> viewFilter) {
+    }
+
+    @Override
+    public ViewFilter<T> getViewFilter() {
+        return null;
+    }
+
+    @Override
+    public void filterView(String filters) {
+
+    }
+
+    @Override
     public Stream<T> streamAll() {
         return null;
     }

@@ -49,6 +49,20 @@ public class ObjectListProvider<T extends StoredObject> extends CallbackDataProv
     }
 
     @Override
+    public void setViewFilter(ViewFilter<T> viewFilter) {
+    }
+
+    @Override
+    public ViewFilter<T> getViewFilter() {
+        return null;
+    }
+
+    @Override
+    public void filterView(String filters) {
+
+    }
+
+    @Override
     public void filter(Predicate<T> filter) {
     }
 

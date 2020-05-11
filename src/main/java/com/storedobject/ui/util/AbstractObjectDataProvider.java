@@ -20,6 +20,12 @@ public interface AbstractObjectDataProvider<T extends StoredObject, M> extends D
     @Override
     void close();
 
+    void setViewFilter(ViewFilter<T> viewFilter);
+
+    ViewFilter<T> getViewFilter();
+
+    void filterView(String filters);
+
     /**
      * Set a DB filter.
      *

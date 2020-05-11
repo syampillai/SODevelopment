@@ -1,7 +1,9 @@
 package com.storedobject.ui;
 
+import com.storedobject.common.LogicalOperator;
 import com.storedobject.common.ResourceOwner;
 import com.storedobject.core.ObjectSetter;
+import com.storedobject.core.ObjectToString;
 import com.storedobject.core.StoredObject;
 import com.storedobject.ui.util.ObjectDataProvider;
 import com.storedobject.ui.util.ObjectGridData;
@@ -9,6 +11,7 @@ import com.storedobject.ui.util.ObjectSupplier;
 import com.vaadin.flow.data.provider.DataProvider;
 
 import java.util.List;
+import java.util.function.BiFunction;
 
 public class ObjectGrid<T extends StoredObject> extends DataGrid<T> implements ObjectGridData<T>, ResourceOwner {
 
@@ -72,5 +75,20 @@ public class ObjectGrid<T extends StoredObject> extends DataGrid<T> implements O
     @Override
     public final AutoCloseable getResource() {
         return null;
+    }
+
+    public void filterView(String filters) {
+    }
+
+    public void configureFilterView(BiFunction<T, String[], Boolean> matchFunction) {
+    }
+
+    public void configureFilterView(ObjectToString<T> objectToString) {
+    }
+
+    public void configureFilterView(String... attributes) {
+    }
+
+    public void configureFilterView(LogicalOperator logicalOperator) {
     }
 }

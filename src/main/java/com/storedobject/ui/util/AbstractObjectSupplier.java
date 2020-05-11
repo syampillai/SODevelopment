@@ -39,6 +39,20 @@ public class AbstractObjectSupplier<T extends StoredObject, M> extends CallbackD
     }
 
     @Override
+    public void setViewFilter(ViewFilter<T> viewFilter) {
+    }
+
+    @Override
+    public ViewFilter<T> getViewFilter() {
+        return null;
+    }
+
+    @Override
+    public void filterView(String filters) {
+
+    }
+
+    @Override
     public boolean isFullyLoaded() {
         return false;
     }
