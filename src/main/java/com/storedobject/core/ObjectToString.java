@@ -4,12 +4,11 @@ import com.storedobject.common.StringList;
 import com.storedobject.common.ToString;
 import com.storedobject.core.StoredObjectUtility.MethodList;
 
+@FunctionalInterface
 public interface ObjectToString<T extends StoredObject> extends ToString<T> {
 
 	@Override
-	default String toString(T object) {
-		return object.toDisplay();
-	}
+	String toString(T object);
 
 	static <O extends StoredObject> ObjectToString<O> create(Class<O> objectClass, String... attributes) {
 		return new O2S<>();
@@ -28,5 +27,10 @@ public interface ObjectToString<T extends StoredObject> extends ToString<T> {
 	}
 
 	class O2S<O extends StoredObject> implements ObjectToString<O> {
+
+		@Override
+		public String toString(O object) {
+			return null;
+		}
 	}
 }
