@@ -91,6 +91,10 @@ public interface ObjectGridData<T extends StoredObject> extends HasColumns<T>, O
         getDataProvider().clear();
     }
 
+    default void clear(boolean refresh) {
+        getDataProvider().clear(refresh);
+    }
+
     default boolean isFullyLoaded() {
         return getDataProvider().isFullyLoaded();
     }

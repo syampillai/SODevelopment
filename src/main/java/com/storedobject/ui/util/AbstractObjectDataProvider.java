@@ -95,6 +95,10 @@ public interface AbstractObjectDataProvider<T extends StoredObject, M> extends D
     void load(ObjectIterator<T> objects);
 
     default void clear() {
+        clear(true);
+    }
+
+    default void clear(boolean refresh) {
         load(ObjectIterator.create());
     }
 
