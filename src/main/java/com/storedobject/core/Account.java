@@ -362,7 +362,7 @@ public class Account extends StoredObject implements OfEntity {
         return new Account();
     }
 
-    public static ObjectIterator<Account> list(SystemEntity systemEntity, String name) {
+    public static ObjectIterator<? extends Account> list(SystemEntity systemEntity, String name) {
         return list(Account.class);
     }
 }

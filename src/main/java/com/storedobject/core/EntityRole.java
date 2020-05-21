@@ -2,7 +2,7 @@ package com.storedobject.core;
 
 import java.math.BigDecimal;
 
-public class EntityRole extends StoredObject implements OfEntity, HasContacts, RequiresApproval {
+public abstract class EntityRole extends StoredObject implements OfEntity, HasContacts, RequiresApproval {
 
     public EntityRole() {
     }
