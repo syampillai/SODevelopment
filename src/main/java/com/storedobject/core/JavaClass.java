@@ -22,7 +22,6 @@ public final class JavaClass extends JavaInnerClass {
 		return null;
 	}
 
-	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
 	public static boolean checkName(String name) {
 		return false;
 	}

@@ -1,202 +1,368 @@
 package com.storedobject.core;
 
-public class Account extends com.storedobject.core.StoredObject {
+import com.storedobject.core.annotation.SetNotAllowed;
 
-    public Account(com.storedobject.core.Id p1) {
-        this();
+import java.math.BigDecimal;
+import java.util.Currency;
+
+/**
+ * This class represents an Account. Account has a status ({@link #getAccountStatus()}) which is a bit pattern with following values:<pre>
+ *    0: [Account level] 0 = Active, 1 = Closed
+ *  2,1: [Account level, Overrides 10,9] 00 = Bits 10,9 applicable, 01 = Debits allowed (credit blocked), 10 = Credits allowed (debits blocked), 11 = Frozen
+ *    3: [Chart level] 0 = Balance control is not strict, 1 = Strict balance control
+ *    4: [Chart level] (Strictly applied if bit 3 = 1) 0 = Debit balance, 1 = Credit balance
+ *  6,5: [Chart level] 00 = BS item, 01 = PL item, 10 = Stock item, 11 = Contingent.
+ *    7: [Chart level] 0 = Normal, 1 = Deep frozen (No transactions, no way to override).
+ *    8: [Chart level] 0 = No limit check, 1 = Limit check
+ * 10,9: [Chart level] 00 = Debit and credit trans allowed, 01 = Generally debited, 10 = Generally credited, 11 = Frozen
+ * </pre>
+ */
+public class Account extends StoredObject implements OfEntity {
+
+    /**
+     * Constructs an Account in local currency.
+     *
+     * @param chartId Chart Id.
+     */
+    public Account(Id chartId) {
+        this(chartId, null, null);
     }
 
-    public Account(com.storedobject.core.Id p1, java.lang.String p2) {
-        this();
+    /**
+     * Constructs an Account.
+     *
+     * @param chartId Chart Id.
+     * @param currency The accounting currency.
+     */
+    public Account(Id chartId, String currency) {
+        this(chartId, currency, null);
     }
 
-    public Account(com.storedobject.core.Id p1, com.storedobject.core.Id p2) {
-        this();
+    /**
+     * Constructs an Account in local currency.
+     *
+     * @param chartId Chart Id.
+     * @param systemEntityId Id of the System Entity where this account is opened.
+     */
+    public Account(Id chartId, Id systemEntityId) {
+        this(chartId, null, systemEntityId);
     }
 
-    public Account(com.storedobject.core.Id p1, java.lang.String p2, com.storedobject.core.Id p3) {
-        this();
+    /**
+     * Constructs an Account.
+     *
+     * @param chartId Chart Id.
+     * @param systemEntityId Id of the System Entity where this account is opened.
+     * @param currency Account's currency.
+     */
+    public Account(Id chartId, String currency, Id systemEntityId) {
     }
 
+    /**
+     * Constructs a local currency Account.
+     */
     public Account() {
+        this(null, null, null);
     }
 
-    public java.lang.String toString() {
+    public static void columns(Columns columns) {
+    }
+
+    public static String filter(Class<?> accountClass, String fieldName) {
         return null;
     }
 
-    public java.lang.String getName() {
-        return null;
-    }
-
-    public void setName(java.lang.String p1) {
-    }
-
-    public void close() throws java.lang.Exception {
-    }
-
-    public final java.lang.String getNumber() {
-        return null;
-    }
-
+    /**
+     * Refreshes the balance and accountStatus from the database.
+     */
     public final void refresh() {
     }
 
-    public void setCurrency(java.util.Currency p1) {
-    }
-
-    public void setCurrency(java.lang.String p1) {
-    }
-
-    public static void columns(com.storedobject.core.Columns p1) {
-    }
-
-    public static void readOnlyColumns(com.storedobject.core.ColumnNames p1) {
-    }
-
-    public static void indices(com.storedobject.core.Indices p1) {
-    }
-
-    public static java.lang.String[] displayColumns() {
+    /**
+     * Gets the local currency.
+     *
+     * @return The local currency.
+     */
+    public Currency getLocalCurrency() {
         return null;
     }
 
-    public static java.lang.String[] browseColumns() {
+    /**
+     * Gets the currency.
+     *
+     * @return The currency.
+     */
+    public Currency getCurrency() {
         return null;
     }
 
-    public static java.lang.String[] protectedColumns() {
+    /**
+     * Sets the currency.
+     *
+     * @param currency The currency.
+     */
+    public void setCurrency(Currency currency) {
+    }
+
+    /**
+     * Sets the currency.
+     *
+     * @param currency The currency.
+     */
+    public void setCurrency(String currency) {
+        setCurrency(Money.getCurrency(currency));
+    }
+
+    /**
+     * Gets the Id of the System Entity.
+     *
+     * @return The Id of the System Entity
+     */
+    @SetNotAllowed
+    public Id getSystemEntityId() {
         return null;
     }
 
-    public static java.lang.String filter(java.lang.Class <?> p1, java.lang.String p2) {
+    // For internal use only.
+    public void setSystemEntity(BigDecimal idValue) {
+    }
+
+    /**
+     * Gets the System Entity.
+     *
+     * @return The System Entity
+     */
+    public SystemEntity getSystemEntity() {
         return null;
     }
 
-    public java.util.Currency getLocalCurrency() {
+    final void addBalance(Money balance) {
+    }
+
+    public void setBalance(Object balance) {
+    }
+
+    public Money getBalance() {
         return null;
     }
 
-    public java.util.Currency getCurrency() {
+    final void addLocalCurrencyBalance(Money localCurrencyBalance) {
+    }
+
+    public void setLocalCurrencyBalance(Object localCurrencyBalance) {
+    }
+
+    public Money getLocalCurrencyBalance() {
         return null;
     }
 
-    public com.storedobject.core.Id getSystemEntityId() {
+    public void setOpeningBalance(Object openingBalance) {
+    }
+
+    public Money getOpeningBalance() {
         return null;
     }
 
-    public void setSystemEntity(java.math.BigDecimal p1) {
+    public void setLocalCurrencyOpeningBalance(Object localCurrencyOpeningBalance) {
     }
 
-    public com.storedobject.core.SystemEntity getSystemEntity() {
-        return null;
-    }
-
-    protected void addBalance(com.storedobject.core.Money p1) {
-    }
-
-    public void setBalance(java.lang.Object p1) {
-    }
-
-    public com.storedobject.core.Money getBalance() {
-        return null;
-    }
-
-    public void addLocalCurrencyBalance(com.storedobject.core.Money p1) {
-    }
-
-    public void setLocalCurrencyBalance(java.lang.Object p1) {
-    }
-
-    public com.storedobject.core.Money getLocalCurrencyBalance() {
-        return null;
-    }
-
-    public void setOpeningBalance(java.lang.Object p1) {
-    }
-
-    public com.storedobject.core.Money getOpeningBalance() {
-        return null;
-    }
-
-    public void setLocalCurrencyOpeningBalance(java.lang.Object p1) {
-    }
-
-    public com.storedobject.core.Money getLocalCurrencyOpeningBalance() {
+    public Money getLocalCurrencyOpeningBalance() {
         return null;
     }
 
     public boolean isLocalCurrency() {
-        return false;
+        return true;
     }
 
     public boolean isForeignCurrency() {
-        return false;
+        return !isLocalCurrency();
     }
 
     public int getAccountStatus() {
         return 0;
     }
 
-    public void setAccountStatus(int p1) {
+    public void setAccountStatus(int accountStatus) {
     }
 
-    public void reopen() throws java.lang.Exception {
+    public void close() throws Exception {
     }
 
-    public void validateData() throws java.lang.Exception {
+    public void reopen() throws Exception {
     }
 
-    public java.lang.String getTitle() {
+    public String getName() {
         return null;
     }
 
-    public com.storedobject.core.AccountChart getChart() {
+    public void setName(String name) {
+    }
+
+    public final String getNumber() {
         return null;
     }
 
-    public final void setNumber(java.lang.String p1) {
+    public final void setNumber(String number) {
     }
 
-    public void setChart(java.math.BigDecimal p1) {
+    public void setChart(BigDecimal chartId) {
+        setChart(new Id(chartId));
     }
 
-    public void setChart(com.storedobject.core.Id p1) {
+    public void setChart(Id chartId) {
     }
 
-    public com.storedobject.core.Id getChartId() {
+    public Id getChartId() {
         return null;
     }
 
-    public com.storedobject.core.Money createAmount(java.math.BigDecimal p1) {
+    public AccountChart getChart() {
         return null;
     }
 
-    public com.storedobject.core.Money createLocalCurrencyAmount(java.math.BigDecimal p1) {
+    public String getTitle() {
         return null;
     }
 
-    public final void debit(com.storedobject.core.Money p1, int p2) throws java.lang.Exception {
+    public Money createAmount(BigDecimal amount) {
+        return null;
     }
 
-    public final void debit(java.math.BigDecimal p1, int p2) throws java.lang.Exception {
+    public Money createLocalCurrencyAmount(BigDecimal amount) {
+        return null;
     }
 
-    public final void debit(com.storedobject.core.Money p1, com.storedobject.core.Money p2, int p3) throws java.lang.Exception {
+    /**
+     * Debit
+     *
+     * @param amount Amount.
+     * @param entrySerial Entry serial.
+     * @throws Exception Any exception.
+     */
+    public final void debit(Money amount, int entrySerial) throws Exception {
     }
 
-    public final void debit(java.math.BigDecimal p1, java.math.BigDecimal p2, int p3) throws java.lang.Exception {
+    /**
+     * Debit
+     *
+     * @param amount Amount.
+     * @param entrySerial Entry serial.
+     * @throws Exception Any exception.
+     */
+    public final void debit(BigDecimal amount, int entrySerial) throws Exception {
     }
 
-    public final void credit(com.storedobject.core.Money p1, int p2) throws java.lang.Exception {
+    /**
+     * Debit
+     *
+     * @param amount Amount in account currency.
+     * @param localCurrencyAmount Amount in local currency.
+     * @param entrySerial Entry serial.
+     * @throws Exception Any exception.
+     */
+    public final void debit(Money amount, Money localCurrencyAmount, int entrySerial) throws Exception {
     }
 
-    public final void credit(java.math.BigDecimal p1, int p2) throws java.lang.Exception {
+    /**
+     * Debit
+     *
+     * @param amount Amount in account currency.
+     * @param localCurrencyAmount Amount in local currency.
+     * @param entrySerial Entry serial.
+     * @throws Exception Any exception.
+     */
+    public final void debit(BigDecimal amount, BigDecimal localCurrencyAmount, int entrySerial) throws Exception {
     }
 
-    public final void credit(com.storedobject.core.Money p1, com.storedobject.core.Money p2, int p3) throws java.lang.Exception {
+    /**
+     * Credit
+     *
+     * @param amount Amount.
+     * @param entrySerial Entry serial.
+     * @throws Exception Any exception.
+     */
+    public final void credit(Money amount, int entrySerial) throws Exception {
     }
 
-    public final void credit(java.math.BigDecimal p1, java.math.BigDecimal p2, int p3) throws java.lang.Exception {
+    /**
+     * Credit
+     *
+     * @param amount Amount.
+     * @param entrySerial Entry serial.
+     * @throws Exception Any exception.
+     */
+    public final void credit(BigDecimal amount, int entrySerial) throws Exception {
+    }
+
+    /**
+     * Credit
+     *
+     * @param amount Amount in account currency.
+     * @param localCurrencyAmount Amount in local currency.
+     * @param entrySerial Entry serial.
+     * @throws Exception Any exception.
+     */
+    public final void credit(Money amount, Money localCurrencyAmount, int entrySerial) throws Exception {
+    }
+
+    /**
+     * Credit
+     *
+     * @param amount Amount in account currency.
+     * @param localCurrencyAmount Amount in local currency.
+     * @param entrySerial Entry serial.
+     * @throws Exception Any exception.
+     */
+    public final void credit(BigDecimal amount, BigDecimal localCurrencyAmount, int entrySerial) throws Exception {
+    }
+
+    public static <A extends Account> A getByNumber(SystemEntity systemEntity, Class<A> accountClass, String number) {
+        return get(accountClass);
+    }
+
+    public static <A extends Account> A getByNumber(SystemEntity systemEntity, Class<A> accountClass, String number, boolean any) {
+        return get(accountClass);
+    }
+
+    public static <A extends Account> ObjectIterator<A> listByNumber(Class<A> accountClass, String number) {
+        return listByNumber(accountClass, number, false);
+    }
+
+    public static <A extends Account> ObjectIterator<A> listByNumber(final Class<A> accountClass, String number, final boolean any) {
+        return list(accountClass);
+    }
+
+    public static <A extends Account> ObjectIterator<A> listByNumber(SystemEntity systemEntity, Class<A> accountClass, String number) {
+        return list(accountClass);
+    }
+
+    public static <A extends Account> ObjectIterator<A> listByNumber(final SystemEntity systemEntity,
+                                                                     final Class<A> accountClass, String number, final boolean any) {
+        return list(accountClass);
+    }
+
+    public static <A extends Account> A getByName(SystemEntity systemEntity, Class<A> accountClass, String name) {
+        return get(accountClass);
+    }
+
+    public static <A extends Account> A getByName(SystemEntity systemEntity, Class<A> accountClass, String name, boolean any) {
+        return get(accountClass);
+    }
+
+    public static <A extends Account> ObjectIterator<A> listByName(SystemEntity systemEntity, Class<A> accountClass, String name) {
+        return list(accountClass);
+    }
+
+    public static <A extends Account> ObjectIterator<A> listByName(final SystemEntity systemEntity,
+                                                                   final Class<A> accountClass, String name, final boolean any) {
+        return list(accountClass);
+    }
+
+    public static Account get(SystemEntity systemEntity, String name) {
+        return new Account();
+    }
+
+    public static ObjectIterator<Account> list(SystemEntity systemEntity, String name) {
+        return list(Account.class);
     }
 }
