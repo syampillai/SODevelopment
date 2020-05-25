@@ -1,66 +1,61 @@
 package com.storedobject.core;
 
+import com.storedobject.common.DateUtility;
+
+import java.sql.Time;
 import java.util.Calendar;
 
 public class DatePeriod extends AbstractPeriod<java.sql.Date> {
 
-    public DatePeriod(Calendar from, Calendar to) {
-    	super(DateUtility.create(from), DateUtility.create(to));
-    }
-
-    public DatePeriod(java.util.Date from, java.util.Date to) {
-    	super(DateUtility.create(from), DateUtility.create(to));
-    }
-
-    public DatePeriod(java.sql.Date from, java.sql.Date to) {
-    	super(from, to);
-    }
-
-	@Override
-	protected java.sql.Date clone(java.sql.Date date) {
-		return null;
+	public DatePeriod(Calendar from, Calendar to) {
+		super(DateUtility.create(from), DateUtility.create(to));
 	}
 
-	@Override
-	protected boolean same(java.sql.Date one, java.sql.Date two) {
-		return false;
+	public DatePeriod(java.util.Date from, java.util.Date to) {
+		super(DateUtility.create(from), DateUtility.create(to));
 	}
 
-	@Override
-	protected String toString(java.sql.Date date) {
-		return null;
+	public DatePeriod(java.sql.Date from, java.sql.Date to) {
+		super(from, to);
 	}
 
-	@Override
-	protected String toDBString(java.sql.Date date) {
-		return null;
+	private DatePeriod() {
+		super(null, null);
 	}
-	
+
 	public TimePeriod getTimePeriod() {
-		return null;
+		return new TimePeriod((Time) null, null);
 	}
-	
+
 	public static DatePeriod thisMonth() {
-		return null;
+		return new DatePeriod();
 	}
-	
+
 	public static DatePeriod monthTillToday() {
-		return null;
+		return new DatePeriod();
 	}
-	
+
 	public static DatePeriod monthTillYesterday() {
-		return null;
+		return new DatePeriod();
 	}
-	
+
 	public static DatePeriod thisYear() {
-		return null;
+		return new DatePeriod();
 	}
-	
+
 	public static DatePeriod yearTillToday() {
-		return null;
+		return new DatePeriod();
 	}
-	
+
 	public static DatePeriod yearTillYesterday() {
-		return null;
+		return new DatePeriod();
+	}
+
+	public static DatePeriod tillToday(int fromDays) {
+		return new DatePeriod();
+	}
+
+	public static DatePeriod tillYesterday(int fromDays) {
+		return new DatePeriod();
 	}
 }

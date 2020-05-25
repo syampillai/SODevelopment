@@ -1,30 +1,53 @@
 package com.storedobject.core;
 
+import java.sql.Date;
+
+/**
+ * Representation of a single entry in the {@link Ledger}.
+ *
+ * @author Syam
+ */
 public final class LedgerEntry {
 
-    protected LedgerEntry(java.sql.Date p1, com.storedobject.core.Money p2, com.storedobject.core.Money p3) {
-        this();
+    /**
+     * Constructor.
+     */
+    LedgerEntry() {
     }
 
-    private LedgerEntry() {
+    /**
+     * Date of this entry.
+     *
+     * @return Date of the entry.
+     */
+    public Date getDate() {
+        return DateUtility.today();
     }
 
-    public java.sql.Date getDate() {
-        return null;
+    /**
+     * Foreign currency amount of this entry.
+     *
+     * @return Foreign currency amount.
+     */
+    public Money getAmount() {
+        return new Money();
     }
 
-    public com.storedobject.core.Money getAmount() {
-        return null;
+    /**
+     * Local currency amount of this entry.
+     *
+     * @return Local currency amount.
+     */
+    public Money getLocalCurrencyAmount() {
+        return new Money();
     }
 
-    public java.lang.String getNarration() {
-        return null;
-    }
-
-    protected void setRow(java.sql.ResultSet p1) throws java.lang.Exception {
-    }
-
-    public com.storedobject.core.Money getLocalCurrencyAmount() {
-        return null;
+    /**
+     * Transaction narration (particulars) of this entry.
+     *
+     * @return Transaction narration.
+     */
+    public String getNarration() {
+        return "";
     }
 }

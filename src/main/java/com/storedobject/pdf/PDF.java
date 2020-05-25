@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.stream.Stream;
 
 /**
@@ -192,6 +193,119 @@ public abstract class PDF implements java.io.Closeable, com.storedobject.core.Co
      * @param verticalAlignment Alignment value from PDFElement.
      */
     public void add(Object any, int horizontalAlignment, int verticalAlignment) {
+    }
+
+    /**
+     * Adds an object to the given PDFTable as a PDFCell.
+     * Object can be 'text', a PDFImage, a PDFCell, a PDFTable or anything else.
+     *
+     * @param table Table to which the object needs to be added after converting into a PDFCell.
+     * @param any Any object to convert to a PDFCell.
+     */
+    public void add(PDFTable table, Object any) {
+    }
+
+    /**
+     * Adds an object to the given PDFTable as a PDFCell.
+     * Object can be 'text', a PDFImage, a PDFCell, a PDFTable or anything else.
+     *
+     * @param table Table to which the object needs to be added after converting into a PDFCell.
+     * @param any Any object to convert to a PDFCell.
+     * @param cellCustomizer Cell customizer. If non-null value is passed, the cell will be passed through this for further customization.
+     */
+    public void add(PDFTable table, Object any, Function<PDFCell, PDFCell> cellCustomizer) {
+    }
+
+    /**
+     * Adds an object to the given PDFTable as a PDFCell.
+     * Object can be 'text', a PDFImage, a PDFCell, a PDFTable or anything else.
+     *
+     * @param table Table to which the object needs to be added after converting into a PDFCell.
+     * @param any Any object to convert to a PDFCell.
+     * @param rightAligned Right alignment.
+     */
+    public void add(PDFTable table, Object any, boolean rightAligned) {
+    }
+
+    /**
+     * Adds an object to the given PDFTable as a PDFCell.
+     * Object can be 'text', a PDFImage, a PDFCell, a PDFTable or anything else.
+     *
+     * @param table Table to which the object needs to be added after converting into a PDFCell.
+     * @param any Any object to convert to a PDFCell.
+     * @param rightAligned Right alignment.
+     * @param cellCustomizer Cell customizer. If non-null value is passed, the cell will be passed through this for further customization.
+     */
+    public void add(PDFTable table, Object any, boolean rightAligned, Function<PDFCell, PDFCell> cellCustomizer) {
+    }
+
+    /**
+     * Adds an object to the given PDFTable as a PDFCell.
+     * Object can be 'text', a PDFImage, a PDFCell, a PDFTable or anything else.
+     *
+     * @param table Table to which the object needs to be added after converting into a PDFCell.
+     * @param any Any object to convert to a PDFCell.
+     */
+    public void addCentered(PDFTable table, Object any) {
+    }
+
+    /**
+     * Adds an object to the given PDFTable as a PDFCell.
+     * Object can be 'text', a PDFImage, a PDFCell, a PDFTable or anything else.
+     *
+     * @param table Table to which the object needs to be added after converting into a PDFCell.
+     * @param any Any object to convert to a PDFCell.
+     * @param cellCustomizer Cell customizer. If non-null value is passed, the cell will be passed through this for further customization.
+     */
+    public void addCentered(PDFTable table, Object any, Function<PDFCell, PDFCell> cellCustomizer) {
+    }
+
+    /**
+     * Adds an object to the given PDFTable as a PDFCell.
+     * Object can be 'text', a PDFImage, a PDFCell, a PDFTable or anything else.
+     *
+     * @param table Table to which the object needs to be added after converting into a PDFCell.
+     * @param any Any object to convert to a PDFCell.
+     * @param horizontalAlignment Alignment value from PDFElement.
+     */
+    public void add(PDFTable table, Object any, int horizontalAlignment) {
+    }
+
+    /**
+     * Adds an object to the given PDFTable as a PDFCell.
+     * Object can be 'text', a PDFImage, a PDFCell, a PDFTable or anything else.
+     *
+     * @param table Table to which the object needs to be added after converting into a PDFCell.
+     * @param any Any object to convert to a PDFCell.
+     * @param horizontalAlignment Alignment value from PDFElement.
+     * @param cellCustomizer Cell customizer. If non-null value is passed, the cell will be passed through this for further customization.
+     */
+    public void add(PDFTable table, Object any, int horizontalAlignment, Function<PDFCell, PDFCell> cellCustomizer) {
+    }
+
+    /**
+     * Adds an object to the given PDFTable as a PDFCell.
+     * Object can be 'text', a PDFImage, a PDFCell, a PDFTable or anything else.
+     *
+     * @param table Table to which the object needs to be added after converting into a PDFCell.
+     * @param any Any object to convert to a PDFCell.
+     * @param horizontalAlignment Alignment value from PDFElement.
+     * @param verticalAlignment Alignment value from PDFElement.
+     */
+    public void add(PDFTable table, Object any, int horizontalAlignment, int verticalAlignment) {
+    }
+
+    /**
+     * Adds an object to the given PDFTable as a PDFCell.
+     * Object can be 'text', a PDFImage, a PDFCell, a PDFTable or anything else.
+     *
+     * @param table Table to which the object needs to be added after converting into a PDFCell.
+     * @param any Any object to convert to a PDFCell.
+     * @param horizontalAlignment Alignment value from PDFElement.
+     * @param verticalAlignment Alignment value from PDFElement.
+     * @param cellCustomizer Cell customizer. If non-null value is passed, the cell will be passed through this for further customization.
+     */
+    public void add(PDFTable table, Object any, int horizontalAlignment, int verticalAlignment, Function<PDFCell, PDFCell> cellCustomizer) {
     }
 
     /**
@@ -472,7 +586,7 @@ public abstract class PDF implements java.io.Closeable, com.storedobject.core.Co
      * @return The table
      */
     public static PDFTable createTable(int... relativeWidths) {
-        return null;
+        return new PDFTable(1);
     }
 
     /**
@@ -482,7 +596,19 @@ public abstract class PDF implements java.io.Closeable, com.storedobject.core.Co
      * @return The cell that is created.
      */
     public PDFCell createCenteredCell(Object object) {
-        return null;
+        return new PDFCell();
+    }
+
+    /**
+     * Creates a centered cell that can be added to a table.
+     *
+     * @param object Object that provides the content of the cell - object.toString(). Object can also be either a PDFImage, PDFCell, PDFTable, PDFPhrase, PDFChunk,
+     * Image, StreamData or Barcode.
+     * @param cellCustomizer Cell customizer. If non-null value is passed, the cell created will be passed through this for further customization.
+     * @return The cell that is created.
+     */
+    public PDFCell createCenteredCell(Object object, Function<PDFCell, PDFCell> cellCustomizer) {
+        return new PDFCell();
     }
 
     /**
@@ -492,7 +618,19 @@ public abstract class PDF implements java.io.Closeable, com.storedobject.core.Co
      * @return The cell that is created.
      */
     public PDFCell createCell(Object object) {
-        return null;
+        return new PDFCell();
+    }
+
+    /**
+     * Creates a cell that can be added to a table.
+     *
+     * @param object Object that provides the content of the cell - object.toString(). Object can also be either a PDFImage, PDFCell, PDFTable, PDFPhrase, PDFChunk,
+     * Image, StreamData or Barcode.
+     * @param cellCustomizer Cell customizer. If non-null value is passed, the cell created will be passed through this for further customization.
+     * @return The cell that is created.
+     */
+    public PDFCell createCell(Object object, Function<PDFCell, PDFCell> cellCustomizer) {
+        return new PDFCell();
     }
 
     /**
@@ -503,7 +641,20 @@ public abstract class PDF implements java.io.Closeable, com.storedobject.core.Co
      * @return The cell that is created.
      */
     public PDFCell createCell(Object object, boolean rightAligned) {
-        return null;
+        return new PDFCell();
+    }
+
+    /**
+     * Creates a cell that can be added to a table.
+     *
+     * @param object Object that provides the content of the cell - object.toString(). Object can also be either a PDFImage, PDFCell, PDFTable, PDFPhrase, PDFChunk,
+     * Image, StreamData or Barcode.
+     * @param rightAligned Whether the cell is right aligned or not.
+     * @param cellCustomizer Cell customizer. If non-null value is passed, the cell created will be passed through this for further customization.
+     * @return The cell that is created.
+     */
+    public PDFCell createCell(Object object, boolean rightAligned, Function<PDFCell, PDFCell> cellCustomizer) {
+        return new PDFCell();
     }
 
     /**
@@ -514,7 +665,20 @@ public abstract class PDF implements java.io.Closeable, com.storedobject.core.Co
      * @return The cell that is created.
      */
     public PDFCell createCell(Object object, int horizontalAlignment) {
-        return null;
+        return new PDFCell();
+    }
+
+    /**
+     * Creates a cell that can be added to a table.
+     *
+     * @param object Object that provides the content of the cell - object.toString(). Object can also be either a PDFImage, PDFCell, PDFTable, PDFPhrase, PDFChunk,
+     * Image, StreamData or Barcode.
+     * @param horizontalAlignment Alignment value from PDFElement.
+     * @param cellCustomizer Cell customizer. If non-null value is passed, the cell created will be passed through this for further customization.
+     * @return The cell that is created.
+     */
+    public PDFCell createCell(Object object, int horizontalAlignment, Function<PDFCell, PDFCell> cellCustomizer) {
+        return new PDFCell();
     }
 
     /**
@@ -526,7 +690,21 @@ public abstract class PDF implements java.io.Closeable, com.storedobject.core.Co
      * @return The cell that is created.
      */
     public PDFCell createCell(Object object, int horizontalAlignment, int verticalAlignment) {
-        return null;
+        return new PDFCell();
+    }
+
+    /**
+     * Creates a cell that can be added to a table.
+     *
+     * @param object Object that provides the content of the cell - object.toString(). Object can also be either a PDFImage, PDFCell, PDFTable, PDFPhrase, PDFChunk,
+     * Image, StreamData or Barcode.
+     * @param horizontalAlignment Alignment value from PDFElement.
+     * @param verticalAlignment Alignment value from PDFElement.
+     * @param cellCustomizer Cell customizer. If non-null value is passed, the cell created will be passed through this for further customization.
+     * @return The cell that is created.
+     */
+    public PDFCell createCell(Object object, int horizontalAlignment, int verticalAlignment, Function<PDFCell, PDFCell> cellCustomizer) {
+        return new PDFCell();
     }
 
     /**
