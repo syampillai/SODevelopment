@@ -202,7 +202,7 @@ public abstract class PDF implements java.io.Closeable, com.storedobject.core.Co
      * @param table Table to which the object needs to be added after converting into a PDFCell.
      * @param any Any object to convert to a PDFCell.
      */
-    public void add(PDFTable table, Object any) {
+    public void addToTable(PDFTable table, Object any) {
     }
 
     /**
@@ -213,7 +213,7 @@ public abstract class PDF implements java.io.Closeable, com.storedobject.core.Co
      * @param any Any object to convert to a PDFCell.
      * @param cellCustomizer Cell customizer. If non-null value is passed, the cell will be passed through this for further customization.
      */
-    public void add(PDFTable table, Object any, Function<PDFCell, PDFCell> cellCustomizer) {
+    public void addToTable(PDFTable table, Object any, Function<PDFCell, PDFCell> cellCustomizer) {
     }
 
     /**
@@ -224,7 +224,7 @@ public abstract class PDF implements java.io.Closeable, com.storedobject.core.Co
      * @param any Any object to convert to a PDFCell.
      * @param rightAligned Right alignment.
      */
-    public void add(PDFTable table, Object any, boolean rightAligned) {
+    public void addToTable(PDFTable table, Object any, boolean rightAligned) {
     }
 
     /**
@@ -236,7 +236,7 @@ public abstract class PDF implements java.io.Closeable, com.storedobject.core.Co
      * @param rightAligned Right alignment.
      * @param cellCustomizer Cell customizer. If non-null value is passed, the cell will be passed through this for further customization.
      */
-    public void add(PDFTable table, Object any, boolean rightAligned, Function<PDFCell, PDFCell> cellCustomizer) {
+    public void addToTable(PDFTable table, Object any, boolean rightAligned, Function<PDFCell, PDFCell> cellCustomizer) {
     }
 
     /**
@@ -246,7 +246,7 @@ public abstract class PDF implements java.io.Closeable, com.storedobject.core.Co
      * @param table Table to which the object needs to be added after converting into a PDFCell.
      * @param any Any object to convert to a PDFCell.
      */
-    public void addCentered(PDFTable table, Object any) {
+    public void addToTableCentered(PDFTable table, Object any) {
     }
 
     /**
@@ -257,7 +257,7 @@ public abstract class PDF implements java.io.Closeable, com.storedobject.core.Co
      * @param any Any object to convert to a PDFCell.
      * @param cellCustomizer Cell customizer. If non-null value is passed, the cell will be passed through this for further customization.
      */
-    public void addCentered(PDFTable table, Object any, Function<PDFCell, PDFCell> cellCustomizer) {
+    public void addToTableCentered(PDFTable table, Object any, Function<PDFCell, PDFCell> cellCustomizer) {
     }
 
     /**
@@ -268,7 +268,7 @@ public abstract class PDF implements java.io.Closeable, com.storedobject.core.Co
      * @param any Any object to convert to a PDFCell.
      * @param horizontalAlignment Alignment value from PDFElement.
      */
-    public void add(PDFTable table, Object any, int horizontalAlignment) {
+    public void addToTable(PDFTable table, Object any, int horizontalAlignment) {
     }
 
     /**
@@ -280,7 +280,7 @@ public abstract class PDF implements java.io.Closeable, com.storedobject.core.Co
      * @param horizontalAlignment Alignment value from PDFElement.
      * @param cellCustomizer Cell customizer. If non-null value is passed, the cell will be passed through this for further customization.
      */
-    public void add(PDFTable table, Object any, int horizontalAlignment, Function<PDFCell, PDFCell> cellCustomizer) {
+    public void addToTable(PDFTable table, Object any, int horizontalAlignment, Function<PDFCell, PDFCell> cellCustomizer) {
     }
 
     /**
@@ -292,7 +292,7 @@ public abstract class PDF implements java.io.Closeable, com.storedobject.core.Co
      * @param horizontalAlignment Alignment value from PDFElement.
      * @param verticalAlignment Alignment value from PDFElement.
      */
-    public void add(PDFTable table, Object any, int horizontalAlignment, int verticalAlignment) {
+    public void addToTable(PDFTable table, Object any, int horizontalAlignment, int verticalAlignment) {
     }
 
     /**
@@ -305,7 +305,7 @@ public abstract class PDF implements java.io.Closeable, com.storedobject.core.Co
      * @param verticalAlignment Alignment value from PDFElement.
      * @param cellCustomizer Cell customizer. If non-null value is passed, the cell will be passed through this for further customization.
      */
-    public void add(PDFTable table, Object any, int horizontalAlignment, int verticalAlignment, Function<PDFCell, PDFCell> cellCustomizer) {
+    public void addToTable(PDFTable table, Object any, int horizontalAlignment, int verticalAlignment, Function<PDFCell, PDFCell> cellCustomizer) {
     }
 
     /**

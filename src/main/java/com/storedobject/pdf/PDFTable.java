@@ -50,16 +50,6 @@ public class PDFTable implements PDFElement {
     public void addBlankCell(int count, Function<PDFCell, PDFCell> cellCustomizer) {
     }
 
-    /**
-     * Adds a cell element.
-     *
-     * @param text The text for the cell
-     * @deprecated Use addBlanckCell() if you want to add a blank cell, otherwise use addCell(createCell(...))
-     */
-    @Deprecated
-    public void addCell(final String text) {
-    }
-
     public void addCell(PDFTable table) {
     }
 
@@ -279,7 +269,6 @@ public class PDFTable implements PDFElement {
      * @param fromColumn From column.
      */
     public void addBlankRow(int fromColumn) {
-        addBlankRow(null, fromColumn, Integer.MAX_VALUE);
     }
 
     /**
@@ -298,7 +287,6 @@ public class PDFTable implements PDFElement {
      * @param toColumn To column.
      */
     public void addBlankRow(int fromColumn, int toColumn) {
-        addBlankRow(null, fromColumn, toColumn);
     }
 
     /**
@@ -309,64 +297,5 @@ public class PDFTable implements PDFElement {
      * @param cellCustomizer Cell customizer. If non-null value is passed, the cell will be passed through this for further customization.
      */
     public void addBlankRow(int fromColumn, int toColumn, Function<PDFCell, PDFCell> cellCustomizer) {
-    }
-
-    /**
-     * Add a blank row.
-     *
-     * @param pdf PDF to which this table belongs to. (Could be <code>null</code>.)
-     */
-    public void addBlankRow(PDF pdf) {
-        addBlankRow(pdf, 0, Integer.MAX_VALUE);
-    }
-
-    /**
-     * Add a blank row.
-     *
-     * @param pdf PDF to which this table belongs to. (Could be <code>null</code>.)
-     * @param cellCustomizer Cell customizer. If non-null value is passed, the cell will be passed through this for further customization.
-     */
-    public void addBlankRow(PDF pdf, Function<PDFCell, PDFCell> cellCustomizer) {
-    }
-
-    /**
-     * Add a blank row.
-     *
-     * @param pdf PDF to which this table belongs to. (Could be <code>null</code>.)
-     * @param fromColumn From column.
-     */
-    public void addBlankRow(PDF pdf, int fromColumn) {
-        addBlankRow(pdf, fromColumn, Integer.MAX_VALUE);
-    }
-
-    /**
-     * Add a blank row.
-     *
-     * @param pdf PDF to which this table belongs to. (Could be <code>null</code>.)
-     * @param fromColumn From column.
-     * @param cellCustomizer Cell customizer. If non-null value is passed, the cell will be passed through this for further customization.
-     */
-    public void addBlankRow(PDF pdf, int fromColumn, Function<PDFCell, PDFCell> cellCustomizer) {
-    }
-
-    /**
-     * Add a blank row.
-     *
-     * @param pdf PDF to which this table belongs to. (Could be <code>null</code>.)
-     * @param fromColumn From column.
-     * @param toColumn To column.
-     */
-    public void addBlankRow(PDF pdf, int fromColumn, int toColumn) {
-    }
-
-    /**
-     * Add a blank row.
-     *
-     * @param pdf PDF to which this table belongs to. (Could be <code>null</code>.)
-     * @param fromColumn From column.
-     * @param toColumn To column.
-     * @param cellCustomizer Cell customizer. If non-null value is passed, the cell will be passed through this for further customization.
-     */
-    public void addBlankRow(PDF pdf, int fromColumn, int toColumn, Function<PDFCell, PDFCell> cellCustomizer) {
     }
 }
