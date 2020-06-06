@@ -1,9 +1,8 @@
 package com.storedobject.core;
 
-
 import com.storedobject.common.Executable;
 
-public final class Logic extends StoredObject implements DisplayOrder {
+public final class Logic extends StoredObject implements DisplayOrder, Executable {
 
 	public Logic(String className, String title) {
 	}
@@ -107,6 +106,13 @@ public final class Logic extends StoredObject implements DisplayOrder {
 	public void setAutoExecute(boolean autoExecute) {
 	}
 
+	public boolean getSingleInstance() {
+		return false;
+	}
+
+	public void setSingleInstance(boolean singleInstance) {
+	}
+
 	public boolean getAutoExecute() {
 		return false;
 	}
@@ -129,5 +135,8 @@ public final class Logic extends StoredObject implements DisplayOrder {
 
 	public static ObjectIterator<Logic> list(String title) {
 		return null;
+	}
+
+	public void execute() {
 	}
 }

@@ -1,10 +1,12 @@
 package com.storedobject.office.od.ods;
 
+import com.storedobject.common.SORuntimeException;
 import org.apache.poi.ss.formula.FormulaParseException;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellAddress;
 import org.apache.poi.ss.util.CellRangeAddress;
 
+import java.time.LocalDateTime;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -16,6 +18,7 @@ public class Cell implements org.apache.poi.ss.usermodel.Cell {
     @Deprecated
     @Override
     public void setCellType(CellType cellType) {
+        throw new SORuntimeException("Unsupported");
     }
 
     @Override
@@ -25,7 +28,7 @@ public class Cell implements org.apache.poi.ss.usermodel.Cell {
 
     @Override
     public CellType getCellType() {
-        return null;
+        return CellType._NONE;
     }
 
     @Deprecated
@@ -54,6 +57,10 @@ public class Cell implements org.apache.poi.ss.usermodel.Cell {
     }
 
     @Override
+    public void setCellValue(LocalDateTime localDateTime) {
+    }
+
+    @Override
     public void setCellValue(Calendar calendar) {
     }
 
@@ -75,7 +82,7 @@ public class Cell implements org.apache.poi.ss.usermodel.Cell {
 
     @Override
     public String getCellFormula() {
-        return null;
+        return "";
     }
 
     @Override
@@ -89,22 +96,27 @@ public class Cell implements org.apache.poi.ss.usermodel.Cell {
     }
 
     @Override
+    public LocalDateTime getLocalDateTimeCellValue() {
+        return null;
+    }
+
+    @Override
     public RichTextString getRichStringCellValue() {
         return null;
     }
 
     @Override
     public String getStringCellValue() {
-        return null;
+        return "";
     }
 
     @Override
     public void setCellValue(boolean b) {
+
     }
 
     @Override
     public void setCellErrorValue(byte b) {
-
     }
 
     @Override
@@ -134,7 +146,7 @@ public class Cell implements org.apache.poi.ss.usermodel.Cell {
 
     @Override
     public CellAddress getAddress() {
-        return null;
+        return new CellAddress(0, 0);
     }
 
     @Override
@@ -188,12 +200,12 @@ public class Cell implements org.apache.poi.ss.usermodel.Cell {
     }
 
     public Sheet getSheet() {
-        return null;
+        return new Sheet();
     }
 
     @Override
     public Row getRow() {
-        return null;
+        return new Row(new Sheet(), 0);
     }
 
     public void dispose() {

@@ -1,10 +1,11 @@
 package com.storedobject.ui;
 
 import com.storedobject.common.Executable;
+import com.storedobject.common.Reentrant;
 import com.storedobject.core.*;
 import com.storedobject.vaadin.ExecutableView;
 
-public interface Transactional extends Executable, com.storedobject.vaadin.ExecutableView, HasLogic {
+public interface Transactional extends Reentrant, com.storedobject.vaadin.ExecutableView, HasLogic {
 
     @Override
     default void run() {
