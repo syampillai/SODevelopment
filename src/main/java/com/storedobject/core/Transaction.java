@@ -132,46 +132,4 @@ public interface Transaction {
 	 * @return True if active. False if already committed or rolled back.
 	 */
 	boolean isActive();
-
-	/**
-	 * Debit a local currency account.
-	 *
-	 * @param account Account to be debited.
-	 * @param amount Amount.
-	 * @param narration Transaction narration.
-	 * @throws Exception Any
-	 */
-	void debit(Account account, Money amount, String narration) throws Exception;
-
-	/**
-	 * Debit a foreign currency account.
-	 *
-	 * @param account Account to be debited.
-	 * @param amount Amount in account currency.
-	 * @param localCurrencyAmount Amount in local currency.
-	 * @throws Exception Any
-	 * @param narration Transaction narration.
-	 */
-	void debit(Account account, Money amount, Money localCurrencyAmount, String narration) throws Exception;
-
-	/**
-	 * Credit a local currency account.
-	 *
-	 * @param account Account to be credited.
-	 * @param amount Amount.
-	 * @param narration Transaction narration.
-	 * @throws Exception Any
-	 */
-	void credit(Account account, Money amount, String narration) throws Exception;
-
-	/**
-	 * Credit a foreign currency account.
-	 *
-	 * @param account Account to be credited.
-	 * @param amount Amount in account currency.
-	 * @param localCurrencyAmount Amount in local currency.
-	 * @param narration Transaction narration.
-	 * @throws Exception Any
-	 */
-	void credit(Account account, Money amount, Money localCurrencyAmount, String narration) throws Exception;
 }

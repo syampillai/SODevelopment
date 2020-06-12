@@ -371,30 +371,6 @@ public abstract class StoredObject {
         return false;
     }
 
-    public final void debit(Account p1, Money p2, int p3) throws Exception {
-    }
-
-    public final void debit(Account p1, java.math.BigDecimal p2, int p3) throws Exception {
-    }
-
-    public final void debit(Account p1, Money p2, Money p3, int p4) throws Exception {
-    }
-
-    public final void debit(Account p1, java.math.BigDecimal p2, java.math.BigDecimal p3, int p4) throws Exception {
-    }
-
-    public final void credit(Account p1, Money p2, int p3) throws Exception {
-    }
-
-    public final void credit(Account p1, java.math.BigDecimal p2, int p3) throws Exception {
-    }
-
-    public final void credit(Account p1, Money p2, Money p3, int p4) throws Exception {
-    }
-
-    public final void credit(Account p1, java.math.BigDecimal p2, java.math.BigDecimal p3, int p4) throws Exception {
-    }
-
     public final boolean saving() {
         return false;
     }
@@ -531,9 +507,6 @@ public abstract class StoredObject {
     public final void undelete() throws Exception {
     }
 
-    public void generateTransactions() throws Exception {
-    }
-
     public void saved() throws Exception {
     }
 
@@ -546,10 +519,6 @@ public abstract class StoredObject {
     }
 
     public String getUniqueCondition() {
-        return null;
-    }
-
-    public String transactionNarration(int p1) {
         return null;
     }
 
