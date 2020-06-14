@@ -4,6 +4,7 @@ import com.storedobject.core.annotation.SetNotAllowed;
 
 import java.math.BigDecimal;
 import java.util.Currency;
+import java.util.Date;
 
 /**
  * This class represents an Account. Account has a status ({@link #getAccountStatus()}) which is a bit pattern with following values:<pre>
@@ -68,10 +69,6 @@ public class Account extends StoredObject implements OfEntity {
     public static void columns(Columns columns) {
     }
 
-    public static String filter(Class<?> accountClass, String fieldName) {
-        return null;
-    }
-
     /**
      * Refreshes the balance and accountStatus from the database.
      */
@@ -84,7 +81,7 @@ public class Account extends StoredObject implements OfEntity {
      * @return The local currency.
      */
     public Currency getLocalCurrency() {
-        return null;
+        return Money.defaultCurrency;
     }
 
     /**
@@ -93,7 +90,7 @@ public class Account extends StoredObject implements OfEntity {
      * @return The currency.
      */
     public Currency getCurrency() {
-        return null;
+        return Money.defaultCurrency;
     }
 
     /**
@@ -120,7 +117,7 @@ public class Account extends StoredObject implements OfEntity {
      */
     @SetNotAllowed
     public Id getSystemEntityId() {
-        return null;
+        return new Id();
     }
 
     // For internal use only.
@@ -133,7 +130,7 @@ public class Account extends StoredObject implements OfEntity {
      * @return The System Entity
      */
     public SystemEntity getSystemEntity() {
-        return null;
+        return new SystemEntity();
     }
 
     final void addBalance(Money balance) {
@@ -143,7 +140,11 @@ public class Account extends StoredObject implements OfEntity {
     }
 
     public Money getBalance() {
-        return null;
+        return new Money();
+    }
+
+    public Money getBalance(Date date) {
+        return new Money();
     }
 
     final void addLocalCurrencyBalance(Money localCurrencyBalance) {
@@ -153,21 +154,25 @@ public class Account extends StoredObject implements OfEntity {
     }
 
     public Money getLocalCurrencyBalance() {
-        return null;
+        return new Money();
+    }
+
+    public Money getLocalCurrencyBalance(Date date) {
+        return new Money();
     }
 
     public void setOpeningBalance(Object openingBalance) {
     }
 
     public Money getOpeningBalance() {
-        return null;
+        return new Money();
     }
 
     public void setLocalCurrencyOpeningBalance(Object localCurrencyOpeningBalance) {
     }
 
     public Money getLocalCurrencyOpeningBalance() {
-        return null;
+        return new Money();
     }
 
     public boolean isLocalCurrency() {
@@ -192,14 +197,14 @@ public class Account extends StoredObject implements OfEntity {
     }
 
     public String getName() {
-        return null;
+        return "";
     }
 
     public void setName(String name) {
     }
 
     public final String getNumber() {
-        return null;
+        return "";
     }
 
     public final void setNumber(String number) {
@@ -213,11 +218,11 @@ public class Account extends StoredObject implements OfEntity {
     }
 
     public Id getChartId() {
-        return null;
+        return new Id();
     }
 
     public AccountChart getChart() {
-        return null;
+        return new AccountChart();
     }
 
     public String getTitle() {
@@ -225,11 +230,11 @@ public class Account extends StoredObject implements OfEntity {
     }
 
     public Money createAmount(BigDecimal amount) {
-        return null;
+        return new Money();
     }
 
     public Money createLocalCurrencyAmount(BigDecimal amount) {
-        return null;
+        return new Money();
     }
 
     public static <A extends Account> A getByNumber(SystemEntity systemEntity, Class<A> accountClass, String number) {

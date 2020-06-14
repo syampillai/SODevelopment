@@ -50,11 +50,11 @@ public final class Money implements Storable, Comparable<Money> {
 	}
 
 	public static Money create(Object value) {
-		return null;
+		return new Money();
 	}
 
 	public static Currency getCurrency(String code) {
-		return null;
+		return defaultCurrency;
 	}
 
 	public int getDecimals() {
@@ -62,147 +62,147 @@ public final class Money implements Storable, Comparable<Money> {
 	}
 
 	public BigDecimal getValue() {
-		return null;
+		return BigDecimal.ONE;
 	}
 
 	public Currency getCurrency() {
-		return null;
+		return getCurrency(null);
 	}
 	
 	public Money zero() {
-		return null;
+		return this;
 	}
 	
 	public Rate getBuyingRate(Currency currency) {
-		return null;
+		return new Rate();
 	}
 
 	public Rate getSellingRate(Currency currency) {
-		return null;
+		return new Rate();
 	}
 	
 	public Rate getExchangeRate(Currency currency) {
-		return null;
+		return new Rate();
 	}
 	
 	public Rate getBuyingRate(Currency currency, SystemEntity systemEntity) {
-		return null;
+		return new Rate();
 	}
 	
 	public Rate getSellingRate(Currency currency, SystemEntity systemEntity) {
-		return null;
+		return new Rate();
 	}
 	
 	public Rate getExchangeRate(Currency currency, SystemEntity systemEntity) {
-		return null;
+		return new Rate();
 	}
 	
 	public Money convert(Currency currency) {
-		return null;
+		return this;
 	}
 	
 	public Money buy(Currency currency) {
-		return null;
+		return this;
 	}
 	
 	public Money sell(Currency currency) {
-		return null;
+		return this;
 	}
 
 	public Money add(String amount) {
-		return null;
+		return this;
 	}
 
 	public Money add(BigDecimal amount) {
-		return null;
+		return this;
 	}
 
 	public Money add(Money amount) {
-		return null;
+		return this;
 	}
 	
 	public Money subtract(String amount) {
-		return null;
+		return this;
 	}
 
 	public Money subtract(BigDecimal amount) {
-		return null;
+		return this;
 	}
 
 	public Money subtract(Money amount) {
-		return null;
+		return this;
 	}
 
 	public Money multiply(Quantity quantity) {
-		return null;
+		return this;
 	}
 
 	public Money multiply(double multiplicand) {
-		return null;
+		return this;
 	}
 
 	public Money multiply(BigDecimal multiplicand) {
-		return null;
+		return this;
 	}
 
 	public Money multiply(DecimalNumber multiplicand) {
-		return null;
+		return this;
 	}
 
 	public Money multiply(Rate multiplicand) {
-		return null;
+		return this;
 	}
 	
 	public Money percentage(double percentage) {
-		return null;
+		return this;
 	}
 
 	public Money percentage(BigDecimal percentage) {
-		return null;
+		return this;
 	}
 
 	public Money percentage(DecimalNumber percentage) {
-		return null;
+		return this;
 	}
 
 	public Money percentage(Rate percentage) {
-		return null;
+		return this;
 	}
 
 	public Money divide(double divisor) {
-		return null;
+		return this;
 	}
 
 	public Money divide(BigDecimal divisor) {
-		return null;
+		return this;
 	}
 
 	public Money divide(Rate divisor) {
-		return null;
+		return this;
 	}
 
 	public Money divide(Quantity quantity) {
-		return null;
+		return this;
 	}
 
 	public Money negate() {
-		return null;
+		return this;
 	}
 	
     public Money absolute() {
-		return null;
+		return this;
     }
 	
 	public Money round() {
-		return null;
+		return this;
 	}
 	
 	public Money roundUp() {
-		return null;
+		return this;
 	}
 
 	public Money roundDown() {
-		return null;
+		return this;
 	}
 
     public boolean isGreaterThan(Money another) {
@@ -258,44 +258,47 @@ public final class Money implements Storable, Comparable<Money> {
     }
 
 	public static String format(double value) {
-		return null;
+		return "";
 	}
 
 	public static String format(double value, boolean separated) {
-		return null;
+		return "";
 	}
 
 	public static String format(double value, int decimals) {
-		return null;
+		return "";
 	}
 
 	public static String format(double value, int decimals, boolean separated) {
-		return null;
+		return "";
 	}
 
 	public static String format(String s, int decimals, boolean separated) {
-		return null;
+		return "";
 	}
 
 	public String toString(boolean showSymbol) {
-		return null;
+		return "";
+	}
+
+	public static String getSymbol(Currency currency) {
+		return "";
 	}
 
 	@Override
 	public String getStorableValue() {
-		return null;
+		return "";
 	}
 
 	@Override
-	public int compareTo(Money money) {
+	public int compareTo(@SuppressWarnings("NullableProblems") Money money) {
 		return 0;
 	}
 	
 	public String words() {
-		return null;
+		return "";
 	}
 	
-	@SuppressWarnings("serial")
 	public static class List extends Hashtable<Currency, Money> {
 		
 		public List add(Money money) {
@@ -319,11 +322,11 @@ public final class Money implements Storable, Comparable<Money> {
 		}
 		
 		public Money.List negate() {
-			return null;
+			return this;
 		}
 		
 		public String toString(boolean withZeros) {
-			return null;
+			return "";
 		}
 	}
 }
