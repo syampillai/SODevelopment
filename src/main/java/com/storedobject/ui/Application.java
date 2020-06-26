@@ -95,6 +95,12 @@ public class Application extends com.storedobject.vaadin.Application implements 
         return true;
     }
 
+    public void openMenu() {
+    }
+
+    public void closeMenu() {
+    }
+
     public void view(MediaFile mediaFile) {
     }
 

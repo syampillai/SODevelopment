@@ -14,6 +14,14 @@ public interface HasContacts {
         return null;
     }
 
+    default String getContacts(String contactType) {
+        return null;
+    }
+
+    default String getContacts(String contactType, String delimitedBy) {
+        return null;
+    }
+
     default Id getContactOwnerId() {
         return ((StoredObject)this).getId();
     }
