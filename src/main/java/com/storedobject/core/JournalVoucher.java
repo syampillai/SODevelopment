@@ -4,6 +4,8 @@ import com.storedobject.core.annotation.Column;
 
 import java.math.BigDecimal;
 import java.sql.Date;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.stream.Stream;
 
 /**
@@ -337,6 +339,15 @@ public abstract class JournalVoucher extends StoredObject {
      */
     public Entry getEntry(int index) {
         return new Entry();
+    }
+
+    /**
+     * Get the list of all vouchers in this transaction. The first entry in the list will be this voucher itself.
+     *
+     * @return List of journal vouchers.
+     */
+    public List<JournalVoucher> getVouchers() {
+        return new ArrayList<>();
     }
 
     /**

@@ -226,7 +226,16 @@ public class Account extends StoredObject implements OfEntity {
     }
 
     public String getTitle() {
-        return null;
+        return "";
+    }
+
+    @Override
+    public final String toString() {
+        return "";
+    }
+
+    public String toSubstring() {
+        return "";
     }
 
     public Money createAmount(BigDecimal amount) {

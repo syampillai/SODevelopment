@@ -1,6 +1,8 @@
 package com.storedobject.core;
 
 import java.sql.Date;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Representation of a single entry in the {@link Ledger}.
@@ -41,13 +43,59 @@ public final class LedgerEntry {
     public Money getLocalCurrencyAmount() {
         return new Money();
     }
+    /**
+     * Get the balance in the account after this entry is counted.
+     *
+     * @return Balance.
+     */
+    public Money getBalance() {
+        return new Money();
+    }
 
     /**
-     * Transaction narration (particulars) of this entry.
+     * Get the local currency balance in the account after this entry is counted.
      *
-     * @return Transaction narration.
+     * @return Local currency balance.
      */
-    public String getNarration() {
+    public Money getLocalCurrencyBalance() {
+        return new Money();
+    }
+
+    /**
+     * Get the opening balance in the account at this entry (before effecting transaction of
+     * this entry).
+     *
+     * @return Opening balance.
+     */
+    public Money getOpeningBalance() {
+        return new Money();
+    }
+
+    /**
+     * Get the opening balance in local currency in the account at this entry (before effecting transaction of
+     * this entry).
+     *
+     * @return Local currency opening balance.
+     */
+    public Money getLocalCurrencyOpeningBalance() {
+        return new Money();
+    }
+
+    /**
+     * Transaction particulars (narration) of this entry.
+     *
+     * @return Transaction particulars.
+     */
+    public String getParticulars() {
         return "";
+    }
+
+    /**
+     * Get the vouchers for this transaction. The first entry in the list will be the voucher for this entry.
+     *
+     * @return List of journal vouchers.
+     */
+    public List<JournalVoucher> getVouchers() {
+        return new ArrayList<>();
     }
 }
