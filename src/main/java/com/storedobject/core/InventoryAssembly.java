@@ -2,7 +2,14 @@ package com.storedobject.core;
 
 import java.math.BigDecimal;
 
-public final class InventoryAssembly extends StoredObject implements Detail {
+/**
+ * <p>An item can be an assembly, composed of one or more sub-items and each sub-item
+ * can also be an assembly.</p>
+ * <p>This class represents definition of an assembly node.</p>
+ *
+ * @author Syam
+ */
+public final class InventoryAssembly extends StoredObject {
 
     public InventoryAssembly() {
     }
@@ -14,7 +21,7 @@ public final class InventoryAssembly extends StoredObject implements Detail {
     }
 
     public String getPosition() {
-        return null;
+        return "";
     }
 
     public void setItemType(Id itemTypeId) {
@@ -27,11 +34,11 @@ public final class InventoryAssembly extends StoredObject implements Detail {
     }
 
     public Id getItemTypeId() {
-        return null;
+        return new Id();
     }
 
     public InventoryItemType getItemType() {
-        return null;
+        return new InventoryItemType();
     }
 
     public void setParentItemType(Id parentItemTypeId) {
@@ -44,11 +51,11 @@ public final class InventoryAssembly extends StoredObject implements Detail {
     }
 
     public Id getParentItemTypeId() {
-        return null;
+        return new Id();
     }
 
     public InventoryItemType getParentItemType() {
-        return null;
+        return new InventoryItemType();
     }
 
     public void setQuantity(Quantity quantity) {
@@ -58,20 +65,20 @@ public final class InventoryAssembly extends StoredObject implements Detail {
     }
 
     public Quantity getQuantity() {
-        return null;
+        return Count.ZERO;
     }
 
-    @Override
-    public Id getUniqueId() {
-        return getId();
+    public void setAccessory(boolean accessory) {
     }
 
-    @Override
-    public void copyValuesFrom(Detail detail) {
+    public boolean getAccessory() {
+        return false;
     }
 
-    @Override
-    public boolean isDetailOf(Class<? extends StoredObject> masterClass) {
-        return true;
+    public void setOptional(boolean optional) {
+    }
+
+    public boolean getOptional() {
+        return false;
     }
 }

@@ -14,37 +14,37 @@ public class SubscriptionItem extends InventoryItem {
     }
 
     public Date getDateFrom() {
-    	return null;
+        return new Date(0);
     }
 
     public void setDateTo(Date dateTo) {
     }
 
     public Date getDateTo() {
-    	return null;
+        return new Date(0);
     }
 
     public void setSubscriptionNumber(String subscriptionNumber) {
     }
 
     public String getSubscriptionNumber() {
-    	return null;
-    }
-    
-    @Override
-    public SubscriptionItemType getPartNumber() {
-    	return null;
+        return "";
     }
 
-    public static Class <SubscriptionItemType> getPartNumberType() {
-    	return null;
+    @Override
+    public SubscriptionItemType getItemType() {
+        return(SubscriptionItemType) super.getItemType();
+    }
+
+    public static Class <? extends SubscriptionItemType> getPartNumberType() {
+        return SubscriptionItemType.class;
     }
 
     public static SubscriptionItem get(String serial, SubscriptionItemType itemType) {
-    	return null;
+        return InventoryItem.get(SubscriptionItem.class, serial, itemType);
     }
 
-    public static ObjectIterator <SubscriptionItem> list(String serial, SubscriptionItemType itemType) {
-    	return null;
+    public static ObjectIterator <? extends SubscriptionItem> list(String serial, SubscriptionItemType itemType) {
+        return InventoryItem.list(SubscriptionItem.class, serial, itemType);
     }
 }

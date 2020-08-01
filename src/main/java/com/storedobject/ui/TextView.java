@@ -99,7 +99,10 @@ public class TextView extends View implements CloseableView, Transactional, Styl
     @Override
     @SuppressWarnings("unchecked")
     public Application getApplication() {
-        return (Application)super.getApplication();
+        return super.getApplication();
+    }
+
+    public void setApplication(Application application) {
     }
 
     @Override

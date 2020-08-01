@@ -7,21 +7,21 @@ public class ServiceItem extends InventoryItem {
 
     public static void columns(Columns columns) {
     }
-    
+
     @Override
-    public ServiceItemType getPartNumber() {
-        return null;
+    public ServiceItemType getItemType() {
+        return (ServiceItemType) super.getItemType();
     }
 
-    public static Class <ServiceItemType> getPartNumberType() {
-        return null;
+    public static Class <? extends ServiceItemType> getPartNumberType() {
+        return ServiceItemType.class;
     }
 
     public static ServiceItem get(String serial, ServiceItemType itemType) {
-        return null;
+        return InventoryItem.get(ServiceItem.class, serial, itemType);
     }
 
-    public static ObjectIterator <ServiceItem> list(String serial, ServiceItemType itemType) {
-        return null;
+    public static ObjectIterator <? extends ServiceItem> list(String serial, ServiceItemType itemType) {
+        return InventoryItem.list(ServiceItem.class, serial, itemType);
     }
 }

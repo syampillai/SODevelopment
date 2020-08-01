@@ -1,212 +1,112 @@
 package com.storedobject.core;
 
-import java.math.BigDecimal;
 import java.sql.Date;
+import java.util.stream.Stream;
 
-public final class InventoryTransaction extends StoredObject {
+/**
+ * Utility class to create inventory transactions (movement of items from one locations to another).
+ *
+ * @author Syam
+ */
+public final class InventoryTransaction {
 
-    public InventoryTransaction() {
+    public InventoryTransaction(Date date, InventoryStore from, InventoryLocation to, String reference) {
+        this(date, from.getStoreBin(), to, reference);
     }
 
-    public static void columns(Columns columns) {
+    public InventoryTransaction(Date date, InventoryStore from, InventoryStore to, String reference) {
+        this(date, from.getStoreBin(), to.getStoreBin(), reference);
     }
 
-    public void setDate(Date date) {
+    public InventoryTransaction(Date date, InventoryLocation from, InventoryStore to, String reference) {
+        this(date, from, to.getStoreBin(), reference);
     }
 
-    public Date getDate() {
-        return null;
+    public InventoryTransaction(Date date, InventoryLocation from, InventoryLocation to, String reference) {
     }
 
-    public void setType(int type) {
+    public void add(InventoryItemType partNumber, Quantity quantity, Money cost) {
+        add(partNumber, null, quantity, cost);
     }
 
-    public int getType() {
-        return 0;
+    public void add(InventoryItemType partNumber, String serialNumber, Quantity quantity) {
     }
 
-    public static String[] getTypeValues() {
-        return null;
+    public void add(InventoryItemType partNumber, String serialNumber, Quantity quantity, Money cost) {
     }
 
-    public static String getTypeValue(int value) {
-        return null;
+    public void add(InventoryItemType partNumber, String serialNumber, Quantity quantity, Money cost, String reference) {
     }
 
-    public String getTypeValue() {
-        return null;
-    }
-    
-    public boolean isReceipt() {
-    	return false;
-    }
-    
-    public boolean isIssue() {
-    	return false;
+    public void remove(Entry entry) {
     }
 
-    public void setItem(Id itemId) {
+    public void save(TransactionManager tm) throws Exception {
     }
 
-    public void setItem(BigDecimal idValue) {
+    public void save(Transaction transaction) throws Exception {
     }
 
-    public void setItem(InventoryItem item) {
+    public InventoryLocation getLocationFrom() {
+        return new InventoryBin();
     }
 
-    public Id getItemId() {
-        return null;
+    public InventoryLocation getLocationTo() {
+        return new InventoryStoreBin();
     }
 
-    public InventoryItem getItem() {
-        return null;
+    public Stream<Entry> entries() {
+        return entries(false);
     }
 
-    public void setQuantity(Quantity quantity) {
+    public Stream<Entry> entries(boolean includeAssemblyComponents) {
+        return Stream.empty();
     }
 
-    public void setQuantity(Object value) {
-    }
+    public class Entry {
 
-    public Quantity getQuantity() {
-        return null;
-    }
+        private Entry() {
+            InventoryTransaction.this.getLocationTo();
+        }
 
-    public void setCost(Money cost) {
-    }
+        public InventoryItem getItem() {
+            return new InventoryItem();
+        }
 
-    public void setCost(Object moneyValue) {
-    }
+        public InventoryItemType getItemType() {
+            return new InventoryItemType();
+        }
 
-    public Money getCost() {
-        return null;
-    }
+        public String getSerialNumber() {
+            return "";
+        }
 
-    public void setStore(Id storeId) {
-    }
+        public void setSerialNumber(String serialNumber) {
+        }
 
-    public void setStore(BigDecimal idValue) {
-    }
+        public Quantity getQuantity() {
+            return Count.ZERO;
+        }
 
-    public void setStore(InventoryStore store) {
-    }
+        public void setQuantity(Quantity quantity) {
+        }
 
-    public Id getStoreId() {
-        return null;
-    }
+        public Money getCost() {
+            return new Money();
+        }
 
-    public InventoryStore getStore() {
-        return null;
-    }
+        public void setCost(Money cost) {
+        }
 
-    public void setStockLocation(Id stockLocationId) {
-    }
+        public String getReference() {
+            return "";
+        }
 
-    public void setStockLocation(BigDecimal idValue) {
-    }
+        public void setReference(String reference) {
+        }
 
-    public void setStockLocation(InventoryStockLocation stockLocation) {
-    }
-
-    public Id getStockLocationId() {
-        return null;
-    }
-
-    public InventoryStockLocation getStockLocation() {
-        return null;
-    }
-
-    public void setServiceabilityStatus(int serviceabilityStatus) {
-    }
-
-    public int getServiceabilityStatus() {
-        return 0;
-    }
-
-    public static String[] getServiceabilityStatusValues() {
-        return null;
-    }
-
-    public static String getServiceabilityStatusValue(int value) {
-        return null;
-    }
-
-    public String getServiceabilityStatusValue() {
-        return null;
-    }
-
-    public void setStatus(int status) {
-    }
-
-    public int getStatus() {
-        return 0;
-    }
-
-    public static String[] getStatusValues() {
-        return null;
-    }
-
-    public static String getStatusValue(int value) {
-        return null;
-    }
-
-    public String getStatusValue() {
-        return null;
-    }
-
-    public void setTransactionEntry(Id documentItemId) {
-    }
-
-    public void setTransactionEntry(BigDecimal idValue) {
-    }
-
-    public void setTransactionEntry(InventoryReceiptItem documentItem) {
-    }
-
-    public Id getTransactionEntryId() {
-        return null;
-    }
-
-    public StoredObject getTransactionEntry() {
-        return null;
-    }
-
-    public boolean getSubassembly() {
-		return false;
-	}
-
-	public void setSubassembly(boolean subassembly) {
-	}
-
-    public InventoryReceipt getReceipt() {
-        return null;
-    }
-
-    public InventoryReceiptItem getReceiptItem() {
-        return null;
-    }
-    
-    public InventoryIssue getIssue() {
-        return null;
-    }
-
-    public InventoryIssueItem getIssueItem() {
-        return null;
-    }
-
-    public InventoryReceiptDocumentItem getReceiptDocumentItem() {
-        return null;
-    }
-
-    public InventoryIssueDocumentItem getIssueDocumentItem() {
-        return null;
-    }
-
-    public InventoryReceiptDocument getReceiptDocument() {
-        return null;
-    }
-
-    public InventoryIssueDocument getIssueDocument() {
-        return null;
+        public boolean isAssemblyComponent() {
+            return false;
+        }
     }
 }

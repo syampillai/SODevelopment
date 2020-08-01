@@ -1,36 +1,58 @@
 package com.storedobject.core;
 
-public abstract class InventoryStore extends StoredObject {
+import java.math.BigDecimal;
+
+/**
+ * Represents a store where items can stocked at the bin locations ({@link InventoryBin}) of the store.
+ *
+ * @author Syam
+ */
+public class InventoryStore extends StoredObject implements OfEntity {
 
     public InventoryStore() {
-    }
-
-    public java.lang.String getName() {
-        return null;
-    }
-
-    public void setName(java.lang.String name) {
     }
 
     public static void columns(Columns columns) {
     }
 
-    public static void indices(Indices indices) {
+    public String getName() {
+        return "";
     }
 
-	public static <T extends InventoryStore> T get(String name) {
-    	return null;
+    public void setName(String name) {
     }
 
-	public static <T extends InventoryStore> ObjectIterator<T> list(String name) {
-    	return null;
+    public void setSystemEntity(Id systemEntityId) {
     }
-	
-	public boolean getMainStore() {
-		return false;
-	}
-	
-    public static InventoryStore findMainStore() {
-    	return null;
+
+    public void setSystemEntity(BigDecimal idValue) {
+    }
+
+    public void setSystemEntity(SystemEntity systemEntity) {
+    }
+
+    public Id getSystemEntityId() {
+        return new Id();
+    }
+
+    public SystemEntity getSystemEntity() {
+        return new SystemEntity();
+    }
+
+    public static <T extends InventoryStore> T get(String name) {
+        //noinspection unchecked
+        return (T) new InventoryStore();
+    }
+
+    public static <T extends InventoryStore> ObjectIterator<T> list(String name) {
+        return ObjectIterator.create();
+    }
+
+    public final InventoryStoreBin getStoreBin() {
+        return new InventoryStoreBin();
+    }
+
+    public static InventoryStore getStore(Id id) {
+        return new InventoryStore();
     }
 }

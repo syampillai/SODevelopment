@@ -1,36 +1,38 @@
-package com.storedobject.ui;
+package com.storedobject.ui.inventory;
 
 import com.storedobject.common.FilterProvider;
 import com.storedobject.core.InventoryItem;
 import com.storedobject.core.InventoryStore;
+import com.storedobject.ui.ObjectGetField;
+import com.storedobject.ui.ObjectProvider;
 import com.storedobject.vaadin.ButtonLayout;
 import com.vaadin.flow.component.Component;
 
 import java.util.function.Consumer;
 
-public class InventoryItemField<I extends InventoryItem> extends ObjectGetField<I> {
+public class ItemField<I extends InventoryItem> extends ObjectGetField<I> {
 
-    public InventoryItemField(Class<I> objectClass) {
+    public ItemField(Class<I> objectClass) {
         this(null, objectClass);
     }
 
-    public InventoryItemField(String label, Class<I> objectClass) {
+    public ItemField(String label, Class<I> objectClass) {
         this(label, objectClass, false);
     }
 
-    public InventoryItemField(Class<I> objectClass, boolean allowAny) {
+    public ItemField(Class<I> objectClass, boolean allowAny) {
         this(null, objectClass, allowAny);
     }
 
-    public InventoryItemField(Class<I> objectClass, boolean allowAny, boolean addAllowed) {
+    public ItemField(Class<I> objectClass, boolean allowAny, boolean addAllowed) {
         this(null, objectClass, allowAny, addAllowed);
     }
 
-    public InventoryItemField(String label, Class<I> objectClass, boolean allowAny) {
+    public ItemField(String label, Class<I> objectClass, boolean allowAny) {
         this(label, objectClass, allowAny, false);
     }
 
-    public InventoryItemField(String label, Class<I> objectClass, boolean allowAny, boolean addAllowed) {
+    public ItemField(String label, Class<I> objectClass, boolean allowAny, boolean addAllowed) {
         super(objectClass, allowAny);
     }
 

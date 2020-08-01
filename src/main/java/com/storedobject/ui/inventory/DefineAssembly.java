@@ -14,6 +14,10 @@ public class DefineAssembly<T extends InventoryItemType, C extends InventoryItem
     protected ConfirmButton delete;
     protected Button selectRoot;
 
+    public DefineAssembly(Class<T> itemTypeClass) {
+        this(itemTypeClass, null);
+    }
+
     public DefineAssembly(Class<T> itemTypeClass, Class<C> componentTypeClass) {
         super(InventoryAssembly.class);
     }

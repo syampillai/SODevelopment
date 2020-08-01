@@ -1,7 +1,10 @@
 package com.storedobject.core;
 
-import java.math.BigDecimal;
-
+/**
+ * An inventory item type denotes a "part number".
+ *
+ * @author Syam
+ */
 public class InventoryItemType extends StoredObject implements HasChildren {
 
     public InventoryItemType() {
@@ -9,55 +12,45 @@ public class InventoryItemType extends StoredObject implements HasChildren {
 
     public static void columns(Columns columns) {
     }
-    
-    public void setName(Id nameId) {
+
+    public String getName() {
+        return "";
     }
 
-    public void setName(BigDecimal idValue) {
-    }
-
-    public void setName(InventoryItemName name) {
-    }
-
-    public Id getNameId() {
-        return null;
-    }
-
-    public InventoryItemName getName() {
-        return null;
+    public void setName(String name) {
     }
 
     public void setPartNumber(String partNumber) {
     }
 
     public String getPartNumber() {
-        return null;
+        return "";
     }
 
-	public String getAlternateCode() {
-        return null;
-	}
+    public String getAlternateCode() {
+        return "";
+    }
 
-	public void setAlternateCode(String alternateCode) {
-	}
-	
-	public void setUnitOfMeasurement(MeasurementUnit unitOfMeasurement) {
-	}
-	
-	public void setUnitOfMeasurement(Quantity unitOfMeasurement) {
+    public void setAlternateCode(String alternateCode) {
+    }
+
+    public void setUnitOfMeasurement(MeasurementUnit unitOfMeasurement) {
+    }
+
+    public void setUnitOfMeasurement(Quantity unitOfMeasurement) {
     }
 
     public void setUnitOfMeasurement(Object value) {
     }
 
     public Quantity getUnitOfMeasurement() {
-        return null;
+        return Count.ZERO;
     }
-    
+
     public final MeasurementUnit getUnit() {
-    	return null;
+        return Count.ZERO.getUnit();
     }
-    
+
     public void setUnitCost(Money unitCost) {
     }
 
@@ -65,15 +58,15 @@ public class InventoryItemType extends StoredObject implements HasChildren {
     }
 
     public Money getUnitCost() {
-        return null;
+        return new Money();
     }
-    
+
     public UnitCost getUnitCost(MeasurementUnit unit) {
-        return null;
+        return new UnitCost(new Money(), Count.ONE);
     }
-    
+
     public Money getCost(Quantity quantity) {
-        return null;
+        return new Money();
     }
 
     public void setMinimumStockLevel(Quantity minimumStockLevel) {
@@ -83,7 +76,7 @@ public class InventoryItemType extends StoredObject implements HasChildren {
     }
 
     public Quantity getMinimumStockLevel() {
-        return null;
+        return Count.ZERO;
     }
 
     public void setReorderPoint(Quantity reorderPoint) {
@@ -93,7 +86,7 @@ public class InventoryItemType extends StoredObject implements HasChildren {
     }
 
     public Quantity getReorderPoint() {
-        return null;
+        return Count.ZERO;
     }
 
     public void setEconomicOrderQuantity(Quantity economicOrderQuantity) {
@@ -103,135 +96,183 @@ public class InventoryItemType extends StoredObject implements HasChildren {
     }
 
     public Quantity getEconomicOrderQuantity() {
-        return null;
+        return Count.ZERO;
     }
 
-    public void setHandlingAndStorage(int handlingAndStorage) {
-    }
-
-    public int getHandlingAndStorage() {
+    public int getAverageLeadTime() {
         return 0;
     }
 
-    public static String[] getHandlingAndStorageValues() {
-        return null;
+    public void setAverageLeadTime(int averageLeadTime) {
     }
 
-    public static String getHandlingAndStorageValue(int value) {
-        return null;
+    public int getRepairTurnaroundTime() {
+        return 0;
     }
 
-    public String getHandlingAndStorageValue() {
-        return null;
+    public void setRepairTurnaroundTime(int repairTurnAroundTime) {
     }
 
     public void checkUnit(Quantity quantity, String name) throws Invalid_State {
     }
-    
+
     public void checkUnit(Quantity quantity) throws Invalid_State {
     }
 
+    /**
+     * <p>Is this item is a serialized item?</p>
+     * <p>A serialized item has a unique serial number (mostly assigned by the manufacturer itself). The item is
+     * always tracked by the serial number in the system.</p>
+     *
+     * @return True or false.
+     */
     public boolean isSerialized() {
-    	return false;
+        return false;
     }
 
+    /**
+     * <p>Is this item is an expendable item?</p>
+     * <p>Items (such as nut, bolt, rivet etc.) for which (1) no authorized repair procedure exists, and/or
+     * (2) the cost of repair would exceed cost of its replacement. Expendable items are usually considered to be
+     * consumed when issued and are not recorded as returnable inventory.</p>
+     *
+     * @return True or false.
+     */
     public boolean isExpendable() {
         return false;
     }
 
+    /**
+     * <p>Is this item is a consumable item?</p>
+     * <p>A consumable item (or a consumable) is an item that is once used, can not be recovered. Once issued from
+     * stores, consumables gets incorporated into other items and loose their identity. An example of a consumable
+     * is paint.</p>
+     *
+     * @return True or false.
+     */
     public boolean isConsumable() {
         return false;
     }
 
-    public Id getCategoryId() {
-    	return null;
+    /**
+     * <p>Is this item a tool?</p>
+     * <p>A tool is always tracked when issued to a "Maintenance Unit"</p>
+     *
+     * @return True or false.
+     */
+    public boolean isTool() {
+        return false;
     }
 
-	public <T extends InventoryItem> T createItem() {
-    	return null;
-    }
-    
-    public static Class<? extends InventoryItem> getItemType() {
+    /**
+     * Get the category Id of this item. A category Id could be anything an organization may want to maintain
+     * items in some special category groups. For example, in an airline store, items may be categorized based on
+     * the aircraft fleet and in that case, even if some items can be used across the fleets, it may be still
+     * maintained per fleet.
+     *
+     * @return Category Id. Default is <code>null</code>.
+     */
+    public Id getCategoryId() {
         return null;
+    }
+
+    /**
+     * Is this item an alternate part number for a given item.
+     *
+     * @param alternatePartNumber An alternate item.
+     * @return True or false.
+     */
+    public boolean isAPN(@SuppressWarnings("unused") InventoryItemType alternatePartNumber) {
+        return false;
+    }
+
+    /**
+     * Is this item an alternate part number for a given item.
+     *
+     * @param alternatePart An alternate item.
+     * @return True or false.
+     */
+    public final boolean isAPN(InventoryItem alternatePart) {
+        return alternatePart != null && isAPN(alternatePart.getItemType());
+    }
+
+    /**
+     * is shelf-life applicable?
+     *
+     * @return True or false.
+     */
+    public boolean isShelfLifeApplicable() {
+        return false;
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T extends InventoryItem> T createItem() {
+        return (T) new InventoryItem();
+    }
+
+    public static Class<? extends InventoryItem> getItemType() {
+        return InventoryItem.class;
     }
 
     public static InventoryItemType get(String partNumber) {
-        return null;
+        return new InventoryItemType();
     }
-    
+
     public static ObjectIterator<? extends InventoryItemType> list(String partNumber) {
-    	return null;
+        return ObjectIterator.create();
     }
 
     public static <T extends InventoryItemType> T getByPartNumber(Class<T> itemClass, String partNumber) {
-        return null;
+        //noinspection unchecked
+        return (T) new InventoryItemType();
     }
-    
+
     public static <T extends InventoryItemType> T getByPartNumber(Class<T> itemClass, String partNumber, boolean any) {
-        return null;
+        //noinspection unchecked
+        return (T) new InventoryItemType();
     }
 
     public static <T extends InventoryItemType> ObjectIterator<T> listByPartNumber(Class<T> itemClass, String partNumber) {
-        return null;
+        return ObjectIterator.create();
     }
-    
+
     public static <T extends InventoryItemType> ObjectIterator<T> listByPartNumber(Class<T> itemClass, String partNumber, boolean any) {
-        return null;
+        return ObjectIterator.create();
     }
 
-	public <I extends InventoryItem> ObjectIterator<I> listStock(Id storeId) {
-        return null;
-	}
+    public ObjectIterator<InventoryItem> listStock(InventoryStore store) {
+        return ObjectIterator.create();
+    }
 
-	public <I extends InventoryItem> ObjectIterator<I> listStock(String serialNumber, Id storeId) {
-        return null;
-	}
-    
-	public <I extends InventoryItem> ObjectIterator<I> listStock(Id storeId, int serviceabilityStatus) {
-        return null;
-	}
-	
-	public <I extends InventoryItem> ObjectIterator<I> listStock(Id storeId, int... serviceabilityStatus) {
-        return null;
-	}
-	
-	public <I extends InventoryItem> ObjectIterator<I> listStock(String serialNumber, Id storeId, int serviceabilityStatus) {
-        return null;
-	}
+    public ObjectIterator<InventoryItem> listStock(String serialNumber, InventoryStore store) {
+        return ObjectIterator.create();
+    }
 
-	public <I extends InventoryItem> ObjectIterator<I> listStock(String serialNumber, Id storeId, int... serviceabilityStatus) {
-        return null;
-	}
+    public ObjectIterator<InventoryItem> listStock(InventoryLocation location) {
+        return ObjectIterator.create();
+    }
 
-	public boolean checkStock(Id storeId, Quantity quantity) {
-        return false;
-	}
-	
-	public boolean checkStock(Id storeId, Quantity quantity, int serviceabilityStatus) {
-        return false;
-	}
-	
-	public boolean checkStock(Id storeId, Quantity quantity, int... serviceabilityStatus) {
-        return false;
-	}
-	
-	public boolean checkStock(Id storeId, Quantity quantity, String serialNumber) {
-        return false;
-	}
-	
-	public boolean checkStock(Id storeId, Quantity quantity, String serialNumber, int serviceabilityStatus) {
-        return false;
-	}
+    public ObjectIterator<InventoryItem> listStock(String serialNumber, InventoryLocation location) {
+        return ObjectIterator.create();
+    }
 
-	public boolean checkStock(Id storeId, Quantity quantity, String serialNumber, int... serviceabilityStatus) {
-        return false;
-	}
+    public boolean checkStock(InventoryStore store, Quantity quantity) {
+        return true;
+    }
 
-	public String getSerialNumberName() {
-		return null;
-	}
-	
-	public boolean mainStoreOnly() {
-		return false;
-	}
+    public boolean checkStock(InventoryStore store, Quantity quantity, String serialNumber) {
+        return true;
+    }
+
+    public boolean checkStock(InventoryLocation location, Quantity quantity) {
+        return true;
+    }
+
+    public boolean checkStock(InventoryLocation location, Quantity quantity, String serialNumber) {
+        return true;
+    }
+
+    public String getSerialNumberName() {
+        return "";
+    }
 }
