@@ -32,11 +32,11 @@ public class SubscriptionItem extends InventoryItem {
     }
 
     @Override
-    public SubscriptionItemType getItemType() {
-        return(SubscriptionItemType) super.getItemType();
+    public SubscriptionItemType getPartNumber() {
+        return(SubscriptionItemType) super.getPartNumber();
     }
 
-    public static Class <? extends SubscriptionItemType> getPartNumberType() {
+    public static Class <? extends SubscriptionItemType> getItemType() {
         return SubscriptionItemType.class;
     }
 

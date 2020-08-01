@@ -16,20 +16,20 @@ public class InventoryItem extends StoredObject {
     public static void columns(Columns columns) {
     }
 
-    public void setItemType(Id itemTypeId) {
+    public void setPartNumber(Id partNumberId) {
     }
 
-    public void setItemType(BigDecimal idValue) {
+    public void setPartNumber(BigDecimal idValue) {
     }
 
-    public void setItemType(InventoryItemType itemType) {
+    public void setPartNumber(InventoryItemType partNumber) {
     }
 
-    public Id getItemTypeId() {
+    public Id getPartNumberId() {
         return new Id();
     }
 
-    public InventoryItemType getItemType() {
+    public InventoryItemType getPartNumber() {
         return new InventoryItemType();
     }
 
@@ -81,7 +81,7 @@ public class InventoryItem extends StoredObject {
     }
 
     public Quantity getQuantity() {
-        return Count.ZERO;
+        return Count.ONE;
     }
 
     public void setCost(Money cost) {
@@ -117,9 +117,11 @@ public class InventoryItem extends StoredObject {
     }
 
     public void setOwner(BigDecimal idValue) {
+        setOwner(new Id(idValue));
     }
 
     public void setOwner(Entity owner) {
+        setOwner(owner == null ? null : owner.getId());
     }
 
     public Id getOwnerId() {
@@ -130,48 +132,48 @@ public class InventoryItem extends StoredObject {
         return new Entity();
     }
 
-    public static InventoryItem get(String serialNumber, String itemType) {
+    public static InventoryItem get(String serialNumber, String partNumber) {
         return new InventoryItem();
     }
 
-    public static <T extends InventoryItem> InventoryItem get(String serialNumber, InventoryItemType itemType) {
+    public static <T extends InventoryItem> InventoryItem get(String serialNumber, InventoryItemType partNumber) {
         return new InventoryItem();
     }
 
-    public static InventoryItem getByItemTypeId(String serialNumber, Id itemType) {
+    public static InventoryItem getByPartNumberId(String serialNumber, Id partNumber) {
         return new InventoryItem();
     }
 
-    public static <T extends InventoryItem> T getByItemType(Class<T> itemClass, String serialNumber, String itemType) {
+    public static <T extends InventoryItem> T getByPartNumber(Class<T> itemClass, String serialNumber, String partNumber) {
         //noinspection unchecked
-        return (T) new InventoryItem();
+        return (T)new InventoryItem();
     }
 
-    public static <T extends InventoryItem> T get(Class<T> itemClass, String serialNumber, InventoryItemType itemType) {
+    public static <T extends InventoryItem> T get(Class<T> itemClass, String serialNumber, InventoryItemType partNumber) {
         //noinspection unchecked
-        return (T) new InventoryItem();
+        return (T)new InventoryItem();
     }
 
-    public static <T extends InventoryItem> T getByItemType(Class<T> itemClass, String serialNumber, String itemType, boolean any) {
+    public static <T extends InventoryItem> T getByPartNumber(Class<T> itemClass, String serialNumber, String partNumber, boolean any) {
         //noinspection unchecked
-        return (T) new InventoryItem();
+        return (T)new InventoryItem();
     }
 
-    public static <T extends InventoryItem> T get(Class<T> itemClass, String serialNumber, InventoryItemType itemType, boolean any) {
+    public static <T extends InventoryItem> T get(Class<T> itemClass, String serialNumber, InventoryItemType partNumber, boolean any) {
         //noinspection unchecked
-        return (T) new InventoryItem();
+        return (T)new InventoryItem();
     }
 
-    public static <T extends InventoryItem> T getByItemTypeId(Class<T> itemClass, String serialNumber, Id itemType) {
+    public static <T extends InventoryItem> T getByPartNumberId(Class<T> itemClass, String serialNumber, Id partNumber) {
         //noinspection unchecked
-        return (T) new InventoryItem();
+        return (T)new InventoryItem();
     }
 
-    public static <T extends InventoryItem> ObjectIterator<T> list(Class<T> itemClass, String serialNumber, InventoryItemType itemType) {
+    public static <T extends InventoryItem> ObjectIterator<T> list(Class<T> itemClass, String serialNumber, InventoryItemType partNumber) {
         return ObjectIterator.create();
     }
 
-    public static <T extends InventoryItem> ObjectIterator<T> list(Class<T> itemClass, String serialNumber, InventoryItemType itemType, boolean any) {
+    public static <T extends InventoryItem> ObjectIterator<T> list(Class<T> itemClass, String serialNumber, InventoryItemType partNumber, boolean any) {
         return ObjectIterator.create();
     }
 
@@ -183,7 +185,7 @@ public class InventoryItem extends StoredObject {
      * @return True or false.
      */
     public final boolean isSerialized() {
-        return getItemType().isSerialized();
+        return getPartNumber().isSerialized();
     }
 
     /**
@@ -195,7 +197,7 @@ public class InventoryItem extends StoredObject {
      * @return True or false.
      */
     public final boolean isExpendable() {
-        return getItemType().isExpendable();
+        return getPartNumber().isExpendable();
     }
 
     /**
@@ -207,7 +209,7 @@ public class InventoryItem extends StoredObject {
      * @return True or false.
      */
     public final boolean isConsumable() {
-        return getItemType().isConsumable();
+        return getPartNumber().isConsumable();
     }
 
     /**
@@ -217,10 +219,10 @@ public class InventoryItem extends StoredObject {
      * @return True or false.
      */
     public final boolean isTool() {
-        return getItemType().isTool();
+        return getPartNumber().isTool();
     }
 
-    public static Class<? extends InventoryItemType> getItemTypeClass() {
+    public static Class<? extends InventoryItemType> getItemType() {
         return InventoryItemType.class;
     }
 
@@ -230,7 +232,7 @@ public class InventoryItem extends StoredObject {
      * @return True or false.
      */
     public final boolean isShelfLifeApplicable() {
-        return getItemType().isShelfLifeApplicable();
+        return getPartNumber().isShelfLifeApplicable();
     }
 
     /**
@@ -243,11 +245,9 @@ public class InventoryItem extends StoredObject {
     }
 
     public void checkUnit(Quantity quantity, String name) throws Invalid_State {
-        getItemType().checkUnit(quantity, name);
     }
 
     public void checkUnit(Quantity quantity) throws Invalid_State {
-        getItemType().checkUnit(quantity, null);
     }
 
     public static ObjectIterator<InventoryItem> listStock(String partNumber, InventoryStore store) {
@@ -258,11 +258,11 @@ public class InventoryItem extends StoredObject {
         return ObjectIterator.create();
     }
 
-    public static <T extends InventoryItemType> ObjectIterator<InventoryItem> listStock(T itemType, InventoryStore store) {
+    public static <T extends InventoryItemType> ObjectIterator<InventoryItem> listStock(T partNumber, InventoryStore store) {
         return ObjectIterator.create();
     }
 
-    public static <T extends InventoryItemType> ObjectIterator<InventoryItem> listStock(T itemType, String serialNumber, InventoryStore store) {
+    public static <T extends InventoryItemType> ObjectIterator<InventoryItem> listStock(T partNumber, String serialNumber, InventoryStore store) {
         return ObjectIterator.create();
     }
 
@@ -274,11 +274,11 @@ public class InventoryItem extends StoredObject {
         return ObjectIterator.create();
     }
 
-    public static <T extends InventoryItemType> ObjectIterator<InventoryItem> listStock(T itemType, InventoryLocation location) {
+    public static <T extends InventoryItemType> ObjectIterator<InventoryItem> listStock(T partNumber, InventoryLocation location) {
         return ObjectIterator.create();
     }
 
-    public static <T extends InventoryItemType> ObjectIterator<InventoryItem> listStock(T itemType, String serialNumber, InventoryLocation location) {
+    public static <T extends InventoryItemType> ObjectIterator<InventoryItem> listStock(T partNumber, String serialNumber, InventoryLocation location) {
         return ObjectIterator.create();
     }
 }

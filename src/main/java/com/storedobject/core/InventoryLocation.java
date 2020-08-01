@@ -33,16 +33,16 @@ public abstract class InventoryLocation extends StoredObject {
      * @return True or false.
      */
     public final boolean canStore(InventoryItem item) {
-        return canStore(item.getItemType());
+        return canStore(item.getPartNumber());
     }
 
     /**
      * Check whether a particular type of item (part number) can be stored at this location or not.
      *
-     * @param itemType Item type to check.
+     * @param partNumber Item type to check.
      * @return True or false.
      */
-    public boolean canStore(InventoryItemType itemType) {
+    public boolean canStore(InventoryItemType partNumber) {
         return true;
     }
 

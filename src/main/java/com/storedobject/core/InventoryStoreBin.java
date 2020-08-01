@@ -53,11 +53,11 @@ public final class InventoryStoreBin extends InventoryBin {
     /**
      * This method always returns <code>true</code>. (Means, anything can be stocked at this level).
      *
-     * @param itemType Item type to check.
+     * @param partNumber Item type to check.
      * @return True.
      */
     @Override
-    public boolean canStore(InventoryItemType itemType) {
+    public boolean canStore(InventoryItemType partNumber) {
         return true;
     }
 }

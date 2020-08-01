@@ -9,11 +9,11 @@ public class ServiceItem extends InventoryItem {
     }
 
     @Override
-    public ServiceItemType getItemType() {
-        return (ServiceItemType) super.getItemType();
+    public ServiceItemType getPartNumber() {
+        return (ServiceItemType) super.getPartNumber();
     }
 
-    public static Class <? extends ServiceItemType> getPartNumberType() {
+    public static Class <? extends ServiceItemType> getItemType() {
         return ServiceItemType.class;
     }
 

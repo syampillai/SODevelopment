@@ -193,7 +193,7 @@ public class InventoryItemType extends StoredObject implements HasChildren {
      * @return True or false.
      */
     public final boolean isAPN(InventoryItem alternatePart) {
-        return alternatePart != null && isAPN(alternatePart.getItemType());
+        return alternatePart != null && isAPN(alternatePart.getPartNumber());
     }
 
     /**
