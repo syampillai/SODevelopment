@@ -36,10 +36,6 @@ public class SubscriptionItem extends InventoryItem {
         return(SubscriptionItemType) super.getPartNumber();
     }
 
-    public static Class <? extends SubscriptionItemType> getItemType() {
-        return SubscriptionItemType.class;
-    }
-
     public static SubscriptionItem get(String serial, SubscriptionItemType itemType) {
         return InventoryItem.get(SubscriptionItem.class, serial, itemType);
     }

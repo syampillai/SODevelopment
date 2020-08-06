@@ -35,6 +35,23 @@ public final class InventoryLedger extends StoredObject {
         return new InventoryItem();
     }
 
+    public void setItemType(Id itemTypeId) {
+    }
+
+    public void setItemType(BigDecimal idValue) {
+    }
+
+    public void setItemType(InventoryItemType itemType) {
+    }
+
+    public Id getItemTypeId() {
+        return new Id();
+    }
+
+    public InventoryItemType getItemType() {
+        return new InventoryItemType();
+    }
+
     public void setQuantity(Quantity quantity) {
     }
 

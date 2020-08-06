@@ -63,7 +63,7 @@ public class InventoryItem extends StoredObject {
     public void setLocation(BigDecimal idValue) {
     }
 
-    public void setLocation(InventoryBin location) {
+    public void setLocation(InventoryLocation location) {
     }
 
     public Id getLocationId() {
@@ -177,6 +177,10 @@ public class InventoryItem extends StoredObject {
         return ObjectIterator.create();
     }
 
+    public final boolean canStore(InventoryLocation location) {
+        return getPartNumber().canStore(location);
+    }
+
     /**
      * <p>Is this item is a serialized item?</p>
      * <p>A serialized item has a unique serial number (mostly assigned by the manufacturer itself). The item is
@@ -222,10 +226,6 @@ public class InventoryItem extends StoredObject {
         return getPartNumber().isTool();
     }
 
-    public static Class<? extends InventoryItemType> getItemType() {
-        return InventoryItemType.class;
-    }
-
     /**
      * Is shelf-life applicable?
      *
@@ -242,6 +242,14 @@ public class InventoryItem extends StoredObject {
      */
     public Date getShelfLife() {
         return null;
+    }
+
+    public final Class<? extends InventoryItemType> getPartNumberType() {
+        return InventoryItemType.class;
+    }
+
+    public final Class<? extends InventoryItemType> getItemType() {
+        return InventoryItemType.class;
     }
 
     public void checkUnit(Quantity quantity, String name) throws Invalid_State {
@@ -280,5 +288,29 @@ public class InventoryItem extends StoredObject {
 
     public static <T extends InventoryItemType> ObjectIterator<InventoryItem> listStock(T partNumber, String serialNumber, InventoryLocation location) {
         return ObjectIterator.create();
+    }
+
+    public static ObjectIterator<InventoryItem> listStock(String partNumber, String serialNumber) {
+        return ObjectIterator.create();
+    }
+
+    public static ObjectIterator<InventoryItem> listStock(InventoryItemType partNumber, String serialNumber) {
+        return ObjectIterator.create();
+    }
+
+    public final String getPartNumberName() {
+        return "";
+    }
+
+    public final String getPartNumberShortName() {
+        return "";
+    }
+
+    public final String getSerialNumberName() {
+        return "";
+    }
+
+    public final String getSerialNumberShortName() {
+        return "";
     }
 }

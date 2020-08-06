@@ -206,11 +206,11 @@ public class InventoryItemType extends StoredObject implements HasChildren {
     }
 
     @SuppressWarnings("unchecked")
-    public <T extends InventoryItem> T createItem() {
+    public final <T extends InventoryItem> T createItem() {
         return (T) new InventoryItem();
     }
 
-    public static Class<? extends InventoryItem> getItemType() {
+    public final Class<? extends InventoryItem> getItemType() {
         return InventoryItem.class;
     }
 
@@ -256,6 +256,14 @@ public class InventoryItemType extends StoredObject implements HasChildren {
         return ObjectIterator.create();
     }
 
+    public static ObjectIterator<InventoryItem> listStock(String partNumber, String serialNumber) {
+        return ObjectIterator.create();
+    }
+
+    public static ObjectIterator<InventoryItem> listStock(InventoryItemType partNumber, String serialNumber) {
+        return ObjectIterator.create();
+    }
+
     public boolean checkStock(InventoryStore store, Quantity quantity) {
         return true;
     }
@@ -272,7 +280,23 @@ public class InventoryItemType extends StoredObject implements HasChildren {
         return true;
     }
 
+    public String getPartNumberName() {
+        return "Part Number";
+    }
+
+    public String getPartNumberShortName() {
+        return "P/N";
+    }
+
     public String getSerialNumberName() {
-        return "";
+        return isSerialized() ? "Serial Number" : "Serial/Lot/Batch Number";
+    }
+
+    public String getSerialNumberShortName() {
+        return "S/N";
+    }
+
+    public boolean canStore(InventoryLocation location) {
+        return true;
     }
 }

@@ -30,10 +30,6 @@ public class ServiceItemType extends InventoryItemType {
         return false;
     }
 
-    public static Class<? extends ServiceItem> getItemType() {
-        return ServiceItem.class;
-    }
-
     public static ServiceItemType get(String name) {
         return InventoryItemType.getByPartNumber(ServiceItemType.class, name);
     }

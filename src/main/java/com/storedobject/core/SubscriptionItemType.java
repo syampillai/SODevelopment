@@ -39,10 +39,6 @@ public class SubscriptionItemType extends InventoryItemType {
         return false;
     }
 
-    public static Class<? extends SubscriptionItem> getItemType() {
-        return SubscriptionItem.class;
-    }
-
     public static SubscriptionItemType get(String name) {
         return InventoryItemType.getByPartNumber(SubscriptionItemType.class, name);
     }

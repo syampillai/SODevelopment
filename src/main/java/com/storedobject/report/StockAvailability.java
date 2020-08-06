@@ -1,27 +1,47 @@
 package com.storedobject.report;
 
-import com.storedobject.common.SORuntimeException;
 import com.storedobject.core.*;
-import com.storedobject.pdf.*;
+import com.storedobject.pdf.PDFColor;
+import com.storedobject.pdf.PDFFont;
+import com.storedobject.pdf.PDFReport;
+import com.storedobject.pdf.PDFTable;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class StockAvailability extends PDFReport {
 
-    private final InventoryTransaction requirement;
-    private InventoryStore store;
+    private final List<InventoryItemType> itemTypes = new ArrayList<>();
+    private final List<Quantity> quantities = new ArrayList<>();
+    private final InventoryStore store;
 
-    public StockAvailability(Device device, InventoryTransaction requirement) {
-        this(device, requirement, false);
+    public StockAvailability(Device device) {
+        this(device, null, null, null);
     }
 
-    public StockAvailability(Device device, InventoryTransaction requirement, boolean checkAllStores) {
+    public StockAvailability(Device device, InventoryItemType partNumber, Quantity quantity) {
+        this(device, partNumber, quantity, null);
+    }
+
+    public StockAvailability(Device device, InventoryStore store) {
+        this(device, null, null, store);
+    }
+
+    public StockAvailability(Device device, InventoryItemType partNumber, Quantity quantity, InventoryStore store) {
         super(device);
-        this.requirement = requirement;
-        InventoryLocation location = requirement.getLocationFrom();
-        if(!(location instanceof InventoryBin)) {
-            throw new SORuntimeException("Stock availability can not be checked at location '" + location + "'");
-        }
-        if(!checkAllStores) {
-            this.store = ((InventoryBin)location).getStore();
+        this.store = store;
+        add(partNumber, quantity);
+    }
+
+    public void add(InventoryItemType partNumber, Quantity quantity) {
+        if(partNumber != null && quantity != null && quantity.isPositive()) {
+            int i = itemTypes.indexOf(partNumber);
+            if(i >= 0) {
+                quantities.set(i, quantities.get(i).add(quantity));
+            } else {
+                itemTypes.add(partNumber);
+                quantities.add(quantity);
+            }
         }
     }
 
@@ -33,9 +53,9 @@ public class StockAvailability extends PDFReport {
     @Override
     public void generateContent() {
         PDFTable table = createTable(90, 10);
-        requirement.entries().forEach(entry -> {
+        for(int index = 0; index < itemTypes.size(); index++) {
             Text b1 = new Text(), b2 = new Text();
-            InventoryItemType itemType = entry.getItemType();
+            InventoryItemType itemType = itemTypes.get(index);
             b1.append(12, PDFFont.BOLD).append(itemType).newLine().append(10, PDFFont.NORMAL);
             b2.newLine(true);
             Quantity total = itemType.getUnitOfMeasurement(), inTransit = itemType.getUnitOfMeasurement(), q = itemType.getUnitOfMeasurement();
@@ -73,7 +93,7 @@ public class StockAvailability extends PDFReport {
                 b1.newLine();
                 b2.newLine();
             }
-            q = entry.getQuantity();
+            q = quantities.get(index);
             b1.newLine().append("Required");
             b2.newLine().append(q);
             if(total.isConvertible(q)) {
@@ -88,7 +108,7 @@ public class StockAvailability extends PDFReport {
             }
             table.addCell(createCell(b1));
             table.addCell(createCell(b2, true));
-        });
+        }
         add(table);
     }
 }

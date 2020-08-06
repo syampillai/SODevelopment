@@ -13,10 +13,6 @@ public class ServiceItem extends InventoryItem {
         return (ServiceItemType) super.getPartNumber();
     }
 
-    public static Class <? extends ServiceItemType> getItemType() {
-        return ServiceItemType.class;
-    }
-
     public static ServiceItem get(String serial, ServiceItemType itemType) {
         return InventoryItem.get(ServiceItem.class, serial, itemType);
     }

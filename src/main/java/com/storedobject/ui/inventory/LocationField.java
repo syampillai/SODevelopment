@@ -19,4 +19,8 @@ public class LocationField extends ObjectComboField<InventoryLocation> {
     private static List<InventoryLocation> locations(int... types) {
         return new ArrayList<>();
     }
+
+    public List<InventoryLocation> getLocations() {
+        return new ArrayList<>();
+    }
 }
