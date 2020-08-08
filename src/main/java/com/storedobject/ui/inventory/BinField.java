@@ -26,7 +26,7 @@ public class BinField extends ObjectGetField<InventoryBin> {
     }
 
     public BinField(String caption, InventoryStore store) {
-        this(caption, ObjectProvider.create(store));
+        this(caption, () -> store);
     }
 
     public BinField(String caption, ObjectProvider<? extends InventoryStore> storeField) {

@@ -10,30 +10,72 @@ import java.util.stream.Stream;
  */
 public final class InventoryTransaction {
 
-    public InventoryTransaction(Date date) {
+    public InventoryTransaction(TransactionManager tm) {
+        this(tm, "");
     }
 
-    public InventoryTransaction(Date date, String reference) {
+    public InventoryTransaction(TransactionManager tm, String reference) {
+        this(tm, null, reference);
+    }
+
+    public InventoryTransaction(TransactionManager tm, Date date) {
+        this(tm, date, null);
+    }
+
+    public InventoryTransaction(TransactionManager tm, Date date, String reference) {
+    }
+
+    public Date getDate() {
+        return new Date(0);
     }
 
     /**
-     * Create a "data pick-up" location for a given location.
+     * Create "Inventory Transaction" for data pick-up.
      *
-     * @param forLocation Location for which "data pick-up" location to be created.
      * @param tm Transaction manager.
-     * @return "Data pickup" location (it may be already existing or created now).
+     * @return Instance of the "Inventory Transaction" suitable for data pick-up.
      */
-    public static InventoryLocation createDataPickupLocation(InventoryLocation forLocation, TransactionManager tm) {
-        return new InventoryBin();
+    public static InventoryTransaction forDataPickup(TransactionManager tm) {
+        return new InventoryTransaction(tm, null, null);
+    }
+
+    public void dataPickup(InventoryItem item, InventoryLocation to) {
+    }
+
+    public void purchase(InventoryItem item, String reference, InventoryLocation to, Entity fromEntity) {
+    }
+
+    public void purchaseReturn(InventoryItem item, Quantity quantity, String reference, Entity toEntity) {
+    }
+
+    public void sale(InventoryItem item, Quantity quantity, String reference, Entity toEntity) {
+    }
+
+    public void saleReturn(InventoryItem item, String reference, Entity fromEntity) {
     }
 
     public void moveTo(InventoryItem item, Quantity quantity, String reference, InventoryLocation to) {
     }
 
+    public void moveTo(InventoryItem item, String reference, InventoryLocation to) {
+    }
+
+    public void sendForRepair(InventoryItem item, String reference, Entity repairEntity) {
+    }
+
+    public void loanTo(InventoryItem item, String reference, Entity entity) {
+    }
+
+    public void loanFrom(InventoryItem item, String reference, InventoryLocation to, Entity entity) {
+    }
+
+    public void loanReturn(InventoryItem item, String reference) {
+    }
+
     public void abandon() {
     }
 
-    public void save(TransactionManager tm) throws Exception {
+    public void save() throws Exception {
     }
 
     public void save(Transaction transaction) throws Exception {

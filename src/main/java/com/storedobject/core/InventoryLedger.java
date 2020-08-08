@@ -5,6 +5,8 @@ import java.sql.Date;
 
 public final class InventoryLedger extends StoredObject {
 
+    public static final Date dataPickupDate = DateUtility.create(2000, 1, 1);
+
     public InventoryLedger() {
     }
 
