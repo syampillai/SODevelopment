@@ -132,6 +132,17 @@ public class InventoryItem extends StoredObject {
         return new Entity();
     }
 
+    /**
+     * This will be invoked whenever this item is moved from one location to another. This is called from
+     * within the transaction. So, {@link #getTransaction()} will return the current transaction.
+     *
+     * @param from Location from.
+     * @param to Location to.
+     * @throws Exception An exception may be raised if the move not legal.
+     */
+    public void moved(InventoryLocation from, InventoryLocation to) throws Exception {
+    }
+
     public static InventoryItem get(String serialNumber, String partNumber) {
         return new InventoryItem();
     }
@@ -296,6 +307,34 @@ public class InventoryItem extends StoredObject {
 
     public static ObjectIterator<InventoryItem> listStock(InventoryItemType partNumber, String serialNumber) {
         return ObjectIterator.create();
+    }
+
+    /**
+     * Get the parent item on which this item is fitted on.
+     *
+     * @return Parent item if exists.
+     */
+    public InventoryItem getParentItem() {
+        return null;
+    }
+
+    /**
+     * Get the parent/grand-parents item on which this item is fitted on.
+     *
+     * @param itemClass Type of parent/grand-parent to look for.
+     * @return Parent item if exists.
+     */
+    public <I extends InventoryItem> InventoryItem getParentItem(Class<I> itemClass) {
+        return null;
+    }
+
+    public final InventoryLocation getPreviousLocation() {
+        InventoryLedger move = get(InventoryLedger.class, "Item=" + getId(), "Date,TranId");
+        return move == null ? null : move.getLocationFrom();
+    }
+
+    public final InventoryLocation getPreviousLocation(int stepsBackward) {
+        return new InventoryBin();
     }
 
     public final String getPartNumberName() {

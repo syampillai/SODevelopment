@@ -10,6 +10,8 @@ import java.util.stream.Stream;
  */
 public final class InventoryTransaction {
 
+    public final static Date dataPickupDate = DateUtility.today();
+
     public InventoryTransaction(TransactionManager tm) {
         this(tm, "");
     }
@@ -42,6 +44,15 @@ public final class InventoryTransaction {
     public void dataPickup(InventoryItem item, InventoryLocation to) {
     }
 
+    public void dataPickup(InventoryItem item, InventoryLocation locationTo, InventoryFitmentPosition assemblyPosition) {
+    }
+
+    public void scrap(InventoryItem item, String reference) {
+    }
+
+    public void scrap(InventoryItem item, Quantity quantity, String reference) {
+    }
+
     public void purchase(InventoryItem item, String reference, InventoryLocation to, Entity fromEntity) {
     }
 
@@ -58,6 +69,9 @@ public final class InventoryTransaction {
     }
 
     public void moveTo(InventoryItem item, String reference, InventoryLocation to) {
+    }
+    
+    public void reverse(InventoryItem item, String reference) {
     }
 
     public void sendForRepair(InventoryItem item, String reference, Entity repairEntity) {

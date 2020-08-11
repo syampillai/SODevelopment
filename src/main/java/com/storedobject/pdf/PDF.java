@@ -576,7 +576,7 @@ public abstract class PDF implements java.io.Closeable, com.storedobject.core.Co
      * @return The table
      */
     public static PDFTable createTable(int columnCount) {
-        return null;
+        return new PDFTable(columnCount);
     }
 
     /**

@@ -1,7 +1,9 @@
 package com.storedobject.ui.inventory;
 
 import com.storedobject.common.FilterProvider;
+import com.storedobject.core.Id;
 import com.storedobject.core.InventoryItem;
+import com.storedobject.core.InventoryItemType;
 import com.storedobject.core.InventoryStore;
 import com.storedobject.ui.ObjectGetField;
 import com.storedobject.ui.ObjectProvider;
@@ -34,6 +36,20 @@ public class ItemField<I extends InventoryItem> extends ObjectGetField<I> {
 
     public ItemField(String label, Class<I> objectClass, boolean allowAny, boolean addAllowed) {
         super(objectClass, allowAny);
+    }
+
+    public void fixPartNumber(InventoryItemType partNumber) {
+    }
+
+    public void setPartNumber(InventoryItemType partNumber) {
+    }
+
+    public InventoryItemType getPartNumber() {
+        return new InventoryItemType();
+    }
+
+    public Id getPartNumberId() {
+        return new Id();
     }
 
     @Override

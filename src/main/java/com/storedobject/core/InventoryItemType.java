@@ -177,6 +177,15 @@ public class InventoryItemType extends StoredObject implements HasChildren {
     }
 
     /**
+     * Is this item an assembly?
+     *
+     * @return True or false.
+     */
+    public final boolean isAssembly() {
+        return exists(InventoryAssembly.class, "ParentItemType=" + getId());
+    }
+
+    /**
      * Is this item an alternate part number for a given item.
      *
      * @param alternatePartNumber An alternate item.
