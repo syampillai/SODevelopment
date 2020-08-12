@@ -11,4 +11,19 @@ represent "data objects" or pure logic for processing, UI, reporting etc. It use
 for understanding dependencies). [Apache POI](https://poi.apache.org/) library is
 utilized for the creation of Excel compatible output.
 
-[![](https://jitpack.io/v/syampillai/SODevelopment.svg)](https://jitpack.io/#syampillai/SODevelopment)
+### Maven
+```
+<repositories>
+    <repository>
+        <id>github</id>
+        <url>https://maven.pkg.github.com/syampillai/SODevelopment</url>
+    </repository>
+</repositories>
+```
+```
+<dependency>
+  <groupId>com.storedobject</groupId>
+  <artifactId>so-development</artifactId>
+  <version>3.6.4</version>
+</dependency>
+```
