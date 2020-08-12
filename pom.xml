@@ -6,10 +6,10 @@
 
     <groupId>com.storedobject</groupId>
     <artifactId>so-development</artifactId>
-    <version>3.6.2</version>
+    <version>3.6.3</version>
 
     <properties>
-        <so-common-version>3.2.6</so-common-version>
+        <so-common-version>3.2.7</so-common-version>
         <so-components-version>7.1.1</so-components-version>
         <so-charts-version>0.0.5</so-charts-version>
         <vaadin.version>16.0.2</vaadin.version>
@@ -50,8 +50,8 @@
             <url>http://maven.vaadin.com/vaadin-addons</url>
         </repository>
         <repository>
-            <id>jitpack.io</id>
-            <url>https://jitpack.io</url>
+            <id>github</id>
+            <url>https://maven.pkg.github.com/syampillai/SOCommon</url>
         </repository>
     </repositories>
 
@@ -71,8 +71,8 @@
 
         <!-- SO Common -->
         <dependency>
-            <groupId>com.github.syampillai</groupId>
-            <artifactId>SOCommon</artifactId>
+            <groupId>com.storedobject</groupId>
+            <artifactId>so-common</artifactId>
             <version>${so-common-version}</version>
         </dependency>
 
@@ -134,13 +134,10 @@
     </scm>
 
     <distributionManagement>
-        <snapshotRepository>
-            <id>ossrh</id>
-            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-        </snapshotRepository>
         <repository>
-            <id>ossrh</id>
-            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+            <id>do-development</id>
+            <name>Syam Pillai</name>
+            <url>https://maven.pkg.github.com/syampillai/SODevelopment</url>
         </repository>
     </distributionManagement>
 
