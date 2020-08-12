@@ -6,10 +6,10 @@
 
     <groupId>com.storedobject</groupId>
     <artifactId>so-development</artifactId>
-    <version>3.6.3</version>
+    <version>3.6.4</version>
 
     <properties>
-        <so-common-version>3.2.7</so-common-version>
+        <so-common-version>3.2.8</so-common-version>
         <so-components-version>7.1.1</so-components-version>
         <so-charts-version>0.0.5</so-charts-version>
         <vaadin.version>16.0.2</vaadin.version>
@@ -135,7 +135,7 @@
 
     <distributionManagement>
         <repository>
-            <id>do-development</id>
+            <id>github</id>
             <name>Syam Pillai</name>
             <url>https://maven.pkg.github.com/syampillai/SODevelopment</url>
         </repository>
