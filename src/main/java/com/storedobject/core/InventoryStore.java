@@ -39,9 +39,13 @@ public class InventoryStore extends StoredObject implements OfEntity {
         return new SystemEntity();
     }
 
-    public static <T extends InventoryStore> T get(String name) {
+    public static <T extends InventoryStore> T get(SystemEntity systemEntity, String name) {
         //noinspection unchecked
         return (T) new InventoryStore();
+    }
+
+    public static <T extends InventoryStore> ObjectIterator<T> list(SystemEntity systemEntity, String name) {
+        return ObjectIterator.create();
     }
 
     public static <T extends InventoryStore> ObjectIterator<T> list(String name) {

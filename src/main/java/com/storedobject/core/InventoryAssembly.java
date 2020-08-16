@@ -81,4 +81,11 @@ public final class InventoryAssembly extends StoredObject {
     public boolean getOptional() {
         return false;
     }
+
+    public void setDisplayOrder(int displayOrder) {
+    }
+
+    public int getDisplayOrder() {
+        return 0;
+    }
 }
