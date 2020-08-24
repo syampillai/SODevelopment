@@ -70,7 +70,7 @@ public final class ClassAttribute<T extends StoredObject> {
     }
 
     public ClassAttribute<?> getParent() {
-        return null;
+        return new ClassAttribute<>();
     }
 
     public int getFormStyle() {
@@ -78,15 +78,15 @@ public final class ClassAttribute<T extends StoredObject> {
     }
 
     public String getTitle() {
-        return null;
+        return "";
     }
 
     public String getFormLayout() {
-        return null;
+        return "";
     }
 
     public StringList getExtraFields() {
-        return null;
+        return StringList.EMPTY;
     }
 
     public int howBig(boolean any) {
@@ -94,18 +94,18 @@ public final class ClassAttribute<T extends StoredObject> {
     }
 
     public StringList getAnchors() {
-        return null;
+        return StringList.EMPTY;
     }
 
     public static ClassAttribute<?> get(int family) {
-        return null;
+        return new ClassAttribute<>();
     }
 
     public static <O extends StoredObject> ClassAttribute<O> get(O object) {
-        return null;
+        return new ClassAttribute<>();
     }
 
     public static <O extends StoredObject> ClassAttribute<O> get(Class<O> objectClass) {
-        return null;
+        return new ClassAttribute<>();
     }
 }

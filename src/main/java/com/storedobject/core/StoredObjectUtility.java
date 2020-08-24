@@ -26,7 +26,7 @@ public final class StoredObjectUtility {
     }
 
     public static <T extends StoredObject> ClassAttribute<T> classAttribute(Class<T> objectClass) {
-        return null;
+        return ClassAttribute.get(objectClass);
     }
 
     public static String[] createDDL(Class<? extends StoredObject> objectClass) throws Exception {

@@ -8,7 +8,6 @@ import com.vaadin.flow.component.Focusable;
 import com.vaadin.flow.component.HasComponents;
 import com.vaadin.flow.component.HasValue;
 
-import java.util.function.BiFunction;
 import java.util.function.Function;
 
 public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T> implements Transactional, ObjectSetter<T>,
@@ -320,5 +319,8 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T> 
 
     @Override
     public void setTransactionCreator(TransactionCreator transactionCreator) {
+    }
+
+    public void setRawObject(StoredObject object) {
     }
 }

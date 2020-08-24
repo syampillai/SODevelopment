@@ -352,4 +352,8 @@ public class InventoryItem extends StoredObject {
     public final String getSerialNumberShortName() {
         return "";
     }
+
+    public final <O extends InventoryItem> ObjectIterator<O> listAssemblies(Class<O> itemClass) {
+        return ObjectIterator.create();
+    }
 }

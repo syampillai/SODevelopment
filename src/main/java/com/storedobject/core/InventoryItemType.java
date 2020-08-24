@@ -191,7 +191,7 @@ public class InventoryItemType extends StoredObject implements HasChildren {
      * @param alternatePartNumber An alternate item.
      * @return True or false.
      */
-    public boolean isAPN(@SuppressWarnings("unused") InventoryItemType alternatePartNumber) {
+    public boolean isAPN(InventoryItemType alternatePartNumber) {
         return false;
     }
 
@@ -307,5 +307,9 @@ public class InventoryItemType extends StoredObject implements HasChildren {
 
     public boolean canStore(InventoryLocation location) {
         return true;
+    }
+
+    public final ObjectIterator<InventoryAssembly> listAssemblies() {
+        return ObjectIterator.create();
     }
 }

@@ -37,7 +37,7 @@ public class ObjectForest<T extends StoredObject> extends AbstractObjectForest<T
         return null;
     }
 
-    protected <O extends StoredObject> ObjectEditor<O> createObjectEditor(@SuppressWarnings("unused") Class<O> objectClass) {
+    protected <O extends StoredObject> ObjectEditor<O> createObjectEditor(Class<O> objectClass) {
         return null;
     }
 
@@ -58,11 +58,14 @@ public class ObjectForest<T extends StoredObject> extends AbstractObjectForest<T
         return false;
     }
 
+    public void setSplitView() {
+    }
+
     public final <O extends StoredObject> ObjectSearcher<O> getObjectSearcher(Class<O> objectClass) {
         return null;
     }
 
-    protected <O extends StoredObject> ObjectSearcher<O> createObjectSearcher(@SuppressWarnings("unused") Class<O> objectClass) {
+    protected <O extends StoredObject> ObjectSearcher<O> createObjectSearcher(Class<O> objectClass) {
         return null;
     }
 }
