@@ -2,8 +2,6 @@ package com.storedobject.ui;
 
 import com.storedobject.common.FilterProvider;
 import com.storedobject.core.*;
-import com.storedobject.ui.util.IdInput;
-import com.storedobject.ui.util.ObjectInput;
 import com.storedobject.vaadin.CustomField;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ItemLabelGenerator;

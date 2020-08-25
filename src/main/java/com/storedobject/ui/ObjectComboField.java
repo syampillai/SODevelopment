@@ -4,7 +4,6 @@ import com.storedobject.common.FilterProvider;
 import com.storedobject.common.ResourceOwner;
 import com.storedobject.core.ObjectSearchFilter;
 import com.storedobject.core.StoredObject;
-import com.storedobject.ui.util.ObjectInput;
 import com.storedobject.vaadin.ComboField;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ItemLabelGenerator;
@@ -216,5 +215,9 @@ public class ObjectComboField<T extends StoredObject> extends ComboField<T> impl
     @Override
     public final AutoCloseable getResource() {
         return null;
+    }
+
+    @Override
+    public void focus() {
     }
 }

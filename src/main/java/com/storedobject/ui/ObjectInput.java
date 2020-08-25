@@ -1,7 +1,8 @@
-package com.storedobject.ui.util;
+package com.storedobject.ui;
 
 import com.storedobject.core.Id;
 import com.storedobject.core.StoredObject;
+import com.storedobject.ui.util.AbstractObjectInput;
 import com.vaadin.flow.component.ItemLabelGenerator;
 
 public interface ObjectInput<T extends StoredObject> extends AbstractObjectInput<T> {
@@ -25,11 +26,5 @@ public interface ObjectInput<T extends StoredObject> extends AbstractObjectInput
 
     @Override
     default void setObject(T object) {
-    }
-
-    default void setPlaceholder(String placeholder) {
-    }
-
-    default void setItemLabelGenerator(ItemLabelGenerator<T> itemLabelGenerator) {
     }
 }

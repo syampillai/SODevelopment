@@ -1,10 +1,7 @@
 package com.storedobject.ui.inventory;
 
 import com.storedobject.common.FilterProvider;
-import com.storedobject.core.Id;
-import com.storedobject.core.InventoryItem;
-import com.storedobject.core.InventoryItemType;
-import com.storedobject.core.InventoryStore;
+import com.storedobject.core.*;
 import com.storedobject.ui.ObjectGetField;
 import com.storedobject.ui.ObjectProvider;
 import com.storedobject.vaadin.ButtonLayout;
@@ -12,7 +9,7 @@ import com.vaadin.flow.component.Component;
 
 import java.util.function.Consumer;
 
-public class ItemField<I extends InventoryItem> extends ObjectGetField<I> {
+public class ItemField<I extends InventoryItem> extends ObjectGetField<I> implements ItemInput<I> {
 
     public ItemField(Class<I> objectClass) {
         this(null, objectClass);
@@ -26,15 +23,7 @@ public class ItemField<I extends InventoryItem> extends ObjectGetField<I> {
         this(null, objectClass, allowAny);
     }
 
-    public ItemField(Class<I> objectClass, boolean allowAny, boolean addAllowed) {
-        this(null, objectClass, allowAny, addAllowed);
-    }
-
     public ItemField(String label, Class<I> objectClass, boolean allowAny) {
-        this(label, objectClass, allowAny, false);
-    }
-
-    public ItemField(String label, Class<I> objectClass, boolean allowAny, boolean addAllowed) {
         super(objectClass, allowAny);
     }
 
@@ -73,18 +62,24 @@ public class ItemField<I extends InventoryItem> extends ObjectGetField<I> {
     public void setPrefixFieldControl(boolean searchFieldControl) {
     }
 
-    public void setStoreField(ObjectProvider<? extends InventoryStore> storeField) {
+    @Override
+    public void setStore(ObjectProvider<? extends InventoryStore> storeField) {
     }
 
-    public ObjectProvider<? extends InventoryStore> getStoreField() {
-        return null;
+    @Override
+    public void setStore(InventoryStore store) {
     }
 
+    @Override
+    public void setLocation(ObjectProvider<? extends InventoryLocation> locationField) {
+    }
+
+    @Override
+    public void setLocation(InventoryLocation location) {
+    }
+
+    @Override
     public void setExtraFilterProvider(FilterProvider extraFilterProvider) {
-    }
-
-    public FilterProvider getExtraFilterProvider() {
-        return null;
     }
 
     @Override

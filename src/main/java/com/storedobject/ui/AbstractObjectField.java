@@ -4,7 +4,6 @@ import com.storedobject.common.FilterProvider;
 import com.storedobject.core.ObjectIterator;
 import com.storedobject.core.ObjectSearchFilter;
 import com.storedobject.core.StoredObject;
-import com.storedobject.ui.util.ObjectInput;
 import com.storedobject.vaadin.ButtonLayout;
 import com.storedobject.vaadin.CustomField;
 import com.storedobject.vaadin.ValueRequired;

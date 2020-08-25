@@ -3,6 +3,8 @@ package com.storedobject.ui.util;
 import com.storedobject.common.FilterProvider;
 import com.storedobject.core.Id;
 import com.storedobject.core.StoredObject;
+import com.storedobject.ui.IdInput;
+import com.storedobject.ui.ObjectInput;
 import com.vaadin.flow.component.Component;
 
 import java.util.function.Consumer;

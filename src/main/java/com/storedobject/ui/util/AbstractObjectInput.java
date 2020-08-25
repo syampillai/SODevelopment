@@ -8,6 +8,7 @@ import com.storedobject.ui.FilterMethods;
 import com.storedobject.ui.ObjectProvider;
 import com.storedobject.vaadin.HasElement;
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.ItemLabelGenerator;
 
 import java.util.function.Consumer;
 
@@ -94,4 +95,12 @@ public interface AbstractObjectInput<T extends StoredObject> extends ObjectProvi
     void setReadOnly(boolean readOnly);
 
     void setEnabled(boolean enabled);
+
+    default void setPlaceholder(String placeholder) {
+    }
+
+    default void setItemLabelGenerator(ItemLabelGenerator<T> itemLabelGenerator) {
+    }
+
+    void focus();
 }
