@@ -6,6 +6,7 @@ import com.storedobject.core.ObjectSearchFilter;
 import com.storedobject.core.StoredObject;
 import com.vaadin.flow.component.ItemLabelGenerator;
 import com.vaadin.flow.data.provider.CallbackDataProvider;
+import com.vaadin.flow.shared.Registration;
 
 import java.util.function.Predicate;
 import java.util.stream.Stream;
@@ -17,6 +18,11 @@ public class AbstractObjectSupplier<T extends StoredObject, M> extends CallbackD
     AbstractObjectSupplier(ObjectsCached<T, M> supplier, boolean load) {
         super(supplier.new Fetcher(), supplier.new Counter(), AbstractObjectSupplier::id);
         this.supplier = supplier;
+    }
+
+    @Override
+    public Registration addObjectDataLoadedListener(ObjectDataLoadedListener listener) {
+        return () -> {};
     }
 
     private static Object id(Object item) {

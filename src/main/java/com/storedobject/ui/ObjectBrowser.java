@@ -80,12 +80,19 @@ public class ObjectBrowser<T extends StoredObject> extends ObjectGrid<T> impleme
                 null,null, ObjectEditor.allowedActions(className));
     }
 
-    public static <O extends StoredObject> ObjectBrowser<O> create(Class<O> objectClass, int actions, String title) {
-        return null;
+    public static <O extends StoredObject> ObjectBrowser<O> create(Class<O> objectClass) {
+        return create(objectClass, ALL);
     }
 
+    public static <O extends StoredObject> ObjectBrowser<O> create(Class<O> objectClass, int actions) {
+        return create(objectClass, actions, null);
+    }
+
+    public static <O extends StoredObject> ObjectBrowser<O> create(Class<O> objectClass, int actions, String title) {
+        return create(objectClass, null, actions, title);
+    }
     public static <O extends StoredObject> ObjectBrowser<O> create(Class<O> objectClass, Iterable<String> browseColumns, int actions, String title) {
-        return null;
+        return new ObjectBrowser<>(objectClass);
     }
 
     public ObjectSearchBuilder<T> createSearchBuilder(StringList searchColumns) {
@@ -113,11 +120,11 @@ public class ObjectBrowser<T extends StoredObject> extends ObjectGrid<T> impleme
     protected void addExtraButtons() {
     }
 
-    protected boolean canDelete(@SuppressWarnings("unused") T object) {
+    protected boolean canDelete(T object) {
         return true;
     }
 
-    protected boolean canEdit(@SuppressWarnings("unused") T object) {
+    protected boolean canEdit(T object) {
         return true;
     }
 

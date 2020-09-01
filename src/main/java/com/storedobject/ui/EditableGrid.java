@@ -1,16 +1,17 @@
 package com.storedobject.ui;
 
-import com.storedobject.common.ResourceOwner;
 import com.storedobject.core.EditableList;
-import com.storedobject.vaadin.HasColumns;
-import com.vaadin.flow.component.AbstractField;
-import com.vaadin.flow.component.gridpro.GridPro;
-import com.vaadin.flow.data.provider.DataProvider;
 
-import java.lang.reflect.Method;
 import java.util.stream.Stream;
 
-public class EditableGrid<T> extends GridPro<T> implements HasColumns<T>, EditableList<T>, ResourceOwner {
+/**
+ * An editable grid. It internally maintains an {@link EditableList} that provides status information on all each row
+ * of the grid. (See {@link #getEditableList()}).
+ *
+ * @param <T>
+ * @author Syam
+ */
+public abstract class EditableGrid<T> extends DataGrid<T> implements EditableList<T> {
 
     /**
      * Constructor that will generate columns from the Bean's properties.
@@ -28,52 +29,17 @@ public class EditableGrid<T> extends GridPro<T> implements HasColumns<T>, Editab
      * @param columns Column names
      */
     public EditableGrid(Class<T> objectClass, Iterable<String> columns) {
-    }
-
-    @Override
-    public final void setDataProvider(DataProvider<T, ?> dataProvider) {
-    }
-
-    public EditableList<T> getEditableList() {
-        return null;
+        super(objectClass, columns);
     }
 
     /**
-     * For internal use only.
+     * Get the "editable list" from this grid.
      *
-     * @return The embedded SO Grid.
+     * @return The embedded "editable list".
      */
-    @Override
-    public final SOGrid<T> getSOGrid() {
-        return null;
-    }
-
-    protected String getEditorGetMethodName(@SuppressWarnings("unused") String columnName) {
-        return null;
-    }
-
-    protected Method getEditorGetMethod(String columnName) {
-        return null;
-    }
-
-    protected String getEditorSetMethodName(@SuppressWarnings("unused") String columnName) {
-        return null;
-    }
-
-    protected Method getEditorSetMethod(@SuppressWarnings("unused") String columnName) {
-        return null;
-    }
-
-    protected AbstractField<?, ?> getColumnField(@SuppressWarnings("unused") String columName) {
-        return null;
-    }
-
-    @SuppressWarnings("unused")
-    public void setEditedValue(String columName, T item, Object columnValue) {
-    }
-
-    public boolean isColumnEditable(String columnName) {
-        return true;
+    public EditableList<T> getEditableList() {
+        //noinspection unchecked
+        return (EditableList<T>) getDataProvider();
     }
 
     @Override
@@ -103,37 +69,37 @@ public class EditableGrid<T> extends GridPro<T> implements HasColumns<T>, Editab
 
     @Override
     public int size() {
-        return getEditableList().size();
+        return 0;
     }
 
     @Override
     public boolean append(T item) {
-        return getEditableList().append(item);
+        return false;
     }
 
     @Override
     public boolean add(T item) {
-        return getEditableList().add(item);
+        return false;
     }
 
     @Override
     public boolean delete(T item) {
-        deselect(item);
-        return getEditableList().delete(item);
+        return false;
     }
 
     @Override
     public boolean undelete(T item) {
-        return getEditableList().undelete(item);
+        return false;
     }
 
     @Override
     public boolean update(T item) {
-        return getEditableList().update(item);
+        return false;
     }
 
-    @Override
-    public final AutoCloseable getResource() {
-        return null;
+    /**
+     * Cancel the editing if it is active. Sub-classes should implement this.
+     */
+    protected void cancelEdit() {
     }
 }

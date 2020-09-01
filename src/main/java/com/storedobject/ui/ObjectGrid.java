@@ -5,10 +5,12 @@ import com.storedobject.common.ResourceOwner;
 import com.storedobject.core.ObjectSetter;
 import com.storedobject.core.ObjectToString;
 import com.storedobject.core.StoredObject;
+import com.storedobject.ui.util.ObjectDataLoadedListener;
 import com.storedobject.ui.util.ObjectDataProvider;
 import com.storedobject.ui.util.ObjectGridData;
 import com.storedobject.ui.util.ObjectSupplier;
 import com.vaadin.flow.data.provider.DataProvider;
+import com.vaadin.flow.shared.Registration;
 
 import java.util.List;
 import java.util.function.BiFunction;
@@ -37,6 +39,10 @@ public class ObjectGrid<T extends StoredObject> extends DataGrid<T> implements O
 
     public ObjectGrid(Class<T> objectClass, Iterable<String> columns, ObjectDataProvider<T> dataProvider) {
         super(objectClass, columns);
+    }
+
+    public Registration addObjectDataLoadedListener(ObjectDataLoadedListener listener) {
+        return () -> {};
     }
 
     @Override

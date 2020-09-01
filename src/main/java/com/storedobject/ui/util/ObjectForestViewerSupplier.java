@@ -21,6 +21,11 @@ public class ObjectForestViewerSupplier<T extends StoredObject> implements Abstr
     }
 
     @Override
+    public Registration addObjectDataLoadedListener(ObjectDataLoadedListener listener) {
+        return () -> {};
+    }
+
+    @Override
     public List<T> listRoots() {
         return null;
     }

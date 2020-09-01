@@ -87,6 +87,9 @@ public interface ObjectGridData<T extends StoredObject> extends HasColumns<T>, O
         load(objects.iterator());
     }
 
+    default void loaded() {
+    }
+
     default void clear() {
         getDataProvider().clear();
     }

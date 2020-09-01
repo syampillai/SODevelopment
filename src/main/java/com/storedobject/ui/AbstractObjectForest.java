@@ -7,17 +7,17 @@ import com.storedobject.core.ObjectSearchFilter;
 import com.storedobject.core.ObjectsSetter;
 import com.storedobject.core.StoredObject;
 import com.storedobject.ui.util.AbstractObjectForestSupplier;
+import com.storedobject.ui.util.ObjectDataLoadedListener;
 import com.storedobject.vaadin.DataTreeGrid;
+import com.vaadin.flow.data.provider.DataProvider;
 
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 public abstract class AbstractObjectForest<T extends StoredObject> extends DataTreeGrid<Object> implements ObjectsSetter<T>, Transactional {
 
-    protected AbstractObjectForestSupplier<T> dataProvider;
+    private AbstractObjectForestSupplier<T> dataProvider;
 
     public AbstractObjectForest(Class<T> objectClass) {
         this(objectClass, null);
@@ -41,13 +41,24 @@ public abstract class AbstractObjectForest<T extends StoredObject> extends DataT
 
     @Override
     public Class<T> getObjectClass() {
-        return null;
+        //noinspection unchecked
+        return (Class<T>) StoredObject.class;
+    }
+    @Override
+    public void setDataProvider(DataProvider<Object, ?> dataProvider) {
+    }
+
+    public void setDataSupplier(AbstractObjectForestSupplier<T> dataProvider) {
+    }
+
+    public AbstractObjectForestSupplier<T> getDataSupplier() {
+        return dataProvider;
     }
 
     @SuppressWarnings("unchecked")
     @Override
     public Application getApplication() {
-        return null;
+        return Application.get();
     }
 
     @Override
@@ -92,6 +103,12 @@ public abstract class AbstractObjectForest<T extends StoredObject> extends DataT
     public void setRoot(T root) {
     }
 
+    public void loaded() {
+    }
+
+    public void clear() {
+    }
+
     boolean isFullyLoaded() {
         return false;
     }
@@ -109,22 +126,22 @@ public abstract class AbstractObjectForest<T extends StoredObject> extends DataT
     }
 
     public ObjectSearchFilter getFilter() {
-        return null;
+        return new ObjectSearchFilter();
     }
 
     public void scrollTo(T object) {
     }
 
     public T getRoot() {
-        return null;
+        return listRoots().get(0);
     }
 
     public List<T> listRoots() {
-        return null;
+        return new ArrayList<>();
     }
 
     public T getItem(int index) {
-        return null;
+        return getRoot();
     }
 
     @Override
@@ -144,6 +161,6 @@ public abstract class AbstractObjectForest<T extends StoredObject> extends DataT
     }
 
     public Set<StoredObject> getSelectedObjects() {
-        return null;
+        return new HashSet<>();
     }
 }

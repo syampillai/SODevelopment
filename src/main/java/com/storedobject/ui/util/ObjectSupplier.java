@@ -26,9 +26,4 @@ public class ObjectSupplier<T extends StoredObject> extends AbstractObjectSuppli
     @Override
     public void refreshItem(T item) {
     }
-
-    @Override
-    public Registration addObjectDataLoadedListener(ObjectDataLoadedListener listener) {
-        return null;
-    }
 }

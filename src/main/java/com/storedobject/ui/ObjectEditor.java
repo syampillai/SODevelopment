@@ -270,19 +270,28 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T> 
     }
 
     /**
-     * Allow/disallow link editing.
+     * For internal use only. If set, saving will be skipped! (It is internally used to switch on/off link
+     * editing depending on whether this is a child of another editor or not).
      *
-     * @param allowLinkEditing True if link editing needs to be allowed
+     * @param on True or false.
      */
-    public void setAllowLinkEditing(boolean allowLinkEditing) {
+    public final void setDoNotSave(boolean on) {
     }
 
     /**
-     * Check whether link editing is allowed or not.
+     * Allow/disallow "Do not save" option. (See {@link #setDoNotSave(boolean)}.
      *
-     * @return True if link editing is allowed.
+     * @param allowDoNotSave True if link editing needs to be allowed
      */
-    public boolean isLinkEditingAllowed() {
+    public void setAllowDoNotSave(boolean allowDoNotSave) {
+    }
+
+    /**
+     * Check whether "Do not save" option is allowed or not.
+     *
+     * @return True/false.
+     */
+    public boolean isDoNotSaveAllowed() {
         return false;
     }
 

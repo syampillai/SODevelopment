@@ -3,8 +3,11 @@ package com.storedobject.ui;
 import com.storedobject.core.NewObject;
 import com.storedobject.core.ObjectsSetter;
 import com.storedobject.core.StoredObject;
+import com.storedobject.ui.util.ObjectDataLoadedListener;
 import com.storedobject.ui.util.ObjectTreeListProvider;
 import com.storedobject.vaadin.DataTreeGrid;
+import com.vaadin.flow.component.ItemLabelGenerator;
+import com.vaadin.flow.shared.Registration;
 
 import java.util.List;
 
@@ -57,6 +60,14 @@ public class ObjectTree<T extends StoredObject> extends DataTreeGrid<T> implemen
         return super.getDataClass();
     }
 
+    public Registration addObjectDataLoadedListener(ObjectDataLoadedListener listener) {
+        return () -> {};
+    }
+
+    public void setItemLabelGenerator(ItemLabelGenerator<T> itemLabelGenerator) {
+        dataProvider.setItemLabelGenerator(itemLabelGenerator);
+    }
+
     public void load() {
     }
 
@@ -64,6 +75,12 @@ public class ObjectTree<T extends StoredObject> extends DataTreeGrid<T> implemen
     }
 
     public void load(T root) {
+    }
+
+    public void loaded() {
+    }
+
+    public void clear() {
     }
 
     @Override

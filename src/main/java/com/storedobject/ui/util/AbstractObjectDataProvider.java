@@ -7,6 +7,7 @@ import com.storedobject.core.StoredObject;
 import com.storedobject.ui.FilterMethods;
 import com.vaadin.flow.component.ItemLabelGenerator;
 import com.vaadin.flow.data.provider.DataProvider;
+import com.vaadin.flow.shared.Registration;
 
 import java.io.Closeable;
 import java.util.stream.Stream;
@@ -16,6 +17,8 @@ public interface AbstractObjectDataProvider<T extends StoredObject, M> extends D
     boolean isAllowAny();
 
     Class<T> getObjectClass();
+
+    Registration addObjectDataLoadedListener(ObjectDataLoadedListener listener);
 
     @Override
     void close();

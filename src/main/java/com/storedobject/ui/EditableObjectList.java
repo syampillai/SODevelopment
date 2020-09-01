@@ -88,6 +88,9 @@ public class EditableObjectList<T extends StoredObject> extends ObjectList<T> im
     public void reloadAll() {
     }
 
+    public void savedAll() {
+    }
+
     @Override
     public boolean isAdded(T item) {
         return false;

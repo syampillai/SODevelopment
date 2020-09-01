@@ -1,27 +1,28 @@
 package com.storedobject.core;
 
-public class JavaClassLoader extends java.lang.ClassLoader {
+public class JavaClassLoader extends ClassLoader {
 
     protected JavaClassLoader() {
+        super(Thread.currentThread().getContextClassLoader());
     }
 
-    public java.lang.Class <?> findClass(java.lang.String p1) throws java.lang.ClassNotFoundException {
-        return null;
+    public static Class<?> getLogic(String name) throws ClassNotFoundException {
+        return getLogic(name, true);
     }
 
-    public static boolean exists(java.lang.String p1) {
+    public static Class<?> getLogic(String name, boolean resolve) throws ClassNotFoundException {
+        return Person.class;
+    }
+
+    public static boolean exists(String name) {
+        try {
+            return getLogic(name, true) == Person.class;
+        } catch(ClassNotFoundException ignored) {
+        }
         return false;
     }
 
-    public static java.lang.Class <?> getLogic(java.lang.String p1) throws java.lang.ClassNotFoundException {
-        return null;
-    }
-
-    public static java.lang.Class <?> getLogic(java.lang.String p1, boolean p2) throws java.lang.ClassNotFoundException {
-        return null;
-    }
-
-    public static boolean loaded(java.lang.String p1) {
-        return false;
+    public static boolean loaded(String name) {
+        return exists("O");
     }
 }

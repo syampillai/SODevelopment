@@ -75,7 +75,11 @@ public class ObjectField<T extends StoredObject> extends CustomField<Id> impleme
         this(label, list(list));
     }
 
-    protected ObjectField(String label, Class<T> objectClass, boolean any, Type type, ObjectGetField.GetProvider<T> getProvider, boolean addAllowed) {
+    protected ObjectField(String label, Class<T> objectClass, boolean any, ObjectGetField.GetProvider<T> getProvider, boolean addAllowed) {
+        this(label, objectClass, any, (ObjectInput<T>)null);
+    }
+
+    private ObjectField(String label, Class<T> objectClass, boolean any, Type type, ObjectGetField.GetProvider<T> getProvider, boolean addAllowed) {
         this(label, objectClass, any, (ObjectInput<T>)null);
     }
 

@@ -1,6 +1,6 @@
 package com.storedobject.ui;
 
-import com.storedobject.core.ObjectSearchFilter;
+import com.storedobject.core.EditableList;
 import com.storedobject.core.ObjectSetter;
 import com.storedobject.core.StoredObject;
 import com.storedobject.ui.util.ObjectDataProvider;
@@ -8,14 +8,20 @@ import com.storedobject.ui.util.ObjectGridData;
 import com.vaadin.flow.component.HasValue;
 import com.vaadin.flow.shared.Registration;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiConsumer;
-import java.util.function.Predicate;
 import java.util.stream.Stream;
-
+/**
+ * An editable grid of objects. It internally maintains an {@link EditableList} that provides status information on all each row
+ * of the grid. (See {@link #getEditableList()}).
+ *
+ * @param <T>
+ * @author Syam
+ */
 public class EditableObjectGrid<T extends StoredObject> extends EditableGrid<T> implements ObjectGridData<T>, EditableDataGrid {
 
-    ObjectSetter objectSetter;
+    T editingItem;
 
     public EditableObjectGrid(Class<T> objectClass) {
         this(objectClass, false);
@@ -43,21 +49,22 @@ public class EditableObjectGrid<T extends StoredObject> extends EditableGrid<T> 
 
     @Override
     public ObjectDataProvider<T> getDataProvider() {
-        return null;
+        //noinspection unchecked
+        return (ObjectDataProvider<T>) super.getDataProvider();
     }
 
     @Override
     public EditableObjectList<T> getEditableList() {
-        return null;
+        return (EditableObjectList<T>) super.getEditableList();
     }
 
     public Registration addValueChangeTracker(BiConsumer<EditableObjectList<T>, Boolean> tracker) {
-        return null;
+        return getEditableList().addValueChangeTracker(tracker);
     }
 
     @Override
     public List<ObjectChangedListener<T>> getObjectChangedListeners(boolean create) {
-        return null;
+        return new ArrayList<>();
     }
 
     @Override
@@ -66,16 +73,16 @@ public class EditableObjectGrid<T extends StoredObject> extends EditableGrid<T> 
 
     @Override
     public String getOrderBy() {
-        return null;
+        return "";
     }
 
     @Override
-    public void setObjectSetter(ObjectSetter setter) {
+    public void setObjectSetter(ObjectSetter<T> setter) {
     }
 
     @Override
     public List<ObjectEditorListener> getObjectEditorListeners(boolean create) {
-        return null;
+        return new ArrayList<>();
     }
 
     public void reload(T object) {
@@ -88,17 +95,21 @@ public class EditableObjectGrid<T extends StoredObject> extends EditableGrid<T> 
     }
 
     @Override
-    public Predicate<T> getFilterPredicate() {
+    public boolean isColumnEditable(String columnName) {
+        return !"*".equals(columnName);
+    }
+
+    protected HasValue<?, ?> getColumnField(String columnName) {
         return null;
     }
 
     @Override
-    public ObjectSearchFilter getFilter(boolean create) {
-        return null;
+    public final Stream<HasValue<?, ?>> streamEditableFields() {
+        return Stream.of();
     }
 
     public final ObjectEditor<T> getRowEditor() {
-        return null;
+        return ObjectEditor.create(getObjectClass());
     }
 
     protected ObjectEditor<T> createObjectEditor() {
@@ -110,14 +121,17 @@ public class EditableObjectGrid<T extends StoredObject> extends EditableGrid<T> 
     }
 
     public final ObjectEditor<T> getObjectEditor() {
-        return null;
+        return getRowEditor();
+    }
+
+    protected void customizeObjectEditor() {
     }
 
     public void setReadOnly(boolean readOnly) {
     }
 
     public final boolean isReadOnly() {
-        return false;
+        return getObjectEditor().isReadOnly();
     }
 
     public boolean editItem(T item) {
@@ -131,11 +145,6 @@ public class EditableObjectGrid<T extends StoredObject> extends EditableGrid<T> 
     }
 
     public final T getEditingItem() {
-        return null;
-    }
-
-    @Override
-    public Stream<HasValue<?, ?>> streamEditableFields() {
-        return null;
+        return editingItem;
     }
 }

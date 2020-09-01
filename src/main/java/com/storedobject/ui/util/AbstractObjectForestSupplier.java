@@ -4,6 +4,7 @@ import com.storedobject.core.ObjectIterator;
 import com.storedobject.core.StoredObject;
 import com.storedobject.core.StoredObjectUtility;
 import com.vaadin.flow.data.provider.hierarchy.HierarchicalDataProvider;
+import com.vaadin.flow.shared.Registration;
 
 import java.util.List;
 
@@ -14,6 +15,8 @@ public interface AbstractObjectForestSupplier<T extends StoredObject> extends Hi
     }
 
     List<T> listRoots();
+
+    Registration addObjectDataLoadedListener(ObjectDataLoadedListener listener);
 
     void setListLinks(ListLinks listLinks);
 }
