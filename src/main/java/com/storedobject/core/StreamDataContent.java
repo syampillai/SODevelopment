@@ -1,37 +1,51 @@
 package com.storedobject.core;
 
-public class StreamDataContent implements com.storedobject.core.ContentProducer {
+import java.io.InputStream;
 
-    public StreamDataContent(com.storedobject.core.StreamData p1) {
-        this();
+public class StreamDataContent implements ContentProducer {
+
+    private final StreamData sd;
+
+    public StreamDataContent(StreamData sd) {
+        this.sd = sd;
     }
 
-    private StreamDataContent() {
+    @Override
+    public void produce() {
     }
 
-    public java.lang.String getFileName() {
+    @SuppressWarnings("RedundantThrows")
+    @Override
+    public InputStream getContent() throws Exception {
+        return sd.getContent();
+    }
+
+    @Override
+    public String getContentType() {
+        return sd.getMimeType();
+    }
+
+    @Override
+    public String getFileName() {
         return null;
     }
 
-    public java.io.InputStream getContent() throws java.lang.Exception {
-        return null;
+    @Override
+    public String getFileExtension() {
+        return sd.getFileExtension();
     }
 
-    public java.lang.String getContentType() {
-        return null;
+    @Override
+    public void setTransactionManager(TransactionManager tm) {
     }
 
-    public void execute() {
+    @Override
+    public boolean isLink() {
+        return sd.isLink();
     }
 
-    public void setTransactionManager(com.storedobject.core.TransactionManager p1) {
-    }
-
-    public java.lang.String getFileExtension() {
-        return null;
-    }
-
-    public static java.lang.String getFileExtension(java.lang.String p1) {
-        return null;
+    @Override
+    public String getLink() {
+        return sd.getLink();
     }
 }

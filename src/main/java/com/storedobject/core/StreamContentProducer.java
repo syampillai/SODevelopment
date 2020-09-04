@@ -16,7 +16,7 @@ public abstract class StreamContentProducer implements ContentProducer, Closeabl
 	}
 
 	@Override
-	public void execute() {
+	public void produce() {
 	}
 
     @Override

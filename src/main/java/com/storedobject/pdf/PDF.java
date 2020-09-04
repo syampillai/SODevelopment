@@ -29,7 +29,7 @@ public abstract class PDF implements java.io.Closeable, com.storedobject.core.Co
             "A2 Portrait",
             "A2 Landscape",
             "A1 Portrait",
-            "A1 Landscpae",
+            "A1 Landscape",
             "A0 Portrait",
             "A0 Landscape",
             "Letter Portrait",
@@ -357,7 +357,7 @@ public abstract class PDF implements java.io.Closeable, com.storedobject.core.Co
      * This is the method to be invoked in order to do the content generation. This method is generally not overridden but
      * if it is overridden, make sure that the "super" is invoked.
      */
-    public void execute() {
+    public void produce() {
     }
 
     /**
@@ -1487,7 +1487,7 @@ public abstract class PDF implements java.io.Closeable, com.storedobject.core.Co
          * @param value Value of the cell
          * @return The cell that is created.
          */
-        protected PDFCell createValueCell(@SuppressWarnings("unused") String attribute, Object value) {
+        protected PDFCell createValueCell(String attribute, Object value) {
             return createCell(createCell(value));
         }
     }
@@ -1525,7 +1525,7 @@ public abstract class PDF implements java.io.Closeable, com.storedobject.core.Co
          * @param label Label to be printed (Label is automatically generated from the attribute)
          * @return The cell that is created.
          */
-        protected PDFCell createLabelCell(@SuppressWarnings("unused") String attribute, String label) {
+        protected PDFCell createLabelCell(String attribute, String label) {
             return createCell(label);
         }
 
@@ -1536,7 +1536,7 @@ public abstract class PDF implements java.io.Closeable, com.storedobject.core.Co
          * @param value Value of the cell
          * @return The cell that is created.
          */
-        protected PDFCell createValueCell(@SuppressWarnings("unused") String attribute, Object value) {
+        protected PDFCell createValueCell(String attribute, Object value) {
             return createCell(createCell(value));
         }
     }

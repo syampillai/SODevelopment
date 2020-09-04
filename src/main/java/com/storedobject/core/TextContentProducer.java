@@ -1,22 +1,46 @@
 package com.storedobject.core;
 
+import com.storedobject.common.TextContentGenerator;
+
 import java.io.OutputStream;
 
-public abstract class TextContentProducer extends com.storedobject.core.StreamContentProducer {
+public class TextContentProducer extends StreamContentProducer {
 
-	public TextContentProducer() {
-		this(null);
-	}
-	
-	public TextContentProducer(OutputStream out) {
-		super(out);
-	}
+    private TextContentGenerator textContentGenerator;
 
-    public java.lang.String getContentType() {
-        return null;
+    public TextContentProducer() {
+        this(null, null);
     }
 
-    public java.lang.String getFileExtension() {
-        return null;
+    public TextContentProducer(OutputStream out) {
+        super(out);
+    }
+
+    public TextContentProducer(TextContentGenerator textContentGenerator) {
+        this(textContentGenerator, null);
+    }
+
+    public TextContentProducer(TextContentGenerator textContentGenerator, OutputStream out) {
+        super(out);
+        setContentGenerator(textContentGenerator);
+    }
+
+    public void setContentGenerator(TextContentGenerator textContentGenerator) {
+        this.textContentGenerator = textContentGenerator;
+    }
+
+    @Override
+    public String getContentType() {
+        return textContentGenerator == null ? "text/plain" : textContentGenerator.getContentType();
+    }
+
+    @Override
+    public String getFileExtension() {
+        return textContentGenerator == null ? "txt" : textContentGenerator.getFileExtension();
+    }
+
+    @Override
+    public void generateContent() throws Exception {
+        textContentGenerator.generateContent(getWriter());
     }
 }

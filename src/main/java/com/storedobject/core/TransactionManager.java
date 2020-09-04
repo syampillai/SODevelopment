@@ -52,7 +52,7 @@ public final class TransactionManager {
      * @throws Exception Any exception.
      */
     public DBTransaction createTransaction() throws Exception {
-        return null;
+        return new DBTransaction();
     }
 
     /**

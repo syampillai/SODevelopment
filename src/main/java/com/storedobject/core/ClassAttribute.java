@@ -1,10 +1,8 @@
 package com.storedobject.core;
 
-import com.storedobject.common.SORuntimeException;
 import com.storedobject.common.StringList;
 
 import java.lang.reflect.Method;
-import java.sql.SQLException;
 
 /**
  * For internal use only.
@@ -51,7 +49,7 @@ public final class ClassAttribute<T extends StoredObject> {
     }
 
     public StringList getAttributes() {
-        return null;
+        return StringList.EMPTY;
     }
 
     public String getModuleName() {

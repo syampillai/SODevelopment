@@ -113,7 +113,20 @@ public final class ApplicationServer {
     public void close() {
     }
 
+    public static void log(Object anything) {
+        log(anything, null);
+    }
+
+    public static void log(Object anything, Throwable error) {
+        log(null, anything, error);
+    }
+
     public static void log(Device device, Object anything) {
+        log(device, anything, null);
+    }
+
+    public static void log(Device device, Throwable error) {
+        log(device, null, error);
     }
 
     public static void log(Device device, Object anything, Throwable error) {
