@@ -7,10 +7,10 @@ import java.util.function.BiFunction;
 
 public class ViewFilter<T extends StoredObject> {
 
-    public ViewFilter(AbstractObjectDataProvider<T, ?> dataProvider) {
+    public ViewFilter(AbstractObjectDataProvider<T, ?, ?> dataProvider) {
     }
 
-    public void setDataProvider(AbstractObjectDataProvider<T, ?> dataProvider) {
+    public void setDataProvider(AbstractObjectDataProvider<T, ?, ?> dataProvider) {
     }
 
     public boolean setObjectConverter(ObjectToString<T> objectConverter) {

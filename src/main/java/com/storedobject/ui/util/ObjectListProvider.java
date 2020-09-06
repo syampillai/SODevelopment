@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
-public class ObjectListProvider<T extends StoredObject> extends CallbackDataProvider<T, String> implements ObjectDataProvider<T> {
+public class ObjectListProvider<T extends StoredObject, F> extends CallbackDataProvider<T, F> implements ObjectDataProvider<T, F> {
 
     public ObjectListProvider(Class<T> objectClass) {
         this();

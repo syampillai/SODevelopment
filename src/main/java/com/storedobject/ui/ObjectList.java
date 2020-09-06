@@ -5,7 +5,7 @@ import com.storedobject.ui.util.ObjectListProvider;
 
 import java.util.ArrayList;
 
-public class ObjectList<T extends StoredObject> extends ObjectListProvider<T> {
+public class ObjectList<T extends StoredObject, F> extends ObjectListProvider<T, F> {
 
     public ObjectList(Class<T> objectClass) {
         this(objectClass, false);

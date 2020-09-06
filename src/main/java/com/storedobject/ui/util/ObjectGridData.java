@@ -19,7 +19,7 @@ import java.util.stream.Stream;
 
 public interface ObjectGridData<T extends StoredObject> extends HasColumns<T>, ObjectChangedListener<T>, ObjectsSetter<T>, ObjectSearcher<T>, Transactional, ObjectEditorListener, FilterMethods<T> {
 
-    ObjectDataProvider<T> getDataProvider();
+    ObjectDataProvider<T, Void> getDataProvider();
 
     void deselectAll();
 

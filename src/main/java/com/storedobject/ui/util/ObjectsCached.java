@@ -8,7 +8,7 @@ import com.vaadin.flow.data.provider.Query;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
-public class ObjectsCached<T extends StoredObject, M> {
+public class ObjectsCached<T extends StoredObject, M, F> {
 
     ObjectsCached(int linkType, StoredObject master, Class<T> objectClass, String condition, String orderBy, boolean any, boolean allowSorting) {
     }
@@ -44,18 +44,18 @@ public class ObjectsCached<T extends StoredObject, M> {
     void deleted(T item) {
     }
 
-    class Fetcher implements CallbackDataProvider.FetchCallback<M, String> {
+    class Fetcher implements CallbackDataProvider.FetchCallback<M, F> {
 
         @Override
-        public Stream<M> fetch(Query<M, String> query) {
+        public Stream<M> fetch(Query<M, F> query) {
             return null;
         }
     }
 
-    class Counter implements CallbackDataProvider.CountCallback<M, String> {
+    class Counter implements CallbackDataProvider.CountCallback<M, F> {
 
         @Override
-        public int count(Query<M, String> query) {
+        public int count(Query<M, F> query) {
             return 0;
         }
     }

@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
-public class ObjectForestViewerSupplier<T extends StoredObject> implements AbstractObjectDataProvider<T, Object>, AbstractObjectForestSupplier<T> {
+public class ObjectForestViewerSupplier<T extends StoredObject, F> implements AbstractObjectDataProvider<T, Object, F>, AbstractObjectForestSupplier<T, F> {
 
     public ObjectForestViewerSupplier(Class<T> objectClass, String condition, String orderBy, boolean any) {
     }
@@ -152,13 +152,13 @@ public class ObjectForestViewerSupplier<T extends StoredObject> implements Abstr
     }
 
     @Override
-    public int getChildCount(HierarchicalQuery<Object, String> hierarchicalQuery) {
+    public int getChildCount(HierarchicalQuery<Object, F> hierarchicalQuery) {
         return 0;
     }
 
     @Override
-    public Stream<Object> fetchChildren(HierarchicalQuery<Object, String> hierarchicalQuery) {
-        return null;
+    public Stream<Object> fetchChildren(HierarchicalQuery<Object, F> hierarchicalQuery) {
+        return Stream.of();
     }
 
     @Override

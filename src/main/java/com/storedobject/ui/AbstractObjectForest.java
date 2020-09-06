@@ -7,7 +7,6 @@ import com.storedobject.core.ObjectSearchFilter;
 import com.storedobject.core.ObjectsSetter;
 import com.storedobject.core.StoredObject;
 import com.storedobject.ui.util.AbstractObjectForestSupplier;
-import com.storedobject.ui.util.ObjectDataLoadedListener;
 import com.storedobject.vaadin.DataTreeGrid;
 import com.vaadin.flow.data.provider.DataProvider;
 
@@ -17,7 +16,7 @@ import java.util.stream.Stream;
 
 public abstract class AbstractObjectForest<T extends StoredObject> extends DataTreeGrid<Object> implements ObjectsSetter<T>, Transactional {
 
-    private AbstractObjectForestSupplier<T> dataProvider;
+    private AbstractObjectForestSupplier<T, Void> dataProvider;
 
     public AbstractObjectForest(Class<T> objectClass) {
         this(objectClass, null);
@@ -48,10 +47,10 @@ public abstract class AbstractObjectForest<T extends StoredObject> extends DataT
     public void setDataProvider(DataProvider<Object, ?> dataProvider) {
     }
 
-    public void setDataSupplier(AbstractObjectForestSupplier<T> dataProvider) {
+    public void setDataSupplier(AbstractObjectForestSupplier<T, Void> dataProvider) {
     }
 
-    public AbstractObjectForestSupplier<T> getDataSupplier() {
+    public AbstractObjectForestSupplier<T, Void> getDataSupplier() {
         return dataProvider;
     }
 

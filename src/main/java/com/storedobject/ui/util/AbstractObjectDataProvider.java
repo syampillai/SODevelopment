@@ -12,7 +12,7 @@ import com.vaadin.flow.shared.Registration;
 import java.io.Closeable;
 import java.util.stream.Stream;
 
-public interface AbstractObjectDataProvider<T extends StoredObject, M> extends DataProvider<M, String>, FilterMethods<T>, Closeable, ResourceOwner {
+public interface AbstractObjectDataProvider<T extends StoredObject, M, F> extends DataProvider<M, F>, FilterMethods<T>, Closeable, ResourceOwner {
 
     boolean isAllowAny();
 

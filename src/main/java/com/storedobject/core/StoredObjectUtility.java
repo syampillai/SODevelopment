@@ -205,7 +205,7 @@ public final class StoredObjectUtility {
         }
 
         public String execute(Object object) {
-            return null;
+            return "";
         }
     }
 
@@ -217,11 +217,11 @@ public final class StoredObjectUtility {
     }
 
     public static Object emptyValue(Class<?> p) {
-        return null;
+        return "";
     }
 
     public static String toString(StoredObject object) {
-        return null;
+        return "";
     }
 
     public static class Link<L extends StoredObject> {
@@ -251,7 +251,7 @@ public final class StoredObjectUtility {
         }
 
         public StringList getBrowseColumns() {
-            return null;
+            return StringList.EMPTY;
         }
 
         public void setType(int type) {
@@ -266,7 +266,7 @@ public final class StoredObjectUtility {
         }
 
         public String getOrderBy() {
-            return null;
+            return "";
         }
 
         public void setAny() {
@@ -285,15 +285,15 @@ public final class StoredObjectUtility {
         }
 
         public ObjectIterator<L> list(StoredObject master) {
-            return null;
+            return ObjectIterator.create();
         }
 
         public ObjectIterator<L> list(Id id) {
-            return null;
+            return ObjectIterator.create();
         }
 
         public Query query(StoredObject master) {
-            return null;
+            return master.queryLinks(Person.class, "");
         }
     }
 
@@ -302,15 +302,15 @@ public final class StoredObjectUtility {
     }
 
     public static ArrayList<Link<?>> linkDetails(Class<? extends StoredObject> masterClass) {
-        return null;
+        return new ArrayList<>();
     }
 
     public static ArrayList<Link<?>> linkDetails(Class<? extends StoredObject> masterClass, StringList extraLinks) {
-        return null;
+        return new ArrayList<>();
     }
 
     public static Class<? extends StoredObject> getObjectClass(String className) {
-        return null;
+        return Person.class;
     }
 
     public static <T extends StoredObject> T get(Class<T> objectClass, String nameField, String nameValue) {

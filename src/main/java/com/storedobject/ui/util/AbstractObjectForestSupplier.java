@@ -8,7 +8,7 @@ import com.vaadin.flow.shared.Registration;
 
 import java.util.List;
 
-public interface AbstractObjectForestSupplier<T extends StoredObject> extends HierarchicalDataProvider<Object, String>, AbstractObjectDataProvider<T, Object> {
+public interface AbstractObjectForestSupplier<T extends StoredObject, F> extends HierarchicalDataProvider<Object, F>, AbstractObjectDataProvider<T, Object, F> {
 
     interface ListLinks {
         ObjectIterator<? extends StoredObject> list(StoredObjectUtility.Link<?> link, StoredObject master);

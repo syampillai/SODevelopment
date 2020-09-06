@@ -39,18 +39,18 @@ public class EditableObjectGrid<T extends StoredObject> extends EditableGrid<T> 
         this(objectClass, columns, new EditableObjectList<>(objectClass, any));
     }
 
-    public EditableObjectGrid(Class<T> objectClass, ObjectDataProvider<T> dataProvider) {
+    public EditableObjectGrid(Class<T> objectClass, ObjectDataProvider<T, Void> dataProvider) {
         this(objectClass, null, dataProvider);
     }
 
-    public EditableObjectGrid(Class<T> objectClass, Iterable<String> columns, ObjectDataProvider<T> dataProvider) {
+    public EditableObjectGrid(Class<T> objectClass, Iterable<String> columns, ObjectDataProvider<T, Void> dataProvider) {
         super(objectClass, columns);
     }
 
     @Override
-    public ObjectDataProvider<T> getDataProvider() {
+    public ObjectDataProvider<T, Void> getDataProvider() {
         //noinspection unchecked
-        return (ObjectDataProvider<T>) super.getDataProvider();
+        return (ObjectDataProvider<T, Void>) super.getDataProvider();
     }
 
     @Override

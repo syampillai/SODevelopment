@@ -8,7 +8,7 @@ import com.vaadin.flow.shared.Registration;
 
 import java.util.function.BiConsumer;
 
-public class EditableObjectList<T extends StoredObject> extends ObjectList<T> implements EditableList<T> {
+public class EditableObjectList<T extends StoredObject> extends ObjectList<T, Void> implements EditableList<T> {
 
     public EditableObjectList(Class<T> objectClass) {
         this(objectClass, false);

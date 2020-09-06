@@ -30,11 +30,11 @@ public class ObjectSearchBrowser<T extends StoredObject> extends ObjectBrowser<T
         this(objectClass, browseColumns, filterColumns, caption, null);
     }
 
-    public ObjectSearchBrowser(Class<T> objectClass, String caption, ObjectDataProvider<T> dataProvider) {
+    public ObjectSearchBrowser(Class<T> objectClass, String caption, ObjectDataProvider<T, Void> dataProvider) {
         this(objectClass, null, caption, dataProvider);
     }
 
-    public ObjectSearchBrowser(Class<T> objectClass, Iterable<String> browseColumns, String caption, ObjectDataProvider<T> dataProvider) {
+    public ObjectSearchBrowser(Class<T> objectClass, Iterable<String> browseColumns, String caption, ObjectDataProvider<T, Void> dataProvider) {
         super(objectClass, browseColumns, EditorAction.SEARCH | EditorAction.RELOAD, caption, dataProvider);
     }
 

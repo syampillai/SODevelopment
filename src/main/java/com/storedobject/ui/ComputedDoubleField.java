@@ -14,7 +14,7 @@ public class ComputedDoubleField extends ComputedField<ComputedDouble, Double> {
         this(label, 0);
     }
 
-    public ComputedDoubleField(Integer value) {
+    public ComputedDoubleField(Double value) {
         this(null, new ComputedDouble(value));
     }
 
@@ -22,36 +22,44 @@ public class ComputedDoubleField extends ComputedField<ComputedDouble, Double> {
         this(null, value);
     }
 
-    public ComputedDoubleField(String label, Integer value) {
+    public ComputedDoubleField(String label, Double value) {
         this(label, new ComputedDouble(value));
     }
 
-    public ComputedDoubleField(int width) {
-        this(null, 0, width);
+    public ComputedDoubleField(int decimals) {
+        this(null, 0.0, decimals);
     }
 
-    public ComputedDoubleField(String label, int width) {
-        this(label, 0, width);
+    public ComputedDoubleField(String label, int decimals) {
+        this(label, 0.0, decimals);
     }
 
-    public ComputedDoubleField(Integer value, int width) {
-        this(null, new ComputedDouble(value), width);
+    public ComputedDoubleField(Double value, int decimals) {
+        this(null, new ComputedDouble(value), decimals);
     }
 
-    public ComputedDoubleField(ComputedDouble value, int width) {
-        this(null, value, width);
+    public ComputedDoubleField(ComputedDouble value, int decimals) {
+        this(null, value, decimals);
     }
 
-    public ComputedDoubleField(String label, Integer value, int width) {
-        this(label, new ComputedDouble(value), width);
+    public ComputedDoubleField(String label, Double value, int decimals) {
+        this(label, new ComputedDouble(value), decimals);
     }
 
     public ComputedDoubleField(String label, ComputedDouble value) {
         this(label, value, 0);
     }
 
-    public ComputedDoubleField(String label, ComputedDouble value, int width) {
+    public ComputedDoubleField(String label, ComputedDouble value, int decimals) {
         super(new DoubleField(), label, value, new ComputedDouble());
-        ((DoubleField)getField()).setLength(width);
+        ((DoubleField)getField()).setLength(decimals);
+    }
+
+    public ComputedDoubleField(String label, Double value, int width, int decimals) {
+        this(label, new ComputedDouble(value), width, decimals);
+    }
+
+    public ComputedDoubleField(String label, ComputedDouble value, int width, int decimals) {
+        super(new DoubleField(0.0, width, decimals), label, value, new ComputedDouble());
     }
 }

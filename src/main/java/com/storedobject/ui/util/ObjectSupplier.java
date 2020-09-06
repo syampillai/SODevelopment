@@ -1,9 +1,8 @@
 package com.storedobject.ui.util;
 
 import com.storedobject.core.StoredObject;
-import com.vaadin.flow.shared.Registration;
 
-public class ObjectSupplier<T extends StoredObject> extends AbstractObjectSupplier<T, T> implements ObjectDataProvider<T> {
+public class ObjectSupplier<T extends StoredObject, F> extends AbstractObjectSupplier<T, T, F> implements ObjectDataProvider<T, F> {
 
     public ObjectSupplier(Class<T> objectClass, String condition, String orderBy, boolean any) {
         this(0, null, objectClass, condition, orderBy, any);

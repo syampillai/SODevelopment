@@ -13,8 +13,8 @@ import com.vaadin.flow.data.provider.ListDataProvider;
 @SuppressWarnings("serial")
 public class ObjectHistoryGrid<T extends StoredObject> extends DataGrid<T> {
 
-    private T object;
-    private BiPredicate<T, T> viewFilter;
+    private final T object;
+    private final BiPredicate<T, T> viewFilter;
 
     public ObjectHistoryGrid(T object) {
         this(object, (StringList)null);
@@ -99,7 +99,7 @@ public class ObjectHistoryGrid<T extends StoredObject> extends DataGrid<T> {
         }
         List<T> list = new ArrayList<>();
         objects.collectAll(list);
-        setDataProvider(new ListDataProvider(list));
+        setItems(new ListDataProvider<>(list));
     }
 
     public void executeAll() {
@@ -117,8 +117,8 @@ public class ObjectHistoryGrid<T extends StoredObject> extends DataGrid<T> {
                 return;
             }
             Link<?> link;
-            for(AuditTrailLinkConfiguration atlc: atc.listLinks(AuditTrailLinkConfiguration.class)) {
-                link = atlc.createLink(object.getClass());
+            for(AuditTrailLinkConfiguration auditTrailLinkConfiguration: atc.listLinks(AuditTrailLinkConfiguration.class)) {
+                link = auditTrailLinkConfiguration.createLink(object.getClass());
                 if(link == null) {
                     continue;
                 }

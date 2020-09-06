@@ -61,11 +61,11 @@ public class ObjectBrowser<T extends StoredObject> extends ObjectGrid<T> impleme
         this(objectClass, browseColumns, actions, filterColumns, caption, null);
     }
 
-    public ObjectBrowser(Class<T> objectClass, int actions, String caption, ObjectDataProvider<T> dataProvider) {
+    public ObjectBrowser(Class<T> objectClass, int actions, String caption, ObjectDataProvider<T, Void> dataProvider) {
         this(objectClass, null, actions, caption, dataProvider);
     }
 
-    public ObjectBrowser(Class<T> objectClass, Iterable<String> browseColumns, int actions, String caption, ObjectDataProvider<T> dataProvider) {
+    public ObjectBrowser(Class<T> objectClass, Iterable<String> browseColumns, int actions, String caption, ObjectDataProvider<T, Void> dataProvider) {
         super(objectClass, browseColumns, dataProvider);
     }
 

@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 
-public class ObjectForestSupplier<T extends StoredObject> extends AbstractObjectSupplier<T, Object> implements AbstractObjectForestSupplier<T> {
+public class ObjectForestSupplier<T extends StoredObject, F> extends AbstractObjectSupplier<T, Object, F> implements AbstractObjectForestSupplier<T, F> {
 
     public ObjectForestSupplier(Class<T> objectClass, String condition, String orderBy, boolean any) {
         this(0, null, objectClass, condition, orderBy, any);
@@ -31,23 +31,23 @@ public class ObjectForestSupplier<T extends StoredObject> extends AbstractObject
     }
 
     @Override
-    public Stream<Object> fetch(Query<Object, String> query) {
+    public Stream<Object> fetch(Query<Object, F> query) {
         return null;
     }
 
     @Override
-    public int size(Query<Object, String> query) {
+    public int size(Query<Object, F> query) {
         return super.size(query);
     }
 
     @Override
-    public int getChildCount(HierarchicalQuery<Object, String> query) {
+    public int getChildCount(HierarchicalQuery<Object, F> query) {
         return 0;
     }
 
     @Override
-    public Stream<Object> fetchChildren(HierarchicalQuery<Object, String> query) {
-        return null;
+    public Stream<Object> fetchChildren(HierarchicalQuery<Object, F> query) {
+        return Stream.of();
     }
 
     @Override

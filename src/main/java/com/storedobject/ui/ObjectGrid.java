@@ -9,6 +9,7 @@ import com.storedobject.ui.util.ObjectDataLoadedListener;
 import com.storedobject.ui.util.ObjectDataProvider;
 import com.storedobject.ui.util.ObjectGridData;
 import com.storedobject.ui.util.ObjectSupplier;
+import com.vaadin.flow.component.grid.dataview.GridDataView;
 import com.vaadin.flow.data.provider.DataProvider;
 import com.vaadin.flow.shared.Registration;
 
@@ -33,11 +34,11 @@ public class ObjectGrid<T extends StoredObject> extends DataGrid<T> implements O
         this(objectClass, columns, new ObjectSupplier<>(objectClass, null, null, any));
     }
 
-    public ObjectGrid(Class<T> objectClass, ObjectDataProvider<T> dataProvider) {
+    public ObjectGrid(Class<T> objectClass, ObjectDataProvider<T, Void> dataProvider) {
         this(objectClass, null, dataProvider);
     }
 
-    public ObjectGrid(Class<T> objectClass, Iterable<String> columns, ObjectDataProvider<T> dataProvider) {
+    public ObjectGrid(Class<T> objectClass, Iterable<String> columns, ObjectDataProvider<T, Void> dataProvider) {
         super(objectClass, columns);
     }
 
@@ -46,12 +47,14 @@ public class ObjectGrid<T extends StoredObject> extends DataGrid<T> implements O
     }
 
     @Override
-    public void setDataProvider(DataProvider<T, ?> dataProvider) {
+    public GridDataView<T> setItems(DataProvider<T, Void> dataProvider) {
+        return getGenericDataView();
     }
 
     @Override
-    public ObjectDataProvider<T> getDataProvider() {
-        return null;
+    public ObjectDataProvider<T, Void> getDataProvider() {
+        //noinspection unchecked
+        return (ObjectDataProvider<T, Void>) super.getDataProvider();
     }
 
     @Override

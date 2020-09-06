@@ -11,11 +11,11 @@ import com.vaadin.flow.shared.Registration;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
-public class AbstractObjectSupplier<T extends StoredObject, M> extends CallbackDataProvider<M, String> implements AbstractObjectDataProvider<T, M> {
+public class AbstractObjectSupplier<T extends StoredObject, M, F> extends CallbackDataProvider<M, F> implements AbstractObjectDataProvider<T, M, F> {
 
-    ObjectsCached<T, M> supplier;
+    ObjectsCached<T, M, F> supplier;
 
-    AbstractObjectSupplier(ObjectsCached<T, M> supplier, boolean load) {
+    AbstractObjectSupplier(ObjectsCached<T, M, F> supplier, boolean load) {
         super(supplier.new Fetcher(), supplier.new Counter(), AbstractObjectSupplier::id);
         this.supplier = supplier;
     }
