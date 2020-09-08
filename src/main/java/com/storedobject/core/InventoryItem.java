@@ -188,7 +188,7 @@ public class InventoryItem extends StoredObject {
         return ObjectIterator.create();
     }
 
-    public final boolean canStore(InventoryLocation location) {
+    public boolean canStore(InventoryLocation location) {
         return getPartNumber().canStore(location);
     }
 

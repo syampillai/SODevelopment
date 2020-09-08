@@ -27,13 +27,6 @@ public class InventoryItemType extends StoredObject implements HasChildren {
         return "";
     }
 
-    public String getAlternateCode() {
-        return "";
-    }
-
-    public void setAlternateCode(String alternateCode) {
-    }
-
     public void setUnitOfMeasurement(MeasurementUnit unitOfMeasurement) {
     }
 
