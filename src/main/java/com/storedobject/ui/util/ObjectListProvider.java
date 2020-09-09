@@ -17,7 +17,7 @@ public class ObjectListProvider<T extends StoredObject, F> extends CallbackDataP
         this();
     }
 
-    public ObjectListProvider(List<T> list) {
+    public ObjectListProvider(Class<T> objectClass, List<T> list) {
         this();
     }
 

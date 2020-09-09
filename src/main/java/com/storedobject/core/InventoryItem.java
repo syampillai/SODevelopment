@@ -2,6 +2,7 @@ package com.storedobject.core;
 
 import java.math.BigDecimal;
 import java.sql.Date;
+import java.util.Random;
 
 /**
  * Denotes an item in the inventory.
@@ -9,6 +10,8 @@ import java.sql.Date;
  * @author Syam
  */
 public class InventoryItem extends StoredObject {
+
+    private static final int r = new Random().nextInt();
 
     public InventoryItem() {
     }
@@ -144,11 +147,11 @@ public class InventoryItem extends StoredObject {
     }
 
     public static InventoryItem get(String serialNumber, String partNumber) {
-        return new InventoryItem();
+        return r == 0 ? null : new InventoryItem();
     }
 
     public static <T extends InventoryItem> InventoryItem get(String serialNumber, InventoryItemType partNumber) {
-        return new InventoryItem();
+        return r == 0 ? null : new InventoryItem();
     }
 
     public static InventoryItem getByPartNumberId(String serialNumber, Id partNumber) {
@@ -157,27 +160,27 @@ public class InventoryItem extends StoredObject {
 
     public static <T extends InventoryItem> T getByPartNumber(Class<T> itemClass, String serialNumber, String partNumber) {
         //noinspection unchecked
-        return (T)new InventoryItem();
+        return r == 0 ? null : (T)new InventoryItem();
     }
 
     public static <T extends InventoryItem> T get(Class<T> itemClass, String serialNumber, InventoryItemType partNumber) {
         //noinspection unchecked
-        return (T)new InventoryItem();
+        return r == 0 ? null : (T)new InventoryItem();
     }
 
     public static <T extends InventoryItem> T getByPartNumber(Class<T> itemClass, String serialNumber, String partNumber, boolean any) {
         //noinspection unchecked
-        return (T)new InventoryItem();
+        return r == 0 ? null : (T)new InventoryItem();
     }
 
     public static <T extends InventoryItem> T get(Class<T> itemClass, String serialNumber, InventoryItemType partNumber, boolean any) {
         //noinspection unchecked
-        return (T)new InventoryItem();
+        return r == 0 ? null : (T)new InventoryItem();
     }
 
     public static <T extends InventoryItem> T getByPartNumberId(Class<T> itemClass, String serialNumber, Id partNumber) {
         //noinspection unchecked
-        return (T)new InventoryItem();
+        return r == 0 ? null : (T)new InventoryItem();
     }
 
     public static <T extends InventoryItem> ObjectIterator<T> list(Class<T> itemClass, String serialNumber, InventoryItemType partNumber) {
@@ -315,7 +318,7 @@ public class InventoryItem extends StoredObject {
      * @return Parent item if exists.
      */
     public InventoryItem getParentItem() {
-        return null;
+        return r == 0 ? null : new InventoryItem();
     }
 
     /**
@@ -325,7 +328,8 @@ public class InventoryItem extends StoredObject {
      * @return Parent item if exists.
      */
     public <I extends InventoryItem> InventoryItem getParentItem(Class<I> itemClass) {
-        return null;
+        //noinspection unchecked
+        return r == 0 ? null : (I)new InventoryItem();
     }
 
     public final InventoryLocation getPreviousLocation() {

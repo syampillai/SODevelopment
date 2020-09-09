@@ -13,10 +13,11 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 
 /**
- * PDF Class<br>
+ * This class is used to create PDF output. The only abstract method in this class is generateContent()
+ * and is the one where you really print the report content. In most cases, you may use
+ * {@link PDFReport} class instead of this class directly.
  *
- * This class is used to create PDF report. The only abstract method in this class is generateContent()
- * and is the one where you really print the report content.
+ * @author Syam
  */
 public abstract class PDF implements java.io.Closeable, com.storedobject.core.ContentProducer {
 
@@ -1804,8 +1805,5 @@ public abstract class PDF implements java.io.Closeable, com.storedobject.core.Co
          */
         public void close() {
         }
-    }
-
-    public static void copy(InputStream in, OutputStream out, int pageStart, int pageEnd, int... pagesToSkip) {
     }
 }
