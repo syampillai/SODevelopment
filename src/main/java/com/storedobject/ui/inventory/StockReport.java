@@ -31,17 +31,14 @@ public class StockReport extends DataForm {
     public void printStock(ObjectIterator<? extends InventoryItemType> partNumbers, String categoryHeading) {
     }
 
-    public void printHeading(String heading) {
-    }
-
-    public String getItemTypeTitle(@SuppressWarnings("unused") InventoryItemType itemType) {
+    public String getItemTypeTitle(InventoryItemType itemType) {
         return null;
     }
 
-    public void configure(@SuppressWarnings("unused") com.storedobject.report.StockReport report) {
+    public void configure(com.storedobject.report.StockReport report) {
     }
 
-    public void configure(@SuppressWarnings("unused") com.storedobject.report.StockReportExcel report) {
+    public void configure(com.storedobject.report.StockReportExcel report) {
     }
 
     public boolean printZeroQuantity(InventoryStore store, InventoryItemType itemType) {

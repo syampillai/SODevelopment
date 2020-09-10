@@ -4,22 +4,22 @@ import com.storedobject.common.FilterProvider;
 import com.storedobject.common.ResourceOwner;
 import com.storedobject.core.ObjectSearchFilter;
 import com.storedobject.core.StoredObject;
-import com.storedobject.vaadin.ComboField;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ItemLabelGenerator;
+import com.vaadin.flow.component.combobox.ComboBox;
 
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
-public class ObjectComboField<T extends StoredObject> extends ComboField<T> implements ObjectInput<T>, ResourceOwner {
+public class ObjectComboField<T extends StoredObject> extends ComboBox<T> implements ObjectInput<T>, ResourceOwner {
 
     public ObjectComboField(Class<T> objectClass) {
         this(objectClass, false);
     }
 
     public ObjectComboField(Class<T> objectClass, boolean any) {
-        this(objectClass, null, any);
+        this(objectClass, (String)null, any);
     }
 
     public ObjectComboField(Class<T> objectClass, boolean any, boolean allowAdd) {
@@ -55,7 +55,7 @@ public class ObjectComboField<T extends StoredObject> extends ComboField<T> impl
     }
 
     public ObjectComboField(String label, Class<T> objectClass, boolean any) {
-        this(label, objectClass, null, any);
+        this(label, objectClass, (String)null, any);
     }
 
     public ObjectComboField(String label, Class<T> objectClass, boolean any, boolean allowAdd) {
@@ -87,18 +87,34 @@ public class ObjectComboField<T extends StoredObject> extends ComboField<T> impl
     }
 
     public ObjectComboField(List<T> list) {
-        this(null, list);
+        super(null);
     }
 
     public ObjectComboField(String label, List<T> list) {
-        this(label, list,false);
+        super(label);
     }
 
     public ObjectComboField(List<T> list, boolean allowAdd) {
-        this(null, list, allowAdd);
+        super(null);
     }
 
     public ObjectComboField(String label, List<T> list, boolean allowAdd) {
+        super(label);
+    }
+
+    public ObjectComboField(Class<T> objectClass, List<T> list) {
+        this(null, objectClass, list);
+    }
+
+    public ObjectComboField(String label, Class<T> objectClass, List<T> list) {
+        this(label, objectClass, list,false);
+    }
+
+    public ObjectComboField(Class<T> objectClass, List<T> list, boolean allowAdd) {
+        this(null, objectClass, list, allowAdd);
+    }
+
+    public ObjectComboField(String label, Class<T> objectClass, List<T> list, boolean allowAdd) {
         super(label);
     }
 

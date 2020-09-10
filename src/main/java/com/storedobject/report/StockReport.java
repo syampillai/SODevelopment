@@ -5,7 +5,6 @@ import com.storedobject.core.InventoryItemType;
 import com.storedobject.core.InventoryStore;
 import com.storedobject.core.ObjectIterator;
 import com.storedobject.pdf.PDFReport;
-import com.storedobject.pdf.PDFTable;
 
 public class StockReport extends PDFReport {
 
@@ -39,16 +38,8 @@ public class StockReport extends PDFReport {
     public void setServiceabilityStatus(int serviceabilityStatus) {
     }
 
-    @Override
-    public PDFTable getTitleTable() {
-        return null;
-    }
-
     public String getItemTypeTitle(InventoryItemType itemType) {
         return null;
-    }
-
-    public void printHeading(String heading) {
     }
 
     @Override
