@@ -29,10 +29,10 @@ public class StockMovementReport extends DataForm {
     public void printStockMovement(ObjectIterator<? extends InventoryItemType> partNumbers, String categoryHeading) {
     }
 
-    public String getItemTypeTitle(@SuppressWarnings("unused") InventoryItemType itemType) {
+    public String getItemTypeTitle(InventoryItemType itemType) {
         return null;
     }
 
-    public void configure(@SuppressWarnings("unused") com.storedobject.report.StockMovementReport report) {
+    public void configure(com.storedobject.report.StockMovementReport report) {
     }
 }

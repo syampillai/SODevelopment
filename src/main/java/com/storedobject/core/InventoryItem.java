@@ -312,6 +312,14 @@ public class InventoryItem extends StoredObject {
         return ObjectIterator.create();
     }
 
+    public static <T extends InventoryItemType> ObjectIterator<InventoryItem> listStock(T partNumber) {
+        return listStock(partNumber, null, (InventoryStore) null);
+    }
+
+    public static ObjectIterator<InventoryItem> listItems(InventoryItemType partNumber) {
+        return ObjectIterator.create();
+    }
+
     /**
      * Get the parent item on which this item is fitted on.
      *

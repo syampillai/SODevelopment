@@ -174,11 +174,11 @@ public class PDFTable implements PDFElement {
         return 0;
     }
 
-    public int getRunDirection() {
+    public int getTextDirection() {
         return 0;
     }
 
-    public void setRunDirection(int direction) {
+    public void setTextDirection(int direction) {
     }
 
     public float getHeaderHeight() {
