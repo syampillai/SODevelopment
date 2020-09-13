@@ -1,5 +1,8 @@
 package com.storedobject.core;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * An inventory item type denotes a "part number".
  *
@@ -178,24 +181,12 @@ public class InventoryItemType extends StoredObject implements HasChildren {
         return exists(InventoryAssembly.class, "ParentItemType=" + getId());
     }
 
-    /**
-     * Is this item an alternate part number for a given item.
-     *
-     * @param alternatePartNumber An alternate item.
-     * @return True or false.
-     */
-    public boolean isAPN(InventoryItemType alternatePartNumber) {
+    public boolean isAPN(InventoryItemType anotherPartNumber) {
         return false;
     }
 
-    /**
-     * Is this item an alternate part number for a given item.
-     *
-     * @param alternatePart An alternate item.
-     * @return True or false.
-     */
-    public final boolean isAPN(InventoryItem alternatePart) {
-        return alternatePart != null && isAPN(alternatePart.getPartNumber());
+    public final boolean isAPN(InventoryItem anotherItem) {
+        return anotherItem != null && isAPN(anotherItem.getPartNumber());
     }
 
     /**
@@ -298,11 +289,27 @@ public class InventoryItemType extends StoredObject implements HasChildren {
         return "S/N";
     }
 
+    public boolean isBlocked() {
+        return false;
+    }
+
+    public boolean isObsolete() {
+        return isBlocked();
+    }
+
     public boolean canStore(InventoryLocation location) {
         return true;
     }
 
     public final ObjectIterator<InventoryAssembly> listAssemblies() {
         return ObjectIterator.create();
+    }
+
+    public final List<InventoryItemType> listAPNs() {
+        return new ArrayList<>();
+    }
+
+    public static List<InventoryItemType> listAPNs(Id partNumberId) {
+        return new ArrayList<>();
     }
 }

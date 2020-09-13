@@ -7,37 +7,37 @@ import com.storedobject.ui.ObjectEditor;
 import com.storedobject.ui.ObjectGrid;
 import com.storedobject.vaadin.CloseableView;
 
-public class ViewStock extends ObjectGrid<InventoryItem> implements CloseableView {
+public class LocateItem extends ObjectGrid<InventoryItem> implements CloseableView {
 
-    public ViewStock() {
+    public LocateItem() {
         this(null, null);
     }
 
-    public ViewStock(String caption) {
+    public LocateItem(String caption) {
         this(caption, null);
     }
 
-    public ViewStock(InventoryItemType partNumber) {
+    public LocateItem(InventoryItemType partNumber) {
         this(null, partNumber);
     }
 
-    public ViewStock(boolean canEdit) {
+    public LocateItem(boolean canEdit) {
         this(null, null, canEdit);
     }
 
-    public ViewStock(String caption, boolean canEdit) {
+    public LocateItem(String caption, boolean canEdit) {
         this(caption, null, canEdit);
     }
 
-    public ViewStock(InventoryItemType partNumber, boolean canEdit) {
+    public LocateItem(InventoryItemType partNumber, boolean canEdit) {
         this(null, partNumber, canEdit);
     }
 
-    public ViewStock(String caption, InventoryItemType partNumber) {
+    public LocateItem(String caption, InventoryItemType partNumber) {
         this(caption, partNumber, false);
     }
 
-    public ViewStock(String caption, InventoryItemType partNumber, boolean canEdit) {
+    public LocateItem(String caption, InventoryItemType partNumber, boolean canEdit) {
         super(InventoryItem.class, StringList.create("Quantity", "SerialNumber", "InTransit", "Location"), true);
     }
 

@@ -105,6 +105,9 @@ public class ObjectListEditor<T extends StoredObject> extends EditableObjectGrid
     public void view() {
     }
 
+    public void validateData() throws Exception {
+    }
+
     public void save(Transaction transaction) throws Exception {
     }
 
