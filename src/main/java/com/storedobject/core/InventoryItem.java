@@ -3,6 +3,7 @@ package com.storedobject.core;
 import java.math.BigDecimal;
 import java.sql.Date;
 import java.util.Random;
+import java.util.function.Predicate;
 
 /**
  * Denotes an item in the inventory.
@@ -366,6 +367,10 @@ public class InventoryItem extends StoredObject {
     }
 
     public final <O extends InventoryItem> ObjectIterator<O> listAssemblies(Class<O> itemClass) {
+        return ObjectIterator.create();
+    }
+
+    public final <O extends InventoryItem> ObjectIterator<O> listAssemblies(Class<O> itemClass, Predicate<O> filter) {
         return ObjectIterator.create();
     }
 }

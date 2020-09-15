@@ -4,6 +4,7 @@ import com.storedobject.core.EditableList;
 import com.storedobject.core.StoredObject;
 import com.storedobject.core.StoredObjectUtility;
 import com.storedobject.core.Transaction;
+import com.storedobject.vaadin.ButtonLayout;
 
 import java.util.function.Function;
 
@@ -14,6 +15,8 @@ import java.util.function.Function;
  * @author Syam
  */
 public class ObjectListEditor<T extends StoredObject> extends EditableObjectGrid<T> implements Transactional {
+
+    protected final ButtonLayout buttonPanel = new ButtonLayout();
 
     public ObjectListEditor(Class<T> objectClass) {
         this(objectClass, null);

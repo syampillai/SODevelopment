@@ -2,6 +2,7 @@ package com.storedobject.core;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Predicate;
 
 /**
  * An inventory item type denotes a "part number".
@@ -302,6 +303,10 @@ public class InventoryItemType extends StoredObject implements HasChildren {
     }
 
     public final ObjectIterator<InventoryAssembly> listAssemblies() {
+        return ObjectIterator.create();
+    }
+
+    public final ObjectIterator<InventoryAssembly> listAssemblies(Predicate<InventoryAssembly> filter) {
         return ObjectIterator.create();
     }
 

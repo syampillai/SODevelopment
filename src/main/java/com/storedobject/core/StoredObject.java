@@ -10,6 +10,7 @@ import java.io.Writer;
 import java.sql.Timestamp;
 import java.util.*;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.logging.Logger;
 
 @SuppressWarnings({"ResultOfMethodCallIgnored", "unchecked"})
@@ -603,7 +604,7 @@ public abstract class StoredObject implements Displayable {
     }
 
     public static <T extends StoredObject> T get(Transaction transaction, Class<T> objectClass, String condition, String order) {
-        return System.currentTimeMillis() < 1 ? null : (T)new Person();
+        return r < 1 ? null : (T)new Person();
     }
 
     public static <T extends StoredObject> T get(ObjectIterator<T> iterator) {
@@ -611,7 +612,7 @@ public abstract class StoredObject implements Displayable {
     }
 
     public static <T extends StoredObject> T get(ObjectIterator<T> list, boolean validateOne) {
-        return (T)new Person();
+        return r == 0 ? null : (T)new Person();
     }
 
     public ObjectIterator<? extends StoredObject> listHistory() {
@@ -664,7 +665,7 @@ public abstract class StoredObject implements Displayable {
     }
 
     public static <T extends StoredObject, C extends T> C get(Transaction transaction, Class<T> objectClass, String condition, String order, boolean any) {
-        return (C) new Person();
+        return r == 0 ? null : (C) new Person();
     }
 
     public static <T extends StoredObject> ObjectIterator<T> listViaQuery(Class<T> objectClass, Query query) {
@@ -727,6 +728,11 @@ public abstract class StoredObject implements Displayable {
     }
 
     public <T extends StoredObject> ObjectIterator<T> listTree(Class<T> objectClass, Function<StoredObject, ObjectIterator<T>> childrenFunction) {
+        return ObjectIterator.create();
+    }
+
+    public <T extends StoredObject> ObjectIterator<T> listTree(Class<T> objectClass, Function<StoredObject,
+            ObjectIterator<T>> childrenFunction, Predicate<T> filter) {
         return ObjectIterator.create();
     }
 
@@ -1547,7 +1553,7 @@ public abstract class StoredObject implements Displayable {
     }
 
     public final <T extends StoredObject> T getMaster(Transaction transaction, Class<T> objectClass, String condition) {
-        return (T) new Person();
+        return r == 0 ? null : (T) new Person();
     }
 
     public final <T extends StoredObject> T getMaster(int linkType, Class<T> objectClass) {
@@ -1563,7 +1569,7 @@ public abstract class StoredObject implements Displayable {
     }
 
     public final <T extends StoredObject> T getMaster(Transaction transaction, int linkType, Class<T> objectClass, String condition) {
-        return (T) new Person();
+        return r == 0 ? null : (T) new Person();
     }
 
     public final <T extends StoredObject> T getMaster(String linkType, Class<T> objectClass) {
@@ -1580,7 +1586,7 @@ public abstract class StoredObject implements Displayable {
 
     public final <T extends StoredObject> T getMaster(Transaction transaction, String linkType, Class<T> objectClass,
                                                       String condition) {
-        return (T) new Person();
+        return r == 0 ? null : (T) new Person();
     }
 
     public final <T extends StoredObject> T getMaster(Class<T> objectClass, boolean any) {
@@ -1596,7 +1602,7 @@ public abstract class StoredObject implements Displayable {
     }
 
     public final <T extends StoredObject> T getMaster(Transaction transaction, Class<T> objectClass, String condition, boolean any) {
-        return (T) new Person();
+        return r == 0 ? null : (T) new Person();
     }
 
     public final <T extends StoredObject> T getMaster(int linkType, Class<T> objectClass, boolean any) {
@@ -1613,7 +1619,7 @@ public abstract class StoredObject implements Displayable {
 
     public final <T extends StoredObject> T getMaster(Transaction transaction, int linkType, Class<T> objectClass,
                                                       String condition, boolean any) {
-        return (T) new Person();
+        return r == 0 ? null : (T) new Person();
     }
 
     public final <T extends StoredObject> T getMaster(String linkType, Class<T> objectClass, boolean any) {
@@ -1630,7 +1636,7 @@ public abstract class StoredObject implements Displayable {
 
     public final <T extends StoredObject> T getMaster(Transaction transaction, String linkType, Class<T> objectClass,
                                                       String condition, boolean any) {
-        return (T) new Person();
+        return r == 0 ? null : (T) new Person();
     }
 
     public boolean existsMaster(StoredObject master) {
