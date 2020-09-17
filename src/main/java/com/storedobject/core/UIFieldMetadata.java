@@ -1,20 +1,23 @@
 package com.storedobject.core;
 
-import com.storedobject.core.annotation.Column;
+import java.lang.reflect.Method;
 
 public class UIFieldMetadata extends StoredObject implements Detail {
 
 	public UIFieldMetadata() {
 	}
 
+	public UIFieldMetadata(String fieldName, Method getMethod) {
+	}
+
 	public static void columns(Columns columns) {
+	}
+
+	public void setGetMethod(Method getMethod) {
 	}
 
 	public static String browseOrder() {
 		return null;
-	}
-
-	public void setMetadata(Column column) {
 	}
 
 	public boolean isFieldOrderBuiltIn() {
