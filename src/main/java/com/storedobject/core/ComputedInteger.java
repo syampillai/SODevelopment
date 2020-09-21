@@ -20,7 +20,7 @@ public class ComputedInteger extends AbstractComputedInteger implements Comparab
 	}
 
 	public static ComputedInteger create(Object value) {
-		return null;
+		return new ComputedInteger();
 	}
 	
 	public void set(ComputedInteger value) {
@@ -32,12 +32,12 @@ public class ComputedInteger extends AbstractComputedInteger implements Comparab
 	}
 
 	@Override
-	public int compareTo(ComputedInteger o) {
+	public int compareTo(@SuppressWarnings("NullableProblems") ComputedInteger o) {
 		return super.compareTo(o);
 	}
 
 	@Override
 	protected String getDBType() {
-		return "CINTEGER";
+		return "";
 	}
 }

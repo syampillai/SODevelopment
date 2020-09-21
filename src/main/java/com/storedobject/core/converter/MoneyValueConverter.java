@@ -1,19 +1,18 @@
 package com.storedobject.core.converter;
 
-public class MoneyValueConverter extends com.storedobject.core.converter.ValueConverter < com.storedobject.core.Money > {
+import com.storedobject.core.Money;
+
+public class MoneyValueConverter extends ValueConverter<Money> {
 
     private MoneyValueConverter() {
     }
 
-    public static com.storedobject.core.converter.MoneyValueConverter get() {
-        return null;
+    public static MoneyValueConverter get() {
+        return new MoneyValueConverter();
     }
 
-    public com.storedobject.core.Money convert(java.lang.Object p1) {
-        return null;
-    }
-
-    public java.lang.Class < com.storedobject.core.Money > getValueType() {
-        return null;
+    @Override
+    public Class<Money> getValueType() {
+        return Money.class;
     }
 }

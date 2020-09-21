@@ -6,19 +6,16 @@ import com.storedobject.vaadin.ListGrid;
 
 import java.sql.ResultSet;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.Set;
 
-public class QueryGrid extends ListGrid<QueryGrid.SQLResultSet> {
-
-    private final Map<Integer, String> columnNames = new HashMap<>();
+public class QueryGrid extends ListGrid<QueryGrid.QueryResult> {
 
     public QueryGrid(Query query) {
         this(query.getResultSet());
     }
 
     public QueryGrid(ResultSet resultSet) {
-        super(SQLResultSet.class, StringList.EMPTY);
+        super(QueryResult.class, StringList.EMPTY);
     }
 
     public boolean includeColumn(int columnIndex) {
@@ -29,12 +26,12 @@ public class QueryGrid extends ListGrid<QueryGrid.SQLResultSet> {
         return value;
     }
 
-    static class SQLResultSet extends HashMap<Integer, Object> {
+    public static class QueryResult extends HashMap<Integer, Object> {
 
-        SQLResultSet(ResultSet rs, Set<Integer> columnIndices) {
+        private QueryResult(ResultSet rs, Set<Integer> columnIndices) {
         }
 
-        Object getValue(int columnIndex) {
+        public Object getValue(int columnIndex) {
             return get(columnIndex);
         }
     }

@@ -6,23 +6,28 @@ public class SecondsValueConverter extends ValueConverter<Integer> {
 	}
 
 	public static SecondsValueConverter get() {
-		return null;
+		return create("");
 	}
 
 	public static SecondsValueConverter create(String emptyValue) {
-		return null;
+		return new SecondsValueConverter("");
 	}
 
 	@Override
 	public Class<Integer> getValueType() {
-		return null;
+		return Integer.class;
 	}
 
-	public static String format(int minutes) {
-		return null;
+	@Override
+	public Integer convert(Object value) {
+		return 0;
+	}
+
+	public static String format(int seconds) {
+		return "";
 	}
 
 	public static int parse(Object value) {
-		return -1;
+		return 0;
 	}
 }

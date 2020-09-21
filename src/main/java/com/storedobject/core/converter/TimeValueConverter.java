@@ -1,19 +1,20 @@
 package com.storedobject.core.converter;
 
-public class TimeValueConverter extends com.storedobject.core.converter.ValueConverter < java.util.Date > {
+import java.util.Date;
+
+public class TimeValueConverter extends ValueConverter<Date> {
+
+    private static final TimeValueConverter instance = new TimeValueConverter();
 
     private TimeValueConverter() {
     }
 
-    public static com.storedobject.core.converter.TimeValueConverter get() {
-        return null;
+    @Override
+    public Class<Date> getValueType() {
+        return Date.class;
     }
 
-    public java.lang.String format(java.lang.Object p1) {
-        return null;
-    }
-
-    public java.lang.Class < java.util.Date > getValueType() {
-        return null;
+    public static TimeValueConverter get() {
+        return instance;
     }
 }

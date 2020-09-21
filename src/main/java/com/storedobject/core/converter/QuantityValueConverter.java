@@ -1,19 +1,18 @@
 package com.storedobject.core.converter;
 
-public class QuantityValueConverter extends com.storedobject.core.converter.ValueConverter < com.storedobject.core.Quantity > {
+import com.storedobject.core.Quantity;
+
+public class QuantityValueConverter extends ValueConverter<Quantity> {
 
     private QuantityValueConverter() {
     }
 
-    public static com.storedobject.core.converter.QuantityValueConverter get() {
-        return null;
+    public static QuantityValueConverter get() {
+        return new QuantityValueConverter();
     }
 
-    public com.storedobject.core.Quantity convert(java.lang.Object p1) {
-        return null;
-    }
-
-    public java.lang.Class < com.storedobject.core.Quantity > getValueType() {
-        return null;
+    @Override
+    public Class<Quantity> getValueType() {
+        return Quantity.class;
     }
 }

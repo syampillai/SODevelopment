@@ -37,21 +37,21 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T> 
     }
 
     public static <O extends StoredObject> ObjectEditor<O> create(Class<O> objectClass) {
-        return null;
+        return new ObjectEditor<>(objectClass);
     }
 
     public static <O extends StoredObject> ObjectEditor<O> create(Class<O> objectClass, int actions) {
-        return null;
+        return new ObjectEditor<>(objectClass);
     }
 
     public static <O extends StoredObject> ObjectEditor<O> create(Class<O> objectClass, int actions, String title) {
-        return null;
+        return new ObjectEditor<>(objectClass);
     }
 
     @SuppressWarnings("unchecked")
     @Override
     public Application getApplication() {
-        return null;
+        return super.getApplication();
     }
 
     protected int filterActions(int actions) {
@@ -66,7 +66,7 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T> 
     }
 
     protected static String allowedActions(String className) {
-        return null;
+        return "";
     }
 
     @Override
@@ -143,7 +143,7 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T> 
     }
 
     public ObjectSearcher<T> getSearcher() {
-        return null;
+        return ObjectBrowser.create(getObjectClass());
     }
 
     protected boolean delete() throws Exception {

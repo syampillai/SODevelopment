@@ -1,19 +1,16 @@
 package com.storedobject.core.converter;
 
-public class IntegerValueConverter extends com.storedobject.core.converter.ValueConverter < java.lang.Integer > {
+public class IntegerValueConverter extends ValueConverter<Integer> {
 
     private IntegerValueConverter() {
     }
 
-    public static com.storedobject.core.converter.IntegerValueConverter get() {
-        return null;
+    public static IntegerValueConverter get() {
+        return new IntegerValueConverter();
     }
 
-    public java.lang.Integer convert(java.lang.Object p1) {
-        return null;
-    }
-
-    public java.lang.Class < java.lang.Integer > getValueType() {
-        return null;
+    @Override
+    public Class<Integer> getValueType() {
+        return Integer.class;
     }
 }

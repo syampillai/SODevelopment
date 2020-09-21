@@ -1,19 +1,21 @@
 package com.storedobject.core;
 
-import java.sql.Date;
-import java.sql.Time;
 import java.sql.Timestamp;
 import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.GregorianCalendar;
 
 public abstract class Database {
+
+	private static Database db;
 
 	public static void login(String driver, String ip, int port, String database, String user, String password) throws Exception {
 	}
 
 	public static Database get() {
-		return null;
+		return db;
 	}
 
 	public static void lockDatabase() {
@@ -32,7 +34,7 @@ public abstract class Database {
 	public abstract boolean isALogin(String user, String password);
 
 	public String initialPassword() {
-		return null;
+		return "";
 	}
 
 	public abstract boolean createLogin(String user, String password);
@@ -48,17 +50,17 @@ public abstract class Database {
 	protected abstract boolean resetPassword(String user, String securityPassword, String newPassword);
 
 	public String maxTime() {
-		return null;
+		return "";
 	}
 
 	public abstract String currentTime();
 
 	public Calendar getCurrentTime() {
-		return null;
+		return new GregorianCalendar();
 	}
 
 	public String currentTimeSQL() {
-		return null;
+		return "";
 	}
 
 	public abstract String callProc(String name, String parameter);
@@ -68,19 +70,19 @@ public abstract class Database {
 	public abstract String getObjectClassName();
 
 	public static <D extends java.util.Date> String format(D date) {
-		return null;
+		return "";
 	}
 
 	public static <D extends java.util.Date> String formatWithTime(D date) {
-		return null;
+		return "";
 	}
 
 	public static DateFormat dateFormat() {
-		return null;
+		return new SimpleDateFormat();
 	}
 
 	public static DateFormat dateTimeFormat() {
-		return null;
+		return new SimpleDateFormat();
 	}
 
 	public int nanoDigits() {
@@ -99,20 +101,20 @@ public abstract class Database {
 		return false;
 	}
 
-	protected final boolean executeSQL(String sql[], String user, String password) {
+	protected final boolean executeSQL(String[] sql, String user, String password) {
 		return false;
 	}
 
-	protected final boolean executeSQL(String sql[], String user, String password, boolean ignoreErrors) {
+	protected final boolean executeSQL(String[] sql, String user, String password, boolean ignoreErrors) {
 		return false;
 	}
 
 	public final Timestamp maxTimeStamp() {
-		return null;
+		return new Timestamp(0);
 	}
 
 	protected RawSQL getSQL() {
-		return null;
+		return new RawSQL();
 	}
 
 	public boolean schemaExists(String schemaName) {
@@ -124,7 +126,7 @@ public abstract class Database {
 	}
 
 	public ArrayList<String> foreignKeyConstraints(String tableName) {
-		return null;
+		return new ArrayList<>();
 	}
 
 	public abstract ArrayList<String> parentTable(String tableName);
@@ -132,7 +134,7 @@ public abstract class Database {
 	public abstract String columnType(String columnType, int width, int precision);
 
 	public ArrayList<String[]> columnDetails(String tableName) {
-		return null;
+		return new ArrayList<>();
 	}
 
 	protected abstract String[] createSchemaDDL(String schemaName);

@@ -6,24 +6,24 @@ public class MinutesValueConverter extends ValueConverter<Integer> {
 	}
 
 	public static MinutesValueConverter get() {
-		return null;
+		return new MinutesValueConverter("", false);
 	}
 
 	public static MinutesValueConverter create(String emptyValue) {
-		return null;
+		return get();
 	}
 
 	public static MinutesValueConverter create(String emptyValue, boolean allowDays) {
-		return null;
+		return get();
 	}
 
 	@Override
 	public Class<Integer> getValueType() {
-		return null;
+		return Integer.class;
 	}
 
 	public static String format(int minutes, boolean allowDays) {
-		return null;
+		return "";
 	}
 
 	public static int parse(Object value) {

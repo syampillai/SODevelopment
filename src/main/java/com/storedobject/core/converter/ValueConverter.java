@@ -3,13 +3,14 @@ package com.storedobject.core.converter;
 public abstract class ValueConverter<T> {
 
 	public T convert(Object value) {
-		return null;
+		//noinspection unchecked
+		return (T)value;
 	}
 
 	public abstract Class<T> getValueType();
 
 	public String format(Object value) {
-		return null;
+		return "";
 	}
 	
 	public int getAlignment() {
@@ -17,10 +18,10 @@ public abstract class ValueConverter<T> {
 	}
 	
 	public T getEmptyValue() {
-		return null;
+		return convert("");
 	}
 	
 	public String getEmptyTextValue() {
-		return null;
+		return "";
 	}
 }

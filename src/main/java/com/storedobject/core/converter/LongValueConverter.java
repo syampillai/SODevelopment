@@ -1,19 +1,16 @@
 package com.storedobject.core.converter;
 
-public class LongValueConverter extends com.storedobject.core.converter.ValueConverter < java.lang.Long > {
+public class LongValueConverter extends ValueConverter<Long> {
 
     private LongValueConverter() {
     }
 
-    public static com.storedobject.core.converter.LongValueConverter get() {
-        return null;
+    public static LongValueConverter get() {
+        return new LongValueConverter();
     }
 
-    public java.lang.Long convert(java.lang.Object p1) {
-        return null;
-    }
-
-    public java.lang.Class < java.lang.Long > getValueType() {
-        return null;
+    @Override
+    public Class<Long> getValueType() {
+        return Long.class;
     }
 }

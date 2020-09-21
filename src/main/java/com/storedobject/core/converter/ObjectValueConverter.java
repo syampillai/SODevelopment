@@ -1,23 +1,22 @@
 package com.storedobject.core.converter;
 
-public class ObjectValueConverter extends com.storedobject.core.converter.ValueConverter < com.storedobject.core.StoredObject > {
+import com.storedobject.core.StoredObject;
 
-    public ObjectValueConverter(java.lang.Class <? extends com.storedobject.core.StoredObject > p1) {
-        this();
+public class ObjectValueConverter extends ValueConverter<StoredObject> {
+
+    public ObjectValueConverter(Class<? extends StoredObject> objectClass) {
     }
 
-    private ObjectValueConverter() {
+    @Override
+    public Class<StoredObject> getValueType() {
+        return StoredObject.class;
     }
 
-    public java.lang.String format(java.lang.Object p1) {
-        return null;
-    }
-
-    public com.storedobject.core.StoredObject convert(java.lang.Object p1) {
-        return null;
-    }
-
-    public java.lang.Class < com.storedobject.core.StoredObject > getValueType() {
+    @Override
+    public StoredObject convert(Object value) {
+        if(value instanceof StoredObject) {
+            return (StoredObject) value;
+        }
         return null;
     }
 }
