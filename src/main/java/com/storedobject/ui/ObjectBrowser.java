@@ -204,4 +204,7 @@ public class ObjectBrowser<T extends StoredObject> extends ObjectGrid<T> impleme
     public Stream<HasValue<?, ?>> streamEditableFields() {
         return null;
     }
+
+    public void setSplitView() {
+    }
 }

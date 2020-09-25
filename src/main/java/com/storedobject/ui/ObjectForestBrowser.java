@@ -13,7 +13,7 @@ import static com.storedobject.core.EditorAction.ALLOW_ANY;
 public class ObjectForestBrowser<T extends StoredObject> extends ObjectForest<T> {
 
     protected final ButtonLayout buttonPanel = new ButtonLayout();
-    protected Button add, edit, delete, reload, view, report, excel, audit, exit;
+    protected Button add, edit, delete, filter, load, view, report, excel, audit, exit;
 
     public ObjectForestBrowser(Class<T> objectClass) {
         this(objectClass, ALL);
@@ -81,15 +81,15 @@ public class ObjectForestBrowser<T extends StoredObject> extends ObjectForest<T>
     protected void addExtraButtons() {
     }
 
-    protected boolean canDelete(@SuppressWarnings("unused") StoredObject object) {
+    protected boolean canDelete(StoredObject object) {
         return true;
     }
 
-    protected boolean canEdit(@SuppressWarnings("unused") StoredObject object) {
+    protected boolean canEdit(StoredObject object) {
         return true;
     }
 
-    protected boolean canAdd(@SuppressWarnings("unused") StoredObject parentObject) {
+    protected boolean canAdd(StoredObject parentObject) {
         return true;
     }
 }

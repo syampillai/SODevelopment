@@ -111,7 +111,6 @@ public class ObjectTree<T extends StoredObject> extends DataTreeGrid<T> implemen
         return super.getApplication();
     }
 
-
     public void setObjectEditor(ObjectEditor<T> editor) {
     }
 
@@ -124,5 +123,8 @@ public class ObjectTree<T extends StoredObject> extends DataTreeGrid<T> implemen
     }
 
     public void setNewObjectGenerator(NewObject<T> newObject) {
+    }
+
+    public void setSplitView() {
     }
 }

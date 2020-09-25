@@ -46,8 +46,4 @@ public class ObjectForestEditor<T extends StoredObject> extends ObjectForestBrow
     public static <O extends StoredObject> ObjectForestEditor<O> create(Class<O> objectClass, Iterable<String> columns, int actions, String title) {
         return new ObjectForestEditor<>(objectClass, columns, actions, title);
     }
-
-    @Override
-    public final void setSplitView() {
-    }
 }
