@@ -3,6 +3,7 @@ package com.storedobject.ui;
 import com.storedobject.core.Money;
 import com.storedobject.vaadin.CustomTextField;
 
+import java.util.Collection;
 import java.util.Currency;
 
 public class MoneyField extends CustomTextField<Money> {
@@ -45,12 +46,12 @@ public class MoneyField extends CustomTextField<Money> {
 
     @Override
     protected Money getModelValue(String string) {
-        return null;
+        return new Money();
     }
 
     @Override
     protected String format(Money value) {
-        return null;
+        return "";
     }
 
     @Override
@@ -58,6 +59,15 @@ public class MoneyField extends CustomTextField<Money> {
     }
 
     public Currency getCurrency() {
-        return null;
+        return getValue().getCurrency();
+    }
+
+    public void setAllowedCurrencies(Collection<Currency> allowedCurrencies) {
+    }
+
+    public void setAllowedCurrencies(Currency... allowedCurrencies) {
+    }
+
+    public void setAllowedCurrencies(String... allowedCurrencies) {
     }
 }

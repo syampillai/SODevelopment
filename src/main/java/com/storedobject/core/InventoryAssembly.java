@@ -88,4 +88,12 @@ public final class InventoryAssembly extends StoredObject {
     public int getDisplayOrder() {
         return 0;
     }
+
+    public boolean canFit(InventoryItemType partNumber) {
+        return false;
+    }
+
+    public boolean canFit(Id partNumberId) {
+        return false;
+    }
 }

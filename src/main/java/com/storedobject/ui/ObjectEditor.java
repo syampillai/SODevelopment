@@ -124,6 +124,9 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T> 
     public void validateAnchorValues(T object) throws SOException {
     }
 
+    public void resetAnchor() {
+    }
+
     public void doAdd() {
     }
 

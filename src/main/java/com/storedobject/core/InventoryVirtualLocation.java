@@ -39,4 +39,24 @@ public final class InventoryVirtualLocation extends InventoryLocation {
 
     public void setType(int type) {
     }
+
+    private static InventoryVirtualLocation getFor(Id entityId, int type) {
+        return get(InventoryVirtualLocation.class, "Entity=" + entityId + " AND Type=" + type);
+    }
+
+    public static InventoryVirtualLocation getForSupplier(Id supplierId) {
+        return getFor(supplierId, 1);
+    }
+
+    public static InventoryVirtualLocation getForConsumer(Id consumerId) {
+        return getFor(consumerId, 2);
+    }
+
+    public static InventoryVirtualLocation getScrapLocation(SystemEntity systemEntity) {
+        return getFor(systemEntity.getEntityId(), 6);
+    }
+
+    public static InventoryVirtualLocation getShortageLocation(SystemEntity systemEntity) {
+        return getFor(systemEntity.getEntityId(), 7);
+    }
 }

@@ -78,6 +78,10 @@ public class InventoryItem extends StoredObject {
         return new InventoryBin();
     }
 
+    public InventoryLocation getRealLocation() {
+        return getLocation();
+    }
+
     public void setQuantity(Quantity quantity) {
     }
 
@@ -328,6 +332,10 @@ public class InventoryItem extends StoredObject {
      */
     public InventoryItem getParentItem() {
         return r == 0 ? null : new InventoryItem();
+    }
+
+    public InventoryItem getGrandParentItem() {
+        return getParentItem();
     }
 
     /**

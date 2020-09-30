@@ -52,6 +52,14 @@ public final class InventoryFitmentPosition extends InventoryLocation {
     public void setAssembly(InventoryAssembly assembly) {
     }
 
+    public boolean canFit(InventoryItemType partNumber) {
+        return true;
+    }
+
+    public boolean canFit(Id partNumberId) {
+        return true;
+    }
+
     @Override
     public final int getType() {
         return 14;

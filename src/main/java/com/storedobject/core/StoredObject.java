@@ -2007,4 +2007,8 @@ public abstract class StoredObject implements Displayable {
     public final void clearObjectLinks() {
         links = null;
     }
+
+    public static String toCode(String code) {
+        return code;
+    }
 }
