@@ -53,15 +53,23 @@ public final class InventoryFitmentPosition extends InventoryLocation {
     }
 
     public boolean canFit(InventoryItemType partNumber) {
-        return true;
+        return canFit(partNumber.getId());
+    }
+
+    public boolean canFit(InventoryItem item) {
+        return canFit(item.getPartNumberId());
     }
 
     public boolean canFit(Id partNumberId) {
-        return true;
+        return partNumberId != null && getAssembly().canFit(partNumberId);
     }
 
     @Override
     public final int getType() {
         return 14;
+    }
+
+    public InventoryItem getFittedItem() {
+        return get(InventoryItem.class, "Location=" + getId(), true);
     }
 }

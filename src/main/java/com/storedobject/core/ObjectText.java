@@ -4,6 +4,8 @@ import com.storedobject.common.Storable;
 
 public final class ObjectText<T extends StoredObject> implements Storable {
 
+    private T object;
+
     public ObjectText() {
     }
 
@@ -17,6 +19,7 @@ public final class ObjectText<T extends StoredObject> implements Storable {
     }
 
     public ObjectText(ObjectText<T> objectText) {
+        this.object = objectText.object;
     }
 
     public static <O extends StoredObject> ObjectText<O> create(Object value) {
@@ -27,20 +30,25 @@ public final class ObjectText<T extends StoredObject> implements Storable {
     }
 
     public void setObject(T object) {
+        this.object = object;
     }
 
     public void setText(String text) {
     }
 
     public Id getId() {
-        return null;
+        return object.getId();
     }
 
     public T getObject() {
-        return null;
+        return object;
     }
 
     public String getText() {
-        return null;
+        return object.toString();
+    }
+
+    public boolean isEmpty() {
+        return "".equals(getText());
     }
 }

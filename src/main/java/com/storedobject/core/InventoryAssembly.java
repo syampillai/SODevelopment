@@ -1,6 +1,7 @@
 package com.storedobject.core;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 
 /**
  * <p>An item can be an assembly, composed of one or more sub-items and each sub-item
@@ -94,6 +95,6 @@ public final class InventoryAssembly extends StoredObject {
     }
 
     public boolean canFit(Id partNumberId) {
-        return false;
+        return partNumberId.get().equals(BigInteger.ONE);
     }
 }
