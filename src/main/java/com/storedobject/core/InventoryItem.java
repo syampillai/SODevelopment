@@ -44,6 +44,10 @@ public class InventoryItem extends StoredObject {
         return "";
     }
 
+    public String getSerialNumberDisplay() {
+        return "";
+    }
+
     public void setStore(Id storeId) {
     }
 
@@ -76,6 +80,10 @@ public class InventoryItem extends StoredObject {
 
     public InventoryLocation getLocation() {
         return new InventoryBin();
+    }
+
+    public String getLocationDisplay() {
+        return "";
     }
 
     public InventoryLocation getRealLocation() {

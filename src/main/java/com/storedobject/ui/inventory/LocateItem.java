@@ -10,11 +10,11 @@ import com.storedobject.vaadin.CloseableView;
 public class LocateItem extends ObjectGrid<InventoryItem> implements CloseableView {
 
     public LocateItem() {
-        this(null, null);
+        this((String)null);
     }
 
     public LocateItem(String caption) {
-        this(caption, null);
+        this(caption, null, null, false);
     }
 
     public LocateItem(InventoryItemType partNumber) {
@@ -39,6 +39,14 @@ public class LocateItem extends ObjectGrid<InventoryItem> implements CloseableVi
 
     public LocateItem(String caption, InventoryItemType partNumber, boolean canEdit) {
         this(caption, partNumber, null, canEdit);
+    }
+
+    public LocateItem(Class<? extends InventoryItem> itemClass) {
+        this(null, itemClass, false);
+    }
+
+    public LocateItem(String caption, Class<? extends InventoryItem> itemClass) {
+        this(caption, null, itemClass, false);
     }
 
     public LocateItem(String caption, Class<? extends InventoryItem> itemClass, boolean canEdit) {
