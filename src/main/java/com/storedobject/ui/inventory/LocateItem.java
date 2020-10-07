@@ -22,11 +22,11 @@ public class LocateItem extends ObjectGrid<InventoryItem> implements CloseableVi
     }
 
     public LocateItem(boolean canEdit) {
-        this(null, null, canEdit);
+        this(null, null, null, canEdit);
     }
 
     public LocateItem(String caption, boolean canEdit) {
-        this(caption, null, canEdit);
+        this(caption, null, null, canEdit);
     }
 
     public LocateItem(InventoryItemType partNumber, boolean canEdit) {
@@ -38,6 +38,14 @@ public class LocateItem extends ObjectGrid<InventoryItem> implements CloseableVi
     }
 
     public LocateItem(String caption, InventoryItemType partNumber, boolean canEdit) {
+        this(caption, partNumber, null, canEdit);
+    }
+
+    public LocateItem(String caption, Class<? extends InventoryItem> itemClass, boolean canEdit) {
+        this(caption, null, itemClass, canEdit);
+    }
+
+    private LocateItem(String caption, InventoryItemType partNumber, Class<? extends InventoryItem> itemClass, boolean canEdit) {
         super(InventoryItem.class, StringList.create("Quantity", "SerialNumber", "InTransit", "Location"), true);
     }
 
