@@ -1608,17 +1608,7 @@ public abstract class PDF implements java.io.Closeable, com.storedobject.core.Co
          * @param color Color to be appended
          * @return This
          */
-        public Text append(java.awt.Color color) {
-            return null;
-        }
-
-        /**
-         * Appends a color to this text. This color will be used for further texts added.
-         *
-         * @param color Color to be appended
-         * @return This
-         */
-        public Text append(String color) {
+        public Text append(Color color) {
             return null;
         }
 
