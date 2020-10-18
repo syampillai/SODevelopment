@@ -24,6 +24,10 @@ public class Application extends com.storedobject.vaadin.Application implements 
         return false;
     }
 
+    public Id getBiometricDeviceId() {
+        return null;
+    }
+
     public TransactionManager getTransactionManager() {
         return null;
     }

@@ -1,13 +1,12 @@
 package com.storedobject.core;
 
-@SuppressWarnings("serial")
-public class Invalid_Account_Balance extends com.storedobject.core.Database_Id_Message {
+public class Invalid_Account_Balance extends Database_Id_Message {
 
-    public Invalid_Account_Balance(java.lang.String p1) {
+    public Invalid_Account_Balance(String message) {
         this();
     }
 
     private Invalid_Account_Balance() {
-        super((java.lang.String) null);
+        super(null);
     }
 }

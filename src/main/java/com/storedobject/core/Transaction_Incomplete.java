@@ -1,9 +1,8 @@
 package com.storedobject.core;
 
-import com.storedobject.common.SOException;
+public class Transaction_Incomplete extends Database_Id_Message {
 
-public class Transaction_Incomplete extends SOException {
-
-    public Transaction_Incomplete() {
+    public Transaction_Incomplete(String id) {
+        super(id);
     }
 }

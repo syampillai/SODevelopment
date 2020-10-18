@@ -1,6 +1,6 @@
 package com.storedobject.tools;
 
-import com.storedobject.common.SOException;
+import com.storedobject.core.SOException;
 
 public class Old_Class_Loaded extends SOException {
 
