@@ -70,6 +70,10 @@ public final class InventoryFitmentPosition extends InventoryLocation {
     }
 
     public InventoryItem getFittedItem() {
-        return get(InventoryItem.class, "Location=" + getId(), true);
+        return getFittedItem(null);
+    }
+
+    public InventoryItem getFittedItem(Transaction transaction) {
+        return get(transaction, InventoryItem.class, "Location=" + getId(), true);
     }
 }

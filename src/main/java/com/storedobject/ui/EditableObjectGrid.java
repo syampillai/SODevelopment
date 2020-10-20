@@ -141,6 +141,9 @@ public class EditableObjectGrid<T extends StoredObject> extends EditableGrid<T> 
     public void cancelEdit() {
     }
 
+    public void cancelRowEdit() {
+    }
+
     public void saveEdited() {
     }
 

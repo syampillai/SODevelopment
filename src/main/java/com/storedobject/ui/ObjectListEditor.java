@@ -42,9 +42,6 @@ public class ObjectListEditor<T extends StoredObject> extends EditableObjectGrid
         return null;
     }
 
-    public void cancelEditing() {
-    }
-
     public T selected() {
         return getSelected();
     }

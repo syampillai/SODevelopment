@@ -34,6 +34,10 @@ public interface EditableList<T> {
 
     boolean append(T item);
 
+    default void append(Iterable<T> items) {
+        items.forEach(this::append);
+    }
+
     default boolean add(int index, T item) {
         return add(item);
     }
@@ -45,4 +49,8 @@ public interface EditableList<T> {
     boolean undelete(T item);
 
     boolean update(T item);
+
+    default boolean isSavePending() {
+        return streamAll().anyMatch(o -> isEdited(o) || isDeleted(o));
+    }
 }
