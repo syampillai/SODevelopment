@@ -114,4 +114,9 @@ public class TextView extends View implements CloseableView, Transactional, Styl
     public void abort() {
         getApplication().access(super::abort);
     }
+
+    @Override
+    public boolean isNewLine() {
+        return false;
+    }
 }

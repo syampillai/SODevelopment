@@ -34,6 +34,11 @@ public class ELabel extends StyledText implements StyledBuilder, HasText {
     }
 
     @Override
+    public boolean isNewLine() {
+        return false;
+    }
+
+    @Override
     public StyledBuilder drawLine() {
         return this;
     }

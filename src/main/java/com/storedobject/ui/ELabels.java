@@ -39,6 +39,11 @@ public class ELabels extends Div implements StyledBuilder, HasText {
     }
 
     @Override
+    public boolean isNewLine() {
+        return false;
+    }
+
+    @Override
     public StyledBuilder getInternalStyledBuilder() {
         return null;
     }

@@ -26,4 +26,9 @@ public class Alert extends com.storedobject.vaadin.Alert implements StyledBuilde
     public Application getApplication() {
         return null;
     }
+
+    @Override
+    public boolean isNewLine() {
+        return false;
+    }
 }

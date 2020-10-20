@@ -45,6 +45,11 @@ public class ELabelField extends CustomField<String> implements StyledBuilder, H
     }
 
     @Override
+    public boolean isNewLine() {
+        return false;
+    }
+
+    @Override
     public StyledBuilder clearContent() {
         return this;
     }

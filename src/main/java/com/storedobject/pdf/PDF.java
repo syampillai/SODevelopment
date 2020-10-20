@@ -1724,6 +1724,12 @@ public abstract class PDF implements java.io.Closeable, com.storedobject.core.Co
         public Text newLine(boolean forceIt) {
             return null;
         }
+
+        @Override
+        public boolean isNewLine() {
+            return false;
+        }
+
         /**
          * Checks if empty or not.
          *
