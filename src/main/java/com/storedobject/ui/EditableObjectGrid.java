@@ -19,7 +19,7 @@ import java.util.stream.Stream;
  * @param <T>
  * @author Syam
  */
-public class EditableObjectGrid<T extends StoredObject> extends EditableGrid<T> implements ObjectGridData<T>, EditableDataGrid {
+public class EditableObjectGrid<T extends StoredObject> extends AbstractEditableGrid<T> implements ObjectGridData<T>, EditableDataGrid {
 
     T editingItem;
 
@@ -39,11 +39,11 @@ public class EditableObjectGrid<T extends StoredObject> extends EditableGrid<T> 
         this(objectClass, columns, new EditableObjectList<>(objectClass, any));
     }
 
-    public EditableObjectGrid(Class<T> objectClass, ObjectDataProvider<T, Void> dataProvider) {
+    public EditableObjectGrid(Class<T> objectClass, EditableList<T> dataProvider) {
         this(objectClass, null, dataProvider);
     }
 
-    public EditableObjectGrid(Class<T> objectClass, Iterable<String> columns, ObjectDataProvider<T, Void> dataProvider) {
+    public EditableObjectGrid(Class<T> objectClass, Iterable<String> columns, EditableList<T> dataProvider) {
         super(objectClass, columns);
     }
 

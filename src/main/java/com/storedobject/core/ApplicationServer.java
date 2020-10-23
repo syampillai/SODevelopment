@@ -2,6 +2,7 @@ package com.storedobject.core;
 
 import com.storedobject.pdf.PDFImage;
 
+import java.sql.Date;
 import java.util.List;
 import java.util.Properties;
 
@@ -14,6 +15,10 @@ public final class ApplicationServer {
     }
 
     protected static void revalidateDevice(DeviceLayout layout) {
+    }
+
+    public Date getDate() {
+        return DateUtility.today();
     }
 
     public Device getDevice() {

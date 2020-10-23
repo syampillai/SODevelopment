@@ -123,8 +123,32 @@ public class ObjectListProvider<T extends StoredObject, F> extends CallbackDataP
         return false;
     }
 
+    public final boolean add(T item, boolean refresh) {
+        return false;
+    }
+
     public boolean add(int index, T item) {
         return true;
+    }
+
+    public boolean add(int index, T item, boolean refresh) {
+        return true;
+    }
+
+    public final boolean append(T item) {
+        return true;
+    }
+
+    public final boolean append(T item, boolean refresh) {
+        return true;
+    }
+
+    public boolean append(int index, T item) {
+        return append(index, item, true);
+    }
+
+    public boolean append(int index, T item, boolean refresh) {
+        return add(index, item, refresh);
     }
 
     public boolean update(T item) {

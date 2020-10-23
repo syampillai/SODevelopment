@@ -4,7 +4,7 @@ import com.storedobject.core.JavaClassLoader;
 import com.storedobject.core.StoredObject;
 import com.storedobject.core.StoredObjectUtility;
 
-public class ObjectForestViewer<T extends StoredObject> extends AbstractObjectForest<T> {
+public class ObjectForestViewer<T extends StoredObject> extends ObjectForestEditor<T> {
 
     public ObjectForestViewer(Class<T> objectClass) {
         this(objectClass, false);
@@ -35,7 +35,7 @@ public class ObjectForestViewer<T extends StoredObject> extends AbstractObjectFo
     }
 
     public ObjectForestViewer(Class<T> objectClass, Iterable<String> columns, boolean any, String caption) {
-        super(objectClass, columns);
+        super(objectClass, columns, 0, caption);
     }
 
     public ObjectForestViewer(String className) throws Exception {

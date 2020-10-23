@@ -1,5 +1,6 @@
 package com.storedobject.core;
 
+import java.sql.Date;
 import java.util.Locale;
 
 public interface Device {
@@ -70,4 +71,7 @@ public interface Device {
     void showNotification(String caption, Throwable error);
     String getDevicePackageTag();
     MessageViewer getMessageViewer();
+
+    default void setDate(Date date) {
+    }
 }

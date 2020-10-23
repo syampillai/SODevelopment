@@ -51,6 +51,6 @@ public interface EditableList<T> {
     boolean update(T item);
 
     default boolean isSavePending() {
-        return streamAll().anyMatch(o -> isEdited(o) || isDeleted(o));
+        return streamAll().anyMatch(o -> isAdded(o) || isEdited(o) || isDeleted(o));
     }
 }

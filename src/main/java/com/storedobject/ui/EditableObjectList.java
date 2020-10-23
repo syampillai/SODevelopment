@@ -43,12 +43,12 @@ public class EditableObjectList<T extends StoredObject> extends ObjectList<T, Vo
     }
 
     @Override
-    public boolean append(T item) {
+    public boolean append(int index, T item, boolean refresh) {
         return false;
     }
 
     @Override
-    public boolean add(int index, T item) {
+    public boolean add(int index, T item, boolean refresh) {
         return true;
     }
 

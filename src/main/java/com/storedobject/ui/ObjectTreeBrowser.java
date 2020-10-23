@@ -70,12 +70,20 @@ public class ObjectTreeBrowser<T extends StoredObject> extends ObjectTree<T> {
         this((Class<T>) JavaClassLoader.getLogic(className), null, 0, null);
     }
 
+    public static <O extends StoredObject> ObjectTreeBrowser<O> create(Class<O> objectClass) {
+        return create(objectClass, ALL);
+    }
+
+    public static <O extends StoredObject> ObjectTreeBrowser<O> create(Class<O> objectClass, int actions) {
+        return create(objectClass, actions, null);
+    }
+
     public static <O extends StoredObject> ObjectTreeBrowser<O> create(Class<O> objectClass, int actions, String title) {
-        return null;
+        return new ObjectTreeBrowser<>(objectClass);
     }
 
     public static <O extends StoredObject> ObjectTreeBrowser<O> create(Class<O> objectClass, Iterable<String> columns, int actions, String title) {
-        return null;
+        return new ObjectTreeBrowser<>(objectClass);
     }
 
     protected boolean isActionAllowed(String action) {
