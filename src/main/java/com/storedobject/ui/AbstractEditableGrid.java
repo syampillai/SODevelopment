@@ -1,6 +1,7 @@
 package com.storedobject.ui;
 
 import com.storedobject.core.EditableList;
+import com.vaadin.flow.component.HasValue;
 
 import java.util.stream.Stream;
 
@@ -16,6 +17,17 @@ public abstract class AbstractEditableGrid<T> extends DataGrid<T> implements Edi
 
     public AbstractEditableGrid(Class<T> objectClass, Iterable<String> columns, EditableList<T> dataProvider) {
         super(objectClass, columns);
+    }
+
+    public void setEditOnSingleClick(boolean editOnSingleClick) {
+    }
+
+    public HasValue<?, ?> getField(String columnName) {
+        return null;
+    }
+
+    public boolean editItem(T item) {
+        return false;
     }
 
     public EditableList<T> getEditableList() {

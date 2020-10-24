@@ -52,10 +52,6 @@ public class EditableGrid<T> extends AbstractEditableGrid<T> implements Editable
     public void clear() {
     }
 
-    public boolean editItem(T item) {
-        return new Random().nextBoolean();
-    }
-
     @Override
     public void cancelEdit() {
     }

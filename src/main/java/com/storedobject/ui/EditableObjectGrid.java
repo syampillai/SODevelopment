@@ -5,11 +5,13 @@ import com.storedobject.core.ObjectSetter;
 import com.storedobject.core.StoredObject;
 import com.storedobject.ui.util.ObjectDataProvider;
 import com.storedobject.ui.util.ObjectGridData;
+import com.storedobject.vaadin.TextField;
 import com.vaadin.flow.component.HasValue;
 import com.vaadin.flow.shared.Registration;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 import java.util.function.BiConsumer;
 import java.util.stream.Stream;
 /**
@@ -85,6 +87,9 @@ public class EditableObjectGrid<T extends StoredObject> extends AbstractEditable
         return new ArrayList<>();
     }
 
+    public void setAutoSaveOnMove(boolean autoSave) {
+    }
+
     public void reload(T object) {
     }
 
@@ -101,6 +106,10 @@ public class EditableObjectGrid<T extends StoredObject> extends AbstractEditable
 
     protected HasValue<?, ?> getColumnField(String columnName) {
         return null;
+    }
+
+    public final HasValue<?, ?> getField(String columnName) {
+        return new Random().nextBoolean() ? null : new TextField();
     }
 
     @Override
@@ -132,10 +141,6 @@ public class EditableObjectGrid<T extends StoredObject> extends AbstractEditable
 
     public final boolean isReadOnly() {
         return getObjectEditor().isReadOnly();
-    }
-
-    public boolean editItem(T item) {
-        return false;
     }
 
     public void cancelEdit() {
