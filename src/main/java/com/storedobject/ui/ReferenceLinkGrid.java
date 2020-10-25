@@ -1,9 +1,6 @@
 package com.storedobject.ui;
 
-import com.storedobject.core.ObjectSearcher;
-import com.storedobject.core.StoredObject;
-import com.storedobject.core.StoredObjectLink;
-import com.storedobject.core.StoredObjectUtility;
+import com.storedobject.core.*;
 import com.storedobject.ui.util.LinkGridButtons;
 import com.storedobject.vaadin.View;
 

@@ -335,4 +335,8 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T> 
 
     public void setRawObject(StoredObject object) {
     }
+
+    public <L extends StoredObject> boolean acceptValueChange(ObjectLinkField<L> linkField, L item, int changeAction) {
+        return true;
+    }
 }

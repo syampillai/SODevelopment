@@ -26,6 +26,18 @@ public interface Detail {
     }
 
     /**
+     * Get the unique value that determines the uniqueness of the detail entries. By
+     * default, <code>null</code> is returned so that no uniqueness can be checked using this. (In most cases,
+     * {@link #getUniqueId()} may be enough unless some other type of values need to be checked).
+     *
+     * @param <R> Type of value that determines the uniqueness.
+     * @return Return the value to determine the uniqueness of the detail entries.
+     */
+    default <R> R getUniqueValue() {
+        return null;
+    }
+
+    /**
      * Copy the attribute values from another instance. (This method is no more in use and may be removed
      * in the future).
      *

@@ -1,5 +1,8 @@
 package com.storedobject.core;
 
+import java.util.HashSet;
+import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Stream;
 
 public interface EditableList<T> {
@@ -52,5 +55,16 @@ public interface EditableList<T> {
 
     default boolean isSavePending() {
         return streamAll().anyMatch(o -> isAdded(o) || isEdited(o) || isDeleted(o));
+    }
+
+    default <R> T getDuplicate(Function<T, R> value) {
+        if(value == null) {
+            return null;
+        }
+        Set<R> valuesSet = new HashSet<>();
+        return stream().filter(item -> {
+            R v = value.apply(item);
+            return v != null && !valuesSet.add(v);
+        }).findAny().orElse(null);
     }
 }

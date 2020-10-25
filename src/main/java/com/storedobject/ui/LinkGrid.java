@@ -1,5 +1,6 @@
 package com.storedobject.ui;
 
+import com.storedobject.core.EditorAction;
 import com.storedobject.core.StoredObject;
 import com.storedobject.core.StoredObjectLink;
 import com.storedobject.core.StoredObjectUtility;
@@ -180,9 +181,7 @@ public interface LinkGrid<T extends StoredObject> extends StoredObjectLink<T> {
     default void clear() {
     }
 
-    default void saveEdited() {
-    }
-
-    default void cancelEditing() {
+    default boolean canChange(T item, EditorAction editorAction) {
+        return true;
     }
 }

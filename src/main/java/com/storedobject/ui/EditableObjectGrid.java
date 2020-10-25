@@ -21,7 +21,7 @@ import java.util.stream.Stream;
  * @param <T>
  * @author Syam
  */
-public class EditableObjectGrid<T extends StoredObject> extends AbstractEditableGrid<T> implements ObjectGridData<T>, EditableDataGrid {
+public class EditableObjectGrid<T extends StoredObject> extends AbstractEditableGrid<T> implements ObjectGridData<T>, EditableDataGrid<T> {
 
     T editingItem;
 

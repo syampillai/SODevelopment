@@ -6,7 +6,7 @@ import com.vaadin.flow.component.HasValue;
 import java.util.Random;
 import java.util.stream.Stream;
 
-public class EditableGrid<T> extends AbstractEditableGrid<T> implements EditableDataGrid {
+public class EditableGrid<T> extends AbstractEditableGrid<T> implements EditableDataGrid<T> {
 
     private T editingItem;
 
