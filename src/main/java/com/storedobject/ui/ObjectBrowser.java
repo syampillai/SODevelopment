@@ -16,7 +16,7 @@ import java.util.stream.Stream;
 import static com.storedobject.core.EditorAction.ALL;
 import static com.storedobject.core.EditorAction.ALLOW_ANY;
 
-public class ObjectBrowser<T extends StoredObject> extends ObjectGrid<T> implements EditableDataGrid {
+public class ObjectBrowser<T extends StoredObject> extends ObjectGrid<T> implements EditableDataGrid<T> {
 
     protected final ButtonLayout buttonPanel = new ButtonLayout();
     protected Button add, edit, delete, search, filter, load, view, report, excel, audit, exit, save, cancel;
@@ -120,11 +120,11 @@ public class ObjectBrowser<T extends StoredObject> extends ObjectGrid<T> impleme
     protected void addExtraButtons() {
     }
 
-    protected boolean canDelete(T object) {
+    public boolean canDelete(T object) {
         return true;
     }
 
-    protected boolean canEdit(T object) {
+    public boolean canEdit(T object) {
         return true;
     }
 
