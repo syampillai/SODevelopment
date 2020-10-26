@@ -30,10 +30,9 @@ public interface Detail {
      * default, <code>null</code> is returned so that no uniqueness can be checked using this. (In most cases,
      * {@link #getUniqueId()} may be enough unless some other type of values need to be checked).
      *
-     * @param <R> Type of value that determines the uniqueness.
      * @return Return the value to determine the uniqueness of the detail entries.
      */
-    default <R> R getUniqueValue() {
+    default Object getUniqueValue() {
         return null;
     }
 
