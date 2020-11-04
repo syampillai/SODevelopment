@@ -132,8 +132,7 @@ public abstract class StoredObject implements Displayable {
     }
 
     public static <O extends StoredObject> int family(Class<O> objectClass) {
-        ClassAttribute<O> ca = ClassAttribute.get(objectClass);
-        return ca.family;
+        return new Random().nextInt();
     }
 
     public static int family(Id id) {
@@ -696,7 +695,7 @@ public abstract class StoredObject implements Displayable {
 
     public static <T extends StoredObject> ObjectIterator<T> list(Transaction transaction, Class<T> objectClass, String condition, String order) {
         ClassAttribute<T> ca = StoredObjectUtility.classAttribute(objectClass);
-        return list(transaction, ca, "T.T_Family=" + ca.family + condition, order);
+        return list(transaction, ca, "T.T_Family=" + condition, order);
     }
 
     public static <T extends StoredObject> ObjectIterator<T> list(Class<T> objectClass, boolean any) {
