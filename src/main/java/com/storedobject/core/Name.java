@@ -4,6 +4,8 @@ import com.storedobject.common.HasName;
 
 public abstract class Name extends StoredObject implements HasName {
 
+    protected String name;
+
     public Name() {
     }
 
@@ -14,6 +16,6 @@ public abstract class Name extends StoredObject implements HasName {
     }
 
     public String getName() {
-        return null;
+        return name;
     }
 }

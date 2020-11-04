@@ -1,12 +1,10 @@
 package com.storedobject.ui;
 
-import com.storedobject.core.ObjectSearcher;
 import com.storedobject.core.StoredObject;
+import com.storedobject.ui.util.AbstractObjectForestSupplier;
 import com.storedobject.ui.util.ObjectForestSupplier;
 
-public class ObjectForest<T extends StoredObject> extends AbstractObjectForest<T> {
-
-    ObjectForestSupplier.LinkNode currentLinkNode;
+public class ObjectForest<T extends StoredObject> extends BaseObjectForest<T> {
 
     public ObjectForest(Class<T> objectClass) {
         this(objectClass, false);
@@ -21,51 +19,16 @@ public class ObjectForest<T extends StoredObject> extends AbstractObjectForest<T
     }
 
     public ObjectForest(Class<T> objectClass, Iterable<String> columns, boolean any) {
-        super(objectClass, columns);
+        this(columns, new ObjectForestSupplier<>(objectClass, null, null, any));
     }
 
-    public <O extends StoredObject> void addObjectChangedListener(Class<O> objectClass, ObjectChangedListener<O> listener) {
+    ObjectForest(Iterable<String> columns, AbstractObjectForestSupplier<T, Void> dataProvider) {
+        super(columns, dataProvider);
     }
 
-    public void removeObjectChangedListener(ObjectChangedListener<T> listener) {
-    }
-
-    public <O extends StoredObject> void setObjectEditor(Class<O> objectClass, ObjectEditor<O> editor) {
-    }
-
-    public final <O extends StoredObject> ObjectEditor<O> getObjectEditor(Class<O> objectClass) {
-        return null;
-    }
-
-    protected <O extends StoredObject> ObjectEditor<O> createObjectEditor(Class<O> objectClass) {
-        return null;
-    }
-
-    /**
-     * Allow/disallow link editing.
-     *
-     * @param allowLinkEditing True if link editing needs to be allowed
-     */
-    public final void setAllowLinkEditing(boolean allowLinkEditing) {
-    }
-
-    /**
-     * Check whether link editing is allowed or not.
-     *
-     * @return True if link editing is allowed.
-     */
-    public final boolean isLinkEditingAllowed() {
-        return false;
-    }
-
-    public void setSplitView() {
-    }
-
-    public final <O extends StoredObject> ObjectSearcher<O> getObjectSearcher(Class<O> objectClass) {
-        return null;
-    }
-
-    protected <O extends StoredObject> ObjectSearcher<O> createObjectSearcher(Class<O> objectClass) {
-        return null;
+    @Override
+    public  <O extends StoredObject> O selected() {
+        //noinspection unchecked
+        return (O)getSelected();
     }
 }

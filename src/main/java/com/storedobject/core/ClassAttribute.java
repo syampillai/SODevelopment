@@ -3,23 +3,11 @@ package com.storedobject.core;
 import com.storedobject.common.StringList;
 
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
 
-/**
- * For internal use only.
- */
 public final class ClassAttribute<T extends StoredObject> {
-
-    protected String moduleName, tableName;
-    protected String[] attributes;
-    protected StringList displayColumns, protectedColumns, browseColumns, searchColumns, links;
-    private StringList extraFields;
-    protected String browseOrder;
-    protected boolean[] writeAllowed;
-    protected Method[] setMethods, getMethods, fileMethods;
-    protected int family, hints = -1;
-    protected boolean saveAllowed;
-    protected Class<T> objectClass;
-    protected int statusUI = 0;
 
     private ClassAttribute() {
     }
@@ -53,15 +41,20 @@ public final class ClassAttribute<T extends StoredObject> {
     }
 
     public String getModuleName() {
-        return moduleName;
+        return "";
     }
 
     public String getTableName() {
-        return tableName;
+        return "";
     }
 
     public Class<T> getObjectClass() {
-        return objectClass;
+        //noinspection unchecked
+        return new Random().nextBoolean() ? (Class<T>) Person.class : (Class<T>) Entity.class;
+    }
+
+    public <C extends T> List<Class<C>> listChildClasses(boolean fullTree) {
+        return new ArrayList<>();
     }
 
     public void unload() {
