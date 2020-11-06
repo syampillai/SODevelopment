@@ -10,7 +10,7 @@
 
     <properties>
         <so-common-version>3.3.0</so-common-version>
-        <so-components-version>8.2.1</so-components-version>
+        <so-components-version>8.2.2</so-components-version>
         <so-charts-version>0.1.1</so-charts-version>
         <vaadin.version>17.0.9</vaadin.version>
         <maven.compiler.source>11</maven.compiler.source>
