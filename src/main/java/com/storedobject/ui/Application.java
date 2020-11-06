@@ -3,13 +3,22 @@ package com.storedobject.ui;
 import com.storedobject.core.*;
 import com.storedobject.ui.util.AbstractContentGenerator;
 import com.storedobject.vaadin.ApplicationLayout;
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.progressbar.ProgressBar;
+
+import java.util.Random;
 
 public class Application extends com.storedobject.vaadin.Application implements Device, RunningLogic {
 
     @Override
     protected ApplicationLayout createLayout() {
         return null;
+    }
+
+    public void setSingleLogicMode(boolean singleLogicMode) {
+    }
+
+    public void execute(Logic logic) {
     }
 
     public static Application get() {
@@ -96,7 +105,7 @@ public class Application extends com.storedobject.vaadin.Application implements 
     }
 
     public boolean isMenuOpened() {
-        return true;
+        return new Random().nextBoolean();
     }
 
     public void openMenu() {
@@ -132,6 +141,10 @@ public class Application extends com.storedobject.vaadin.Application implements 
     }
 
     public String addResource(ContentProducer producer) {
+        return null;
+    }
+
+    public Component getAlertButton() {
         return null;
     }
 
@@ -176,6 +189,9 @@ public class Application extends com.storedobject.vaadin.Application implements 
 
     public BusyIndicator getBusyIndicator() {
         return new BusyIndicator((this));
+    }
+
+    void drawMenu(com.storedobject.vaadin.Application application) {
     }
 
     public class BusyIndicator extends ProgressBar {
