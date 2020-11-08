@@ -2,7 +2,9 @@ package com.storedobject.core;
 
 import com.storedobject.common.Range;
 
+import java.sql.Timestamp;
 import java.util.Calendar;
+import java.util.GregorianCalendar;
 
 public abstract class AbstractPeriod<T extends java.util.Date> extends Range<T> {
 
@@ -11,11 +13,11 @@ public abstract class AbstractPeriod<T extends java.util.Date> extends Range<T> 
     }
 
     public Calendar getCalendarFrom() {
-        return null;
+        return new GregorianCalendar();
     }
 
     public Calendar getCalendarTo() {
-        return null;
+        return new GregorianCalendar();
     }
 
     @Override
@@ -56,14 +58,24 @@ public abstract class AbstractPeriod<T extends java.util.Date> extends Range<T> 
 	}
     
 	protected String toDBString(T date) {
-        return null;
+        return "";
 	}
-    
-    public String getDBCondition() {
-        return null;
-    }
-    
-    public String getDBTimeCondition() {
-        return null;
-    }
+
+	public String getDBCondition() {
+		return " BETWEEN '" + toDBString(getFrom()) + "' AND '" + toDBString(getTo()) + "' ";
+	}
+
+	public String getDBCondition(TransactionManager tm) {
+		return " BETWEEN '" + toDBString(tm.dateGMT(getFrom())) + "' AND '" + toDBString(tm.dateGMT(getTo())) + "' ";
+	}
+
+	public String getDBTimeCondition() {
+		Timestamp t1 = com.storedobject.common.DateUtility.startTime(getFrom()), t2 = com.storedobject.common.DateUtility.endTime(getTo());
+		return " BETWEEN '" + Database.format(t1) + "' AND '" + Database.format(t2) + "' ";
+	}
+
+	public String getDBTimeCondition(TransactionManager tm) {
+		Timestamp t1 = tm.dateGMT(com.storedobject.common.DateUtility.startTime(getFrom())), t2 = tm.dateGMT(com.storedobject.common.DateUtility.endTime(getTo()));
+		return " BETWEEN '" + Database.format(t1) + "' AND '" + Database.format(t2) + "' ";
+	}
 }

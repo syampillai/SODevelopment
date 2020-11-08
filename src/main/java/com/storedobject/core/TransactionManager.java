@@ -6,7 +6,10 @@ import java.util.Properties;
 
 public final class TransactionManager {
 
+    private final Device device;
+
     public TransactionManager(Device device, String login) {
+        this.device = device;
     }
 
     public void reinit(char[] password) throws Exception {
@@ -18,11 +21,11 @@ public final class TransactionManager {
      * @return Session Id.
      */
     public Id getSession() {
-        return null;
+        return new Id();
     }
 
     public Device getDevice() {
-        return null;
+        return device;
     }
 
     public boolean needsApprovals() {
@@ -30,7 +33,7 @@ public final class TransactionManager {
     }
 
     public static TransactionManager create(Device device, Properties loginProperties) {
-        return null;
+        return new TransactionManager(null, "");
     }
 
     /**
@@ -61,7 +64,7 @@ public final class TransactionManager {
      * @return Newly created transaction.
      */
     public PseudoTransaction createPseudoTransaction() {
-        return null;
+        return new PseudoTransaction(this);
     }
 
     public boolean verify(char[] password) {
@@ -69,18 +72,18 @@ public final class TransactionManager {
     }
 
     public SystemUser getUser() {
-        return null;
+        return new SystemUser();
     }
 
     public void setEntity(SystemEntity entity) {
     }
 
     public SystemEntity getEntity() {
-        return null;
+        return new SystemEntity();
     }
 
     public Currency getCurrency() {
-        return null;
+        return Currency.getInstance("INR");
     }
 
     @FunctionalInterface
@@ -101,22 +104,30 @@ public final class TransactionManager {
     }
 
     public String format(Date date) {
-        return null;
+        return "";
+    }
+
+    public <D extends java.util.Date> D date(D dateGMT) {
+        return dateGMT;
+    }
+
+    public <D extends java.util.Date> D dateGMT(D date) {
+        return date;
     }
 
     public Id checkType(StoredObject host, Id id, Class<? extends StoredObject> objectClass) throws Exception {
-        return null;
+        return id;
     }
 
     public Id checkType(StoredObject host, Id id, Class<? extends StoredObject> objectClass, boolean allowEmpty) throws Exception {
-        return null;
+        return id;
     }
 
     public Id checkTypeAny(StoredObject host, Id id, Class<? extends StoredObject> objectClass) throws Exception {
-        return null;
+        return id;
     }
 
     public Id checkTypeAny(StoredObject host, Id id, Class<? extends StoredObject> objectClass, boolean allowEmpty) throws Exception {
-        return null;
+        return id;
     }
 }

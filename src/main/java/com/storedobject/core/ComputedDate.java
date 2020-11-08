@@ -74,7 +74,7 @@ public class ComputedDate extends Date implements ComputedValue<Date>, Storable 
 
 	@Override
 	public String getStorableValue() {
-		return "ROW('" + Database.get().format(this) + "','" + (computed ? "t" : "f") + "')::CDATE";
+		return "ROW('" + Database.format(this) + "','" + (computed ? "t" : "f") + "')::CDATE";
 	}
 
 	public boolean isComputed() {
@@ -92,13 +92,14 @@ public class ComputedDate extends Date implements ComputedValue<Date>, Storable 
 
 	@Override
 	public boolean equals(Object another) {
-		if(another == null || !(another instanceof ComputedDate)) {
+		if(!(another instanceof ComputedDate)) {
 			return false;
 		}
 		ComputedDate cd = (ComputedDate)another;
 		return cd.computed == computed && DateUtility.isSameDate(this, cd);
 	}
 	
+	@SuppressWarnings("MethodDoesntCallSuperMethod")
 	@Override
 	public ComputedDate clone() {
 		return new ComputedDate(this);

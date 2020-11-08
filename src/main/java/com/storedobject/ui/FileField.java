@@ -7,14 +7,18 @@ import com.vaadin.flow.component.Component;
 public class FileField extends AbstractObjectField<StreamData> {
 
     public FileField() {
-        this(null,true, ObjectField.Type.FILE);
+        this(ObjectField.Type.FILE);
     }
 
     public FileField(String caption) {
-        this(caption,true, ObjectField.Type.FILE);
+        this(caption, ObjectField.Type.FILE);
     }
 
-    public FileField(String label, boolean allowUpload, ObjectField.Type type) {
+    public FileField(ObjectField.Type... types) {
+        super(StreamData.class,false);
+    }
+
+    public FileField(String label, ObjectField.Type... types) {
         super(StreamData.class,false);
     }
 

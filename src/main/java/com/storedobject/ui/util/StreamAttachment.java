@@ -19,6 +19,10 @@ public class StreamAttachment {
         return null;
     }
 
+    public int getAttachmentType() {
+        return 1;
+    }
+
     void load() {
     }
 

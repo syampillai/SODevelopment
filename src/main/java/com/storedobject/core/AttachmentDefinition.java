@@ -13,9 +13,8 @@ public class AttachmentDefinition extends StoredObject {
     public void setClassName(String className) {
     }
 
-    @Column(order = 100)
     public String getClassName() {
-        return null;
+        return "";
     }
 
     public void setDisplayOrder(int displayOrder) {
@@ -31,7 +30,7 @@ public class AttachmentDefinition extends StoredObject {
 
     @Column(order = 300)
     public String getName() {
-        return null;
+        return "";
     }
 
     public void setType(int type) {
@@ -42,12 +41,12 @@ public class AttachmentDefinition extends StoredObject {
         return 0;
     }
 
-    public static String[] getTypeValues() {
-        return null;
+    public static String[] getTypeBitValues() {
+        return new String[0];
     }
 
     public static String getTypeValue(int value) {
-        return null;
+        return "";
     }
 
     public String getTypeValue() {
@@ -59,7 +58,7 @@ public class AttachmentDefinition extends StoredObject {
 
     @Column(order = 500, required = false)
     public String getFileClassName() {
-        return null;
+        return "";
     }
 
     public void setMandatory(boolean mandatory) {
@@ -75,14 +74,14 @@ public class AttachmentDefinition extends StoredObject {
 
     @Column(order = 700, required = false)
     public String getCaption() {
-        return null;
+        return "";
     }
 
     public UIFieldMetadata getMetadata() {
-        return null;
+        return new UIFieldMetadata();
     }
 
     public Class<? extends FileData> getFileClass() {
-        return null;
+        return FileData.class;
     }
 }

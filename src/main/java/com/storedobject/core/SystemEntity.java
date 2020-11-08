@@ -22,29 +22,29 @@ public final class SystemEntity extends StoredObject implements RequiresApproval
 	}
 
 	public String getName() {
-		return null;
+		return "";
 	}
 
 	public String getLocation() {
-		return null;
+		return "";
 	}
 
 	public String getCurrency() {
-		return null;
+		return "";
 	}
 
 	public void setCurrency(String currency) {
 	}
 
 	public Id getEntityId() {
-		return null;
+		return new Id();
 	}
 
 	public void setEntity(BigDecimal idValue) {
 	}
 
 	public Entity getEntity() {
-		return null;
+		return new Entity();
 	}
 
 	public int getStatus() {
@@ -58,18 +58,25 @@ public final class SystemEntity extends StoredObject implements RequiresApproval
 	}
 
 	public Date getWorkingDate() {
-		return null;
+		return DateUtility.today();
+	}
+
+	public String getTimeZone() {
+		return "";
+	}
+
+	public void setTimeZone(String timeZone) {
 	}
 
 	public void setStartOfFinancialYear(Date startDate) {
 	}
 
 	public Date getStartOfFinancialYear() {
-		return null;
+		return DateUtility.today();
 	}
 
 	public Date getEndOfFinancialYear() {
-		return null;
+		return DateUtility.today();
 	}
 	
     public void setLogoName(String logoName) {
@@ -91,28 +98,36 @@ public final class SystemEntity extends StoredObject implements RequiresApproval
 	}
 
 	public String getAlternateLocaleCountry() {
-		return null;
+		return "";
 	}
 
 	public void setAlternateLocaleCountry(String alternateLocaleCountry) {
 	}
 	
 	public Locale getAlternateLocale() {
-		return null;
+		return Locale.ENGLISH;
 	}
 	
 	public void setAlternateLocale(Locale locale) {
 	}
 	
 	protected static Locale getLocale(String localeCountry, String localeLanguage) {
-		return null;
+		return Locale.ENGLISH;
 	}
 	
 	public static SystemEntity get() {
-		return null;
+		return new SystemEntity();
 	}
 	
 	public static Currency getDefaultCurrency() {
-		return null;
+		return Currency.getInstance("");
+	}
+
+	public <D extends java.util.Date> D dateGMT(D date) {
+		return date;
+	}
+
+	public <D extends java.util.Date> D date(D dateGMT) {
+		return dateGMT;
 	}
 }
