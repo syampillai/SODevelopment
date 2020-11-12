@@ -4,6 +4,8 @@ import com.storedobject.core.StoredObject;
 import com.storedobject.core.StreamData;
 import com.vaadin.flow.component.Component;
 
+import java.util.Random;
+
 public class FileField extends AbstractObjectField<StreamData> {
 
     public FileField() {
@@ -24,6 +26,9 @@ public class FileField extends AbstractObjectField<StreamData> {
 
     public static <O extends StoredObject> boolean canCreate(Class<O> objectClass) {
         return ObjectGetField.canCreate(objectClass);
+    }
+
+    public void allowLinking() {
     }
 
     @Override
@@ -72,6 +77,11 @@ public class FileField extends AbstractObjectField<StreamData> {
 
     public boolean isVideo() {
         return false;
+    }
+
+    @Override
+    public final boolean isRequired() {
+        return new Random().nextBoolean();
     }
 
     public void disallowLinking() {

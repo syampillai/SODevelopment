@@ -5,6 +5,7 @@ import com.storedobject.common.Storable;
 import java.math.BigDecimal;
 import java.util.Currency;
 import java.util.Hashtable;
+import java.util.Random;
 
 public final class Money implements Storable, Comparable<Money> {
 
@@ -70,7 +71,7 @@ public final class Money implements Storable, Comparable<Money> {
 	}
 	
 	public Money zero() {
-		return this;
+		return new Money();
 	}
 	
 	public Rate getBuyingRate(Currency currency) {
@@ -98,159 +99,159 @@ public final class Money implements Storable, Comparable<Money> {
 	}
 	
 	public Money convert(Currency currency) {
-		return this;
+		return new Money();
 	}
 	
 	public Money buy(Currency currency) {
-		return this;
+		return new Money();
 	}
 	
 	public Money sell(Currency currency) {
-		return this;
+		return new Money();
 	}
 
 	public Money add(String amount) {
-		return this;
+		return new Money();
 	}
 
 	public Money add(BigDecimal amount) {
-		return this;
+		return new Money();
 	}
 
 	public Money add(Money amount) {
-		return this;
+		return new Money();
 	}
 	
 	public Money subtract(String amount) {
-		return this;
+		return new Money();
 	}
 
 	public Money subtract(BigDecimal amount) {
-		return this;
+		return new Money();
 	}
 
 	public Money subtract(Money amount) {
-		return this;
+		return new Money();
 	}
 
 	public Money multiply(Quantity quantity) {
-		return this;
+		return new Money();
 	}
 
 	public Money multiply(double multiplicand) {
-		return this;
+		return new Money();
 	}
 
 	public Money multiply(BigDecimal multiplicand) {
-		return this;
+		return new Money();
 	}
 
 	public Money multiply(DecimalNumber multiplicand) {
-		return this;
+		return new Money();
 	}
 
 	public Money multiply(Rate multiplicand) {
-		return this;
+		return new Money();
 	}
 	
 	public Money percentage(double percentage) {
-		return this;
+		return new Money();
 	}
 
 	public Money percentage(BigDecimal percentage) {
-		return this;
+		return new Money();
 	}
 
 	public Money percentage(DecimalNumber percentage) {
-		return this;
+		return new Money();
 	}
 
 	public Money percentage(Rate percentage) {
-		return this;
+		return new Money();
 	}
 
 	public Money divide(double divisor) {
-		return this;
+		return new Money();
 	}
 
 	public Money divide(BigDecimal divisor) {
-		return this;
+		return new Money();
 	}
 
 	public Money divide(Rate divisor) {
-		return this;
+		return new Money();
 	}
 
 	public Money divide(Quantity quantity) {
-		return this;
+		return new Money();
 	}
 
 	public Money negate() {
-		return this;
+		return new Money();
 	}
 	
     public Money absolute() {
-		return this;
+		return new Money();
     }
 	
 	public Money round() {
-		return this;
+		return new Money();
 	}
 	
 	public Money roundUp() {
-		return this;
+		return new Money();
 	}
 
 	public Money roundDown() {
-		return this;
+		return new Money();
 	}
 
     public boolean isGreaterThan(Money another) {
-		return false;
+		return new Random().nextBoolean();
     }
 
     public boolean isGreaterThan(long value) {
-		return false;
+		return new Random().nextBoolean();
     }
 
     public boolean isLessThan(Money another) {
-		return false;
+		return new Random().nextBoolean();
     }
 
     public boolean isLessThan(long value) {
-		return false;
+		return new Random().nextBoolean();
     }
 
     public boolean isGreaterThanOrEqual(Money another) {
-		return false;
+		return new Random().nextBoolean();
     }
 
     public boolean isGreaterThanOrEqual(long value) {
-		return false;
+		return new Random().nextBoolean();
     }
 
     public boolean isLessThanOrEqual(Money another) {
-		return false;
+		return new Random().nextBoolean();
     }
 
     public boolean isLessThanOrEqual(long value) {
-		return false;
+		return new Random().nextBoolean();
     }
 
     public boolean isZero() {
-		return false;
+		return new Random().nextBoolean();
     }
 
     public boolean isDebit() {
-		return false;
+		return new Random().nextBoolean();
     }
     
     public boolean isNegative() {
-		return false;
+		return new Random().nextBoolean();
     }
 
     public boolean isCredit() {
-		return false;
+		return new Random().nextBoolean();
     }
     
     public boolean isPositive() {
@@ -258,75 +259,81 @@ public final class Money implements Storable, Comparable<Money> {
     }
 
 	public static String format(double value) {
-		return "";
+		return new Random().nextBoolean() + "";
 	}
 
 	public static String format(double value, boolean separated) {
-		return "";
+		return new Random().nextBoolean() + "";
 	}
 
 	public static String format(double value, int decimals) {
-		return "";
+		return new Random().nextBoolean() + "";
 	}
 
 	public static String format(double value, int decimals, boolean separated) {
-		return "";
+		return new Random().nextBoolean() + "";
 	}
 
 	public static String format(String s, int decimals, boolean separated) {
-		return "";
+		return new Random().nextBoolean() + "";
 	}
 
 	public String toString(boolean showSymbol) {
-		return "";
+		return new Random().nextBoolean() + "";
 	}
 
 	public static String getSymbol(Currency currency) {
-		return "";
+		return new Random().nextBoolean() + "";
 	}
 
 	@Override
 	public String getStorableValue() {
-		return "";
+		return new Random().nextBoolean() + "";
 	}
 
 	@Override
 	public int compareTo(@SuppressWarnings("NullableProblems") Money money) {
-		return 0;
+		return new Random().nextInt();
 	}
 	
 	public String words() {
-		return "";
+		return new Random().nextBoolean() + "";
 	}
 	
 	public static class List extends Hashtable<Currency, Money> {
 		
 		public List add(Money money) {
+			put(defaultCurrency, new Money());
 			return this;
 		}
 		
 		public List add(List moneyList) {
+			put(defaultCurrency, new Money());
 			return this;
 		}
 
 		public List subtract(Money money) {
+			put(defaultCurrency, new Money());
 			return this;
 		}
 		
 		public List subtract(List moneyList) {
+			put(defaultCurrency, new Money());
 			return this;
 		}
 		
 		public boolean isZero() {
+			put(defaultCurrency, new Money());
 			return true;
 		}
 		
 		public Money.List negate() {
+			put(defaultCurrency, new Money());
 			return this;
 		}
 		
 		public String toString(boolean withZeros) {
-			return "";
+			return new Random().nextBoolean() + "";
 		}
 	}
 }

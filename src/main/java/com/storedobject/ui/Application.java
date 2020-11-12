@@ -2,7 +2,6 @@ package com.storedobject.ui;
 
 import com.storedobject.core.*;
 import com.storedobject.ui.util.AbstractContentGenerator;
-import com.storedobject.vaadin.ApplicationLayout;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.progressbar.ProgressBar;
 
@@ -10,8 +9,19 @@ import java.util.Random;
 
 public class Application extends com.storedobject.vaadin.Application implements Device, RunningLogic {
 
+    public Application() {
+        this(null);
+    }
+
+    public Application(ApplicationLayout applicationLayout) {
+        this(applicationLayout, false);
+    }
+
+    public Application(ApplicationLayout applicationLayout, boolean singleLogicMode) {
+    }
+
     @Override
-    protected ApplicationLayout createLayout() {
+    protected final ApplicationLayout createLayout() {
         return null;
     }
 

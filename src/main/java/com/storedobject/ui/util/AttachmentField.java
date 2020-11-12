@@ -18,7 +18,4 @@ public class AttachmentField extends TranslatedField<StreamAttachment, StreamDat
     public boolean isEmpty() {
         return false;
     }
-
-    void updated() {
-    }
 }
