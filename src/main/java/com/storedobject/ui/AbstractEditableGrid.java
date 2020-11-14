@@ -91,4 +91,10 @@ public abstract class AbstractEditableGrid<T> extends DataGrid<T> implements Edi
     }
 
     protected abstract void cancelEdit();
+
+    public void clear() {
+    }
+
+    public void changed(T item, int changeAction) {
+    }
 }

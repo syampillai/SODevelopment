@@ -146,13 +146,13 @@ public class EditableObjectGrid<T extends StoredObject> extends AbstractEditable
     public void cancelEdit() {
     }
 
-    public void cancelRowEdit() {
-    }
-
     public void saveEdited() {
     }
 
     public final T getEditingItem() {
         return editingItem;
+    }
+
+    public void validateData(T item) throws Exception {
     }
 }

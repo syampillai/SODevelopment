@@ -99,9 +99,6 @@ public class ObjectListEditor<T extends StoredObject> extends EditableObjectGrid
     public void setAllowSaveAll(boolean allowSaveAll) {
     }
 
-    public final void setObjectEditor(ObjectEditor<T> editor) {
-    }
-
     public void view() {
     }
 

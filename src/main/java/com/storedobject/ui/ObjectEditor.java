@@ -8,7 +8,9 @@ import com.vaadin.flow.component.Focusable;
 import com.vaadin.flow.component.HasComponents;
 import com.vaadin.flow.component.HasValue;
 
+import java.util.Random;
 import java.util.function.Function;
+import java.util.function.Predicate;
 
 public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T> implements Transactional, ObjectSetter<T>,
         ObjectChangedListener<T>, ObjectEditorListener, ObjectProvider<T>, AlertHandler, TransactionCreator {
@@ -90,6 +92,12 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T> 
     }
 
     public void removeObjectEditorListener(ObjectEditorListener listener) {
+    }
+
+    public void addValidator(Predicate<T> validator) {
+    }
+
+    public void removeValidator(Predicate<T> validator) {
     }
 
     protected void createExtraButtons() {
@@ -331,6 +339,13 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T> 
 
     @Override
     public void setTransactionCreator(TransactionCreator transactionCreator) {
+    }
+
+    public void setBuffered(boolean buffered) {
+    }
+
+    public final boolean isBuffered() {
+        return new Random().nextBoolean();
     }
 
     public void setRawObject(StoredObject object) {
