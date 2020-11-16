@@ -5,26 +5,52 @@ import com.storedobject.core.TransactionManager;
 
 import java.io.InputStream;
 
-public abstract class Content implements ContentProducer {
+/**
+ * Content coming from an {@link InputStream} that can be viewed or downloaded
+ * (via {@link Application#view(String, ContentProducer)} or {@link Application#download(ContentProducer)}).
+ *
+ * @author @Syam
+ */
+public class Content implements ContentProducer {
 
-    private final InputStream stream;
+    private final InputStream content;
+    private final String mimeType, fileExtension;
 
-    public Content(InputStream stream) {
-        this.stream = stream;
+    /**
+     * Constructor.
+     *
+     * @param content Content.
+     * @param mimeType Content type.
+     * @param fileExtension File extension.
+     */
+    public Content(InputStream content, String mimeType, String fileExtension) {
+        this.content = content;
+        this.mimeType = mimeType;
+        this.fileExtension = fileExtension;
     }
 
     @Override
-    public void produce() {
+    public final void produce() {
     }
 
     @Override
     public final InputStream getContent() {
-        return stream;
+        return content;
     }
 
     @Override
     public String getFileName() {
         return null;
+    }
+
+    @Override
+    public final String getContentType() {
+        return mimeType;
+    }
+
+    @Override
+    public final String getFileExtension() {
+        return fileExtension;
     }
 
     @Override
