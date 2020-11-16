@@ -113,6 +113,10 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T> 
         return false;
     }
 
+    public boolean isReadOnly() {
+        return true;
+    }
+
     public void doSave() {
     }
 
