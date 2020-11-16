@@ -9,7 +9,7 @@ import java.io.InputStream;
  * Content coming from an {@link InputStream} that can be viewed or downloaded
  * (via {@link Application#view(String, ContentProducer)} or {@link Application#download(ContentProducer)}).
  *
- * @author @Syam
+ * @author Syam
  */
 public class Content implements ContentProducer {
 

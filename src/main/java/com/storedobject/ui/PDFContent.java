@@ -9,7 +9,7 @@ import java.io.InputStream;
  * PDF content coming from an {@link InputStream} that can be viewed or downloaded
  * (via {@link Application#view(String, ContentProducer)} or {@link Application#download(ContentProducer)}).
  *
- * @author @Syam
+ * @author Syam
  */
 public final class PDFContent extends Content {
 
