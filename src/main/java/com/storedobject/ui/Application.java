@@ -114,6 +114,12 @@ public class Application extends com.storedobject.vaadin.Application implements 
     public void setDeviceLayout(DeviceLayout layout) {
     }
 
+    public void loadStyles(String textContentName) {
+    }
+
+    public void logout() {
+    }
+
     public boolean isMenuOpened() {
         return new Random().nextBoolean();
     }
