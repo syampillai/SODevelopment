@@ -3,7 +3,7 @@ package com.storedobject.core;
 import com.storedobject.common.Displayable;
 import com.storedobject.common.StringList;
 
-import java.io.BufferedReader;
+import java.io.LineNumberReader;
 import java.io.InputStream;
 import java.io.Reader;
 import java.io.Writer;
@@ -293,10 +293,10 @@ public abstract class StoredObject implements Displayable {
     public void setRawValue(String attributeName, String rawValue) throws Exception {
     }
 
-    public void load(BufferedReader in) throws Exception {
+    public void load(LineNumberReader in) throws Exception {
     }
 
-    public static StoredObject create(BufferedReader in) throws Exception {
+    public static StoredObject create(LineNumberReader in) throws Exception {
         return new Person();
     }
 
