@@ -927,7 +927,7 @@ public abstract class PDF implements java.io.Closeable, com.storedobject.core.Co
      * @return Transaction Manager
      */
     public final TransactionManager getTransactionManager() {
-        return null;
+        return new TransactionManager(null, null);
     }
 
     /**

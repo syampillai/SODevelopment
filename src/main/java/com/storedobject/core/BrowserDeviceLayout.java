@@ -8,10 +8,15 @@ public class BrowserDeviceLayout extends DeviceLayout {
     public static void columns(Columns columns) {
     }
 
-    public void setLoginBackgroundImageName(String loginBackgroundImageName) {
+    @Override
+    public int getSupportedDevices() {
+        return 0;
     }
 
-    public String getLoginBackgroundImageName() {
+    public void setLoginImageName(String loginImageName) {
+    }
+
+    public String getLoginImageName() {
         return "";
     }
 
@@ -20,10 +25,5 @@ public class BrowserDeviceLayout extends DeviceLayout {
 
     public String getExitSite() {
         return "";
-    }
-
-    @Override
-    public int getSupportedDevices() {
-        return 1;
     }
 }

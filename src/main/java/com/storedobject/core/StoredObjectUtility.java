@@ -102,7 +102,7 @@ public final class StoredObjectUtility {
     }
 
     public static StringList searchColumns(Class<? extends StoredObject> objectClass) {
-        return null;
+        return StringList.create("");
     }
 
     public static StringList protectedColumns(Class<? extends StoredObject> objectClass) {
@@ -134,7 +134,7 @@ public final class StoredObjectUtility {
     }
 
     public static MethodList[] createMethodLists(Class<?> objectClass, StringList attributeNames) {
-        return null;
+        return new MethodList[0];
     }
 
     public static class MethodList implements MethodInvoker {

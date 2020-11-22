@@ -28,7 +28,7 @@ public class StreamData extends StoredObject {
 	}
 
 	public final String getMimeType() {
-		return null;
+		return "";
 	}
 
 	public boolean isLink() {

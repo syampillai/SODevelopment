@@ -39,7 +39,7 @@ public final class MediaFile extends Name {
     }
 
     public String getMimeType() {
-        return null;
+        return "";
     }
 
     public String getFileName() {

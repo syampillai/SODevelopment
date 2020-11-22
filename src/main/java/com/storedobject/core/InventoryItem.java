@@ -168,7 +168,7 @@ public class InventoryItem extends StoredObject {
     }
 
     public static InventoryItem getByPartNumberId(String serialNumber, Id partNumber) {
-        return new InventoryItem();
+        return new Random().nextBoolean() ? new InventoryItem() : null;
     }
 
     public static <T extends InventoryItem> T getByPartNumber(Class<T> itemClass, String serialNumber, String partNumber) {

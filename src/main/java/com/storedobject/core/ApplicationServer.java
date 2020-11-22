@@ -3,6 +3,7 @@ package com.storedobject.core;
 import com.storedobject.pdf.PDFImage;
 
 import java.sql.Date;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
@@ -104,6 +105,11 @@ public final class ApplicationServer {
         return true;
     }
 
+    public boolean login(WebBiometric biometric, String id, String type, String authenticatorData,
+                         String clientDataJSON, String signature, String userHandle, boolean b) {
+        return false;
+    }
+
     public boolean isAdmin() {
         return false;
     }
@@ -138,7 +144,7 @@ public final class ApplicationServer {
     }
 
     public TransactionManager getTransactionManager() {
-        return null;
+        return new TransactionManager(null, null);
     }
 
     public String getDateFormat() {
@@ -149,7 +155,7 @@ public final class ApplicationServer {
     }
 
     public static String runMode() {
-        return null;
+        return "";
     }
 
     public synchronized static void initialize(String propertiesFileName) {
@@ -171,6 +177,6 @@ public final class ApplicationServer {
     }
 
     public List<Logic> populateMenu(ApplicationMenu menu, SystemUser menuUser) {
-        return null;
+        return new ArrayList<>();
     }
 }

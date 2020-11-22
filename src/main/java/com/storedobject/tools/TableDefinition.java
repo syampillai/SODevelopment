@@ -4,12 +4,12 @@ import java.io.InputStream;
 import java.io.Writer;
 import java.util.ArrayList;
 
+import com.storedobject.common.StyledBuilder;
 import com.storedobject.core.Columns;
 import com.storedobject.core.JavaClass;
 import com.storedobject.core.ObjectIterator;
 import com.storedobject.core.StoredObject;
 import com.storedobject.core.TransactionManager;
-import com.storedobject.ui.StyledBuilder;
 
 public class TableDefinition extends StoredObject {
 

@@ -3,6 +3,7 @@ package com.storedobject.core;
 import java.sql.Date;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 /**
  * Representation of a "window" of entries (instances of {@link LedgerEntry}) of the "Transaction Ledger".
@@ -147,7 +148,7 @@ public final class LedgerWindow {
      * @return Most recent transaction date. This method returns <code>null</code> if transactions are not yet loaded.
      */
     public Date getMostRecentDate() {
-        return DateUtility.today();
+        return new Random().nextBoolean() ? DateUtility.today() : null;
     }
 
     /**
@@ -156,7 +157,7 @@ public final class LedgerWindow {
      * @return Earliest transaction date. This method returns <code>null</code> if transactions are not fully loaded.
      */
     public Date getEarliestDate() {
-        return DateUtility.today();
+        return new Random().nextBoolean() ? DateUtility.today() : null;
     }
 
     /**

@@ -11,7 +11,7 @@ public interface HasContacts {
     }
 
     default String getContact(String contactType) {
-        return null;
+        return "";
     }
 
     default String getContactRaw(String contactType) {

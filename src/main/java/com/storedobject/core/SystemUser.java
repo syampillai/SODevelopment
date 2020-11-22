@@ -33,11 +33,11 @@ public final class SystemUser extends StoredObject implements RequiresApproval {
     }
 
     public Person getPerson() {
-        return null;
+        return new Person();
     }
 
     public String getLogin() {
-        return null;
+        return "";
     }
 
     public int getStatus() {

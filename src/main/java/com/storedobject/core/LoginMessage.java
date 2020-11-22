@@ -48,7 +48,26 @@ public class LoginMessage extends StoredObject {
     public void setDisableLogin(boolean disableLogin) {
     }
 
-    public boolean getDisableLogin() {
+	public void setPriority(int priority) {
+	}
+
+	public int getPriority() {
+		return 0;
+	}
+
+	public static String[] getPriorityValues() {
+		return new String[0];
+	}
+
+	public static String getPriorityValue(int value) {
+    	return "";
+	}
+
+	public String getPriorityValue() {
+		return "";
+	}
+
+	public boolean getDisableLogin() {
     	return false;
     }
 

@@ -12,7 +12,7 @@ public class PasswordPolicy extends StoredObject {
     }
 
     public String getDataClass() {
-        return null;
+        return "";
     }
 
     public void setMinimumLength(int minimumLength) {
@@ -37,15 +37,15 @@ public class PasswordPolicy extends StoredObject {
     }
 
     public static String[] getRequirementValues() {
-        return null;
+        return new String[0];
     }
 
     public static String getRequirementValue(int value) {
-        return null;
+        return "";
     }
 
     public String getRequirementValue() {
-        return null;
+        return "";
     }
 
     public void setRequireMixedcase(boolean requireMixedcase) {
@@ -69,23 +69,37 @@ public class PasswordPolicy extends StoredObject {
         return 0;
     }
 
+    public void setReuseHistory(int reuseHistory) {
+    }
+
+    public int getReuseHistory() {
+        return 0;
+    }
+
+    public void setInitialPassword(String initialPassword) {
+    }
+
+    public String getInitialPassword() {
+        return "";
+    }
+
     public String describe() {
-        return null;
+        return "";
     }
 
     public String apply(char[] password) {
-        return null;
+        return "";
     }
 
     public static PasswordPolicy get(Id owner) {
-        return null;
+        return new PasswordPolicy();
     }
 
     public static <T extends StoredObject> PasswordPolicy get(T owner) {
-        return null;
+        return new PasswordPolicy();
     }
 
     public static <T extends StoredObject> PasswordPolicy getForClass(Class<T> owner) {
-        return null;
+        return new PasswordPolicy();
     }
 }

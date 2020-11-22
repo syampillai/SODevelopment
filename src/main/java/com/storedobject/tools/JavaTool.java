@@ -19,15 +19,15 @@ public class JavaTool {
 	}
 	
 	public static String getSourceDirectory() {
-		return null;
+		return "";
 	}
 
 	public static String getClassDirectory() {
-		return null;
+		return "";
 	}
 	
 	public static String getJarsDirectory() {
-		return null;
+		return "";
 	}
 	
 	public static void loadDefinitions(TransactionManager tm, InputStream data, StyledBuilder message) throws Exception {
