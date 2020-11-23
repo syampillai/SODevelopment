@@ -97,19 +97,6 @@ public final class ApplicationServer {
         return null;
     }
 
-    public boolean login(String user, char[] password, boolean lockIfFailed) {
-        return true;
-    }
-
-    public boolean login(String user, char[] password) {
-        return true;
-    }
-
-    public boolean login(WebBiometric biometric, String id, String type, String authenticatorData,
-                         String clientDataJSON, String signature, String userHandle, boolean b) {
-        return false;
-    }
-
     public boolean isAdmin() {
         return false;
     }
