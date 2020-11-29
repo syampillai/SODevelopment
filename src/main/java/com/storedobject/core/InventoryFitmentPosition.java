@@ -2,16 +2,8 @@ package com.storedobject.core;
 
 import java.math.BigDecimal;
 
-/**
- * Represents a "fitment position" (a position where an item can be fitted) of an assembled item.
- *
- * @author Syam
- */
 public final class InventoryFitmentPosition extends InventoryLocation {
 
-    /**
-     * Constructor.
-     */
     public InventoryFitmentPosition() {
     }
 
@@ -65,7 +57,7 @@ public final class InventoryFitmentPosition extends InventoryLocation {
     }
 
     @Override
-    public final int getType() {
+    public int getType() {
         return 14;
     }
 

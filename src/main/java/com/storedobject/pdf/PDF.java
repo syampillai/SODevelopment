@@ -1,8 +1,8 @@
 package com.storedobject.pdf;
 
 import com.storedobject.common.*;
-import com.storedobject.core.*;
 import com.storedobject.core.StringUtility;
+import com.storedobject.core.*;
 
 import java.awt.*;
 import java.io.IOException;
@@ -1220,6 +1220,16 @@ public abstract class PDF implements java.io.Closeable, com.storedobject.core.Co
      * @return Image
      */
     public static PDFImage createImage(StreamData streamData) {
+        return null;
+    }
+
+
+    /**
+     * Create image from an input stream (stream will be closed)
+     * @param stream Input stream
+     * @return Image
+     */
+    public static PDFImage createImage(InputStream stream) {
         return null;
     }
 
