@@ -3,11 +3,6 @@ package com.storedobject.core;
 import java.sql.Date;
 import java.util.stream.Stream;
 
-/**
- * Utility class to create inventory transactions (movement of items from one locations to another).
- *
- * @author Syam
- */
 public final class InventoryTransaction {
 
     public final static Date dataPickupDate = DateUtility.today();
@@ -31,12 +26,6 @@ public final class InventoryTransaction {
         return new Date(0);
     }
 
-    /**
-     * Create "Inventory Transaction" for data pick-up.
-     *
-     * @param tm Transaction manager.
-     * @return Instance of the "Inventory Transaction" suitable for data pick-up.
-     */
     public static InventoryTransaction forDataPickup(TransactionManager tm) {
         return new InventoryTransaction(tm, null, null);
     }
@@ -51,6 +40,9 @@ public final class InventoryTransaction {
     }
 
     public void scrap(InventoryItem item, Quantity quantity, String reference) {
+    }
+
+    public void bookShortage(InventoryItem item, Quantity quantity, String reference) {
     }
 
     public void purchase(InventoryItem item, String reference, InventoryLocation to, Entity fromEntity) {

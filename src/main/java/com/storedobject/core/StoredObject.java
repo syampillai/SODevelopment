@@ -290,7 +290,7 @@ public abstract class StoredObject implements Displayable {
         return loading ? this : new Person();
     }
 
-    public void setRawValue(String attributeName, String rawValue) throws Exception {
+    public void setRawValue(String attributeName, Object rawValue) throws Exception {
     }
 
     public void load(LineNumberReader in) throws Exception {

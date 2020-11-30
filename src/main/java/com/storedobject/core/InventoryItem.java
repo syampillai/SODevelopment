@@ -389,4 +389,12 @@ public class InventoryItem extends StoredObject {
     public final <O extends InventoryItem> ObjectIterator<O> listAssemblies(Class<O> itemClass, Predicate<O> filter) {
         return ObjectIterator.create();
     }
+
+    public boolean wasDataPicked() {
+        return wasDataPicked(0);
+    }
+
+    public boolean wasDataPicked(int stepsBackward) {
+        return new Random().nextBoolean();
+    }
 }

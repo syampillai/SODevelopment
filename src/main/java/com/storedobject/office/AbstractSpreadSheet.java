@@ -132,6 +132,9 @@ public abstract class AbstractSpreadSheet extends StreamContentProducer {
     public void goToRow(int row) {
     }
 
+    public void setCellValue(Cell cell, Object cellValue) {
+    }
+
     @Override
     public void close() {
     }

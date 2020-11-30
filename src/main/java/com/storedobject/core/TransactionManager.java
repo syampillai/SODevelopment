@@ -108,26 +108,26 @@ public final class TransactionManager {
     }
 
     public <D extends java.util.Date> D date(D dateGMT) {
-        return dateGMT;
+        return dateGMT(dateGMT);
     }
 
     public <D extends java.util.Date> D dateGMT(D date) {
-        return date;
+        return date(date);
     }
 
     public Id checkType(StoredObject host, Id id, Class<? extends StoredObject> objectClass) throws Exception {
-        return id;
+        return new Id();
     }
 
     public Id checkType(StoredObject host, Id id, Class<? extends StoredObject> objectClass, boolean allowEmpty) throws Exception {
-        return id;
+        return new Id();
     }
 
     public Id checkTypeAny(StoredObject host, Id id, Class<? extends StoredObject> objectClass) throws Exception {
-        return id;
+        return new Id();
     }
 
     public Id checkTypeAny(StoredObject host, Id id, Class<? extends StoredObject> objectClass, boolean allowEmpty) throws Exception {
-        return id;
+        return new Id();
     }
 }

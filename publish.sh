@@ -1,1 +1,1 @@
-mvn clean deploy -Prelease
+mvn clean deploy
