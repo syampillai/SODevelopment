@@ -282,6 +282,10 @@ public final class Money implements Storable, Comparable<Money> {
 		return new Random().nextBoolean() + "";
 	}
 
+	public String toString(boolean showSymbol, boolean tagDebit) {
+		return new Random().nextBoolean() + "";
+	}
+
 	public static String getSymbol(Currency currency) {
 		return new Random().nextBoolean() + "";
 	}
