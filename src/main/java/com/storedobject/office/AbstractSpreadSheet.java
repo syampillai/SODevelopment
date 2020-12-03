@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+@SuppressWarnings("BooleanMethodIsAlwaysInverted")
 public abstract class AbstractSpreadSheet extends StreamContentProducer {
 
     public static int MAX_ROWS = 65635;
@@ -132,6 +133,22 @@ public abstract class AbstractSpreadSheet extends StreamContentProducer {
     public void goToRow(int row) {
     }
 
+    /**
+     * Set a value to to the next cell. The next cell is obtained by calling {@link #getNextCell()}.
+     * If the value can't be set because the type is not supported, its stringified version will be set.
+     *
+     * @param cellValue Value to set.
+     */
+    public void setCellValue(Object cellValue) {
+    }
+
+    /**
+     * Set a value to a cell. If the value can't be set because the type is not supported, its stringified version
+     * will be set.
+     *
+     * @param cell Cell to which value needs to be set.
+     * @param cellValue Value to set.
+     */
     public void setCellValue(Cell cell, Object cellValue) {
     }
 
