@@ -1,8 +1,20 @@
 package com.storedobject.core;
 
+import com.storedobject.core.annotation.*;
 import java.math.BigDecimal;
 
-public class InventoryGRNItem extends StoredObject implements Detail {
+public final class InventoryGRNItem extends StoredObject implements Detail {
+
+    private Id partNumberId;
+    private InventoryItemType partNumber;
+    private String serialNumber;
+    private Quantity quantity = Quantity.create(Quantity.class);
+    private Money unitCost = new Money();
+    private Id binId = Id.ZERO;
+    private InventoryBin bin;
+    private Id itemId = Id.ZERO;
+    private InventoryItem item;
+    private boolean inspected = false;
 
     public InventoryGRNItem() {
     }
@@ -11,102 +23,110 @@ public class InventoryGRNItem extends StoredObject implements Detail {
     }
 
     public void setPartNumber(Id partNumberId) {
+        if(partNumber != null && (Id.isNull(partNumberId) || !partNumberId.equals(this.partNumberId))) {
+            partNumber = null;
+        }
+        this.partNumberId = partNumberId;
     }
 
     public void setPartNumber(BigDecimal idValue) {
+        setPartNumber(new Id(idValue));
     }
 
     public void setPartNumber(InventoryItemType partNumber) {
+        setPartNumber(partNumber == null ? null : partNumber.getId());
     }
 
     public Id getPartNumberId() {
-        return new Id();
+        return partNumberId;
     }
 
     public InventoryItemType getPartNumber() {
-        return new InventoryItemType();
+        return partNumber;
     }
 
     public void setSerialNumber(String serialNumber) {
+        this.serialNumber = serialNumber;
     }
 
+    @Column(order = 200, required = false)
     public String getSerialNumber() {
-        return "";
+        return serialNumber;
     }
 
     public void setQuantity(Quantity quantity) {
+        this.quantity = quantity;
     }
 
     public void setQuantity(Object value) {
+        setQuantity(Quantity.create(value));
     }
 
+    @Column(order = 300)
     public Quantity getQuantity() {
-        return Count.ZERO;
+        return quantity;
     }
 
     public void setUnitCost(Money unitCost) {
+        this.unitCost = unitCost;
     }
 
     public void setUnitCost(Object moneyValue) {
+        setUnitCost(Money.create(moneyValue));
     }
 
     public Money getUnitCost() {
-        return new Money();
-    }
-
-    public void setAssembly(Id assemblyId) {
-    }
-
-    public void setAssembly(BigDecimal idValue) {
-    }
-
-    public void setAssembly(InventoryAssembly assembly) {
-    }
-
-    public Id getAssemblyId() {
-        return new Id();
-    }
-
-    public InventoryAssembly getAssembly() {
-        return new InventoryAssembly();
+        return unitCost;
     }
 
     public void setBin(Id binId) {
     }
 
     public void setBin(BigDecimal idValue) {
+        setBin(new Id(idValue));
     }
 
     public void setBin(InventoryBin bin) {
+        setBin(bin == null ? null : bin.getId());
     }
 
     public Id getBinId() {
-        return new Id();
+        return binId;
     }
 
     public InventoryBin getBin() {
-        return new InventoryBin();
+        return bin;
     }
 
     public void setItem(Id itemId) {
     }
 
     public void setItem(BigDecimal idValue) {
+        setItem(new Id(idValue));
     }
 
     public void setItem(InventoryItem item) {
+        setItem(item == null ? null : item.getId());
     }
 
     public Id getItemId() {
-        return new Id();
+        return itemId;
     }
 
     public InventoryItem getItem() {
-        return new InventoryItem();
+        return item;
+    }
+
+    public void setInspected(boolean inspected) {
+        this.inspected = inspected;
+    }
+
+    public boolean getInspected() {
+        return inspected;
     }
 
     @Override
-    public final boolean isDetailOf(Class<? extends StoredObject> masterClass) {
-        return true;
+    public boolean isDetailOf(Class<? extends StoredObject> masterClass) {
+        return InventoryGRN.class == masterClass;
     }
 }

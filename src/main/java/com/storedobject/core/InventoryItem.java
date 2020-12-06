@@ -397,4 +397,8 @@ public class InventoryItem extends StoredObject {
     public boolean wasDataPicked(int stepsBackward) {
         return new Random().nextBoolean();
     }
+
+    public boolean cameAsAssemblyPart() {
+        return new Random().nextBoolean();
+    }
 }
