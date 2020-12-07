@@ -46,6 +46,14 @@ public abstract class PDFReport extends PDF {
 	}
 
 	/**
+	 * Generate the content and view it on the device with a caption.
+	 *
+	 * @param caption Caption.
+	 */
+	public void execute(String caption) {
+	}
+
+	/**
 	 * Get the device on which content will be rendered on.
 	 *
 	 * @return The device.
