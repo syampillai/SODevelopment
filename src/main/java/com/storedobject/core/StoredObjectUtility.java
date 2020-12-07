@@ -220,7 +220,7 @@ public final class StoredObjectUtility {
         return "";
     }
 
-    public static <O extends StoredObject> O createObject(Class<O> objectClass, Object value) {
+    public static <O extends StoredObject> O retrieveObject(Class<O> objectClass, Object value) {
         try {
             return objectClass.getDeclaredConstructor().newInstance();
         } catch(Throwable ignored) {
