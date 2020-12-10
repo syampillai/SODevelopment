@@ -99,12 +99,16 @@ public class ObjectIterator<O extends StoredObject> implements Iterator<O>, Iter
         return find(o -> true);
     }
 
-    public long count() {
-        return 0;
-    }
-
     public ObjectIterator<O> skip(long count) {
         return this;
+    }
+
+    public ObjectIterator<O> limit(long count) {
+        return this;
+    }
+
+    public long count() {
+        return 0;
     }
 
     public long count(Predicate<? super O> filter) {

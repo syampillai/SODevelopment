@@ -354,15 +354,19 @@ public final class StoredObjectUtility {
     }
 
     public static String stackTrace() {
-        return null;
+        return "";
     }
 
     public static String stackTrace(int count) {
-        return null;
+        return "";
     }
 
     public static String stackTrace(int count, boolean includeCore) {
-        return null;
+        return "";
+    }
+
+    public static String stackTrace(int count, boolean includeCore, int skip) {
+        return "";
     }
 
     public static Query getTransactionLog(SystemUser su, Timestamp from, Timestamp to) {

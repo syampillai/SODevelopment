@@ -6,6 +6,7 @@ import java.sql.Date;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+import java.util.Random;
 
 public final class ApplicationServer {
 
@@ -36,6 +37,10 @@ public final class ApplicationServer {
 
     public static String getGlobalProperty(String key) {
         return null;
+    }
+
+    public static boolean getGlobalBooleanProperty(String key) {
+        return new Random().nextBoolean();
     }
 
     public static String getPackageName() {
