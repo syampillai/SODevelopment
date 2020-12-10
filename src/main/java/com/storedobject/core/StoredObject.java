@@ -726,12 +726,11 @@ public abstract class StoredObject implements Displayable {
         return ObjectIterator.create();
     }
 
-    public <T extends StoredObject> ObjectIterator<T> listTree(Class<T> objectClass, Function<StoredObject, ObjectIterator<T>> childrenFunction) {
+    public <T extends StoredObject> ObjectIterator<T> listTree(Function<StoredObject, ObjectIterator<T>> childrenFunction) {
         return ObjectIterator.create();
     }
 
-    public <T extends StoredObject> ObjectIterator<T> listTree(Class<T> objectClass, Function<StoredObject,
-            ObjectIterator<T>> childrenFunction, Predicate<T> filter) {
+    public <T extends StoredObject> ObjectIterator<T> listTree(Function<StoredObject, ObjectIterator<T>> childrenFunction, Predicate<T> filter) {
         return ObjectIterator.create();
     }
 
