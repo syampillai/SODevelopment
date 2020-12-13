@@ -59,4 +59,8 @@ public final class InventoryVirtualLocation extends InventoryLocation {
     public static InventoryVirtualLocation getShortageLocation(SystemEntity systemEntity) {
         return getFor(systemEntity.getEntityId(), 7);
     }
+
+    public static InventoryVirtualLocation getRecycleLocation() {
+        return new InventoryVirtualLocation();
+    }
 }

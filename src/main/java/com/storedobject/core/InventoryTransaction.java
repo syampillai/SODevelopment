@@ -36,6 +36,18 @@ public final class InventoryTransaction {
     public void dataPickup(InventoryItem item, InventoryLocation locationTo, InventoryFitmentPosition assemblyPosition) {
     }
 
+    public static InventoryLocation createSupplierLocation(TransactionManager tm, Entity supplier) {
+        return new InventoryVirtualLocation();
+    }
+
+    public static InventoryLocation createConsumerLocation(TransactionManager tm, Entity consumer) {
+        return new InventoryVirtualLocation();
+    }
+
+    public static InventoryLocation createRepairLocation(TransactionManager tm, Entity repairEntity) {
+        return new InventoryVirtualLocation();
+    }
+
     public void scrap(InventoryItem item, String reference) {
     }
 
@@ -76,6 +88,12 @@ public final class InventoryTransaction {
     }
 
     public void loanReturn(InventoryItem item, String reference) {
+    }
+
+    public void thrash(InventoryItem item, String reference) {
+    }
+
+    public void thrash(InventoryItem item, Quantity quantity, String reference) {
     }
 
     public void abandon() {

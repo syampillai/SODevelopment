@@ -310,6 +310,14 @@ public class InventoryItemType extends StoredObject implements HasChildren {
         return ObjectIterator.create();
     }
 
+    public final ObjectIterator<InventoryAssembly> listImmediateAssemblies() {
+        return ObjectIterator.create();
+    }
+
+    public final ObjectIterator<InventoryAssembly> listImmediateAssemblies(Predicate<InventoryAssembly> filter) {
+        return ObjectIterator.create();
+    }
+
     public final List<InventoryItemType> listAPNs() {
         return new ArrayList<>();
     }

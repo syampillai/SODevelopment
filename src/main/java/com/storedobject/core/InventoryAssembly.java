@@ -97,4 +97,12 @@ public final class InventoryAssembly extends StoredObject {
     public boolean canFit(Id partNumberId) {
         return partNumberId.get().equals(BigInteger.ONE);
     }
+
+    public ObjectIterator<InventoryAssembly> listImmediateAssemblies() {
+        return ObjectIterator.create();
+    }
+
+    public ObjectIterator<InventoryAssembly> listAssemblies() {
+        return ObjectIterator.create();
+    }
 }

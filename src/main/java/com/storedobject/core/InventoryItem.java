@@ -382,12 +382,24 @@ public class InventoryItem extends StoredObject {
         return "";
     }
 
+    public final ObjectIterator<InventoryFitmentPosition> listAllFitmentPositions() {
+        return ObjectIterator.create();
+    }
+
+    public final ObjectIterator<InventoryFitmentPosition> listFitmentPositions() {
+        return ObjectIterator.create();
+    }
+
     public final <O extends InventoryItem> ObjectIterator<O> listAssemblies(Class<O> itemClass) {
         return ObjectIterator.create();
     }
 
     public final <O extends InventoryItem> ObjectIterator<O> listAssemblies(Class<O> itemClass, Predicate<O> filter) {
         return ObjectIterator.create();
+    }
+
+    public boolean isAssemblyIncomplete() {
+        return new Random().nextBoolean();
     }
 
     public boolean wasDataPicked() {

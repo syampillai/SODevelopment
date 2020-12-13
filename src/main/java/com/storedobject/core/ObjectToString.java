@@ -22,6 +22,14 @@ public interface ObjectToString<T extends StoredObject> extends ToString<T> {
 		return new O2S<>();
 	}
 
+	static <O extends StoredObject> ObjectToString<O> create(Class<O> objectClass, StringList attributes, boolean showAttributes) {
+		return new O2S<>();
+	}
+
+	static <O extends StoredObject> ObjectToString<O> create(Class<O> objectClass, String delimiter, StringList attributes, boolean showAttributes) {
+		return new O2S<>();
+	}
+
 	static <O extends StoredObject> ObjectToString<O> create(Class<O> objectClass, MethodList displayMethod) {
 		return new O2S<>();
 	}

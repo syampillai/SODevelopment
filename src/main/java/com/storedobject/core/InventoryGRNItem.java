@@ -125,6 +125,9 @@ public final class InventoryGRNItem extends StoredObject implements Detail {
         return inspected;
     }
 
+    public void inspect(Transaction transaction) throws Exception {
+    }
+
     @Override
     public boolean isDetailOf(Class<? extends StoredObject> masterClass) {
         return InventoryGRN.class == masterClass;
