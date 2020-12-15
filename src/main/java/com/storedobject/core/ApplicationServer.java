@@ -156,6 +156,9 @@ public final class ApplicationServer {
     public synchronized static void initialize(String propertiesFileName, Properties variables) {
     }
 
+    public synchronized static void initialize(String propertiesFileName, String link) {
+    }
+
     public static String createLogicName(String deviceTag, Class<?> objectClass, String tag) {
         return null;
     }
