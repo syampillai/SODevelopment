@@ -71,6 +71,10 @@ public final class TransactionManager {
         return false;
     }
 
+    public boolean verify(char[] password, int authenticatorCode) {
+        return false;
+    }
+
     public SystemUser getUser() {
         return new SystemUser();
     }

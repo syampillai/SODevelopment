@@ -17,11 +17,11 @@ public final class PIN extends StoredObject {
 	}
 	
 	public static PIN get(Id owner, String type) {
-		return null;
+		return new PIN();
 	}
 	
 	public String getType() {
-		return null;
+		return "";
 	}
 	
 	public void setType(String type) {
@@ -32,14 +32,14 @@ public final class PIN extends StoredObject {
 	}
 	
 	public Id getOwnerId() {
-		return null;
+		return new Id();
 	}
 	
 	public void setOwner(BigDecimal idValue) {
 	}
 	
 	public StoredObject getOwner() {
-		return null;
+		return new SystemUser();
 	}
 
 	public void setStatus(int status) {
@@ -53,7 +53,7 @@ public final class PIN extends StoredObject {
 	}
 
 	public Date getExpiry() {
-		return null;
+		return DateUtility.today();
 	}
 
 	public boolean isExpired() {
@@ -72,12 +72,16 @@ public final class PIN extends StoredObject {
 	public boolean verify(char[] pin) {
 		return false;
 	}
-	
+
+	public boolean verify(char[] pin, int authenticatorCode) {
+		return false;
+	}
+
 	public static boolean verify(Id ownerId, String type, char[] pin) {
 		return false;
 	}
 	
 	public PasswordPolicy getPolicy() {
-		return null;
+		return new PasswordPolicy();
 	}
 }

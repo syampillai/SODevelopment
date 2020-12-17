@@ -13,7 +13,15 @@ public final class Login {
         return false;
     }
 
+    public boolean login(String user, char[] password, int authenticatorCode) {
+        return false;
+    }
+
     public boolean login(String user, char[] password, boolean lockIfFailed) {
+        return false;
+    }
+
+    public boolean login(String user, char[] password, int authenticatorCode, boolean lockIfFailed) {
         return false;
     }
 
