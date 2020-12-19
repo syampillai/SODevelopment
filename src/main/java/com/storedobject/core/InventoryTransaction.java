@@ -33,6 +33,9 @@ public final class InventoryTransaction {
     public void dataPickup(InventoryItem item, InventoryLocation to) {
     }
 
+    public void dataPickup(InventoryItem item, Quantity quantity, InventoryLocation to) {
+    }
+
     public void dataPickup(InventoryItem item, InventoryLocation locationTo, InventoryFitmentPosition assemblyPosition) {
     }
 
@@ -54,10 +57,19 @@ public final class InventoryTransaction {
     public void scrap(InventoryItem item, Quantity quantity, String reference) {
     }
 
+    public void consume(InventoryItem item, String reference) {
+    }
+
+    public void consume(InventoryItem item, Quantity quantity, String reference) {
+    }
+
     public void bookShortage(InventoryItem item, Quantity quantity, String reference) {
     }
 
     public void purchase(InventoryItem item, String reference, InventoryLocation to, Entity fromEntity) {
+    }
+
+    public void purchase(InventoryItem item, Quantity quantity, String reference, InventoryLocation to, Entity fromEntity) {
     }
 
     public void purchaseReturn(InventoryItem item, Quantity quantity, String reference, Entity toEntity) {
