@@ -1,7 +1,8 @@
 package com.storedobject.core;
 
 import java.sql.Date;
-import java.util.stream.Stream;
+import java.util.HashMap;
+import java.util.Map;
 
 public final class InventoryTransaction {
 
@@ -117,51 +118,7 @@ public final class InventoryTransaction {
     public void save(Transaction transaction) throws Exception {
     }
 
-    public Stream<Entry> entries() {
-        return entries(false);
-    }
-
-    public Stream<Entry> entries(boolean includeAssemblyComponents) {
-        return Stream.empty();
-    }
-
-    public int getEntryCount() {
-        return 0;
-    }
-
-    public class Entry {
-
-        private Entry(InventoryItem item, Quantity quantity, String reference, InventoryLocation locationTo) {
-            abandon();
-        }
-
-        public InventoryItem getItem() {
-            return new InventoryItem();
-        }
-
-        public Quantity getQuantity() {
-            return Count.ONE;
-        }
-
-        public void setQuantity(Quantity quantity) {
-        }
-
-        public String getReference() {
-            return "";
-        }
-
-        public void setReference(String reference) {
-        }
-
-        public boolean isAssemblyComponent() {
-            return false;
-        }
-
-        public InventoryLocation getLocationTo() {
-            return new InventoryBin();
-        }
-
-        public void setLocationTo(InventoryLocation locationTo) {
-        }
+    public Map<Id, Id> getItemsChanged() {
+        return new HashMap<>();
     }
 }

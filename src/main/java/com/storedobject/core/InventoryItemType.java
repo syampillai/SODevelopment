@@ -258,6 +258,22 @@ public class InventoryItemType extends StoredObject implements HasChildren {
         return ObjectIterator.create();
     }
 
+    public ObjectIterator<InventoryItem> listItems() {
+        return listItems(null, false);
+    }
+
+    public ObjectIterator<InventoryItem> listItems(String condition) {
+        return listItems(condition, false);
+    }
+
+    public ObjectIterator<InventoryItem> listItems(boolean includeZeros) {
+        return listItems(null, includeZeros);
+    }
+
+    public ObjectIterator<InventoryItem> listItems(String condition, boolean includeZeros) {
+        return InventoryItem.listItems(this, condition, includeZeros);
+    }
+
     public boolean checkStock(InventoryStore store, Quantity quantity) {
         return true;
     }

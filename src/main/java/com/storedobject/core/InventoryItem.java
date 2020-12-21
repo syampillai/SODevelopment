@@ -330,14 +330,38 @@ public class InventoryItem extends StoredObject {
     }
 
     public static ObjectIterator<InventoryItem> listItems(InventoryItemType partNumber) {
-        return ObjectIterator.create();
+        return listItems(partNumber, null, false);
+    }
+
+    public static ObjectIterator<InventoryItem> listItems(InventoryItemType partNumber, String condition) {
+        return listItems(partNumber, condition, false);
     }
 
     /**
-     * Get the parent item on which this item is fitted on.
+     * List all the items for the given part number. It will return even the items fitted on assemblies,
+     * items sent for repair etc. However, items that are already scrapped will not be included.
      *
-     * @return Parent item if exists.
+     * @param partNumber Part number for which the list needs to be obtained.
+     * @param includeZeros Whether to include zero quantity items (in the case of non-serialized items) or not.
+     * @return List of items.
      */
+    public static ObjectIterator<InventoryItem> listItems(InventoryItemType partNumber, boolean includeZeros) {
+        return listItems(partNumber, null, includeZeros);
+    }
+
+    /**
+     * List all the items for the given part number. It will return even the items fitted on assemblies,
+     * items sent for repair etc. However, items that are already scrapped will not be included.
+     *
+     * @param partNumber Part number for which the list needs to be obtained.
+     * @param condition Additional condition if any. Could be null.
+     * @param includeZeros Whether to include zero quantity items (in the case of non-serialized items) or not.
+     * @return List of items.
+     */
+    public static ObjectIterator<InventoryItem> listItems(InventoryItemType partNumber, String condition, boolean includeZeros) {
+        return ObjectIterator.create();
+    }
+
     public InventoryItem getParentItem() {
         return r == 0 ? null : new InventoryItem();
     }
@@ -346,12 +370,6 @@ public class InventoryItem extends StoredObject {
         return getParentItem();
     }
 
-    /**
-     * Get the parent/grand-parents item on which this item is fitted on.
-     *
-     * @param itemClass Type of parent/grand-parent to look for.
-     * @return Parent item if exists.
-     */
     public <I extends InventoryItem> InventoryItem getParentItem(Class<I> itemClass) {
         //noinspection unchecked
         return r == 0 ? null : (I)new InventoryItem();

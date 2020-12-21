@@ -165,27 +165,31 @@ public abstract class AbstractSpreadSheet extends StreamContentProducer {
     }
 
     public CellStyle getDateStyle() {
-        return null;
+        return workbook.createCellStyle();
     }
 
     public CellStyle getHourStyle() {
-        return null;
+        return workbook.createCellStyle();
     }
 
     public CellStyle getPercentageStyle() {
-        return null;
+        return workbook.createCellStyle();
     }
 
     public CellStyle getPercentage2Style() {
-        return null;
+        return workbook.createCellStyle();
     }
 
     public CellStyle getNumericStyle(int width, int decimals) {
-        return null;
+        return workbook.createCellStyle();
     }
 
     public CellStyle getNumericStyle(int width, int decimals, boolean separated) {
-        return null;
+        return workbook.createCellStyle();
+    }
+
+    public CellStyle getRightAlignedStyle() {
+        return workbook.createCellStyle();
     }
 
     public static boolean validateCellAddress(String cellAddress) {
