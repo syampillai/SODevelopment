@@ -2,6 +2,7 @@ package com.storedobject.core;
 
 import java.math.BigDecimal;
 import java.sql.Date;
+import java.util.Random;
 
 public final class MaterialReturned extends StoredObject {
 
@@ -9,6 +10,13 @@ public final class MaterialReturned extends StoredObject {
     }
 
     public static void columns(Columns columns) {
+    }
+
+    public void setNo(int no) {
+    }
+
+    public int getNo() {
+        return new Random().nextInt();
     }
 
     public void setDate(Date date) {

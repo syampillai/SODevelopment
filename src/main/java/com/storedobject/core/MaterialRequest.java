@@ -13,6 +13,13 @@ public final class MaterialRequest extends StoredObject {
     public static void columns(Columns columns) {
     }
 
+    public void setNo(int no) {
+    }
+
+    public int getNo() {
+        return new Random().nextInt();
+    }
+
     public void setDate(Date date) {
     }
 

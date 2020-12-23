@@ -4,11 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
 
-/**
- * An inventory item type denotes a "part number".
- *
- * @author Syam
- */
 public class InventoryItemType extends StoredObject implements HasChildren {
 
     public InventoryItemType() {
@@ -103,81 +98,32 @@ public class InventoryItemType extends StoredObject implements HasChildren {
     public void setAverageLeadTime(int averageLeadTime) {
     }
 
-    public int getRepairTurnaroundTime() {
-        return 0;
-    }
-
-    public void setRepairTurnaroundTime(int repairTurnAroundTime) {
-    }
-
     public void checkUnit(Quantity quantity, String name) throws Invalid_State {
     }
 
     public void checkUnit(Quantity quantity) throws Invalid_State {
     }
 
-    /**
-     * <p>Is this item is a serialized item?</p>
-     * <p>A serialized item has a unique serial number (mostly assigned by the manufacturer itself). The item is
-     * always tracked by the serial number in the system.</p>
-     *
-     * @return True or false.
-     */
     public boolean isSerialized() {
         return false;
     }
 
-    /**
-     * <p>Is this item is an expendable item?</p>
-     * <p>Items (such as nut, bolt, rivet etc.) for which (1) no authorized repair procedure exists, and/or
-     * (2) the cost of repair would exceed cost of its replacement. Expendable items are usually considered to be
-     * consumed when issued and are not recorded as returnable inventory.</p>
-     *
-     * @return True or false.
-     */
     public boolean isExpendable() {
         return false;
     }
 
-    /**
-     * <p>Is this item is a consumable item?</p>
-     * <p>A consumable item (or a consumable) is an item that is once used, can not be recovered. Once issued from
-     * stores, consumables gets incorporated into other items and loose their identity. An example of a consumable
-     * is paint.</p>
-     *
-     * @return True or false.
-     */
     public boolean isConsumable() {
         return false;
     }
 
-    /**
-     * <p>Is this item a tool?</p>
-     * <p>A tool is always tracked when issued to a "Maintenance Unit"</p>
-     *
-     * @return True or false.
-     */
     public boolean isTool() {
         return false;
     }
 
-    /**
-     * Get the category Id of this item. A category Id could be anything an organization may want to maintain
-     * items in some special category groups. For example, in an airline store, items may be categorized based on
-     * the aircraft fleet and in that case, even if some items can be used across the fleets, it may be still
-     * maintained per fleet.
-     *
-     * @return Category Id. Default is <code>null</code>.
-     */
     public Id getCategoryId() {
         return null;
     }
 
-    /**
-     * Is this item an assembly?
-     *
-     * @return True or false.
-     */
     public final boolean isAssembly() {
         return exists(InventoryAssembly.class, "ParentItemType=" + getId());
     }
@@ -190,11 +136,6 @@ public class InventoryItemType extends StoredObject implements HasChildren {
         return anotherItem != null && isAPN(anotherItem.getPartNumber());
     }
 
-    /**
-     * is shelf-life applicable?
-     *
-     * @return True or false.
-     */
     public boolean isShelfLifeApplicable() {
         return false;
     }

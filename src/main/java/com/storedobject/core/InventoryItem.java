@@ -5,11 +5,6 @@ import java.sql.Date;
 import java.util.Random;
 import java.util.function.Predicate;
 
-/**
- * Denotes an item in the inventory.
- *
- * @author Syam
- */
 public class InventoryItem extends StoredObject {
 
     private static final int r = new Random().nextInt();
@@ -148,14 +143,6 @@ public class InventoryItem extends StoredObject {
         return new Entity();
     }
 
-    /**
-     * This will be invoked whenever this item is moved from one location to another. This is called from
-     * within the transaction. So, {@link #getTransaction()} will return the current transaction.
-     *
-     * @param from Location from.
-     * @param to Location to.
-     * @throws Exception An exception may be raised if the move not legal.
-     */
     public void moved(InventoryLocation from, InventoryLocation to) throws Exception {
     }
 
@@ -208,65 +195,26 @@ public class InventoryItem extends StoredObject {
         return getPartNumber().canStore(location);
     }
 
-    /**
-     * <p>Is this item is a serialized item?</p>
-     * <p>A serialized item has a unique serial number (mostly assigned by the manufacturer itself). The item is
-     * always tracked by the serial number in the system.</p>
-     *
-     * @return True or false.
-     */
     public final boolean isSerialized() {
         return getPartNumber().isSerialized();
     }
 
-    /**
-     * <p>Is this item is an expendable item?</p>
-     * <p>Items (such as nut, bolt, rivet etc.) for which (1) no authorized repair procedure exists, and/or
-     * (2) the cost of repair would exceed cost of its replacement. Expendable items are usually considered to be
-     * consumed when issued and are not recorded as returnable inventory.</p>
-     *
-     * @return True or false.
-     */
     public final boolean isExpendable() {
         return getPartNumber().isExpendable();
     }
 
-    /**
-     * <p>Is this item is a consumable item?</p>
-     * <p>A consumable item (or a consumable) is an item that is once used, can not be recovered. Once issued from
-     * stores, consumables gets incorporated into other items and loose their identity. An example of a consumable
-     * is paint.</p>
-     *
-     * @return True or false.
-     */
     public final boolean isConsumable() {
         return getPartNumber().isConsumable();
     }
 
-    /**
-     * <p>Is this item a tool?</p>
-     * <p>A tool is always tracked when issued to a "Maintenance Unit"</p>
-     *
-     * @return True or false.
-     */
     public final boolean isTool() {
         return getPartNumber().isTool();
     }
 
-    /**
-     * Is shelf-life applicable?
-     *
-     * @return True or false.
-     */
     public final boolean isShelfLifeApplicable() {
         return getPartNumber().isShelfLifeApplicable();
     }
 
-    /**
-     * Get the shelf-life of this item.
-     *
-     * @return Date of expiry if shelf-life is applicable, otherwise <code>null</code>.
-     */
     public Date getShelfLife() {
         return null;
     }
@@ -337,27 +285,10 @@ public class InventoryItem extends StoredObject {
         return listItems(partNumber, condition, false);
     }
 
-    /**
-     * List all the items for the given part number. It will return even the items fitted on assemblies,
-     * items sent for repair etc. However, items that are already scrapped will not be included.
-     *
-     * @param partNumber Part number for which the list needs to be obtained.
-     * @param includeZeros Whether to include zero quantity items (in the case of non-serialized items) or not.
-     * @return List of items.
-     */
     public static ObjectIterator<InventoryItem> listItems(InventoryItemType partNumber, boolean includeZeros) {
         return listItems(partNumber, null, includeZeros);
     }
 
-    /**
-     * List all the items for the given part number. It will return even the items fitted on assemblies,
-     * items sent for repair etc. However, items that are already scrapped will not be included.
-     *
-     * @param partNumber Part number for which the list needs to be obtained.
-     * @param condition Additional condition if any. Could be null.
-     * @param includeZeros Whether to include zero quantity items (in the case of non-serialized items) or not.
-     * @return List of items.
-     */
     public static ObjectIterator<InventoryItem> listItems(InventoryItemType partNumber, String condition, boolean includeZeros) {
         return ObjectIterator.create();
     }

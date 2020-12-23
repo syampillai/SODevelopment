@@ -2,17 +2,9 @@ package com.storedobject.core;
 
 import java.math.BigDecimal;
 import java.sql.Date;
+import java.util.Random;
 
 public final class InventoryGRN extends StoredObject implements HasChildren {
-
-    private final static String[] statusValues = {
-            "Initiated", "Processed", "Closed"
-    };
-    private final Date date = DateUtility.today();
-    private String referenceNumber;
-    private Id storeId;
-    private Id supplierId;
-    private int status = 0;
 
     public InventoryGRN() {
     }
@@ -20,83 +12,82 @@ public final class InventoryGRN extends StoredObject implements HasChildren {
     public static void columns(Columns columns) {
     }
 
+    public void setNo(int no) {
+    }
+
+    public int getNo() {
+        return new Random().nextInt();
+    }
+
     public void setDate(Date date) {
-        this.date.setTime(date.getTime());
     }
 
     public Date getDate() {
-        return new Date(date.getTime());
+        return new Date(0);
     }
 
     public void setReferenceNumber(String referenceNumber) {
-        this.referenceNumber = referenceNumber;
     }
 
     public String getReferenceNumber() {
-        return referenceNumber;
+        return "";
     }
 
     public void setStore(Id storeId) {
     }
 
     public void setStore(BigDecimal idValue) {
-        setStore(new Id(idValue));
     }
 
     public void setStore(InventoryStore store) {
-        setStore(store == null ? null : store.getId());
     }
 
     public Id getStoreId() {
-        return storeId;
+        return new Id();
     }
 
     public InventoryStore getStore() {
-        return get(InventoryStore.class, storeId, true);
+        return new InventoryStore();
     }
 
     public void setSupplier(Id supplierId) {
-        this.supplierId = supplierId;
     }
 
     public void setSupplier(BigDecimal idValue) {
-        setSupplier(new Id(idValue));
     }
 
     public void setSupplier(Entity supplier) {
-        setSupplier(supplier == null ? null : supplier.getId());
     }
 
     public Id getSupplierId() {
-        return supplierId;
+        return new Id();
     }
 
     public Entity getSupplier() {
-        return get(Entity.class, supplierId);
+        return new Entity();
     }
 
     public static String[] getStatusValues() {
-        return statusValues;
+        return new String[] { };
     }
 
     public void setStatus(int status) {
-        this.status = status;
     }
 
     public int getStatus() {
-        return status;
+        return new Random().nextInt();
     }
 
     public String getStatusValue() {
-        return statusValues[status];
+        return "";
     }
 
     public boolean isProcessed() {
-        return status == 1;
+        return new Random().nextInt() == 1;
     }
 
     public boolean isClosed() {
-        return status == 2;
+        return new Random().nextInt() == 2;
     }
 
     public void process(Transaction transaction) throws Exception {
