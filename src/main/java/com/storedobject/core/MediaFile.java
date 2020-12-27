@@ -24,7 +24,7 @@ public final class MediaFile extends Name {
     }
 
     public StreamData getFile() {
-        return null;
+        return new StreamData();
     }
 
     public long getTimeKey() {

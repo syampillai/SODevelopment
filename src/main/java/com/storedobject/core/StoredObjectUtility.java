@@ -10,6 +10,7 @@ import java.lang.reflect.Method;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Properties;
+import java.util.Random;
 
 public final class StoredObjectUtility {
 
@@ -26,23 +27,23 @@ public final class StoredObjectUtility {
     }
 
     public static <T extends StoredObject> ClassAttribute<T> classAttribute(Class<T> objectClass) {
-        return ClassAttribute.get(objectClass);
+        return Math.random() > 0.5 ? ClassAttribute.get(objectClass) : null;
     }
 
     public static String[] createDDL(Class<? extends StoredObject> objectClass) throws Exception {
-        return null;
+        return new String[new Random().nextInt()];
     }
 
     public static String[] foreignKeysDDL(Class<? extends StoredObject> objectClass) {
-        return null;
+        return new String[new Random().nextInt()];
     }
 
     public static String[] dropDDL(Class<? extends StoredObject> objectClass) {
-        return null;
+        return new String[new Random().nextInt()];
     }
 
     public static String[] reindex(Class<? extends StoredObject> objectClass) {
-        return null;
+        return new String[new Random().nextInt()];
     }
 
     public static String buildSQL(ClassAttribute<? extends StoredObject> ca, String columns, String condition, String order, boolean header) {
@@ -106,15 +107,15 @@ public final class StoredObjectUtility {
     }
 
     public static StringList protectedColumns(Class<? extends StoredObject> objectClass) {
-        return null;
+        return StringList.EMPTY;
     }
 
     public static StringList browseColumns(Class<? extends StoredObject> objectClass) {
-        return null;
+        return StringList.EMPTY;
     }
 
     public static StringList links(Class<? extends StoredObject> masterClass) {
-        return null;
+        return StringList.EMPTY;
     }
 
     public static String browseOrder(Class<? extends StoredObject> objectClass) {
@@ -130,7 +131,7 @@ public final class StoredObjectUtility {
     }
 
     public static MethodList createMethodList(Class<?> objectClass, String attributeName) {
-        return null;
+        return new MethodList(null);
     }
 
     public static MethodList[] createMethodLists(Class<?> objectClass, StringList attributeNames) {
@@ -370,7 +371,7 @@ public final class StoredObjectUtility {
     }
 
     public static Query getTransactionLog(SystemUser su, Timestamp from, Timestamp to) {
-        return null;
+        return new Query();
     }
 
     public static boolean sameContent(TransactionManager tm, StoredObject one, StoredObject two) {

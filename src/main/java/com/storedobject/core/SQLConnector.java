@@ -1,5 +1,6 @@
 package com.storedobject.core;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public abstract class SQLConnector {
@@ -37,7 +38,7 @@ public abstract class SQLConnector {
 	 * @return Stack trace information of busy connections.
 	 */
 	public static List<String> getDebugInfo(int ageInMinutes) {
-		return null;
+		return new ArrayList<>();
 	}
 
 	/**

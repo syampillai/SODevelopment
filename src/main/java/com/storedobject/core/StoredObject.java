@@ -528,7 +528,7 @@ public abstract class StoredObject implements Displayable {
     }
 
     public final Timestamp timestamp() {
-        return new Timestamp(234L);
+        return Math.random() > 0.5 ? new Timestamp(234L) : null;
     }
 
     public final Id userId() {

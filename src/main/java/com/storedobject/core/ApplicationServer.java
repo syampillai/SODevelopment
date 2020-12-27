@@ -28,11 +28,11 @@ public final class ApplicationServer {
     }
 
     public static String getLogFile() {
-        return null;
+        return "";
     }
 
     public static String getGlobalProperty(String key, String defaultValue) {
-        return null;
+        return Math.random() > 0.5 ? defaultValue : "X";
     }
 
     public static String getGlobalProperty(String key) {

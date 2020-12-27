@@ -19,9 +19,10 @@ public final class JavaClass extends JavaInnerClass {
 	}
 
 	public static JavaClass create(String name) {
-		return null;
+		return new JavaClass();
 	}
 
+	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
 	public static boolean checkName(String name) {
 		return false;
 	}
@@ -52,7 +53,7 @@ public final class JavaClass extends JavaInnerClass {
 	}
 
 	public InputStream getSourceStream() {
-		return null;
+		return new StreamData().getContent();
 	}
 
 	public ObjectIterator<JavaInnerClass> getInnerClassList() {
