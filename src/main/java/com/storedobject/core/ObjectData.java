@@ -1,160 +1,87 @@
 package com.storedobject.core;
 
-import java.util.List;
+import com.storedobject.common.DataSet;
+import com.storedobject.common.StringList;
 
-import com.storedobject.common.MethodInvoker;
-import com.storedobject.core.converter.ValueConverter;
+import java.lang.reflect.Method;
 
-public class ObjectData<T extends StoredObject> implements ObjectConverter<T, T> {
+public class ObjectData<T extends StoredObject> implements DataSet {
 
-	protected final MethodInvoker method = null;
-	protected final Class<?> methodType = null;
-	protected final ClassAttribute<T> ca = null;
-	protected ValueConverter<?> valueConverter = null;
+	private final Class<T> objectClass;
+	private T object;
 
-	public ObjectData(ClassAttribute<T> ca, String name) {
-	}
-	
-	public ObjectData(ClassAttribute<T> ca, String name, MethodInvoker methodInvoker) {
-	}
-	
-	public MethodInvoker getMethodInvoker() {
-		return null;
+	public ObjectData(T object) {
+		this(object, (StringList) null);
 	}
 
-	public Class<?> getType() {
-		return null;
+	public ObjectData(T object, String... fieldNames) {
+		this(object, (StringList) null);
 	}
 
-	public boolean isEqualTo(Object value) {
-		return false;
+	public ObjectData(T object, StringList fieldNames) {
+		//noinspection unchecked
+		this.objectClass = (Class<T>) object.getClass();
 	}
 
-	public boolean isNotEqualTo(Object value) {
-		return false;
+	public ObjectData(Class<T> objectClass) {
+		this(objectClass, (StringList) null);
 	}
 
-	public boolean isLessThan(Object value) {
-		return false;
+	public ObjectData(Class<T> objectClass, String... fieldNames) {
+		this.objectClass = objectClass;
 	}
 
-	public boolean isLessThanOrEqualTo(Object value) {
-		return false;
-	}
-
-	public boolean isGreaterThan(Object value) {
-		return false;
-	}
-
-	public boolean isGreaterThanOrEqualTo(Object value) {
-		return false;
-	}
-
-	public boolean isRange(Object value) {
-		return false;
-	}
-
-	public boolean isStartingWith(Object value) {
-		return false;
-	}
-
-	public boolean contains(Object value) {
-		return false;
-	}
-
-	public boolean containsAny(Object value) {
-		return false;
-	}
-
-	public String getName() {
-		return null;
-	}
-
-	public void setTitle(String title) {
-	}
-
-	public String getTitle() {
-		return null;
+	public ObjectData(Class<T> objectClass, StringList fieldNames) {
+		this.objectClass = objectClass;
 	}
 
 	@Override
-	public T convert(T object) {
-		return null;
+	public void set(String key, Object value) {
 	}
 
-
-	public List<String> getChoiceBitValues() {
-		return null;
-	}
-
-	public List<String> getChoiceValues() {
-		return null;
-	}
-
-	public boolean isConditionValid() {
-		return true;
-	}
-
-	public void describeCondition(StringBuilder s) {
-	}
-
-	public void appendCondition(StringBuilder s) {
-	}
-
-	public boolean isDatabase() {
+	@Override
+	public boolean canSet(String key) {
 		return false;
 	}
 
-	public void setVisible(boolean visible) {
+	@Override
+	public Object get(String key) {
+		return "";
 	}
 
-	public boolean isVisible() {
-		return false;
+	@Override
+	public StringList keys() {
+		return StringList.EMPTY;
 	}
 
-	public void setOrder(int order) {
+	public final Class<T> getObjectClass() {
+		return objectClass;
 	}
 
-	public int getOrder() {
-		return 0;
+	public T getObject() {
+		return object;
 	}
 
-	public void setSelection(String selection) {
+	public void setObject(T object) {
+		this.object = object;
 	}
 
-	public void setSelection(int selection) {
+	@Override
+	public void add(String key) {
 	}
 
-	public int getSelection() {
-		return 0;
+	@Override
+	public void remove(String key) {
 	}
 
-	public String getSelectionValue() {
-		return null;
+	public void stringifyValues() {
 	}
 
-	public void setLowerValue(Object lowerValue) {
+	public StoredObjectUtility.MethodList getGetMethod(String key) {
+		return StoredObjectUtility.createMethodList(objectClass, key);
 	}
 
-	public Object getLowerValue() {
-		return null;
-	}
-
-	public void setUpperValue(Object upperValue) {
-	}
-
-	public Object getUpperValue() {
-		return null;
-	}
-
-	public int getMinumumWidth() {
-		return 0;
-	}
-
-	public void save(StringBuilder s) {
-	}
-
-	public Iterable<String> getSelectionCriteria() {
-		return null;
+	public Method getSetMethod(String key) {
+		return StoredObjectUtility.createMethod(objectClass, key);
 	}
 }

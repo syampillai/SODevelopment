@@ -1460,11 +1460,36 @@ public abstract class PDF implements java.io.Closeable, com.storedobject.core.Co
          * Create a table for the given type of {@link StoredObject} class.
          *
          * @param objectClass Object class
+         * @param attributes List of attributes to be reported
+         */
+        public ObjectTable(Class<T> objectClass, StringList attributes) {
+            this(objectClass, true, attributes);
+        }
+
+        /**
+         * Create a table for the given type of {@link StoredObject} class.
+         *
+         * @param objectClass Object class
          * @param withHeadings Whether header columns to be created automatically or not
          * @param attributes List of attributes to be reported
          */
         public ObjectTable(Class<T> objectClass, boolean withHeadings, String... attributes) {
-            super(attributes.length);
+            this(objectClass, StringList.create(attributes), withHeadings);
+        }
+
+        /**
+         * Create a table for the given type of {@link StoredObject} class.
+         *
+         * @param objectClass Object class
+         * @param withHeadings Whether header columns to be created automatically or not
+         * @param attributes List of attributes to be reported
+         */
+        public ObjectTable(Class<T> objectClass, boolean withHeadings, StringList attributes) {
+            this(objectClass, attributes, withHeadings);
+        }
+
+        private ObjectTable(Class<T> objectClass, StringList attributes, boolean withHeadings) {
+            super(attributes.size());
         }
 
         /**
@@ -1518,6 +1543,16 @@ public abstract class PDF implements java.io.Closeable, com.storedobject.core.Co
          * @param attributes List of attributes to be reported
          */
         public ObjectFormTable(Class<T> objectClass, String... attributes) {
+            this(objectClass, StringList.create(attributes));
+        }
+
+        /**
+         * Create a table for the given type of {@link StoredObject} class.
+         *
+         * @param objectClass Object class
+         * @param attributes List of attributes to be reported
+         */
+        public ObjectFormTable(Class<T> objectClass, StringList attributes) {
             super(2);
         }
 
