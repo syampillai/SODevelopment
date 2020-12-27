@@ -1,0 +1,28 @@
+.menublock {
+    cursor: pointer;
+}
+
+.menuimage {
+    width: 100%;
+    min-width: 250px;
+    max-width: 250px;
+    min-height: 200px;
+    max-height: 200px;
+    margin: 0 auto;
+    box-sizing: border-box;
+}
+
+.menutext {
+    display: block;
+    white-space: nowrap;
+    overflow: hidden;
+    background: rgba(0, 0, 0, 0.5);
+    color: #f1f1f1;
+    width: 100%;
+    min-width: 250px;
+    max-width: 250px;
+    padding: 10px;
+    margin: 0 auto;
+    box-sizing: border-box;
+    text-overflow: ellipsis;
+}
