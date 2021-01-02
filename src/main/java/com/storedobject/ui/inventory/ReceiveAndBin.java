@@ -130,6 +130,7 @@ public class ReceiveAndBin extends ListGrid<InventoryItem> implements Transactio
             warning("Reference can't be empty");
             return;
         }
+        clearAlerts();
         if(transact(t -> {
             InventoryTransaction it = new InventoryTransaction(getTransactionManager(), d, reference);
             boolean any = false;

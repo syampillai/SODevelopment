@@ -22,17 +22,41 @@ import java.util.function.Function;
  */
 public class ObjectListEditor<T extends StoredObject> extends EditableObjectGrid<T> implements Transactional {
 
-    private Button add;
-    private Button edit;
-    private Button delete;
-    private Button reload;
-    private Button reloadAll;
-    private Button view;
-    private Button saveAll;
+    /**
+     * Button panel.
+     */
+    protected final ButtonLayout buttonPanel;
+    /**
+     * "Add" button.
+     */
+    protected final Button add;
+    /**
+     * "Edit" button.
+     */
+    protected final Button edit;
+    /**
+     * "Delete" button.
+     */
+    protected final Button delete;
+    /**
+     * "Reload" button.
+     */
+    protected final Button reload;
+    /**
+     * "Reload All" button.
+     */
+    protected final Button reloadAll;
+    /**
+     * "View" button.
+     */
+    protected final Button view;
+    /**
+     * "Save All" button.
+     */
+    protected final Button saveAll;
     private boolean allowView = true, allowAdd = true, allowEdit = true, allowDelete = true,
             allowReload = true, allowReloadAll = true, rowEditing = false, allowSaveAll = true;
     private ObjectEditor<T> viewer;
-    protected final ButtonLayout buttonPanel;
     private final AcceptAbandonButtons acceptAbandonButtons;
     private Function<EditableList<T>, Boolean> saver;
 
@@ -80,9 +104,21 @@ public class ObjectListEditor<T extends StoredObject> extends EditableObjectGrid
      */
     public ObjectListEditor(Class<T> objectClass, Iterable<String> columns) {
         super(objectClass, columns == null ? StoredObjectUtility.browseColumns(objectClass) : columns, false);
-        buttonPanel = new Buttons();
+        buttonPanel = new ButtonLayout();
+        saveAll = new Button("Save Changes", "save", e -> save()).asSmall().asPrimary();
+        add = new Button("Add", e -> addIf()).asSmall();
+        edit = new Button("Edit", e -> editIf()).asSmall();
+        delete = new Button("Delete", e -> deleteIf()).asSmall();
+        reload = new Button("Undo", e -> reloadIf()).asSmall();
+        reloadAll = new Button("Undo All", e -> reloadAllIf()).asSmall();
+        view = new Button("View", e -> viewIf()).asSmall();
+        buttonPanel.add(saveAll, add, edit, delete, view, reload, reloadAll);
+        Editor<T> e = getEditor();
+        e.addOpenListener(l -> setRowEditing(true));
+        e.addCloseListener(l -> setRowEditing(false));
+        changedInt();
         acceptAbandonButtons = new AcceptAbandonButtons(this::saveEdited, this::cancelEdit);
-        addValueChangeTracker((e, fromClient) -> changed());
+        addValueChangeTracker((editableList, fromClient) -> changed());
     }
 
     @Override
@@ -113,13 +149,6 @@ public class ObjectListEditor<T extends StoredObject> extends EditableObjectGrid
      */
     public void hideRowEditorButtons() {
         acceptAbandonButtons.hideButtons();
-    }
-
-    /**
-     * Hide the save-all button.
-     */
-    public void hideSaveButton() {
-        saveAll.setVisible(false);
     }
 
     private boolean releaseEd() {
@@ -425,6 +454,14 @@ public class ObjectListEditor<T extends StoredObject> extends EditableObjectGrid
         changedInt();
     }
 
+    /**
+     * This method should be overridden to control the visibility of various buttons. Visibility of the following
+     * buttons can be set: {@link #add}, {@link #edit}, {@link #delete}, {@link #reload}, {@link #reloadAll},
+     * {@link #view}, {@link #saveAll}.
+     */
+    public void setButtonVisibility() {
+    }
+
     private void changedInt() {
         if(view == null) {
             return;
@@ -439,6 +476,18 @@ public class ObjectListEditor<T extends StoredObject> extends EditableObjectGrid
             reload.setVisible(v && allowReload);
             reloadAll.setVisible(v && allowReloadAll);
             saveAll.setVisible(v && allowSaveAll);
+        }
+        setButtonVisibility();
+        view.setVisible(view.isVisible() && allowView);
+        v = !isReadOnly();
+        add.setVisible(add.isVisible() && v && allowAdd);
+        edit.setVisible(edit.isVisible() && v && allowEdit);
+        delete.setVisible(delete.isVisible() && v && allowDelete);
+        if(allowReload || allowReloadAll) {
+            v = isSavePending();
+            reload.setVisible(reload.isVisible() && v && allowReload);
+            reloadAll.setVisible(reloadAll.isVisible() && v && allowReloadAll);
+            saveAll.setVisible(saveAll.isVisible() && v && allowSaveAll);
         }
     }
 
@@ -568,23 +617,5 @@ public class ObjectListEditor<T extends StoredObject> extends EditableObjectGrid
      */
     public void setSaver(Function<EditableList<T>, Boolean> saver) {
         this.saver = saver;
-    }
-
-    private class Buttons extends ButtonLayout {
-
-        Buttons() {
-            saveAll = new Button("Save Changes", "save", e -> save()).asSmall().asPrimary();
-            add = new Button("Add", e -> addIf()).asSmall();
-            edit = new Button("Edit", e -> editIf()).asSmall();
-            delete = new Button("Delete", e -> deleteIf()).asSmall();
-            reload = new Button("Undo", e -> reloadIf()).asSmall();
-            reloadAll = new Button("Undo All", e -> reloadAllIf()).asSmall();
-            view = new Button("View", e -> viewIf()).asSmall();
-            add(saveAll, add, edit, delete, view, reload, reloadAll);
-            Editor<T> e = getEditor();
-            e.addOpenListener(l -> setRowEditing(true));
-            e.addCloseListener(l -> setRowEditing(false));
-            changedInt();
-        }
     }
 }

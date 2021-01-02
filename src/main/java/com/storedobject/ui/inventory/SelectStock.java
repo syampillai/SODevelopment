@@ -2,7 +2,7 @@ package com.storedobject.ui.inventory;
 
 import com.storedobject.core.InventoryItem;
 import com.storedobject.core.ObjectIterator;
-import com.storedobject.ui.SelectGrid;
+import com.storedobject.vaadin.SelectGrid;
 
 import java.util.function.Consumer;
 
