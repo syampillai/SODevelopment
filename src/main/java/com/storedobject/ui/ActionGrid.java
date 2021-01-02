@@ -7,7 +7,7 @@ import com.vaadin.flow.component.html.Div;
 import java.util.List;
 
 /**
- * A grid to be shown in a window with "Yes/No" buttons and an action is carried out if "Yes" button is pressed.
+ * A grid to be shown in a window with "Yes/No" buttons and an action is carried out if the "Yes" button is pressed.
  *
  * @param <T> Type of object in the grid.
  * @author Syam
@@ -172,8 +172,8 @@ public class ActionGrid<T> extends ListGrid<T> {
             return;
         }
         try {
-            action.run();
             close();
+            action.run();
         } catch(Throwable error) {
             error(error);
         }

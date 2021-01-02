@@ -47,6 +47,10 @@ public final class MaterialRequestItem extends StoredObject implements Detail {
         return Count.ZERO;
     }
 
+    public Quantity getBalance() {
+        return Count.ZERO;
+    }
+
     @Override
     public boolean isDetailOf(Class<? extends StoredObject> masterClass) {
         return masterClass == MaterialRequest.class;

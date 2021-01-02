@@ -85,6 +85,10 @@ public class InventoryItem extends StoredObject {
         return getLocation();
     }
 
+    public boolean isAvailableAt(InventoryLocation location) {
+        return false;
+    }
+
     public void setQuantity(Quantity quantity) {
     }
 

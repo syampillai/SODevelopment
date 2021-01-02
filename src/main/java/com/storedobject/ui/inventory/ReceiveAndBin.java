@@ -147,11 +147,11 @@ public class ReceiveAndBin extends ListGrid<InventoryItem> implements Transactio
             if(update != null) {
                 update.transact(t);
             }
+        })) {
+            close();
             if(refresher != null) {
                 refresher.run();
             }
-        })) {
-            close();
             message("Done");
         }
     }

@@ -33,7 +33,6 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T> 
 
     protected HasComponents buttonPanel;
     protected Button add, edit, delete, search, report, audit, exit, save, cancel;
-    private Button process;
     ObjectSearcherField<T> searcherField;
     private int actions;
     private boolean closeOnSave, editing = false;
@@ -386,7 +385,6 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T> 
         if(instance instanceof OfEntity && Id.isNull(((OfEntity) instance).getSystemEntityId())) {
             try {
                 Method m = getObjectClass().getMethod("setSystemEntity", Id.class);
-                //noinspection ConstantConditions
                 m.invoke(instance, getTransactionManager().getEntity().getId());
             } catch(Throwable ignored) {
             }
@@ -530,7 +528,6 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T> 
     @Override
     public void clean() {
         super.clean();
-        process = null;
         clearTran();
     }
 
@@ -1144,7 +1141,7 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T> 
     }
 
     public void viewObject(Consumer<T> action) {
-        viewObject(null, null, action, null, true);
+        viewObject(getObject(), null, action, null, true);
     }
 
     public void viewObject(T object, Consumer<T> action) {
@@ -1171,11 +1168,24 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T> 
         buttonPanel.removeAll();
         if(action != null) {
             T o = object;
-            process = new Button(actionName == null ? "Process" : actionName, "", e -> {
-                close();
-                action.accept(o);
-            });
-            buttonPanel.add(process);
+            String icon;
+            if(actionName == null || actionName.isEmpty() || "Process".equals(actionName)) {
+                actionName = "Process";
+                icon = "process";
+            } else {
+                int p = actionName.indexOf('|');
+                if(p > 0) {
+                    icon = actionName.substring(p + 1).trim();
+                    actionName = actionName.substring(0, p).trim();
+                } else {
+                    icon = "";
+                }
+            }
+            buttonPanel.add(new Button(actionName, icon, e -> {
+                        close();
+                        action.accept(o);
+                    })
+            );
         }
         buttonPanel.add(exit);
     }
@@ -1584,24 +1594,25 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T> 
         private void run(Runnable action) {
             final AtomicInteger any = new AtomicInteger(0);
             this.streamFieldsCreated().forEach(f -> {
-                any.incrementAndGet();
-                if(f instanceof com.storedobject.ui.ObjectField) {
-                    ObjectInput<?> objectField = ((ObjectField<?>) f).getField();
-                    if(objectField instanceof ObjectComboField) {
-                        ObjectComboField<?> objectComboField = (ObjectComboField<?>) objectField;
-                        if(objectComboField.getObjectCount() == 1) {
-                            objectComboField.setFirstValue();
-                            any.decrementAndGet();
+                if(!f.isReadOnly()) {
+                    any.incrementAndGet();
+                    if(f instanceof com.storedobject.ui.ObjectField) {
+                        ObjectInput<?> objectField = ((ObjectField<?>) f).getField();
+                        if(objectField instanceof ObjectComboField) {
+                            ObjectComboField<?> objectComboField = (ObjectComboField<?>) objectField;
+                            if(objectComboField.getObjectCount() == 1) {
+                                objectComboField.setFirstValue();
+                                any.decrementAndGet();
+                            }
                         }
                     }
                 }
             });
+            this.action = action;
             if(any.get() > 0) {
-                this.action = action;
                 execute();
             } else {
-                anchorAction = false;
-                action.run();
+                process();
             }
         }
     }

@@ -15,6 +15,7 @@ import java.util.function.BiFunction;
 
 public class ObjectGrid<T extends StoredObject> extends DataGrid<T> implements ObjectGridData<T>, ResourceOwner {
 
+    static final String NOTHING_SELECTED = "Nothing selected";
     private final List<ObjectDataLoadedListener> dataLoadedListeners = new ArrayList<>();
     ObjectSetter<T> objectSetter;
     private ObjectDataProvider<T, Void> dataProvider;
@@ -124,6 +125,24 @@ public class ObjectGrid<T extends StoredObject> extends DataGrid<T> implements O
     @Override
     public String getOrderBy() {
         return orderBy;
+    }
+
+    public T selected() {
+        clearAlerts();
+        T o = getSelected();
+        if(o == null) {
+            switch(size()) {
+                case 0:
+                    warning("No item to select!");
+                    return null;
+                case 1:
+                    o = getItem(0);
+                    select(o);
+                    return o;
+            }
+            warning(NOTHING_SELECTED);
+        }
+        return o;
     }
 
     @Override

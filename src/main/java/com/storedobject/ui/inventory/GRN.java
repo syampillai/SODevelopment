@@ -13,6 +13,11 @@ import java.util.Collection;
 import java.util.List;
 import java.util.function.Consumer;
 
+/**
+ * GRN - Create, edit and process GRNs.
+ *
+ * @author Syam
+ */
 public class GRN extends ObjectBrowser<InventoryGRN> {
 
     private ObjectEditor<InventoryGRN> viewer;
@@ -20,20 +25,40 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
     private final ELabel store = new ELabel("Store: Not selected");
     private final Button switchStore = new Button("Switch Store", VaadinIcon.STORAGE, e -> switchStore());
 
+    /**
+     * Constructor.
+     */
     public GRN() {
         this(EditorAction.ALL);
     }
 
+    /**
+     * Constructor.
+     *
+     * @param actions Allowed edit actions (See {@link EditorAction}).
+     */
     public GRN(int actions) {
         this(actions, null);
     }
 
+    /**
+     * Constructor.
+     *
+     * @param actions Allowed edit actions (See {@link EditorAction}).
+     * @param caption Caption.
+     */
     public GRN(int actions, String caption) {
         this(InventoryItemType.class, null, actions, caption);
     }
 
+    /**
+     * Constructor.
+     *
+     * @param classNames Class names of to be used. "Class Name of P/N|Class Name of Supplier".
+     */
     public GRN(String classNames) {
         this(itemTypeClass(classNames), suppliers(classNames), EditorAction.ALL, null);
+        setStore(storeName(classNames));
     }
 
     private GRN(Class<? extends InventoryItemType> pnClass, Collection<Entity> suppliers, int actions, String caption) {
@@ -113,6 +138,23 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
         load.click();
     }
 
+    /**
+     * Set the store programmatically.
+     *
+     * @param store Store to be set.
+     */
+    public void setStore(InventoryStore store) {
+        editor.resetAnchor();
+        if(store == null) {
+            return;
+        }
+        HasValue<?, ?> storeField = editor.getAnchorField("Store");
+        //noinspection unchecked
+        ((IdInput<InventoryStore>)storeField).setValue(store);
+        storeField.setReadOnly(true);
+        load.click();
+    }
+
     private static Class<? extends InventoryItemType> itemTypeClass(String classNames) {
         int p = classNames.indexOf('|');
         if(p >= 0) {
@@ -132,7 +174,11 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
     private static Collection<Entity> suppliers(String classNames) {
         int p = classNames.indexOf('|');
         if(p >= 0) {
-            classNames = classNames.substring(p + 1);
+            classNames = classNames.substring(p + 1).trim();
+            p = classNames.indexOf('|');
+            if(p >= 0) {
+                classNames = classNames.substring(0, p).trim();
+            }
         } else {
             return null;
         }
@@ -146,6 +192,29 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
         } catch(Throwable e) {
             throw new SORuntimeException("Unable to determine suppliers from '" + classNames + "'");
         }
+    }
+
+    private static InventoryStore storeName(String classNames) {
+        int p = classNames.indexOf('|');
+        if(p >= 0) {
+            classNames = classNames.substring(p + 1).trim();
+            p = classNames.indexOf('|');
+            if(p >= 0) {
+                classNames = classNames.substring(p + 1).trim();
+            } else {
+                return null;
+            }
+        } else {
+            return null;
+        }
+        if(classNames.isEmpty()) {
+            return null;
+        }
+        InventoryStore store = LocationField.getStore(classNames);
+        if(store == null) {
+            throw new SORuntimeException("Unable to determine the store from '" + classNames + "'");
+        }
+        return store;
     }
 
     private static class GRNEditor extends ObjectEditor<InventoryGRN> {

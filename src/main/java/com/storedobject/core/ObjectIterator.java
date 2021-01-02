@@ -167,6 +167,14 @@ public class ObjectIterator<O extends StoredObject> implements Iterator<O>, Iter
         return new ArrayList<>();
     }
 
+    public List<O> toList() {
+        return (List<O>)collectAll((Collection<O>)null);
+    }
+
+    public <T> List<T> toList(Function<O, T> convertor) {
+        return (List<T>)collectAll(null, convertor);
+    }
+
     public O single(Predicate<? super O> filter) {
         return single(filter, true);
     }

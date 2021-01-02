@@ -20,7 +20,6 @@ import static com.storedobject.core.EditorAction.*;
 
 public class ObjectBrowser<T extends StoredObject> extends ObjectGrid<T> implements EditableDataGrid<T> {
 
-    static final String NOTHING_SELECTED = "Nothing selected";
     private ObjectSearchBuilder<T> searchBuilder;
     protected final ButtonLayout buttonPanel = new ButtonLayout();
     protected Button add, edit, delete, search, filter, load, view, report, excel, audit, exit, save, cancel;
@@ -408,6 +407,7 @@ public class ObjectBrowser<T extends StoredObject> extends ObjectGrid<T> impleme
         super.close();
     }
 
+    @Override
     public T selected() {
         clearAlerts();
         T o = getSelected();

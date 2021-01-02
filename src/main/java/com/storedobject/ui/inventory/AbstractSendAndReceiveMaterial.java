@@ -1,6 +1,5 @@
 package com.storedobject.ui.inventory;
 
-import com.storedobject.common.SORuntimeException;
 import com.storedobject.common.StringList;
 import com.storedobject.core.*;
 import com.storedobject.ui.*;
@@ -28,7 +27,7 @@ public abstract class AbstractSendAndReceiveMaterial extends ObjectBrowser<Mater
     }
 
     public AbstractSendAndReceiveMaterial(InventoryLocation fromOrTo, boolean receiveMode) {
-        this(fromOrToField(fromOrTo), receiveMode);
+        this(LocationField.create(fromOrTo), receiveMode);
     }
 
     private AbstractSendAndReceiveMaterial(LocationField fromOrToField, boolean receiveMode) {
@@ -51,28 +50,11 @@ public abstract class AbstractSendAndReceiveMaterial extends ObjectBrowser<Mater
         setOrderBy("Date DESC,ReferenceNumber");
     }
 
-    private static LocationField fromOrToField(InventoryLocation fromOrTo) {
-        List<InventoryLocation> list = new ArrayList<>();
-        list.add(fromOrTo);
-        return new LocationField(list);
-    }
-
     private static LocationField fromOrToField(String fromOrTo, boolean receiveMode) {
-        if(fromOrTo == null || fromOrTo.isEmpty()) {
-            throw new SORuntimeException((receiveMode ? "Store" : "Location") + " not specified!");
-        }
-        LocationField fromOrToField;
         if(receiveMode) {
-            fromOrToField = new LocationField(0);
-        } else {
-            fromOrToField = new LocationField(4, 5, 11);
+            return LocationField.create(null, fromOrTo, 0);
         }
-        InventoryLocation fromOrToLoc = fromOrToField.getLocations().stream().
-                filter(loc -> loc.getName().equalsIgnoreCase(fromOrTo)).findFirst().orElse(null);
-        if(fromOrToLoc == null) {
-            throw new SORuntimeException((receiveMode ? "Store" : "Location") + " not found - " + fromOrTo);
-        }
-        return fromOrToField(fromOrToLoc);
+        return LocationField.create(null, fromOrTo, 4, 5, 11);
     }
 
     @Override

@@ -1,9 +1,8 @@
 package com.storedobject.core;
 
-import java.math.BigDecimal;
 import java.sql.Date;
+import java.math.BigDecimal;
 import java.sql.Timestamp;
-import java.util.Random;
 
 public final class MaterialRequest extends StoredObject {
 
@@ -17,7 +16,7 @@ public final class MaterialRequest extends StoredObject {
     }
 
     public int getNo() {
-        return new Random().nextInt();
+        return 0;
     }
 
     public void setDate(Date date) {
@@ -38,7 +37,6 @@ public final class MaterialRequest extends StoredObject {
     }
 
     public void setFromLocation(BigDecimal idValue) {
-        setFromLocation(new Id(idValue));
     }
 
     public void setFromLocation(InventoryLocation fromLocation) {
@@ -56,7 +54,6 @@ public final class MaterialRequest extends StoredObject {
     }
 
     public void setToLocation(BigDecimal idValue) {
-        setToLocation(new Id(idValue));
     }
 
     public void setToLocation(InventoryLocation toLocation) {
@@ -74,11 +71,11 @@ public final class MaterialRequest extends StoredObject {
     }
 
     public int getStatus() {
-        return new Random().nextInt();
+        return 0;
     }
 
     public static String[] getStatusValues() {
-        return new String[0];
+        return new String[] {};
     }
 
     public static String getStatusValue(int value) {
@@ -120,9 +117,42 @@ public final class MaterialRequest extends StoredObject {
         return "";
     }
 
-    public void request(Transaction transaction) throws Exception {
+    public void setPerson(Id personId) {
     }
 
-    public void foreclose(Transaction transaction) throws Exception {
+    public void setPerson(BigDecimal idValue) {
+        setPerson(new Id(idValue));
+    }
+
+    public void setPerson(Person person) {
+        setPerson(person == null ? null : person.getId());
+    }
+
+    public Id getPersonId() {
+        return new Id();
+    }
+
+    public Person getPerson() {
+        return new Person();
+    }
+
+    public void setReserved(boolean reserved) {
+    }
+
+    public boolean getReserved() {
+        return false;
+    }
+
+    public void setReceived(boolean received) {
+    }
+
+    public boolean getReceived() {
+        return false;
+    }
+
+    public void releaseReservation(Transaction transaction) throws Exception {
+    }
+
+    public void request(Transaction transaction) throws Exception {
     }
 }
