@@ -1,5 +1,6 @@
 package com.storedobject.ui;
 
+import com.storedobject.common.FilterProvider;
 import com.storedobject.common.StringList;
 import com.storedobject.core.*;
 import com.storedobject.ui.util.ObjectDataProvider;
@@ -36,6 +37,7 @@ public class ObjectBrowser<T extends StoredObject> extends ObjectGrid<T> impleme
     private SplitLayout layout;
     private boolean anchorsExist;
     private String anchorFilter;
+    private final ObjectSearchFilter extraFilter = new ObjectSearchFilter();
 
     public ObjectBrowser(Class<T> objectClass) {
         this(objectClass, (String)null);
@@ -554,7 +556,16 @@ public class ObjectBrowser<T extends StoredObject> extends ObjectGrid<T> impleme
                     filter(null);
                 } else {
                     clear(false);
-                    load(anchorFilter);
+                    filter = anchorFilter;
+                    String ef = extraFilter.getFilter();
+                    if(ef != null) {
+                        if(filter == null) {
+                            filter = ef;
+                        } else {
+                            filter += " AND (" + ef + ")";
+                        }
+                    }
+                    load(filter);
                 }
             } else {
                 Predicate<T> filterFunction = null;
@@ -568,12 +579,32 @@ public class ObjectBrowser<T extends StoredObject> extends ObjectGrid<T> impleme
                     if(anchorFilter != null) {
                         filter += " AND (" + anchorFilter + ")";
                     }
+                    String ef = extraFilter.getFilter();
+                    if(ef != null) {
+                        filter += " AND (" + ef + ")";
+                    }
                     load(filter);
                 } else {
                     filter(filterFunction);
                 }
             }
         }
+    }
+
+    public void setExtraFilter(FilterProvider filterProvider) {
+        if(extraFilter.getFilterProvider() == filterProvider) {
+            return;
+        }
+        extraFilter.setFilterProvider(filterProvider);
+        reload(true);
+    }
+
+    public void setExtraFilter(String extraFilter) {
+        if(Objects.equals(extraFilter, this.extraFilter.getCondition())) {
+            return;
+        }
+        this.extraFilter.setCondition(extraFilter);
+        reload(true);
     }
 
     @Override

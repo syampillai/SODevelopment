@@ -10,30 +10,32 @@ import com.vaadin.flow.component.icon.VaadinIcon;
 import java.util.ArrayList;
 import java.util.List;
 
-public abstract class AbstractSendAndReceiveMaterial extends ObjectBrowser<MaterialReturned> {
+public abstract class AbstractSendAndReceiveMaterial<T extends InventoryTransfer, L extends InventoryTransferItem> extends ObjectBrowser<T> {
 
     private final Button send = new Button("Send", VaadinIcon.TRUCK, e -> send());
     private final Button receive = new Button("Receive", VaadinIcon.STORAGE, e -> receive());
     private final ObjectField<InventoryLocation> fromField, toField;
     private InventoryLocation fromOrTo;
     private final boolean receiveMode;
+    private final Class<L> itemClass;
 
-    public AbstractSendAndReceiveMaterial(boolean receiveMode) {
-        this((String) null, receiveMode);
+    public AbstractSendAndReceiveMaterial(Class<T> transferClass, Class<L> itemClass, boolean receiveMode) {
+        this(transferClass, itemClass, (String) null, receiveMode);
     }
 
-    public AbstractSendAndReceiveMaterial(String fromOrTo, boolean receiveMode) {
-        this(fromOrToField(fromOrTo, receiveMode), receiveMode);
+    public AbstractSendAndReceiveMaterial(Class<T> transferClass, Class<L> itemClass, String fromOrTo, boolean receiveMode) {
+        this(transferClass, itemClass, fromOrToField(fromOrTo, receiveMode), receiveMode);
     }
 
-    public AbstractSendAndReceiveMaterial(InventoryLocation fromOrTo, boolean receiveMode) {
-        this(LocationField.create(fromOrTo), receiveMode);
+    public AbstractSendAndReceiveMaterial(Class<T> transferClass, Class<L> itemClass, InventoryLocation fromOrTo, boolean receiveMode) {
+        this(transferClass, itemClass, LocationField.create(fromOrTo), receiveMode);
     }
 
-    private AbstractSendAndReceiveMaterial(LocationField fromOrToField, boolean receiveMode) {
-        super(MaterialReturned.class,
+    private AbstractSendAndReceiveMaterial(Class<T> transferClass, Class<L> itemClass, LocationField fromOrToField, boolean receiveMode) {
+        super(transferClass,
                 receiveMode ? StringList.create("Date", "ReferenceNumber", "FromLocation as Sent from", "Received") :
-                        StringList.create("Date", "ReferenceNumber", "ToLocation as Return to", "Status"));
+                        StringList.create("Date", "ReferenceNumber", "ToLocation as " + (transferClass == MaterialReturned.class ? "Return" : "Transfer") + " to", "Status"));
+        this.itemClass = itemClass;
         this.receiveMode = receiveMode;
         setCaption((receiveMode ? "Receive" : "Sent") + " Materials");
         send.setVisible(!receiveMode);
@@ -41,13 +43,26 @@ public abstract class AbstractSendAndReceiveMaterial extends ObjectBrowser<Mater
         this.fromOrTo = fromOrToField.getValue();
         if(receiveMode) {
             this.toField = new ObjectField<>("Receive at", fromOrToField);
-            this.fromField = new ObjectField<>("Sent from", new LocationField(4, 5, 11));
+            this.fromField = new ObjectField<>("Sent from", new LocationField(0, 4, 5, 11));
         } else {
             this.fromField = new ObjectField<>("Sent from", fromOrToField);
-            this.toField = new ObjectField<>("Return to", new LocationField(0));
+            if(transferClass == MaterialReturned.class) {
+                this.toField = new ObjectField<>("Return to", new LocationField(0));
+            } else {
+                this.toField = new ObjectField<>("Transferred to", new LocationField(0, 4, 5, 11));
+            }
         }
-        setFilter((receiveMode ? "To" : "From") + "Location=" + this.fromOrTo.getId() + (receiveMode ? " AND Status=1" : ""));
         setOrderBy("Date DESC,ReferenceNumber");
+        setExtraFilter((String)null);
+    }
+
+    @Override
+    public void setExtraFilter(String extraFilter) {
+        String f = (receiveMode ? "To" : "From") + "Location=" + this.fromOrTo.getId() + (receiveMode ? " AND Status=1" : "");
+        if(extraFilter != null) {
+            f += " AND (" + extraFilter + ")";
+        }
+        super.setExtraFilter(f);
     }
 
     private static LocationField fromOrToField(String fromOrTo, boolean receiveMode) {
@@ -73,17 +88,17 @@ public abstract class AbstractSendAndReceiveMaterial extends ObjectBrowser<Mater
         buttonPanel.add(send, receive);
     }
 
-    public String getReceived(MaterialReturned mr) {
+    public String getReceived(T mr) {
         return mr != null && mr.getStatus() == 2 ? "Yes" : "No";
     }
 
     @Override
-    protected ObjectEditor<MaterialReturned> createObjectEditor() {
+    protected ObjectEditor<T> createObjectEditor() {
         return new MREditor();
     }
 
     @Override
-    public boolean canEdit(MaterialReturned object) {
+    public boolean canEdit(T object) {
         if(object.getStatus() > 0) {
             warning("Changes not possible with status = " + object.getStatusValue());
             return false;
@@ -92,7 +107,7 @@ public abstract class AbstractSendAndReceiveMaterial extends ObjectBrowser<Mater
     }
 
     @Override
-    public boolean canDelete(MaterialReturned object) {
+    public boolean canDelete(T object) {
         if(object.getStatus() == 1) {
             if(receiveMode) {
                 warning("Please receive the items first.");
@@ -106,7 +121,7 @@ public abstract class AbstractSendAndReceiveMaterial extends ObjectBrowser<Mater
     }
 
     private void send() {
-        MaterialReturned mr = selected();
+        T mr = selected();
         if(mr == null) {
             return;
         }
@@ -121,7 +136,7 @@ public abstract class AbstractSendAndReceiveMaterial extends ObjectBrowser<Mater
     }
 
     private void receive() {
-        MaterialReturned mr = selected();
+        T mr = selected();
         if(mr == null) {
             return;
         }
@@ -130,19 +145,19 @@ public abstract class AbstractSendAndReceiveMaterial extends ObjectBrowser<Mater
             return;
         }
         List<InventoryItem> items = new ArrayList<>();
-        mr.listLinks(MaterialReturnedItem.class).map(MaterialReturnedItem::getItem).collectAll(items);
+        mr.listLinks(itemClass).map(InventoryTransferItem::getItem).collectAll(items);
         new ReceiveAndBin(mr.getDate(), "Receipt " + mr.getReferenceNumber(), items, mr::receive, () -> refresh(mr)).execute(getView());
     }
 
-    private class MREditor extends ObjectEditor<MaterialReturned> {
+    private class MREditor extends ObjectEditor<T> {
 
         private MRItemGrid mrItemGrid;
 
         public MREditor() {
-            super(MaterialReturned.class);
+            super(AbstractSendAndReceiveMaterial.this.getObjectClass());
             if(!receiveMode) {
                 setNewObjectGenerator(() -> {
-                    MaterialReturned mr = new MaterialReturned();
+                    T mr = getObjectClass().getDeclaredConstructor().newInstance();
                     mr.setFromLocation(fromOrTo);
                     return mr;
                 });
@@ -177,14 +192,14 @@ public abstract class AbstractSendAndReceiveMaterial extends ObjectBrowser<Mater
         protected LinkGrid<?> createLinkFieldGrid(String fieldName, ObjectLinkField<?> field) {
             if("Items.l".equals(fieldName)) {
                 //noinspection unchecked
-                mrItemGrid = new MRItemGrid((ObjectLinkField<MaterialReturnedItem>) field);
+                mrItemGrid = new MRItemGrid((ObjectLinkField<L>) field);
                 return mrItemGrid;
             }
             return super.createLinkFieldGrid(fieldName, field);
         }
 
         @Override
-        public void setObject(MaterialReturned object, boolean load) {
+        public void setObject(T object, boolean load) {
             super.setObject(object, load);
             if(object != null && !receiveMode) {
                 if(!fromOrTo.getId().equals(object.getFromLocationId())) {
@@ -199,25 +214,25 @@ public abstract class AbstractSendAndReceiveMaterial extends ObjectBrowser<Mater
         }
     }
 
-    private class MRItemGrid extends DetailLinkGrid<MaterialReturnedItem> {
+    private class MRItemGrid extends DetailLinkGrid<L> {
 
         private ItemInput<?> itemInput;
 
-        public MRItemGrid(ObjectLinkField<MaterialReturnedItem> linkField) {
+        public MRItemGrid(ObjectLinkField<L> linkField) {
             super(linkField);
         }
 
         @Override
-        public ObjectEditor<MaterialReturnedItem> constructObjectEditor() {
+        public ObjectEditor<L> constructObjectEditor() {
             return new MRIEditor();
         }
 
-        private class MRIEditor extends ObjectEditor<MaterialReturnedItem> {
+        private class MRIEditor extends ObjectEditor<L> {
 
             private QuantityField quantityField;
 
             public MRIEditor() {
-                super(MaterialReturnedItem.class);
+                super(itemClass);
             }
 
             @Override
@@ -234,7 +249,7 @@ public abstract class AbstractSendAndReceiveMaterial extends ObjectBrowser<Mater
             }
 
             @Override
-            public void setObject(MaterialReturnedItem object, boolean load) {
+            public void setObject(L object, boolean load) {
                 super.setObject(object, load);
                 if(object != null) {
                     changed(object.getItem());

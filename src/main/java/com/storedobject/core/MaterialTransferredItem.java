@@ -1,8 +1,8 @@
 package com.storedobject.core;
 
-public final class MaterialReturnedItem extends InventoryTransferItem {
+public final class MaterialTransferredItem extends InventoryTransferItem {
 
-    public MaterialReturnedItem() {
+    public MaterialTransferredItem() {
     }
 
     public static void columns(Columns columns) {
@@ -10,6 +10,6 @@ public final class MaterialReturnedItem extends InventoryTransferItem {
 
     @Override
     public boolean isDetailOf(Class<? extends StoredObject> masterClass) {
-        return masterClass == MaterialReturned.class;
+        return masterClass == MaterialTransferred.class;
     }
 }

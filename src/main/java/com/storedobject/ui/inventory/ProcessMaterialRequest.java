@@ -46,7 +46,7 @@ public class ProcessMaterialRequest extends AbstractRequestMaterial {
     @Override
     public final void constructed() {
         super.constructed();
-        setFilter("Status IN (1,2)");
+        setExtraFilter("Status IN (1,2)");
     }
 
     @Override

@@ -18,10 +18,11 @@ public class ReceiveMaterial extends DataForm {
     private static final String[] TYPE_4_STORES = new String[] {
             "Purchased (GRN)",
             "Returned from other Locations",
+            "Transferred from other Stores",
     };
     private static final String[] TYPE_4_LOCATIONS = new String[] {
             "Issued from Stores",
-            "Sent from other Locations",
+            "Transferred from Stores",
     };
     private boolean valuesSet = false;
     private final LocationField toField;
@@ -162,6 +163,9 @@ public class ReceiveMaterial extends DataForm {
                 case 1:
                     new ReceiveMaterialReturned(to).execute();
                     return true;
+                case 2:
+                    new ReceiveMaterialTransferred(to).execute();
+                    return true;
             }
         } else {
             switch(typeFieldForLocations.getValue()) {
@@ -169,11 +173,10 @@ public class ReceiveMaterial extends DataForm {
                     new ReceiveMaterialRequested(to).execute();
                     return true;
                 case 1:
-                    new ReceiveMaterialReturned(to).execute();
+                    new ReceiveMaterialTransferred(to).execute();
                     return true;
             }
         }
-        warning("Not yet supported");
         return true;
     }
 }
