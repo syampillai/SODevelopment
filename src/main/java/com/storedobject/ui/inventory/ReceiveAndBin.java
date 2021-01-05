@@ -175,23 +175,28 @@ public class ReceiveAndBin extends ListGrid<InventoryItem> implements Transactio
     }
 
     private boolean saveItem(InventoryItem item) {
-        return transact(t -> {
-            itemEditor.save(t);
-            if(item.isSerialized()) {
-                refresh(item);
-            } else {
-                removeIf(i -> {
-                    if(i.getId().equals(item.getId()) ||
-                            !i.getPartNumberId().equals(item.getPartNumberId()) ||
-                            !i.getLocationId().equals(item.getLocationId()) ||
-                            !i.getOwnerId().equals(item.getOwnerId())) {
-                        return false;
-                    }
-                    return StoredObject.get(InventoryItem.class, i.getId(), true).getQuantity().isZero();
-                });
-                refresh();
-            }
-        });
+        if(!transact(t -> itemEditor.save(t))) {
+            return false;
+        }
+        if(item.isSerialized()) {
+            refresh(item);
+        } else {
+            removeIf(i -> {
+                if(i.getId().equals(item.getId()) ||
+                        !i.getPartNumberId().equals(item.getPartNumberId()) ||
+                        !i.getLocationId().equals(item.getLocationId()) ||
+                        !i.getOwnerId().equals(item.getOwnerId())) {
+                    return false;
+                }
+                return StoredObject.get(InventoryItem.class, i.getId(), true).getQuantity().isZero();
+            });
+            refresh();
+        }
+        InventoryLocation bin = bins.get(item.getId());
+        if(bin != null && !bin.canStore(item)) {
+            warning("This item can't be stored at location '" + bin.toDisplay() + "'. Please a suitable location.");
+        }
+        return true;
     }
 
     private class BinEditor extends DataForm {

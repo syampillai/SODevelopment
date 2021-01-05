@@ -53,6 +53,7 @@ public abstract class AbstractRequestMaterial extends ObjectBrowser<MaterialRequ
         if(issuing && !(this.fromOrTo instanceof InventoryStoreBin)) {
             throw new SORuntimeException("Not a store - " + this.fromOrTo.toDisplay());
         }
+        setOrderBy("Date DESC,No DESC");
     }
 
     private static StringList columns(int style, boolean issuing) {
@@ -69,6 +70,17 @@ public abstract class AbstractRequestMaterial extends ObjectBrowser<MaterialRequ
         }
         return columns(0, false);
     }
+
+    @Override
+    public void setExtraFilter(String extraFilter) {
+        String f = getFixedSide() + "Location=" + fromOrTo.getId();
+        if(extraFilter != null) {
+            f += " AND (" + extraFilter + ")";
+        }
+        super.setExtraFilter(f);
+    }
+
+    abstract String getFixedSide();
 
     @Override
     public void constructed() {
@@ -229,7 +241,7 @@ public abstract class AbstractRequestMaterial extends ObjectBrowser<MaterialRequ
 
             private void pnChanged() {
                 InventoryItemType pn = pnField.getObject();
-                qField.setValue(pn.getUnitOfMeasurement());
+                qField.setValue(pn == null ? Count.ZERO : pn.getUnitOfMeasurement());
             }
         }
     }

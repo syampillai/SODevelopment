@@ -282,4 +282,8 @@ public class InventoryItemType extends StoredObject implements HasChildren {
     public static List<InventoryItemType> listAPNs(Id partNumberId) {
         return new ArrayList<>();
     }
+
+    public InventoryBin findBin(InventoryStore store) {
+        return Math.random() < 0.5 ? null : new InventoryBin();
+    }
 }

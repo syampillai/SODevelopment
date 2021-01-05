@@ -156,9 +156,8 @@ public class ReceiveMaterial extends DataForm {
         if(to instanceof InventoryStoreBin) {
             switch(typeFieldForStores.getValue()) {
                 case 0:
-                    GRN grn = new GRN();
+                    GRN grn = new GRN(((InventoryStoreBin)to).getStore());
                     grn.execute();
-                    grn.setStore(((InventoryStoreBin)to).getStore());
                     return true;
                 case 1:
                     new ReceiveMaterialReturned(to).execute();

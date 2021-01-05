@@ -164,14 +164,19 @@ public class LocationField extends ObjectComboField<InventoryLocation> {
      * Remove a location from the list of allowed locations.
      *
      * @param location Location to be removed.
+     * @return Self reference.
      */
-    public void remove(InventoryLocation location) {
+    public LocationField remove(InventoryLocation location) {
+        if(location == null) {
+            return this;
+        }
         boolean sameValue = location.equals(getValue());
         //noinspection unchecked
         ((ObjectListProvider<InventoryLocation, ?>)getDataProvider()).delete(location);
         if(sameValue) {
             setValue(locations.isEmpty() ? null : locations.get(0));
         }
+        return this;
     }
 
     /**

@@ -1,5 +1,6 @@
 package com.storedobject.ui.inventory;
 
+import com.storedobject.common.SORuntimeException;
 import com.storedobject.common.StringList;
 import com.storedobject.core.*;
 import com.storedobject.ui.*;
@@ -12,10 +13,12 @@ import java.util.List;
 
 public abstract class AbstractSendAndReceiveMaterial<T extends InventoryTransfer, L extends InventoryTransferItem> extends ObjectBrowser<T> {
 
+    private static final int[] ALL_TYPES = new int[] { 0, 3, 4, 5, 9, 11 };
     private final Button send = new Button("Send", VaadinIcon.TRUCK, e -> send());
     private final Button receive = new Button("Receive", VaadinIcon.STORAGE, e -> receive());
     private final ObjectField<InventoryLocation> fromField, toField;
     private InventoryLocation fromOrTo;
+    private InventoryLocation otherLocation;
     private final boolean receiveMode;
     private final Class<L> itemClass;
 
@@ -23,59 +26,107 @@ public abstract class AbstractSendAndReceiveMaterial<T extends InventoryTransfer
         this(transferClass, itemClass, (String) null, receiveMode);
     }
 
+    public AbstractSendAndReceiveMaterial(Class<T> transferClass, Class<L> itemClass, boolean receiveMode, InventoryLocation otherLocation) {
+        this(transferClass, itemClass, (String) null, receiveMode, otherLocation);
+    }
+
     public AbstractSendAndReceiveMaterial(Class<T> transferClass, Class<L> itemClass, String fromOrTo, boolean receiveMode) {
-        this(transferClass, itemClass, fromOrToField(fromOrTo, receiveMode), receiveMode);
+        this(transferClass, itemClass, fromOrTo, receiveMode, otherLoc(fromOrTo));
+    }
+
+    private AbstractSendAndReceiveMaterial(Class<T> transferClass, Class<L> itemClass, String fromOrTo, boolean receiveMode, InventoryLocation otherLocation) {
+        this(transferClass, itemClass, fromOrToField(fromOrTo, receiveMode, transferClass), receiveMode, otherLocation);
     }
 
     public AbstractSendAndReceiveMaterial(Class<T> transferClass, Class<L> itemClass, InventoryLocation fromOrTo, boolean receiveMode) {
         this(transferClass, itemClass, LocationField.create(fromOrTo), receiveMode);
     }
 
+    public AbstractSendAndReceiveMaterial(Class<T> transferClass, Class<L> itemClass, InventoryLocation fromOrTo, boolean receiveMode, InventoryLocation otherLocation) {
+        this(transferClass, itemClass, LocationField.create(fromOrTo), receiveMode, otherLocation);
+    }
+
     private AbstractSendAndReceiveMaterial(Class<T> transferClass, Class<L> itemClass, LocationField fromOrToField, boolean receiveMode) {
+        this(transferClass, itemClass, fromOrToField, receiveMode, null);
+    }
+
+    private AbstractSendAndReceiveMaterial(Class<T> transferClass, Class<L> itemClass, LocationField fromOrToField, boolean receiveMode, InventoryLocation otherLocation) {
         super(transferClass,
                 receiveMode ? StringList.create("Date", "ReferenceNumber", "FromLocation as Sent from", "Received") :
                         StringList.create("Date", "ReferenceNumber", "ToLocation as " + (transferClass == MaterialReturned.class ? "Return" : "Transfer") + " to", "Status"));
         this.itemClass = itemClass;
         this.receiveMode = receiveMode;
-        setCaption((receiveMode ? "Receive" : "Sent") + " Materials");
+        setCaption((receiveMode ? "Receive" : (transferClass == MaterialReturned.class ? "Return" : "Transfer")) + " Materials");
         send.setVisible(!receiveMode);
         receive.setVisible(receiveMode);
         this.fromOrTo = fromOrToField.getValue();
+        this.otherLocation = otherLocation;
+        if(this.otherLocation != null && this.otherLocation.equals(this.fromOrTo)) {
+            throw new SORuntimeException("Both locations can't be the same - " + this.fromOrTo.toDisplay());
+        }
+        LocationField lf;
         if(receiveMode) {
             this.toField = new ObjectField<>("Receive at", fromOrToField);
-            this.fromField = new ObjectField<>("Sent from", new LocationField(0, 4, 5, 11));
+            lf = this.otherLocation == null ? new LocationField(ALL_TYPES).remove(this.fromOrTo) : LocationField.create(this.otherLocation);
+            this.fromField = new ObjectField<>("Sent from", lf);
         } else {
             this.fromField = new ObjectField<>("Sent from", fromOrToField);
             if(transferClass == MaterialReturned.class) {
-                this.toField = new ObjectField<>("Return to", new LocationField(0));
+                lf = this.otherLocation == null ? new LocationField(0).remove(this.fromOrTo) : LocationField.create(this.otherLocation);
+                this.toField = new ObjectField<>("Return to", lf);
             } else {
-                this.toField = new ObjectField<>("Transferred to", new LocationField(0, 4, 5, 11));
+                lf = this.otherLocation == null ? new LocationField(ALL_TYPES).remove(this.fromOrTo) : LocationField.create(this.otherLocation);
+                this.toField = new ObjectField<>("Transferred to", lf);
             }
         }
-        setOrderBy("Date DESC,ReferenceNumber");
-        setExtraFilter((String)null);
+        setOrderBy("Date DESC,No DESC");
     }
 
     @Override
     public void setExtraFilter(String extraFilter) {
-        String f = (receiveMode ? "To" : "From") + "Location=" + this.fromOrTo.getId() + (receiveMode ? " AND Status=1" : "");
+        String f = getFixedSide() + "Location=" + this.fromOrTo.getId();
+        if(otherLocation != null) {
+            f += " AND " + ("To".equals(getFixedSide()) ? "From" : "To") + "Location=" + this.otherLocation.getId();
+        }
         if(extraFilter != null) {
             f += " AND (" + extraFilter + ")";
         }
         super.setExtraFilter(f);
     }
 
-    private static LocationField fromOrToField(String fromOrTo, boolean receiveMode) {
+    String getFixedSide() {
+        return receiveMode ? "To" : "From";
+    }
+
+    private static LocationField fromOrToField(String fromOrTo, boolean receiveMode, Class<?> transferClass) {
         if(receiveMode) {
             return LocationField.create(null, fromOrTo, 0);
         }
-        return LocationField.create(null, fromOrTo, 4, 5, 11);
+        if(transferClass == MaterialReturned.class) {
+            return LocationField.create(null, fromOrTo, 4, 5, 11);
+        }
+        return LocationField.create(null, fromOrTo, ALL_TYPES);
+    }
+
+    private static InventoryLocation otherLoc(String name) {
+        if(name == null || name.isEmpty()) {
+            return null;
+        }
+        int p = name.indexOf('|');
+        if(p < 0) {
+            return null;
+        }
+        return LocationField.getLocation(name.substring(p + 1).trim(), true, ALL_TYPES);
     }
 
     @Override
     public void createHeaders() {
-        prependHeader().join().setComponent(new ELabel(receiveMode ? "Receive at: " : "From: ")
-                .append(fromOrTo.toDisplay(), "blue").update());
+        ELabel e = new ELabel((receiveMode ? "Receive at" : "From") + ": ").
+                append(fromOrTo.toDisplay(), "blue");
+        if(otherLocation != null) {
+            e.append(" " + (receiveMode ? "From" : "To") + ": ").append(otherLocation.toDisplay(), "blue");
+        }
+        prependHeader().join().setComponent(e.update());
     }
 
     @Override
@@ -88,13 +139,13 @@ public abstract class AbstractSendAndReceiveMaterial<T extends InventoryTransfer
         buttonPanel.add(send, receive);
     }
 
-    public String getReceived(T mr) {
-        return mr != null && mr.getStatus() == 2 ? "Yes" : "No";
+    public String getReceived(T mt) {
+        return mt != null && mt.getStatus() == 2 ? "Yes" : "No";
     }
 
     @Override
     protected ObjectEditor<T> createObjectEditor() {
-        return new MREditor();
+        return new MTEditor();
     }
 
     @Override
@@ -121,45 +172,48 @@ public abstract class AbstractSendAndReceiveMaterial<T extends InventoryTransfer
     }
 
     private void send() {
-        T mr = selected();
-        if(mr == null) {
+        T mt = selected();
+        if(mt == null) {
             return;
         }
-        if(mr.getStatus() != 0) {
+        if(mt.getStatus() != 0) {
             warning("Already sent!");
             return;
         }
-        if(transact(mr::send)) {
-            refresh(mr);
+        if(transact(mt::send)) {
+            refresh(mt);
             message("Sent successfully");
         }
     }
 
     private void receive() {
-        T mr = selected();
-        if(mr == null) {
+        T mt = selected();
+        if(mt == null) {
             return;
         }
-        if(mr.getStatus() != 1) {
+        if(mt.getStatus() != 1) {
             warning("Already received!");
             return;
         }
         List<InventoryItem> items = new ArrayList<>();
-        mr.listLinks(itemClass).map(InventoryTransferItem::getItem).collectAll(items);
-        new ReceiveAndBin(mr.getDate(), "Receipt " + mr.getReferenceNumber(), items, mr::receive, () -> refresh(mr)).execute(getView());
+        mt.listLinks(itemClass).map(InventoryTransferItem::getItem).collectAll(items);
+        new ReceiveAndBin(mt.getDate(), "Receipt " + mt.getReferenceNumber(), items, mt::receive, () -> refresh(mt)).execute(getView());
     }
 
-    private class MREditor extends ObjectEditor<T> {
+    private class MTEditor extends ObjectEditor<T> {
 
-        private MRItemGrid mrItemGrid;
+        private MTItemGrid mtItemGrid;
 
-        public MREditor() {
+        public MTEditor() {
             super(AbstractSendAndReceiveMaterial.this.getObjectClass());
             if(!receiveMode) {
                 setNewObjectGenerator(() -> {
-                    T mr = getObjectClass().getDeclaredConstructor().newInstance();
-                    mr.setFromLocation(fromOrTo);
-                    return mr;
+                    T mt = getObjectClass().getDeclaredConstructor().newInstance();
+                    mt.setFromLocation(fromOrTo);
+                    if(otherLocation != null) {
+                        mt.setToLocation(otherLocation);
+                    }
+                    return mt;
                 });
             }
         }
@@ -170,9 +224,17 @@ public abstract class AbstractSendAndReceiveMaterial<T extends InventoryTransfer
             if(receiveMode) {
                 toField.setValue(fromOrTo);
                 setFieldReadOnly(toField);
+                if(otherLocation != null) {
+                    fromField.setValue(otherLocation);
+                    setFieldReadOnly(fromField);
+                }
             } else {
                 fromField.setValue(fromOrTo);
                 setFieldReadOnly(fromField);
+                if(otherLocation != null) {
+                    toField.setValue(otherLocation);
+                    setFieldReadOnly(toField);
+                }
             }
             setFieldHidden("Status");
         }
@@ -192,8 +254,8 @@ public abstract class AbstractSendAndReceiveMaterial<T extends InventoryTransfer
         protected LinkGrid<?> createLinkFieldGrid(String fieldName, ObjectLinkField<?> field) {
             if("Items.l".equals(fieldName)) {
                 //noinspection unchecked
-                mrItemGrid = new MRItemGrid((ObjectLinkField<L>) field);
-                return mrItemGrid;
+                mtItemGrid = new MTItemGrid((ObjectLinkField<L>) field);
+                return mtItemGrid;
             }
             return super.createLinkFieldGrid(fieldName, field);
         }
@@ -205,20 +267,23 @@ public abstract class AbstractSendAndReceiveMaterial<T extends InventoryTransfer
                 if(!fromOrTo.getId().equals(object.getFromLocationId())) {
                     fromOrTo = object.getFromLocation();
                     if(fromOrTo instanceof InventoryStoreBin) {
-                        mrItemGrid.itemInput.setStore(((InventoryStoreBin) fromOrTo).getStore());
+                        mtItemGrid.itemInput.setStore(((InventoryStoreBin) fromOrTo).getStore());
                     } else {
-                        mrItemGrid.itemInput.setLocation(fromOrTo);
+                        mtItemGrid.itemInput.setLocation(fromOrTo);
+                    }
+                    if(otherLocation != null) {
+                        otherLocation = object.getToLocation();
                     }
                 }
             }
         }
     }
 
-    private class MRItemGrid extends DetailLinkGrid<L> {
+    private class MTItemGrid extends DetailLinkGrid<L> {
 
         private ItemInput<?> itemInput;
 
-        public MRItemGrid(ObjectLinkField<L> linkField) {
+        public MTItemGrid(ObjectLinkField<L> linkField) {
             super(linkField);
         }
 

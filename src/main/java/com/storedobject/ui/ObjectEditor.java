@@ -792,6 +792,13 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T> 
     }
 
     /**
+     * This method will be invoked if the "Cancel" button is pressed on the anchor form.
+     *
+     */
+    protected void anchorsCancelled() {
+    }
+
+    /**
      * Execute the "anchor form" and run some specified action.
      *
      * @param action Action to run.
@@ -1589,6 +1596,7 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T> 
                 closeOnSave = false;
                 ObjectEditor.this.close();
             }
+            anchorsCancelled();
         }
 
         private void run(Runnable action) {

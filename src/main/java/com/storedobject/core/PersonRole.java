@@ -20,11 +20,11 @@ public abstract class PersonRole extends StoredObject implements OfEntity, HasCo
     }
 
     public Id getPersonId() {
-        return null;
+        return new Id();
     }
 
     public Person getPerson() {
-        return null;
+        return new Person();
     }
     
     public void setSystemEntity(Id systemEntityId) {
@@ -37,47 +37,53 @@ public abstract class PersonRole extends StoredObject implements OfEntity, HasCo
     }
 
     public Id getSystemEntityId() {
-        return null;
+        return new Id();
     }
 
     @Override
 	public SystemEntity getSystemEntity() {
-        return null;
+        return new SystemEntity();
     }
 
     public static <T extends PersonRole> T get(SystemEntity systemEntity, Class<T> roleClass, Person person) {
-        return null;
+        //noinspection unchecked
+        return (T) new PersonRole() {};
     }
     
     public static <T extends PersonRole> T get(SystemEntity systemEntity, Class<T> roleClass, Person person, boolean any) {
-        return null;
+        //noinspection unchecked
+        return (T) new PersonRole() {};
     }
     
     public static <T extends PersonRole> T getByPersonId(SystemEntity systemEntity, Class<T> roleClass, Id personId) {
-        return null;
+        //noinspection unchecked
+        return (T) new PersonRole() {};
     }
     
     public static <T extends PersonRole> T getByPersonId(SystemEntity systemEntity, Class<T> roleClass, Id personId, boolean any) {
-        return null;
+        //noinspection unchecked
+        return (T) new PersonRole() {};
     }
 
     public static <T extends PersonRole> T getByName(SystemEntity systemEntity, Class<T> roleClass, String name) {
-        return null;
+        //noinspection unchecked
+        return (T) new PersonRole() {};
     }
 
     public static <T extends PersonRole> T getByName(SystemEntity systemEntity, Class<T> roleClass, String name, boolean any) {
-        return null;
+        //noinspection unchecked
+        return (T) new PersonRole() {};
     }
 
     public static <T extends PersonRole> ObjectIterator<T> listByName(SystemEntity systemEntity, Class<T> roleClass, String name) {
-        return null;
+        return ObjectIterator.create();
     }
     
     public static <T extends PersonRole> ObjectIterator<T> listByName(final SystemEntity systemEntity, final Class<T> roleClass, String name, final boolean any) {
-        return null;
+        return ObjectIterator.create();
     }
 
     public Id getContactOwnerId() {
-        return null;
+        return new Id();
     }
 }

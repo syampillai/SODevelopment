@@ -9,6 +9,7 @@ import com.storedobject.ui.QuantityField;
 import com.storedobject.ui.util.AbstractObjectForestSupplier;
 import com.storedobject.vaadin.*;
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.grid.ColumnTextAlign;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridMultiSelectionModel;
@@ -50,9 +51,16 @@ public class ProcessMaterialRequest extends AbstractRequestMaterial {
     }
 
     @Override
+    String getFixedSide() {
+        return "To";
+    }
+
+    @Override
     protected void addExtraButtons() {
         super.addExtraButtons();
-        buttonPanel.add(new Button("Process", e -> processRequest()));
+        Checkbox h = new Checkbox("Include History");
+        h.addValueChangeListener(e -> setExtraFilter(e.getValue() ? null : "Status IN (1,2)"));
+        buttonPanel.add(new Button("Process", e -> processRequest()), h);
     }
 
     private void processRequest() {
@@ -62,7 +70,7 @@ public class ProcessMaterialRequest extends AbstractRequestMaterial {
         }
         mr.reload();
         if(mr.getStatus() > 2) {
-            warning("Can not process, status changed to - " + mr.getStatusValue());
+            warning("Can not process, is '" + mr.getStatusValue() + "'");
             refresh(mr);
             return;
         }
@@ -357,6 +365,9 @@ public class ProcessMaterialRequest extends AbstractRequestMaterial {
             removeButton.setVisible(count > 0 || miiMap.values().stream().anyMatch(list -> !list.isEmpty()));
             saveButton.setVisible(count > 0 || saveButton.isVisible());
             refresh();
+            for(MaterialRequestItem mri: mriList) {
+                expand(mri);
+            }
         }
 
         private void removeEntries() {

@@ -28,6 +28,11 @@ public class RequestMaterial extends AbstractRequestMaterial {
     }
 
     @Override
+    String getFixedSide() {
+        return "From";
+    }
+
+    @Override
     protected void addExtraButtons() {
         super.addExtraButtons();
         buttonPanel.add(new Button("Send Request", VaadinIcon.PAPERPLANE, e -> sendRequest()));

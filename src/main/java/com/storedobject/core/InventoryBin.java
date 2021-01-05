@@ -2,17 +2,8 @@ package com.storedobject.core;
 
 import java.math.BigDecimal;
 
-/**
- * Represents a bin within a store where items can be stocked. (There can be a hierarchy of bins within
- * a store and thus, each bin can have a parent bin).
- *
- * @author Syam
- */
 public class InventoryBin extends InventoryLocation {
 
-    /**
-     * Constructor.
-     */
     public InventoryBin() {
     }
 
@@ -36,25 +27,10 @@ public class InventoryBin extends InventoryLocation {
         return new InventoryStore();
     }
 
-    public void setParentLocation(Id parentLocationId) {
+    public void setPickingOrder(int pickingOrder) {
     }
 
-    public void setParentLocation(BigDecimal idValue) {
-    }
-
-    public void setParentLocation(InventoryBin parentLocation) {
-    }
-
-    public Id getParentLocationId() {
-        return new Id();
-    }
-
-    public InventoryBin getParentLocation() {
-        return new InventoryBin();
-    }
-
-    @Override
-    public final int getType() {
+    public int getPickingOrder() {
         return 0;
     }
 
@@ -64,5 +40,15 @@ public class InventoryBin extends InventoryLocation {
 
     public static ObjectIterator<InventoryBin> list(String name, InventoryStore store) {
         return ObjectIterator.create();
+    }
+
+    @Override
+    public final int getType() {
+        return 0;
+    }
+
+    @Override
+    public final Id getEntityId() {
+        return Id.ZERO;
     }
 }

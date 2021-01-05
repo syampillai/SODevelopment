@@ -2,6 +2,7 @@ package com.storedobject.ui;
 
 import com.storedobject.common.Geolocation;
 import com.storedobject.common.MathUtility;
+import com.storedobject.core.GlobalProperty;
 import com.storedobject.helper.ID;
 import com.vaadin.flow.component.ClientCallable;
 import com.vaadin.flow.component.DetachEvent;
@@ -20,7 +21,7 @@ import java.util.stream.Stream;
 @JsModule("./so/google-map/google-map.js")
 public class GoogleMap extends PolymerTemplate<GoogleMap.Model> {
 
-    private static String apiKey;
+    private static String apiKey = GlobalProperty.get("Google Map API Key");
     private int width = 600, height = 400;
     private final List<String> commands = new ArrayList<>();
     private boolean trigged = false;
@@ -39,7 +40,7 @@ public class GoogleMap extends PolymerTemplate<GoogleMap.Model> {
 
     public GoogleMap(Geolocation geolocation) {
         ID.set(this);
-        if(apiKey != null) {
+        if(apiKey != null && !apiKey.isEmpty()) {
             getModel().setApiKey(apiKey);
         }
         getModel().setApiId("api" + ID.newID());

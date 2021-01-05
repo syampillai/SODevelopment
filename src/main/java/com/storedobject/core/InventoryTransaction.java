@@ -121,4 +121,7 @@ public final class InventoryTransaction {
     public Map<Id, Id> getItemsChanged() {
         return new HashMap<>();
     }
+
+    public void checkTransit(boolean checkTransit) {
+    }
 }

@@ -3,6 +3,7 @@ package com.storedobject.ui.inventory;
 import com.storedobject.core.InventoryLocation;
 import com.storedobject.core.MaterialReturned;
 import com.storedobject.core.MaterialReturnedItem;
+import com.vaadin.flow.component.checkbox.Checkbox;
 
 public final class ReceiveMaterialReturned extends AbstractSendAndReceiveMaterial<MaterialReturned, MaterialReturnedItem> {
 
@@ -16,5 +17,19 @@ public final class ReceiveMaterialReturned extends AbstractSendAndReceiveMateria
 
     public ReceiveMaterialReturned(InventoryLocation to) {
         super(MaterialReturned.class, MaterialReturnedItem.class, to, true);
+    }
+
+    @Override
+    public void constructed() {
+        super.constructed();
+        setExtraFilter("Status=1");
+    }
+
+    @Override
+    protected void addExtraButtons() {
+        super.addExtraButtons();
+        Checkbox h = new Checkbox("Include History");
+        h.addValueChangeListener(e -> setExtraFilter(e.getValue() ? null : "Status=1"));
+        buttonPanel.add(h);
     }
 }
