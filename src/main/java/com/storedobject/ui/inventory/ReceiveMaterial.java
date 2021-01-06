@@ -16,9 +16,10 @@ import com.storedobject.vaadin.View;
 public class ReceiveMaterial extends DataForm {
 
     private static final String[] TYPE_4_STORES = new String[] {
-            "Purchased (GRN)",
-            "Returned from other Locations",
-            "Transferred from other Stores",
+            "GRN - Purchases",
+            "Returned from Other Locations",
+            "Transferred from Other Stores",
+            "Returned from Repair/Maintenance Organizations"
     };
     private static final String[] TYPE_4_LOCATIONS = new String[] {
             "Issued from Stores",
@@ -164,6 +165,9 @@ public class ReceiveMaterial extends DataForm {
                     return true;
                 case 2:
                     new ReceiveMaterialTransferred(to).execute();
+                    return true;
+                case 3:
+                    new ReceiveRepairedItems((InventoryStoreBin) to).execute();
                     return true;
             }
         } else {

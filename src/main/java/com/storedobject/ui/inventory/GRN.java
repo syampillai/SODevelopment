@@ -95,6 +95,8 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
         editor.grnBrowser = this;
         if(store != null) {
             addConstructedListener(f -> setStore(store));
+        } else {
+            setExtraFilter("Status<2", false);
         }
     }
 
@@ -114,6 +116,11 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
 
     void showStore(InventoryStore store) {
         this.storeDisplay.clearContent().append("Store: ").append(store.toDisplay(), "blue").update();
+    }
+
+    public void processGRN(InventoryGRN grn) {
+        select(grn);
+        edit.click();
     }
 
     @Override
@@ -271,6 +278,7 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
                 }
                 supplierField = new ObjectField<>(suppliers);
             }
+            addField("ReferenceNumber");
             setCaption("Edit / Process GRN");
         }
 
@@ -278,6 +286,7 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
         protected void formConstructed() {
             super.formConstructed();
             add.setVisible(false);
+            setFieldReadOnly("ReferenceNumber");
         }
 
         @Override
@@ -352,7 +361,7 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
             if(grn == null) {
                 return false;
             }
-            if(grn.getStatus() > 0) {
+            if(grn.getStatus() > 1) {
                 warning("Status: " + grn.getStatusValue() + ". Can't edit");
                 return false;
             }
@@ -485,7 +494,9 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
             if(showMessage) {
                 message("Status changed to: " + grn.getStatusValue());
                 grnBrowser.refresh(grn);
-                close();
+                if(grn.getStatus() == 2) {
+                    close();
+                }
             }
         }
 
@@ -832,7 +843,6 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
                 bField = new BinField("Bin");
                 snField = new TextField("Serial/Batch Number");
                 qField = new QuantityField("Quantity");
-                setRequired(qField);
                 cField = new MoneyField("Unit Cost");
             }
 
@@ -841,6 +851,8 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
                 pnField = new ObjectField<>("Part Number", pnClass, true);
                 addField(pnField, snField, qField, cField, bField);
                 pnField.addValueChangeListener(e -> pnChanged());
+                setRequired(pnField);
+                setRequired(qField);
             }
 
             private void pnChanged() {

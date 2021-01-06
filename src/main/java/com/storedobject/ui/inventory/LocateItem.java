@@ -1,19 +1,14 @@
 package com.storedobject.ui.inventory;
 
+import com.storedobject.common.StringList;
 import com.storedobject.core.*;
 import com.storedobject.ui.ELabel;
 import com.storedobject.ui.ObjectEditor;
 import com.storedobject.ui.ObjectField;
-import com.storedobject.ui.ObjectGrid;
-import com.storedobject.vaadin.Button;
-import com.storedobject.vaadin.ButtonLayout;
-import com.storedobject.vaadin.CloseableView;
-import com.storedobject.vaadin.TextField;
+import com.storedobject.vaadin.*;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.icon.VaadinIcon;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.stream.Stream;
 
 /**
@@ -22,7 +17,7 @@ import java.util.stream.Stream;
  *
  * @author Syam
  */
-public class LocateItem extends ObjectGrid<InventoryItem> implements CloseableView {
+public class LocateItem extends ListGrid<InventoryItem> implements CloseableView {
 
     private final Class<? extends InventoryItem> itemClass;
     private final ObjectField<InventoryItemType> pnField;
@@ -30,7 +25,6 @@ public class LocateItem extends ObjectGrid<InventoryItem> implements CloseableVi
     private final Button inspect;
     @SuppressWarnings("rawtypes")
     private ObjectEditor editor;
-    private final List<InventoryItem> items = new ArrayList<>();
 
     /**
      * Constructor.
@@ -139,7 +133,7 @@ public class LocateItem extends ObjectGrid<InventoryItem> implements CloseableVi
     }
 
     private LocateItem(String caption, InventoryItemType partNumber, Class<? extends InventoryItem> itemClass, boolean canInspect) {
-        super(InventoryItem.class, ItemField.COLUMNS, true);
+        super(InventoryItem.class, StringList.create(ItemField.COLUMNS));
         this.itemClass = itemClass;
         setCaption(caption == null || caption.isEmpty() ? "Items" : caption);
         if(itemClass == null) {
@@ -229,6 +223,15 @@ public class LocateItem extends ObjectGrid<InventoryItem> implements CloseableVi
         return super.getColumnCaption(columnName);
     }
 
+    public String getLocationDisplay(InventoryItem item) {
+        String s = item.getLocationDisplay();
+        int p = s.indexOf(" \u21D0 ");
+        if(p > 0) {
+            s = s.substring(0, p);
+        }
+        return s;
+    }
+
     private void loadItems() {
         String sn = snField == null ? "" : StoredObject.toCode(snField.getValue());
         if(!sn.isEmpty()) {
@@ -284,23 +287,19 @@ public class LocateItem extends ObjectGrid<InventoryItem> implements CloseableVi
     }
 
     private void loadInt(Stream<InventoryItem> objects) {
-        items.clear();
-        objects.forEach(items::add);
-        load(items);
+        clear();
+        objects.forEach(this::add);
+        if(inspect != null) {
+            inspect.setVisible(!isEmpty());
+        }
     }
 
     private void loadInt(ObjectIterator<InventoryItem> objects) {
-        items.clear();
-        objects.collectAll(items);
-        load(items);
-        if(inspect != null) {
-            inspect.setVisible(!items.isEmpty());
-        }
+        loadInt(objects.stream());
     }
 
     @Override
     public void clear() {
-        items.clear();
         if(inspect != null) {
             inspect.setVisible(false);
         }
@@ -309,7 +308,7 @@ public class LocateItem extends ObjectGrid<InventoryItem> implements CloseableVi
 
     private void inspect() {
         close();
-        new ReceiveAndBin(items).execute();
+        new ReceiveAndBin(this).execute();
     }
 
     private void view(InventoryItem item) {

@@ -19,6 +19,10 @@ public final class ReceiveMaterialReturned extends AbstractSendAndReceiveMateria
         super(MaterialReturned.class, MaterialReturnedItem.class, to, true);
     }
 
+    public ReceiveMaterialReturned(InventoryLocation to, InventoryLocation otherLocation) {
+        super(MaterialReturned.class, MaterialReturnedItem.class, to, true, otherLocation);
+    }
+
     @Override
     public void constructed() {
         super.constructed();
@@ -31,5 +35,10 @@ public final class ReceiveMaterialReturned extends AbstractSendAndReceiveMateria
         Checkbox h = new Checkbox("Include History");
         h.addValueChangeListener(e -> setExtraFilter(e.getValue() ? null : "Status=1"));
         buttonPanel.add(h);
+    }
+
+    @Override
+    public void receive(MaterialReturned entry) {
+        super.receive(entry);
     }
 }

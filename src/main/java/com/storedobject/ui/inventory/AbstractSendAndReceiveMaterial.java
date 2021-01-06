@@ -98,6 +98,13 @@ public abstract class AbstractSendAndReceiveMaterial<T extends InventoryTransfer
         return receiveMode ? "To" : "From";
     }
 
+    void receive(T entry) {
+        if(receiveMode) {
+            select(entry);
+            receive.click();
+        }
+    }
+
     private static LocationField fromOrToField(String fromOrTo, boolean receiveMode, Class<?> transferClass) {
         if(receiveMode) {
             return LocationField.create(null, fromOrTo, 0);
@@ -191,9 +198,17 @@ public abstract class AbstractSendAndReceiveMaterial<T extends InventoryTransfer
         if(mt == null) {
             return;
         }
-        if(mt.getStatus() != 1) {
-            warning("Already received!");
-            return;
+        switch(mt.getStatus()) {
+            case 0:
+                warning("Not yet dispatched");
+                return;
+            case 1:
+                break;
+            case 2:
+                warning("Already received!");
+                return;
+            default:
+                return;
         }
         List<InventoryItem> items = new ArrayList<>();
         mt.listLinks(itemClass).map(InventoryTransferItem::getItem).collectAll(items);

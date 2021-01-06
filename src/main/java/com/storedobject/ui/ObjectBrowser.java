@@ -592,19 +592,31 @@ public class ObjectBrowser<T extends StoredObject> extends ObjectGrid<T> impleme
     }
 
     public void setExtraFilter(FilterProvider filterProvider) {
+        setExtraFilter(filterProvider, true);
+    }
+
+    public void setExtraFilter(FilterProvider filterProvider, boolean reload) {
         if(extraFilter.getFilterProvider() == filterProvider) {
             return;
         }
         extraFilter.setFilterProvider(filterProvider);
-        reload(true);
+        if(reload) {
+            reload(true);
+        }
     }
 
     public void setExtraFilter(String extraFilter) {
+        setExtraFilter(extraFilter, true);
+    }
+
+    public void setExtraFilter(String extraFilter, boolean reload) {
         if(Objects.equals(extraFilter, this.extraFilter.getCondition())) {
             return;
         }
         this.extraFilter.setCondition(extraFilter);
-        reload(true);
+        if(reload) {
+            reload(true);
+        }
     }
 
     @Override

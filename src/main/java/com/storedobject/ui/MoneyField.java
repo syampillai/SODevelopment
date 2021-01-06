@@ -3,6 +3,7 @@ package com.storedobject.ui;
 import com.storedobject.core.Money;
 import com.storedobject.vaadin.Clickable;
 import com.storedobject.vaadin.CustomTextField;
+import com.storedobject.vaadin.RequiredField;
 import com.storedobject.vaadin.util.HasTextValue;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.textfield.TextField;
@@ -10,10 +11,12 @@ import com.vaadin.flow.component.textfield.TextField;
 import java.math.BigDecimal;
 import java.util.*;
 
-public class MoneyField extends CustomTextField<Money> {
+public class MoneyField extends CustomTextField<Money> implements RequiredField {
 
     private Span symbol;
     private List<Currency> allowedCurrencies = null;
+    private boolean required = false;
+    private TextField textField;
 
     public MoneyField() {
         this((String)null);
@@ -66,8 +69,9 @@ public class MoneyField extends CustomTextField<Money> {
             symbol = new Span();
             new Clickable<>(symbol, c -> changeCurrency());
         }
-        TextField field = (TextField) textField;
-        field.setPrefixComponent(symbol);
+        this.textField = (TextField) textField;
+        this.textField.setPrefixComponent(symbol);
+        this.textField.setRequired(required);
     }
 
     @Override
@@ -100,7 +104,7 @@ public class MoneyField extends CustomTextField<Money> {
 
     @Override
     protected String format(Money value) {
-        return value.toString(false);
+        return required && value.isZero() ? "" : value.toString(false);
     }
 
     @Override
@@ -165,5 +169,12 @@ public class MoneyField extends CustomTextField<Money> {
             }
             setValue(new Money(m.getValue(), allowedCurrencies.get(i)));
         }
+    }
+
+    @Override
+    public void setRequired(boolean required) {
+        this.required = required;
+        this.textField.setRequired(required);
+        setPresentationValue(getValue());
     }
 }

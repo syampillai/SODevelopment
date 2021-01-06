@@ -161,6 +161,15 @@ public class LocationField extends ObjectComboField<InventoryLocation> {
     }
 
     /**
+     * Get the number of locations allowed in this field.
+     *
+     * @return Location count.
+     */
+    public int getLocationCount() {
+        return locations.size();
+    }
+
+    /**
      * Remove a location from the list of allowed locations.
      *
      * @param location Location to be removed.

@@ -3,6 +3,7 @@ package com.storedobject.ui.util;
 import com.storedobject.core.MeasurementUnit;
 import com.storedobject.core.Quantity;
 import com.storedobject.vaadin.CustomTextField;
+import com.storedobject.vaadin.RequiredField;
 import com.storedobject.vaadin.util.HasTextValue;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.textfield.HasPrefixAndSuffix;
@@ -10,11 +11,13 @@ import com.vaadin.flow.component.textfield.TextField;
 
 import java.math.BigDecimal;
 
-public class AbstractQuantityField<T extends Quantity> extends CustomTextField<T> {
+public class AbstractQuantityField<T extends Quantity> extends CustomTextField<T> implements RequiredField {
 
     private Span unit;
     private final Class<T> quantityClass;
     private final int decimals;
+    private boolean required = false;
+    private TextField textField;
 
     @SuppressWarnings("unchecked")
     public AbstractQuantityField(String label, int width, int decimals, Class<T> quantityClass, MeasurementUnit unit) {
@@ -42,6 +45,8 @@ public class AbstractQuantityField<T extends Quantity> extends CustomTextField<T
         }
         ((TextField)textField).setAutoselect(true);
         ((HasPrefixAndSuffix)textField).setPrefixComponent(this.unit);
+        this.textField = (TextField) textField;
+        this.textField.setRequired(required);
     }
 
     public MeasurementUnit getUnit() {
@@ -69,12 +74,19 @@ public class AbstractQuantityField<T extends Quantity> extends CustomTextField<T
 
     @Override
     protected String format(T value) {
-        return value.toString(false);
+        return required && value.isZero() ? "" : value.toString(false);
     }
 
     @Override
     protected void setPresentationValue(T value) {
         getField().setValue(format(value));
         this.unit.setText(value.getUnit().getUnit());
+    }
+
+    @Override
+    public void setRequired(boolean required) {
+        this.required = required;
+        this.textField.setRequired(required);
+        setPresentationValue(getValue());
     }
 }
