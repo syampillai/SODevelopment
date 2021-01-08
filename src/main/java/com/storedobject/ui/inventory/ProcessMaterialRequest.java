@@ -294,12 +294,22 @@ public class ProcessMaterialRequest extends AbstractRequestMaterial {
         }
 
         private ObjectIterator<InventoryItem> stockList(MaterialRequestItem mri) {
+            InventoryItemType pn = mri.getPartNumber();
             ObjectIterator<InventoryItem> stock;
             InventoryLocation location = mr.getToLocation();
+            InventoryStore store = null;
             if(location instanceof InventoryStoreBin) {
-                stock = mri.getPartNumber().listStock(((InventoryStoreBin) location).getStore());
+                store = ((InventoryStoreBin) location).getStore();
+                stock = pn.listStock(store);
             } else {
-                stock = mri.getPartNumber().listStock(location);
+                stock = pn.listStock(location);
+            }
+            for(InventoryItemType apn: pn.listAPNs()) {
+                if(store == null) {
+                    stock = stock.add(apn.listStock(location));
+                } else {
+                    stock = stock.add(apn.listStock(store));
+                }
             }
             return stock.filter(ii -> !(ii.getLocation() instanceof InventoryReservedBin));
         }

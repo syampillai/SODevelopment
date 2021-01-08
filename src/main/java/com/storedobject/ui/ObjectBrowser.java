@@ -3,6 +3,8 @@ package com.storedobject.ui;
 import com.storedobject.common.FilterProvider;
 import com.storedobject.common.StringList;
 import com.storedobject.core.*;
+import com.storedobject.ui.inventory.POBrowser;
+import com.storedobject.ui.inventory.POItemBrowser;
 import com.storedobject.ui.util.ObjectDataProvider;
 import com.storedobject.vaadin.*;
 import com.vaadin.flow.component.Component;
@@ -25,7 +27,7 @@ public class ObjectBrowser<T extends StoredObject> extends ObjectGrid<T> impleme
     protected final ButtonLayout buttonPanel = new ButtonLayout();
     protected Button add, edit, delete, search, filter, load, view, report, excel, audit, exit, save, cancel;
     private String allowedActions;
-    private ObjectEditor<T> editor;
+    ObjectEditor<T> editor;
     private List<ObjectEditorListener> objectEditorListeners;
     private T editingItem;
     private boolean rowMode = false;
@@ -88,16 +90,24 @@ public class ObjectBrowser<T extends StoredObject> extends ObjectGrid<T> impleme
         init(actions & (~RELOAD), null, caption, null);
     }
 
-    ObjectBrowser(Class<T> objectClass, Iterable<String> browseColumns, int actions, Iterable<String> filterColumns,
+    protected ObjectBrowser(Class<T> objectClass, Iterable<String> browseColumns, int actions, Iterable<String> filterColumns,
                   String caption, String allowedActions) {
         super(objectClass, browseColumns, (actions & ALLOW_ANY) == ALLOW_ANY);
         init(actions, filterColumns, caption, allowedActions);
     }
 
     private void init(int actions, Iterable<String> filterColumns, String caption, String allowedActions) {
+        if( // Do not allow certain special classes to directly inherit this class with etitability
+                (InventoryPO.class.isAssignableFrom(getObjectClass()) && !(this instanceof POBrowser)) ||
+                        (InventoryPOItem.class.isAssignableFrom(getObjectClass()) && !(this instanceof POItemBrowser))
+        ) {
+            actions &= (~NEW) & (~EDIT) & (~DELETE);
+        }
         anchorsExist = !ClassAttribute.get(getObjectClass()).getAnchors().isEmpty();
         addConstructedListener(o -> gridCreated());
-        setCaption(caption);
+        if(caption != null && !caption.isEmpty()) {
+            setCaption(caption);
+        }
         buttonPanel.add(getConfigureButton());
         save = new Button("Save Changes", "Save", e-> saveEditedRow());
         cancel = new Button("Abandon Changes", "Cancel", e -> cancelRowEdit());
@@ -295,6 +305,14 @@ public class ObjectBrowser<T extends StoredObject> extends ObjectGrid<T> impleme
         } catch (Throwable t) {
             Application.get().log(t);
         }
+        if(InventoryPO.class.isAssignableFrom(objectClass)) {
+            //noinspection rawtypes
+            return new POBrowser(objectClass, actions, title);
+        }
+        if(InventoryPOItem.class.isAssignableFrom(objectClass)) {
+            //noinspection rawtypes
+            return new POItemBrowser(objectClass, actions, title);
+        }
         return new ObjectBrowser<>(objectClass, browseColumns, actions, title);
     }
 
@@ -325,6 +343,22 @@ public class ObjectBrowser<T extends StoredObject> extends ObjectGrid<T> impleme
     @Override
     public final Logic getLogic() {
         return logic;
+    }
+
+    @Override
+    public void setCaption(String caption) {
+        if(caption == null || caption.isEmpty()) {
+            caption = getCaption();
+            if(caption == null || caption.isEmpty()) {
+                return;
+            }
+            error("Error: Please inform Syam about this error");
+            return;
+        }
+        super.setCaption(caption);
+        if(editor != null) {
+            editor.setCaption(caption);
+        }
     }
 
     @Override
@@ -530,7 +564,7 @@ public class ObjectBrowser<T extends StoredObject> extends ObjectGrid<T> impleme
                     oe.executeAnchorForm(() -> reload(true));
                     return;
                 }
-                String af = oe.anchorFilter();
+                String af = oe.getAnchorFilter();
                 again = !Objects.equals(anchorFilter, af);
                 if(again) {
                     anchorFilter = af;
@@ -616,6 +650,55 @@ public class ObjectBrowser<T extends StoredObject> extends ObjectGrid<T> impleme
         this.extraFilter.setCondition(extraFilter);
         if(reload) {
             reload(true);
+        }
+    }
+
+    /**
+     * Validate the anchor values. This is invoked when anchor values are set while adding a new instance.
+     *
+     * @param object The instance that contains the currently accepted anchor values.
+     * @throws SOException If thrown, the message is displayed as a warning and the add operation is aborted.
+     */
+    public void validateAnchorValues(T object) throws SOException {
+    }
+
+    /**
+     * Reset the anchor values so that it will be asked again for the next add/search actions.
+     */
+    public void resetAnchor() {
+        if(anchorsExist) {
+            getObjectEditor();
+            if(editor != null) {
+                editor.anchorAction = true;
+            }
+        }
+    }
+
+    /**
+     * This method is invoked when anchor values are set via the anchor form and if any exception is
+     * thrown from this method, anchor values will asked again.
+     *
+     * @throws Exception If anchor values are not acceptable for some reason.
+     */
+    protected void anchorsSet() throws Exception {
+    }
+
+    /**
+     * This method will be invoked if the "Cancel" button is pressed on the anchor form.
+     *
+     */
+    protected void anchorsCancelled() {
+    }
+
+    /**
+     * Execute the "anchor form" and run some specified action.
+     *
+     * @param action Action to run.
+     */
+    public void executeAnchorForm(Runnable action) {
+        getObjectEditor();
+        if(editor != null) {
+            editor.executeAnchorForm(action);
         }
     }
 
@@ -759,6 +842,7 @@ public class ObjectBrowser<T extends StoredObject> extends ObjectGrid<T> impleme
         }
         if(editor == null) {
             editor = ObjectEditor.create(getObjectClass());
+            editor.setCaption(getCaption());
         }
         if(layout == null) {
             editor.fieldPositions(new ArrayList<>());

@@ -79,7 +79,25 @@ public class LocationField extends ObjectComboField<InventoryLocation> {
             }
             return locationField;
         } catch(Throwable error) {
-            throw new SORuntimeException("Unable to determine stock locations. Have you configured any stores yet?");
+            StringBuilder m = new StringBuilder("Unable to determine stock locations. Check your configuration of ");
+            if(types.length == 0) {
+                m.append("stores.");
+            } else {
+                for(int i = 0; i < types.length; i++) {
+                    if(i > 0) {
+                        m.append(", ");
+                    }
+                    m.append('"');
+                    m.append(InventoryLocation.getTypeValue(types[i]));
+                    m.append('"');
+                }
+                if(types.length > 1) {
+                    m.append(" etc.");
+                } else {
+                    m.append('.');
+                }
+            }
+            throw new SORuntimeException(m.toString());
         }
     }
 

@@ -205,7 +205,6 @@ public class SystemUtility extends View implements CloseableView, Transactional 
         }
         if(c == executeRaw) {
             String command = rawCommand.getValue().trim();
-            //noinspection ResultOfMethodCallIgnored
             getApplication().getServer().execute(command);
             return;
         }

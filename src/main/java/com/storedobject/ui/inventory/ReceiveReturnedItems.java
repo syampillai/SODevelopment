@@ -14,38 +14,43 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-public class ReceiveRepairedItems extends DataForm implements Transactional {
+/**
+ * Return items from an external organization that were sent to them earlier (Sent for repairs, rented out etc.)
+ * 
+ * @author Syam
+ */
+public class ReceiveReturnedItems extends DataForm implements Transactional {
 
     private InventoryLocation storeBin;
-    private InventoryLocation ro;
+    private InventoryLocation eo;
     private final LocationField storeField;
-    private final LocationField roField;
+    private final LocationField eoField;
     private Date date;
 
-    public ReceiveRepairedItems() {
-        this((InventoryStoreBin) null, null);
+    public ReceiveReturnedItems(int type) {
+        this(type, (InventoryStoreBin) null, null);
     }
 
-    public ReceiveRepairedItems(String storeAndROName) {
-        this(LocationField.getStore(storeAndROName), roName(storeAndROName));
+    public ReceiveReturnedItems(int type, String storeAndEOName) {
+        this(type, LocationField.getStore(storeAndEOName), eoName(storeAndEOName, type));
     }
 
-    public ReceiveRepairedItems(InventoryStore store) {
-        this(store, null);
+    public ReceiveReturnedItems(int type, InventoryStore store) {
+        this(type, store, null);
     }
 
-    public ReceiveRepairedItems(InventoryStore store, InventoryLocation ro) {
-        this(store.getStoreBin(), ro);
+    public ReceiveReturnedItems(int type, InventoryStore store, InventoryLocation eo) {
+        this(type, store.getStoreBin(), eo);
     }
 
-    public ReceiveRepairedItems(InventoryStoreBin storeBin) {
-        this(storeBin, null);
+    public ReceiveReturnedItems(int type, InventoryStoreBin storeBin) {
+        this(type, storeBin, null);
     }
 
-    public ReceiveRepairedItems(InventoryStoreBin storeBin, InventoryLocation ro) {
-        super("Receive Repaired Items");
+    public ReceiveReturnedItems(int type, InventoryStoreBin storeBin, InventoryLocation eo) {
+        super(caption(type));
         this.storeBin = storeBin;
-        this.ro = ro;
+        this.eo = eo;
         if(storeBin == null) {
             storeField = LocationField.create(0);
             if(storeField.getLocationCount() == 1) {
@@ -55,43 +60,53 @@ public class ReceiveRepairedItems extends DataForm implements Transactional {
             storeField = LocationField.create(storeBin);
         }
         storeField.setLabel("Select Store");
-        if(ro == null) {
-            roField = LocationField.create(3);
-            if(roField.getLocationCount() == 1) {
-                this.ro = roField.getValue();
+        if(eo == null) {
+            eoField = LocationField.create(type);
+            if(eoField.getLocationCount() == 1) {
+                this.eo = eoField.getValue();
             }
         } else {
-            if(ro.getType() != 3) {
-                throw new SORuntimeException("Not a repair organization - " + ro.getName());
+            if(eo.getType() != type) {
+                throw new SORuntimeException("Incorrect - " + eo.getTypeValue());
             }
-            roField = LocationField.create(ro);
+            eoField = LocationField.create(eo);
         }
-        roField.setLabel("Repair Organization");
-        addField(storeField, roField);
+        eoField.setLabel("Organization");
+        addField(storeField, eoField);
         if(storeBin != null) {
             setFieldReadOnly(storeField);
         }
-        if(ro != null) {
-            setFieldReadOnly(roField);
+        if(eo != null) {
+            setFieldReadOnly(eoField);
         }
         setRequired(storeField);
-        setRequired(roField);
+        setRequired(eoField);
     }
 
-    private static InventoryLocation roName(String storeAndROName) {
-        if(storeAndROName == null || storeAndROName.isEmpty() || !storeAndROName.contains("|")) {
+    private static String caption(int type) {
+        switch(type) {
+            case 3:
+                return "Receive Repaired Items";
+            case 8:
+                return "Receive Lease Returns";
+        }
+        throw new SORuntimeException("Invalid type: " + InventoryLocation.getTypeValue(type));
+    }
+
+    private static InventoryLocation eoName(String storeAndEOName, int type) {
+        if(storeAndEOName == null || storeAndEOName.isEmpty() || !storeAndEOName.contains("|")) {
             return null;
         }
-        storeAndROName = storeAndROName.substring(storeAndROName.indexOf('|') + 1).trim();
-        if(storeAndROName.isEmpty()) {
+        storeAndEOName = storeAndEOName.substring(storeAndEOName.indexOf('|') + 1).trim();
+        if(storeAndEOName.isEmpty()) {
             return null;
         }
-        return LocationField.getLocation(storeAndROName, 3);
+        return LocationField.getLocation(storeAndEOName, type);
     }
 
     @Override
     protected void execute(View parent, boolean doNotLock) {
-        if(storeBin != null && ro != null) {
+        if(storeBin != null && eo != null) {
             proceed();
             return;
         }
@@ -104,19 +119,19 @@ public class ReceiveRepairedItems extends DataForm implements Transactional {
         if(storeBin == null) {
             storeBin = storeField.getValue();
         }
-        if(ro == null) {
-            ro = roField.getValue();
+        if(eo == null) {
+            eo = eoField.getValue();
         }
         proceed();
         return true;
     }
 
     private void proceed() {
-        List<InventoryItem> items = StoredObject.list(InventoryItem.class, "Location=" + ro.getId(), true).
+        List<InventoryItem> items = StoredObject.list(InventoryItem.class, "Location=" + eo.getId(), true).
                 toList();
         if(items.isEmpty()) {
             processOld();
-            message("No items pending to be received from:<BR/>" + ro.toDisplay());
+            message("No items pending to be received from:<BR/>" + eo.toDisplay());
             return;
         }
         new Select(items, true).execute();
@@ -126,7 +141,7 @@ public class ReceiveRepairedItems extends DataForm implements Transactional {
         InventoryItem item;
         List<MaterialReturnedItem> returnedItems;
         List<MaterialReturned> returns = StoredObject.list(MaterialReturned.class,
-                "FromLocation=" + ro.getId() + " AND Status<2").toList();
+                "FromLocation=" + eo.getId() + " AND Status<2").toList();
         for(MaterialReturned returned: returns) {
             returnedItems = returned.listLinks(MaterialReturnedItem.class).toList();
             for(InventoryTransferItem grnItem: returnedItems) {
@@ -156,7 +171,7 @@ public class ReceiveRepairedItems extends DataForm implements Transactional {
         }
         MaterialReturned returned = new MaterialReturned();
         returned.setDate(date);
-        returned.setFromLocation(ro);
+        returned.setFromLocation(eo);
         returned.setToLocation(storeBin);
         if(!transact(t -> {
             returned.save(t);
@@ -175,13 +190,13 @@ public class ReceiveRepairedItems extends DataForm implements Transactional {
         if(!transact(returned::send)) {
             return;
         }
-        ReceiveMaterialReturned v = new ReceiveMaterialReturned(storeBin, ro);
+        ReceiveMaterialReturned v = new ReceiveMaterialReturned(storeBin, eo);
         v.execute();
         v.receive(returned);
     }
 
     private void processOld() {
-        new ReceiveMaterialReturned(storeBin, ro).execute();
+        new ReceiveMaterialReturned(storeBin, eo).execute();
     }
 
     private class Select extends MultiSelectGrid<InventoryItem> {
@@ -192,7 +207,7 @@ public class ReceiveRepairedItems extends DataForm implements Transactional {
         public Select(List<InventoryItem> items, boolean confirm) {
             super(InventoryItem.class, items,
                     StringList.create("PartNumber", "SerialNumber", "Quantity", "Location"),
-                    selectedSet -> ReceiveRepairedItems.this.process(items, selectedSet, confirm));
+                    selectedSet -> ReceiveReturnedItems.this.process(items, selectedSet, confirm));
             this.confirm = confirm;
             if(confirm) {
                 setCaption("Select Returned Items");

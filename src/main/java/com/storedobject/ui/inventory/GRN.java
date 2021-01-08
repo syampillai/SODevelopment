@@ -15,14 +15,12 @@ import java.util.*;
 import java.util.function.Consumer;
 
 /**
- * GRN - Create, edit and process GRNs. Supplier class name can be configured as a global property
- * with Name = "Supplier-Class".
+ * GRN - Create, edit and process GRNs.
  *
  * @author Syam
  */
 public class GRN extends ObjectBrowser<InventoryGRN> {
 
-    private static final Map<Id, Class<? extends EntityRole>> supplierClassMap = new HashMap<>();
     private ObjectEditor<InventoryGRN> viewer;
     private final GRNEditor editor;
     private final ELabel storeDisplay = new ELabel("Store: Not selected");
@@ -83,7 +81,7 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
     /**
      * Constructor.
      *
-     * @param classNames Class names of to be used. "Class Name of P/N|Store Name".
+     * @param classNames Class names to be used. "Class Name of P/N|Store Name".
      */
     public GRN(String classNames) {
         this(itemTypeClass(classNames), EditorAction.ALL, null, storeName(classNames));
@@ -91,19 +89,18 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
 
     private GRN(Class<? extends InventoryItemType> pnClass, int actions, String caption, InventoryStore store) {
         super(InventoryGRN.class, actions, caption);
-        editor = new GRNEditor(pnClass, suppliers(getTransactionManager()), actions, caption);
-        editor.grnBrowser = this;
+        editor = new GRNEditor(pnClass, actions, caption);
         if(store != null) {
             addConstructedListener(f -> setStore(store));
         } else {
             setExtraFilter("Status<2", false);
         }
+        setCaption("GRN");
     }
 
     private void setStore(InventoryStore store) {
         switchStore.setVisible(false);
-        editor.getComponent();
-        editor.resetAnchor();
+        resetAnchor();
         if(store == null) {
             return;
         }
@@ -112,10 +109,6 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
         ((IdInput<InventoryStore>)storeField).setValue(store);
         storeField.setReadOnly(true);
         setExtraFilter("Status<2");
-    }
-
-    void showStore(InventoryStore store) {
-        this.storeDisplay.clearContent().append("Store: ").append(store.toDisplay(), "blue").update();
     }
 
     public void processGRN(InventoryGRN grn) {
@@ -188,9 +181,23 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
     }
 
     private void switchStore() {
-        editor.resetAnchor();
+        resetAnchor();
         storeDisplay.clearContent().append("Store: Not selected").update();
         load.click();
+    }
+
+    @Override
+    protected void anchorsSet() {
+        this.storeDisplay.clearContent().append("Store: ").append(editor.store.toDisplay(), "blue").update();
+    }
+
+    @Override
+    protected void anchorsCancelled() {
+        if(editor.store == null) {
+            close();
+        } else {
+            anchorsSet();
+        }
     }
 
     private static Class<? extends InventoryItemType> itemTypeClass(String classNames) {
@@ -209,24 +216,9 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
         }
     }
 
-    static Collection<Entity> suppliers(TransactionManager tm) {
-        SystemEntity se = tm.getEntity();
-        Id seId = se == null ? Id.ZERO : se.getEntityId();
-        Class<? extends EntityRole> sClass = supplierClassMap.get(seId);
-        if(sClass == null) {
-            String className = GlobalProperty.get(tm, "Supplier-Class");
-            if(className.isEmpty()) {
-                return null;
-            }
-            try {
-                //noinspection unchecked
-                sClass = (Class<? extends EntityRole>) JavaClassLoader.getLogic(className);
-                supplierClassMap.put(seId, sClass);
-            } catch(Throwable e) {
-                throw new SORuntimeException("Unable to determine suppliers from '" + className + "'");
-            }
-        }
-        return StoredObject.list(sClass).convert(EntityRole::getOrganization).collectAll();
+    static Collection<Entity> suppliers() {
+            return StoredObject.list(InventoryVirtualLocation.class, "Type=1").
+                    map(InventoryVirtualLocation::getEntity).toList();
     }
 
     private static InventoryStore storeName(String classNames) {
@@ -260,7 +252,6 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
         private ObjectField<InventoryStore> storeField;
         private InventoryStore store;
         private final NewGRNItemForm newGRNItemForm = new NewGRNItemForm();
-        private GRN grnBrowser;
         private final Button process = new Button("Mark as Inspected", VaadinIcon.CHECK, e -> process());
         private final Button close = new Button("Mark as Received", VaadinIcon.THUMBS_UP_O, e -> process());
         private final Button inspect = new Button("Inspect", VaadinIcon.STOCK, e -> grnItemGrid.inspectSel()).asSmall();
@@ -269,9 +260,10 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
         private final ELabel hint = new ELabel("You may also right-click on the entry to inspect/bin/assemble.", "blue");
         private final Class<? extends InventoryItemType> pnClass;
 
-        GRNEditor(Class<? extends InventoryItemType> pnClass, Collection<Entity> suppliers, int actions, String caption) {
+        GRNEditor(Class<? extends InventoryItemType> pnClass, int actions, String caption) {
             super(InventoryGRN.class, actions & (~EditorAction.SEARCH), caption);
             this.pnClass = pnClass;
+            Collection<Entity> suppliers = suppliers();
             if(suppliers != null) {
                 if(suppliers.isEmpty()) {
                     throw new SORuntimeException("No suppliers found!");
@@ -325,17 +317,6 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
             newGRNItemForm.bField.setStore(store);
             if(grnItemGrid.binEditor != null) {
                 grnItemGrid.binEditor.binField.setStore(store);
-            }
-            if(grnBrowser != null) {
-                grnBrowser.showStore(store);
-            }
-        }
-
-        @Override
-        protected void anchorsCancelled() {
-            super.anchorsCancelled();
-            if(store == null) {
-                grnBrowser.close();
             }
         }
 
@@ -493,7 +474,7 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
             setObject(grn);
             if(showMessage) {
                 message("Status changed to: " + grn.getStatusValue());
-                grnBrowser.refresh(grn);
+                ((GRN)getGrid()).refresh(grn);
                 if(grn.getStatus() == 2) {
                     close();
                 }

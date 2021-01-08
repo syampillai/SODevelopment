@@ -3,7 +3,7 @@ package com.storedobject.ui;
 import com.storedobject.common.SORuntimeException;
 import com.storedobject.common.StringList;
 import com.storedobject.core.*;
-import com.storedobject.ui.inventory.ItemTypeEditor;
+import com.storedobject.ui.inventory.*;
 import com.storedobject.ui.util.*;
 import com.storedobject.vaadin.*;
 import com.vaadin.flow.component.Component;
@@ -27,6 +27,8 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
+
+import static com.storedobject.core.EditorAction.*;
 
 public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T> implements Transactional, ObjectSetter<T>,
         ObjectChangedListener<T>, ObjectEditorListener, ObjectProvider<T>, AlertHandler, TransactionCreator {
@@ -80,8 +82,14 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T> 
                 Application.get().getRunningLogic().getTitle(), allowedActions(className));
     }
 
-    ObjectEditor(Class<T> objectClass, int actions, String caption, String allowedActions) {
+    protected ObjectEditor(Class<T> objectClass, int actions, String caption, String allowedActions) {
         super(objectClass, caption);
+        if( // Do not allow certain special classes to directly inherit this class with editability
+                (InventoryPO.class.isAssignableFrom(objectClass) && !(this instanceof POEditor)) ||
+                (InventoryPOItem.class.isAssignableFrom(objectClass) && !(this instanceof POItemEditor))
+                ) {
+            actions &= (~NEW) & (~EDIT) & (~DELETE);
+        }
         this.allowedActions = allowedActions;
         this.actions = actions == 0 ? EditorAction.ALL : actions;
         this.actions = filterActions(this.actions);
@@ -139,9 +147,13 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T> 
         } catch(Throwable t) {
             Application.get().log(t);
         }
-        if(InventoryItemType.class.isAssignableFrom(objectClass)) {
+        if(InventoryPO.class.isAssignableFrom(objectClass)) {
             //noinspection rawtypes
-            return new ItemTypeEditor(objectClass, actions, title);
+            return new POEditor(objectClass, actions, title);
+        }
+        if(InventoryPOItem.class.isAssignableFrom(objectClass)) {
+            //noinspection rawtypes
+            return new POItemEditor(objectClass, actions, title);
         }
         return new ObjectEditor<>(objectClass, actions, title);
     }
@@ -162,6 +174,25 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T> 
     }
 
     @Override
+    public void setCaption(String caption) {
+        if(caption == null || caption.isEmpty()) {
+            caption = getCaption();
+            if(caption == null || caption.isEmpty()) {
+                return;
+            }
+            error("Error: Please inform Syam about this error");
+            return;
+        }
+        super.setCaption(caption);
+        if(anchorForm != null) {
+            anchorForm.setCaption(caption);
+        }
+        if(searcher instanceof ObjectBrowser) {
+            ((ObjectBrowser<T>) searcher).setCaption("Search: " + caption);
+        }
+    }
+
+    @Override
     public final void setLogic(Logic logic) {
         if(this.logic == null) {
             this.logic = logic;
@@ -172,6 +203,15 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T> 
     @Override
     public final Logic getLogic() {
         return logic;
+    }
+
+    /**
+     * Get the grid associated with this editor.
+     *
+     * @return Associated grid. Could be null.
+     */
+    public final Grid<T> getGrid() {
+        return grid;
     }
 
     List<String> fieldPositions() {
@@ -826,6 +866,9 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T> 
                 });
                 commit();
                 validateAnchorValues(object);
+                if(grid instanceof ObjectBrowser) {
+                    ((ObjectBrowser<T>) grid).validateAnchorValues(object);
+                }
             } catch(SOException e) {
                 warning(e);
                 object = null;
@@ -933,18 +976,44 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T> 
     }
 
     void startSearch() {
-        searcher = getSearcher();
+        searcher = searcher();
         if(searcher != null) {
             searcher.search(getTransactionManager().getEntity(), this);
         }
     }
 
-    public ObjectSearcher<T> getSearcher() {
+    private ObjectSearcher<T> searcher() {
+        if(searcher == null) {
+            ObjectSearcher<T> s = getSearcher();
+            if(s == null) { // Searching deliberately switched off
+                return null;
+            }
+            if(s != searcher) { // Custom search, need to be configured
+                searcher = s;
+                configureSearch();
+            }
+        }
+        return searcher;
+    }
+
+    private void configureSearch() {
+        if(searcher instanceof ObjectBrowser) {
+            ((ObjectBrowser<T>)searcher).setCaption("Search: " + getCaption());
+            ((ObjectBrowser<T>)searcher).editor = this;
+        }
+    }
+
+    private ObjectSearcher<T> constructSearch() {
         if(searcher == null) {
             searcher = new ObjectBrowser<>(getObjectClass(),
                     EditorAction.SEARCH | EditorAction.RELOAD | (isAllowAny() ? EditorAction.ALLOW_ANY : 0));
+            configureSearch();
         }
         return searcher;
+    }
+
+    public ObjectSearcher<T> getSearcher() {
+        return searcher == null ? constructSearch() : searcher;
     }
 
     protected boolean delete() throws Exception {
@@ -1509,7 +1578,13 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T> 
         }
     }
 
-    String anchorFilter() {
+    /**
+     * Get the anchor filter associated with this editor.
+     * <p>Note: Anchor filter will not be available if the anchor form is not yet executed.</p>
+     *
+     * @return Anchor filter if any, otherwise null.
+     */
+    public String getAnchorFilter() {
         return anchorForm == null ? null : anchorForm.filter();
     }
 
@@ -1570,13 +1645,16 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T> 
             String filter = filter();
             try {
                 anchorsSet();
+                if(grid instanceof ObjectBrowser) {
+                    ((ObjectBrowser<T>) grid).anchorsSet();
+                }
             } catch(Exception e) {
                 warning(e);
                 return false;
             }
             close();
             ObjectSearcher<T> searcher = getSearcher();
-            if(searcher != null) {
+            if(searcher != null && searcher != grid) {
                 searcher.getFilter().setCondition(filter);
             }
             anchorAction = false;
@@ -1597,6 +1675,9 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T> 
                 ObjectEditor.this.close();
             }
             anchorsCancelled();
+            if(grid instanceof ObjectBrowser) {
+                ((ObjectBrowser<T>) grid).anchorsCancelled();
+            }
         }
 
         private void run(Runnable action) {

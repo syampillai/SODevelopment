@@ -19,7 +19,8 @@ public class ReceiveMaterial extends DataForm {
             "GRN - Purchases",
             "Returned from Other Locations",
             "Transferred from Other Stores",
-            "Returned from Repair/Maintenance Organizations"
+            "Returned from Repair/Maintenance Organizations",
+            "Lease Returns"
     };
     private static final String[] TYPE_4_LOCATIONS = new String[] {
             "Issued from Stores",
@@ -167,7 +168,10 @@ public class ReceiveMaterial extends DataForm {
                     new ReceiveMaterialTransferred(to).execute();
                     return true;
                 case 3:
-                    new ReceiveRepairedItems((InventoryStoreBin) to).execute();
+                    new ReceiveReturnedItems(3, (InventoryStoreBin) to).execute();
+                    return true;
+                case 4:
+                    new ReceiveReturnedItems(8, (InventoryStoreBin) to).execute();
                     return true;
             }
         } else {
