@@ -74,7 +74,7 @@ public class AbstractQuantityField<T extends Quantity> extends CustomTextField<T
 
     @Override
     protected String format(T value) {
-        return required && value.isZero() ? "" : value.toString(false);
+        return required && (value.isZero()) ? "" : value.toString(false);
     }
 
     @Override

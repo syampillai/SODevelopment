@@ -193,7 +193,7 @@ public class ReceiveAndBin extends ListGrid<InventoryItem> implements Transactio
             refresh();
         }
         InventoryLocation bin = bins.get(item.getId());
-        if(bin != null && !bin.canStore(item)) {
+        if(bin != null && !bin.canBin(item)) {
             warning("This item can't be stored at location '" + bin.toDisplay() + "'. Please a suitable location.");
         }
         return true;
@@ -209,6 +209,7 @@ public class ReceiveAndBin extends ListGrid<InventoryItem> implements Transactio
         private BinEditor() {
             super("Bin");
             addField(itemField, currentLocField, binField);
+            binField.addValueChangeListener(e -> invalidBin(e.getValue()));
         }
 
         public void binItem(InventoryItem item) {
@@ -216,29 +217,51 @@ public class ReceiveAndBin extends ListGrid<InventoryItem> implements Transactio
             itemField.clearContent().append(item.toDisplay()).update();
             InventoryLocation loc = item.getLocation();
             currentLocField.clearContent().append(loc.toDisplay());
+            InventoryBin bin = bins.get(item.getId());
             if(loc instanceof InventoryBin) {
-                binField.setStore(((InventoryBin) loc).getStore());
+                InventoryStore store = ((InventoryBin) loc).getStore();
+                binField.setStore(store);
+                if(bin == null) {
+                    bin = store.findBin(item);
+                    if(bin == null) {
+                        message("Unable to suggest a suitable storage location from prior experience!");
+                    }
+                }
                 setFieldEditable(binField);
             } else {
                 setFieldReadOnly(binField);
                 currentLocField.append(" (Change not allowed)", "red");
             }
             currentLocField.update();
-            binField.setValue(bins.get(item.getId()));
+            binField.setValue(bin);
             execute();
+        }
+
+        private boolean invalidBin(InventoryBin bin) {
+            if(bin != null && item != null && !bin.canBin(item)) {
+                warning("Can't store it there!");
+                binField.focus();
+                return true;
+            }
+            return false;
+        }
+
+        @Override
+        protected void cancel() {
+            clearAlerts();
+            super.cancel();
         }
 
         @Override
         protected boolean process() {
             clearAlerts();
             InventoryBin bin = binField.getValue();
+            if(invalidBin(bin)) {
+                return false;
+            }
             if(bin == null) {
                 bins.remove(item.getId());
             } else {
-                if(!bin.canStore(item)) {
-                    warning("Can't bin it there!");
-                    return true;
-                }
                 bins.put(item.getId(), bin);
             }
             refresh(item);

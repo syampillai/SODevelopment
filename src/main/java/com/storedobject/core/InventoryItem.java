@@ -195,8 +195,12 @@ public class InventoryItem extends StoredObject {
         return ObjectIterator.create();
     }
 
-    public boolean canStore(InventoryLocation location) {
+    public final boolean canBin(InventoryLocation location) {
         return getPartNumber().canStore(location);
+    }
+
+    protected boolean canStore(InventoryLocation location) {
+        return canBin(location);
     }
 
     public final boolean isSerialized() {

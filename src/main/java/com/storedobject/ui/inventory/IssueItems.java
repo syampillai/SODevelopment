@@ -114,7 +114,7 @@ class IssueItems extends DataForm implements Transactional {
             warning("Location/bin not changed");
             return false;
         }
-        if(!item.canStore(bin)) {
+        if(!item.canBin(bin)) {
             warning("This item can not be moved to '" + bin + "'");
             itemField.focus();
             return false;

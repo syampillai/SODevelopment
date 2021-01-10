@@ -255,7 +255,11 @@ public class InventoryItemType extends StoredObject implements HasChildren {
         return isBlocked();
     }
 
-    public boolean canStore(InventoryLocation location) {
+    public final boolean canBin(InventoryLocation location) {
+        return true;
+    }
+
+    protected boolean canStore(InventoryLocation location) {
         return true;
     }
 
@@ -281,9 +285,5 @@ public class InventoryItemType extends StoredObject implements HasChildren {
 
     public static List<InventoryItemType> listAPNs(Id partNumberId) {
         return new ArrayList<>();
-    }
-
-    public InventoryBin findBin(InventoryStore store) {
-        return Math.random() < 0.5 ? null : new InventoryBin();
     }
 }

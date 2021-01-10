@@ -298,4 +298,44 @@ public class PDFTable implements PDFElement {
      */
     public void addBlankRow(int fromColumn, int toColumn, Function<PDFCell, PDFCell> cellCustomizer) {
     }
+
+    /**
+     * Set the border width for the left side. Default is no border.
+     *
+     * @param borderThickness Border width.
+     */
+    public void setBorderWidthLeft(float borderThickness) {
+    }
+
+    /**
+     * Set the border width for the right side. Default is no border.
+     *
+     * @param borderThickness Border width.
+     */
+    public void setBorderWidthRight(float borderThickness) {
+    }
+
+    /**
+     * Set the border width for the top side. Default is no border.
+     *
+     * @param borderThickness Border width.
+     */
+    public void setBorderWidthTop(float borderThickness) {
+    }
+
+    /**
+     * Set the border width for the bottom side. Default is no border.
+     *
+     * @param borderThickness Border width.
+     */
+    public void setBorderWidthBottom(float borderThickness) {
+    }
+
+    /**
+     * Set the border width for the all sides. Default is no border.
+     *
+     * @param borderThickness Border width.
+     */
+    public void setBorderWidth(float borderThickness) {
+    }
 }

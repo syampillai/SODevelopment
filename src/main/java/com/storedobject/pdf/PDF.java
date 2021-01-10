@@ -591,6 +591,16 @@ public abstract class PDF implements java.io.Closeable, com.storedobject.core.Co
     }
 
     /**
+     * Set a cell customizer that will be called whenever a table cell is created.
+     * The default customizer draws a border around the cell. So, if you don't want that, set this to null or to
+     * your own custom one.
+     *
+     * @param defaultCellCustomizer Default cell customizer. Could be null.
+     */
+    public void setDefaultCellCustomizer(Consumer<PDFCell> defaultCellCustomizer) {
+    }
+
+    /**
      * Creates a centered cell that can be added to a table.
      *
      * @param object Object that provides the content of the cell - object.toString(). Object can also be either a PDFImage, PDFCell, PDFTable, PDFPhrase or PDFChunk.

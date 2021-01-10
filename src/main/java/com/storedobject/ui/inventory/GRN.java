@@ -657,7 +657,7 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
                     bin();
                 } else {
                     InventoryLocation bin = grnItem.getBin();
-                    if(bin != null && !(bin instanceof InventoryStoreBin) && !bin.canStore(grnItem.getItem())) {
+                    if(bin != null && !(bin instanceof InventoryStoreBin) && !bin.canBin(grnItem.getItem())) {
                         warning("This item can't be stored at '" + bin.toDisplay() + "', Kindly set the correct bin.");
                     }
                 }
@@ -685,7 +685,6 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
                     binEditor = new BinEditor();
                 }
                 binEditor.setGRNItem(grnItem);
-                binEditor.execute();
                 invokeBin = false;
             }
 
@@ -752,19 +751,30 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
                 itemField.clearContent().append(grnItem.getItem().toDisplay()).update();
                 InventoryBin bin = grnItem.getBin();
                 if(bin == null) {
-                    bin = grnItem.getItem().getPartNumber().findBin(store);
+                    bin = store.findBin(grnItem.getItem());
+                    if(bin == null) {
+                        message("Unable to suggest a suitable storage location from prior experience!");
+                    }
                 }
                 binField.setValue(bin);
+                execute();
+            }
+
+            @Override
+            protected void cancel() {
+                super.cancel();
+                clearAlerts();
             }
 
             @Override
             protected boolean process() {
+                clearAlerts();
                 InventoryBin bin = binField.getValue();
                 if(bin.getId().equals(grnItem.getBinId())) {
                     return true;
                 }
                 InventoryItem item = grnItem.getItem();
-                if(!item.canStore(bin)) {
+                if(!item.canBin(bin)) {
                     warning("This item can't be stored at '" + bin.toDisplay() + "'");
                     return false;
                 }
@@ -845,7 +855,7 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
                         qField.setValue(pn.getUnitOfMeasurement());
                     }
                     cField.setValue(pn.getUnitCost());
-                    InventoryBin bin = pn.findBin(store);
+                    InventoryBin bin = store.findBin(pn);
                     if(bin != null) {
                         bField.setValue(bin);
                     }
@@ -854,6 +864,7 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
 
             @Override
             protected boolean process() {
+                clearAlerts();
                 InventoryItemType pn = pnField.getObject();
                 Quantity q = qField.getValue();
                 String sn = StoredObject.toCode(snField.getValue());
@@ -866,6 +877,10 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
                     return false;
                 }
                 InventoryBin bin = bField.getValue();
+                if(bin != null && !bin.canBin(pn)) {
+                    warning("Storage location selected is not suitable");
+                    return false;
+                }
                 Money cost = cField.getValue();
                 int n;
                 if(pn.isSerialized() && !q.equals(Count.ONE)) {

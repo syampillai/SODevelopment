@@ -59,4 +59,12 @@ public class InventoryStore extends StoredObject implements OfEntity {
     public static InventoryStore getStore(Id id) {
         return new InventoryStore();
     }
+
+    public InventoryBin findBin(InventoryItemType partNumber) {
+        return new InventoryBin();
+    }
+
+    public InventoryBin findBin(InventoryItem item) {
+        return new InventoryBin();
+    }
 }

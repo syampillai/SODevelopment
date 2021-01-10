@@ -7,7 +7,6 @@ import com.storedobject.vaadin.DataForm;
 import com.storedobject.vaadin.TextField;
 import com.storedobject.vaadin.View;
 
-import javax.mail.Store;
 import java.sql.Date;
 import java.util.function.Consumer;
 
@@ -196,7 +195,7 @@ class GetItems extends DataForm implements Transactional {
             warning("Location/bin must be selected");
             return;
         }
-        if(!partNumber.canStore(bin)) {
+        if(!partNumber.canBin(bin)) {
             warning("This item can not be moved to '" + bin + "'");
             pnField.focus();
             return;

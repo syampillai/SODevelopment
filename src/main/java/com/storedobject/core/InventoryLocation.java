@@ -1,5 +1,7 @@
 package com.storedobject.core;
 
+import java.util.Random;
+
 /**
  * Represents a location where an item can be located or sourced. A location could be an {@link InventoryBin} (if
  * it is stocked in a store), a "supplier", a "repair organization" (if it is sent for repair there),
@@ -32,8 +34,8 @@ public abstract class InventoryLocation extends StoredObject {
      * @param item Item to check.
      * @return True or false.
      */
-    public final boolean canStore(InventoryItem item) {
-        return canStore(item.getPartNumber());
+    public final boolean canBin(InventoryItem item) {
+        return new Random().nextBoolean();
     }
 
     /**
@@ -42,8 +44,8 @@ public abstract class InventoryLocation extends StoredObject {
      * @param partNumber Item type to check.
      * @return True or false.
      */
-    public boolean canStore(InventoryItemType partNumber) {
-        return true;
+    public final boolean canBin(InventoryItemType partNumber) {
+        return canBin(new InventoryItem());
     }
 
     public Id getDataPickupLocationId() {
