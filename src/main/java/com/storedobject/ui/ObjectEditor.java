@@ -28,8 +28,6 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
-import static com.storedobject.core.EditorAction.*;
-
 public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T> implements Transactional, ObjectSetter<T>,
         ObjectChangedListener<T>, ObjectEditorListener, ObjectProvider<T>, AlertHandler, TransactionCreator {
 
@@ -84,12 +82,6 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T> 
 
     protected ObjectEditor(Class<T> objectClass, int actions, String caption, String allowedActions) {
         super(objectClass, caption);
-        if( // Do not allow certain special classes to directly inherit this class with editability
-                (InventoryPO.class.isAssignableFrom(objectClass) && !(this instanceof POEditor)) ||
-                (InventoryPOItem.class.isAssignableFrom(objectClass) && !(this instanceof POItemEditor))
-                ) {
-            actions &= (~NEW) & (~EDIT) & (~DELETE);
-        }
         this.allowedActions = allowedActions;
         this.actions = actions == 0 ? EditorAction.ALL : actions;
         this.actions = filterActions(this.actions);
@@ -437,14 +429,27 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T> 
         return getForm().getObject(false);
     }
 
+    private boolean inventoryItem() {
+        // Inventory items should not be manipulated directly
+        return InventoryItem.class.isAssignableFrom(getObjectClass());
+    }
+
+    private boolean inventory() {
+        // Do not allow certain special classes to directly inherit this class with editability
+        return (InventoryPO.class.isAssignableFrom(getObjectClass()) && !(this instanceof POEditor)) ||
+                (InventoryPOItem.class.isAssignableFrom(getObjectClass()) && !(this instanceof POItemEditor));
+    }
+
     private void buildButtons() {
-        if(!InventoryItem.class.isAssignableFrom(getObjectClass()) && (actions & EditorAction.NEW) == EditorAction.NEW) {
+        boolean notInvI = !inventoryItem();
+        boolean notInv = !inventory();
+        if(notInvI && notInv && (actions & EditorAction.NEW) == EditorAction.NEW) {
             add = new Button("Add", this);
         }
-        if((actions & EditorAction.EDIT) == EditorAction.EDIT) {
+        if(notInv && (actions & EditorAction.EDIT) == EditorAction.EDIT) {
             edit = new Button("Edit", this);
         }
-        if(!InventoryItem.class.isAssignableFrom(getObjectClass()) && (actions & EditorAction.DELETE) == EditorAction.DELETE) {
+        if(notInvI && notInv && (actions & EditorAction.DELETE) == EditorAction.DELETE) {
             delete = new ConfirmButton("Delete", this);
         }
         if((actions & EditorAction.SEARCH) == EditorAction.SEARCH) {

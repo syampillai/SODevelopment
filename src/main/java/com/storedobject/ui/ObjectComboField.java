@@ -139,7 +139,6 @@ public class ObjectComboField<T extends StoredObject> extends ComboBox<T> implem
             addToPrefix(addButton);
         }
         ResourceDisposal.register(this);
-        addDetachListener(e -> ResourceDisposal.gc());
     }
 
     private void addNew() {

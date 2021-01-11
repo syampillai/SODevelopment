@@ -311,7 +311,8 @@ public class ProcessMaterialRequest extends AbstractRequestMaterial {
                     stock = stock.add(apn.listStock(store));
                 }
             }
-            return stock.filter(ii -> !(ii.getLocation() instanceof InventoryReservedBin));
+            return stock.filter(ii -> !(ii.getLocation() instanceof InventoryReservedBin) &&
+                    ii.isServiceable() && !ii.isBlocked());
         }
 
         private void balanceFill() {
@@ -469,6 +470,10 @@ public class ProcessMaterialRequest extends AbstractRequestMaterial {
         }
 
         private void issue() {
+            if(mi.listLinks(MaterialIssuedItem.class).stream().noneMatch(mii -> mii.getQuantity().isPositive())) {
+                message("Nothing to issue!");
+                return;
+            }
             if(transact(t -> mi.issue(t))) {
                 close();
                 mr.reload();

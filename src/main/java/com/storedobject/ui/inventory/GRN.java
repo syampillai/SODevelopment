@@ -640,12 +640,16 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
             }
 
             private boolean saveItem() {
+                InventoryLocation bin = grnItem.getBin();
                 if(!transact(t -> {
                     InventoryItem item;
                     itemEditor.save(t);
                     item = (InventoryItem) itemEditor.getObject();
                     if(!item.getId().equals(grnItem.getItemId())) {
                         grnItem.setItem(item.getId());
+                        if(bin != null && !(bin instanceof InventoryStoreBin) && !bin.canBin(item)) {
+                            grnItem.setBin(Id.ZERO);
+                        }
                         grnItem.save(t);
                     }
                 })) {
@@ -656,9 +660,8 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
                 if(invokeBin) {
                     bin();
                 } else {
-                    InventoryLocation bin = grnItem.getBin();
-                    if(bin != null && !(bin instanceof InventoryStoreBin) && !bin.canBin(grnItem.getItem())) {
-                        warning("This item can't be stored at '" + bin.toDisplay() + "', Kindly set the correct bin.");
+                    if(Id.isNull(grnItem.getBinId()) && bin != null) {
+                        warning("This item can't be stored at the previously selected location '" + bin.toDisplay() + "', Kindly set the correct bin.");
                     }
                 }
                 return true;
@@ -728,7 +731,9 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
                 public void saved(InventoryGRNItem object) {
                     super.saved(object);
                     refresh(object);
-                    inspect();
+                    if(!object.getSerialNumber().isBlank()) {
+                        inspect();
+                    }
                 }
             }
         }

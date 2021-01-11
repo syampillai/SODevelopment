@@ -103,6 +103,9 @@ public class ObjectBrowser<T extends StoredObject> extends ObjectGrid<T> impleme
         ) {
             actions &= (~NEW) & (~EDIT) & (~DELETE);
         }
+        if(InventoryItem.class.isAssignableFrom(getObjectClass())) {
+            actions &= (~NEW) & (~DELETE);
+        }
         anchorsExist = !ClassAttribute.get(getObjectClass()).getAnchors().isEmpty();
         addConstructedListener(o -> gridCreated());
         if(caption != null && !caption.isEmpty()) {

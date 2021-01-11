@@ -2,6 +2,8 @@ package com.storedobject.core;
 
 import java.math.BigDecimal;
 import java.sql.Date;
+import java.util.Map;
+import java.util.Random;
 
 public class InventoryPO extends StoredObject implements HasChildren {
 
@@ -82,6 +84,24 @@ public class InventoryPO extends StoredObject implements HasChildren {
     }
 
     public boolean isClosed() {
-        return false;
+        return new Random().nextBoolean();
+    }
+
+    public void placeOrder(Transaction transaction) throws Exception {
+    }
+
+    public void closeOrder(Transaction transaction) throws Exception {
+    }
+
+    public boolean canClose() {
+        return new Random().nextBoolean();
+    }
+
+    public InventoryGRN createGRN(Transaction transaction, Map<Id, Quantity> quantities) throws Exception {
+        return new InventoryGRN();
+    }
+
+    public final ObjectIterator<InventoryPOItem> listItems() {
+        return listLinks(getTransaction(), InventoryPOItem.class, true);
     }
 }

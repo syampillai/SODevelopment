@@ -203,6 +203,18 @@ public class InventoryItem extends StoredObject {
         return canBin(location);
     }
 
+    public boolean isServiceable() {
+        return true;
+    }
+
+    public final boolean isBlocked() {
+        return getPartNumber().isBlocked();
+    }
+
+    public final boolean isObsolete() {
+        return getPartNumber().isObsolete();
+    }
+
     public final boolean isSerialized() {
         return getPartNumber().isSerialized();
     }
