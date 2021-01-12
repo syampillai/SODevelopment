@@ -34,7 +34,7 @@ import java.util.function.Consumer;
 
 public class Application extends com.storedobject.vaadin.Application implements Device, RunningLogic, RequiresApproval {
 
-    private static final String VERSION = "18.0.3";
+    private static final String VERSION = "18.0.5";
     private static final String COMPACT_STYLES =
             "--lumo-size-xl: 3rem;\n" +
             "--lumo-size-l: 2.5rem;\n" +
@@ -698,7 +698,6 @@ public class Application extends com.storedobject.vaadin.Application implements 
             }
         }
         application.stopPolling(application);
-        //noinspection ResultOfMethodCallIgnored
         autos.forEach(as::execute);
     }
 

@@ -321,9 +321,13 @@ public class ProcessMaterialRequest extends AbstractRequestMaterial {
             Quantity q;
             ObjectIterator<InventoryItem> stock;
             MaterialIssuedItem mii;
+            boolean contains;
             for(MaterialRequestItem mri: mriList) {
-                if(!selectedSet.isEmpty() && selectionValue == 1 && selectedSet.contains(mri)) {
-                    continue;
+                if(!selectedSet.isEmpty()) {
+                    contains = selectedSet.contains(mri);
+                    if((selectionValue == 0 && !contains) || (selectionValue == 1 && contains)) {
+                        continue;
+                    }
                 }
                 q = mri.getBalance();
                 stock = stockList(mri);
@@ -338,13 +342,14 @@ public class ProcessMaterialRequest extends AbstractRequestMaterial {
                             continue;
                         }
                         if(!selectedSet.isEmpty()) {
+                            contains = selectedSet.contains(mii);
                             if(selectionValue == 0) {
-                                if(!selectedSet.contains(mii)) {
+                                if(!contains) {
                                     q = q.subtract(mii.getQuantity());
                                     continue;
                                 }
                             } else {
-                                if(selectedSet.contains(mii)) {
+                                if(contains) {
                                     q = q.subtract(mii.getQuantity());
                                     continue;
                                 }

@@ -97,6 +97,9 @@ public final class InventoryTransaction {
     public void loanTo(InventoryItem item, String reference, Entity entity) {
     }
 
+    public void receiveFrom(InventoryItem item, String reference, InventoryLocation to, Entity entity) {
+    }
+
     public void loanFrom(InventoryItem item, String reference, InventoryLocation to, Entity entity) {
     }
 
