@@ -57,7 +57,7 @@ public class ListEditor<T> extends EditableGrid<T> {
 
     @Override
     public void createHeaders() {
-        prependHeader().join(1).setComponent(buttonPanel);
+        prependHeader().join().setComponent(buttonPanel);
     }
 
     @Override
