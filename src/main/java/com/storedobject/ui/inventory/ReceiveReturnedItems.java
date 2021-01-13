@@ -4,7 +4,6 @@ import com.storedobject.common.SORuntimeException;
 import com.storedobject.common.StringList;
 import com.storedobject.core.*;
 import com.storedobject.ui.ELabel;
-import com.storedobject.ui.DateField;
 import com.storedobject.ui.Transactional;
 import com.storedobject.vaadin.*;
 import com.vaadin.flow.component.icon.VaadinIcon;
