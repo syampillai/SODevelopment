@@ -48,6 +48,10 @@ public abstract class InventoryLocation extends StoredObject {
         return canBin(new InventoryItem());
     }
 
+    protected boolean canStore(InventoryItemType partNumber) {
+        return true;
+    }
+
     public Id getDataPickupLocationId() {
         return Id.ZERO;
     }
