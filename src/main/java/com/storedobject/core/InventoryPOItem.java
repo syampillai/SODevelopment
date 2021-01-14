@@ -1,6 +1,7 @@
 package com.storedobject.core;
 
 import java.math.BigDecimal;
+import java.util.Random;
 
 public class InventoryPOItem extends StoredObject implements Detail {
 
@@ -64,12 +65,30 @@ public class InventoryPOItem extends StoredObject implements Detail {
         return Count.ONE;
     }
 
+    public static String[] getTypeValues() {
+        return new String[0];
+    }
+
+    public void setType(int type) {
+    }
+
+    public int getType() {
+        return new Random().nextInt();
+    }
+
+    public String getTypeValue() {
+        return "";
+    }
+
     public Quantity getBalance() {
         return Count.ONE;
     }
 
     @Override
-    public boolean isDetailOf(Class<? extends StoredObject> masterClass) {
+    public final boolean isDetailOf(Class<? extends StoredObject> masterClass) {
         return InventoryPO.class.isAssignableFrom(masterClass);
+    }
+
+    public void setAPN(Transaction transaction, InventoryItemType apn, Quantity quantity) throws  Exception {
     }
 }

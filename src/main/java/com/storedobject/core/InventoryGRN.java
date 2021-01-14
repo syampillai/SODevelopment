@@ -82,6 +82,13 @@ public final class InventoryGRN extends StoredObject implements HasChildren {
         return "";
     }
 
+    public void setOwner(boolean owner) {
+    }
+
+    public boolean getOwner() {
+        return new Random().nextBoolean();
+    }
+
     public boolean isProcessed() {
         return new Random().nextInt() == 1;
     }

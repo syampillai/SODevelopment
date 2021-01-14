@@ -97,6 +97,10 @@ public class InventoryPO extends StoredObject implements HasChildren {
         return new Random().nextBoolean();
     }
 
+    public boolean canForeclose() {
+        return new Random().nextBoolean();
+    }
+
     public InventoryGRN createGRN(Transaction transaction, Map<Id, Quantity> quantities) throws Exception {
         return new InventoryGRN();
     }

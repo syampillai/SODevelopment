@@ -36,7 +36,7 @@ public class DetailLinkGrid<T extends StoredObject> extends EditableObjectGrid<T
 
     @Override
     public void createHeaders() {
-        prependHeader().join(1).setComponent(buttonPanel);
+        prependHeader().join().setComponent(buttonPanel);
     }
 
     @Override

@@ -6,7 +6,9 @@ import com.storedobject.ui.ELabel;
 import com.storedobject.ui.ObjectEditor;
 import com.storedobject.ui.ObjectField;
 import com.storedobject.vaadin.*;
+import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.VaadinIcon;
 
 import java.util.stream.Stream;
@@ -201,8 +203,18 @@ public class LocateItem extends ListGrid<InventoryItem> implements CloseableView
     }
 
     @Override
+    protected void onAttach(AttachEvent attachEvent) {
+        super.onAttach(attachEvent);
+        if(pnField != null) {
+            pnField.focus();
+        } else if(snField != null) {
+            snField.focus();
+        }
+    }
+
+    @Override
     public Component createHeader() {
-        ButtonLayout b = new ButtonLayout(inspect);
+        ButtonLayout b = new ButtonLayout(inspect, new Button("Exit", e -> close()));
         if(snField != null) {
             b.add(new ELabel("Serial Number"), snField);
         }

@@ -44,6 +44,10 @@ public final class InventoryTransaction {
         return new InventoryVirtualLocation();
     }
 
+    public static InventoryLocation createExternalOwnerLocation(TransactionManager tm, Entity externalOwner) {
+        return new InventoryVirtualLocation();
+    }
+
     public static InventoryLocation createConsumerLocation(TransactionManager tm, Entity consumer) {
         return new InventoryVirtualLocation();
     }

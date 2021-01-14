@@ -944,8 +944,12 @@ public class ObjectBrowser<T extends StoredObject> extends ObjectGrid<T> impleme
         }
     }
 
+    public boolean canRowEdit(T item) {
+        return true;
+    }
+
     private void editRowInt(T item) {
-        if(!readOnly && editingItem != item) {
+        if(!readOnly && editingItem != item && canRowEdit(item)) {
             editingItem = item;
             getRowEditor();
             if(rowMode && editor.editItem(item)) {

@@ -25,6 +25,7 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
     private final GRNEditor editor;
     private final ELabel storeDisplay = new ELabel("Store: Not selected");
     private final Button switchStore = new Button("Switch Store", VaadinIcon.STORAGE, e -> switchStore());
+    private final boolean externalOwner;
 
     /**
      * Constructor.
@@ -75,7 +76,7 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
      * @param caption Caption.
      */
     public GRN(InventoryStore store, int actions, String caption) {
-        this(InventoryItemType.class, actions, caption, store);
+        this(false, InventoryItemType.class, actions, caption, store);
     }
 
     /**
@@ -84,18 +85,86 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
      * @param classNames Class names to be used. "Class Name of P/N|Store Name".
      */
     public GRN(String classNames) {
-        this(itemTypeClass(classNames), EditorAction.ALL, null, storeName(classNames));
+        this(false, itemTypeClass(classNames), EditorAction.ALL, null, storeName(classNames));
     }
 
-    private GRN(Class<? extends InventoryItemType> pnClass, int actions, String caption, InventoryStore store) {
+    /**
+     * Constructor.
+     *
+     * @param externalOwner External owner or not.
+     */
+    public GRN(boolean externalOwner) {
+        this(externalOwner, EditorAction.ALL);
+    }
+
+    /**
+     * Constructor.
+     *
+     * @param externalOwner External owner or not.
+     * @param actions Allowed edit actions (See {@link EditorAction}).
+     */
+    public GRN(boolean externalOwner, int actions) {
+        this(externalOwner, actions, null);
+    }
+
+    /**
+     * Constructor.
+     *
+     * @param externalOwner External owner or not.
+     * @param actions Allowed edit actions (See {@link EditorAction}).
+     * @param caption Caption.
+     */
+    public GRN(boolean externalOwner, int actions, String caption) {
+        this(externalOwner, null, actions, caption);
+    }
+
+    /**
+     * Constructor.
+     *
+     * @param externalOwner External owner or not.
+     */
+    public GRN(boolean externalOwner, InventoryStore store) {
+        this(externalOwner, store, EditorAction.ALL);
+    }
+
+    /**
+     * Constructor.
+     *
+     * @param externalOwner External owner or not.
+     * @param actions Allowed edit actions (See {@link EditorAction}).
+     */
+    public GRN(boolean externalOwner, InventoryStore store, int actions) {
+        this(externalOwner, store, actions, null);
+    }
+
+    /**
+     * Constructor.
+     *
+     * @param externalOwner External owner or not.
+     * @param actions Allowed edit actions (See {@link EditorAction}).
+     * @param caption Caption.
+     */
+    public GRN(boolean externalOwner, InventoryStore store, int actions, String caption) {
+        this(externalOwner, InventoryItemType.class, actions, caption, store);
+    }
+
+    private GRN(boolean externalOwner, Class<? extends InventoryItemType> pnClass, int actions, String caption, InventoryStore store) {
         super(InventoryGRN.class, actions, caption);
-        editor = new GRNEditor(pnClass, actions, caption);
+        this.externalOwner = externalOwner;
+        editor = new GRNEditor(externalOwner, pnClass, actions, caption);
         if(store != null) {
             addConstructedListener(f -> setStore(store));
         } else {
-            setExtraFilter("Status<2", false);
+            setExtraFilter("Status<2 AND " + (externalOwner ? "" : "NOT ") + "Owner", false);
         }
-        setCaption("GRN");
+        setCaption("GRN from " + (externalOwner ? "External Owners" : "Suppliers"));
+        GridContextMenu<InventoryGRN> cm = new GridContextMenu<>(this);
+        cm.addItem("Receive/Process", e -> e.getItem().ifPresent(i -> edit.click()));
+        cm.setDynamicContentHandler(grn -> {
+            deselectAll();
+            select(grn);
+            return grn != null && grn.getStatus() <= 1;
+        });
     }
 
     private void setStore(InventoryStore store) {
@@ -108,7 +177,7 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
         //noinspection unchecked
         ((IdInput<InventoryStore>)storeField).setValue(store);
         storeField.setReadOnly(true);
-        setExtraFilter("Status<2");
+        setExtraFilter("Status<2 AND " + (externalOwner ? "" : "NOT ") + "Owner");
     }
 
     public void processGRN(InventoryGRN grn) {
@@ -123,8 +192,23 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
     }
 
     @Override
+    public boolean canRowEdit(InventoryGRN item) {
+        select(item);
+        edit.click();
+        return false;
+    }
+
+    @Override
     public void createHeaders() {
         prependHeader().join().setComponent(storeDisplay);
+    }
+
+    @Override
+    public String getColumnCaption(String columnName) {
+        if(externalOwner && "Supplier".equals(columnName)) {
+            return "External Owner";
+        }
+        return super.getColumnCaption(columnName);
     }
 
     @Override
@@ -136,7 +220,8 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
     protected void addExtraButtons() {
         buttonPanel.add(switchStore);
         Checkbox h = new Checkbox("Include History");
-        h.addValueChangeListener(e -> setExtraFilter(e.getValue() ? null : "Status<2"));
+        String condition = (externalOwner ? "" : "NOT ") + "Owner";
+        h.addValueChangeListener(e -> setExtraFilter(condition + (e.getValue() ? "" : " AND Status<2")));
         buttonPanel.add(h);
         super.addExtraButtons();
     }
@@ -188,7 +273,10 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
 
     @Override
     protected void anchorsSet() {
-        this.storeDisplay.clearContent().append("Store: ").append(editor.store.toDisplay(), "blue").update();
+        this.storeDisplay.clearContent().append("Store: ").
+                append(editor.store.toDisplay() +
+                        "  (Double-click or right-click on the entry to receive/process items)", "blue").
+                update();
     }
 
     @Override
@@ -216,8 +304,8 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
         }
     }
 
-    static Collection<Entity> suppliers() {
-            return StoredObject.list(InventoryVirtualLocation.class, "Type=1").
+    static Collection<Entity> suppliers(boolean externalOwner) {
+            return StoredObject.list(InventoryVirtualLocation.class, "Type=" + (externalOwner ? 17 : 1)).
                     map(InventoryVirtualLocation::getEntity).toList();
     }
 
@@ -246,6 +334,7 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
 
     private static class GRNEditor extends ObjectEditor<InventoryGRN> {
 
+        private final boolean externalOwner;
         private ObjectField<Entity> supplierField;
         private ObjectLinkField<InventoryGRNItem> grnItemsField;
         private GRNItemGrid grnItemGrid;
@@ -260,18 +349,24 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
         private final ELabel hint = new ELabel("You may also right-click on the entry to inspect/bin/assemble.", "blue");
         private final Class<? extends InventoryItemType> pnClass;
 
-        GRNEditor(Class<? extends InventoryItemType> pnClass, int actions, String caption) {
+        GRNEditor(boolean externalOwner, Class<? extends InventoryItemType> pnClass, int actions, String caption) {
             super(InventoryGRN.class, actions & (~EditorAction.SEARCH), caption);
+            this.externalOwner = externalOwner;
             this.pnClass = pnClass;
-            Collection<Entity> suppliers = suppliers();
+            Collection<Entity> suppliers = suppliers(externalOwner);
             if(suppliers != null) {
                 if(suppliers.isEmpty()) {
-                    throw new SORuntimeException("No suppliers found!");
+                    throw new SORuntimeException(externalOwner ? "No external parties configured!" : "No suppliers found!");
                 }
                 supplierField = new ObjectField<>(suppliers);
             }
             addField("ReferenceNumber");
             setCaption("Edit / Process GRN");
+            setNewObjectGenerator(() -> {
+                InventoryGRN grn = new InventoryGRN();
+                grn.setOwner(externalOwner);
+                return grn;
+            });
         }
 
         @Override
@@ -284,7 +379,7 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
         @Override
         protected HasValue<?, ?> createField(String fieldName, String label) {
             if(supplierField != null && "Supplier".equals(fieldName)) {
-                supplierField.setLabel(label);
+                supplierField.setLabel(externalOwner ? "External Owner" : label);
                 return supplierField;
             }
             return super.createField(fieldName, label);
@@ -621,7 +716,13 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
                     Quantity q = grnItem.getQuantity();
                     item.setQuantity(q);
                     item.setCost(grnItem.getUnitCost().multiply(q));
-                    item.setLocation(InventoryTransaction.createSupplierLocation(getTransactionManager(), getObject().getSupplier()));
+                    if(externalOwner) {
+                        item.setLocation(InventoryTransaction.createExternalOwnerLocation(getTransactionManager(),
+                                getObject().getSupplier()));
+                    } else {
+                        item.setLocation(InventoryTransaction.createSupplierLocation(getTransactionManager(),
+                                getObject().getSupplier()));
+                    }
                 }
                 clearAlerts();
                 if(itemEditor != null && itemEditor.getObjectClass() != item.getClass()) {
