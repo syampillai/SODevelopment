@@ -1,7 +1,5 @@
 package com.storedobject.ui.inventory;
 
-import com.storedobject.core.InventoryItem;
-import com.storedobject.core.InventoryItemType;
 import com.storedobject.core.InventoryLocation;
 import com.storedobject.core.InventoryTransaction;
 import com.storedobject.ui.Transactional;

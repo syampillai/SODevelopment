@@ -6,6 +6,7 @@ import com.storedobject.core.*;
 import com.storedobject.ui.*;
 import com.storedobject.vaadin.Button;
 import com.vaadin.flow.component.HasValue;
+import com.vaadin.flow.component.grid.contextmenu.GridContextMenu;
 import com.vaadin.flow.component.icon.VaadinIcon;
 
 import java.util.ArrayList;
@@ -52,8 +53,9 @@ public abstract class AbstractSendAndReceiveMaterial<T extends InventoryTransfer
 
     private AbstractSendAndReceiveMaterial(Class<T> transferClass, Class<L> itemClass, LocationField fromOrToField, boolean receiveMode, InventoryLocation otherLocation) {
         super(transferClass,
-                receiveMode ? StringList.create("Date", "ReferenceNumber", "FromLocation as Sent from", "Received") :
-                        StringList.create("Date", "ReferenceNumber", "ToLocation as " + (transferClass == MaterialReturned.class ? "Return" : "Transfer") + " to", "Status"));
+                receiveMode ? StringList.create("Date", "ReferenceNumber as Reference", "FromLocation as Sent from", "Received") :
+                        StringList.create("Date", "ReferenceNumber as Reference",
+                                "ToLocation as " + (transferClass == MaterialReturned.class ? "Return" : "Transfer") + " to", "Status"));
         this.itemClass = itemClass;
         this.receiveMode = receiveMode;
         setCaption((receiveMode ? "Receive" : (transferClass == MaterialReturned.class ? "Return" : "Transfer")) + " Materials");
@@ -80,6 +82,9 @@ public abstract class AbstractSendAndReceiveMaterial<T extends InventoryTransfer
             }
         }
         setOrderBy("Date DESC,No DESC");
+        GridContextMenu<T> cm = new GridContextMenu<>(this);
+        cm.addItem(receiveMode ? "Receive" : "Send", e -> e.getItem().ifPresent(this::rowDoubleClicked));
+        cm.setDynamicContentHandler(o -> o != null && (receiveMode ? o.getStatus() == 1 : o.getStatus() == 2));
     }
 
     @Override
@@ -133,6 +138,10 @@ public abstract class AbstractSendAndReceiveMaterial<T extends InventoryTransfer
         if(otherLocation != null) {
             e.append(" " + (receiveMode ? "From" : "To") + ": ").append(otherLocation.toDisplay(), "blue");
         }
+        e.append(" | ", "green").
+                append("Note: ").
+                append("Double-click or right-click on the entry to " +
+                        (receiveMode ? "receive" : "send"), "blue");
         prependHeader().join().setComponent(e.update());
     }
 
@@ -144,6 +153,14 @@ public abstract class AbstractSendAndReceiveMaterial<T extends InventoryTransfer
             edit.setVisible(false);
         }
         buttonPanel.add(send, receive);
+    }
+
+    @Override
+    public void rowDoubleClicked(T object) {
+        if(object != null) {
+            select(object);
+            (receiveMode ? receive : send).click();
+        }
     }
 
     public String getReceived(T mt) {

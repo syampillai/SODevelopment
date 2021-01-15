@@ -192,6 +192,11 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
     }
 
     @Override
+    public int getRelativeColumnWidth(String columnName) {
+        return "Supplier".equals(columnName) ? 5 : super.getRelativeColumnWidth(columnName);
+    }
+
+    @Override
     public boolean canRowEdit(InventoryGRN item) {
         select(item);
         edit.click();
@@ -274,8 +279,10 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
     @Override
     protected void anchorsSet() {
         this.storeDisplay.clearContent().append("Store: ").
-                append(editor.store.toDisplay() +
-                        "  (Double-click or right-click on the entry to receive/process items)", "blue").
+                append(editor.store, "blue").
+                append(" | ", "green").
+                append("Note: ").
+                append("Double-click or right-click on the entry to receive/process items", "blue").
                 update();
     }
 

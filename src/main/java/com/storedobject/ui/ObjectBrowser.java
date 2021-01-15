@@ -195,20 +195,7 @@ public class ObjectBrowser<T extends StoredObject> extends ObjectGrid<T> impleme
         addItemDoubleClickListener(e -> {
             T item = e.getItem();
             if(item != null) {
-                if(canSearch() && objectSetter != null && search != null && search.isVisible() && search.isEnabled()) {
-                    close();
-                    objectSetter.setObject(item);
-                } else {
-                    if(edit != null && canEdit(item)) {
-                        if(layout == null) {
-                            editRowInt(item);
-                        } else {
-                            getObjectEditor().editObject(item, getView(), true);
-                        }
-                    } else {
-                        getObjectEditor().viewObject(item, getView(), true);
-                    }
-                }
+                rowDoubleClicked(item);
             }
         });
     }
@@ -466,6 +453,23 @@ public class ObjectBrowser<T extends StoredObject> extends ObjectGrid<T> impleme
             warning(NOTHING_SELECTED);
         }
         return o;
+    }
+
+    public void rowDoubleClicked(T object) {
+        if(canSearch() && objectSetter != null && search != null && search.isVisible() && search.isEnabled()) {
+            close();
+            objectSetter.setObject(object);
+        } else {
+            if(edit != null && edit.isVisible() && edit.isEnabled() && canEdit(object)) {
+                if(layout == null) {
+                    editRowInt(object);
+                } else {
+                    getObjectEditor().editObject(object, getView(), true);
+                }
+            } else {
+                getObjectEditor().viewObject(object, getView(), true);
+            }
+        }
     }
 
     @Override

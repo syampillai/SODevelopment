@@ -8,7 +8,6 @@ import com.storedobject.ui.ObjectField;
 import com.storedobject.vaadin.*;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.VaadinIcon;
 
 import java.util.stream.Stream;
@@ -27,6 +26,7 @@ public class LocateItem extends ListGrid<InventoryItem> implements CloseableView
     private final Button inspect;
     @SuppressWarnings("rawtypes")
     private ObjectEditor editor;
+    private InventoryStore store;
 
     /**
      * Constructor.
@@ -57,7 +57,7 @@ public class LocateItem extends ListGrid<InventoryItem> implements CloseableView
     /**
      * Constructor.
      *
-     * @param canInspect Whether the item details can be inspected/re-binned nor not.
+     * @param canInspect Whether the item details can be inspected/re-binned or not.
      */
     public LocateItem(boolean canInspect) {
         this(null, null, null, canInspect);
@@ -67,7 +67,7 @@ public class LocateItem extends ListGrid<InventoryItem> implements CloseableView
      * Constructor.
      *
      * @param caption Caption.
-     * @param canInspect Whether the item details can be inspected/re-binned nor not.
+     * @param canInspect Whether the item details can be inspected/re-binned or not.
      */
     public LocateItem(String caption, boolean canInspect) {
         this(caption(caption), null, itemClass(caption), canInspect);
@@ -77,7 +77,7 @@ public class LocateItem extends ListGrid<InventoryItem> implements CloseableView
      * Constructor.
      *
      * @param partNumber Part number.
-     * @param canInspect Whether the item details can be inspected/re-binned nor not.
+     * @param canInspect Whether the item details can be inspected/re-binned or not.
      */
     public LocateItem(InventoryItemType partNumber, boolean canInspect) {
         this(null, partNumber, canInspect);
@@ -98,7 +98,7 @@ public class LocateItem extends ListGrid<InventoryItem> implements CloseableView
      *
      * @param caption Caption.
      * @param partNumber Part number.
-     * @param canInspect Whether the item details can be inspected/re-binned nor not.
+     * @param canInspect Whether the item details can be inspected/re-binned or not.
      */
     public LocateItem(String caption, InventoryItemType partNumber, boolean canInspect) {
         this(caption, partNumber, null, canInspect);
@@ -128,7 +128,7 @@ public class LocateItem extends ListGrid<InventoryItem> implements CloseableView
      *
      * @param caption Caption.
      * @param itemClass Item class.
-     * @param canInspect Whether the item details can be inspected/re-binned nor not.
+     * @param canInspect Whether the item details can be inspected/re-binned or not.
      */
     public LocateItem(String caption, Class<? extends InventoryItem> itemClass, boolean canInspect) {
         this(caption, null, itemClass, canInspect);
@@ -216,23 +216,12 @@ public class LocateItem extends ListGrid<InventoryItem> implements CloseableView
     public Component createHeader() {
         ButtonLayout b = new ButtonLayout(inspect, new Button("Exit", e -> close()));
         if(snField != null) {
-            b.add(new ELabel("Serial Number"), snField);
+            b.add(new ELabel("S/N: "), snField);
         }
         if(pnField != null) {
-            b.add(new ELabel("Part Number: "), pnField);
+            b.add(new ELabel("P/N: "), pnField);
         }
         return b;
-    }
-
-    @Override
-    public String getColumnCaption(String columnName) {
-        if("SerialNumberDisplay".equals(columnName)) {
-            return "Serial/Batch Number";
-        }
-        if("LocationDisplay".equals(columnName)) {
-            return "Location";
-        }
-        return super.getColumnCaption(columnName);
     }
 
     public String getLocationDisplay(InventoryItem item) {
@@ -259,7 +248,7 @@ public class LocateItem extends ListGrid<InventoryItem> implements CloseableView
                 loadInt(ObjectIterator.create(item));
                 return;
             }
-            loadInt(StoredObject.list(itemClass, "SerialNumber LIKE '" + sn + "%'", true).map(i -> (InventoryItem)i).stream().limit(500));
+            loadInt(StoredObject.list(itemClass, "SerialNumber LIKE '" + sn + "%'", true).map(i -> (InventoryItem)i).stream());
             warning("S/N " + sn + " not found!");
             return;
         }
@@ -284,7 +273,7 @@ public class LocateItem extends ListGrid<InventoryItem> implements CloseableView
                     c = "PartNumber=" + apn.getId() + " AND SerialNumber LIKE '" + sn + "%'";
                     items = items.add(StoredObject.list(iClass, c, true).limit(100).map(i -> i));
                 }
-                loadInt(items.limit(500));
+                loadInt(items);
                 warning("S/N " + sn + " not found!");
                 return;
             }
@@ -300,6 +289,13 @@ public class LocateItem extends ListGrid<InventoryItem> implements CloseableView
 
     private void loadInt(Stream<InventoryItem> objects) {
         clear();
+        if(store != null) {
+            objects = objects.filter(ii -> {
+                InventoryLocation loc = ii.getLocation();
+                return loc instanceof InventoryBin && ((InventoryBin)loc).getStoreId().equals(store.getId());
+            });
+        }
+        objects = objects.limit(500);
         objects.forEach(this::add);
         if(inspect != null) {
             inspect.setVisible(!isEmpty());
@@ -339,5 +335,9 @@ public class LocateItem extends ListGrid<InventoryItem> implements CloseableView
             editor = ObjectEditor.create(item.getClass());
         }
         return editor;
+    }
+
+    public void setStore(InventoryStore store) {
+        this.store = store;
     }
 }

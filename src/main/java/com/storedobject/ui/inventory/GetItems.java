@@ -255,7 +255,7 @@ class GetItems extends DataForm implements Transactional {
         try {
             moveTo();
             return true;
-        } catch(Exception error) {
+        } catch(Throwable error) {
             error(error);
         }
         return false;
@@ -267,7 +267,7 @@ class GetItems extends DataForm implements Transactional {
             item.save(t);
             inventoryTransaction.save(t);
             t.commit();
-        } catch(Exception error) {
+        } catch(Throwable error) {
             t.rollback();
             throw error;
         }

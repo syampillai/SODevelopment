@@ -39,7 +39,7 @@ public class ReceiveAndBin extends ListGrid<InventoryItem> implements Transactio
     }
 
     public ReceiveAndBin(Date date, String reference, List<InventoryItem> itemList, TransactionManager.Transact update, Runnable refresher) {
-        super(InventoryItem.class, filtered(itemList), StringList.create("PartNumber", "SerialNumber", "Quantity", "InTransit", "Location"));
+        super(InventoryItem.class, filtered(itemList), StringList.create("PartNumber", "SerialNumber as Serial", "Quantity", "InTransit", "Location"));
         this.update = update;
         this.refresher = refresher;
         buttonLayout.add(new ELabel("Date"), dateField, new ELabel("Reference"), referenceField, process, exit);
@@ -80,12 +80,25 @@ public class ReceiveAndBin extends ListGrid<InventoryItem> implements Transactio
     }
 
     @Override
+    public int getRelativeColumnWidth(String columnName) {
+        switch(columnName) {
+            case "PartNumber":
+                return 4;
+            case "Location":
+                return 3;
+            case "InTransit":
+                return 1;
+        }
+        return 2;
+    }
+
+    @Override
     public Component createHeader() {
         return buttonLayout;
     }
 
     private void con() {
-        addComponentColumn(this::actionButton);
+        addComponentColumn(this::actionButton).setFlexGrow(0).setWidth("200px");
     }
 
     @Override
