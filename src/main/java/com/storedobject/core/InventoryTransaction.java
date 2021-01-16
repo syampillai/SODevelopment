@@ -56,6 +56,14 @@ public final class InventoryTransaction {
         return new InventoryVirtualLocation();
     }
 
+    public static InventoryLocation createRentOutLocation(TransactionManager tm, Entity entity) {
+        return new InventoryVirtualLocation();
+    }
+
+    public static InventoryLocation createRentInLocation(TransactionManager tm, Entity entity) {
+        return new InventoryVirtualLocation();
+    }
+
     public void scrap(InventoryItem item, String reference) {
     }
 

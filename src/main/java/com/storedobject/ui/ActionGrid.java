@@ -156,11 +156,16 @@ public class ActionGrid<T> extends ListGrid<T> {
 
     @Override
     public final Component createHeader() {
-        ButtonLayout b = new ButtonLayout(
-                confirmMessage,
-                new Button("Yes", e -> act()),
-                new Button("No", e -> cancel())
-        );
+        ButtonLayout b;
+        if(this instanceof MessageGrid) {
+            b = new ButtonLayout(new Button("Ok", e -> close()));
+        } else {
+            b = new ButtonLayout(
+                    confirmMessage,
+                    new Button("Yes", e -> act()),
+                    new Button("No", e -> cancel())
+            );
+        }
         return message == null ? b : new Div(message, b);
     }
 
@@ -211,7 +216,7 @@ public class ActionGrid<T> extends ListGrid<T> {
     private class AGView extends View {
 
         private AGView() {
-            super("Confirm");
+            super(ActionGrid.this instanceof MessageGrid ? "Message" : "Confirm");
             setComponent(ActionGrid.this);
             setWindowMode(true);
         }

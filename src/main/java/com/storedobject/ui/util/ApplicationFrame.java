@@ -13,6 +13,7 @@ import com.vaadin.flow.component.HasText;
 import com.vaadin.flow.component.HtmlComponent;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.combobox.dataview.ComboBoxListDataView;
+import com.vaadin.flow.component.contextmenu.ContextMenu;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.data.provider.DataProvider;
@@ -28,6 +29,7 @@ public class ApplicationFrame extends com.storedobject.vaadin.ApplicationFrame i
     private SearchMenu searchMenu;
 
     public ApplicationFrame() {
+        new ContextMenu(this);
     }
 
     @Override
@@ -36,7 +38,6 @@ public class ApplicationFrame extends com.storedobject.vaadin.ApplicationFrame i
         if(menuLogic.isEmpty()) {
             return super.createMenu();
         }
-        //noinspection CatchMayIgnoreException
         try {
             Class<?> menuLogicClass = JavaClassLoader.getLogic(menuLogic);
             return (ApplicationMenu) menuLogicClass.getDeclaredConstructor(ApplicationFrame.class).

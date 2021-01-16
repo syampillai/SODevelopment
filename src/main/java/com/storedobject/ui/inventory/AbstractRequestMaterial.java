@@ -80,6 +80,10 @@ public abstract class AbstractRequestMaterial extends ObjectBrowser<MaterialRequ
         super.setExtraFilter(f);
     }
 
+    InventoryLocation getFromOrTo() {
+        return fromOrTo;
+    }
+
     abstract String getFixedSide();
 
     @Override
@@ -105,8 +109,13 @@ public abstract class AbstractRequestMaterial extends ObjectBrowser<MaterialRequ
 
     @Override
     public boolean canDelete(MaterialRequest object) {
-        if(object.getStatus() == 1) {
-            warning("Can't delete when status is '" + object.getStatusValue() + "'");
+        switch(object.getStatus()) {
+            case 0:
+            case 4:
+                break;
+            default:
+                warning("Can't delete when status is '" + object.getStatusValue() + "'");
+                return false;
         }
         return super.canDelete(object);
     }

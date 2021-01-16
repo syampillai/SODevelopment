@@ -29,6 +29,7 @@ public class FileViewer extends ObjectForestViewer<FileFolder> implements Closea
 
     public FileViewer(String path, String caption) {
         super(FileFolder.class, StringList.EMPTY);
+        filter.setVisible(false);
         addConstructedListener(o -> con());
         getDataSupplier().setListLinks(new FolderLister());
         if(path == null) {
@@ -51,9 +52,19 @@ public class FileViewer extends ObjectForestViewer<FileFolder> implements Closea
     }
 
     private void con() {
-        addComponentColumn(this::createViewMenu).setFlexGrow(0);
-        addComponentColumn(this::createDownloadMenu).setFlexGrow(0);
+        addComponentColumn(this::createViewMenu).setFlexGrow(0).setWidth("120px");
+        addComponentColumn(this::createDownloadMenu).setFlexGrow(0).setWidth("150px");
         addColumn(v -> " ").setFlexGrow(0);
+    }
+
+    @Override
+    public ObjectSearchBuilder<FileFolder> createSearchBuilder(StringList searchColumns) {
+        return null;
+    }
+
+    @Override
+    public Component createHeader() {
+        return null;
     }
 
     @Override

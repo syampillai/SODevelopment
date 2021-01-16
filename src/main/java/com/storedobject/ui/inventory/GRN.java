@@ -765,6 +765,14 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
                 }
                 itemEditor.close();
                 refresh(grnItem);
+                InventoryItem ii = grnItem.getItem();
+                if(ii.isBlocked()) {
+                    if(ii.isServiceable()) {
+                        warning("This is a blocked item and its status is still set as serviceable. GRN processing will fail unless the status is changed!");
+                    } else {
+                        warning("This is a blocked item! Please take appropriate steps to return it.");
+                    }
+                }
                 if(invokeBin) {
                     bin();
                 } else {

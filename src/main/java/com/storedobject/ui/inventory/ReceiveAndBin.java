@@ -133,6 +133,7 @@ public class ReceiveAndBin extends ListGrid<InventoryItem> implements Transactio
     }
 
     protected void process() {
+        clearAlerts();
         Date d = dateField.getValue();
         if(d.before(date)) {
             warning("Date shouldn't be less than " + DateUtility.formatDate(date));
@@ -171,6 +172,7 @@ public class ReceiveAndBin extends ListGrid<InventoryItem> implements Transactio
     }
 
     private void inspect(InventoryItem item) {
+        clearAlerts();
         if(itemEditor != null && itemEditor.getObjectClass() != item.getClass()) {
             itemEditor = null;
         }
@@ -226,6 +228,7 @@ public class ReceiveAndBin extends ListGrid<InventoryItem> implements Transactio
         }
 
         public void binItem(InventoryItem item) {
+            clearAlerts();
             this.item = item;
             itemField.clearContent().append(item.toDisplay()).update();
             InventoryLocation loc = item.getLocation();

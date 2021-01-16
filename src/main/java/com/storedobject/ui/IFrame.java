@@ -4,6 +4,7 @@ import com.storedobject.core.TextContent;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasSize;
 import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.component.contextmenu.ContextMenu;
 import com.vaadin.flow.dom.Style;
 
 /**
@@ -28,6 +29,7 @@ public class IFrame extends Component implements HasSize {
      * @param sourceDocument Source document to set.
      */
     public IFrame(String sourceDocument) {
+        new ContextMenu(this);
         Style s = getElement().getStyle();
         s.set("border", "none");
         s.set("margin", "0px");

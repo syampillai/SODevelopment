@@ -70,7 +70,7 @@ public class ProcessMaterialRequest extends AbstractRequestMaterial {
         }
         mr.reload();
         if(mr.getStatus() > 2) {
-            warning("Can not process, is '" + mr.getStatusValue() + "'");
+            warning("Can not process, status is '" + mr.getStatusValue() + "'");
             refresh(mr);
             return;
         }

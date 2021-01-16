@@ -207,11 +207,11 @@ public class InventoryItem extends StoredObject {
         return true;
     }
 
-    public final boolean isBlocked() {
+    public boolean isBlocked() {
         return getPartNumber().isBlocked();
     }
 
-    public final boolean isObsolete() {
+    public boolean isObsolete() {
         return getPartNumber().isObsolete();
     }
 

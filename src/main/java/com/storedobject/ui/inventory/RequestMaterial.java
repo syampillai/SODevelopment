@@ -1,11 +1,13 @@
 package com.storedobject.ui.inventory;
 
-import com.storedobject.core.InventoryLocation;
-import com.storedobject.core.MaterialRequest;
-import com.storedobject.core.MaterialRequestItem;
+import com.storedobject.common.StringList;
+import com.storedobject.core.*;
+import com.storedobject.ui.MessageGrid;
 import com.storedobject.vaadin.Button;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.icon.VaadinIcon;
+
+import java.util.List;
 
 public class RequestMaterial extends AbstractRequestMaterial {
 
@@ -39,6 +41,7 @@ public class RequestMaterial extends AbstractRequestMaterial {
         Checkbox h = new Checkbox("Include History");
         h.addValueChangeListener(e -> setExtraFilter(e.getValue() ? null : "Status<=1"));
         buttonPanel.add(h);
+        buttonPanel.add(new Button("\u21f0 Receive Screen", VaadinIcon.TRUCK, e -> receive()));
     }
 
     private void sendRequest() {
@@ -62,5 +65,24 @@ public class RequestMaterial extends AbstractRequestMaterial {
             refresh(mr);
             message("Request sent");
         }
+    }
+
+    private void receive() {
+        close();
+        new ReceiveMaterialRequested(getFromOrTo()).execute();
+    }
+
+    @Override
+    public void doDelete(MaterialRequest object) {
+        List<MaterialIssued> mis = StoredObject.list(MaterialIssued.class, "Request=" + object.getId()).
+                toList();
+        if(mis.isEmpty()) {
+            super.doDelete(object);
+            return;
+        }
+        new MessageGrid<>(MaterialIssued.class, mis,
+                StringList.create("Date", "ReferenceNumber AS Reference", "Location AS Issued from", "Status"),
+                "Materials were issued via these. Deletion is possible only after closing and deleting these!").
+                execute(this.getView());
     }
 }

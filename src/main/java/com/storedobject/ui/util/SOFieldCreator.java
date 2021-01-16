@@ -178,6 +178,9 @@ public class SOFieldCreator<T> implements ObjectFieldCreator<T> {
         if(form == null) {
             return 0;
         }
+        if(fieldName.startsWith("_")) {
+            return Integer.MAX_VALUE - 100;
+        }
         if(fieldName.equals(".p")) {
             return Integer.MIN_VALUE;
         }

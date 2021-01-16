@@ -252,7 +252,7 @@ public class InventoryItemType extends StoredObject implements HasChildren {
     }
 
     public boolean isObsolete() {
-        return isBlocked();
+        return false;
     }
 
     public final boolean canBin(InventoryLocation location) {
