@@ -1,5 +1,6 @@
 package com.storedobject.ui.inventory;
 
+import com.storedobject.common.Executable;
 import com.storedobject.common.SORuntimeException;
 import com.storedobject.common.StringList;
 import com.storedobject.core.*;
@@ -13,6 +14,11 @@ public abstract class AbstractRequestMaterial extends ObjectBrowser<MaterialRequ
     private InventoryLocation fromOrTo;
     private MaterialRequestPriority normalPriority;
     private final boolean issuing;
+
+    AbstractRequestMaterial(Executable redirect) {
+        super(MaterialRequest.class);
+        throw new LogicRedirected(redirect);
+    }
 
     AbstractRequestMaterial(boolean issuing, int noActions) {
         this(issuing, (String) null, noActions);

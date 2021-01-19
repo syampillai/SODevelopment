@@ -1,5 +1,6 @@
 package com.storedobject.ui.inventory;
 
+import com.storedobject.common.Executable;
 import com.storedobject.common.StringList;
 import com.storedobject.core.*;
 import com.storedobject.ui.ELabel;
@@ -28,7 +29,7 @@ public class ProcessMaterialRequest extends AbstractRequestMaterial {
     private final IssueTreeGrid issueTreeGrid = new IssueTreeGrid();
 
     public ProcessMaterialRequest() {
-        super(true, NO_ACTIONS);
+        super(new PromptStore());
     }
 
     public ProcessMaterialRequest(String store) {
@@ -823,6 +824,29 @@ public class ProcessMaterialRequest extends AbstractRequestMaterial {
                 quantityField.setValue(mii.getQuantity());
                 execute();
             }
+        }
+    }
+
+    private static class PromptStore extends DataForm implements Executable {
+
+        private final LocationField locationField = LocationField.create("Store", 0);
+
+        public PromptStore() {
+            super("Process Material Requests");
+            addField(locationField);
+            setRequired(locationField);
+        }
+
+        @Override
+        protected boolean process() {
+            close();
+            new ProcessMaterialRequest(locationField.getValue()).execute();
+            return true;
+        }
+
+        @Override
+        public void run() {
+            execute();
         }
     }
 }

@@ -61,6 +61,10 @@ public final class InventoryFitmentPosition extends InventoryLocation {
         return 14;
     }
 
+    public String getPosition() {
+        return getAssembly().getPosition();
+    }
+
     public InventoryItem getFittedItem() {
         return getFittedItem(null);
     }

@@ -227,8 +227,42 @@ public abstract class AbstractSendAndReceiveMaterial<T extends InventoryTransfer
             default:
                 return;
         }
-        List<InventoryItem> items = new ArrayList<>();
-        mt.listLinks(itemClass).map(InventoryTransferItem::getItem).collectAll(items);
+        List<InventoryItem> items = mt.listLinks(itemClass).map(InventoryTransferItem::getItem).toList();
+        List<InventoryItem> moved = new ArrayList<>();
+        InventoryLocation to = mt.getToLocation();
+        Id storeId = to instanceof InventoryStoreBin ? ((InventoryStoreBin) to).getStoreId() : null;
+        items.removeIf(i -> {
+           InventoryLocation loc = i.getLocation();
+           if(loc.getId().equals(to.getId())) {
+               return false;
+           }
+           if(storeId != null && loc instanceof InventoryBin && ((InventoryBin) loc).getStoreId().equals(storeId)) {
+               return false;
+           }
+           moved.add(i);
+           return true;
+        });
+        if(moved.isEmpty()) {
+            receive(mt, items);
+        } else {
+            String m1, m2 = "You may ";
+            if(items.isEmpty()) {
+                m1 = "All";
+                m2 += "just mark it as received";
+            } else {
+                m1 = "The following";
+                m2 += "inspect/bin the remaining items";
+            }
+            m1 +=  " items are already moved!";
+            m2 += ". Proceed?";
+            ActionGrid<InventoryItem> ac;
+            ac = new ActionGrid<>(InventoryItem.class, moved, m1, () -> receive(mt, items));
+            ac.getConfirmMessage().clearContent().append(m2).update();
+            ac.execute();
+        }
+    }
+
+    private void receive(T mt, List<InventoryItem> items) {
         new ReceiveAndBin(mt.getDate(), "Receipt " + mt.getReferenceNumber(), items, mt::receive, () -> refresh(mt)).execute(getView());
     }
 

@@ -155,4 +155,7 @@ public final class MaterialRequest extends StoredObject {
 
     public void request(Transaction transaction) throws Exception {
     }
+
+    public void foreclose(Transaction transaction) throws Exception {
+    }
 }

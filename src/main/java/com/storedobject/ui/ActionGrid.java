@@ -158,12 +158,12 @@ public class ActionGrid<T> extends ListGrid<T> {
     public final Component createHeader() {
         ButtonLayout b;
         if(this instanceof MessageGrid) {
-            b = new ButtonLayout(new Button("Ok", e -> close()));
+            b = new ButtonLayout(new Button("Ok", e -> close()).asSmall());
         } else {
             b = new ButtonLayout(
                     confirmMessage,
-                    new Button("Yes", e -> act()),
-                    new Button("No", e -> cancel())
+                    new Button("Yes", e -> act()).asSmall(),
+                    new Button("No", e -> cancel()).asSmall()
             );
         }
         return message == null ? b : new Div(message, b);

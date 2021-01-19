@@ -84,7 +84,7 @@ public abstract class AbstractAssembly<T extends InventoryItem, C extends Invent
     }
 
     public final String getPosition(InventoryFitmentPosition fitmentPosition) {
-        return fitmentPosition == root ? ("[" + rootItem.getLocation().getName() + "]") : fitmentPosition.getAssembly().getPosition();
+        return fitmentPosition == root ? ("[" + rootItem.getLocation().getName() + "]") : fitmentPosition.getPosition();
     }
 
     public final String getPartNumber(InventoryFitmentPosition fitmentPosition) {
