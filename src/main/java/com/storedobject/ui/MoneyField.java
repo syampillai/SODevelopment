@@ -5,6 +5,7 @@ import com.storedobject.vaadin.Clickable;
 import com.storedobject.vaadin.CustomTextField;
 import com.storedobject.vaadin.RequiredField;
 import com.storedobject.vaadin.util.HasTextValue;
+import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.textfield.TextField;
 
@@ -52,7 +53,6 @@ public class MoneyField extends CustomTextField<Money> implements RequiredField 
             width = 22;
         }
         getField().setMaxLength(width);
-        ((TextField)getField()).setAutoselect(true);
         Money v = getEmptyValue();
         setValue(v);
         setPresentationValue(v);
@@ -61,6 +61,15 @@ public class MoneyField extends CustomTextField<Money> implements RequiredField 
 
     private MoneyField(Money defaultValue) {
         super(defaultValue);
+    }
+
+    @Override
+    protected void onAttach(AttachEvent attachEvent) {
+        super.onAttach(attachEvent);
+        Application a = Application.get();
+        if(a != null) {
+            ((TextField) getField()).setAutoselect(!a.getWebBrowser().isAndroid());
+        }
     }
 
     @Override
@@ -96,7 +105,11 @@ public class MoneyField extends CustomTextField<Money> implements RequiredField 
             m = Money.create(string);
             if(allowedCurrencies != null && !allowedCurrencies.contains(m.getCurrency())) {
                 m = new Money(m.getValue(), allowedCurrencies.get(0));
+                focus();
             }
+        }
+        if(m.wasRounded()) {
+            focus();
         }
         setPresentationValue(m);
         return m;

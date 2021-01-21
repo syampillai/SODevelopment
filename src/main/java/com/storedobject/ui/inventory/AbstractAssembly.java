@@ -65,7 +65,7 @@ public abstract class AbstractAssembly<T extends InventoryItem, C extends Invent
     public final HTMLGenerator getName(InventoryFitmentPosition fitmentPosition) {
         HTMLText s = new HTMLText();
         if(fitmentPosition == root) {
-            s.append(rootItem.getPartNumber().getName());
+            s.append(rootItem.getPartNumber().getName() + " [" + rootItem.getLocation().getName() + "]");
             return s;
         }
         InventoryItem item = fitmentPosition.getFittedItem();
@@ -83,8 +83,16 @@ public abstract class AbstractAssembly<T extends InventoryItem, C extends Invent
         return s;
     }
 
+    @Override
+    public int getRelativeColumnWidth(String columnName) {
+        if("Name".equals(columnName)) {
+            return 4;
+        }
+        return super.getRelativeColumnWidth(columnName);
+    }
+
     public final String getPosition(InventoryFitmentPosition fitmentPosition) {
-        return fitmentPosition == root ? ("[" + rootItem.getLocation().getName() + "]") : fitmentPosition.getPosition();
+        return fitmentPosition == root ? "" : fitmentPosition.getPosition();
     }
 
     public final String getPartNumber(InventoryFitmentPosition fitmentPosition) {

@@ -375,7 +375,11 @@ public abstract class AbstractSendAndReceiveMaterial<T extends InventoryTransfer
                 itemInput = (ItemInput<?>)(itemField).getField();
                 itemField.addValueChangeListener(e -> changed(itemInput.getValue()));
                 if(!receiveMode) {
-                    itemInput.setLocation(fromOrTo);
+                    if(fromOrTo instanceof InventoryStoreBin) {
+                        itemInput.setStore(((InventoryStoreBin) fromOrTo).getStore());
+                    } else {
+                        itemInput.setLocation(fromOrTo);
+                    }
                 }
             }
 

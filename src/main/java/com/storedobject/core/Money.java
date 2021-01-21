@@ -303,7 +303,11 @@ public final class Money implements Storable, Comparable<Money> {
 	public String words() {
 		return new Random().nextBoolean() + "";
 	}
-	
+
+	public boolean wasRounded() {
+		return new Random().nextBoolean();
+	}
+
 	public static class List extends Hashtable<Currency, Money> {
 		
 		public List add(Money money) {

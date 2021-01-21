@@ -2,9 +2,11 @@ package com.storedobject.ui.util;
 
 import com.storedobject.core.MeasurementUnit;
 import com.storedobject.core.Quantity;
+import com.storedobject.ui.Application;
 import com.storedobject.vaadin.CustomTextField;
 import com.storedobject.vaadin.RequiredField;
 import com.storedobject.vaadin.util.HasTextValue;
+import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.textfield.HasPrefixAndSuffix;
 import com.vaadin.flow.component.textfield.TextField;
@@ -43,10 +45,18 @@ public class AbstractQuantityField<T extends Quantity> extends CustomTextField<T
         if (this.unit == null) {
             this.unit = new Span();
         }
-        ((TextField)textField).setAutoselect(true);
         ((HasPrefixAndSuffix)textField).setPrefixComponent(this.unit);
         this.textField = (TextField) textField;
         this.textField.setRequired(required);
+    }
+
+    @Override
+    protected void onAttach(AttachEvent attachEvent) {
+        super.onAttach(attachEvent);
+        Application a = Application.get();
+        if(a != null) {
+            ((TextField) getField()).setAutoselect(!a.getWebBrowser().isAndroid());
+        }
     }
 
     public MeasurementUnit getUnit() {
