@@ -7,9 +7,9 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.function.Predicate;
+import java.util.stream.Stream;
 
 public class ObjectCache<T extends StoredObject> implements Iterable<T> {
-	
 
 	public ObjectCache(Class<T> objectClass) {
 	}
@@ -37,10 +37,13 @@ public class ObjectCache<T extends StoredObject> implements Iterable<T> {
 
 	public ObjectCache(Class<T> objectClass, Iterable<Id> idList) {
 	}
-	
+
 	public ObjectCache(Class<T> objectClass, ObjectIterator<T> objects) {
 	}
-	
+
+	public ObjectCache(Class<T> objectClass, Stream<T> objects) {
+	}
+
 	public void load() {
 	}
 	
@@ -67,10 +70,13 @@ public class ObjectCache<T extends StoredObject> implements Iterable<T> {
 	
 	public void load(Iterable<Id> idList) {
 	}
-	
+
 	public void load(ObjectIterator<T> objects) {
 	}
-	
+
+	public void load(Stream<T> objects) {
+	}
+
 	public Class<T> getObjectClass() {
 		return null;
 	}

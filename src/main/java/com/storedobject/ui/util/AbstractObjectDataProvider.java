@@ -14,7 +14,8 @@ import java.io.Closeable;
 import java.util.Objects;
 import java.util.stream.Stream;
 
-public interface AbstractObjectDataProvider<T extends StoredObject, M, F> extends DataProvider<M, F>, FilterMethods<T>, Closeable, ResourceOwner {
+public interface AbstractObjectDataProvider<T extends StoredObject, M, F> extends
+        DataProvider<M, F>, FilterMethods<T>, Closeable, ResourceOwner, ObjectLoader<T> {
 
     boolean isAllowAny();
 
@@ -118,28 +119,6 @@ public interface AbstractObjectDataProvider<T extends StoredObject, M, F> extend
     int indexOf(T object);
 
     T getItem(int index);
-
-    default void load() {
-        load(null, null);
-    }
-
-    default void load(String condition) {
-        load(condition, null);
-    }
-
-    void load(String condition, String orderBy);
-
-    default void load(int linkType, StoredObject master) {
-        load(linkType, master, null, null);
-    }
-
-    default void load(int linkType, StoredObject master, String condition) {
-        load(linkType, master, condition, null);
-    }
-
-    void load(int linkType, StoredObject master, String condition, String orderBy);
-
-    void load(ObjectIterator<T> objects);
 
     default void clear() {
         clear(true);

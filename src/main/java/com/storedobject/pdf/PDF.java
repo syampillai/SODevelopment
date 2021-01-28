@@ -1225,6 +1225,15 @@ public abstract class PDF implements java.io.Closeable, com.storedobject.core.Co
     }
 
     /**
+     * Create image from a signature instance
+     * @param signature Signature
+     * @return Image
+     */
+    public static PDFImage createImage(Signature signature) {
+        return null;
+    }
+
+    /**
      * Create image from stream data
      * @param streamData Stream data
      * @return Image

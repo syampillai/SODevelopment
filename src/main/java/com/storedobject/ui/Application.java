@@ -37,27 +37,27 @@ public class Application extends com.storedobject.vaadin.Application implements 
     private static final String VERSION = "18.0.5";
     private static final String COMPACT_STYLES =
             "--lumo-size-xl: 3rem;\n" +
-            "--lumo-size-l: 2.5rem;\n" +
-            "--lumo-size-m: 2rem;\n" +
-            "--lumo-size-s: 1.75rem;\n" +
-            "--lumo-size-xs: 1.5rem;\n" +
-            "--lumo-font-size: 1rem;\n" +
-            "--lumo-font-size-xxxl: 1.75rem;\n" +
-            "--lumo-font-size-xxl: 1.375rem;\n" +
-            "--lumo-font-size-xl: 1.125rem;\n" +
-            "--lumo-font-size-l: 1rem;\n" +
-            "--lumo-font-size-m: 0.875rem;\n" +
-            "--lumo-font-size-s: 0.8125rem;\n" +
-            "--lumo-font-size-xs: 0.75rem;\n" +
-            "--lumo-font-size-xxs: 0.6875rem;\n" +
-            "--lumo-line-height-m: 1.4;\n" +
-            "--lumo-line-height-s: 1.2;\n" +
-            "--lumo-line-height-xs: 1.1;\n" +
-            "--lumo-space-xl: 1.875rem;\n" +
-            "--lumo-space-l: 1.25rem;\n" +
-            "--lumo-space-m: 0.625rem;\n" +
-            "--lumo-space-s: 0.3125rem;\n" +
-            "--lumo-space-xs: 0.1875rem;";
+                    "--lumo-size-l: 2.5rem;\n" +
+                    "--lumo-size-m: 2rem;\n" +
+                    "--lumo-size-s: 1.75rem;\n" +
+                    "--lumo-size-xs: 1.5rem;\n" +
+                    "--lumo-font-size: 1rem;\n" +
+                    "--lumo-font-size-xxxl: 1.75rem;\n" +
+                    "--lumo-font-size-xxl: 1.375rem;\n" +
+                    "--lumo-font-size-xl: 1.125rem;\n" +
+                    "--lumo-font-size-l: 1rem;\n" +
+                    "--lumo-font-size-m: 0.875rem;\n" +
+                    "--lumo-font-size-s: 0.8125rem;\n" +
+                    "--lumo-font-size-xs: 0.75rem;\n" +
+                    "--lumo-font-size-xxs: 0.6875rem;\n" +
+                    "--lumo-line-height-m: 1.4;\n" +
+                    "--lumo-line-height-s: 1.2;\n" +
+                    "--lumo-line-height-xs: 1.1;\n" +
+                    "--lumo-space-xl: 1.875rem;\n" +
+                    "--lumo-space-l: 1.25rem;\n" +
+                    "--lumo-space-m: 0.625rem;\n" +
+                    "--lumo-space-s: 0.3125rem;\n" +
+                    "--lumo-space-xs: 0.1875rem;";
     private static final String DELETE_COMPACT_STYLES = "--lumo-size-xl\n" +
             "--lumo-size-l\n" +
             "--lumo-size-m\n" +
@@ -84,7 +84,7 @@ public class Application extends com.storedobject.vaadin.Application implements 
     private BrowserDeviceLayout layout = null;
     private Logic runningLogic;
     private final ApplicationLayout mainLayout;
-    private boolean singleLogicMode = false;
+    private boolean singleLogicMode = false, abortOnLogicSwitch = false;
     private final Hashtable<Long, AbstractContentGenerator> dynamicContent = new Hashtable<>();
     private final Hashtable<Long, WeakReference<AbstractContentGenerator>> multiContent = new Hashtable<>();
     private ObjectViewer objectViewer;
@@ -100,12 +100,20 @@ public class Application extends com.storedobject.vaadin.Application implements 
     }
 
     public Application(ApplicationLayout applicationLayout) {
-        this(applicationLayout, ApplicationServer.getGlobalBooleanProperty("application.logic.single"));
+        this(applicationLayout,
+                ApplicationServer.getGlobalBooleanProperty("application.logic.single"),
+                ApplicationServer.getGlobalBooleanProperty("application.logic.abortWhenSwitched")
+        );
     }
 
     public Application(ApplicationLayout applicationLayout, boolean singleLogicMode) {
+        this(applicationLayout, singleLogicMode, singleLogicMode);
+    }
+
+    public Application(ApplicationLayout applicationLayout, boolean singleLogicMode, boolean abortOnLogicSwitch) {
         this.mainLayout = applicationLayout;
         setSingleLogicMode(singleLogicMode);
+        setAbortOnLogicSwitch(abortOnLogicSwitch);
         login = new Login(this, getMessageViewer());
     }
 
@@ -258,9 +266,20 @@ public class Application extends com.storedobject.vaadin.Application implements 
         this.singleLogicMode = singleLogicMode;
     }
 
+    public void setAbortOnLogicSwitch(boolean abortOnLogicSwitch) {
+        this.abortOnLogicSwitch = abortOnLogicSwitch;
+    }
+
     public void execute(Logic logic) {
-        if(singleLogicMode) {
-            execute(logic, true);
+        if(singleLogicMode || abortOnLogicSwitch) {
+            if(abortOnLogicSwitch) {
+                execute(logic, true);
+            } else {
+                if(getActiveViews().allMatch(v -> v instanceof InformationView || v.getComponent() instanceof PDFViewer)) {
+                    logic.execute();
+                }
+                closeMenu();
+            }
         } else {
             logic.execute();
         }
@@ -443,20 +462,29 @@ public class Application extends com.storedobject.vaadin.Application implements 
             caption = "Media";
         }
         if(mediaFile.isImage()) {
-            View.createCloseableView(new Image(mediaFile), caption).execute();
+            infoView(new Image(mediaFile), caption);
             return;
         }
         if(mediaFile.isAudio()) {
-            View.createCloseableView(new Audio(mediaFile), caption).execute();
+            infoView(new Audio(mediaFile), caption);
             return;
         }
         if(mediaFile.isVideo()) {
-            View.createCloseableView(new Video(mediaFile), caption).execute();
+            infoView(new Video(mediaFile), caption);
             return;
         }
         if(mediaFile.getMimeType().equals(AbstractContentGenerator.PDF_CONTENT)) {
-            View.createCloseableView(new PDFViewer("media/" + mediaFile.getFileName()), caption).execute();
+            infoView(new PDFViewer("media/" + mediaFile.getFileName()), caption);
         }
+    }
+
+    private void infoView(Component c, String caption) {
+        class V extends View implements CloseableView, InformationView {
+            private V(Component component, String caption) {
+                super(component, caption);
+            }
+        }
+        new V(c, caption).execute();
     }
 
     public void view(String caption, Id objectId) {

@@ -117,7 +117,7 @@ public class ObjectListProvider<T extends StoredObject, F> extends CallbackDataP
     }
 
     @Override
-    public void load(ObjectIterator<T> objects) {
+    public void load(Stream<T> objects) {
         supplier.cache.clear();
         objects.forEach(o -> {
             if(loadFilter == null || loadFilter.test(o)) {

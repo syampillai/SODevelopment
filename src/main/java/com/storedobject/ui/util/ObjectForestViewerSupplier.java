@@ -23,6 +23,7 @@ public class ObjectForestViewerSupplier<T extends StoredObject, F> implements Ab
 
     public ObjectForestViewerSupplier(int linkType, StoredObject master, Class<T> objectClass, String condition, String orderBy, boolean any) {
         supplier = new ObjectForestSupplier<>(linkType, master, objectClass, condition, orderBy, any);
+        load(ObjectIterator.create());
     }
 
     @Override
@@ -74,7 +75,7 @@ public class ObjectForestViewerSupplier<T extends StoredObject, F> implements Ab
     }
 
     @Override
-    public void load(ObjectIterator<T> objects) {
+    public void load(Stream<T> objects) {
         supplier.load(objects);
     }
 

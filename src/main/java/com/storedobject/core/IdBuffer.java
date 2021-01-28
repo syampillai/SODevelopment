@@ -6,6 +6,7 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.function.Predicate;
+import java.util.stream.Stream;
 
 public final class IdBuffer implements Iterable<Id> {
 	
@@ -13,10 +14,10 @@ public final class IdBuffer implements Iterable<Id> {
 	
 	public IdBuffer(Query query) {
 	}
-	
+
 	public IdBuffer(Iterable<Id> idList) {
 	}
-	
+
 	public void close() {
 	}
 	

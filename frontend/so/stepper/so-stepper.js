@@ -146,9 +146,9 @@ export class SOStepper extends LitElement {
 
     render() {
         return html`
-            <div id="header" class="header" part="header"></div>
-            <div id="content" class="content" part="content"></div>
-            <div id="footer" class="footer" part="footer"></div>
+            <div id="header" class="header"></div>
+            <div id="content" class="content"></div>
+            <div id="footer" class="footer"></div>
         `;
     }
 

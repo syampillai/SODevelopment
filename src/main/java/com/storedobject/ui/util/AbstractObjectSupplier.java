@@ -95,7 +95,7 @@ public class AbstractObjectSupplier<T extends StoredObject, M, F> extends Callba
     }
 
     @Override
-    public void load(ObjectIterator<T> objects) {
+    public void load(Stream<T> objects) {
         if(objects == null) {
             return;
         }

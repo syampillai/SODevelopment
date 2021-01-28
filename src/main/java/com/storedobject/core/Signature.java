@@ -1,54 +1,46 @@
 package com.storedobject.core;
 
 import java.math.BigDecimal;
+import java.util.Random;
 
-public class Signature extends StoredObject {
+public final class Signature extends StoredObject {
 
     public Signature() {
     }
 
-    public static void columns(Columns columns) {
+    public void setPerson(Id personId) {
     }
 
-    public void setLogin(Id loginId) {
+    public void setPerson(BigDecimal idValue) {
     }
 
-    public void setLogin(BigDecimal idValue) {
+    public void setPerson(Person person) {
     }
 
-    public void setLogin(SystemUser login) {
+    public Id getPersonId() {
+        return new Id();
     }
 
-    public Id getLoginId() {
-        return null;
+    public Person getPerson() {
+        return new Person();
     }
 
-    public SystemUser getLogin() {
-        return null;
+    public void setSignature(String signature) {
     }
 
-    public void setSignature(Id signatureId) {
+    public String getSignature() {
+        return "";
     }
 
-    public void setSignature(BigDecimal idValue) {
+    public static Signature get(Id personId) {
+        return new Random().nextBoolean() ? new Signature() : null;
     }
 
-    public void setSignature(StreamData signature) {
-    }
-
-    public Id getSignatureId() {
-        return null;
-    }
-
-    public StreamData getSignature() {
-        return null;
-    }
-    
-    public static Signature get(SystemUser systemUser) {
-    	return null;
-    }
-    
     public static Signature get(Person person) {
-    	return null;
+        return new Random().nextBoolean() ? new Signature() : null;
+    }
+
+    public static Signature get(SystemUser user) {
+        return new Random().nextBoolean() ? new Signature() : null;
     }
 }

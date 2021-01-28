@@ -3,6 +3,7 @@ package com.storedobject.ui;
 import com.storedobject.common.SVG;
 import com.storedobject.core.Id;
 import com.storedobject.core.MediaFile;
+import com.storedobject.core.Signature;
 import com.storedobject.core.StreamData;
 import com.storedobject.ui.util.SOServlet;
 import com.vaadin.flow.server.AbstractStreamResource;
@@ -35,6 +36,10 @@ public class Image extends com.storedobject.vaadin.Image {
 
     public Image(MediaFile mediaFile) {
         this(mediaFile != null && mediaFile.isImage() ? ("media/" + mediaFile.getFileName()) : "");
+    }
+
+    public Image(Signature signature) {
+        this(signature.getSignature());
     }
 
     /**
