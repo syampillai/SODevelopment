@@ -222,7 +222,7 @@ public class ObjectGetField<T extends StoredObject> extends AbstractObjectField<
                     }
                 }
             } catch (Exception e) {
-                e.printStackTrace();
+                ApplicationServer.log(Application.get(), e);
                 value = null;
             }
         }

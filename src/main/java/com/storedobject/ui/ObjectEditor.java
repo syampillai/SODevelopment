@@ -167,12 +167,17 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T> 
 
     @Override
     public void setCaption(String caption) {
-        if(caption == null || caption.isEmpty()) {
+        setCaption(caption, false);
+    }
+
+    void setCaption(String caption, boolean internal) {
+        if(!internal && (caption == null || caption.isEmpty())) {
             caption = getCaption();
             if(caption == null || caption.isEmpty()) {
                 return;
             }
-            error("Error: Please inform Syam about this error");
+            error("Error: Please inform Syam about this error, trying to overwrite caption '" + caption + "' with empty value!");
+            Thread.dumpStack();
             return;
         }
         super.setCaption(caption);

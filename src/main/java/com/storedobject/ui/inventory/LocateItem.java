@@ -2,14 +2,18 @@ package com.storedobject.ui.inventory;
 
 import com.storedobject.common.StringList;
 import com.storedobject.core.*;
+import com.storedobject.report.ItemMovementReport;
 import com.storedobject.ui.ELabel;
 import com.storedobject.ui.ObjectEditor;
 import com.storedobject.ui.ObjectField;
 import com.storedobject.vaadin.*;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.grid.contextmenu.GridContextMenu;
+import com.vaadin.flow.component.grid.contextmenu.GridMenuItem;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.stream.Stream;
 
 /**
@@ -23,10 +27,10 @@ public class LocateItem extends ListGrid<InventoryItem> implements CloseableView
     private final Class<? extends InventoryItem> itemClass;
     private final ObjectField<InventoryItemType> pnField;
     private final TextField snField;
-    private final Button inspect;
     @SuppressWarnings("rawtypes")
     private ObjectEditor editor;
     private InventoryStore store;
+    private final ELabel help = new ELabel("Right-click on the row to see more options", "blue");
 
     /**
      * Constructor.
@@ -162,13 +166,22 @@ public class LocateItem extends ListGrid<InventoryItem> implements CloseableView
                 pnField.addValueChangeListener(e -> loadItems());
             }
         }
+        GridContextMenu<InventoryItem> cm = new GridContextMenu<>(this);
+        cm.addItem("View Details", e -> e.getItem().ifPresent(this::view));
         if(canInspect) {
-            inspect = new Button("Inspect / Rebin", VaadinIcon.STORAGE, e -> inspect());
-            inspect.setVisible(false);
-        } else {
-            inspect = null;
+            cm.addItem("Inspect & Bin", e -> e.getItem().ifPresent(this::inspect));
         }
-        addItemDoubleClickListener(e -> view(e.getItem()));
+        GridMenuItem<InventoryItem> movementReport = cm.addItem("Movement Report",
+                e -> e.getItem().ifPresent(i -> new ItemMovementReport(getApplication(), i).execute()));
+        cm.setDynamicContentHandler(ii -> {
+            deselectAll();
+            if(ii == null) {
+                return false;
+            }
+            select(ii);
+            movementReport.setVisible(ii.isSerialized());
+            return true;
+        });
     }
 
     private static String caption(String caption) {
@@ -214,7 +227,7 @@ public class LocateItem extends ListGrid<InventoryItem> implements CloseableView
 
     @Override
     public Component createHeader() {
-        ButtonLayout b = new ButtonLayout(inspect, new Button("Exit", e -> close()));
+        ButtonLayout b = new ButtonLayout(new Button("Exit", e -> close()));
         if(snField != null) {
             b.add(new ELabel("S/N: "), snField);
         }
@@ -222,6 +235,18 @@ public class LocateItem extends ListGrid<InventoryItem> implements CloseableView
             b.add(new ELabel("P/N: "), pnField);
         }
         return b;
+    }
+
+    @Override
+    public void createFooters() {
+        appendFooter().join().setComponent(help);
+        help.setVisible(!isEmpty());
+    }
+
+    @Override
+    public void clear() {
+        super.clear();
+        help.setVisible(false);
     }
 
     public String getLocationDisplay(InventoryItem item) {
@@ -297,26 +322,18 @@ public class LocateItem extends ListGrid<InventoryItem> implements CloseableView
         }
         objects = objects.limit(500);
         objects.forEach(this::add);
-        if(inspect != null) {
-            inspect.setVisible(!isEmpty());
-        }
+        help.setVisible(!isEmpty());
     }
 
     private void loadInt(ObjectIterator<InventoryItem> objects) {
         loadInt(objects.stream());
     }
 
-    @Override
-    public void clear() {
-        if(inspect != null) {
-            inspect.setVisible(false);
-        }
-        super.clear();
-    }
-
-    private void inspect() {
+    private void inspect(InventoryItem ii) {
         close();
-        new ReceiveAndBin(this).execute();
+        List<InventoryItem> list = new ArrayList<>();
+        list.add(ii);
+        new ReceiveAndBin(list).execute();
     }
 
     private void view(InventoryItem item) {

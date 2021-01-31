@@ -1,6 +1,7 @@
 package com.storedobject.ui;
 
 import com.storedobject.common.Barcode;
+import com.storedobject.core.ApplicationServer;
 import com.storedobject.vaadin.PaintedImage;
 
 import java.awt.*;
@@ -84,7 +85,7 @@ public class BarcodeImage extends PaintedImage {
         } catch (Exception e) {
             Application a = Application.get();
             if(a == null) {
-                e.printStackTrace();
+                ApplicationServer.log(a, e);
             } else {
                 a.log(e);
             }

@@ -22,6 +22,7 @@ public class ReceiveAndBin extends ListGrid<InventoryItem> implements Transactio
     private final Map<Id, InventoryBin> bins = new HashMap<>();
     @SuppressWarnings("rawtypes")
     private ObjectEditor itemEditor;
+    private InventoryLocation previousLocation;
     private final BinEditor binner = new BinEditor();
     protected final Button process = new ConfirmButton("Accept Bin Changes", VaadinIcon.STOCK, e -> process());
     protected final Button exit = new Button("Exit", e -> close());
@@ -184,6 +185,7 @@ public class ReceiveAndBin extends ListGrid<InventoryItem> implements Transactio
             //noinspection unchecked
             itemEditor.setSaver(e -> saveItem(item));
         }
+        previousLocation = item.getLocation();
         item.setInTransit(false);
         //noinspection unchecked
         itemEditor.editObject(item, getView());
@@ -209,7 +211,12 @@ public class ReceiveAndBin extends ListGrid<InventoryItem> implements Transactio
         }
         InventoryLocation bin = bins.get(item.getId());
         if(bin != null && !bin.canBin(item)) {
-            warning("This item can't be stored at location '" + bin.toDisplay() + "'. Please a suitable location.");
+            warning("This item can't be stored at location '" + bin.toDisplay() +
+                    "'. Please choose a suitable location.");
+        }
+        if(!item.getLocationId().equals(previousLocation.getId())) {
+            warning("Due to change in serviceability status, item is removed from '" + previousLocation.toDisplay()
+                    + "'. Please move it to suitable location.");
         }
         return true;
     }

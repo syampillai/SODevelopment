@@ -719,7 +719,14 @@ public class SOFieldCreator<T> implements ObjectFieldCreator<T> {
                 } else if(md.isDays()) {
                     f = new DaysField(label);
                 } else {
-                    f = new IntegerField(label, 0, md.getIntParameter(-1, 0));
+                    int w = md.getIntParameter(0, 0);
+                    boolean negative = w < 0;
+                    if(negative) {
+                        w = -w;
+                    } else if(w == 0) {
+                        w = -1;
+                    }
+                    f = new IntegerField(label, 0, w, false, negative);
                     ((IntegerField) f).setPlaceholder(md.getParameter(1));
                 }
             }

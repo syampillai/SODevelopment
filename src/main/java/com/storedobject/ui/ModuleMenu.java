@@ -3,20 +3,18 @@ package com.storedobject.ui;
 import com.storedobject.common.SORuntimeException;
 import com.storedobject.core.*;
 import com.storedobject.vaadin.*;
-import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.DetachEvent;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Paragraph;
-import com.vaadin.flow.shared.Registration;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class ModuleMenu extends View implements CloseableView {
+public class ModuleMenu extends View implements CloseableView, Transactional {
 
     private final Breadcrumbs breadcrumbs = new Breadcrumbs(this);
     private final Body body;
@@ -36,12 +34,8 @@ public class ModuleMenu extends View implements CloseableView {
         }
         setCaption(module.getName());
         body = new Body();
-        CSSGrid div = new CSSGrid();
-        div.getStyle().set("grid-template-rows", "10% auto");
-        div.justify(breadcrumbs, CSSGrid.Position.START);
-        div.align(breadcrumbs, CSSGrid.Position.START);
-        div.add(breadcrumbs, body);
-        setComponent(div);
+        VerticalLayout layout = new VerticalLayout(breadcrumbs, body);
+        setComponent(layout);
         if(drawFailed(module)) {
             warning("Nothing found under: " + module.getName());
         }
@@ -76,7 +70,7 @@ public class ModuleMenu extends View implements CloseableView {
     }
 
     private boolean drawFailed(List<ModuleLogic> moduleList) {
-        body.clear();
+        body.removeAll();
         for(ModuleLogic m: moduleList) {
             body.add(new MenuBlock(m));
         }
@@ -90,91 +84,14 @@ public class ModuleMenu extends View implements CloseableView {
         }
     }
 
-    private class Body extends GridLayout {
-
-        private Registration r;
-        private int blockCount = 0, columns = 1, possibleColumns;
+    private static class Body extends ButtonLayout {
 
         private Body() {
-            super(1);
-            setGap(20);
-            setWidthFull();
-        }
-
-        private void width(int w) {
-            possibleColumns = w / 290;
-            if(possibleColumns < 1) {
-                possibleColumns = 1;
-            }
-            if(possibleColumns < columns) {
-                setColumns(possibleColumns);
-            } else if(possibleColumns > columns) {
-                readjustColumns();
-            }
-        }
-
-        private void readjustColumns() {
-            if(possibleColumns > columns) {
-                if(blockCount > columns) {
-                    int c = blockCount;
-                    switch(c) {
-                        case 4:
-                            c = 2;
-                            break;
-                        case 5:
-                        case 6:
-                            c = 3;
-                            break;
-                        case 7:
-                        case 8:
-                            c = 4;
-                            break;
-                    }
-                    setColumns(c);
-                } else {
-                    setColumns(blockCount);
-                }
-            }
-        }
-
-        @Override
-        public void setColumns(int columns) {
-            columns = Math.min(columns, possibleColumns);
-            if(columns == this.columns) {
-                return;
-            }
-            this.columns = columns;
-            super.setColumns(this.columns);
-        }
-
-        @Override
-        protected void onAttach(AttachEvent attachEvent) {
-            super.onAttach(attachEvent);
-            if(r == null) {
-                width(Application.get().getDeviceWidth());
-                r = Application.get().addContentResizedListener((w, h) -> width(w));
-            }
-        }
-
-        @Override
-        protected void onDetach(DetachEvent detachEvent) {
-            super.onDetach(detachEvent);
-            if(r != null) {
-                r.remove();
-                r = null;
-            }
-        }
-
-        private void add(MenuBlock m) {
-            super.add(m);
-            ++blockCount;
-            readjustColumns();
-        }
-
-        private void clear() {
-            blockCount = 0;
-            removeAll();
-            setColumns(1);
+            setGap(10);
+            setSizeFull();
+            getElement().getStyle()
+                    .set("justify-content", "space-evenly")
+                    .set("box-sizing", "border-box");
         }
     }
 
@@ -182,6 +99,7 @@ public class ModuleMenu extends View implements CloseableView {
     private class MenuBlock extends Div {
 
         private final ModuleLogic moduleLogic;
+        private View view;
 
         private MenuBlock(ModuleLogic moduleLogic) {
             this.moduleLogic = moduleLogic;
@@ -212,8 +130,18 @@ public class ModuleMenu extends View implements CloseableView {
                     warning("Nothing found under - " + moduleLogic.getName());
                 }
             } else {
-                //noinspection ResultOfMethodCallIgnored
-                Application.get().getServer().execute(logic);
+                Application a = Application.get();
+                if(view != null) {
+                    View old = a.getActiveViews().filter(v -> v == view).findAny().orElse(null);
+                    if(old != null) {
+                        view.execute();
+                        return;
+                    }
+                }
+                Object object = a.getServer().execute(logic);
+                if(object instanceof View) {
+                    view = (View) object;
+                }
             }
         }
     }

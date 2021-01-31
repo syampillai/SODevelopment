@@ -22,6 +22,7 @@ import com.vaadin.flow.data.provider.hierarchy.HierarchicalQuery;
 import com.vaadin.flow.data.selection.MultiSelectionEvent;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 
 public class ProcessMaterialRequest extends AbstractRequestMaterial {
@@ -270,10 +271,14 @@ public class ProcessMaterialRequest extends AbstractRequestMaterial {
                 return;
             }
             deselectAll();
+            AtomicInteger bCount = new AtomicInteger(0);
             List<MaterialIssuedItem> miis = items(mri);
-            ObjectIterator<InventoryItem> stock = stockList(mri);
+            ObjectIterator<InventoryItem> stock = stockList(mri, bCount);
             if(!miis.isEmpty()) {
                 stock = stock.filter(ii -> miis.stream().noneMatch(i -> i.getItemId().equals(ii.getId())));
+            }
+            if(bCount.get() > 0) {
+                message("Blocked items encountered: " + bCount.get());
             }
             new SelectStock(stock, s -> addEntry(mri, s)).execute();
         }
@@ -294,7 +299,7 @@ public class ProcessMaterialRequest extends AbstractRequestMaterial {
             balanceFill();
         }
 
-        private ObjectIterator<InventoryItem> stockList(MaterialRequestItem mri) {
+        private ObjectIterator<InventoryItem> stockList(MaterialRequestItem mri, AtomicInteger blockedCounter) {
             InventoryItemType pn = mri.getPartNumber();
             ObjectIterator<InventoryItem> stock;
             InventoryLocation location = mr.getToLocation();
@@ -313,11 +318,22 @@ public class ProcessMaterialRequest extends AbstractRequestMaterial {
                 }
             }
             return stock.filter(ii -> !(ii.getLocation() instanceof InventoryReservedBin) &&
-                    ii.isServiceable() && !ii.isBlocked());
+                    ii.isServiceable() && !blocked(ii, blockedCounter));
+        }
+
+        private boolean blocked(InventoryItem ii, AtomicInteger counter) {
+            if(ii.isBlocked()) {
+                if(counter != null) {
+                    counter.incrementAndGet();
+                }
+                return true;
+            }
+            return false;
         }
 
         private void balanceFill() {
             deselectAll();
+            AtomicInteger bCount = new AtomicInteger(0);
             int count = 0, replaced = 0;
             Quantity q;
             ObjectIterator<InventoryItem> stock;
@@ -331,7 +347,7 @@ public class ProcessMaterialRequest extends AbstractRequestMaterial {
                     }
                 }
                 q = mri.getBalance();
-                stock = stockList(mri);
+                stock = stockList(mri, bCount);
                 for(InventoryItem ii: stock) {
                     if(!q.isPositive()) {
                         break;
@@ -378,7 +394,15 @@ public class ProcessMaterialRequest extends AbstractRequestMaterial {
                     readyToIssueMap.remove(mri.getId());
                 }
             }
-            message("Entries filled: " + count + (replaced == 0 ? "" : (" (" + replaced + " replaced)")));
+            StringBuilder m = new StringBuilder("Entries filled: ");
+            m.append(count);
+            if(replaced > 0) {
+                m.append(", Replaced: ").append(replaced);
+            }
+            if(bCount.get() > 0) {
+                m.append(", Blocked items encountered: ").append(bCount.get());
+            }
+            message(m);
             removeButton.setVisible(count > 0 || miiMap.values().stream().anyMatch(list -> !list.isEmpty()));
             saveButton.setVisible(count > 0 || saveButton.isVisible());
             refresh();
@@ -530,6 +554,7 @@ public class ProcessMaterialRequest extends AbstractRequestMaterial {
             return h.getHTML();
         }
 
+        @SuppressWarnings("unused")
         public String getSerialNumber(Object o) {
             if(o instanceof MaterialIssuedItem) {
                 return ((MaterialIssuedItem) o).getItem().getSerialNumber();

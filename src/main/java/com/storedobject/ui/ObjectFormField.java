@@ -72,7 +72,7 @@ public class ObjectFormField<T extends StoredObject> extends CustomField<T> impl
     public ObjectFormField(String label, ObjectEditor<T> formEditor, HasContainer mergeTo) {
         ObjectField.checkDetailClass(formEditor.getObjectClass(), label);
         this.formEditor = formEditor;
-        this.formEditor.setCaption("");
+        this.formEditor.setCaption("", true);
         this.mergeTo = mergeTo;
         if(mergeTo != null && mergeTo != DUMMY) {
             this.formEditor.setFieldContainerProvider(mergeTo);

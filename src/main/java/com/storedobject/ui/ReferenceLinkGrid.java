@@ -74,7 +74,7 @@ public class ReferenceLinkGrid<T extends StoredObject> extends ObjectGrid<T> imp
 
     @Override
     public void createHeaders() {
-        prependHeader().join(1).setComponent(buttonPanel);
+        prependHeader().join().setComponent(buttonPanel);
     }
 
     @Override

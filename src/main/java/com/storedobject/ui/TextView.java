@@ -1,6 +1,7 @@
 package com.storedobject.ui;
 
 import com.storedobject.common.Processor;
+import com.storedobject.core.ApplicationServer;
 import com.storedobject.vaadin.CloseableView;
 import com.storedobject.vaadin.View;
 import com.vaadin.flow.component.Component;
@@ -90,7 +91,7 @@ public class TextView extends View implements CloseableView, Transactional, Styl
             try {
                 process();
             } catch(Throwable error) {
-                error.printStackTrace();
+                ApplicationServer.log(getApplication(), error);
                 getApplication().getUI().access(() -> error(error));
             }
             getApplication().access(() -> {
