@@ -177,7 +177,15 @@ public class ObjectCache<T extends StoredObject> implements Iterable<T> {
 	public IdBuffer getIdBuffer() {
 		return null;
 	}
-	
+
+	public ObjectCache<T> delete(T object) {
+		return null;
+	}
+
+	public ObjectCache<T> delete(Id id) {
+		return null;
+	}
+
 	public ObjectCache<T> filter(Predicate<T> filter) {
 		return null;
 	}

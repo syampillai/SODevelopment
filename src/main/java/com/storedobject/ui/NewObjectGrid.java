@@ -7,7 +7,6 @@ import java.util.stream.Stream;
 public class NewObjectGrid<T extends StoredObject> extends DataGrid<T> implements ObjectLoader<T> {
 
     private final ObjectCache<T> cache;
-    private String condition, orderBy;
 
     public NewObjectGrid(Class<T> objectClass) {
         this(objectClass, false);
@@ -23,7 +22,7 @@ public class NewObjectGrid<T extends StoredObject> extends DataGrid<T> implement
 
     public NewObjectGrid(Class<T> objectClass, Iterable<String> columns, boolean any) {
         super(objectClass, columns);
-        cache = new ObjectCache<>(objectClass);
+        cache = new ObjectCache<>(objectClass, any);
         //noinspection deprecation
         setDataProvider(cache);
     }
@@ -57,20 +56,61 @@ public class NewObjectGrid<T extends StoredObject> extends DataGrid<T> implement
     }
 
     @Override
+    public void reload() {
+        cache.reload();
+    }
+
+    @Override
     public String getCondition() {
-        return condition;
+        return cache.getCondition();
     }
 
     public void setCondition(String condition) {
-        this.condition = condition;
+        cache.setCondition(condition);
     }
 
     @Override
     public String getOrderBy() {
-        return orderBy;
+        return cache.getOrderBy();
     }
 
     public void setOrderBy(String orderBy) {
-        this.orderBy = orderBy;
+        cache.setOrderBy(orderBy);
+    }
+
+    @Override
+    public boolean isAllowAny() {
+        return cache.isAllowAny();
+    }
+
+    public void setMaster(StoredObject master) {
+        cache.setMaster(master);
+    }
+
+    public StoredObject getMaster() {
+        return cache.getMaster();
+    }
+
+    public void setLinkType(int linkType) {
+        cache.setLinkType(linkType);
+    }
+
+    public int getLinkType() {
+        return cache.getLinkType();
+    }
+
+    @Override
+    public void added(T item) {
+        cache.added(item);
+    }
+
+    @Override
+    public void edited(T item) {
+        cache.edited(item);
+    }
+
+    @Override
+    public void deleted(T item) {
+        cache.deleted(item);
     }
 }

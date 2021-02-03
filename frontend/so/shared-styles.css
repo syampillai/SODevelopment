@@ -20,13 +20,13 @@
     content: "";
 }
 .v-loading-indicator.first:before {
-    background-color: skyblue;
+    background-color: var(--so-delay-color-s, skyblue);
 }
 .v-loading-indicator.second:before {
-    background-color: salmon;
+    background-color: var(--so-delay-color-m, salmon);
 }
 .v-loading-indicator.third:before {
-    background-color: red;
+    background-color: var(--so-delay-color-l, red);
 }
 @keyframes bouncedelay {
     0%, 80%, 100% {

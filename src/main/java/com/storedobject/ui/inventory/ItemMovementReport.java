@@ -2,6 +2,7 @@ package com.storedobject.ui.inventory;
 
 import com.storedobject.core.InventoryItem;
 import com.storedobject.ui.Application;
+import com.storedobject.vaadin.Button;
 import com.storedobject.vaadin.DataForm;
 
 public class ItemMovementReport extends DataForm {
@@ -15,14 +16,31 @@ public class ItemMovementReport extends DataForm {
     }
 
     @Override
+    protected void buildButtons() {
+        super.buildButtons();
+        buttonPanel.removeAll();
+        ok.setText("Print");
+        ok.setIcon("pdf");
+        buttonPanel.add(new Button("View", e -> process(true)), ok, cancel);
+    }
+
+    @Override
     protected boolean process() {
+        return process(false);
+    }
+
+    private boolean process(boolean view) {
         InventoryItem item = itemField.getValue();
         if(!item.isSerialized()) {
             warning("Not a trackable item: " + item.toDisplay());
             return false;
         }
         close();
-        new com.storedobject.report.ItemMovementReport(getApplication(), item).execute();
+        if(view) {
+            new ItemMovementView(item).execute();
+        } else {
+            new com.storedobject.report.ItemMovementReport(getApplication(), item).execute();
+        }
         return true;
     }
 }

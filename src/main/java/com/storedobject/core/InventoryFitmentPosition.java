@@ -72,4 +72,8 @@ public final class InventoryFitmentPosition extends InventoryLocation {
     public InventoryItem getFittedItem(Transaction transaction) {
         return get(transaction, InventoryItem.class, "Location=" + getId(), true);
     }
+
+    public String toDisplay(boolean includeFittedItem) {
+        return toDisplay();
+    }
 }

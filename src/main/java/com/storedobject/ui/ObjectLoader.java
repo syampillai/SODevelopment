@@ -15,6 +15,8 @@ public interface ObjectLoader<T extends StoredObject> {
         return null;
     }
 
+    boolean isAllowAny();
+
     default void load() {
         load(getCondition(), getOrderBy());
     }
@@ -59,4 +61,14 @@ public interface ObjectLoader<T extends StoredObject> {
     }
 
     void clear();
+
+    default void reload() {
+        load();
+    }
+
+    void added(T item);
+
+    void edited(T item);
+
+    void deleted(T item);
 }

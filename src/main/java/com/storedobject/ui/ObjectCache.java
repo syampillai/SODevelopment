@@ -11,17 +11,22 @@ import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
-public class ObjectCache<T extends StoredObject> extends AbstractDataProvider<T, Predicate<T>>
+public final class ObjectCache<T extends StoredObject> extends AbstractDataProvider<T, Predicate<T>>
         implements ObjectLoader<T>, AutoCloseable, ResourceOwner {
 
     private final Class<T> objectClass;
+    private final boolean any;
+    private int linkType = 0;
+    private StoredObject master;
+    private String condition, orderBy;
     private com.storedobject.core.ObjectCache<T> cache = null, transformedCache = null;
     private List<T> list =  null, transformedList = null;
     private Comparator<T> sortOrder = null;
     private Predicate<T> filter;
 
-    public ObjectCache(Class<T> objectClass) {
+    public ObjectCache(Class<T> objectClass, boolean any) {
         this.objectClass = objectClass;
+        this.any = any;
         ResourceDisposal.register(this);
     }
 
@@ -109,10 +114,62 @@ public class ObjectCache<T extends StoredObject> extends AbstractDataProvider<T,
         }
     }
 
+    public void setCondition(String condition) {
+        this.condition = condition;
+        if(list == null) {
+            reload();
+        }
+    }
+
+    @Override
+    public String getCondition() {
+        return condition;
+    }
+
+    public void setOrderBy(String orderBy) {
+        this.orderBy = orderBy;
+        if(list == null) {
+            reload();
+        }
+    }
+
+    @Override
+    public String getOrderBy() {
+        return orderBy;
+    }
+
+    @Override
+    public boolean isAllowAny() {
+        return any;
+    }
+
+    public void setMaster(StoredObject master) {
+        load(linkType, master);
+    }
+
+    public StoredObject getMaster() {
+        return master;
+    }
+
+    public void setLinkType(int linkType) {
+        if(master != null) {
+            load(linkType, master);
+        } else {
+            this.linkType = linkType;
+        }
+    }
+
+    public int getLinkType() {
+        return linkType;
+    }
+
     @Override
     public void load(String condition, String orderBy) {
         reset();
-        cache = new com.storedobject.core.ObjectCache<>(objectClass, condition, orderBy);
+        this.condition = condition;
+        this.orderBy = orderBy;
+        this.master = null;
+        cache = new com.storedobject.core.ObjectCache<>(objectClass, condition, orderBy, any);
         transformedCache = cache;
         refreshAll();
     }
@@ -120,7 +177,11 @@ public class ObjectCache<T extends StoredObject> extends AbstractDataProvider<T,
     @Override
     public void load(int linkType, StoredObject master, String condition, String orderBy) {
         reset();
-        cache = new com.storedobject.core.ObjectCache<>(objectClass, condition, orderBy);
+        this.condition = condition;
+        this.orderBy = orderBy;
+        this.master = master;
+        this.linkType = linkType;
+        cache = new com.storedobject.core.ObjectCache<>(objectClass, master.queryLinks(linkType, objectClass, "T.Id", condition, orderBy, any));
         transformedCache = cache;
         refreshAll();
     }
@@ -134,6 +195,20 @@ public class ObjectCache<T extends StoredObject> extends AbstractDataProvider<T,
             transformedList = list;
         }
         refreshAll();
+    }
+
+    @Override
+    public void reload() {
+        if(list != null) {
+            List<T> copy = list;
+            load(copy.stream().map(o -> StoredObject.get(objectClass, o.getId(), any)));
+            return;
+        }
+        if(master == null) {
+            load(condition, orderBy);
+        } else {
+            load(linkType, master, condition, orderBy);
+        }
     }
 
     @Override
@@ -184,6 +259,55 @@ public class ObjectCache<T extends StoredObject> extends AbstractDataProvider<T,
     @Override
     public void close() {
         reset();
+    }
+
+    @Override
+    public void added(T object) {
+        if(list != null) {
+            list.add(object);
+            refreshAll();
+            return;
+        }
+        reload();
+    }
+
+    @Override
+    public void edited(T object) {
+        if(list != null) {
+            int i = list.indexOf(object);
+            if(i >= 0) {
+                list.set(i, object);
+                refreshItem(object);
+            }
+            return;
+        }
+        cache.refresh(object);
+        refreshItem(object);
+    }
+
+    @Override
+    public void deleted(T object) {
+        if(list != null) {
+            if(list.remove(object)) {
+                refreshAll();
+            }
+            return;
+        }
+        com.storedobject.core.ObjectCache<T> c = cache.delete(object);
+        if(c != cache) {
+            if(transformedCache != cache) {
+                transformedCache.close();
+                transformedCache = null;
+            } else {
+                transformedCache = c;
+            }
+            cache.close();
+            cache = c;
+            if(transformedCache == null) {
+                transform();
+            }
+            refreshAll();
+        }
     }
 
     @Override

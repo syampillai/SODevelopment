@@ -4,6 +4,7 @@ import com.storedobject.vaadin.Box;
 import com.storedobject.vaadin.CustomField;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.HasText;
+import com.vaadin.flow.component.html.Div;
 
 public class ELabelField extends CustomField<String> implements StyledBuilder, HasText {
 
@@ -16,14 +17,16 @@ public class ELabelField extends CustomField<String> implements StyledBuilder, H
 
     public ELabelField(String label) {
         super("");
-        Box box = new Box(this.label);
-        box.setStyle("display", "flex");
-        box.setPadding("0px 0px 0px 4px");
+        Div div = new Div(this.label);
+        Box box = new Box(div);
+        box.setStyle("display", "block");
+        box.setPadding("4px");
         box.setBorderWidth(1);
         box.setBorderStyle("dashed");
         box.alignSizing();
         box.setStyle("min-height", "32px");
-        add(this.label);
+        box.setStyle("line-height", "1.5em");
+        add(div);
         setLabel(label);
     }
 

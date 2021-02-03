@@ -22,7 +22,7 @@ public class ItemField<I extends InventoryItem> extends ObjectGetField<I> implem
 
     final static StringList COLUMNS = StringList.create("PartNumber as Part/Model Number",
             "SerialNumberDisplay as Serial/Batch",
-            "Quantity", "InTransit", "LocationDisplay as Location", "Owner");
+            "Quantity", "InTransit", "Serviceable", "LocationDisplay as Location", "Owner");
     private final ItemTypeField<?> typeField;
     private ObjectProvider<? extends InventoryStore> storeField;
     private ObjectProvider<? extends InventoryLocation> locationField;

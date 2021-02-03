@@ -14,7 +14,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class ModuleMenu extends View implements CloseableView, Transactional {
+public class ModuleMenu extends View implements CloseableView, SingletonLogic {
 
     private final Breadcrumbs breadcrumbs = new Breadcrumbs(this);
     private final Body body;

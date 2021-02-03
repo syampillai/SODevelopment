@@ -134,12 +134,6 @@ public interface AbstractObjectDataProvider<T extends StoredObject, M, F> extend
 
     void filterChanged();
 
-    void added(T item);
-
-    void edited(T item);
-
-    void deleted(T item);
-
     class ObjectAdder<O extends StoredObject> {
 
         private ObjectEditor<O> adder;

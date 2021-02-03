@@ -135,6 +135,14 @@ public class ProcessMaterialRequest extends AbstractRequestMaterial {
             GridMenuItem<Object> removeEntry = contextMenu.addItem("Remove Entry", e -> removeEntries());
             GridMenuItem<Object> qEdit = contextMenu.addItem("Edit Quantity", e -> editQuantity());
             GridMenuItem<Object> qZero = contextMenu.addItem("Set Quantity to Zero", e -> zeroQuantity());
+            GridMenuItem<Object> searchEverywhere = contextMenu.addItem("Search Everywhere", e -> {
+                Object o = e.getItem().orElse(null);
+                if(o instanceof MaterialRequestItem) {
+                    LocateItem locateItem = new LocateItem(((MaterialRequestItem) o).getPartNumber());
+                    locateItem.setUserStore(((InventoryStoreBin)getFromOrTo()).getStoreId());
+                    locateItem.execute();
+                }
+            });
             contextMenu.setDynamicContentHandler(o -> {
                 deselectAll();
                 select(o);
@@ -156,8 +164,10 @@ public class ProcessMaterialRequest extends AbstractRequestMaterial {
                     addEntry.setVisible(s);
                     addEntries.setVisible(s);
                     removeEntries.setVisible(!miis.isEmpty());
+                    searchEverywhere.setVisible(s && mri.getPartNumber().isSerialized());
                     return true;
                 }
+                searchEverywhere.setVisible(false);
                 addEntry.setVisible(false);
                 addEntries.setVisible(false);
                 removeEntries.setVisible(false);

@@ -2,16 +2,14 @@ package com.storedobject.ui.inventory;
 
 import com.storedobject.common.StringList;
 import com.storedobject.core.*;
-import com.storedobject.report.ItemMovementReport;
-import com.storedobject.ui.ELabel;
-import com.storedobject.ui.ObjectEditor;
-import com.storedobject.ui.ObjectField;
+import com.storedobject.ui.*;
 import com.storedobject.vaadin.*;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.grid.contextmenu.GridContextMenu;
 import com.vaadin.flow.component.grid.contextmenu.GridMenuItem;
 
+import java.sql.Date;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
@@ -30,6 +28,7 @@ public class LocateItem extends ListGrid<InventoryItem> implements CloseableView
     @SuppressWarnings("rawtypes")
     private ObjectEditor editor;
     private InventoryStore store;
+    private Id fromStoreId = Id.ZERO;
     private final ELabel help = new ELabel("Right-click on the row to see more options", "blue");
 
     /**
@@ -168,17 +167,21 @@ public class LocateItem extends ListGrid<InventoryItem> implements CloseableView
         }
         GridContextMenu<InventoryItem> cm = new GridContextMenu<>(this);
         cm.addItem("View Details", e -> e.getItem().ifPresent(this::view));
-        if(canInspect) {
-            cm.addItem("Inspect & Bin", e -> e.getItem().ifPresent(this::inspect));
-        }
-        GridMenuItem<InventoryItem> movementReport = cm.addItem("Movement Report",
-                e -> e.getItem().ifPresent(i -> new ItemMovementReport(getApplication(), i).execute()));
+        GridMenuItem<InventoryItem> inspect =
+                cm.addItem("Inspect & Bin", e -> e.getItem().ifPresent(this::inspect));
+        GridMenuItem<InventoryItem> breakAssembly =
+                cm.addItem("Break from Assembly", e -> e.getItem().ifPresent(this::breakAssembly));
+        GridMenuItem<InventoryItem> movementReport = cm.addItem("Movement Detail",
+                e -> e.getItem().ifPresent(i -> new ItemMovementView(i).execute()));
         cm.setDynamicContentHandler(ii -> {
             deselectAll();
             if(ii == null) {
                 return false;
             }
             select(ii);
+            inspect.setVisible(canInspect || ii.getStoreId().equals(fromStoreId));
+            breakAssembly.setVisible((canInspect || ii.getStoreId().equals(fromStoreId)) &&
+                    ii.getLocation() instanceof InventoryFitmentPosition);
             movementReport.setVisible(ii.isSerialized());
             return true;
         });
@@ -249,13 +252,29 @@ public class LocateItem extends ListGrid<InventoryItem> implements CloseableView
         help.setVisible(false);
     }
 
-    public String getLocationDisplay(InventoryItem item) {
-        String s = item.getLocationDisplay();
-        int p = s.indexOf(" \u21D0 ");
-        if(p > 0) {
-            s = s.substring(0, p);
+    public static String getLocationDisplay(InventoryItem item) {
+        InventoryLocation loc = item.getLocation();
+        if(!(loc instanceof InventoryFitmentPosition)) {
+            return item.getLocationDisplay();
         }
-        return s;
+        InventoryLocation location;
+        String s;
+        StringBuilder sb = new StringBuilder();
+        while(item != null) {
+            location = item.getLocation();
+            s = location instanceof InventoryFitmentPosition ?
+                    ((InventoryFitmentPosition) location).toDisplay(false) :
+                    item.getLocationDisplay();
+            if(sb.length() > 0) {
+                sb.append('\n');
+            }
+            sb.append(s);
+            if(!(location instanceof InventoryFitmentPosition)) {
+                break;
+            }
+            item = item.getParentItem();
+        }
+        return sb.toString();
     }
 
     private void loadItems() {
@@ -336,6 +355,15 @@ public class LocateItem extends ListGrid<InventoryItem> implements CloseableView
         new ReceiveAndBin(list).execute();
     }
 
+    private void breakAssembly(InventoryItem ii) {
+        ELabel m = new ELabel(ii.toDisplay(), "blue");
+        m.newLine().append("Do you really want to take out this item?", "red").newLine();
+        m.append("Fitment location:").newLine();
+        m.append(getLocationDisplay(ii));
+        deselectAll();
+        new ActionForm(m.update(), () -> new DetachFromAssembly(ii).execute()).execute();
+    }
+
     private void view(InventoryItem item) {
         if(item != null) {
             //noinspection unchecked
@@ -356,5 +384,54 @@ public class LocateItem extends ListGrid<InventoryItem> implements CloseableView
 
     public void setStore(InventoryStore store) {
         this.store = store;
+    }
+
+    public void setUserStore(Id fromStoreId) {
+        this.fromStoreId = Id.isNull(fromStoreId) ? Id.ZERO : fromStoreId;
+    }
+
+    private class DetachFromAssembly extends DataForm implements Transactional {
+
+        private final InventoryItem item;
+        private final DateField dateField = new DateField("Date");
+        private final TextField referenceField = new TextField("Reference");
+        private final InventoryLocation location;
+
+        public DetachFromAssembly(InventoryItem item) {
+            super("Detach from Assembly");
+            this.item = item;
+            location = item.getRealLocation();
+            addField(new ELabelField("Item", item.toDisplay(), "blue"),
+                    new ELabelField("Current location", getLocationDisplay(item), "blue"),
+                    new ELabelField("After removal, it will be available at", location.toDisplay(), "blue"),
+                    dateField, referenceField);
+            setRequired(referenceField);
+        }
+
+        @Override
+        protected boolean process() {
+            Date d = dateField.getValue();
+            if(!d.before(DateUtility.tomorrow())) {
+                warning("Invalid date!");
+                dateField.focus();
+                return false;
+            }
+            String ref = referenceField.getValue().trim();
+            if(ref.isEmpty()) {
+                referenceField.setValue("");
+                referenceField.focus();
+                return false;
+            }
+            close();
+            InventoryTransaction it = new InventoryTransaction(getTransactionManager(), dateField.getValue());
+            it.moveTo(item, ref, location);
+            if(transact(it::save)) {
+                message("Item '" + item.toDisplay() +
+                        "' is removed from the assembly and is available at '" + location + "' now!");
+                loadItems();
+            }
+            LocateItem.this.select(item);
+            return true;
+        }
     }
 }
