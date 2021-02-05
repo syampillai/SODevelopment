@@ -3,6 +3,7 @@ package com.storedobject.ui.inventory;
 import com.storedobject.common.SORuntimeException;
 import com.storedobject.common.StringList;
 import com.storedobject.core.*;
+import com.storedobject.pdf.*;
 import com.storedobject.ui.HTMLText;
 import com.storedobject.ui.Transactional;
 import com.storedobject.ui.util.AbstractObjectForestSupplier;
@@ -127,7 +128,7 @@ public abstract class AbstractAssembly<T extends InventoryItem, C extends Invent
         if(selectAnother != null) {
             buttonLayout.add(selectAnother);
         }
-        buttonLayout.add(new Button("Exit", e -> close()));
+        buttonLayout.add(new Button("Print", e -> new FitList()), new Button("Exit", e -> close()));
         return buttonLayout;
     }
 
@@ -391,5 +392,105 @@ public abstract class AbstractAssembly<T extends InventoryItem, C extends Invent
     interface RemoveItem {
         void setAssemblyPosition(InventoryFitmentPosition fitmentPosition);
         void execute(View lock);
+    }
+
+    private class FitList extends PDFReport {
+
+        private PDFTable table;
+
+        public FitList() {
+            super((com.storedobject.ui.Application)Application.get());
+            if(rootItem == null) {
+                return;
+            }
+            setTitleText(
+                    new Text("Fit List", 16, PDFFont.BOLD).
+                    newLine().
+                    append(rootItem.toDisplay(), 14, PDFFont.BOLD)
+            );
+            execute();
+        }
+
+        @Override
+        public void generateContent() throws Exception {
+            table = createTable(3, 3, 3, 3, 3, 3, 3, 3, 60, 20, 40, 40, 20, 20, 20);
+            boolean first = true;
+            PDFCell cell;
+            for(String h: COLUMNS) {
+                cell = createCenteredCell(createTitleText(StringUtility.makeLabel(h)));
+                if(first) {
+                    first = false;
+                    cell.setColumnSpan(9);
+                }
+                table.addCell(cell);
+            }
+            table.setHeaderRows(1);
+            print(0, root);
+            addTable(table);
+        }
+
+        private void print(int level, InventoryFitmentPosition pos) {
+            for(InventoryFitmentPosition p: subassemblies(pos)) {
+                print(p, level);
+                print(level + 1, p);
+            }
+        }
+
+        private void print(InventoryFitmentPosition pos, int level) {
+            PDFCell cell;
+            for(int i = 0; i < Math.min(8, level); i++) {
+                cell = createCenteredCell("-", c -> { c.setBorder(0); return c; });
+                table.addCell(cell);
+            }
+            StringBuilder name = new StringBuilder(name(pos));
+            while(level > 8) {
+                name.insert(0, "- ");
+                --level;
+            }
+            cell = createCell(name);
+            cell.setColumnSpan(9 - level);
+            table.addCell(cell);
+            cCell(getPosition(pos));
+            tCell(getPartNumber(pos));
+            InventoryItem item = pos.getFittedItem();
+            if(item == null) {
+                tCell(new Text().append("Missing", PDFColor.RED));
+            } else {
+                tCell(item.getSerialNumber());
+            }
+            tCell(item == null ? pos.getAssembly().getItemType().getUnitOfMeasurement() : item.getQuantity());
+            cCell(getAccessory(pos));
+            cCell(getOptional(pos));
+        }
+
+        private String name(InventoryFitmentPosition fitmentPosition) {
+            StringBuilder s = new StringBuilder();
+            InventoryItem item = fitmentPosition.getFittedItem();
+            InventoryAssembly a = fitmentPosition.getAssembly();
+            InventoryItemType itemType = item == null ? fitmentPosition.getAssembly().getItemType() : item.getPartNumber();
+            if(item == null || item.getQuantity().isZero()) {
+                s.append(itemType.getName()).append(itemType.isSerialized() ? "" : (" (Required: " + a.getQuantity() + ")"));
+            } else {
+                if(item.getQuantity().isLessThan(a.getQuantity())) {
+                    s.append(itemType.getName()).append(" (Required: ").append(a.getQuantity()).append(")");
+                } else {
+                    s.append(itemType.getName());
+                }
+            }
+            return s.toString();
+        }
+
+        private void tCell(Object o) {
+            table.addCell(createCell(o));
+        }
+
+        private void cCell(Object o) {
+            table.addCell(createCenteredCell(o));
+        }
+
+        @Override
+        public int getPageOrientation() {
+            return ORIENTATION_LANDSCAPE;
+        }
     }
 }

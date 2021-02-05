@@ -3,13 +3,6 @@ package com.storedobject.core;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
-/**
- * <p>An item can be an assembly, composed of one or more sub-items and each sub-item
- * can also be an assembly.</p>
- * <p>This class represents definition of an assembly node.</p>
- *
- * @author Syam
- */
 public final class InventoryAssembly extends StoredObject {
 
     public InventoryAssembly() {

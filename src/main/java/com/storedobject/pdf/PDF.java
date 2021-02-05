@@ -1615,7 +1615,7 @@ public abstract class PDF implements java.io.Closeable, com.storedobject.core.Co
          * Creates an empty text string.
          */
         public Text() {
-            createCell(null);
+            this("");
         }
 
         /**
@@ -1624,7 +1624,7 @@ public abstract class PDF implements java.io.Closeable, com.storedobject.core.Co
          * @param text Object to be converted to text.
          */
         public Text(Object text) {
-            this();
+            this(text, (PDFFont)null);
         }
 
         /**
@@ -1634,7 +1634,45 @@ public abstract class PDF implements java.io.Closeable, com.storedobject.core.Co
          * @param font Font for this text.
          */
         public Text(Object text, PDFFont font) {
-            this();
+            pageCompleted();
+        }
+
+        /**
+         * Creates a text string from the object.
+         *
+         * @param text Object to be converted to text.
+         * @param fontSize Font size.
+         */
+        public Text(Object text, int fontSize) {
+        }
+
+        /**
+         * Creates a text string from the object.
+         *
+         * @param text Object to be converted to text.
+         * @param fontSize Font size.
+         * @param fontStyle Style of the font to be appended (PDFFont.BOLD, PDFFont.ITALIC etc.)
+         */
+        public Text(Object text, int fontSize, int fontStyle) {
+        }
+
+        /**
+         * Creates a text string from the object.
+         *
+         * @param fontSize Font size.
+         */
+        public Text(int fontSize) {
+            this("", fontSize);
+        }
+
+        /**
+         * Creates a text string from the object.
+         *
+         * @param fontSize Font size.
+         * @param fontStyle Style of the font to be appended (PDFFont.BOLD, PDFFont.ITALIC etc.)
+         */
+        public Text(int fontSize, int fontStyle) {
+            this("", fontSize, fontStyle);
         }
 
         /**
@@ -1643,8 +1681,16 @@ public abstract class PDF implements java.io.Closeable, com.storedobject.core.Co
          * @param text Object to be converted to text.
          * @param color Color for this text.
          */
-        public Text(Object text, java.awt.Color color) {
-            this();
+        public Text(Object text, Color color) {
+        }
+
+        /**
+         * Creates a text string from the object.
+         *
+         * @param text Object to be converted to text.
+         * @param color Color for this text.
+         */
+        public Text(Object text, PDFColor color) {
         }
 
         /**
@@ -1653,7 +1699,6 @@ public abstract class PDF implements java.io.Closeable, com.storedobject.core.Co
          * @param chunk Chunk from which the text is created. Font of this chunk is also accepted.
          */
         public Text(PDFChunk chunk) {
-            this();
         }
 
         /**
@@ -1715,6 +1760,29 @@ public abstract class PDF implements java.io.Closeable, com.storedobject.core.Co
          */
         public Text append(int fontSize, int fontStyle) {
             return null;
+        }
+
+        /**
+         * Appends a font to this text. This font will be used for further texts added.
+         *
+         * @param text  Text to be appended.
+         * @param fontSize Point size of the font to be appended
+         * @return This
+         */
+        public Text append(Object text, int fontSize) {
+            return append(fontSize).append(text);
+        }
+
+        /**
+         * Appends a font to this text. This font will be used for further texts added.
+         *
+         * @param text  Text to be appended.
+         * @param fontSize Point size of the font to be appended
+         * @param fontStyle Style of the font to be appended (PDFFont.BOLD, PDFFont.ITALIC etc.)
+         * @return This
+         */
+        public Text append(Object text, int fontSize, int fontStyle) {
+            return append(fontSize, fontStyle).append(text);
         }
 
         /**

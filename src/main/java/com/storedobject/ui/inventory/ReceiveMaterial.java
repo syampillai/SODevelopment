@@ -19,6 +19,7 @@ public class ReceiveMaterial extends DataForm {
             "GRN - Purchases",
             "Returned from Other Locations",
             "Transferred from Other Stores",
+            "Transferred from Other Stores (Against Requests)",
             "Returned from Repair/Maintenance Organizations",
             "Lease Returns",
             "GRN - From External Owners",
@@ -168,12 +169,15 @@ public class ReceiveMaterial extends DataForm {
                     new ReceiveMaterialTransferred(to).execute();
                     return true;
                 case 3:
-                    new ReceiveReturnedItems(3, (InventoryStoreBin) to).execute();
+                    new ReceiveMaterialRequested(to).execute();
                     return true;
                 case 4:
-                    new ReceiveReturnedItems(8, (InventoryStoreBin) to).execute();
+                    new ReceiveReturnedItems(3, (InventoryStoreBin) to).execute();
                     return true;
                 case 5:
+                    new ReceiveReturnedItems(8, (InventoryStoreBin) to).execute();
+                    return true;
+                case 6:
                     new GRN(true, ((InventoryStoreBin)to).getStore()).execute();
                     return true;
             }

@@ -139,7 +139,7 @@ public class ProcessMaterialRequest extends AbstractRequestMaterial {
                 Object o = e.getItem().orElse(null);
                 if(o instanceof MaterialRequestItem) {
                     LocateItem locateItem = new LocateItem(((MaterialRequestItem) o).getPartNumber());
-                    locateItem.setUserStore(((InventoryStoreBin)getFromOrTo()).getStoreId());
+                    locateItem.setAllowBreaking(true);
                     locateItem.execute();
                 }
             });

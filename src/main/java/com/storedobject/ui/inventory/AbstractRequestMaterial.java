@@ -37,7 +37,7 @@ public abstract class AbstractRequestMaterial extends ObjectBrowser<MaterialRequ
     }
 
     AbstractRequestMaterial(boolean issuing, int columnStyle, String fromOrTo, int noActions) {
-        this(issuing, columnStyle, issuing ? LocationField.create(null, 0) :
+        this(issuing, columnStyle, issuing ? LocationField.create(null, fromOrTo,0) :
                 LocationField.create(null, fromOrTo, 0, 4, 5, 11),
                 noActions);
     }

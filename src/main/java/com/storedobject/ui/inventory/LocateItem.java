@@ -28,7 +28,7 @@ public class LocateItem extends ListGrid<InventoryItem> implements CloseableView
     @SuppressWarnings("rawtypes")
     private ObjectEditor editor;
     private InventoryStore store;
-    private Id fromStoreId = Id.ZERO;
+    private boolean allowBreaking;
     private final ELabel help = new ELabel("Right-click on the row to see more options", "blue");
 
     /**
@@ -179,8 +179,8 @@ public class LocateItem extends ListGrid<InventoryItem> implements CloseableView
                 return false;
             }
             select(ii);
-            inspect.setVisible(canInspect || ii.getStoreId().equals(fromStoreId));
-            breakAssembly.setVisible((canInspect || ii.getStoreId().equals(fromStoreId)) &&
+            inspect.setVisible(canInspect || allowBreaking);
+            breakAssembly.setVisible((canInspect || allowBreaking) &&
                     ii.getLocation() instanceof InventoryFitmentPosition);
             movementReport.setVisible(ii.isSerialized());
             return true;
@@ -386,8 +386,8 @@ public class LocateItem extends ListGrid<InventoryItem> implements CloseableView
         this.store = store;
     }
 
-    public void setUserStore(Id fromStoreId) {
-        this.fromStoreId = Id.isNull(fromStoreId) ? Id.ZERO : fromStoreId;
+    public void setAllowBreaking(boolean allowBreaking) {
+        this.allowBreaking = allowBreaking;
     }
 
     private class DetachFromAssembly extends DataForm implements Transactional {

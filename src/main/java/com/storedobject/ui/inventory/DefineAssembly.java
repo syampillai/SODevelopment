@@ -3,6 +3,7 @@ package com.storedobject.ui.inventory;
 import com.storedobject.common.SORuntimeException;
 import com.storedobject.common.StringList;
 import com.storedobject.core.*;
+import com.storedobject.pdf.*;
 import com.storedobject.ui.*;
 import com.storedobject.ui.Application;
 import com.storedobject.ui.util.AbstractObjectForestSupplier;
@@ -21,6 +22,7 @@ import java.util.stream.Stream;
 
 public class DefineAssembly<T extends InventoryItemType, C extends InventoryItemType> extends DataTreeGrid<InventoryAssembly> implements Transactional {
 
+    private static final StringList COLUMNS = StringList.create("ItemType", "Position", "Quantity", "Accessory", "Optional");
     private final ButtonLayout buttonLayout = new ButtonLayout();
     private final ObjectSearchBrowser<T> searcher;
     protected Button add = new Button("Add", this);
@@ -39,7 +41,7 @@ public class DefineAssembly<T extends InventoryItemType, C extends InventoryItem
     }
 
     public DefineAssembly(Class<T> itemTypeClass, Class<C> componentTypeClass) {
-        super(InventoryAssembly.class, StringList.create("ItemType", "Position", "Quantity", "Accessory", "Optional"));
+        super(InventoryAssembly.class, COLUMNS);
         //noinspection unchecked
         this.componentTypeClass = componentTypeClass == null ? (Class<C>)itemTypeClass : componentTypeClass;
         searcher = ObjectSearchBrowser.create(itemTypeClass, "N", null);
@@ -124,7 +126,9 @@ public class DefineAssembly<T extends InventoryItemType, C extends InventoryItem
         }
         copy.setVisible(false);
         Button exit = new Button("Exit", e -> close());
-        addButtons(add, edit, delete, selectRoot, copy, exit);
+        addButtons(add, edit, delete, selectRoot, copy,
+                new Button("Print", e -> new PrintAssembly()),
+                exit);
         return buttonLayout;
     }
 
@@ -409,6 +413,86 @@ public class DefineAssembly<T extends InventoryItemType, C extends InventoryItem
             //noinspection unchecked
             setTopLevelItem((T)root.getItemType());
             return true;
+        }
+    }
+
+    private class PrintAssembly extends PDFReport {
+
+        private PDFTable table;
+
+        public PrintAssembly() {
+            super((com.storedobject.ui.Application) com.storedobject.vaadin.Application.get());
+            if(root == null) {
+                return;
+            }
+            setTitleText(
+                    new Text("Assembly Definition", 16, PDFFont.BOLD).
+                            newLine().
+                            append(root.getItemType().toDisplay(), 14, PDFFont.BOLD)
+            );
+            execute();
+        }
+
+        @Override
+        public void generateContent() throws Exception {
+            table = createTable(3, 3, 3, 3, 3, 3, 3, 3, 60, 20, 20, 20, 20);
+            boolean first = true;
+            PDFCell cell;
+            for(String h: COLUMNS) {
+                cell = createCenteredCell(createTitleText(StringUtility.makeLabel(h)));
+                if(first) {
+                    first = false;
+                    cell.setColumnSpan(9);
+                }
+                table.addCell(cell);
+            }
+            table.setHeaderRows(1);
+            print(0, root, null);
+            addTable(table);
+        }
+
+        private void print(int level, InventoryAssembly ia, String pos) {
+            for(InventoryAssembly p: subassemblies(ia)) {
+                print(level + 1, p, print(p, level, pos));
+            }
+        }
+
+        private String print(InventoryAssembly ia, int level, String parentPos) {
+            PDFCell cell;
+            for(int i = 0; i < Math.min(8, level); i++) {
+                cell = createCenteredCell("-", c -> { c.setBorder(0); return c; });
+                table.addCell(cell);
+            }
+            StringBuilder name = new StringBuilder(ia.getItemType().toDisplay());
+            while(level > 8) {
+                name.insert(0, "- ");
+                --level;
+            }
+            cell = createCell(name);
+            cell.setColumnSpan(9 - level);
+            table.addCell(cell);
+            String p = ia.getPosition();
+            if(parentPos != null && "-".equals(p)) {
+                p = parentPos;
+            }
+            cCell(p);
+            tCell(ia.getQuantity());
+            cCell(getAccessory(ia));
+            cCell(getOptional(ia));
+            return p;
+        }
+
+        private void tCell(Object o) {
+            table.addCell(createCell(o));
+        }
+
+        private void cCell(Object o) {
+            table.addCell(createCenteredCell(o));
+        }
+
+        @Override
+        public int getPageOrientation() {
+            return ORIENTATION_LANDSCAPE;
         }
     }
 }
