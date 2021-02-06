@@ -17,7 +17,7 @@ import java.util.Map;
 public class ModuleMenu extends View implements CloseableView, SingletonLogic {
 
     private final Breadcrumbs breadcrumbs = new Breadcrumbs(this);
-    private final Body body;
+    private final CenteredLayout body;
     private final Map<Breadcrumbs.Breadcrumb, List<ModuleLogic>> modules = new HashMap<>();
 
     public ModuleMenu(Application application) {
@@ -33,7 +33,8 @@ public class ModuleMenu extends View implements CloseableView, SingletonLogic {
             throw new SORuntimeException("Application Module missing!");
         }
         setCaption(module.getName());
-        body = new Body();
+        body = new CenteredLayout();
+        body.setGap(10);
         VerticalLayout layout = new VerticalLayout(breadcrumbs, body);
         setComponent(layout);
         if(drawFailed(module)) {
@@ -81,17 +82,6 @@ public class ModuleMenu extends View implements CloseableView, SingletonLogic {
     public void clicked(Component c) {
         if(c instanceof Breadcrumbs.Breadcrumb) {
             drawFailed(modules.get(c));
-        }
-    }
-
-    private static class Body extends ButtonLayout {
-
-        private Body() {
-            setGap(10);
-            setSizeFull();
-            getElement().getStyle()
-                    .set("justify-content", "space-evenly")
-                    .set("box-sizing", "border-box");
         }
     }
 

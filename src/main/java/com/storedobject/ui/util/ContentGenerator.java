@@ -3,10 +3,7 @@ package com.storedobject.ui.util;
 import com.storedobject.common.Sequencer;
 import com.storedobject.core.ContentProducer;
 import com.storedobject.core.StreamData;
-import com.storedobject.ui.Application;
-import com.storedobject.ui.Audio;
-import com.storedobject.ui.Image;
-import com.storedobject.ui.Video;
+import com.storedobject.ui.*;
 import com.storedobject.vaadin.PDFViewer;
 import com.storedobject.vaadin.View;
 import com.vaadin.flow.component.Component;
@@ -81,17 +78,17 @@ public class ContentGenerator extends AbstractContentGenerator {
             if(caption == null) {
                 caption = "Video";
             }
-            show(new Video(resource(ct)));
+            show(new CenteredLayout(new Video(resource(ct))));
         } else if(ct.startsWith("audio/")) {
             if(caption == null) {
                 caption = "Audio";
             }
-            show(new Audio(resource(ct)));
+            show(new CenteredLayout(new Audio(resource(ct))));
         } else if(ct.startsWith("image/")) {
             if(caption == null) {
                 caption = "Image";
             }
-            show(new Image(resource(ct)));
+            show(new CenteredLayout(new Image(resource(ct))));
         }
         return true;
     }

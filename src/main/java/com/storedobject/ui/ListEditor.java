@@ -20,16 +20,31 @@ import java.util.function.Function;
  */
 public class ListEditor<T> extends EditableGrid<T> {
 
+    /**
+     * Button panel.
+     */
+    protected final ButtonLayout buttonPanel;
+    /**
+     * "Add" button.
+     */
+    protected final Button add;
+    /**
+     * "Edit" button.
+     */
+    protected final Button edit;
+    /**
+     * "Delete" button.
+     */
+    protected final Button delete;
+    /**
+     * "Save All" button.
+     */
+    protected final Button saveAll;
     private NewObject<T> newObject;
-    private Button add, edit, delete, saveAll;
     private boolean allowAdd = true;
     private boolean allowEdit = true;
     private boolean allowDelete = true;
     private boolean allowSaveAll = true;
-    /**
-     * Button panel displayed at the top.
-     */
-    protected final ButtonLayout buttonPanel;
     private final AcceptAbandonButtons acceptAbandonButtons;
     private Function<EditableList<T>, Boolean> saver;
 
@@ -50,6 +65,10 @@ public class ListEditor<T> extends EditableGrid<T> {
      */
     public ListEditor(Class<T> objectClass, Iterable<String> columns) {
         super(objectClass, columns);
+        saveAll = new Button("Save Changes", "save", e -> save()).asSmall().asPrimary();
+        add = new Button("Add", e -> addIf()).asSmall();
+        edit = new Button("Edit", e -> editIf()).asSmall();
+        delete = new Button("Delete", e -> deleteIf()).asSmall();
         buttonPanel = new Buttons();
         acceptAbandonButtons = new AcceptAbandonButtons(this::saveEdited, this::cancelEdit);
         setWidth("100%");
@@ -345,10 +364,6 @@ public class ListEditor<T> extends EditableGrid<T> {
     private class Buttons extends ButtonLayout {
 
         Buttons() {
-            saveAll = new Button("Save Changes", "save", e -> save()).asSmall().asPrimary();
-            add = new Button("Add", e -> addIf()).asSmall();
-            edit = new Button("Edit", e -> editIf()).asSmall();
-            delete = new Button("Delete", e -> deleteIf()).asSmall();
             add(saveAll, add, edit, delete);
             Editor<T> e = getEditor();
             e.addOpenListener(l -> saveAll.setVisible(false));

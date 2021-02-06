@@ -1,6 +1,6 @@
 package com.storedobject.ui.common;
 
-import com.storedobject.core.Id;
+import com.storedobject.core.Person;
 import com.storedobject.core.Signature;
 import com.storedobject.helper.ID;
 import com.storedobject.helper.LitComponent;
@@ -18,13 +18,20 @@ import com.vaadin.flow.component.icon.VaadinIcon;
 
 public final class CaptureSignature extends DataForm implements Transactional {
 
-    private final Sign sign = new Sign();
+    private final Sign sign;
     private final GridLayout layout = new GridLayout(1);
     private Application application;
     private Signature signature;
+    private final Person person;
 
     public CaptureSignature() {
+        this(null);
+    }
+
+    public CaptureSignature(Person person) {
         super("Sign");
+        this.person = person == null ? getTransactionManager().getUser().getPerson() : person;
+        sign = new Sign();
         add(sign);
         RadioChoiceField ink = new RadioChoiceField(new String[] { "Black", "Blue" });
         add(new CompoundField(new ELabel("Ink Color: "), ink));
@@ -54,11 +61,10 @@ public final class CaptureSignature extends DataForm implements Transactional {
         buttonPanel.getElement().removeFromParent();
         layout.add((Component) buttonPanel);
         application = Application.get();
-        Id pid = getTransactionManager().getUser().getPersonId();
-        signature = Signature.get(pid);
+        signature = Signature.get(person.getId());
         if(signature == null) {
             signature = new Signature();
-            signature.setPerson(pid);
+            signature.setPerson(person);
         } else {
             sign.load(signature.getSignature());
         }
@@ -89,20 +95,7 @@ public final class CaptureSignature extends DataForm implements Transactional {
 
         public Sign() {
             getElement().setProperty("idSign", "sosign" + ID.newID());
-            getElement().setProperty("person", getTransactionManager().getUser().getPerson().getName());
-        }
-
-        void setSize(int width, int height) {
-            setWidth(width);
-            setHeight(height);
-        }
-
-        void setWidth(int width) {
-            getElement().setProperty("width", width);
-        }
-
-        void setHeight(int height) {
-            getElement().setProperty("height", height);
+            getElement().setProperty("person", person.getName());
         }
 
         @ClientCallable
