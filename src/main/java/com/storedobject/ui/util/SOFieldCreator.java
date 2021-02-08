@@ -1,6 +1,7 @@
 package com.storedobject.ui.util;
 
 import com.storedobject.common.Geolocation;
+import com.storedobject.common.JSON;
 import com.storedobject.common.StringList;
 import com.storedobject.core.*;
 import com.storedobject.core.converter.DaysValueConverter;
@@ -548,6 +549,9 @@ public class SOFieldCreator<T> implements ObjectFieldCreator<T> {
                 }
             }
             return new ObjectField<>(label, realObjectType, md.isAny(), mimeType == null ? objectFieldType(md.getStyle()) : mimeType, md.isAddAllowed());
+        }
+        if(JSON.class == type) {
+            return new JSONField(label);
         }
         if(Money.class == type) {
             return new MoneyField(label, md.getIntParameter(0, 0));
