@@ -25,6 +25,7 @@ public class ObjectBrowser<T extends StoredObject> extends ObjectGrid<T> impleme
 
     private ObjectSearchBuilder<T> searchBuilder;
     protected final ButtonLayout buttonPanel = new ButtonLayout();
+    protected PrintButton print;
     protected Button add, edit, delete, search, filter, load, view, report, excel, audit, exit, save, cancel;
     private String allowedActions;
     ObjectEditor<T> editor;
@@ -165,6 +166,10 @@ public class ObjectBrowser<T extends StoredObject> extends ObjectGrid<T> impleme
                 buttonPanel.add(view);
             }
             if((actions & PDF) == PDF) {
+                print = PrintButton.create(this);
+                if(print != null) {
+                    buttonPanel.add(print);
+                }
                 report = new Button("Report", this);
                 buttonPanel.add(report);
             }
@@ -687,6 +692,7 @@ public class ObjectBrowser<T extends StoredObject> extends ObjectGrid<T> impleme
      *
      * @throws Exception If anchor values are not acceptable for some reason.
      */
+    @SuppressWarnings("RedundantThrows")
     protected void anchorsSet() throws Exception {
     }
 

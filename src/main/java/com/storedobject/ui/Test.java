@@ -1,36 +1,44 @@
 package com.storedobject.ui;
 
-import com.storedobject.vaadin.ComboField;
-import com.storedobject.vaadin.DataForm;
+import com.storedobject.common.StringList;
+import com.storedobject.core.Person;
+import com.storedobject.vaadin.CloseableView;
 
-public class Test extends DataForm {
-
-    private final ComboField<String> productField = new ComboField<>("Product", new String[] { "CD", "SB", "TD"});
-    private final ComboField<String> currencyField = new ComboField<>("Currency", new String[] { });
+public class Test extends ObjectGrid<Person> implements CloseableView {
 
     public Test() {
-        super("Test");
-        addField(productField, currencyField);
-        productField.addValueChangeListener(e -> productChanged(e.getValue()));
-        productChanged("CD");
-    }
-
-    private void productChanged(String p) {
-        switch(p) {
-            case "CD":
-                currencyField.setItems("AED", "USD", "EUR");
-                break;
-            case "SB":
-                currencyField.setItems("AED");
-                break;
-            case "TD":
-                currencyField.setItems("AED", "USD", "EUR", "JPY");
-                break;
-        }
+        super(Person.class, StringList.create("Title", "FirstName", "LastName", "DateOfBirth"));
+        load();
     }
 
     @Override
-    protected boolean process() {
-        return false;
+    public String getColumnCaption(String columnName) {
+        if(columnName.equals("Title")) {
+            return "Long Title";
+        }
+        return super.getColumnCaption(columnName);
+    }
+
+    @Override
+    public String getFixedColumnWidth(String columnName) {
+        if("Title".equals(columnName)) {
+            return "70px";
+        }
+        return null;
+    }
+
+    @Override
+    public int getRelativeColumnWidth(String columnName) {
+        switch(columnName) {
+            case "FirstName":
+            case "LastName":
+                return 4;
+        }
+        return 1;
+    }
+
+    @Override
+    public boolean isColumnSortable(String columnName) {
+        return !"Title".equals(columnName);
     }
 }

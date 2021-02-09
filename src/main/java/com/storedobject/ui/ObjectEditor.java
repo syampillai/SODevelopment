@@ -32,6 +32,7 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T> 
         ObjectChangedListener<T>, ObjectEditorListener, ObjectProvider<T>, AlertHandler, TransactionCreator {
 
     protected HasComponents buttonPanel;
+    protected PrintButton print;
     protected Button add, edit, delete, search, report, audit, exit, save, cancel;
     ObjectSearcherField<T> searcherField;
     private int actions;
@@ -464,6 +465,7 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T> 
             }
         }
         if((actions & EditorAction.PDF) == EditorAction.PDF) {
+            print = PrintButton.create(this);
             report = new Button("Report", this);
         }
         if((actions & EditorAction.AUDIT) == EditorAction.AUDIT) {
@@ -534,6 +536,9 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T> 
         if(searcherField != null) {
             searcherField.setVisible(false);
         }
+        if(print != null) {
+            print.setVisible(false);
+        }
         if(report != null) {
             report.setVisible(false);
         }
@@ -564,6 +569,9 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T> 
             buttonPanel.add(search);
         }
         addExtraButtons();
+        if(print != null) {
+            buttonPanel.add(print);
+        }
         if(report != null) {
             buttonPanel.add(report);
         }

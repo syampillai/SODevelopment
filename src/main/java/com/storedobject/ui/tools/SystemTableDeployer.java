@@ -375,7 +375,7 @@ public class SystemTableDeployer extends View implements Transactional {
                 }
                 if(!found) {
                     alterTable.add(copy = pre + "ADD COLUMN " + cds.getName(i) + " " + cds.getType(i) +
-                            " DEFAULT " + ColumnDefinition.getDefaultValue(cds.getType(i)));
+                            " NOT NULL DEFAULT " + ColumnDefinition.getDefaultValue(cds.getType(i)));
                     alterTable.add(copy.replace(pre, ppre));
                 }
             }

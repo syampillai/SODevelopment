@@ -5,7 +5,7 @@ import com.storedobject.core.Id;
 import com.storedobject.core.ReportFormat;
 import com.storedobject.core.StreamData;
 
-public class ODTReport extends ODT {
+public class ODTReport extends ODT<Object> {
 
     public ODTReport(Device device) {
         this(device, (StreamData)null, null);

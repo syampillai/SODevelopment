@@ -12,7 +12,8 @@ import com.vaadin.flow.component.icon.VaadinIcon;
 import java.util.ArrayList;
 import java.util.List;
 
-public abstract class AbstractSendAndReceiveMaterial<T extends InventoryTransfer, L extends InventoryTransferItem> extends ObjectBrowser<T> {
+public abstract class AbstractSendAndReceiveMaterial<T extends InventoryTransfer, L extends InventoryTransferItem>
+        extends ObjectBrowser<T> {
 
     private static final int[] ALL_TYPES = new int[] { 0, 3, 4, 5, 8, 11 };
     private final Button send = new Button("Send", VaadinIcon.TRUCK, e -> send());
@@ -27,38 +28,52 @@ public abstract class AbstractSendAndReceiveMaterial<T extends InventoryTransfer
         this(transferClass, itemClass, (String) null, receiveMode);
     }
 
-    public AbstractSendAndReceiveMaterial(Class<T> transferClass, Class<L> itemClass, boolean receiveMode, InventoryLocation otherLocation) {
+    public AbstractSendAndReceiveMaterial(Class<T> transferClass, Class<L> itemClass, boolean receiveMode,
+                                          InventoryLocation otherLocation) {
         this(transferClass, itemClass, (String) null, receiveMode, otherLocation);
     }
 
-    public AbstractSendAndReceiveMaterial(Class<T> transferClass, Class<L> itemClass, String fromOrTo, boolean receiveMode) {
+    public AbstractSendAndReceiveMaterial(Class<T> transferClass, Class<L> itemClass, String fromOrTo,
+                                          boolean receiveMode) {
         this(transferClass, itemClass, fromOrTo, receiveMode, otherLoc(fromOrTo));
     }
 
-    private AbstractSendAndReceiveMaterial(Class<T> transferClass, Class<L> itemClass, String fromOrTo, boolean receiveMode, InventoryLocation otherLocation) {
+    private AbstractSendAndReceiveMaterial(Class<T> transferClass, Class<L> itemClass, String fromOrTo,
+                                           boolean receiveMode, InventoryLocation otherLocation) {
         this(transferClass, itemClass, fromOrToField(fromOrTo, receiveMode, transferClass), receiveMode, otherLocation);
     }
 
-    public AbstractSendAndReceiveMaterial(Class<T> transferClass, Class<L> itemClass, InventoryLocation fromOrTo, boolean receiveMode) {
+    public AbstractSendAndReceiveMaterial(Class<T> transferClass, Class<L> itemClass, InventoryLocation fromOrTo,
+                                          boolean receiveMode) {
         this(transferClass, itemClass, LocationField.create(fromOrTo), receiveMode);
     }
 
-    public AbstractSendAndReceiveMaterial(Class<T> transferClass, Class<L> itemClass, InventoryLocation fromOrTo, boolean receiveMode, InventoryLocation otherLocation) {
+    public AbstractSendAndReceiveMaterial(Class<T> transferClass, Class<L> itemClass, InventoryLocation fromOrTo,
+                                          boolean receiveMode, InventoryLocation otherLocation) {
         this(transferClass, itemClass, LocationField.create(fromOrTo), receiveMode, otherLocation);
     }
 
-    private AbstractSendAndReceiveMaterial(Class<T> transferClass, Class<L> itemClass, LocationField fromOrToField, boolean receiveMode) {
+    private AbstractSendAndReceiveMaterial(Class<T> transferClass, Class<L> itemClass, LocationField fromOrToField,
+                                           boolean receiveMode) {
         this(transferClass, itemClass, fromOrToField, receiveMode, null);
     }
 
-    private AbstractSendAndReceiveMaterial(Class<T> transferClass, Class<L> itemClass, LocationField fromOrToField, boolean receiveMode, InventoryLocation otherLocation) {
+    private AbstractSendAndReceiveMaterial(Class<T> transferClass, Class<L> itemClass, LocationField fromOrToField,
+                                           boolean receiveMode, InventoryLocation otherLocation) {
         super(transferClass,
-                receiveMode ? StringList.create("Date", "ReferenceNumber as Reference", "FromLocation as Sent from", "Received") :
+                receiveMode ?
+                        StringList.create("Date", "ReferenceNumber as Reference", "FromLocation as Sent from", "Received") :
                         StringList.create("Date", "ReferenceNumber as Reference",
-                                "ToLocation as " + (transferClass == MaterialReturned.class ? "Return" : "Transfer") + " to", "Status"));
+                                "ToLocation as " +
+                                        (transferClass == MaterialReturned.class ? "Return" :
+                                                (transferClass == InventoryRO.class ? "Send" : "Transfer")) + " to", "Status"));
         this.itemClass = itemClass;
         this.receiveMode = receiveMode;
-        setCaption((receiveMode ? "Receive" : (transferClass == MaterialReturned.class ? "Return" : "Transfer")) + " Materials");
+        if(transferClass == InventoryRO.class) {
+            setCaption("Send Items for Repair");
+        } else {
+            setCaption((receiveMode ? "Receive" : (transferClass == MaterialReturned.class ? "Return" : "Transfer")) + " Materials");
+        }
         send.setVisible(!receiveMode);
         receive.setVisible(receiveMode);
         this.fromOrTo = fromOrToField.getValue();
@@ -77,8 +92,16 @@ public abstract class AbstractSendAndReceiveMaterial<T extends InventoryTransfer
                 lf = this.otherLocation == null ? new LocationField(0).remove(this.fromOrTo) : LocationField.create(this.otherLocation);
                 this.toField = new ObjectField<>("Return to", lf);
             } else {
-                lf = this.otherLocation == null ? new LocationField(ALL_TYPES).remove(this.fromOrTo) : LocationField.create(this.otherLocation);
-                this.toField = new ObjectField<>("Transferred to", lf);
+                if(this.otherLocation == null) {
+                    if(transferClass == InventoryRO.class) {
+                        lf = new LocationField(3);
+                    } else {
+                        lf = new LocationField(ALL_TYPES).remove(this.fromOrTo);
+                    }
+                } else {
+                    lf = LocationField.create(this.otherLocation);
+                }
+                this.toField = new ObjectField<>((transferClass == InventoryRO.class ? "Sent" : "Transferred") + " to", lf);
             }
         }
         setOrderBy("Date DESC,No DESC");
@@ -282,6 +305,9 @@ public abstract class AbstractSendAndReceiveMaterial<T extends InventoryTransfer
                     return mt;
                 });
             }
+            if(getObjectClass() == InventoryRO.class) {
+                setCaption("Send Items for Repair");
+            }
         }
 
         @Override
@@ -380,6 +406,9 @@ public abstract class AbstractSendAndReceiveMaterial<T extends InventoryTransfer
                     } else {
                         itemInput.setLocation(fromOrTo);
                     }
+                }
+                if(AbstractSendAndReceiveMaterial.this.getObjectClass() == InventoryRO.class) {
+                    setFieldHidden(quantityField);
                 }
             }
 

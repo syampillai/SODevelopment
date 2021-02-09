@@ -258,7 +258,7 @@ public abstract class AbstractRequestMaterial extends ObjectBrowser<MaterialRequ
 
             private void pnChanged() {
                 InventoryItemType pn = pnField.getObject();
-                qField.setValue(pn == null ? Count.ZERO : pn.getUnitOfMeasurement());
+                qField.setValue(pn == null ? Count.ZERO : pn.getUnitOfIssue());
             }
         }
     }

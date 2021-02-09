@@ -1,5 +1,7 @@
 package com.storedobject.core;
 
+import com.storedobject.core.annotation.Column;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
@@ -36,6 +38,20 @@ public class InventoryItemType extends StoredObject implements HasChildren {
     }
 
     public Quantity getUnitOfMeasurement() {
+        return Count.ZERO;
+    }
+
+    public void setUnitOfIssue(MeasurementUnit unitOfIssue) {
+    }
+
+    public void setUnitOfIssue(Quantity unitOfIssue) {
+    }
+
+    public void setUnitOfIssue(Object value) {
+    }
+
+    @Column(required = false)
+    public Quantity getUnitOfIssue() {
         return Count.ZERO;
     }
 
