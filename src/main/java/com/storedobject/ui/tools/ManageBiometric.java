@@ -13,19 +13,15 @@ import com.storedobject.vaadin.HTMLGenerator;
 
 public class ManageBiometric extends ObjectBrowser<WebBiometric> {
 
-    private Button registrationButton;
-    private BiometricRegistration registration;
-    private Application application;
+    private final Button registrationButton;
+    private final BiometricRegistration registration;
+    private final Application application;
 
-    public ManageBiometric() {
+    public ManageBiometric(Application application) {
         super(WebBiometric.class, StringList.create("This", "DeviceName", "Disabled"),
                 EditorAction.EDIT | EditorAction.DELETE, "Manage Biometric");
         createHTMLColumn("This", this::getThis);
-        addConstructedListener(o -> con());
-    }
-
-    private void con() {
-        application = Application.get();
+        this.application = application;
         SystemUser su = application.getTransactionManager().getUser();
         setFilter("Login=" + su.getId());
         if(application.isBiometricAvailable() && !application.isBiometricRegistered()) {
@@ -38,6 +34,10 @@ public class ManageBiometric extends ObjectBrowser<WebBiometric> {
             registration = null;
             registrationButton = null;
         }
+        addConstructedListener(o -> con());
+    }
+
+    private void con() {
         load();
         setObjectEditor(new Editor());
     }
@@ -93,7 +93,7 @@ public class ManageBiometric extends ObjectBrowser<WebBiometric> {
         protected void formConstructed() {
             super.formConstructed();
             addValidator(getField("DeviceName"),
-                    name -> getObject().duplicateDeviceName((String)name), "Name already exists");
+                    name -> !getObject().duplicateDeviceName((String)name), "Name already exists");
         }
     }
 }

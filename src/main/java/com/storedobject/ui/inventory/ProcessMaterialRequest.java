@@ -102,7 +102,7 @@ public class ProcessMaterialRequest extends AbstractRequestMaterial {
                 uninitialized = !visible;
             }
         };
-        Button processButton = new Button("Issue Items", VaadinIcon.TRUCK, e -> issue());
+        Button processButton = new ConfirmButton("Issue Items", VaadinIcon.TRUCK, e -> issue());
         private final Button saveButton = new Button("Save Changes", e -> save()) {
             @Override
             public void setVisible(boolean visible) {
@@ -121,7 +121,10 @@ public class ProcessMaterialRequest extends AbstractRequestMaterial {
             setDataProvider(new TreeData());
             setHeightFull();
             Button fillButton = new Button("Fill Items", VaadinIcon.FILL, e -> fillItems.execute());
-            buttonLayout.add(fillButton, removeButton, saveButton, processButton, new Button("Exit", e -> saveAndClose()));
+            buttonLayout.add(fillButton, removeButton, saveButton,
+                    new Button("Picking Order", "sort", e -> pickingOrder()),
+                    processButton,
+                    new Button("Exit", e -> saveAndClose()));
             removeButton.setVisible(false);
             saveButton.setVisible(false);
             processButton.setVisible(false);
@@ -519,6 +522,42 @@ public class ProcessMaterialRequest extends AbstractRequestMaterial {
                 mr.reload();
                 ProcessMaterialRequest.this.refresh(mr);
             }
+        }
+
+        private void pickingOrder() {
+            mriList.sort(new POrder());
+            refresh();
+        }
+
+        private class POrder implements Comparator<MaterialRequestItem> {
+
+            @Override
+            public int compare(MaterialRequestItem o1, MaterialRequestItem o2) {
+                List<MaterialIssuedItem> l1 = miiMap.get(o1.getId()), l2 = miiMap.get(o2.getId());
+                if(l1.isEmpty() && l2.isEmpty()) {
+                    return 0;
+                }
+                if(l1.isEmpty()) {
+                    return 1;
+                }
+                if(l2.isEmpty()) {
+                    return -1;
+                }
+                if(l1.stream().allMatch(mii -> mii.getItem().getLocation() instanceof InventoryStoreBin)) {
+                    return 1;
+                }
+                if(l2.stream().allMatch(mii -> mii.getItem().getLocation() instanceof InventoryStoreBin)) {
+                    return -1;
+                }
+                return min(l1) - min(l2);
+            }
+        }
+
+        private int min(List<MaterialIssuedItem> list) {
+            return list.stream().filter(mii -> !(mii.getItem().getLocation() instanceof InventoryStoreBin)).
+                    filter(mii -> mii.getItem().getLocation() instanceof InventoryBin).
+                    mapToInt(mii -> ((InventoryBin)mii.getItem().getLocation()).getPickingOrder()).
+                    min().orElse(0);
         }
 
         public String getItemBin(Object o) {

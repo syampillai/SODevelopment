@@ -382,4 +382,7 @@ public class InventoryItem extends StoredObject {
     public boolean cameAsAssemblyPart() {
         return new Random().nextBoolean();
     }
+
+    public static void saveExternal(Transaction transaction, InventoryItem item, Entity externalEntity) throws Exception {
+    }
 }

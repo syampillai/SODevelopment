@@ -15,7 +15,7 @@ import java.util.List;
 public abstract class AbstractSendAndReceiveMaterial<T extends InventoryTransfer, L extends InventoryTransferItem>
         extends ObjectBrowser<T> {
 
-    private static final int[] ALL_TYPES = new int[] { 0, 3, 4, 5, 8, 11 };
+    private static final int[] ALL_TYPES = new int[] { 0, 3, 4, 5, 8, 10, 11 };
     private final Button send = new Button("Send", VaadinIcon.TRUCK, e -> send());
     private final Button receive = new Button("Receive", VaadinIcon.STORAGE, e -> receive());
     private final ObjectField<InventoryLocation> fromField, toField;

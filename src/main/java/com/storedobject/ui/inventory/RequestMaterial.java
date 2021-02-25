@@ -117,7 +117,7 @@ public class RequestMaterial extends AbstractRequestMaterial {
 
     private static class PromptLocation extends DataForm implements Executable {
 
-        private final LocationField locationField = LocationField.create("Location", 4, 5, 11);
+        private final LocationField locationField = LocationField.create("Location", 4, 5, 10, 11);
 
         public PromptLocation() {
             super("Material Request");

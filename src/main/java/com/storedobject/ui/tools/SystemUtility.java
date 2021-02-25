@@ -112,8 +112,10 @@ public class SystemUtility extends View implements CloseableView, Transactional 
         form.add(buttons);
         ELabelField appDetails = new ELabelField("Application Details");
         Application a = Application.get();
-        appDetails.append("Version ").append(a.getDriverIdentifier()).
-                newLine().append("Device Size ").append(a.getDeviceWidth()).append('x').append(a.getDeviceHeight()).
+        appDetails.append("Version: ").append(a.getDriverIdentifier()).
+                newLine().append("Device Size: ").append(a.getDeviceWidth()).append('x').append(a.getDeviceHeight()).
+                newLine().append("Biometric Available: ").append(a.isBiometricAvailable()).
+                newLine().append("Biometric Registered: ").append(a.isBiometricRegistered()).
                 update();
         form.add(appDetails);
         setComponent(form);

@@ -1,6 +1,7 @@
 package com.storedobject.ui;
 
 import com.storedobject.common.HTMLText;
+import com.storedobject.ui.util.SOEnvironment;
 import com.storedobject.vaadin.StyledText;
 import com.vaadin.flow.component.HasText;
 import com.vaadin.flow.component.icon.Icon;
@@ -34,6 +35,9 @@ public class ELabel extends StyledText implements StyledBuilder, HasText {
     }
 
     private static Object convert(Object object) {
+        if(object == null) {
+            return "";
+        }
         if(object instanceof Icon) {
             HTMLText h = new HTMLText();
             h.appendHTML("<iron-icon icon=\"" + ((Icon)object).getElement().getAttribute("icon") + "\"></iron-icon>");
@@ -41,6 +45,10 @@ public class ELabel extends StyledText implements StyledBuilder, HasText {
         }
         if(object instanceof ELabel) {
             return ((ELabel)object).label;
+        }
+        Application a = Application.get();
+        if(a != null) {
+            return a.getEnvironment().toDisplay(object);
         }
         return object;
     }
