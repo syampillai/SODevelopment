@@ -50,21 +50,22 @@ public class StockReport extends DataForm {
         return true;
     }
 
-    @SuppressWarnings("RedundantThrows")
     public void generateContent() throws Exception {
         customized = false;
     }
 
-    public void printStock(ObjectIterator<? extends InventoryItemType> partNumbers) {
-        printStock(partNumbers, null);
+    public boolean printStock(ObjectIterator<? extends InventoryItemType> partNumbers) {
+        return printStock(partNumbers, null);
     }
 
-    public void printStock(ObjectIterator<? extends InventoryItemType> partNumbers, String categoryHeading) {
+    public boolean printStock(ObjectIterator<? extends InventoryItemType> partNumbers, String categoryHeading) {
         if(pdf != null) {
-            pdf.printStock(partNumbers, categoryHeading);
+            return pdf.printStock(partNumbers, categoryHeading);
         } else if(excel != null) {
             excel.printStock(partNumbers, categoryHeading);
+            return true;
         }
+        return false;
     }
 
     public String getItemTypeTitle(InventoryItemType itemType) {
