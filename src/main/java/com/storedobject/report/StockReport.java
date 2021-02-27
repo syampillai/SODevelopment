@@ -46,12 +46,19 @@ public class StockReport extends PDFReport {
     public void generateContent() throws Exception {
     }
 
-    public boolean printStock(ObjectIterator<? extends InventoryItemType> partNumbers) {
-        return printStock(partNumbers, null);
+    public void printStock(ObjectIterator<? extends InventoryItemType> partNumbers) {
+        printStock(partNumbers, null);
     }
 
-    public boolean printStock(ObjectIterator<? extends InventoryItemType> partNumbers, String categoryHeading) {
-        return true;
+    public void printStock(ObjectIterator<? extends InventoryItemType> partNumbers, String categoryHeading) {
+        printStock(partNumbers, categoryHeading, false);
+    }
+
+    public void printStock(ObjectIterator<? extends InventoryItemType> partNumbers, boolean newPage) {
+        printStock(partNumbers, null, newPage);
+    }
+
+    public void printStock(ObjectIterator<? extends InventoryItemType> partNumbers, String categoryHeading, boolean newPage) {
     }
 
     public boolean printZeroQuantity(InventoryStore store, InventoryItemType itemType) {

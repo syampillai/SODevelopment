@@ -54,18 +54,24 @@ public class StockReport extends DataForm {
         customized = false;
     }
 
-    public boolean printStock(ObjectIterator<? extends InventoryItemType> partNumbers) {
-        return printStock(partNumbers, null);
+    public void printStock(ObjectIterator<? extends InventoryItemType> partNumbers) {
+        printStock(partNumbers, null);
     }
 
-    public boolean printStock(ObjectIterator<? extends InventoryItemType> partNumbers, String categoryHeading) {
+    public void printStock(ObjectIterator<? extends InventoryItemType> partNumbers, String categoryHeading) {
+        printStock(partNumbers, categoryHeading, false);
+    }
+
+    public void printStock(ObjectIterator<? extends InventoryItemType> partNumbers, boolean newPage) {
+        printStock(partNumbers, null, newPage);
+    }
+
+    public void printStock(ObjectIterator<? extends InventoryItemType> partNumbers, String categoryHeading, boolean newPage) {
         if(pdf != null) {
-            return pdf.printStock(partNumbers, categoryHeading);
+            pdf.printStock(partNumbers, categoryHeading, newPage);
         } else if(excel != null) {
             excel.printStock(partNumbers, categoryHeading);
-            return true;
         }
-        return false;
     }
 
     public String getItemTypeTitle(InventoryItemType itemType) {
