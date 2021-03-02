@@ -1,14 +1,15 @@
 package com.storedobject.ui;
 
-import com.storedobject.core.Person;
 import com.storedobject.vaadin.DataForm;
 import com.storedobject.vaadin.FreeFormatField;
+import com.storedobject.vaadin.TextArea;
+import com.storedobject.vaadin.util.HasTextValue;
 
-public class Test extends DataForm implements Transactional {
+public class Test extends DataForm {
 
     public Test() {
         super("Test", false);
-        addField(new F("Person 1"), new F("Person 2"));
+        addField(new TF("Test"));
     }
 
     @Override
@@ -16,15 +17,20 @@ public class Test extends DataForm implements Transactional {
         return false;
     }
 
-    public static class F extends FreeFormatField<Person> {
+    private static class TF extends FreeFormatField<String> {
 
-        protected F(String label) {
-            super(label, null);
+        protected TF(String label) {
+            super(label, "", new TextArea());
         }
 
         @Override
-        protected Person getModelValue(String string) {
-            return Person.get(string);
+        protected HasTextValue createField() {
+            return new TextArea();
+        }
+
+        @Override
+        protected String getModelValue(String string) {
+            return "{\n" + string + "\n}";
         }
     }
 }
