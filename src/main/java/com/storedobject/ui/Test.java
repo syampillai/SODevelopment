@@ -1,36 +1,24 @@
 package com.storedobject.ui;
 
+import com.storedobject.core.Area;
+import com.storedobject.core.Temperature;
+import com.storedobject.core.Volume;
 import com.storedobject.vaadin.DataForm;
-import com.storedobject.vaadin.FreeFormatField;
-import com.storedobject.vaadin.TextArea;
-import com.storedobject.vaadin.util.HasTextValue;
 
 public class Test extends DataForm {
 
     public Test() {
         super("Test", false);
-        addField(new TF("Test"));
+        MeasurementUnitField muf;
+        addField(muf = new MeasurementUnitField("Unit"));
+        muf.setValue(Area.defaultUnit);
+        MeasurementField<Temperature> tf;
+        addField(tf = new MeasurementField<>(new Temperature(26, "F")));
+        tf.addValueChangeListener(e -> muf.setValue(Volume.defaultUnit));
     }
 
     @Override
     protected boolean process() {
         return false;
-    }
-
-    private static class TF extends FreeFormatField<String> {
-
-        protected TF(String label) {
-            super(label, "", new TextArea());
-        }
-
-        @Override
-        protected HasTextValue createField() {
-            return new TextArea();
-        }
-
-        @Override
-        protected String getModelValue(String string) {
-            return "{\n" + string + "\n}";
-        }
     }
 }

@@ -20,8 +20,10 @@ import java.util.function.Consumer;
  */
 public class ItemField<I extends InventoryItem> extends ObjectGetField<I> implements ItemInput<I> {
 
-    final static StringList COLUMNS = StringList.create("PartNumber as Part/Model Number",
-            "SerialNumberDisplay as Serial/Batch",
+    final static StringList COLUMNS = StringList.create(
+            "PartNumber.Name AS Item",
+            "PartNumber.PartNumber AS Part/Model Number",
+            "SerialNumberDisplay AS Serial/Batch",
             "Quantity", "InTransit", "Serviceable", "LocationDisplay as Location", "Owner");
     private final ItemTypeField<?> typeField;
     private ObjectProvider<? extends InventoryStore> storeField;

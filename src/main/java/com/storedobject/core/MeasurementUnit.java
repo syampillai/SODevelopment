@@ -49,4 +49,8 @@ public class MeasurementUnit {
 	public BigDecimal getMultiplier() {
 		return null;
 	}
+
+	public Class<? extends Quantity> getQuantityClass() {
+		return Quantity.getClass(this);
+	}
 }

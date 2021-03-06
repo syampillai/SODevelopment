@@ -229,7 +229,16 @@ public abstract class AbstractRequestMaterial extends ObjectBrowser<MaterialRequ
         private ObjectField<InventoryItemType> pnField;
 
         public MRIGrid(ObjectLinkField<MaterialRequestItem> linkField) {
-            super(linkField, StringList.create("PartNumber", "Requested", "Issued", "Balance"));
+            super(linkField, StringList.create("Item", "PartNumber", "Requested", "Issued", "Balance"));
+        }
+
+        public String getItem(MaterialRequestItem mri) {
+            return mri.getPartNumber().getName();
+        }
+
+        @SuppressWarnings("unused")
+        public String getPartNumber(MaterialRequestItem mri) {
+            return mri.getPartNumber().getPartNumber();
         }
 
         @Override
@@ -237,8 +246,9 @@ public abstract class AbstractRequestMaterial extends ObjectBrowser<MaterialRequ
             return new MRIEditor();
         }
 
-        public Quantity getBalance(MaterialRequestItem item) {
-            return item.getRequested().subtract(item.getIssued());
+        @SuppressWarnings("unused")
+        public Quantity getBalance(MaterialRequestItem mri) {
+            return mri.getRequested().subtract(mri.getIssued());
         }
 
         private class MRIEditor extends ObjectEditor<MaterialRequestItem> {

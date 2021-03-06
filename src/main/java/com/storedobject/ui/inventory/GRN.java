@@ -637,7 +637,7 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
             private boolean invokeBin = false;
 
             public GRNItemGrid() {
-                super(grnItemsField, StringList.create("PartNumber", "SerialNumber", "Inspected", "Quantity", "UnitCost", "Bin"));
+                super(grnItemsField, StringList.create("Item", "PartNumber", "SerialNumber", "Inspected", "Quantity", "UnitCost", "Bin"));
                 setObjectEditor(new GRNItemEditor());
                 getButtonPanel().add(inspect, bin, assemble, hint);
                 GridContextMenu<InventoryGRNItem> contextMenu = new GridContextMenu<>(this);
@@ -657,6 +657,16 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
                 });
             }
 
+            public String getItem(InventoryGRNItem grnItem) {
+                return grnItem.getPartNumber().getName();
+            }
+
+            @SuppressWarnings("unused")
+            public String getPartNumber(InventoryGRNItem grnItem) {
+                return grnItem.getPartNumber().getPartNumber();
+            }
+
+            @SuppressWarnings("unused")
             public String getBin(InventoryGRNItem grnItem) {
                 InventoryLocation bin = grnItem.getBin();
                 return bin == null ? "[Not set]" : bin.toDisplay();
