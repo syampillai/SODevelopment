@@ -10,7 +10,7 @@ public class Quantity implements Storable, Comparable<Quantity> {
 	}
 
 	public static Quantity create(Object value) {
-		return null;
+		return new Quantity(null, null);
 	}
 
 	public static <Q extends Quantity> Q create(Object value, Class<Q> qClass) {
@@ -91,6 +91,7 @@ public class Quantity implements Storable, Comparable<Quantity> {
 		return -1;
 	}
 
+	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
 	public boolean isCompatible(Quantity another) {
 		return false;
 	}
@@ -241,7 +242,7 @@ public class Quantity implements Storable, Comparable<Quantity> {
 	}
 
 	@Override
-	public int compareTo(Quantity quantity) {
+	public int compareTo(@SuppressWarnings("NullableProblems") Quantity quantity) {
 		return 0;
 	}
 }

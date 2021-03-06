@@ -8,6 +8,7 @@ import com.storedobject.core.converter.DaysValueConverter;
 import com.storedobject.core.converter.MinutesValueConverter;
 import com.storedobject.core.converter.ValueConverter;
 import com.storedobject.ui.*;
+import com.storedobject.ui.inventory.UOMField;
 import com.storedobject.vaadin.*;
 import com.vaadin.flow.component.HasValue;
 import com.vaadin.flow.component.textfield.PasswordField;
@@ -592,6 +593,11 @@ public class SOFieldCreator<T> implements ObjectFieldCreator<T> {
             return field;
         }
         if(Quantity.class == type) {
+            switch(fieldName) {
+                case "UnitOfMeasurement":
+                case "UnitOfIssue":
+                    return new UOMField(label);
+            }
             return new QuantityField(label, md.getIntParameter(0, 0), md.getIntParameter(6, 1));
         }
         if(Area.class == type) {

@@ -10,14 +10,14 @@ public class MeasurementUnitField extends FreeFormatField<MeasurementUnit> {
     /**
      * Constructor.
      */
-    protected MeasurementUnitField() {
+    public MeasurementUnitField() {
         this(null);
     }
 
     /**
      * Constructor.
      */
-    protected MeasurementUnitField(String label) {
+    public MeasurementUnitField(String label) {
         super(label, Count.defaultUnit);
     }
 
