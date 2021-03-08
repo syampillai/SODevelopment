@@ -1,6 +1,8 @@
 package com.storedobject.core;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
 public class MeasurementUnit {
 
@@ -52,5 +54,9 @@ public class MeasurementUnit {
 
 	public Class<? extends Quantity> getQuantityClass() {
 		return Quantity.getClass(this);
+	}
+
+	public static <Q extends Quantity> List<MeasurementUnit> list(Class<Q> quantityClass) {
+		return new ArrayList<>();
 	}
 }

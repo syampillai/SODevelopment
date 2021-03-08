@@ -599,7 +599,7 @@ public class Application extends com.storedobject.vaadin.Application implements 
         try {
             TextContent home = SOServlet.getTextContent("homeview.html");
             if(home != null) {
-                new HomeHTMLView(this, home).execute();
+                new HomeHTMLView(home).execute();
             } else {
                 MediaFile background = SOServlet.getImage("homeview");
                 if(background == null) {

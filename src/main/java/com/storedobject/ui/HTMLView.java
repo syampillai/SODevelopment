@@ -21,17 +21,16 @@ public class HTMLView extends View implements CloseableView {
      * @param application Application instance.
      */
     public HTMLView(Application application) {
-        this(application, application.getLogicTitle(null));
+        this(application.getLogicTitle(null));
     }
 
     /**
      * Constructor.
      *
-     * @param application Application instance.
      * @param textContentName Name of the text content to set.
      */
-    public HTMLView(Application application, String textContentName) {
-        this(application, tc(textContentName));
+    public HTMLView(String textContentName) {
+        this(tc(textContentName));
     }
 
     /**
@@ -41,38 +40,35 @@ public class HTMLView extends View implements CloseableView {
      * @param windowMode Whether to show it in a window or not.
      */
     public HTMLView(Application application, boolean windowMode) {
-        this(application, application.getLogicTitle(null), windowMode);
+        this(application.getLogicTitle(null), windowMode);
     }
 
     /**
      * Constructor.
      *
-     * @param application Application instance.
      * @param textContentName Name of the text content to set.
      * @param windowMode Whether to show it in a window or not.
      */
-    public HTMLView(Application application, String textContentName, boolean windowMode) {
-        this(application, tc(textContentName), windowMode);
+    public HTMLView(String textContentName, boolean windowMode) {
+        this(tc(textContentName), windowMode);
     }
 
     /**
      * Constructor.
      *
-     * @param application Application instance.
      * @param textContent Text content to set.
      */
-    public HTMLView(Application application, TextContent textContent) {
-        this(application, textContent, false);
+    public HTMLView(TextContent textContent) {
+        this(textContent, false);
     }
 
     /**
      * Constructor.
      *
-     * @param application Application instance.
      * @param textContent Text content to set.
      * @param windowMode Whether to show it in a window or not.
      */
-    public HTMLView(Application application, TextContent textContent, boolean windowMode) {
+    public HTMLView(TextContent textContent, boolean windowMode) {
         super(textContent == null ? "HTML" : textContent.getName());
         if(textContent == null) {
             throw new SORuntimeException(MISSING);

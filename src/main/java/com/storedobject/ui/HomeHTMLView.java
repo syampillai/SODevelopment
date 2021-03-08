@@ -9,11 +9,11 @@ public class HomeHTMLView extends HTMLView implements HomeView {
         super(application);
     }
 
-    public HomeHTMLView(Application application, String textContentName) {
-        super(application, textContentName);
+    public HomeHTMLView(String textContentName) {
+        super(textContentName);
     }
 
-    public HomeHTMLView(Application application, TextContent textContent) {
-        super(application, textContent);
+    public HomeHTMLView(TextContent textContent) {
+        super(textContent);
     }
 }

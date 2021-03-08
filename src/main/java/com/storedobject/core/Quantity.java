@@ -3,6 +3,7 @@ package com.storedobject.core;
 import com.storedobject.common.Storable;
 
 import java.math.BigDecimal;
+import java.util.stream.Stream;
 
 public class Quantity implements Storable, Comparable<Quantity> {
 
@@ -244,5 +245,9 @@ public class Quantity implements Storable, Comparable<Quantity> {
 	@Override
 	public int compareTo(@SuppressWarnings("NullableProblems") Quantity quantity) {
 		return 0;
+	}
+
+	public static <Q extends Quantity> Stream<Class<Q>> types() {
+		return Stream.empty();
 	}
 }
