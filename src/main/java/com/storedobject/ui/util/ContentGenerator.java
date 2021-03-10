@@ -7,6 +7,7 @@ import com.storedobject.ui.*;
 import com.storedobject.vaadin.PDFViewer;
 import com.storedobject.vaadin.View;
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.HasSize;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.WebBrowser;
 
@@ -120,7 +121,21 @@ public class ContentGenerator extends AbstractContentGenerator {
     }
 
     private void show(Component viewer) {
-        View.createCloseableView(viewer, caption).execute();
+        Viewer v = new Viewer(viewer, caption, !application.supportsCloseableView()) {
+            @Override
+            protected int getViewWidth() {
+                return 95;
+            }
+
+            @Override
+            protected int getViewHeight() {
+                return 95;
+            }
+        };
+        if(viewer instanceof HasSize) {
+            ((HasSize)viewer).setHeight("95%");
+        }
+        v.execute();
     }
 
     @Override

@@ -4,14 +4,19 @@ import com.storedobject.common.SORuntimeException;
 import com.storedobject.core.TextContent;
 import com.storedobject.ui.util.SOServlet;
 import com.storedobject.vaadin.*;
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.HasSize;
 
 /**
  * Create a {@link View} from some HTML content. The HTML may contain
  * references to media content using ${media} variable where media is the name of the media to set.
+ * ({@link com.storedobject.core.MediaFile}s can be stored in the DB). If the HTML is a full-fledged one (if it
+ * starts with an html tag), an {@link IFrame} will be created as the component of the {@link View}. Otherwise,
+ * a {@link TemplateLayout} is created.
  *
  * @author Syam
  */
-public class HTMLView extends View implements CloseableView {
+public class HTMLView extends Viewer {
 
     private static final String MISSING = "HTML content missing!";
 
@@ -73,11 +78,18 @@ public class HTMLView extends View implements CloseableView {
         if(textContent == null) {
             throw new SORuntimeException(MISSING);
         }
-        IFrame iFrame = new IFrame();
-        iFrame.setSizeFull();
-        iFrame.getElement().getStyle().set("display", "block").set("overflow", "hidden");
-        iFrame.setSourceDocument(textContent.getContent());
-        setComponent(windowMode ? createWindow(iFrame) : iFrame);
+        boolean asIFrame = textContent.getContent().startsWith("<html");
+        Component component;
+        if(asIFrame) {
+            IFrame iFrame = new IFrame();
+            iFrame.getElement().getStyle().set("display", "block").set("overflow", "hidden");
+            iFrame.setSourceDocument(textContent.getContent());
+            component = iFrame;
+        } else {
+            component = new TemplateLayout(textContent);
+        }
+        ((HasSize)component).setSizeFull();
+        setComponent(windowMode ? createWindow(component) : component);
     }
 
     private static TextContent tc(String name) {
@@ -89,26 +101,5 @@ public class HTMLView extends View implements CloseableView {
             throw new SORuntimeException(MISSING + " - " + name);
         }
         return tc;
-    }
-
-    /**
-     * Create the "window" to show the HTML content. This will be invoked only if the "window mode" is on.
-     *
-     * @param iFrame Iframe containing the HTML to display.
-     * @return A window containing the iframe passed.
-     */
-    protected Window createWindow(IFrame iFrame) {
-        Window w = new Window(new WindowDecorator(this), iFrame);
-        w.setWidth("80vw");
-        w.setHeight("80vh");
-        iFrame.setHeight("90%");
-        new Scrollable(iFrame);
-        return w;
-    }
-
-    @Override
-    public void decorateComponent() {
-        super.decorateComponent();
-        getComponent().getElement().getStyle().set("padding", "0px");
     }
 }

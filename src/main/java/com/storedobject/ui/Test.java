@@ -1,9 +1,12 @@
 package com.storedobject.ui;
 
+import com.storedobject.core.Person;
+import com.storedobject.core.StoredObject;
 import com.storedobject.vaadin.DataForm;
 import com.storedobject.vaadin.TextField;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.template.Id;
 import com.vaadin.flow.component.textfield.PasswordField;
@@ -15,10 +18,12 @@ public class Test extends DataForm {
         addField(new TemperatureField("Temp."));
         addField(new MeasurementUnitField("Unit"));
         add(new TestLayout());
+        add(new H1("External H1"));
     }
 
     @Override
     protected boolean process() {
+        new QueryGrid(StoredObject.query(Person.class, "FirstName,LastName,DateOfBirth")).execute();
         return false;
     }
 

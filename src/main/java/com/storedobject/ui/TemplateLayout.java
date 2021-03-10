@@ -5,6 +5,7 @@ import com.storedobject.common.SORuntimeException;
 import com.storedobject.core.TextContent;
 import com.storedobject.ui.util.HtmlTemplate;
 import com.storedobject.ui.util.SOServlet;
+import com.vaadin.flow.component.HasSize;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -13,11 +14,13 @@ import java.nio.charset.StandardCharsets;
  * A layout {@link com.vaadin.flow.component.Component} based on a template stored in the DB as an HTML like file -
  * It should be stored as {@link com.storedobject.core.TextContent}. The template can contain HTML tags (and thus,
  * Vaadin component tags too) and if any image resources are referenced, respective
- * {@link com.storedobject.core.MediaFile}s must be used just like in {@link HTMLView}.
+ * {@link com.storedobject.core.MediaFile}s must be used just like in {@link HTMLView}. For CSS styling the content,
+ * style tag should be used and if used, it should be the first part of the content. Style tags used in any other
+ * part will be ignored.
  *
  * @author Syam
  */
-public class TemplateLayout extends HtmlTemplate {
+public class TemplateLayout extends HtmlTemplate implements HasSize {
 
     /**
      * Constructor.
@@ -28,8 +31,12 @@ public class TemplateLayout extends HtmlTemplate {
         this(tc(textContentName));
     }
 
-    private TemplateLayout(TextContent tc) {
-        super(tc.getName() + "V" + tc.getVersion(), () -> new TextContentStream(tc));
+    public TemplateLayout(TextContent tc) {
+        this(tc.getName() + "V" + tc.getVersion(), new HTMLSupplier(tc));
+    }
+
+    private TemplateLayout(String cacheKey, HTMLSupplier htmlSupplier) {
+        super(cacheKey, htmlSupplier, htmlSupplier);
     }
 
     private static TextContent tc(String textContentName) {
@@ -40,13 +47,54 @@ public class TemplateLayout extends HtmlTemplate {
         return tc;
     }
 
-    private static class TextContentStream extends InputStream {
+    private static class HTMLSupplier implements StreamSupplier, StyleSupplier {
+
+        private final TextContent tc;
+        private String[] htmlcss;
+
+        private HTMLSupplier(TextContent tc) {
+            this.tc = tc;
+        }
+
+        @Override
+        public InputStream createStream() {
+            if(htmlcss == null) {
+                parse();
+            }
+            return new LinesStream(htmlcss[0]);
+        }
+
+        @Override
+        public String getStyle() {
+            if(htmlcss == null) {
+                parse();
+            }
+            return htmlcss[1];
+        }
+
+        private void parse() {
+            htmlcss = new String[2];
+            String c = tc.getContent().strip();
+            if(c.startsWith("<style")) {
+                int p = c.indexOf("</style>");
+                if(p > 0) {
+                    htmlcss[1] = MediaCSS.parse(c.substring(c.indexOf('>') + 1, p));
+                    htmlcss[0] = c.substring(p + 8);
+                }
+            }
+            if(htmlcss[0] == null) {
+                htmlcss[0] = c;
+            }
+        }
+    }
+
+    private static class LinesStream extends InputStream {
 
         private BufferedReader reader;
         private ByteArrayInputStream bytes = null;
 
-        private TextContentStream(TextContent tc) {
-            this.reader = IO.get(new StringReader(tc.getContent()));
+        private LinesStream(String html) {
+            this.reader = IO.get(new StringReader(html));
         }
 
         @Override

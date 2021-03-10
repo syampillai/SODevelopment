@@ -74,8 +74,24 @@ public abstract class HtmlTemplate extends Component {
      *            an input stream supplier that will be used if caching isn't
      *            used or if there is a cache miss, not <code>null</code>
      */
+
     protected HtmlTemplate(String cacheKey, StreamSupplier streamSupplier) {
-        populate(cacheKey, streamSupplier);
+        this(cacheKey, streamSupplier, null);
+    }
+
+    /**
+     * Creates a new HTML template based on HTML read from an input stream.
+     *
+     * @param cacheKey
+     *            the key to use for potentially caching the result of reading
+     *            and parsing the template, or <code>null</code> never cache the
+     *            result
+     * @param streamSupplier
+     *            an input stream supplier that will be used if caching isn't
+     *            used or if there is a cache miss, not <code>null</code>
+     */
+    protected HtmlTemplate(String cacheKey, StreamSupplier streamSupplier, StyleSupplier styleSupplier) {
+        populate(cacheKey, streamSupplier, styleSupplier);
     }
 
     private void populateFromClasspath(String templateUrl) {
@@ -87,24 +103,32 @@ public abstract class HtmlTemplate extends Component {
                         + " on the classpath relative to the class " + origin.getName());
             }
             return resourceAsStream;
-        });
+        }, null);
     }
 
-    private void populate(String cacheKey, StreamSupplier streamSupplier) {
+    private void populate(String cacheKey, StreamSupplier streamSupplier, StyleSupplier styleSupplier) {
         Document document = getTemplate(cacheKey, streamSupplier);
         Map<String, Element> idMap = new HashMap<>();
-        convertAndAppend(document.body(), getElement().attachShadow(), idMap::put);
+        convertAndAppend(document.body(), getElement().attachShadow(), idMap::put, styleSupplier);
         for (Field field : getClass().getDeclaredFields()) {
             AnnotationReader.getAnnotationFor(field, Id.class).map(Id::value).ifPresent(id -> {
                 if (id.isEmpty()) {
                     id = field.getName();
                 }
+                Component component;
                 Element idElement = idMap.get(id);
                 if (idElement == null) {
-                    throw new IllegalArgumentException("There is no element with id " + id + " to match " + field);
+                    try {
+                        component = getComponentForId(id);
+                    } catch(NO_COMPONENT no_component) {
+                        throw new IllegalArgumentException("There is no element with id " + id + " to match " + field);
+                    }
+                } else {
+                    component = Component.from(idElement, field.getType().asSubclass(Component.class));
                 }
-                Component component = Component.from(idElement, field.getType().asSubclass(Component.class));
-                ReflectTools.setJavaFieldValue(this, field, component);
+                if(component != null) {
+                    ReflectTools.setJavaFieldValue(this, field, component);
+                }
             });
         }
     }
@@ -144,7 +168,13 @@ public abstract class HtmlTemplate extends Component {
     }
 
     private void convertAndAppend(org.jsoup.nodes.Element jsoupElement, com.vaadin.flow.dom.Node<?> flowNode,
-                                  BiConsumer<String, Element> idElementConsumer) {
+                                  BiConsumer<String, Element> idElementConsumer, StyleSupplier styleSupplier) {
+        String style = styleSupplier == null ? null : styleSupplier.getStyle();
+        if(style != null && !style.isBlank()) {
+            Element styleElement = new Element("style");
+            styleElement.setText(style);
+            flowNode.appendChild(styleElement);
+        }
         jsoupElement.childNodes().stream().map(child -> jsoupToFlow(child, idElementConsumer)).filter(Objects::nonNull)
                 .forEach(flowNode::appendChild);
     }
@@ -180,7 +210,7 @@ public abstract class HtmlTemplate extends Component {
                     }
                 }
             });
-            convertAndAppend(jsoupElement, flowElement, idElementConsumer);
+            convertAndAppend(jsoupElement, flowElement, idElementConsumer, null);
             return flowElement;
         } else if (node instanceof TextNode) {
             TextNode textNode = (TextNode) node;
@@ -190,6 +220,13 @@ public abstract class HtmlTemplate extends Component {
         } else {
             throw new IllegalArgumentException("Unsupported tag: " + node.getClass().getName());
         }
+    }
+
+    protected Component getComponentForId(String id) {
+        throw new NO_COMPONENT();
+    }
+
+    private static class NO_COMPONENT extends RuntimeException {
     }
 
     /**
@@ -206,5 +243,9 @@ public abstract class HtmlTemplate extends Component {
          *             if there was a problem when creating the stream
          */
         InputStream createStream() throws IOException;
+    }
+
+    public interface StyleSupplier {
+        String getStyle();
     }
 }

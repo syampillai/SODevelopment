@@ -34,7 +34,7 @@ import java.util.function.Consumer;
 
 public class Application extends com.storedobject.vaadin.Application implements Device, RunningLogic, RequiresApproval {
 
-    private static final String VERSION = "18.0.6";
+    private static final String VERSION = "18.0.7";
     private static final String COMPACT_STYLES =
             "--lumo-size-xl: 3rem;\n" +
                     "--lumo-size-l: 2.5rem;\n" +
@@ -182,6 +182,17 @@ public class Application extends com.storedobject.vaadin.Application implements 
      */
     public boolean isCompactTheme() {
         return compactTheme;
+    }
+
+    /**
+     * Whether this application supports {@link CloseableView} or not. Applications may override the standard
+     * menu system and the overridden menu system may not have support for displaying appropriate "close" icon for
+     * closing the view. In such cases, this method should return <code>false</code>.
+     *
+     * @return True/false. Default is true.
+     */
+    public boolean supportsCloseableView() {
+        return true;
     }
 
     @Override
@@ -626,7 +637,11 @@ public class Application extends com.storedobject.vaadin.Application implements 
     }
 
     protected void executeLogin() {
-        String loginLogic = ApplicationServer.getGlobalProperty("application.logic.login", "");
+        String LOGIN_LOGIC = "application.logic.login";
+        String loginLogic = ApplicationServer.getGlobalProperty(LOGIN_LOGIC, "");
+        if(loginLogic.isEmpty()) {
+            loginLogic = GlobalProperty.get(LOGIN_LOGIC);
+        }
         if(loginLogic.isEmpty()) {
             new LoginForm().execute();
             return;
