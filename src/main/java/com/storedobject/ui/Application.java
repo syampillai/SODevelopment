@@ -387,6 +387,11 @@ public class Application extends com.storedobject.vaadin.Application implements 
         return runningLogic == null ? defaultTitle : runningLogic.getTitle();
     }
 
+    public static String getLogicCaption(String defaultCaption) {
+        Application a = get();
+        return a == null ? defaultCaption : a.getLogicTitle(defaultCaption);
+    }
+
     @Override
     public void setServer(ApplicationServer server) {
         if(this.server == null) {
@@ -640,7 +645,10 @@ public class Application extends com.storedobject.vaadin.Application implements 
         String LOGIN_LOGIC = "application.logic.login";
         String loginLogic = ApplicationServer.getGlobalProperty(LOGIN_LOGIC, "");
         if(loginLogic.isEmpty()) {
-            loginLogic = GlobalProperty.get(LOGIN_LOGIC);
+            try {
+                loginLogic = GlobalProperty.get(LOGIN_LOGIC);
+            } catch(Throwable ignored) {
+            }
         }
         if(loginLogic.isEmpty()) {
             new LoginForm().execute();
