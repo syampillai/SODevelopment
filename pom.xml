@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.storedobject</groupId>
+    <artifactId>so-development</artifactId>
+    <version>6.3.3</version>
+
+    <properties>
+        <so-common-version>4.0.0</so-common-version>
+        <so-components-version>9.8.5</so-components-version>
+        <so-charts-version>2.1.1</so-charts-version>
+        <vaadin.version>20.0.3</vaadin.version>
+        <maven.compiler.source>16</maven.compiler.source>
+        <maven.compiler.target>16</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+    </properties>
+
+    <name>${project.groupId}:${project.artifactId}</name>
+    <description>SO Development skeleton classes</description>
+    <url>https://github.com/syampillai/SODevelopment</url>
+
+    <licenses>
+        <license>
+            <name>Apache License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <developers>
+        <developer>
+            <name>Syam Pillai</name>
+            <email>syam@engravgroup.com</email>
+            <organization>Syam Pillai</organization>
+            <organizationUrl>https://github.com/syampillai</organizationUrl>
+        </developer>
+    </developers>
+
+    <repositories>
+        <repository>
+            <id>Vaadin prereleases</id>
+            <url>https://maven.vaadin.com/vaadin-prereleases</url>
+        </repository>
+        <repository>
+            <id>Vaadin Directory</id>
+            <url>https://maven.vaadin.com/vaadin-addons</url>
+        </repository>
+        <repository>
+            <id>jitpack.io</id>
+            <url>https://jitpack.io</url>
+        </repository>
+    </repositories>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>com.vaadin</groupId>
+                <artifactId>vaadin-bom</artifactId>
+                <type>pom</type>
+                <scope>import</scope>
+                <version>${vaadin.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <dependencies>
+
+        <!-- Java mail -->
+        <dependency>
+            <groupId>com.sun.mail</groupId>
+            <artifactId>jakarta.mail</artifactId>
+            <version>2.0.0</version>
+        </dependency>
+
+        <!-- SO Common (from jitpack) -->
+        <dependency>
+            <groupId>com.github.syampillai</groupId>
+            <artifactId>SOCommon</artifactId>
+            <version>${so-common-version}</version>
+        </dependency>
+
+        <!-- Open Source SO Components -->
+        <dependency>
+            <groupId>com.storedobject.vaadin</groupId>
+            <artifactId>so-components</artifactId>
+            <version>${so-components-version}</version>
+        </dependency>
+
+        <!-- Open Source SO Charts -->
+        <dependency>
+            <groupId>com.storedobject.chart</groupId>
+            <artifactId>so-charts</artifactId>
+            <version>${so-charts-version}</version>
+        </dependency>
+
+        <!-- Vaadin -->
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>vaadin</artifactId>
+        </dependency>
+
+        <!-- Vaadin add-on for SpeedDial -->
+        <dependency>
+            <groupId>io.github.tobsef</groupId>
+            <artifactId>speed-dial</artifactId>
+            <version>1.1.1</version>
+        </dependency>
+
+        <!-- Vaadin add-on for Full Calendar -->
+        <dependency>
+            <groupId>org.vaadin.stefan</groupId>
+            <artifactId>fullcalendar2</artifactId>
+            <version>2.4.3</version>
+        </dependency>
+
+        <!-- Java Servlet -->
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>javax.servlet-api</artifactId>
+            <version>3.1.0</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- POI APIs for Excel interface -->
+        <dependency>
+            <groupId>org.apache.poi</groupId>
+            <artifactId>poi-ooxml</artifactId>
+            <version>4.1.2</version>
+        </dependency>
+
+    </dependencies>
+
+    <scm>
+        <connection>scm:git:git://github.com/syampillai/SODevelopment.git</connection>
+        <developerConnection>scm:git:ssh://github.com/syampillai/SODevelopment.git</developerConnection>
+        <url>https://github.com/syampillai/SODevelopment/tree/master</url>
+    </scm>
+
+    <distributionManagement>
+        <repository>
+            <id>github</id>
+            <name>Syam Pillai</name>
+            <url>https://maven.pkg.github.com/syampillai/SODevelopment</url>
+        </repository>
+    </distributionManagement>
+
+    <build>
+        <plugins>
+            <!-- Compile -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.8.1</version>
+                <configuration>
+                    <source>16</source>
+                    <target>16</target>
+                </configuration>
+            </plugin>
+            <!-- Create jar file -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.1.2</version>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <addClasspath>true</addClasspath>
+                            <classpathPrefix>lib/</classpathPrefix>
+                        </manifest>
+                    </archive>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>

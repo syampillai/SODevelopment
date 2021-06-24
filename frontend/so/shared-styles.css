@@ -1,0 +1,61 @@
+/* Status message - Disable */
+.v-status-message {
+    display: none;
+}
+
+/* Loading Indicator Configuration */
+.v-loading-indicator {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    pointer-events: auto;
+    z-index: 2147483647;
+}
+.v-loading-indicator:before {
+    width: 76px;
+    height: 76px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    margin: -38px 0 0 -38px;
+    border-radius: 100%;
+    animation: bouncedelay 1.2s infinite 0.4s ease-in-out both;
+    content: "";
+}
+.v-loading-indicator.first:before {
+    background-color: var(--so-delay-color-s, skyblue);
+}
+.v-loading-indicator.second:before {
+    background-color: var(--so-delay-color-m, salmon);
+}
+.v-loading-indicator.third:before {
+    background-color: var(--so-delay-color-l, red);
+}
+@keyframes bouncedelay {
+    0%, 80%, 100% {
+        transform: scale(0);
+    }
+    40% {
+        transform: scale(1.0);
+    }
+}
+
+/* ViewerLink */
+span.link {
+    display: inline-block;
+    box-sizing: border-box;
+    font-weight: bold;
+    color: var(--lumo-primary-color);
+    cursor: pointer;
+}
+
+span.contrast {
+    color: var(--lumo-primary-contrast-color);
+}
+
+span.link:hover, span.contrast:hover {
+    border-style: solid;
+    border-width: 2px 0px 2px 0px;
+}
