@@ -13,3 +13,6 @@ utilized for the creation of Excel compatible output.
 
 If you are interested developing for *SO Platform*, please have a look at the
 [Wiki Pages](https://github.com/syampillai/SOTraining/wiki).
+
+Get it from here:  
+[![](https://jitpack.io/v/syampillai/SODevelopment.svg)](https://jitpack.io/#syampillai/SODevelopment)
