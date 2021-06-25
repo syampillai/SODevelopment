@@ -55,9 +55,10 @@ public abstract class IoTObject extends StoredObject{
      *
      * @param objectClass IOT object class.
      * @param <IOT> Type of object class.
+     * @param unitId {@link Id} of the unit (could be null).
      * @return Latest data record or null if not available.
      */
-    public static <IOT extends IoTObject> IOT getLatest(Class<IOT> objectClass) {
-        return objectClass == null ? null : get(objectClass);
+    public static <IOT extends IoTObject> IOT getLatest(Class<IOT> objectClass, Id unitId) {
+        return unitId == null ? null : get(objectClass);
     }
 }
