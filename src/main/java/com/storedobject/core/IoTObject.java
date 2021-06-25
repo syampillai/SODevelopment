@@ -38,4 +38,26 @@ public abstract class IoTObject extends StoredObject{
      */
     public void directUpdate(TransactionManager tm) throws Exception {
     }
+
+    /**
+     * Set the unit {@link Id} of this IoT object. Typically, every IoT object instance belongs to some unit
+     * (plant or equipment being monitored). There must be a "data class" for every such unit and the {@link Id} of
+     * that unit must be set here. Rarely, an IoT object itself may be independent of any unit (for example,
+     * generic values like temperature/humidity of an environment etc.) and in such cases, an empty implementation of
+     * this method is fine.
+     *
+     * @param unitId Id of the unit.
+     */
+    public abstract void setUnit(Id unitId);
+
+    /**
+     * Get the latest data record collected.
+     *
+     * @param objectClass IOT object class.
+     * @param <IOT> Type of object class.
+     * @return Latest data record or null if not available.
+     */
+    public static <IOT extends IoTObject> IOT getLatest(Class<IOT> objectClass) {
+        return objectClass == null ? null : get(objectClass);
+    }
 }

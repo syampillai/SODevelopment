@@ -70,8 +70,8 @@ public class ManageTomcatApplication extends DataForm implements Transactional {
             }
             HTTP http = new HTTP(manager + "/text/" + action.getValue().toLowerCase() + "?path=/" + a);
             http.setAllowHTTPErrors(true);
-            http.setHostnameVerifier((host, session) -> true);
             if(sc != null) {
+                http.setHostnameVerifier((host, session) -> true);
                 http.setSSLSocketFactory(sc.getSocketFactory());
             }
             Secret.authenticate(http, ApplicationServer.getGlobalProperty("application.manager.user",
