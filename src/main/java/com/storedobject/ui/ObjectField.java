@@ -574,16 +574,12 @@ public class ObjectField<T extends StoredObject> extends CustomField<Id> impleme
             return (ObjectInput<O>) new BinField();
         }
         type = type(type, objectClass, any);
-        switch (type) {
-            case GET:
-                return new ObjectGetField<>(null, objectClass, any, addAllowed, getProvider);
-            case CHOICE:
-                return new ObjectComboField<>(objectClass, any, addAllowed);
-            case FORM_BLOCK:
-            case FORM:
-                return new ObjectFormField<>(objectClass, type);
-        }
-        return new ObjectSearchField<>(objectClass, any, addAllowed);
+        return switch(type) {
+            case GET -> new ObjectGetField<>(null, objectClass, any, addAllowed, getProvider);
+            case CHOICE -> new ObjectComboField<>(objectClass, any, addAllowed);
+            case FORM_BLOCK, FORM -> new ObjectFormField<>(objectClass, type);
+            default -> new ObjectSearchField<>(objectClass, any, addAllowed);
+        };
     }
 
     /**

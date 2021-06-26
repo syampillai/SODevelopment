@@ -18,7 +18,8 @@ import java.util.function.Consumer;
  * @param <T> Type of input.
  * @author Syam
  */
-public interface AbstractObjectInput<T extends StoredObject> extends ObjectProvider<T>, ObjectSetter<T>, ObjectGetter<T>, HasElement, FilterMethods<T> {
+public interface AbstractObjectInput<T extends StoredObject>
+        extends ObjectProvider<T>, ObjectSetter<T>, ObjectGetter<T>, HasElement, FilterMethods<T> {
 
     /**
      * Class of the object supported in this input field.

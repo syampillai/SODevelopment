@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.function.Consumer;
 
 /**
- * Field to accept an instance of the {@link InventoryItem}.
+ * Field to accept an instance of the {@link InventoryItem} with provision to input part number.
  *
  * @param <I> Type of inventory item to accept.
  * @author Syam
