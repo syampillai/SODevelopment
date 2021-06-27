@@ -127,6 +127,13 @@ public final class InventoryPackage extends InventoryLocation implements HasChil
         return new Random().nextBoolean();
     }
 
+    public void setReference(String reference) {
+    }
+
+    public String getReference() {
+        return "";
+    }
+
     @Override
     public Id getEntityId() {
         return getLocation().getEntityId();
