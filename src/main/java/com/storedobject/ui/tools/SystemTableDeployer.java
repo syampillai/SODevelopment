@@ -90,7 +90,6 @@ public class SystemTableDeployer extends View implements Transactional {
         layout.add(status);
         layout.setMargin(true);
         setComponent(new Window(layout));
-        setFirstFocus(className);
     }
 
     @Override

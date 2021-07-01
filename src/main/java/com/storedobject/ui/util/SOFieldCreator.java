@@ -34,6 +34,8 @@ public class SOFieldCreator<T> implements ObjectFieldCreator<T> {
     private ArrayList<StoredObjectUtility.Link<?>> links;
     private ArrayList<ContactType> contactTypes;
     private ContactData contactData;
+    private boolean extraInfoLoaded = false;
+    private ExtraInfo<?> extraInfo;
     private ArrayList<AttachmentDefinition> attachmentDefinitions;
     private StreamAttachmentData attachmentData;
 
@@ -140,6 +142,25 @@ public class SOFieldCreator<T> implements ObjectFieldCreator<T> {
         return contactTypes;
     }
 
+    private ExtraInfo<?> extraInfo() {
+        if(extraInfoLoaded) {
+            return extraInfo;
+        }
+        extraInfoLoaded = true;
+        extraInfo = null;
+        if(ca == null || form == null) {
+            return null;
+        }
+        /*
+        ExtraInfoDefinition def = StoredObject.get(ExtraInfoDefinition.class, "ClassName='"
+                + ca.getObjectClass().getName() + "'");
+        if(def != null) {
+            extraInfo = new ExtraInfo<>(def);
+        }
+        */
+        return extraInfo;
+    }
+
     @Override
     public Stream<String> getFieldNames() {
         if(ca != null && form != null) {
@@ -155,7 +176,15 @@ public class SOFieldCreator<T> implements ObjectFieldCreator<T> {
             if(!contactTypes.isEmpty()) {
                 names = Stream.concat(names, listCTs().stream().map(ct -> ct.getName() + ".c"));
             }
-            Optional<StoredObjectUtility.Link<?>> child = links.stream().filter(link -> link.getType() == 0 && link.getObjectClass() == ca.getObjectClass()).findAny();
+            if(extraInfo() != null) {
+                if(protectedColumns.contains(extraInfo.getName() + ".e")) {
+                    extraInfo = null;
+                } else {
+                    names = Stream.concat(names, Stream.of(extraInfo.getName() + ".e"));
+                }
+            }
+            Optional<StoredObjectUtility.Link<?>> child = links.stream().filter(link -> link.getType() == 0 &&
+                    link.getObjectClass() == ca.getObjectClass()).findAny();
             if(child.isPresent()) {
                 names = Stream.concat(names, Stream.of(".p"));
             }
@@ -188,6 +217,11 @@ public class SOFieldCreator<T> implements ObjectFieldCreator<T> {
             ContactType ct = ct(fieldName);
             if(ct != null) {
                 return (Integer.MAX_VALUE - 1000) + ct.getDisplayOrder();
+            }
+        }
+        if(fieldName.endsWith(".e")) {
+            if(extraInfo != null) {
+                return (Integer.MAX_VALUE - 1000) + extraInfo.getDisplayOrder();
             }
         }
         if(fieldName.endsWith(".a")) {
@@ -260,6 +294,17 @@ public class SOFieldCreator<T> implements ObjectFieldCreator<T> {
                 return o -> createAD((StoredObject) o).getAttachment(fieldName);
             }
         }
+        if(ca != null && fieldName.endsWith(".e") && extraInfo != null) {
+            ObjectEditor<?> oe = oe();
+            if(oe == null) {
+                return null;
+            }
+            oe.setExtraInfo(extraInfo);
+            return o -> {
+                extraInfo.setMaster((StoredObject) o);
+                return extraInfo;
+            };
+        }
         if(ca != null && fieldName.endsWith(".c")) {
             ContactType ct = ct(fieldName);
             ObjectEditor<?> oe = oe();
@@ -312,6 +357,9 @@ public class SOFieldCreator<T> implements ObjectFieldCreator<T> {
             return (o, v) -> {
             };
         }
+        if(ca != null && fieldName.endsWith(".e")) {
+            return (o, v) -> extraInfo.setMaster((StoredObject) o);
+        }
         if(ca != null && fieldName.endsWith(".c")) {
             return (o, v) -> {
                 createCD((StoredObject) o);
@@ -355,6 +403,9 @@ public class SOFieldCreator<T> implements ObjectFieldCreator<T> {
                 String label = ad.getCaption();
                 return label.isEmpty() ? fieldName.substring(0, fieldName.length() - 2) : label;
             }
+        }
+        if(fieldName.endsWith(".e") && extraInfo != null) {
+            return null;
         }
         if(fieldName.endsWith(".c")) {
             ContactType ct = ct(fieldName);
@@ -417,6 +468,9 @@ public class SOFieldCreator<T> implements ObjectFieldCreator<T> {
                     attachmentDefinitions.remove(ad);
                     return new AttachmentField(label, createAD(null).addAttachment(ad));
                 }
+            }
+            if(fieldName.endsWith(".e") && extraInfo != null) {
+                return new ExtraInfoField<>(extraInfo);
             }
             if(fieldName.endsWith(".c")) {
                 ContactType ct = ct(fieldName);

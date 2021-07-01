@@ -10,6 +10,7 @@ import com.storedobject.core.StoredObject;
 import com.storedobject.vaadin.*;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Focusable;
+import com.vaadin.flow.component.HasValue;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.datetimepicker.DateTimePicker;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -26,18 +27,21 @@ public class Test implements Executable {
 
     @Override
     public void execute() {
+        /*
         VerifyOTP v = new VerifyOTP(true, "+971508421301", "okay@oka.com",
                 () -> Application.warning("One"),
                 () -> Application.warning("Two"),
                 () -> Application.warning("Three")
                 );
         v.execute();
+        */
         //new TestChart().execute();
         //new TestTemplate().execute();
-        //new TestFields().execute();
+        new TestFields().execute();
         //new TestAlert().execute();
         //new UploadTest().execute();
         //new TFTest().execute();
+        //new TTest().execute();
     }
 
     public static class TestFields extends DataForm {
@@ -45,9 +49,12 @@ public class Test implements Executable {
         private final DateField df;
         private final TimestampField tf;
         private final DateTimePicker tp = new DateTimePicker("V Time");
+        private BooleanRadioField brf;
 
         public TestFields() {
             super("Test", false);
+            addField(brf = new BooleanRadioField("Hello", null));
+            //setRequired(brf);
             String caption = getApplication().getQueryParameter("caption");
             setCaption(caption != null && !caption.isEmpty() ? caption : "NO PARAM");
             PhoneField phoneField = new PhoneField("Phone");
@@ -91,7 +98,7 @@ public class Test implements Executable {
             df.setValue(d);
 
              */
-            System.err.println(tp.getValue());
+            System.err.println(brf.getValue());
             return false;
         }
     }
@@ -179,46 +186,17 @@ public class Test implements Executable {
         }
     }
 
-    private static Timestamp xxx() {
-        try {
-            Class<? extends StoredObject> c = (Class<? extends StoredObject>) JavaClassLoader.getLogic("com.icondisrupt.maritime.ssl.PO");
-            StoredObject so = c.getDeclaredConstructor().newInstance();
-            Method m = c.getMethod("getReceivedAt");
-            return (Timestamp) m.invoke(so);
-        } catch(Exception e) {
-            e.printStackTrace();
+    protected static abstract class TT extends ObjectEditor<Person> {
+
+        public TT() {
+            super(Person.class);
         }
-        return null;
     }
 
-    public static class TFTest extends View implements CloseableView {
+    public static class TTest extends TT {
 
-        private final DateTimePicker dtp = new DateTimePicker("Test Date/Time");
-        private final TimestampField tsf = new TimestampField("Timestamp");
-
-        public TFTest() {
-            super("Test Date-Time Field");
-            VerticalLayout v = new VerticalLayout();
-            v.add(dtp);
-            HorizontalLayout h = new HorizontalLayout();
-            h.add(new com.vaadin.flow.component.button.Button("Set Current Time",
-                    e -> dtp.setValue(LocalDateTime.now())));
-            h.add(new com.vaadin.flow.component.button.Button("Set NULL", e -> dtp.setValue(null)));
-            h.add(new Button("Set 23-01-1998 8:30AM",
-                    e -> dtp.setValue(LocalDateTime.of(1998, 1, 23, 8, 30))));
-            v.add(h);
-
-            v.add(tsf);
-            h = new HorizontalLayout();
-            h.add(new com.vaadin.flow.component.button.Button("Set Current Time",
-                    e -> tsf.setValue(DateUtility.now())));
-            h.add(new com.vaadin.flow.component.button.Button("Set NULL", e -> tsf.setValue(null)));
-            h.add(new Button("Set 23-01-1998 8:30AM",
-                    e -> tsf.setValue(DateUtility.createTimestamp(
-                            LocalDateTime.of(1998, 1, 23, 8, 30)))));
-            h.add(new Button("Value", e -> System.err.println("Value: " + tsf.getValue())));
-            v.add(h);
-            setComponent(v);
+        public TTest() {
+            super();
         }
     }
 }

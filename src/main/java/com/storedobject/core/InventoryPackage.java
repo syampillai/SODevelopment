@@ -20,23 +20,23 @@ public final class InventoryPackage extends InventoryLocation implements HasChil
         return "";
     }
 
-    public void setPackageType(int packageType) {
+    public void setPackageType(Id packageTypeId) {
     }
 
-    public int getPackageType() {
-        return new Random().nextInt();
+    public void setPackageType(BigDecimal idValue) {
+        setPackageType(new Id(idValue));
     }
 
-    public static String[] getPackageTypeValues() {
-        return new String[] {};
+    public void setPackageType(InventoryPackageType packageType) {
+        setPackageType(packageType == null ? null : packageType.getId());
     }
 
-    public static String getPackageTypeValue(int value) {
-        return "";
+    public Id getPackageTypeId() {
+        return new Id();
     }
 
-    public String getPackageTypeValue() {
-        return getPackageTypeValue(0);
+    public InventoryPackageType getPackageType() {
+        return new InventoryPackageType();
     }
 
     public void setLength(Distance length) {

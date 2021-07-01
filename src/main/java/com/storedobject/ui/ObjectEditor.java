@@ -24,6 +24,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -101,6 +102,7 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
     private final TreeSet<String> setNotAllowed = new TreeSet<>();
     private final List<ObjectLinkField<?>> linkFields = new ArrayList<>();
     private StreamAttachmentData streamAttachmentData;
+    private ExtraInfo<?> extraInfo;
     private ContactData contactData;
     private boolean doNotSave = false, allowDoNotSave = true;
     private String allowedActions;
@@ -112,7 +114,7 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
     private Transaction tran;
     private TransactionCreator tranCreator;
     private List<String> fieldPositions;
-    private ObjectFormField<T> formField;
+    private ObjectInput<T> formField;
     private Logic logic;
     Grid<T> grid;
     private String savedInstance;
@@ -295,6 +297,20 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
             anchorForm = null;
         }
         setLinkTabColumns(getColumns());
+    }
+
+    /**
+     * Create an editor for the purpose of embedding an object field.
+     *
+     * @param formField Field to embed.
+     *
+     * @param <O> Type of object.
+     * @return Editor.
+     */
+    public static <O extends StoredObject> ObjectEditor<O> create(ObjectInput<O> formField) {
+        ObjectEditor<O> oe = ObjectEditor.create(formField.getObjectClass());
+        oe.formField = formField;
+        return oe;
     }
 
     @Override
@@ -885,7 +901,7 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
      */
     public boolean isEditing() {
         if(formField != null) {
-            return !formField.isReadOnly();
+            return !((HasValue<?, ?>)formField).isReadOnly();
         }
         //return save != null && buttonPanel == save.getParent().orElse(null);
         return editing;
@@ -921,6 +937,9 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
         }
         if(streamAttachmentData != null) {
             streamAttachmentData.copy().attach();
+        }
+        if(extraInfo != null) {
+            extraInfo.copy().attach();
         }
         if(contactData != null && contactData.ownedByMaster()) {
             contactData.copy().attach();
@@ -1017,6 +1036,9 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
         object.save(t);
         if(parentObject != null) {
             parentObject.addLink(t, object, parentLinkType);
+        }
+        if(extraInfo != null) {
+            extraInfo.save(t);
         }
         if(contactData != null && !contactData.ownedByMaster()) {
             contactData.save(t);
@@ -1970,8 +1992,8 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
         return linkFields.stream().filter(lf -> lf.getFieldName().equals(fn)).findAny().orElse(null);
     }
 
-    List<ObjectLinkField<?>> linkFields() {
-        return linkFields;
+    public List<ObjectLinkField<?>> linkFields() {
+        return Collections.unmodifiableList(linkFields);
     }
 
     /**
@@ -2017,6 +2039,17 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
     }
 
     /**
+     * Get the extra info field if exists.
+     *
+     * @return Field if found, otherwise null.
+     */
+    public HasValue<?, StoredObjectLink<?>> getExtraInfoField() {
+        //noinspection unchecked
+        return extraInfo == null ? null :
+                (HasValue<?, StoredObjectLink<?>>) getField(extraInfo.getName() + ".e");
+    }
+
+    /**
      * For internal use only. Set the contact data.
      *
      * @param contactData Contact data to be set.
@@ -2024,6 +2057,17 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
     public void setContactData(ContactData contactData) {
         if(this.contactData == null) {
             this.contactData = contactData;
+        }
+    }
+
+    /**
+     * For internal use only. Set extra info.
+     *
+     * @param extraInfo Extra info to be set.
+     */
+    public void setExtraInfo(ExtraInfo<?> extraInfo) {
+        if(this.extraInfo == null) {
+            this.extraInfo = extraInfo;
         }
     }
 
