@@ -55,7 +55,7 @@ public class SOEnvironment implements ApplicationEnvironment {
 
     @Override
     public String createLabel(String attributeName) {
-        if(attributeName.endsWith(".l")) {
+        if(attributeName.endsWith(".l") || attributeName.endsWith(".e")) {
             attributeName = attributeName.substring(0, attributeName.length() - 2);
         }
         return StringUtility.makeLabel(attributeName);

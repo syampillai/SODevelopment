@@ -4,6 +4,8 @@ import com.storedobject.core.Transaction;
 
 /**
  * A class that can create a transaction (typically a pseudo transaction).
+ *
+ * @author Syam
  */
 public interface TransactionCreator {
 

@@ -2,20 +2,25 @@ package com.storedobject.ui.util;
 
 import com.storedobject.common.FilterProvider;
 import com.storedobject.core.*;
+import com.storedobject.ui.Application;
 import com.storedobject.ui.ObjectEditor;
 import com.storedobject.ui.ObjectInput;
 import com.storedobject.ui.ObjectLinkField;
+import com.storedobject.vaadin.ValueRequired;
 import com.storedobject.vaadin.View;
 import com.storedobject.vaadin.ViewDependent;
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.HasText;
+import com.vaadin.flow.component.HasValidation;
 import com.vaadin.flow.component.customfield.CustomField;
+import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.shared.Registration;
 
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 class ExtraInfoObjectField<T extends StoredObject> extends CustomField<T>
-        implements ObjectInput<T>, ViewDependent, NoDisplayField {
+        implements ObjectInput<T>, ViewDependent, NoDisplayField, HasValidation, ValueRequired {
 
     final private ExtraInfo<T> extraInfo;
     private final ObjectEditor<T> formEditor;
@@ -27,12 +32,23 @@ class ExtraInfoObjectField<T extends StoredObject> extends CustomField<T>
     private boolean displayCreated = false;
     private Registration masterOpened, masterClosed;
     private boolean fresh = true;
+    private boolean required = false;
+    private String errorText = null;
 
     ExtraInfoObjectField(ExtraInfo<T> extraInfo) {
         this.extraInfo = extraInfo;
         this.formEditor = ObjectEditor.create(this);
         this.formEditor.setSaver(oe -> true);
-        setValue((T) null);
+    }
+
+    @Override
+    public void setRequired(boolean required) {
+        this.required = required;
+    }
+
+    @Override
+    public boolean isRequired() {
+        return required;
     }
 
     @Override
@@ -84,7 +100,11 @@ class ExtraInfoObjectField<T extends StoredObject> extends CustomField<T>
 
     @Override
     public boolean isInvalid() {
-        return getObjectId() == null;
+        Id id = getObjectId();
+        if(errorText != null && !errorText.isEmpty()) {
+            return true;
+        }
+        return required && id == null;
     }
 
     @Override
@@ -116,18 +136,24 @@ class ExtraInfoObjectField<T extends StoredObject> extends CustomField<T>
             newId = t == null || !t.isActive();
         }
         if(newId) {
-            if(formEditor.commit() && masterView != null) {
-                try {
-                    object.clearObjectLinks();
-                    for(ObjectLinkField<?> linkField : formEditor.linkFields()) {
-                        linkField.getValue().copy().attach();
+            errorText = null;
+            if(masterView == null) {
+                errorText = "Unknown state";
+            } else {
+                if(formEditor.commit()) {
+                    try {
+                        object.clearObjectLinks();
+                        for(ObjectLinkField<?> linkField : formEditor.linkFields()) {
+                            linkField.getValue().copy().attach();
+                        }
+                        formEditor.validateData();
+                        object.validateData(masterView.getTransactionManager());
+                        objectId = object.save(masterView.getTransaction(true));
+                        formEditor.setObject(object, true);
+                    } catch(Throwable error) {
+                        errorText = Application.get().getEnvironment().toDisplay(error);
+                        masterView.error(error);
                     }
-                    formEditor.validateData();
-                    object.validateData(masterView.getTransactionManager());
-                    objectId = object.save(masterView.getTransaction(true));
-                    formEditor.setObject(object, true);
-                } catch(Throwable error) {
-                    masterView.warning(error);
                 }
             }
         }
@@ -293,8 +319,8 @@ class ExtraInfoObjectField<T extends StoredObject> extends CustomField<T>
             masterClosed.remove();
         }
         this.masterView = (ObjectEditor<?>) masterView;
-        formEditor.setErrorDisplay(this.masterView.getErrorDisplay());
-            formEditor.setFieldContainerProvider(this.masterView);
+        formEditor.setErrorDisplay(new ErrorCapture());
+        formEditor.setFieldContainerProvider(this.masterView);
         attach();
         formEditor.setTransactionCreator(this.masterView);
         masterOpened = this.masterView.addOpenedListener(v -> fresh = true);
@@ -316,5 +342,30 @@ class ExtraInfoObjectField<T extends StoredObject> extends CustomField<T>
 
     @Override
     public void focus() {
+    }
+
+    private class ErrorCapture implements HasText {
+
+        @Override
+        public Element getElement() {
+            return null;
+        }
+
+        @Override
+        public void setText(String text) {
+            if(text == null || text.isEmpty()) {
+                errorText = null;
+                return;
+            }
+            errorText = text;
+            if(masterView != null) {
+                masterView.warning(errorText);
+            }
+        }
+
+        @Override
+        public String getText() {
+            return errorText;
+        }
     }
 }

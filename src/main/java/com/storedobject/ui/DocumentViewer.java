@@ -54,7 +54,7 @@ public class DocumentViewer extends PDFViewer {
     private class Content extends ContentGenerator {
 
         protected Content(ContentProducer producer) {
-            super(Application.get(), producer, null, null);
+            super(Application.get(), producer, null, null, null);
             setViewer(DocumentViewer.this);
         }
 

@@ -26,18 +26,14 @@ public class ContentGenerator extends AbstractContentGenerator {
     private String caption;
     private PDFViewer viewer;
 
-    public ContentGenerator(Application application, ContentProducer producer) {
-        this(application, producer, true, null, null);
-    }
-
     public ContentGenerator(Application application, ContentProducer producer, String caption,
-                            Consumer<AbstractContentGenerator> inform) {
-        this(application, producer, false, caption, inform);
+                            Consumer<AbstractContentGenerator> inform, Consumer<Long> timeTracker) {
+        this(application, producer, false, caption, inform, timeTracker);
     }
 
     private ContentGenerator(Application application, ContentProducer producer, boolean download, String caption,
-                             Consumer<AbstractContentGenerator>  inform) {
-        super(application, producer, inform);
+                             Consumer<AbstractContentGenerator>  inform, Consumer<Long> timeTracker) {
+        super(application, producer, inform, timeTracker);
         this.download = download;
         this.caption = caption;
         fileId = sequencerFileId.next();

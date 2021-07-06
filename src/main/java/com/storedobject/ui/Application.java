@@ -30,7 +30,7 @@ import java.util.function.Consumer;
 
 public class Application extends com.storedobject.vaadin.Application implements Device, RunningLogic, RequiresApproval {
 
-    private static final String VERSION = "20.0.3";
+    private static final String VERSION = "20.0.4";
     private static final String COMPACT_STYLES =
             """
                     --lumo-size-xl: 3rem;
@@ -623,22 +623,22 @@ public class Application extends com.storedobject.vaadin.Application implements 
         v.view(caption, object);
     }
 
-    private record CP(String caption, ContentProducer producer) {
+    private record CP(String caption, ContentProducer producer, Consumer<Long> timeTracker) {
     }
 
     private final List<CP> contentProducers = new ArrayList<>();
 
     @Override
-    public void view(String caption, ContentProducer producer) {
+    public void view(String caption, ContentProducer producer, Consumer<Long> timeTracker) {
         synchronized(contentProducers) {
-            CP cp = new CP(caption, producer);
+            CP cp = new CP(caption, producer, timeTracker);
             contentProducers.add(cp);
             if(contentProducers.size() > 1) {
                 startPolling(contentProducers);
                 return;
             }
         }
-        new ContentGenerator(this, producer, caption, this::remove).kick();
+        new ContentGenerator(this, producer, caption, this::remove, timeTracker).kick();
     }
 
     private void remove(AbstractContentGenerator acg) {
@@ -646,22 +646,22 @@ public class Application extends com.storedobject.vaadin.Application implements 
             synchronized(contentProducers) {
                 contentProducers.removeIf(cp -> cp.producer == cg.getProducer());
                 if(contentProducers.isEmpty()) {
-                    startPolling(contentProducers);
+                    stopPolling(contentProducers);
                 } else {
                     CP cp = contentProducers.get(0);
-                    new ContentGenerator(this, cp.producer, cp.caption, this::remove).kick();
+                    new ContentGenerator(this, cp.producer, cp.caption, this::remove, cp.timeTracker).kick();
                 }
             }
         }
     }
 
     @Override
-    public void download(ContentProducer producer) {
-        new ContentGenerator(this, producer).kick();
+    public void download(ContentProducer producer, Consumer<Long> informMe) {
+        new ContentGenerator(this, producer, null, this::remove, informMe).kick();
     }
 
     public String addResource(ContentProducer producer) {
-        MultiContentGenerator mcg = new MultiContentGenerator(this, producer);
+        MultiContentGenerator mcg = new MultiContentGenerator(this, producer, this::remove, null);
         return "so" + mcg.getId() + "." + producer.getFileExtension();
     }
 

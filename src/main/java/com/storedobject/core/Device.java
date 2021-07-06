@@ -2,6 +2,7 @@ package com.storedobject.core;
 
 import java.sql.Date;
 import java.util.Locale;
+import java.util.function.Consumer;
 
 public interface Device {
 
@@ -33,11 +34,19 @@ public interface Device {
         view(fileData.getName(), fileData.getFile());
     }
 
-    void view(String caption, ContentProducer producer);
+    default void view(String caption, ContentProducer producer) {
+        view(caption, producer, null);
+    }
 
     default void view(ContentProducer producer) {
         view(null, producer);
     }
+
+    default void view(ContentProducer producer, Consumer<Long> informMe) {
+        view(null, producer, informMe);
+    }
+
+    void view(String caption, ContentProducer producer, Consumer<Long> informMe);
 
     default void download(StreamData streamData) {
         download(null, streamData);
@@ -48,7 +57,11 @@ public interface Device {
     }
 
     default void download(ContentProducer producer) {
-        view(producer);
+        download(producer, null);
+    }
+
+    default void download(ContentProducer producer, Consumer<Long> informMe) {
+        view(producer, informMe);
     }
 
     default void alert(LoginMessage message) {

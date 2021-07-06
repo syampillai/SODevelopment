@@ -5,14 +5,16 @@ import com.storedobject.core.*;
 import com.storedobject.ui.util.NoDisplayField;
 import com.storedobject.vaadin.*;
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.HasText;
 import com.vaadin.flow.component.customfield.CustomField;
+import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.shared.Registration;
 
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 public class ObjectFormField<T extends StoredObject> extends CustomField<T>
-        implements ObjectInput<T>, ViewDependent, NoDisplayField {
+        implements ObjectInput<T>, ViewDependent, NoDisplayField, ValueRequired {
 
     private static final HasContainer DUMMY = () -> null;
     private final ObjectEditor<T> formEditor;
@@ -25,6 +27,8 @@ public class ObjectFormField<T extends StoredObject> extends CustomField<T>
     private boolean displayCreated = false;
     private Registration masterOpened, masterClosed;
     private boolean fresh = true;
+    private boolean required = false;
+    private String errorText = null;
 
     public ObjectFormField(Class<T> objectClass) {
         this(null, objectClass);
@@ -91,6 +95,16 @@ public class ObjectFormField<T extends StoredObject> extends CustomField<T>
     }
 
     @Override
+    public void setRequired(boolean required) {
+        this.required = required;
+    }
+
+    @Override
+    public boolean isRequired() {
+        return required;
+    }
+
+    @Override
     public boolean canDisplay() {
         return formType() == ObjectField.Type.FORM_BLOCK;
     }
@@ -143,7 +157,11 @@ public class ObjectFormField<T extends StoredObject> extends CustomField<T>
 
     @Override
     public boolean isInvalid() {
-        return getObjectId() == null;
+        Id id = getObjectId();
+        if(errorText != null && !errorText.isEmpty()) {
+            return true;
+        }
+        return required && id == null;
     }
 
     @Override
@@ -175,7 +193,9 @@ public class ObjectFormField<T extends StoredObject> extends CustomField<T>
             newId = t == null || !t.isActive();
         }
         if(newId) {
-            if(formEditor.commit() && masterView != null) {
+            if(masterView == null) {
+                errorText = "Unknown state";
+            } else if(formEditor.commit()) {
                 try {
                     object.clearObjectLinks();
                     for(ObjectLinkField<?> linkField: formEditor.linkFields()) {
@@ -186,7 +206,8 @@ public class ObjectFormField<T extends StoredObject> extends CustomField<T>
                     objectId = object.save(masterView.getTransaction(true));
                     formEditor.setObject(object, true);
                 } catch (Throwable error) {
-                    masterView.warning(error);
+                    errorText = Application.get().getEnvironment().toDisplay(error);
+                    masterView.error(error);
                 }
             }
         }
@@ -357,7 +378,7 @@ public class ObjectFormField<T extends StoredObject> extends CustomField<T>
             masterClosed.remove();
         }
         this.masterView = (ObjectEditor<?>)masterView;
-        formEditor.setErrorDisplay(this.masterView.getErrorDisplay());
+        formEditor.setErrorDisplay(new ErrorCapture());
         if(mergeTo == DUMMY) {
             formEditor.setFieldContainerProvider(this.masterView);
         }
@@ -386,5 +407,30 @@ public class ObjectFormField<T extends StoredObject> extends CustomField<T>
 
     @Override
     public void focus() {
+    }
+
+    private class ErrorCapture implements HasText {
+
+        @Override
+        public Element getElement() {
+            return null;
+        }
+
+        @Override
+        public void setText(String text) {
+            if(text == null || text.isEmpty()) {
+                errorText = null;
+                return;
+            }
+            errorText = text;
+            if(masterView != null) {
+                masterView.warning(errorText);
+            }
+        }
+
+        @Override
+        public String getText() {
+            return errorText;
+        }
     }
 }

@@ -93,7 +93,9 @@ public abstract class PDFReport extends PDF {
 	/**
 	 * Get the "title" part of the report. By default, title part is a {@link PDFTable} created from the
 	 * configured logos (customer logo and product logo) and the "title table" part returned by
-	 * the {@link #getTitleTable()} method.
+	 * the {@link #getTitleTable()} method. However, this method is usually not overridden unless you want to
+	 * create a report that doesn't include printing of logos etc. So, if you override this method, then, the
+	 * {@link #getTitleTable()} is never used (unless you use it within your overridden method).
 	 *
 	 * @return You can return anything and that will be converted appropriately to create the title part of the
 	 * report.

@@ -151,13 +151,11 @@ public class SOFieldCreator<T> implements ObjectFieldCreator<T> {
         if(ca == null || form == null) {
             return null;
         }
-        /*
         ExtraInfoDefinition def = StoredObject.get(ExtraInfoDefinition.class, "ClassName='"
                 + ca.getObjectClass().getName() + "'");
         if(def != null) {
             extraInfo = new ExtraInfo<>(def);
         }
-        */
         return extraInfo;
     }
 
@@ -177,10 +175,10 @@ public class SOFieldCreator<T> implements ObjectFieldCreator<T> {
                 names = Stream.concat(names, listCTs().stream().map(ct -> ct.getName() + ".c"));
             }
             if(extraInfo() != null) {
-                if(protectedColumns.contains(extraInfo.getName() + ".e")) {
+                if(protectedColumns.contains(ExtraInfo.getName() + ".e")) {
                     extraInfo = null;
                 } else {
-                    names = Stream.concat(names, Stream.of(extraInfo.getName() + ".e"));
+                    names = Stream.concat(names, Stream.of(ExtraInfo.getName() + ".e"));
                 }
             }
             Optional<StoredObjectUtility.Link<?>> child = links.stream().filter(link -> link.getType() == 0 &&
@@ -302,7 +300,7 @@ public class SOFieldCreator<T> implements ObjectFieldCreator<T> {
             oe.setExtraInfo(extraInfo);
             return o -> {
                 extraInfo.setMaster((StoredObject) o);
-                return extraInfo;
+                return extraInfo.getValue();
             };
         }
         if(ca != null && fieldName.endsWith(".c")) {

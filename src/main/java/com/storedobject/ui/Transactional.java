@@ -1,10 +1,7 @@
 package com.storedobject.ui;
 
 import com.storedobject.common.Reentrant;
-import com.storedobject.core.HasLogic;
-import com.storedobject.core.Logic;
-import com.storedobject.core.TransactionControl;
-import com.storedobject.core.TransactionManager;
+import com.storedobject.core.*;
 import com.storedobject.vaadin.ExecutableView;
 
 public interface Transactional extends Reentrant, com.storedobject.vaadin.ExecutableView, HasLogic {
@@ -28,12 +25,18 @@ public interface Transactional extends Reentrant, com.storedobject.vaadin.Execut
     }
 
     default boolean transact(TransactionManager.Transact transact) {
-        return transact(null, transact);
+        return transact(null, null, transact);
     }
 
-    default boolean transact(Logic logic, TransactionManager.Transact transact) {
+    default boolean transact(Logic logic, Transaction pseudo, TransactionManager.Transact transact) {
         try {
-            int no = getTransactionManager().transact(logic, transact);
+            PseudoTransaction pt;
+            if(pseudo == null || pseudo instanceof PseudoTransaction) {
+                pt = (PseudoTransaction) pseudo;
+            } else {
+                throw new Invalid_State("Invalid transaction mix");
+            }
+            int no = getTransactionManager().transact(logic, pt, transact);
             if(no > 0) {
                 getApplication().access(() ->
                         Application.warning("Transaction: " + no + ", Approvals Required: " +

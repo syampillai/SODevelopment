@@ -939,7 +939,7 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
             streamAttachmentData.copy().attach();
         }
         if(extraInfo != null) {
-            extraInfo.copy().attach();
+            extraInfo.getValue().copy().attach();
         }
         if(contactData != null && contactData.ownedByMaster()) {
             contactData.copy().attach();
@@ -1016,7 +1016,7 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
         if(saver != null) {
             return saver.apply(this);
         }
-        return transact(logic, this::save);
+        return transact(logic, getTransaction(false), this::save);
     }
 
     /**
@@ -1038,7 +1038,7 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
             parentObject.addLink(t, object, parentLinkType);
         }
         if(extraInfo != null) {
-            extraInfo.save(t);
+            extraInfo.getValue().save(t);
         }
         if(contactData != null && !contactData.ownedByMaster()) {
             contactData.save(t);
@@ -1357,7 +1357,7 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
         if(deleter != null) {
             return deleter.apply(this);
         }
-        return transact(logic, object::delete);
+        return transact(logic, getTransaction(false), object::delete);
     }
 
     void editingStartedInternal() {
@@ -2046,7 +2046,7 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
     public HasValue<?, StoredObjectLink<?>> getExtraInfoField() {
         //noinspection unchecked
         return extraInfo == null ? null :
-                (HasValue<?, StoredObjectLink<?>>) getField(extraInfo.getName() + ".e");
+                (HasValue<?, StoredObjectLink<?>>) getField(ExtraInfo.getName() + ".e");
     }
 
     /**

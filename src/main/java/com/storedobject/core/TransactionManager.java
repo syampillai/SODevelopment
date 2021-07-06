@@ -41,10 +41,11 @@ public final class TransactionManager {
      * DB transaction or a Pseudo-transaction will be created.
      *
      * @param logic Logic
+     * @param pseudoTransaction Pseudo-transaction to be attached to this transaction.
      * @return Newly created transaction.
      * @throws Exception Any exception.
      */
-    public Transaction createTransaction(Logic logic) throws Exception {
+    public Transaction createTransaction(Logic logic, PseudoTransaction pseudoTransaction) throws Exception {
         return logic == null || logic.getApprovalCount() == 0 ? createTransaction() : createPseudoTransaction();
     }
 
@@ -98,6 +99,10 @@ public final class TransactionManager {
     @FunctionalInterface
     public interface Transact {
         void transact(Transaction transaction) throws Exception;
+    }
+
+    public int transact(Logic logic, PseudoTransaction pseudoTransaction, Transact transact) throws Exception {
+        return 0;
     }
 
     public int transact(Logic logic, Transact transact) throws Exception {

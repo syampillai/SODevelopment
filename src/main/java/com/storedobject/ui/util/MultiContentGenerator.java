@@ -5,13 +5,15 @@ import com.storedobject.core.ContentProducer;
 import com.storedobject.ui.Application;
 
 import java.io.InputStream;
+import java.util.function.Consumer;
 
 public class MultiContentGenerator extends AbstractContentGenerator {
 
     private static final Sequencer fileIdSequencer = new Sequencer();
 
-    public MultiContentGenerator(Application application, ContentProducer producer) {
-        super(application, producer, null);
+    public MultiContentGenerator(Application application, ContentProducer producer,
+                                 Consumer<AbstractContentGenerator> inform, Consumer<Long> timeTracker) {
+        super(application, producer, inform, timeTracker);
         fileId = -fileIdSequencer.next();
         producer.setTransactionManager(application.getTransactionManager());
         application.addMultiContent(fileId, this);

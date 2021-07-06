@@ -3,6 +3,7 @@ package com.storedobject.core;
 import com.storedobject.common.Range;
 
 import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 
@@ -77,5 +78,18 @@ public abstract class AbstractPeriod<T extends java.util.Date> extends Range<T> 
 	public String getDBTimeCondition(TransactionManager tm) {
 		Timestamp t1 = tm.dateGMT(com.storedobject.common.DateUtility.startTime(getFrom())), t2 = tm.dateGMT(com.storedobject.common.DateUtility.endTime(getTo()));
 		return " BETWEEN '" + Database.format(t1) + "' AND '" + Database.format(t2) + "' ";
+	}
+
+	/**
+	 * Convert to string in the given "date format". The "date format" passed must be a valid format for
+	 * creating a formatted date/date-time with {@link SimpleDateFormat}. For example, by passing "MMM dd, yyyy" will
+	 * result in a formatted output like "Jan 23, 1998 - Mar 6, 1999".
+	 *
+	 * @param format Date format.
+	 * @return Formatted output.
+	 */
+	public String toString(String format) {
+		SimpleDateFormat f = new SimpleDateFormat(format);
+		return f.format(getFrom()) + " - " + f.format(getTo());
 	}
 }

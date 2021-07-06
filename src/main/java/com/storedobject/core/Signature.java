@@ -1,6 +1,11 @@
 package com.storedobject.core;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.math.BigDecimal;
+import java.util.Base64;
 import java.util.Random;
 
 public final class Signature extends StoredObject {
@@ -30,6 +35,14 @@ public final class Signature extends StoredObject {
 
     public String getSignature() {
         return "";
+    }
+
+    public BufferedImage getImage() {
+        try {
+            return ImageIO.read(new ByteArrayInputStream(Base64.getDecoder().decode("")));
+        } catch(IOException e) {
+            return null;
+        }
     }
 
     public static Signature get(Id personId) {

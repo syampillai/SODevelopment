@@ -8,6 +8,7 @@ import java.io.File;
 import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Objects;
 import java.util.function.Consumer;
 
 public abstract class AbstractContentGenerator extends Thread {
@@ -18,12 +19,15 @@ public abstract class AbstractContentGenerator extends Thread {
     final Application application;
     private boolean generating = true;
     private final Consumer<AbstractContentGenerator> inform;
+    private final Consumer<Long> timeTracker;
+    private long startedAt = 0;
 
     protected AbstractContentGenerator(Application application, ContentProducer producer,
-                                       Consumer<AbstractContentGenerator> inform) {
+                                       Consumer<AbstractContentGenerator> inform, Consumer<Long> timeTracker) {
         this.application = application;
         this.producer = producer;
         this.inform = inform;
+        this.timeTracker = timeTracker;
     }
 
     @Override
@@ -61,12 +65,13 @@ public abstract class AbstractContentGenerator extends Thread {
             return file;
         } catch (Exception e) {
             application.log(e);
-            Application.warning(e);
+            application.showNotification(e);
         }
         return null;
     }
 
     public InputStream getContentStream() {
+        startedAt = System.currentTimeMillis();
         try {
             int time = 100;
             InputStream in;
@@ -81,7 +86,7 @@ public abstract class AbstractContentGenerator extends Thread {
             return new IS(in);
         } catch (Exception e) {
             application.log(e);
-            Application.warning(e);
+            application.showNotification(e);
             generated();
         }
         return null;
@@ -112,9 +117,25 @@ public abstract class AbstractContentGenerator extends Thread {
         if(inform != null) {
             application.access(() -> inform.accept(this));
         }
+        if(timeTracker != null) {
+            timeTracker.accept(System.currentTimeMillis() - startedAt);
+        }
     }
 
     public ContentProducer getProducer() {
         return producer;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if(this == o) return true;
+        if(o == null || getClass() != o.getClass()) return false;
+        AbstractContentGenerator that = (AbstractContentGenerator) o;
+        return fileId == that.fileId;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(fileId);
     }
 }

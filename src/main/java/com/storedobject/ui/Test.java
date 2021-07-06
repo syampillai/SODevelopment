@@ -2,11 +2,11 @@ package com.storedobject.ui;
 
 import com.storedobject.chart.*;
 import com.storedobject.common.Executable;
+import com.storedobject.common.IO;
 import com.storedobject.common.JSON;
-import com.storedobject.core.DateUtility;
-import com.storedobject.core.JavaClassLoader;
-import com.storedobject.core.Person;
-import com.storedobject.core.StoredObject;
+import com.storedobject.core.*;
+import com.storedobject.pdf.PDFCell;
+import com.storedobject.pdf.PDFReport;
 import com.storedobject.vaadin.*;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Focusable;
@@ -17,10 +17,16 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.template.Id;
 
+import javax.imageio.ImageIO;
+import java.awt.image.RenderedImage;
+import java.io.*;
 import java.lang.reflect.Method;
 import java.sql.Date;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
+import java.util.Base64;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Random;
 
 public class Test implements Executable {
@@ -37,11 +43,11 @@ public class Test implements Executable {
         */
         //new TestChart().execute();
         //new TestTemplate().execute();
-        new TestFields().execute();
+        //new TestFields().execute();
         //new TestAlert().execute();
         //new UploadTest().execute();
         //new TFTest().execute();
-        //new TTest().execute();
+        new TTest(Application.get()).execute();
     }
 
     public static class TestFields extends DataForm {
@@ -186,17 +192,23 @@ public class Test implements Executable {
         }
     }
 
-    protected static abstract class TT extends ObjectEditor<Person> {
+    public static class TTest extends PDFReport {
 
-        public TT() {
-            super(Person.class);
+        public TTest(Application application) {
+            super(application);
         }
-    }
 
-    public static class TTest extends TT {
-
-        public TTest() {
-            super();
+        @Override
+        public void generateContent() throws Exception {
+            ObjectTable<Person> persons = new ObjectTable<>(Person.class);
+            for(Person person: StoredObject.list(Person.class)) {
+                persons.addObject(person);
+            }
+            add(persons);
+            PDFCell cell = createCell(Signature.get(((Application)getDevice()).getTransactionManager().getUser()));
+            cell.setFixedHeight(50);
+            cell.setBorder(0);
+            add(cell);
         }
     }
 }
