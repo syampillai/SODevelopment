@@ -32,7 +32,7 @@ public final class Rate extends DecimalNumber {
 	}
 	
 	public static Rate create(Object value, int decimals) {
-		return null;
+		return new Rate();
     }
 	
 	public void checkLimit(String name, int width) throws Invalid_Value {
@@ -43,10 +43,10 @@ public final class Rate extends DecimalNumber {
 	}
 	
 	public Rate average(BigDecimal another) {
-		return null;
+		return new Rate();
 	}
 	
 	public Rate average(Rate second) {
-		return null;
+		return new Rate();
 	}
 }

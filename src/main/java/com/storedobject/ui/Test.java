@@ -43,11 +43,11 @@ public class Test implements Executable {
         */
         //new TestChart().execute();
         //new TestTemplate().execute();
-        //new TestFields().execute();
+        new TestFields().execute();
         //new TestAlert().execute();
         //new UploadTest().execute();
         //new TFTest().execute();
-        new TTest(Application.get()).execute();
+        //new TTest(Application.get()).execute();
     }
 
     public static class TestFields extends DataForm {
@@ -56,9 +56,13 @@ public class Test implements Executable {
         private final TimestampField tf;
         private final DateTimePicker tp = new DateTimePicker("V Time");
         private BooleanRadioField brf;
+        private final ChoiceField cf = new ChoiceField("Choose", new String[] { "One", "Two", "Three" });
 
         public TestFields() {
             super("Test", false);
+            cf.setPlaceholder("Hello");
+            addField(cf);
+            cf.setValue(null);
             addField(brf = new BooleanRadioField("Hello", null));
             //setRequired(brf);
             String caption = getApplication().getQueryParameter("caption");
@@ -70,7 +74,7 @@ public class Test implements Executable {
             //df.setValue(null);
             addField(tf = new TimestampField("Timestamp"));
             //tf.setValue(xxx());
-            setRequired(tf);
+            //setRequired(tf);
             addField(tp);
             QuantityField f1 = new QuantityField("Quantity");
             f1.addValueChangeListener(e -> message(e.getValue()));
@@ -104,7 +108,7 @@ public class Test implements Executable {
             df.setValue(d);
 
              */
-            System.err.println(brf.getValue());
+            System.err.println(cf.getValue() + " " + cf.getEmptyValue());
             return false;
         }
     }

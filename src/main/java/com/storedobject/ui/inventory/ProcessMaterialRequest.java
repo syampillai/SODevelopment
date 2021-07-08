@@ -506,7 +506,7 @@ public class ProcessMaterialRequest extends AbstractRequestMaterial {
         }
 
         private void issue() {
-            if(mi.listLinks(MaterialIssuedItem.class).stream().noneMatch(mii -> mii.getQuantity().isPositive())) {
+            if(mi.listLinks(MaterialIssuedItem.class).noneMatch(mii -> mii.getQuantity().isPositive())) {
                 message("Nothing to issue!");
                 return;
             }

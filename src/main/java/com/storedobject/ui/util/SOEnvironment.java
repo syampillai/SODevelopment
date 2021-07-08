@@ -4,9 +4,11 @@ import com.storedobject.common.EndUserMessage;
 import com.storedobject.core.ApplicationServer;
 import com.storedobject.core.Money;
 import com.storedobject.core.StringUtility;
+import com.storedobject.core.Utility;
 import com.storedobject.ui.Application;
 import com.storedobject.vaadin.*;
 
+import java.sql.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -49,6 +51,9 @@ public class SOEnvironment implements ApplicationEnvironment {
             if(a != null) {
                 return m.toString(a.getTransactionManager().getUser());
             }
+        }
+        if(message instanceof Date d && Utility.isEmpty(d)) {
+            message = null;
         }
         return StringUtility.toString(message);
     }

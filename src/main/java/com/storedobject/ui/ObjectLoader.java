@@ -50,7 +50,9 @@ public interface ObjectLoader<T extends StoredObject> {
     void load(int linkType, StoredObject master, String condition, String orderBy);
 
     default void load(ObjectIterator<T> objects) {
-        load(objects.stream());
+        Stream<T> stream = objects.stream();
+        load(stream);
+        stream.close();
     }
 
     void load(Stream<T> objects);

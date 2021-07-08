@@ -130,11 +130,12 @@ public class ObjectTree<T extends StoredObject> extends DataTreeGrid<T> implemen
         }
         Stream<T> objects;
         if(filter) {
-            objects = oi.stream().filter(o -> dataProvider.getTreeBuilder().getParent(o) == null);
+            objects = oi.filter(o -> dataProvider.getTreeBuilder().getParent(o) == null).stream();
         } else {
             objects = oi.stream();
         }
         setDataProvider(new ObjectTreeListProvider<>(objects, dataProvider.getTreeBuilder()));
+        objects.close();
         refresh();
     }
 

@@ -1,5 +1,6 @@
 package com.storedobject.ui.util;
 
+import com.storedobject.common.ArrayListSet;
 import com.storedobject.common.Geolocation;
 import com.storedobject.common.JSON;
 import com.storedobject.common.StringList;
@@ -15,10 +16,7 @@ import com.vaadin.flow.component.HasValue;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.stream.Stream;
@@ -120,7 +118,8 @@ public class SOFieldCreator<T> implements ObjectFieldCreator<T> {
             return attachmentDefinitions;
         }
         StoredObject.list(AttachmentDefinition.class,
-                "lower(ClassName)='" + ca.getObjectClass().getName().toLowerCase() + "'", "DisplayOrder").collectAll(attachmentDefinitions);
+                "lower(ClassName)='" + ca.getObjectClass().getName().toLowerCase() + "'",
+                "DisplayOrder").collectAll(attachmentDefinitions);
         return attachmentDefinitions;
     }
 
@@ -137,7 +136,8 @@ public class SOFieldCreator<T> implements ObjectFieldCreator<T> {
             if(dummy instanceof HasContacts) {
                 ((HasContacts) dummy).listContactTypes().forEach(contactTypes::add);
             }
-        } catch(InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException ignored) {
+        } catch(InstantiationException | IllegalAccessException | NoSuchMethodException
+                | InvocationTargetException ignored) {
         }
         return contactTypes;
     }
@@ -273,7 +273,8 @@ public class SOFieldCreator<T> implements ObjectFieldCreator<T> {
                 if(o == null) {
                     return "";
                 }
-                @SuppressWarnings("unchecked") Class<? extends StoredObject> objectClass = (Class<? extends StoredObject>) o.getClass();
+                @SuppressWarnings("unchecked") Class<? extends StoredObject> objectClass =
+                        (Class<? extends StoredObject>) o.getClass();
                 if(master != null) {
                     if(objectId == null || !objectId.equals(o)) {
                         master = null;
@@ -573,35 +574,31 @@ public class SOFieldCreator<T> implements ObjectFieldCreator<T> {
             }
             Class<? extends StoredObject> realObjectType = (Class<? extends StoredObject>) objectType;
             realObjectType = md.getParameterAsClass(realObjectType);
-            ObjectField.Type mimeType = null;
             if(realObjectType == StreamData.class) {
                 if(form == null) {
                     return null;
                 }
-                mimeType = objectFieldType(md.getStyle());
-                switch(mimeType) {
-                    case STILL_CAMERA:
-                    case VIDEO_CAMERA:
-                    case MIC:
-                        break;
-                    default:
-                        mimeType = null;
-                        String[] mimes;
-                        try {
-                            mimes = (String[]) objectClass.getMethod("contentTypes", String.class).invoke(null, new Object[]{fieldName});
-                            if(mimes != null && mimes.length == 1) {
-                                mimeType = switch(mimes[0]) {
-                                    case "image/" -> ObjectField.Type.IMAGE;
-                                    case "video/" -> ObjectField.Type.VIDEO;
-                                    case "audio/" -> ObjectField.Type.AUDIO;
-                                    default -> null;
-                                };
-                            }
-                        } catch(Throwable ignore) {
+                List<ObjectField.Type> types = objectFieldTypes(md.getStyle());
+                try {
+                    String[] mimes = (String[]) objectClass.getMethod("contentTypes", String.class)
+                            .invoke(null, new Object[]{fieldName});
+                    for(String mt: mimes) {
+                        if(mt.contains("image/")) {
+                            types.add(ObjectField.Type.IMAGE);
                         }
+                        if(mt.contains("video/")) {
+                            types.add(ObjectField.Type.VIDEO);
+                        }
+                        if(mt.contains("audio/")) {
+                            types.add(ObjectField.Type.AUDIO);
+                        }
+                    }
+                } catch(Throwable ignore) {
                 }
+                return new ObjectField<>(label, new FileField(types.toArray(new ObjectField.Type[0])));
             }
-            return new ObjectField<>(label, realObjectType, md.isAny(), mimeType == null ? objectFieldType(md.getStyle()) : mimeType, md.isAddAllowed());
+            return new ObjectField<>(label, realObjectType, md.isAny(), objectFieldType(md.getStyle()),
+                    md.isAddAllowed());
         }
         if(JSON.class == type) {
             return new JSONField(label);
@@ -647,53 +644,68 @@ public class SOFieldCreator<T> implements ObjectFieldCreator<T> {
         if(Quantity.class == type) {
             return switch(fieldName) {
                 case "UnitOfMeasurement", "UnitOfIssue" -> new UOMField(label);
-                default -> new QuantityField(label, md.getIntParameter(0, 0), md.getIntParameter(6, 1));
+                default -> new QuantityField(label, md.getIntParameter(0, 0),
+                        md.getIntParameter(6, 1));
             };
         }
         if(Area.class == type) {
-            return new AreaField(label, md.getIntParameter(0, 0), md.getIntParameter(6, 1));
+            return new AreaField(label, md.getIntParameter(0, 0),
+                    md.getIntParameter(6, 1));
         }
         if(Count.class == type) {
             return new CountField(label, md.getIntParameter(0, 0));
         }
         if(Distance.class == type) {
-            return new DistanceField(label, md.getIntParameter(0, 0), md.getIntParameter(6, 1));
+            return new DistanceField(label, md.getIntParameter(0, 0),
+                    md.getIntParameter(6, 1));
         }
         if(Volume.class == type) {
-            return new VolumeField(label, md.getIntParameter(0, 0), md.getIntParameter(6, 1));
+            return new VolumeField(label, md.getIntParameter(0, 0),
+                    md.getIntParameter(6, 1));
         }
         if(Weight.class == type) {
-            return new WeightField(label, md.getIntParameter(0, 0), md.getIntParameter(6, 1));
+            return new WeightField(label, md.getIntParameter(0, 0),
+                    md.getIntParameter(6, 1));
         }
         if(FractionalCount.class == type) {
-            return new FractionalCountField(label, md.getIntParameter(0, 0), md.getIntParameter(6, 1));
+            return new FractionalCountField(label, md.getIntParameter(0, 0),
+                    md.getIntParameter(6, 1));
         }
         if(WeightOrVolume.class == type) {
-            return new WeightOrVolumeField(label, md.getIntParameter(0, 0), md.getIntParameter(6, 1));
+            return new WeightOrVolumeField(label, md.getIntParameter(0, 0),
+                    md.getIntParameter(6, 1));
         }
         if(Temperature.class == type) {
-            return new TemperatureField(label, md.getIntParameter(0, 0), md.getIntParameter(6, 1));
+            return new TemperatureField(label, md.getIntParameter(0, 0),
+                    md.getIntParameter(6, 1));
         }
         if(Pressure.class == type) {
-            return new PressureField(label, md.getIntParameter(0, 0), md.getIntParameter(6, 1));
+            return new PressureField(label, md.getIntParameter(0, 0),
+                    md.getIntParameter(6, 1));
         }
         if(Speed.class == type) {
-            return new SpeedField(label, md.getIntParameter(0, 0), md.getIntParameter(6, 1));
+            return new SpeedField(label, md.getIntParameter(0, 0),
+                    md.getIntParameter(6, 1));
         }
         if(Percentage.class == type) {
-            return new PercentageField(label, md.getIntParameter(5, 0), md.getIntParameter(2, 1));
+            return new PercentageField(label, md.getIntParameter(5, 0),
+                    md.getIntParameter(2, 1));
         }
         if(Angle.class == type) {
-            return new AngleField(label, md.getIntParameter(6, 0), md.getIntParameter(2, 1));
+            return new AngleField(label, md.getIntParameter(6, 0),
+                    md.getIntParameter(2, 1));
         }
         if(WeightRate.class == type) {
-            return new WeightRateField(label, md.getIntParameter(0, 0), md.getIntParameter(6, 1));
+            return new WeightRateField(label, md.getIntParameter(0, 0),
+                    md.getIntParameter(6, 1));
         }
         if(VolumeRate.class == type) {
-            return new VolumeRateField(label, md.getIntParameter(0, 0), md.getIntParameter(6, 1));
+            return new VolumeRateField(label, md.getIntParameter(0, 0),
+                    md.getIntParameter(6, 1));
         }
         if(TimeDuration.class == type) {
-            return new TimeDurationField(label, md.getIntParameter(0, 0), md.getIntParameter(6, 1));
+            return new TimeDurationField(label, md.getIntParameter(0, 0),
+                    md.getIntParameter(6, 1));
         }
         if(ComputedDate.class == type) {
             return new ComputedDateField(label);
@@ -718,7 +730,8 @@ public class SOFieldCreator<T> implements ObjectFieldCreator<T> {
             return new GeolocationField(label);
         }
         if(ComputedDouble.class == type) {
-            return new ComputedDoubleField(label, 0.0, md.getIntParameter(-1, 0), md.getIntParameter(2, 1));
+            return new ComputedDoubleField(label, 0.0, md.getIntParameter(-1, 0),
+                    md.getIntParameter(2, 1));
         }
         if(ComputedInteger.class == type) {
             return new ComputedIntegerField(label, md.getIntParameter(8, 0));
@@ -733,7 +746,8 @@ public class SOFieldCreator<T> implements ObjectFieldCreator<T> {
             return new TimestampField(label);
         }
         if(double.class == type) {
-            DoubleField field = new DoubleField(label, 0.0, md.getIntParameter(-1, 0), md.getIntParameter(6, 1));
+            DoubleField field = new DoubleField(label, 0.0, md.getIntParameter(-1, 0),
+                    md.getIntParameter(6, 1));
             field.setPlaceholder(md.getParameter(2));
             return field;
         }
@@ -867,6 +881,19 @@ public class SOFieldCreator<T> implements ObjectFieldCreator<T> {
             }
         }
         return ObjectField.Type.AUTO;
+    }
+
+    private static List<ObjectField.Type> objectFieldTypes(String style) {
+        List<ObjectField.Type> types = new ArrayListSet<>();
+        if(style == null) {
+            return types;
+        }
+        for(ObjectField.Type type : ObjectField.Type.values()) {
+            if(style.contains("(" + type + ")")) {
+                types.add(type);
+            }
+        }
+        return types;
     }
 
     interface RO {

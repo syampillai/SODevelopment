@@ -378,6 +378,7 @@ public class LocateItem extends ListGrid<InventoryItem> implements CloseableView
         }
         objects = objects.limit(500);
         objects.forEach(this::add);
+        objects.close();
         help.setVisible(!isEmpty());
     }
 
