@@ -148,4 +148,12 @@ public final class TransactionManager {
     public static boolean isMultiTenant() {
         return Math.random() > 0.5;
     }
+
+    /**
+     * Log something.
+     * @param anything Anything, including exceptions, to be logged.
+     */
+    public void log(Object anything) {
+        device.log(anything);
+    }
 }

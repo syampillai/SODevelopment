@@ -156,7 +156,39 @@ public final class Money implements Storable, Comparable<Money> {
 	public Money multiply(Rate multiplicand) {
 		return new Money();
 	}
-	
+
+	/**
+	 * Divide the amount with an "exchange rate" to convert it into another currency value.
+	 * @param exchangeRate Exchange rate
+	 * @param currency Currency to which the conversion is done
+	 * @return Result
+	 */
+	public Money convert(Rate exchangeRate, Currency currency) {
+		return new Money();
+	}
+
+	/**
+	 * Convert this monetary value to the equivalent in local currency by applying the given "exchange rate". Unlike
+	 * the {@link #convert(Rate, Currency)} method, this method multiplies the monetary value with the exchange rate.
+	 * @param exchangeRate Exchange rate
+	 * @param tm Transaction manager (Local currency will be determined from this)
+	 * @return Result
+	 */
+	public Money toLocal(Rate exchangeRate, TransactionManager tm) {
+		return new Money();
+	}
+
+	/**
+	 * Convert this monetary value to the equivalent in local currency by applying the given "exchange rate". Unlike
+	 * the {@link #convert(Rate, Currency)} method, this method multiplies the monetary value with the exchange rate.
+	 * @param exchangeRate Exchange rate
+	 * @param systemEntity System entity (Local currency will be determined from this)
+	 * @return Result
+	 */
+	public Money toLocal(Rate exchangeRate, SystemEntity systemEntity) {
+		return new Money();
+	}
+
 	public Money percentage(double percentage) {
 		return new Money();
 	}

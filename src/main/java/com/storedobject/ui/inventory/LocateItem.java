@@ -13,7 +13,6 @@ import com.vaadin.flow.component.grid.contextmenu.GridMenuItem;
 import java.sql.Date;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Stream;
 
 /**
  * For locating stocks of a given "Part Number" and its APNs. The result includes all locations, including items
@@ -65,7 +64,8 @@ public class LocateItem extends ListGrid<InventoryItem> implements CloseableView
      * @param canInspect Whether the item details can be inspected/re-binned or not.
      */
     public LocateItem(boolean canInspect) {
-        this(null, null, null, null, canInspect, null);
+        this(null, null, null, null,
+                canInspect, null);
     }
 
     /**
@@ -324,12 +324,14 @@ public class LocateItem extends ListGrid<InventoryItem> implements CloseableView
                 clear();
                 return;
             }
-            InventoryItem item = StoredObject.list(itemClass, "SerialNumber='" + sn + "'", true).single(false);
+            InventoryItem item = StoredObject.list(itemClass, "SerialNumber='" + sn + "'", true)
+                    .single(false);
             if(item != null) {
                 loadInt(ObjectIterator.create(item));
                 return;
             }
-            loadInt(StoredObject.list(itemClass, "SerialNumber LIKE '" + sn + "%'", true).map(i -> (InventoryItem)i).stream());
+            loadInt(StoredObject.list(itemClass, "SerialNumber LIKE '" + sn + "%'", true)
+                    .map(i -> (InventoryItem)i));
             warning("S/N " + sn + " not found!");
             return;
         }
@@ -368,7 +370,7 @@ public class LocateItem extends ListGrid<InventoryItem> implements CloseableView
         loadInt(items);
     }
 
-    private void loadInt(Stream<InventoryItem> objects) {
+    private void loadInt(ObjectIterator<InventoryItem> objects) {
         clear();
         if(store != null) {
             objects = objects.filter(ii -> {
@@ -380,10 +382,6 @@ public class LocateItem extends ListGrid<InventoryItem> implements CloseableView
         objects.forEach(this::add);
         objects.close();
         help.setVisible(!isEmpty());
-    }
-
-    private void loadInt(ObjectIterator<InventoryItem> objects) {
-        loadInt(objects.stream());
     }
 
     private void inspect(InventoryItem ii) {

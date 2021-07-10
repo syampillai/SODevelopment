@@ -714,7 +714,7 @@ public abstract class StoredObject implements Displayable {
 
     public static <T extends StoredObject> ObjectIterator<T> listViaQuery(Transaction transaction, Class<T> objectClass,
                                                                           Query query) {
-        return ObjectIterator.create(null, transaction, query, objectClass);
+        return ObjectIterator.create();
     }
 
     public static <T extends StoredObject> ObjectIterator<T> list(Class<T> objectClass) {

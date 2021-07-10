@@ -42,9 +42,18 @@ public abstract class AbstractTransaction implements Transaction {
      */
     @Override
     public final TransactionManager getManager() {
-        return null;
+        return new TransactionManager(null, null);
     }
 
     // For internal use only.
-    abstract void credit(StoredObject object, int entrySerial, Account account, Money amount, Money localCurrencyAmount, String narration) throws Exception;
+    abstract void credit(StoredObject object, int entrySerial, Account account, Money amount, Money localCurrencyAmount,
+                         String narration) throws Exception;
+
+    /**
+     * Log something.
+     * @param anything Anything, including exceptions, to be logged.
+     */
+    public void log(Object anything) {
+        getManager().log(anything);
+    }
 }

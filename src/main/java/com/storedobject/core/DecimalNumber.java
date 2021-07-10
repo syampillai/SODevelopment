@@ -3,7 +3,6 @@ package com.storedobject.core;
 import com.storedobject.common.Storable;
 
 import java.math.BigDecimal;
-import java.math.BigInteger;
 
 /**
  * Class that represents a decimal number value with a defined number of decimals digits.
@@ -121,5 +120,19 @@ public class DecimalNumber implements Storable, Comparable<DecimalNumber> {
 	
 	public BigDecimal getAverageValue(BigDecimal second) {
 		return null;
+	}
+
+
+	/**
+	 * Convert it into a String with at least minimum decimals places specified.
+	 * <p>Example: Value: 4123.4500, Output: "4123.4500" (if decimals is les than zero, no conversion),
+	 * "4123.450000" (for 6 decimals), "4123.45" (for 2 decimals or less)</p>
+	 * <p>Example: Value: 4123.0000, Output: "4123.0000" (if decimals is les than zero, no conversion),
+	 * "4123.000000" (for 6 decimals), "4123.00" (for 2 decimals), "4123" (if decimals is zero)</p>
+	 * @param decimals Number of minimum decimals required in the output.
+	 * @return String value.
+	 */
+	public String toString(int decimals) {
+		return toString();
 	}
 }

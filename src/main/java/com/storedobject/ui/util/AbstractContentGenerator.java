@@ -50,11 +50,16 @@ public abstract class AbstractContentGenerator extends Thread {
     }
 
     String getFile() {
-        String f = producer.getFileName();
-        if(f != null && f.length() < 3) {
-            f += "-so";
+        String fileName = producer.getFileName();
+        if(fileName != null && fileName.length() < 3) {
+            fileName += "-so";
         }
-        return f == null ? ("so" + fileId) : f;
+        fileName = fileName == null ? ("so" + fileId) : fileName;
+        return fileName.replace('/', '_')
+                .replace(':', '_')
+                .replace('?', '_')
+                .replace('*', '_')
+                .replace(';', '_');
     }
 
     public File createFile() {

@@ -14,7 +14,6 @@ import com.vaadin.flow.shared.Registration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Stream;
 
 public class ObjectTree<T extends StoredObject> extends DataTreeGrid<T> implements Transactional, ObjectsSetter<T> {
 
@@ -128,14 +127,11 @@ public class ObjectTree<T extends StoredObject> extends DataTreeGrid<T> implemen
             ObjectIterator<StoredObject> oiSO = (ObjectIterator<StoredObject>)ObjectIterator.create(list.iterator()).filter(Objects::nonNull);
             oi = oiSO.map(this::convert).filter(Objects::nonNull);
         }
-        Stream<T> objects;
         if(filter) {
-            objects = oi.filter(o -> dataProvider.getTreeBuilder().getParent(o) == null).stream();
-        } else {
-            objects = oi.stream();
+            oi = oi.filter(o -> dataProvider.getTreeBuilder().getParent(o) == null);
         }
-        setDataProvider(new ObjectTreeListProvider<>(objects, dataProvider.getTreeBuilder()));
-        objects.close();
+        setDataProvider(new ObjectTreeListProvider<>(oi, dataProvider.getTreeBuilder()));
+        oi.close();
         refresh();
     }
 

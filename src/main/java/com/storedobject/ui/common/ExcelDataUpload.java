@@ -21,9 +21,7 @@ import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.sql.Date;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Upload data contain in an Excel file and typically create entries in the system. The Excel file may contain
@@ -323,7 +321,7 @@ public class ExcelDataUpload extends UploadProcessorView implements Transactiona
      *
      * @param index Index to the data.
      * @param mainDataRowsOnly Whether to check in main data rows only or not.
-     * @param ignoreEmpty Whether to ignore empty values or not.
+     * @param ignoreEmpty Whether to ignore empty values or not (Only in the case of textual data).
      * @throws SOException If the cell contains invalid data.
      */
     public void checkForDuplicates(int index, boolean mainDataRowsOnly, boolean ignoreEmpty) throws SOException {
@@ -334,12 +332,11 @@ public class ExcelDataUpload extends UploadProcessorView implements Transactiona
             if(mainDataRowsOnly && !isMainDataRow(i)) {
                 continue;
             }
-            if(!(objects[index] instanceof String)) {
-                throw new SOException("Invalid data type, Cell: " + getExcelCell(i, index) + " (must contain text only)");
+            if(objects[index] instanceof String) {
+                objects[index] = ((String) objects[index]).trim();
             }
-            objects[index] = ((String)objects[index]).trim();
         }
-        String s1, s2;
+        Object o1, o2;
         i = -1;
         int k;
         for(Object[] objects: data) {
@@ -347,14 +344,69 @@ public class ExcelDataUpload extends UploadProcessorView implements Transactiona
             if(mainDataRowsOnly && !isMainDataRow(i)) {
                 continue;
             }
-            s1 = (String)objects[index];
-            if(s1.isEmpty() && ignoreEmpty) {
+            o1 = objects[index];
+            if(ignoreEmpty && o1 instanceof String s && s.isEmpty()) {
                 continue;
             }
             for(k = i + 1; k < data.size(); k++) {
-                s2 = (String)data.get(k)[index];
-                if(s1.equals(s2)) {
+                o2 = data.get(k)[index];
+                if(o1.equals(o2)) {
                     throw new SOException("Duplicate data, Cell: " + getExcelCell(i, index) + " & " + getExcelCell(k, index));
+                }
+            }
+        }
+    }
+
+    /**
+     * Check whether a specific set of data columns contains duplicate values or not.
+     *
+     * @param indices Indices to a set of data.
+     * @throws SOException If the cell contains invalid data.
+     */
+    public void checkForDuplicates(int[] indices) throws SOException {
+        checkForDuplicates(indices, false);
+    }
+
+    /**
+     * Check whether a specific set of data columns contains duplicate values or not.
+     *
+     * @param indices Indices to a set of data.
+     * @param mainDataRowsOnly Whether to check in main data rows only or not.
+     * @throws SOException If the cell contains invalid data.
+     */
+    public void checkForDuplicates(int[] indices, boolean mainDataRowsOnly) throws SOException {
+        testAfter();
+        int i = -1;
+        for(Object[] objects: data) {
+            ++i;
+            if(mainDataRowsOnly && !isMainDataRow(i)) {
+                continue;
+            }
+            for(int index: indices) {
+                if(objects[index] instanceof String) {
+                    objects[index] = ((String) objects[index]).trim();
+                }
+            }
+        }
+        Object[] o1 = new Object[indices.length], o2 = new Object[indices.length];
+        i = -1;
+        int k;
+        Object[] row;
+        for(Object[] objects: data) {
+            ++i;
+            if(mainDataRowsOnly && !isMainDataRow(i)) {
+                continue;
+            }
+            for(int index: indices) {
+                o1[index] = objects[index];
+            }
+            for(k = i + 1; k < data.size(); k++) {
+                row = data.get(k);
+                for(int index: indices) {
+                    o2[index] = row[index];
+                }
+                if(Arrays.equals(o1, o2)) {
+                    throw new SOException("Duplicate data, Rows: " + getExcelRow(i) + " & " + getExcelRow(k));
                 }
             }
         }

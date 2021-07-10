@@ -1,5 +1,6 @@
 package com.storedobject.ui;
 
+import com.storedobject.core.ObjectIterator;
 import com.storedobject.core.StoredObject;
 
 import java.util.stream.Stream;
@@ -46,7 +47,7 @@ public class NewObjectGrid<T extends StoredObject> extends DataGrid<T> implement
     }
 
     @Override
-    public void load(Stream<T> objects) {
+    public void load(ObjectIterator<T> objects) {
         cache.load(objects);
     }
 

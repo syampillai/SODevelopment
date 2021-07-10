@@ -2,6 +2,7 @@ package com.storedobject.ui;
 
 import com.storedobject.common.ResourceDisposal;
 import com.storedobject.common.ResourceOwner;
+import com.storedobject.core.ObjectIterator;
 import com.storedobject.core.StoredObject;
 import com.vaadin.flow.data.provider.AbstractDataProvider;
 
@@ -187,11 +188,10 @@ public final class ObjectCache<T extends StoredObject> extends AbstractDataProvi
     }
 
     @Override
-    public void load(Stream<T> objects) {
+    public void load(ObjectIterator<T> objects) {
         reset();
         if(objects != null) {
-            list = new ArrayList<>();
-            objects.forEach(list::add);
+            list = objects.toList();
             transformedList = list;
         }
         refreshAll();
@@ -201,7 +201,7 @@ public final class ObjectCache<T extends StoredObject> extends AbstractDataProvi
     public void reload() {
         if(list != null) {
             List<T> copy = list;
-            load(copy.stream().map(o -> StoredObject.get(objectClass, o.getId(), any)));
+            load(ObjectIterator.create(copy).map(o -> StoredObject.get(objectClass, o.getId(), any)));
             return;
         }
         if(master == null) {

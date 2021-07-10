@@ -14,7 +14,8 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class ObjectForestViewerSupplier<T extends StoredObject, F> implements AbstractObjectDataProvider<T, Object, F>, AbstractObjectForestSupplier<T, F> {
+public class ObjectForestViewerSupplier<T extends StoredObject, F>
+        implements AbstractObjectDataProvider<T, Object, F>, AbstractObjectForestSupplier<T, F> {
 
     private final ObjectForestSupplier<T, F> supplier;
 
@@ -82,7 +83,7 @@ public class ObjectForestViewerSupplier<T extends StoredObject, F> implements Ab
     }
 
     @Override
-    public void load(Stream<T> objects) {
+    public void load(ObjectIterator<T> objects) {
         supplier.load(objects);
     }
 

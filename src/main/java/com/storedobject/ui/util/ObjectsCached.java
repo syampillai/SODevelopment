@@ -1,6 +1,7 @@
 package com.storedobject.ui.util;
 
 import com.storedobject.core.ObjectCache;
+import com.storedobject.core.ObjectIterator;
 import com.storedobject.core.ObjectSearchFilter;
 import com.storedobject.core.StoredObject;
 import com.vaadin.flow.data.provider.CallbackDataProvider;
@@ -64,7 +65,7 @@ public class ObjectsCached<T extends StoredObject, M, F> {
         }
     }
 
-    void load(Stream<T> objects) {
+    void load(ObjectIterator<T> objects) {
         added.clear();
         fullyLoaded = false;
         if(objects != null) {

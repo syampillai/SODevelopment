@@ -1,5 +1,6 @@
 package com.storedobject.ui.util;
 
+import com.storedobject.core.ObjectIterator;
 import com.storedobject.core.StoredObject;
 import com.storedobject.ui.ObjectTreeBuilder;
 import com.vaadin.flow.component.ItemLabelGenerator;
@@ -11,7 +12,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class ObjectTreeListProvider<T extends StoredObject> extends AbstractBackEndHierarchicalDataProvider<T, String> {
@@ -32,8 +32,8 @@ public class ObjectTreeListProvider<T extends StoredObject> extends AbstractBack
         this.objectTreeBuilder = objectTreeBuilder;
     }
 
-    public ObjectTreeListProvider(Stream<T> roots, ObjectTreeBuilder objectTreeBuilder) {
-        this(roots.collect(Collectors.toList()), objectTreeBuilder);
+    public ObjectTreeListProvider(ObjectIterator<T> roots, ObjectTreeBuilder objectTreeBuilder) {
+        this(roots.toList(), objectTreeBuilder);
     }
 
     public Registration addObjectDataLoadedListener(ObjectDataLoadedListener listener) {

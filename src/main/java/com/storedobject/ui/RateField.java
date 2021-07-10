@@ -82,12 +82,10 @@ public class RateField extends TranslatedField<Rate, BigDecimal> {
 
     public RateField(String label, Rate initialValue, int width, int decimals, boolean grouping, boolean allowNegative) {
         super(new BigDecimalField(width, decimals, grouping, allowNegative),
-                (f, bd) -> new Rate(bd, decimals),
-                (f, dn) -> dn.getValue());
+                (f, bd) -> bd.signum() == 0 ? null : new Rate(bd, decimals),
+                (f, dn) -> dn == null ? BigDecimal.ZERO : dn.getValue(), null);
         setLabel(label);
-        if(initialValue != null) {
-            setValue(initialValue);
-        }
+        setValue(initialValue == null ? Rate.ONE : initialValue);
     }
 
     @Override

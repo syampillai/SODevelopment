@@ -10,7 +10,7 @@ public class MeasurementUnit {
 	}
 
 	public String getUnit() {
-		return null;
+		return "";
 	}
 
 	public boolean hasDecimals() {
@@ -18,23 +18,24 @@ public class MeasurementUnit {
 	}
 
 	protected static MeasurementUnit create(int type, String unit, BigDecimal multiplier, String humanInput) {
-		return null;
+		return get("");
 	}
 
-	protected static MeasurementUnit create(int type, String unit, boolean hasDecimals, BigDecimal multiplier, String humanInput) {
-		return null;
+	protected static MeasurementUnit create(int type, String unit, boolean hasDecimals, BigDecimal multiplier,
+											String humanInput) {
+		return get("");
 	}
 
 	public static MeasurementUnit get(String unit) {
-		return null;
+		return new MeasurementUnit(0, "", true, BigDecimal.ONE, "");
 	}
 
 	public static MeasurementUnit get(String unit, MeasurementUnit similar) {
-		return null;
+		return get("");
 	}
 	
 	public static MeasurementUnit get(String unit, Class<? extends Quantity> quantityClass) {
-		return null;
+		return get("");
 	}
 
 	public static void reload() {
@@ -45,11 +46,11 @@ public class MeasurementUnit {
 	}
 
 	public String getTypeName() {
-		return null;
+		return "";
 	}
 
 	public BigDecimal getMultiplier() {
-		return null;
+		return BigDecimal.ONE;
 	}
 
 	public Class<? extends Quantity> getQuantityClass() {

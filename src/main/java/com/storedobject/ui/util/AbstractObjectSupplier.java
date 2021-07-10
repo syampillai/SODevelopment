@@ -1,5 +1,6 @@
 package com.storedobject.ui.util;
 
+import com.storedobject.core.ObjectIterator;
 import com.storedobject.core.ObjectSearchFilter;
 import com.storedobject.core.StoredObject;
 import com.vaadin.flow.data.provider.CallbackDataProvider;
@@ -11,7 +12,8 @@ import java.util.Objects;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
-public class AbstractObjectSupplier<T extends StoredObject, M, F> extends CallbackDataProvider<M, F> implements AbstractObjectDataProvider<T, M, F> {
+public class AbstractObjectSupplier<T extends StoredObject, M, F> extends CallbackDataProvider<M, F>
+        implements AbstractObjectDataProvider<T, M, F> {
 
     private final List<ObjectDataLoadedListener> dataLoadedListeners = new ArrayList<>();
     ObjectsCached<T, M, F> supplier;
@@ -93,7 +95,7 @@ public class AbstractObjectSupplier<T extends StoredObject, M, F> extends Callba
     }
 
     @Override
-    public void load(Stream<T> objects) {
+    public void load(ObjectIterator<T> objects) {
         if(objects == null) {
             return;
         }

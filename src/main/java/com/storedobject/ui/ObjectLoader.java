@@ -3,8 +3,6 @@ package com.storedobject.ui;
 import com.storedobject.core.ObjectIterator;
 import com.storedobject.core.StoredObject;
 
-import java.util.stream.Stream;
-
 public interface ObjectLoader<T extends StoredObject> {
 
     default String getCondition() {
@@ -49,17 +47,11 @@ public interface ObjectLoader<T extends StoredObject> {
 
     void load(int linkType, StoredObject master, String condition, String orderBy);
 
-    default void load(ObjectIterator<T> objects) {
-        Stream<T> stream = objects.stream();
-        load(stream);
-        stream.close();
-    }
-
-    void load(Stream<T> objects);
+    void load(ObjectIterator<T> objects);
 
     @SuppressWarnings("unchecked")
     default void load(T... objects) {
-        load(Stream.of(objects));
+        load(ObjectIterator.create(objects));
     }
 
     void clear();

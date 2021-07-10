@@ -57,14 +57,18 @@ public class Test implements Executable {
         private final DateTimePicker tp = new DateTimePicker("V Time");
         private BooleanRadioField brf;
         private final ChoiceField cf = new ChoiceField("Choose", new String[] { "One", "Two", "Three" });
+        private final RateField bdf = new RateField("Rate");
+        private final BooleanField bf = new BooleanField("Boolean");
 
         public TestFields() {
             super("Test", false);
+            addField(bf);
+            setRequired(bf);
+            addField(bdf);
+            setRequired(bdf);
             cf.setPlaceholder("Hello");
             addField(cf);
-            cf.setValue(null);
-            addField(brf = new BooleanRadioField("Hello", null));
-            //setRequired(brf);
+            addField(brf = new BooleanRadioField("Hello"));
             String caption = getApplication().getQueryParameter("caption");
             setCaption(caption != null && !caption.isEmpty() ? caption : "NO PARAM");
             PhoneField phoneField = new PhoneField("Phone");
@@ -106,9 +110,8 @@ public class Test implements Executable {
             //tf.setValue(null);
             System.err.println("Got: " + tf.getValue());
             df.setValue(d);
-
              */
-            System.err.println(cf.getValue() + " " + cf.getEmptyValue());
+            System.err.println(bdf.getValue() + " " + bdf.getEmptyValue());
             return false;
         }
     }
