@@ -51,6 +51,15 @@ public abstract class IoTObject extends StoredObject{
     public abstract void setUnit(Id unitId);
 
     /**
+     * Get the {@link Id} of the unit this IoT object belongs to.
+     *
+     * @return Id of the unit or <code>null</code> if it doesn't belong to any specific unit.
+     */
+    public Id getUnitId() {
+        return Id.ZERO;
+    }
+
+    /**
      * Get the latest data record collected.
      *
      * @param objectClass IOT object class.
