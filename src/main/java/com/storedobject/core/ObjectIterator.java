@@ -9,7 +9,7 @@ import java.util.function.*;
 import java.util.stream.Stream;
 
 /**
- * Helper class that allows you to iterate via objects retrieved from the DB. Several methods of
+ * Helper class that allows you to iterate through objects retrieved from the DB. Several methods of
  * {@link StoredObject} returns an instance of this class.
  * <p>Note: Please make sure that you call the {@link #close()} method to release DB resources held by this instance
  * once the usage over. However, if you iterate through the whole list or if you use a terminal operation, it will be

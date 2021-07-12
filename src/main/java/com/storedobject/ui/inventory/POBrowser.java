@@ -87,41 +87,41 @@ public class POBrowser<T extends InventoryPO> extends ObjectBrowser<T> {
             }
             select(po);
             switch(po.getStatus()) {
-                case 0:
+                case 0 -> {
                     placeOrder.setVisible(true);
                     receiveItems.setVisible(false);
                     foreClose.setVisible(true);
                     close.setVisible(false);
                     preGRNs.setVisible(false);
-                    break;
-                case 1:
+                }
+                case 1 -> {
                     placeOrder.setVisible(false);
                     receiveItems.setVisible(true);
                     foreClose.setVisible(true);
                     close.setVisible(false);
                     preGRNs.setVisible(false);
-                    break;
-                case 2:
+                }
+                case 2 -> {
                     placeOrder.setVisible(false);
                     receiveItems.setVisible(true);
                     foreClose.setVisible(true);
                     close.setVisible(false);
                     preGRNs.setVisible(true);
-                    break;
-                case 3:
+                }
+                case 3 -> {
                     placeOrder.setVisible(false);
                     receiveItems.setVisible(false);
                     foreClose.setVisible(false);
                     close.setVisible(true);
                     preGRNs.setVisible(true);
-                    break;
-                case 4:
+                }
+                case 4 -> {
                     placeOrder.setVisible(false);
                     receiveItems.setVisible(false);
                     foreClose.setVisible(false);
                     close.setVisible(false);
                     preGRNs.setVisible(true);
-                    break;
+                }
             }
             return true;
         });
@@ -318,12 +318,14 @@ public class POBrowser<T extends InventoryPO> extends ObjectBrowser<T> {
             return;
         }
         switch(po.getStatus()) {
-            case 4:
+            case 4 -> {
                 message("Already closed");
                 return;
-            case 3:
+            }
+            case 3 -> {
                 message("All items were already received, you may close this order.");
                 return;
+            }
         }
         if(pendingGRNs(po)) {
             return;
@@ -409,6 +411,7 @@ public class POBrowser<T extends InventoryPO> extends ObjectBrowser<T> {
             setAPN(po, item);
         }
 
+        @SuppressWarnings("unused")
         public Quantity getExpected(InventoryPOItem item) {
             return item.getBalance();
         }

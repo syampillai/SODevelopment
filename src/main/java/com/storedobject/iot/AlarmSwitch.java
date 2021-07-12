@@ -26,6 +26,20 @@ public final class AlarmSwitch extends StoredObject implements Detail {
         return "";
     }
 
+    public void setSignificance(int significance) {
+    }
+
+    public int getSignificance() {
+        return 0;
+    }
+
+    public void setAlert(boolean alert) {
+    }
+
+    public boolean getAlert() {
+        return true;
+    }
+
     public void setAlarmWhen(int alarmWhen) {
     }
 

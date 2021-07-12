@@ -33,6 +33,13 @@ public final class ValueLimit extends StoredObject implements Detail {
         return 0;
     }
 
+    public void setAlert(boolean alert) {
+    }
+
+    public boolean getAlert() {
+        return true;
+    }
+
     public void setLowest(double lowest) {
     }
 
