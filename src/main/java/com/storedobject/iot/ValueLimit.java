@@ -1,8 +1,6 @@
 package com.storedobject.iot;
 
-import com.storedobject.core.Columns;
-import com.storedobject.core.Detail;
-import com.storedobject.core.StoredObject;
+import com.storedobject.core.*;
 
 public final class ValueLimit extends StoredObject implements Detail {
 
@@ -31,6 +29,20 @@ public final class ValueLimit extends StoredObject implements Detail {
 
     public int getSignificance() {
         return 0;
+    }
+
+    public void setUnitOfMeasurement(MeasurementUnit unitOfMeasurement) {
+    }
+
+    public void setUnitOfMeasurement(Quantity unitOfMeasurement) {
+    }
+
+    public void setUnitOfMeasurement(Object value) {
+        setUnitOfMeasurement(Quantity.create(value));
+    }
+
+    public Quantity getUnitOfMeasurement() {
+        return Count.ONE;
     }
 
     public void setAlert(boolean alert) {

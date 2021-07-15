@@ -21,7 +21,7 @@
     <orderEntry type="library" name="Maven: com.google.zxing:javase:3.4.0" level="project" />
     <orderEntry type="library" name="Maven: com.beust:jcommander:1.72" level="project" />
     <orderEntry type="library" scope="RUNTIME" name="Maven: com.github.jai-imageio:jai-imageio-core:1.4.0" level="project" />
-    <orderEntry type="library" name="Maven: com.storedobject.vaadin:so-components:9.9.0" level="project" />
+    <orderEntry type="library" name="Maven: com.storedobject.vaadin:so-components:9.9.1" level="project" />
     <orderEntry type="library" name="Maven: com.vaadin:vaadin-core:20.0.4" level="project" />
     <orderEntry type="library" name="Maven: com.vaadin:flow-server:7.0.4" level="project" />
     <orderEntry type="library" name="Maven: org.slf4j:slf4j-api:1.7.25" level="project" />
