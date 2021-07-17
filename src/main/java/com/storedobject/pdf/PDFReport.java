@@ -136,4 +136,13 @@ public abstract class PDFReport extends PDF {
 	public PDFTable getTitleTable() {
     	return null;
 	}
+
+	/**
+	 * Log something via the logger associated with this report.
+	 *
+	 * @param anything Anything to log.
+	 */
+	public void log(Object anything) {
+		getDevice().log(anything);
+	}
 }

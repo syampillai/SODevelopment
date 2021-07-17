@@ -7,6 +7,8 @@ import com.storedobject.core.StreamData;
 
 public class ODTReport extends ODT<Object> {
 
+    private Device device;
+
     public ODTReport(Device device) {
         this(device, (StreamData)null, null);
     }
@@ -18,6 +20,7 @@ public class ODTReport extends ODT<Object> {
     public ODTReport(Device device, Id templateId, Object filler) {
         this(device, (StreamData)null, filler);
         setTemplate(templateId);
+        this.device = device;
     }
 
     public ODTReport(Device device, StreamData streamData) {
@@ -38,6 +41,15 @@ public class ODTReport extends ODT<Object> {
 
     @Override
     public Device getDevice() {
-        return null;
+        return device;
+    }
+
+    /**
+     * Log something via the logger associated with this report.
+     *
+     * @param anything Anything to log.
+     */
+    public void log(Object anything) {
+        device.log(anything);
     }
 }

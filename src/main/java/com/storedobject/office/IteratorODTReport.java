@@ -8,7 +8,7 @@ import com.storedobject.core.StreamData;
 
 public class IteratorODTReport<T> extends ODT<T> {
 
-    private Device device;
+    private final Device device;
 
     public IteratorODTReport(Device device) {
         super();
@@ -56,5 +56,14 @@ public class IteratorODTReport<T> extends ODT<T> {
 
     public Device getDevice() {
         return device;
+    }
+
+    /**
+     * Log something via the logger associated with this report.
+     *
+     * @param anything Anything to log.
+     */
+    public void log(Object anything) {
+        device.log(anything);
     }
 }

@@ -46,12 +46,13 @@ public final class UnitDefinition extends StoredObject implements HasChildren {
         return Math.random() > 0.5 ? Person.class : null;
     }
 
-    public static UnitDefinition getFor(Class<? extends StoredObject> uClass) {
-        return getFor(uClass.getName());
+    public static UnitDefinition getFor(Class<? extends StoredObject> uClass, Class<? extends IoTObject> dClass) {
+        return getFor(uClass.getName(), dClass.getName());
     }
 
-    public static UnitDefinition getFor(String uClassName) {
-        return get(UnitDefinition.class, "UnitClassName='" + uClassName + "'");
+    public static UnitDefinition getFor(String uClassName, String dClassName) {
+        return get(UnitDefinition.class, "UnitClassName='" + uClassName + "' AND DataClassName='"
+                + dClassName + "'");
     }
 
     public static void generateLimitsAndAlarms(TransactionManager tm) throws Exception {

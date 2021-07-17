@@ -9,6 +9,8 @@ import java.io.InputStream;
 
 public class ExcelReport extends Excel {
 
+    private final Device device;
+
     /**
      * Constructor.
      *
@@ -16,6 +18,7 @@ public class ExcelReport extends Excel {
      * This will create an blank Excel file and the content may be manipulated in the generateContent() method.
      */
     public ExcelReport(Device device) {
+        this.device = device;
     }
 
     /**
@@ -26,6 +29,7 @@ public class ExcelReport extends Excel {
      */
     public ExcelReport(Device device, InputStream in) {
         super(in);
+        this.device = device;
     }
 
     /**
@@ -36,6 +40,7 @@ public class ExcelReport extends Excel {
      */
     public ExcelReport(Device device, String databaseFileName) {
         super(databaseFileName);
+        this.device = device;
     }
 
     /**
@@ -46,6 +51,7 @@ public class ExcelReport extends Excel {
      */
     public ExcelReport(Device device, FileData fileData) {
         super(fileData);
+        this.device = device;
     }
 
     /**
@@ -56,6 +62,7 @@ public class ExcelReport extends Excel {
      */
     public ExcelReport(Device device, Id templateId) {
         super(templateId);
+        this.device = device;
     }
 
     /**
@@ -65,6 +72,7 @@ public class ExcelReport extends Excel {
      * @param streamData Stream data containing Excel file with some content.
      */
     public ExcelReport(Device device, StreamData streamData) {
+        this.device = device;
     }
 
     public void view() {
@@ -72,6 +80,15 @@ public class ExcelReport extends Excel {
     }
 
     public Device getDevice() {
-        return null;
+        return device;
+    }
+
+    /**
+     * Log something via the logger associated with this report.
+     *
+     * @param anything Anything to log.
+     */
+    public void log(Object anything) {
+        device.log(anything);
     }
 }

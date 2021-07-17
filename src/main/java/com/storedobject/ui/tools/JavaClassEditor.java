@@ -99,7 +99,7 @@ public class JavaClassEditor extends ObjectEditor<JavaClass> {
         compileSourceAll = new ConfirmButton("Compile All", this);
         format = new Button("Format", this);
         createSourceAll = new Button("Create Source Files", "download", this);
-        downloadAll = new Button("Download All", "download", this);
+        downloadAll = new Button("Download All", "download", e -> new DownloadAll().execute(getView()));
         uploadAll = new Button("Bulk Upload", "upload", this);
         uploadCompile = new Button("Bulk Upload & Deploy", "upload", this);
         uploadCompare = new Button("Bulk Upload & Compare", "upload", this);
@@ -238,24 +238,28 @@ public class JavaClassEditor extends ObjectEditor<JavaClass> {
             v.execute();
             return;
         }
-        if(c == downloadAll) {
-            ContentProducer cp = new TextContentProducer() {
-                @Override
-                public void generateContent() throws Exception {
-                    Writer w = getWriter();
-                    for(JavaClass jc: StoredObject.list(JavaClass.class, "NOT Generated")) {
-                        jc.save(w);
-                    }
-                }
-            };
-            getApplication().view(cp);
-            return;
-        }
         if(c == uploadAll || c == uploadCompile || c == uploadCompare) {
             new UploadClasses(c == uploadAll ? 0 : (c == uploadCompile ? 2 : 1)).execute();
             return;
         }
         super.clicked(c);
+    }
+
+    private void download(String module) {
+        ContentProducer cp = new TextContentProducer() {
+            @Override
+            public void generateContent() throws Exception {
+                String filter = "NOT Generated";
+                if(module != null && !module.isEmpty()) {
+                    filter += " AND Name LIKE '%." + module + ".%'";
+                }
+                Writer w = getWriter();
+                for(JavaClass jc: StoredObject.list(JavaClass.class, filter)) {
+                    jc.save(w);
+                }
+            }
+        };
+        getApplication().view(cp);
     }
 
     @Override
@@ -337,6 +341,7 @@ public class JavaClassEditor extends ObjectEditor<JavaClass> {
                     case 2 -> JavaTool.updateDefinitions(getTransactionManager(), data, this);
                 }
             } catch (Throwable error) {
+                log(error);
                 redMessage(error);
             }
         }
@@ -359,6 +364,29 @@ public class JavaClassEditor extends ObjectEditor<JavaClass> {
         } else {
             setObject(jc);
             message("Loaded version " + jc.getVersion() + (jc.old() ? "" : " (Current Version)"));
+        }
+    }
+
+    private class DownloadAll extends DataForm {
+
+        private TextField module;
+
+        public DownloadAll() {
+            super("Download All Data Classes");
+        }
+
+        @Override
+        protected void buildFields() {
+            addField(module = new TextField("Module Name"));
+            module.setHelperText("Leave it empty for all");
+            module.setSpellCheck(false);
+        }
+
+        @Override
+        protected boolean process() {
+            close();
+            download(module.getValue().trim());
+            return true;
         }
     }
 }

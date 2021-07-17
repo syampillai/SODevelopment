@@ -51,8 +51,8 @@ public class TableDefinitionEditor extends ObjectEditor<TableDefinition> {
         compileSource = new Button("Compile Source",this);
         deploy = new Button("Deploy", "truck", this);
         upload = new Button("Upload", this);
-        download = new Button("Download", this);
-        downloadAll = new Button("Download All", "download", this);
+        download = new Button("Download", e -> download());
+        downloadAll = new Button("Download All", "download", e -> new DownloadAll().execute(this));
         createSourceAll = new Button("Create Source Files", "download", this);
         compileSourceAll = new ConfirmButton("Compile All", this);
         deployAll = new ConfirmButton("Deploy All", "truck", this);
@@ -149,6 +149,30 @@ public class TableDefinitionEditor extends ObjectEditor<TableDefinition> {
         tds.add(id);
     }
 
+    private void download(String module) {
+        ContentProducer cp = new TextContentProducer() {
+            @Override
+            public void generateContent() throws Exception {
+                String filter = module == null || module.isEmpty() ? null : ("ClassName LIKE '%." + module + ".%'");
+                Writer w = getWriter();
+                for(TableDefinition td: StoredObject.list(TableDefinition.class, filter)) {
+                    td.save(w);
+                }
+            }
+        };
+        getApplication().view(cp);
+    }
+
+    private void download() {
+        ContentProducer cp = new TextContentProducer() {
+            @Override
+            public void generateContent() throws Exception {
+                getObject().save(getWriter());
+            }
+        };
+        getApplication().view(cp);
+    }
+
     @SuppressWarnings("resource")
     @Override
     public void clicked(Component c) {
@@ -166,24 +190,6 @@ public class TableDefinitionEditor extends ObjectEditor<TableDefinition> {
         }
         if(c == upload) {
             new UploadBox().execute(this);
-            return;
-        }
-        if(c == download || c == downloadAll) {
-            final Component button = c;
-            ContentProducer cp = new TextContentProducer() {
-                @Override
-                public void generateContent() throws Exception {
-                    if(button == download) {
-                        getObject().save(getWriter());
-                    } else {
-                        Writer w = getWriter();
-                        for(TableDefinition td: StoredObject.list(TableDefinition.class)) {
-                            td.save(w);
-                        }
-                    }
-                }
-            };
-            getApplication().view(cp);
             return;
         }
         if(c == createSourceAll || c == compileSourceAll) {
@@ -328,6 +334,29 @@ public class TableDefinitionEditor extends ObjectEditor<TableDefinition> {
         }
     }
 
+    private class DownloadAll extends DataForm {
+
+        private TextField module;
+
+        public DownloadAll() {
+            super("Download All Data Classes");
+        }
+
+        @Override
+        protected void buildFields() {
+            addField(module = new TextField("Module Name"));
+            module.setHelperText("Leave it empty for all");
+            module.setSpellCheck(false);
+        }
+
+        @Override
+        protected boolean process() {
+            close();
+            download(module.getValue().trim());
+            return true;
+        }
+    }
+
     private class DeployAll extends DataForm {
 
         private TextField filter;
@@ -338,7 +367,8 @@ public class TableDefinitionEditor extends ObjectEditor<TableDefinition> {
 
         @Override
         protected void buildFields() {
-            addField(filter = new TextField("Class Name Filter:"));
+            addField(filter = new TextField("Class Name Filter"));
+            filter.setHelperText("Leave it empty for all");
             filter.setSpellCheck(false);
         }
 
