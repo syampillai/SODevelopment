@@ -1,6 +1,9 @@
 package com.storedobject.pdf;
 
 import com.storedobject.core.Device;
+import com.storedobject.core.HasContacts;
+
+import java.util.function.Function;
 
 /**
  * A PDF class used for generating reports.
@@ -9,6 +12,8 @@ import com.storedobject.core.Device;
  */
 public abstract class PDFReport extends PDF {
 
+	private Device device;
+
 	/**
 	 * Constructor.
 	 *
@@ -16,6 +21,7 @@ public abstract class PDFReport extends PDF {
 	 */
 	public PDFReport(Device device) {
 		this(device, false, false);
+		this.device = device;
 	}
 
 	/**
@@ -59,7 +65,7 @@ public abstract class PDFReport extends PDF {
 	 * @return The device.
 	 */
 	public Device getDevice() {
-    	return null;
+    	return device;
 	}
 
 	/**
@@ -72,12 +78,30 @@ public abstract class PDFReport extends PDF {
 	}
 
 	/**
+	 * Get the name of the configured logo of the organization.
+	 *
+	 * @return Name of the logo. You may override this to print another logo.
+	 */
+	public String getLogoName() {
+		return device.getDeviceLayout().getLogoName(getTransactionManager());
+	}
+
+	/**
 	 * Get the configured logo of the product (could be <code>null</code>).
 	 *
 	 * @return The configured product logo.
 	 */
 	public PDFImage getProductLogo() {
     	return null;
+	}
+
+	/**
+	 * Get the name of the configured product logo of the organization.
+	 *
+	 * @return Name of the product logo. You may override this to print another logo.
+	 */
+	public String getProductLogoName() {
+		return device.getDeviceLayout().getProductLogoName();
 	}
 
 	/**
@@ -135,6 +159,37 @@ public abstract class PDFReport extends PDF {
 	 */
 	public PDFTable getTitleTable() {
     	return null;
+	}
+
+	/**
+	 * This is a helper method to create a "title table" from a {@link HasContacts} instance. The
+	 * {@link #getTitleTable()} can use this to create a "title table" quickly.
+	 *
+	 * @param hasContacts Contact instance. The name and address will be printed from this.
+	 * @param captions Caption to be printed. The fist caption will be more highlighted than the subsequent ones.
+	 * @return A table instance that can be used as a "title table".
+	 */
+	public PDFTable createTitleTable(HasContacts hasContacts, String... captions) {
+		Function<PDFCell, PDFCell> nb =
+				c -> {
+					c.setBorder(0);
+					return c;
+				};
+		PDFTable table = createTable(60, 40);
+		table.setBorderWidth(0);
+		Text text = new Text(hasContacts.getName(), 16, PDFFont.BOLD);
+		text.newLine().append(hasContacts.getContact("Address"), 12, PDFFont.BOLD);
+		table.addCell(createCell(text, nb));
+		if(captions == null || captions.length == 0) {
+			table.addCell(createCell(""), nb);
+		} else {
+			text = new Text(captions, 14, PDFFont.BOLD).newLine();
+			for(int i = 1; i < captions.length; i++) {
+				text.newLine(true).append(captions[i], 12, PDFFont.BOLD);
+			}
+			table.addCell(createCell(text, true), nb);
+		}
+		return table;
 	}
 
 	/**

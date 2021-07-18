@@ -35,6 +35,7 @@ public final class Person extends StoredObject implements HasContacts, Comparabl
 	public void setTitle(int title) throws Invalid_Value {
 	}
 
+	@Override
 	public String getName() {
 		return null;
 	}

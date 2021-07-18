@@ -121,4 +121,9 @@ public abstract class EntityRole extends StoredObject implements OfEntity, HasCo
     public Entity getEntity() {
         return getOrganization();
     }
+
+    @Override
+    public String getName() {
+        return getEntity().getName();
+    }
 }

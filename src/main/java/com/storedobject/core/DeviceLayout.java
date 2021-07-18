@@ -220,4 +220,8 @@ public abstract class DeviceLayout extends StoredObject {
     
     public static void setHTMLColors(String themeName) {
     }
+
+    public String getLogoName(TransactionManager tm) {
+        return "";
+    }
 }

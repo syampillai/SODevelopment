@@ -16,6 +16,7 @@ public final class Entity extends StoredObject implements HasContacts, RequiresA
         return null;
     }
 
+    @Override
 	public String getName() {
         return null;
 	}

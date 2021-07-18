@@ -83,7 +83,13 @@ public abstract class PersonRole extends StoredObject implements OfEntity, HasCo
         return ObjectIterator.create();
     }
 
+    @Override
     public Id getContactOwnerId() {
         return new Id();
+    }
+
+    @Override
+    public String getName() {
+        return getPerson().getName();
     }
 }

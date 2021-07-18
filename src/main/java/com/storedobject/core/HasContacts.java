@@ -2,6 +2,8 @@ package com.storedobject.core;
 
 public interface HasContacts {
 
+    default String getName() { return  null; }
+
     default ObjectIterator<ContactType> listContactTypes() {
         return null;
     }
