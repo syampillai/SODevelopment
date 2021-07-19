@@ -3,6 +3,7 @@ package com.storedobject.ui;
 import com.storedobject.common.SORuntimeException;
 import com.storedobject.common.StringList;
 import com.storedobject.core.*;
+import com.storedobject.report.ObjectList;
 import com.storedobject.ui.common.EntityRoleEditor;
 import com.storedobject.ui.common.PersonRoleEditor;
 import com.storedobject.ui.common.SystemUserEditor;
@@ -673,8 +674,8 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
                 search = new Button("Search", this);
             }
         }
+        print = PrintButton.create(this);
         if((actions & EditorAction.PDF) == EditorAction.PDF) {
-            print = PrintButton.create(this);
             report = new Button("Report", this);
         }
         if(nm && ((actions & EditorAction.AUDIT) == EditorAction.AUDIT)) {
@@ -1287,7 +1288,7 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
      * This is equivalent to pressing the "Report" button.
      */
     public void doReport() {
-        new ObjectReport<>(getObjectClass()).execute();
+        new ObjectList<T>(getApplication(), getObjectClass()).execute();
     }
 
     /**

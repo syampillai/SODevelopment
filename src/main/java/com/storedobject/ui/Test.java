@@ -7,6 +7,7 @@ import com.storedobject.common.JSON;
 import com.storedobject.core.*;
 import com.storedobject.pdf.PDFCell;
 import com.storedobject.pdf.PDFReport;
+import com.storedobject.report.ObjectList;
 import com.storedobject.vaadin.*;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Focusable;
@@ -43,11 +44,12 @@ public class Test implements Executable {
         */
         //new TestChart().execute();
         //new TestTemplate().execute();
-        new TestFields().execute();
+        //new TestFields().execute();
         //new TestAlert().execute();
         //new UploadTest().execute();
         //new TFTest().execute();
         //new TTest(Application.get()).execute();
+        new PersonList(Application.get()).execute();
     }
 
     public static class TestFields extends DataForm {
@@ -199,23 +201,14 @@ public class Test implements Executable {
         }
     }
 
-    public static class TTest extends PDFReport {
+    public static class PersonList extends ObjectList<Person> {
 
-        public TTest(Application application) {
-            super(application);
+        public PersonList(Device device) {
+            super(device, ReportDefinition.create(Person.class, ClassAttribute.get(Person.class).getAttributes()));
         }
 
-        @Override
-        public void generateContent() throws Exception {
-            ObjectTable<Person> persons = new ObjectTable<>(Person.class);
-            for(Person person: StoredObject.list(Person.class)) {
-                persons.addObject(person);
-            }
-            add(persons);
-            PDFCell cell = createCell(Signature.get(((Application)getDevice()).getTransactionManager().getUser()));
-            cell.setFixedHeight(50);
-            cell.setBorder(0);
-            add(cell);
+        public String getShortName(Person p) {
+            return "Short";
         }
     }
 }

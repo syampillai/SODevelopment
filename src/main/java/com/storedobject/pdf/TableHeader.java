@@ -7,7 +7,7 @@ import java.util.function.Function;
  *
  * @author Syam
  */
-public class PDFTableHeader {
+public class TableHeader {
 
     private final String[] cellHeaders;
     private final int[] widths, horizontalAlignments, verticalAlignments;
@@ -19,7 +19,7 @@ public class PDFTableHeader {
      * Constructor. Default relative widths of all columns are set to 10. By default all headers will be centered.
      * @param cellHeaders Cell headers.
      */
-    public PDFTableHeader(String... cellHeaders) {
+    public TableHeader(String... cellHeaders) {
         this.cellHeaders = cellHeaders;
         int n = cellHeaders.length;
         widths = new int[n];
@@ -30,6 +30,15 @@ public class PDFTableHeader {
             horizontalAlignments[i] = PDFElement.ALIGN_CENTER;
             verticalAlignments[i] = PDFElement.ALIGN_MIDDLE;
         }
+    }
+
+    /**
+     * Set caption for a specific column.
+     * @param columnIndex Column index.
+     * @param caption Caption to set.
+     */
+    public void setHeader(int columnIndex, String caption) {
+        cellHeaders[columnIndex] = caption;
     }
 
     /**

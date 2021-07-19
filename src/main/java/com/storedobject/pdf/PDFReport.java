@@ -177,15 +177,29 @@ public abstract class PDFReport extends PDF {
 				};
 		PDFTable table = createTable(60, 40);
 		table.setBorderWidth(0);
-		Text text = new Text(hasContacts.getName(), 16, PDFFont.BOLD);
-		text.newLine().append(hasContacts.getContact("Address"), 12, PDFFont.BOLD);
+		Text text = new Text(hasContacts.getName(), 14, PDFFont.BOLD);
+		StringBuilder a = new StringBuilder();
+		String s = hasContacts.getContact("Address");
+		if(s != null) {
+			a.append(s);
+		}
+		s = hasContacts.getContact("Phone");
+		boolean phone;
+		if(phone = s != null) {
+			a.append("\nPhone: ").append(s);
+		}
+		s = hasContacts.getContact("Email");
+		if(s != null) {
+			a.append(phone ? ", " : "\n").append("Email: ").append(s);
+		}
+		text.newLine().append(a, 6, PDFFont.BOLD);
 		table.addCell(createCell(text, nb));
 		if(captions == null || captions.length == 0) {
 			table.addCell(createCell(""), nb);
 		} else {
-			text = new Text(captions, 14, PDFFont.BOLD).newLine();
+			text = new Text(captions[0], 12, PDFFont.BOLD).newLine();
 			for(int i = 1; i < captions.length; i++) {
-				text.newLine(true).append(captions[i], 12, PDFFont.BOLD);
+				text.newLine(true).append(captions[i], 10, PDFFont.BOLD);
 			}
 			table.addCell(createCell(text, true), nb);
 		}

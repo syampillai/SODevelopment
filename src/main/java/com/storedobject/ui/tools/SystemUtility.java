@@ -4,6 +4,7 @@ import com.storedobject.common.StringList;
 import com.storedobject.core.*;
 import com.storedobject.office.Excel;
 import com.storedobject.pdf.PDFReport;
+import com.storedobject.report.ObjectList;
 import com.storedobject.ui.Application;
 import com.storedobject.ui.*;
 import com.storedobject.ui.common.ExcelDataUpload;
@@ -249,7 +250,7 @@ public class SystemUtility extends View implements CloseableView, Transactional 
         }
         if(c == pdf) {
             if(cols.startsWith("/")) {
-                new ObjectReport(objectClass, any.getValue()).execute();
+                new ObjectList<>(getApplication(), objectClass, any.getValue()).execute();
                 return;
             }
             StringList colList = StringList.create(cols);
