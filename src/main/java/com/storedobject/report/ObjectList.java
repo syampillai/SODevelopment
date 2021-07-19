@@ -7,6 +7,8 @@ import com.storedobject.core.StoredObject;
 import com.storedobject.pdf.PDFReport;
 import com.storedobject.pdf.TableHeader;
 
+import java.util.function.Predicate;
+
 public class ObjectList<T extends StoredObject> extends PDFReport {
 
     protected final ReportDefinition reportDefinition;
@@ -45,5 +47,17 @@ public class ObjectList<T extends StoredObject> extends PDFReport {
 
     @Override
     public void generateContent() throws Exception {
+    }
+
+    public String getOrderBy() {
+        return reportDefinition.getOrderBy();
+    }
+
+    public String getExtraCondition() {
+        return null;
+    }
+
+    public Predicate<T> getLoadFilter() {
+        return null;
     }
 }
