@@ -49,7 +49,8 @@ public class Test implements Executable {
         //new UploadTest().execute();
         //new TFTest().execute();
         //new TTest(Application.get()).execute();
-        new PersonList(Application.get()).execute();
+        //new PersonList(Application.get()).execute();
+        new M().execute();
     }
 
     public static class TestFields extends DataForm {
@@ -209,6 +210,13 @@ public class Test implements Executable {
 
         public String getShortName(Person p) {
             return "Short";
+        }
+    }
+
+    public static class M extends GridMenu {
+
+        public M() {
+            super("G Menu");
         }
     }
 }

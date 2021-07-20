@@ -116,6 +116,22 @@ public abstract class PDF implements java.io.Closeable, com.storedobject.core.Co
         this();
     }
 
+    /**
+     * Open the PDF for creating the content. This is automatically invoked by the framework.
+     */
+    public void open() {
+    }
+
+    /**
+     * Return the width in number of characters for drawing the given value.
+     *
+     * @param any anything.
+     * @return Width in number of characters.
+     */
+    protected final int toCharCount(Object any) {
+        return 0;
+    }
+
     public static PDFRectangle getPageSize(int paperSizeIndex) {
         return null;
     }

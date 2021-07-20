@@ -1,5 +1,10 @@
 package com.storedobject.pdf;
 
+import com.storedobject.office.Excel;
+import org.apache.poi.ss.usermodel.Cell;
+
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Function;
 
 /**
@@ -33,12 +38,50 @@ public class TableHeader {
     }
 
     /**
+     * Constructor. Default relative widths of all columns are set to 10. By default all headers will be centered.
+     * @param cellHeaders Cell headers.
+     */
+    public TableHeader(Iterable<String> cellHeaders) {
+        this(array(cellHeaders));
+    }
+
+    private static String[] array(Iterable<String> cellHeaders) {
+        List<String> a;
+        if(cellHeaders instanceof List) {
+            a = (List<String>) cellHeaders;
+        } else {
+            a = new ArrayList<>();
+            for(String s: cellHeaders) {
+                a.add(s);
+            }
+        }
+        int n = a.size();
+        String[] ch = new String[n];
+        int i = 0;
+        for(String s: a) {
+            ch[i++] = s;
+        }
+        return ch;
+    }
+
+    /**
      * Set caption for a specific column.
      * @param columnIndex Column index.
      * @param caption Caption to set.
      */
     public void setHeader(int columnIndex, String caption) {
         cellHeaders[columnIndex] = caption;
+    }
+
+    private int index(String colName) {
+        int i = 0;
+        for(String cn: cellHeaders) {
+            if(cn.equals(colName)) {
+                return i;
+            }
+            ++i;
+        }
+        return -1;
     }
 
     /**
@@ -51,6 +94,15 @@ public class TableHeader {
     }
 
     /**
+     * Set horizontal alignment.
+     * @param columnName Column name.
+     * @param alignment Alignment,
+     */
+    public void setHorizontalAlignment(String columnName, int alignment) {
+        setHorizontalAlignment(index(columnName), alignment);
+    }
+
+    /**
      * Set vertical alignment.
      * @param columnIndex Column index.
      * @param alignment Alignment,
@@ -60,12 +112,36 @@ public class TableHeader {
     }
 
     /**
+     * Set vertical alignment.
+     * @param columnName Column name.
+     * @param alignment Alignment,
+     */
+    public void setVerticalAlignment(String columnName, int alignment) {
+        setVerticalAlignment(index(columnName), alignment);
+    }
+
+    /**
      * Set relative widths.
      * @param widths Relative widths.
      */
     public void setWidths(int... widths) {
-        for(int i = 0; i < this.widths.length && i < widths.length; ++i) {
-            this.widths[i] = widths[i];
+        if(widths != null) {
+            for(int i = 0; i < this.widths.length && i < widths.length; ++i) {
+                this.widths[i] = widths[i];
+            }
+        }
+    }
+
+    /**
+     * Set relative widths.
+     * @param widths Relative widths.
+     */
+    public void setWidths(Iterable<Integer> widths) {
+        if(widths != null) {
+            int i = 0;
+            for(Integer w: widths) {
+                this.widths[i++] = w;
+            }
         }
     }
 
@@ -76,6 +152,15 @@ public class TableHeader {
      */
     public void setWidth(int columnIndex, int width) {
         widths[columnIndex] = width;
+    }
+
+    /**
+     * Set the relative width of a specific column.
+     * @param columnName Column name.
+     * @param width Relative width.
+     */
+    public void setWidth(String columnName, int width) {
+        setWidth(index(columnName), width);
     }
 
     /**
@@ -141,5 +226,60 @@ public class TableHeader {
      */
     public void setCellCustomizer(Function<PDFCell, PDFCell> cellCustomizer) {
         this.cellCustomizer = cellCustomizer;
+    }
+
+    /**
+     * Fill the header values into the {@link Excel} instance provided. Values will be filled from left to right,
+     * starting from the current cell. Finally, cell position will be set to the next row of the starting cell.
+     *
+     * @param excel Excel instance to which values to be filled.
+     */
+    public void fillHeaderCells(Excel excel) {
+        int r = excel.getRowIndex(), c = excel.getCellIndex();
+        for(int i = 0; i < cellHeaders.length; i++) {
+            excel.goToCell(c + i, r);
+            excel.setCellValue(customCell(excel, i), cellHeaders[i]);
+        }
+        excel.goToCell(c, r + 1);
+    }
+
+    /**
+     * Fill the cell values into the {@link Excel} instance provided. Values will be filled from left to right,
+     * starting from the current cell. Finally, cell position will be set to the next row of the starting cell.
+     *
+     * @param excel Excel instance to which values to be filled.
+     * @param cellValues Cell values to fill.
+     */
+    public void fillRow(Excel excel, Object... cellValues) {
+        int r = excel.getRowIndex(), c = excel.getCellIndex();
+        fillCells(excel, cellValues);
+        excel.goToCell(c, r + 1);
+    }
+
+    /**
+     * Fill the cell values into the {@link Excel} instance provided. Values will be filled from left to right,
+     * starting from the current cell. Finally, cell position will be set to the next cell on the right.
+     *
+     * @param excel Excel instance to which values to be filled.
+     * @param cellValues Cell values to fill.
+     */
+    public void fillCells(Excel excel, Object... cellValues) {
+        if(cellValues != null && cellValues.length > 0) {
+            int r = excel.getRowIndex(), c = excel.getCellIndex();
+            for(int i = 0; i < cellValues.length; i++) {
+                excel.goToCell(c + i, r);
+                excel.setCellValue(customCell(excel, i), cellValues[i]);
+            }
+            excel.goToCell(c + 1, r);
+        }
+    }
+
+    private Cell customCell(Excel excel, int index) {
+        Cell cell = excel.getCell();
+        switch(horizontalAlignments[index]) {
+            case PDFElement.ALIGN_CENTER, PDFElement.ALIGN_MIDDLE -> cell.setCellStyle(excel.getCenteredStyle());
+            case PDFElement.ALIGN_RIGHT -> cell.setCellStyle(excel.getRightAlignedStyle());
+        }
+        return cell;
     }
 }

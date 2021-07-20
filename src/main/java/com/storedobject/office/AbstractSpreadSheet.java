@@ -134,7 +134,7 @@ public abstract class AbstractSpreadSheet extends StreamContentProducer {
     }
 
     /**
-     * Set a value to to the next cell. The next cell is obtained by calling {@link #getNextCell()}.
+     * Set a value to to the current cell.
      * If the value can't be set because the type is not supported, its stringified version will be set.
      *
      * @param cellValue Value to set.

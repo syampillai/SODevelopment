@@ -26,6 +26,15 @@ public class GridMenu extends View implements SingletonLogic, CloseableView {
         add(logic.getTitle(), () -> Application.get().execute(logic));
     }
 
+    @Override
+    protected void execute(View parent, boolean doNotLock) {
+        if(menu.isEmpty()) {
+            message("No options to display for '" + getCaption() + "'");
+            return;
+        }
+        super.execute(parent, doNotLock);
+    }
+
     private class Menu extends ListGrid<MenuItem> {
 
         private final SearchField searchField;

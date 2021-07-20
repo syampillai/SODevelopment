@@ -3,6 +3,8 @@ package com.storedobject.pdf;
 import com.storedobject.core.Device;
 import com.storedobject.core.HasContacts;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Function;
 
 /**
@@ -159,6 +161,35 @@ public abstract class PDFReport extends PDF {
 	 */
 	public PDFTable getTitleTable() {
     	return null;
+	}
+
+	/**
+	 * This is a helper method to create a "title table" from a {@link HasContacts} instance. The
+	 * {@link #getTitleTable()} can use this to create a "title table" quickly.
+	 *
+	 * @param hasContacts Contact instance. The name and address will be printed from this.
+	 * @param captions Caption to be printed. The fist caption will be more highlighted than the subsequent ones.
+	 * @return A table instance that can be used as a "title table".
+	 */
+	public PDFTable createTitleTable(HasContacts hasContacts, Iterable<String> captions) {
+		if(captions == null) {
+			return createTitleTable(hasContacts);
+		}
+		List<String> list;
+		if(captions instanceof List) {
+			list = (List<String>) captions;
+		} else {
+			list = new ArrayList<>();
+			for(String c: captions) {
+				list.add(c);
+			}
+		}
+		String[] cs = new String[list.size()];
+		int i = 0;
+		for(String c: captions) {
+			cs[i++] = c;
+		}
+		return createTitleTable(hasContacts, cs);
 	}
 
 	/**
