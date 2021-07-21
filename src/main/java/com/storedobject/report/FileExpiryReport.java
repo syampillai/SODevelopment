@@ -95,7 +95,7 @@ public class FileExpiryReport extends PDFReport {
 			cell.setColumnSpan(table.getNumberOfColumns());
 			table.addCell(cell);
 		}
-		addTable(table);
+		add(table);
 	}
 	
 	private void print(FileFolder folder) throws Exception {

@@ -17,7 +17,6 @@ import com.storedobject.pdf.PDFFont;
 import com.storedobject.pdf.PDFReport;
 import com.storedobject.pdf.PDFTable;
 
-@SuppressWarnings("unused")
 public class FileCirculationStatus extends PDFReport {
 	
 	private final static long H = 3600000L;
@@ -129,7 +128,7 @@ public class FileCirculationStatus extends PDFReport {
 				table.addCell(cell);
 			}
 		}
-		addTable(table);
+		add(table);
 	}
 	
 	private PDFColor color(FileCirculation fc) {
