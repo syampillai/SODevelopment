@@ -1,5 +1,6 @@
 package com.storedobject.pdf;
 
+import java.util.List;
 import java.util.function.Function;
 
 /**
@@ -129,12 +130,6 @@ public class PDFTable implements PDFElement {
         return 0;
     }
 
-	public void setSpacingBefore(float spacing) {
-    }
-
-	public void setSpacingAfter(float spacing) {
-    }
-
     public void setWidthPercentage(float[] columnWidth, PDFRectangle pageSize) throws PDFException {
     }
 
@@ -147,16 +142,8 @@ public class PDFTable implements PDFElement {
     public void setSkipFirstHeader(boolean skip) {
     }
 
-    public java.util.List < PDFChunk > getChunks() {
+    public List<PDFChunk> getChunks() {
         return null;
-    }
-
-	public float getSpacingBefore() {
-        return 0;
-    }
-
-	public float getSpacingAfter() {
-        return 0;
     }
 
     public float getWidthPercentage() {
@@ -202,15 +189,6 @@ public class PDFTable implements PDFElement {
     }
 
     public void setBreakPoints(int[] breakPoints) {
-    }
-
-    public void keepRowsTogether(int[] rows) {
-    }
-
-    public void keepRowsTogether(int fromRow, int toRow) {
-    }
-
-    public void keepRowsTogether(int fromRow) {
     }
 
     public float[] getAbsoluteWidths() {

@@ -7,6 +7,7 @@ import com.storedobject.common.JSON;
 import com.storedobject.core.*;
 import com.storedobject.pdf.PDFCell;
 import com.storedobject.pdf.PDFReport;
+import com.storedobject.pdf.PDFTable;
 import com.storedobject.report.ObjectList;
 import com.storedobject.vaadin.*;
 import com.vaadin.flow.component.Component;
@@ -17,6 +18,8 @@ import com.vaadin.flow.component.datetimepicker.DateTimePicker;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.template.Id;
+import jdk.jshell.JShell;
+import jdk.jshell.VarSnippet;
 
 import javax.imageio.ImageIO;
 import java.awt.image.RenderedImage;
@@ -213,10 +216,33 @@ public class Test implements Executable {
         }
     }
 
-    public static class M extends GridMenu {
+    public static class M extends DataForm {
+
+        private final TextArea code = new TextArea("Code Shell");
+        private final JShell shell;
 
         public M() {
-            super("G Menu");
+            super("Shell", false);
+            addField(code);
+            shell = JShell.create();
+        }
+
+        @Override
+        protected void buildButtons() {
+            super.buildButtons();
+            ok.setText("Evaluate");
+        }
+
+        @Override
+        protected boolean process() {
+            String code = this.code.getValue();
+            if(!code.isBlank()) {
+                shell.eval(code);
+                shell.variables().forEach(v -> {
+                    message(v.name() + " = " + shell.varValue(v));
+                });
+            }
+            return false;
         }
     }
 }

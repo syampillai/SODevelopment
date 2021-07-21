@@ -79,11 +79,11 @@ public class DeveloperActivity extends DataForm {
                     table.addCell(createCell(log.getActionValue()));
                     table.addCell(createCell(DateUtility.trimMillis(log.getActionedAt())));
                     if((++rows %  80) == 0) {
-                        addTable(table);
+                        add(table);
                     }
                 }
                 if(rows > 0) {
-                    addTable(table);
+                    add(table);
                     addGap(5);
                     printLog(u, false);
                 }
@@ -126,11 +126,11 @@ public class DeveloperActivity extends DataForm {
                 table.addCell(createCell(s.getIPAddress()));
                 table.addCell(createCell(trim(s.getApplication())));
                 if((count.get() % 80) == 0) {
-                    addTable(table);
+                    add(table);
                 }
             });
             if(count.get() > 0) {
-                addTable(table);
+                add(table);
             }
         }
 

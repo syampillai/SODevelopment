@@ -482,11 +482,9 @@ public class QueryGrid extends ListGrid<QueryGrid.QueryResult> {
                     Object v = qr.get(i);
                     table.addCell(createCell(convertValue(v, i), align(v, i)));
                 });
-                if(table.getNumberOfRows() > 60) {
-                    addTable(table);
-                }
+                add(table);
             }
-            addTable(table);
+            add(table);
         }
 
         private int align(Object value, int columnIndex) {

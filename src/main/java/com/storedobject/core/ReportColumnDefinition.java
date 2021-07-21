@@ -112,6 +112,13 @@ public class ReportColumnDefinition extends StoredObject implements Detail {
         return "";
     }
 
+    public void setDisplayOrder(int displayOrder) {
+    }
+
+    public int getDisplayOrder() {
+        return 0;
+    }
+
     @Override
     public boolean isDetailOf(Class<? extends StoredObject> masterClass) {
         return ReportDefinition.class.isAssignableFrom(masterClass);

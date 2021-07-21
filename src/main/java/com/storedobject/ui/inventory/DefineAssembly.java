@@ -433,7 +433,7 @@ public class DefineAssembly<T extends InventoryItemType, C extends InventoryItem
             }
             table.setHeaderRows(1);
             print(0, root, null);
-            addTable(table);
+            add(table);
         }
 
         private void print(int level, InventoryAssembly ia, String pos) {

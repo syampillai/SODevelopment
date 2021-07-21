@@ -17,12 +17,20 @@ public class ObjectList<T extends StoredObject> extends PDFReport {
         this(device, (ReportDefinition) null);
     }
 
-    public ObjectList(Device device, Class<T> dataClass) {
-        this(device, dataClass, false);
+    public ObjectList(Device device, Class<T> dataClass, String... attributes) {
+        this(device, dataClass, false, attributes);
     }
 
-    public ObjectList(Device device, Class<T> dataClass, boolean any) {
-        this(device, ReportDefinition.create(dataClass));
+    public ObjectList(Device device, Class<T> dataClass, boolean any, String... attributes) {
+        this(device, ReportDefinition.create(dataClass, attributes));
+    }
+
+    public ObjectList(Device device, Class<T> dataClass, Iterable<String> attributes) {
+        this(device, dataClass, false, attributes);
+    }
+
+    public ObjectList(Device device, Class<T> dataClass, boolean any, Iterable<String> attributes) {
+        this(device, ReportDefinition.create(dataClass, attributes));
     }
 
     public ObjectList(Device device, ReportDefinition reportDefinition) {

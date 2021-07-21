@@ -1068,13 +1068,6 @@ public abstract class PDF implements java.io.Closeable, com.storedobject.core.Co
     }
 
     /**
-     * Add current set of rows to the document and delete them from the table.
-     * @param table Table to be added.
-     */
-    public void addTable(PDFTable table) {
-    }
-
-    /**
      * Add an image at position (0, 0) in the current page.
      *
      * @param image Image to add.

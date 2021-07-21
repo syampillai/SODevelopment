@@ -428,7 +428,7 @@ public abstract class AbstractAssembly<T extends InventoryItem, C extends Invent
             }
             table.setHeaderRows(1);
             print(0, root);
-            addTable(table);
+            add(table);
         }
 
         private void print(int level, InventoryFitmentPosition pos) {
