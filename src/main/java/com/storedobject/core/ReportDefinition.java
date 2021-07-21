@@ -1,9 +1,11 @@
 package com.storedobject.core;
 
 import com.storedobject.common.Executable;
+import com.storedobject.common.StringList;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Supplier;
 
 public class ReportDefinition extends Name {
 
@@ -123,7 +125,7 @@ public class ReportDefinition extends Name {
         return null;
     }
 
-    public List<ReportColumnDefinition> getColumns() {
+    public final List<ReportColumnDefinition> getColumns() {
         return new ArrayList<>();
     }
 
@@ -136,5 +138,8 @@ public class ReportDefinition extends Name {
     }
 
     public void setExecutable(Executable executable) {
+    }
+
+    public void setCustomColumnSupplier(Supplier<StringList> customColumnSupplier) {
     }
 }

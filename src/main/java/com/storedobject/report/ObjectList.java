@@ -4,9 +4,11 @@ import com.storedobject.core.Device;
 import com.storedobject.core.HasContacts;
 import com.storedobject.core.ReportDefinition;
 import com.storedobject.core.StoredObject;
+import com.storedobject.pdf.PDFCell;
 import com.storedobject.pdf.PDFReport;
 import com.storedobject.pdf.TableHeader;
 
+import java.util.function.Function;
 import java.util.function.Predicate;
 
 public class ObjectList<T extends StoredObject> extends PDFReport {
@@ -55,6 +57,14 @@ public class ObjectList<T extends StoredObject> extends PDFReport {
 
     @Override
     public void generateContent() throws Exception {
+    }
+
+    protected Function<PDFCell, PDFCell> getHeaderCellCustomizer() {
+        return null;
+    }
+
+    protected Function<PDFCell, PDFCell> getBodyCellCustomizer() {
+        return null;
     }
 
     public String getOrderBy() {

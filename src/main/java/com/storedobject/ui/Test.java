@@ -4,6 +4,7 @@ import com.storedobject.chart.*;
 import com.storedobject.common.Executable;
 import com.storedobject.common.IO;
 import com.storedobject.common.JSON;
+import com.storedobject.common.StringList;
 import com.storedobject.core.*;
 import com.storedobject.pdf.PDFCell;
 import com.storedobject.pdf.PDFReport;
@@ -52,8 +53,8 @@ public class Test implements Executable {
         //new UploadTest().execute();
         //new TFTest().execute();
         //new TTest(Application.get()).execute();
-        //new PersonList(Application.get()).execute();
-        new M().execute();
+        new PersonList(Application.get()).execute();
+        //new M().execute();
     }
 
     public static class TestFields extends DataForm {
@@ -208,11 +209,8 @@ public class Test implements Executable {
     public static class PersonList extends ObjectList<Person> {
 
         public PersonList(Device device) {
-            super(device, ReportDefinition.create(Person.class, ClassAttribute.get(Person.class).getAttributes()));
-        }
-
-        public String getShortName(Person p) {
-            return "Short";
+            super(device, ReportDefinition.create(Person.class));
+            reportDefinition.setCustomColumnSupplier(() -> StringList.create("FirstName", "DateOfBirth", "Age"));
         }
     }
 
