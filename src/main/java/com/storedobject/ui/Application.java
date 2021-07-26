@@ -30,7 +30,7 @@ import java.util.function.Consumer;
 
 public class Application extends com.storedobject.vaadin.Application implements Device, RunningLogic, RequiresApproval {
 
-    private static final String VERSION = "20.0.4";
+    private static final String VERSION = "20.0.5";
     private static final String COMPACT_STYLES =
             """
                     --lumo-size-xl: 3rem;
@@ -332,6 +332,22 @@ public class Application extends com.storedobject.vaadin.Application implements 
             return;
         }
         closeTimer();
+        ArrayList<View> views = new ArrayList<>();
+        getActiveViews().forEach(views::add);
+        int count = views.size() << 1;
+        while(count-- > 0) {
+            views.removeIf(v -> !v.executing());
+            if(views.isEmpty()) {
+                break;
+            }
+            View v = views.remove(0);
+            if(v.executing()) {
+                try {
+                    v.abort();
+                } catch(Throwable ignored) {
+                }
+            }
+        }
         String exit = ApplicationServer.getGlobalProperty("application.exit.site", null);
         if(exit == null) {
             exit = layout == null ? "" : layout.getExitSite().trim();

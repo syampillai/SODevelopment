@@ -2,36 +2,14 @@ package com.storedobject.ui;
 
 import com.storedobject.chart.*;
 import com.storedobject.common.Executable;
-import com.storedobject.common.IO;
 import com.storedobject.common.JSON;
-import com.storedobject.common.StringList;
-import com.storedobject.core.*;
-import com.storedobject.pdf.PDFCell;
-import com.storedobject.pdf.PDFReport;
-import com.storedobject.pdf.PDFTable;
-import com.storedobject.report.ObjectList;
 import com.storedobject.vaadin.*;
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.Focusable;
-import com.vaadin.flow.component.HasValue;
-import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.datetimepicker.DateTimePicker;
-import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.template.Id;
 import jdk.jshell.JShell;
-import jdk.jshell.VarSnippet;
 
-import javax.imageio.ImageIO;
-import java.awt.image.RenderedImage;
-import java.io.*;
-import java.lang.reflect.Method;
-import java.sql.Date;
-import java.sql.Timestamp;
-import java.time.LocalDateTime;
-import java.util.Base64;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Random;
 
 public class Test implements Executable {
@@ -46,15 +24,14 @@ public class Test implements Executable {
                 );
         v.execute();
         */
-        //new TestChart().execute();
+        new TestChart().execute();
         //new TestTemplate().execute();
         //new TestFields().execute();
         //new TestAlert().execute();
         //new UploadTest().execute();
         //new TFTest().execute();
         //new TTest(Application.get()).execute();
-        new PersonList(Application.get()).execute();
-        //new M().execute();
+        //new ObjectList("com.storedobject.core.SystemUser|Person.Age/GT AS Age greater than").execute();
     }
 
     public static class TestFields extends DataForm {
@@ -152,48 +129,60 @@ public class Test implements Executable {
             super("Chart");
 
             // Creating a chart display area
-            Chart soChart = new Chart();
+            CustomChart soChart = new CustomChart();
             soChart.setSize("800px", "500px");
 
             // Generating some random values for a LineChart
             Random random = new Random();
-            Data xValues = new Data();
+            CategoryData xValues = new CategoryData();
             Data yValues1 = new Data(), yValues2 = new Data();
-            for(int x = 0; x < 12; x++) {
-                xValues.add(2020);
+            for(int x = 0; x <= 11; x++) {
+                xValues.add("" + (2010 + x));
                 yValues1.add(random.nextInt(100));
                 yValues2.add(random.nextInt(100));
             }
-            xValues.setName("Months of 2021");
-            yValues1.setName("Random Values");
+
+            // Define axes
+            XAxis xAxis = new XAxis(xValues);
+            xAxis.setMinAsMinData();
+            YAxis yAxis1 = new YAxis(yValues1), yAxis2 = new YAxis(yValues2);
 
             // Bar charts is initialized with the generated XY values
             BarChart barChart1 = new BarChart(xValues, yValues1);
-            barChart1.setName("Bar #1");
-            barChart1.setStackName("BC"); // Just a name - should be same for all the charts on the same stack
+            barChart1.setName("Wheat");
             BarChart barChart2 = new BarChart(xValues, yValues2);
-            barChart2.setName("Bar #2");
-            barChart2.setStackName("BC"); // Just a name - should be same for all the charts on the same stack
+            barChart2.setName("Rice");
+            barChart2.setBarGap(0);
 
-            RadiusAxis radiusAxis = new RadiusAxis(xValues);
-            radiusAxis.setMinAsMinData();
-            radiusAxis.setMaxAsMaxData();
-            AngleAxis angleAxis = new AngleAxis(yValues1);
-            angleAxis.setMinAsMinData();
-            angleAxis.setMaxAsMaxData();
-            PolarCoordinate pc = new PolarCoordinate(radiusAxis, angleAxis);
+            // Create and customize value-labels of one of the charts
+            Chart.Label label = barChart1.getLabel(true);
+            label.setFormatter("{1} {black|{chart} Hello World}");
+            label.setInside(true);
+            label.setGap(15);
+            label.setRotation(90);
+            label.getPosition().bottom();
+            Alignment alignment = label.getAlignment(true);
+            alignment.alignCenter();
+            alignment.justifyLeft();
+            RichTextStyle rich = label.getRichTextStyle(true);
+            TextStyle richText = rich.get("black", true);
+            richText.setColor(new Color("black"));
+            barChart2.setLabel(label);
 
-            barChart1.plotOn(pc);
-            //barChart2.plotOn(pc);
+            // Use a coordinate system
+            RectangularCoordinate rc = new RectangularCoordinate();
+            rc.addAxis(xAxis, yAxis1, yAxis2);
+            barChart1.plotOn(rc);
+            barChart2.plotOn(rc);
 
-            soChart.add(pc);
+            soChart.add(rc);
 
             // Set the component for the view
             setComponent(new VerticalLayout(soChart));
         }
     }
 
-    private static class Chart extends SOChart {
+    private static class CustomChart extends SOChart {
 
         @Override
         protected String customizeJSON(String json) {
@@ -206,20 +195,19 @@ public class Test implements Executable {
         }
     }
 
-    public static class PersonList extends ObjectList<Person> {
+    public static class M extends GridMenu {
 
-        public PersonList(Device device) {
-            super(device, ReportDefinition.create(Person.class));
-            reportDefinition.setCustomColumnSupplier(() -> StringList.create("FirstName", "DateOfBirth", "Age"));
+        public M() {
+            super("Menu Test");
         }
     }
 
-    public static class M extends DataForm {
+    public static class SOShell extends DataForm {
 
         private final TextArea code = new TextArea("Code Shell");
         private final JShell shell;
 
-        public M() {
+        public SOShell() {
             super("Shell", false);
             addField(code);
             shell = JShell.create();

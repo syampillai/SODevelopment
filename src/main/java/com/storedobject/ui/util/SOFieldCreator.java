@@ -61,6 +61,10 @@ public class SOFieldCreator<T> implements ObjectFieldCreator<T> {
         this.objectClass = c;
     }
 
+    public Class<T> getObjectClass() {
+        return objectClass;
+    }
+
     @Override
     public Stream<Method> getFieldGetMethods() {
         if(ca != null) {

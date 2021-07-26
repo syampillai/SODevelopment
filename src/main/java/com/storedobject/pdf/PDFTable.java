@@ -136,6 +136,13 @@ public class PDFTable implements PDFElement {
     public void setWidthPercentage(float widthPercentage) {
     }
 
+    public boolean isComplete() {
+        return false;
+    }
+
+    public void setComplete(final boolean complete) {
+    }
+
     public void deleteBodyRows() {
     }
 

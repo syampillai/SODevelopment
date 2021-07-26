@@ -5,6 +5,7 @@ import com.storedobject.common.Range;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.GregorianCalendar;
 
 public abstract class AbstractPeriod<T extends java.util.Date> extends Range<T> {
@@ -91,5 +92,13 @@ public abstract class AbstractPeriod<T extends java.util.Date> extends Range<T> 
 	public String toString(String format) {
 		SimpleDateFormat f = new SimpleDateFormat(format);
 		return f.format(getFrom()) + " - " + f.format(getTo());
+	}
+
+	public boolean inside(long time) {
+		return time >= from.getTime() && time <= to.getTime();
+	}
+
+	public boolean inside(Date date) {
+		return inside(date.getTime());
 	}
 }

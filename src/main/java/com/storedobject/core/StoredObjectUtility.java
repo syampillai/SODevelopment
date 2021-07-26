@@ -165,6 +165,10 @@ public final class StoredObjectUtility {
             return null;
         }
 
+        public boolean isAttribute() {
+            return true;
+        }
+
         public Method getHead() {
             return null;
         }

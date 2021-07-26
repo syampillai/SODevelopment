@@ -4,6 +4,7 @@ import com.storedobject.core.EditableList;
 import com.storedobject.core.Id;
 import com.storedobject.core.ObjectIterator;
 import com.storedobject.core.StoredObject;
+import com.storedobject.ui.util.ObjectListProvider;
 import com.vaadin.flow.shared.Registration;
 
 import java.util.*;
@@ -11,7 +12,7 @@ import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class EditableObjectList<T extends StoredObject> extends ObjectList<T, Void> implements EditableList<T> {
+public class EditableObjectList<T extends StoredObject> extends ObjectListProvider<T, Void> implements EditableList<T> {
 
     private final List<Id> added = new ArrayList<>();
     private final List<Id> edited = new ArrayList<>();
@@ -26,7 +27,8 @@ public class EditableObjectList<T extends StoredObject> extends ObjectList<T, Vo
     }
 
     public EditableObjectList(Class<T> objectClass, boolean allowAny) {
-        super(objectClass, allowAny);
+        super(objectClass);
+        setAllowAny(allowAny);
     }
 
     public boolean isChanged() {
