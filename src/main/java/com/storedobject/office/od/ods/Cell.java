@@ -31,20 +31,8 @@ public class Cell implements org.apache.poi.ss.usermodel.Cell {
         return CellType._NONE;
     }
 
-    @Deprecated
-    @Override
-    public CellType getCellTypeEnum() {
-        return null;
-    }
-
     @Override
     public CellType getCachedFormulaResultType() {
-        return null;
-    }
-
-    @Deprecated
-    @Override
-    public CellType getCachedFormulaResultTypeEnum() {
         return null;
     }
 

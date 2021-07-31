@@ -2,6 +2,7 @@ package com.storedobject.office.od.ods;
 
 import com.storedobject.office.PDFProperties;
 import org.apache.poi.ss.SpreadsheetVersion;
+import org.apache.poi.ss.formula.EvaluationWorkbook;
 import org.apache.poi.ss.formula.udf.UDFFinder;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -53,21 +54,14 @@ public class Workbook implements org.apache.poi.ss.usermodel.Workbook {
         return null;
     }
 
-    @Deprecated
     @Override
-    public short getNumberOfFonts() {
+    public int getNumberOfFonts() {
         return 0;
     }
 
     @Override
     public int getNumberOfFontsAsInt() {
         return getNumberOfFonts();
-    }
-
-    @Deprecated
-    @Override
-    public Font getFontAt(short index) {
-        return null;
     }
 
     @Override
@@ -114,33 +108,9 @@ public class Workbook implements org.apache.poi.ss.usermodel.Workbook {
         return null;
     }
 
-    @Deprecated
-    @Override
-    public Name getNameAt(int index) {
-        return null;
-    }
-
     @Override
     public Name createName() {
         return null;
-    }
-
-    @Deprecated
-    @Override
-    public int getNameIndex(String name) {
-        return 0;
-    }
-
-    @Deprecated
-    @Override
-    public void removeName(int index) {
-
-    }
-
-    @Deprecated
-    @Override
-    public void removeName(String name) {
-
     }
 
     @Override
@@ -263,6 +233,11 @@ public class Workbook implements org.apache.poi.ss.usermodel.Workbook {
     }
 
     @Override
+    public EvaluationWorkbook createEvaluationWorkbook() {
+        return null;
+    }
+
+    @Override
     public int getActiveSheetIndex() {
         return 0;
     }
@@ -348,5 +323,4 @@ public class Workbook implements org.apache.poi.ss.usermodel.Workbook {
 
     public void reload() {
     }
-
 }
