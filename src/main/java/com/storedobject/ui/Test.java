@@ -3,6 +3,9 @@ package com.storedobject.ui;
 import com.storedobject.chart.*;
 import com.storedobject.common.Executable;
 import com.storedobject.common.JSON;
+import com.storedobject.core.Person;
+import com.storedobject.core.Query;
+import com.storedobject.core.StoredObject;
 import com.storedobject.vaadin.*;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.datetimepicker.DateTimePicker;
@@ -26,7 +29,7 @@ public class Test implements Executable {
         v.execute();
         */
         //new TestChart().execute();
-        new HeatmapChartDemo().execute();
+        //new HeatmapChartDemo().execute();
         //new TestTemplate().execute();
         //new TestFields().execute();
         //new TestAlert().execute();
@@ -34,6 +37,7 @@ public class Test implements Executable {
         //new TFTest().execute();
         //new TTest(Application.get()).execute();
         //new ObjectList("com.storedobject.core.SystemUser|Person.Age/GT AS Age greater than").execute();
+        new QG(StoredObject.query(Person.class, "Title,FirstName")).execute();
     }
 
     public static class TestFields extends DataForm {
@@ -276,6 +280,13 @@ public class Test implements Executable {
 
             // Set the component for the view
             setComponent(new HorizontalLayout(soChart));
+        }
+    }
+
+    public static class QG extends QueryGrid {
+
+        public QG(Query query) {
+            super(query);
         }
     }
 }

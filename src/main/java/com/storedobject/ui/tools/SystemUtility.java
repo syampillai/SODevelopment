@@ -3,7 +3,6 @@ package com.storedobject.ui.tools;
 import com.storedobject.common.StringList;
 import com.storedobject.core.*;
 import com.storedobject.office.Excel;
-import com.storedobject.pdf.PDFReport;
 import com.storedobject.report.ObjectList;
 import com.storedobject.ui.Application;
 import com.storedobject.ui.*;
@@ -23,6 +22,7 @@ import java.io.InputStream;
 import java.io.Writer;
 import java.math.BigInteger;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Comparator;
 
@@ -249,19 +249,17 @@ public class SystemUtility extends View implements CloseableView, Transactional 
             return;
         }
         if(c == pdf) {
-            if(cols.startsWith("/")) {
-                new ObjectList<>(getApplication(), objectClass, any.getValue()).execute();
-                return;
-            }
-            StringList colList = StringList.create(cols);
-            new PDFReport(Application.get()) {
+            new ObjectList(getApplication(), objectClass, any.getValue(),
+                    cols.startsWith("/") ? StringList.EMPTY : StringList.create(cols)) {
 
                 @Override
-                public void generateContent() {
-                    ObjectTable ot = new ObjectTable(objectClass, colList);
-                    StoredObject.list(objectClass, where.getValue().trim(), orderBy.getValue().trim(), any.getValue()).
-                            forEach(ot::addObject);
-                    add(ot);
+                public String getOrderBy() {
+                    return orderBy.getValue().trim();
+                }
+
+                @Override
+                public String getExtraCondition() {
+                    return where.getValue();
                 }
             }.execute();
             return;
@@ -285,7 +283,7 @@ public class SystemUtility extends View implements CloseableView, Transactional 
             Excel excel = new Excel() {
                 @Override
                 public void generateContent() throws Exception {
-                    columns.forEach(this::setCellValue);
+                    columns.forEach(c -> setCellValue(getNextCell(), c));
                     getNextRow();
                     Cell cell;
                     Object value;

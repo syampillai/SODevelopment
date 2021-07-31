@@ -39,6 +39,15 @@ public final class ClassAttribute<T extends StoredObject> {
     public StringList getAttributes() {
         return StringList.EMPTY;
     }
+    
+    /**
+     * Get all attributes that can be used by end-developers (for reporting/displaying etc.)
+     *
+     * @return List of attributes.
+     */
+    public List<String> getAllAttributes() {
+        return new ArrayList<>();
+    }
 
     public String getModuleName() {
         return "";

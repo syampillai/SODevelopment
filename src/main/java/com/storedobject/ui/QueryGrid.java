@@ -56,6 +56,7 @@ public class QueryGrid extends ListGrid<QueryGrid.QueryResult> {
      */
     public QueryGrid(Query query, int actions) {
         this(query.getResultSet(), actions);
+        load();
         query.close();
     }
 
@@ -145,6 +146,10 @@ public class QueryGrid extends ListGrid<QueryGrid.QueryResult> {
     @Override
     protected void onAttach(AttachEvent attachEvent) {
         load();
+        if(getColumnCount() == 0) {
+            warning("Nothing to display!");
+            return;
+        }
         super.onAttach(attachEvent);
     }
 
