@@ -6,11 +6,12 @@ import com.storedobject.common.JSON;
 import com.storedobject.vaadin.*;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.datetimepicker.DateTimePicker;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.template.Id;
 import jdk.jshell.JShell;
 
-import java.util.Random;
+import java.util.*;
 
 public class Test implements Executable {
 
@@ -24,7 +25,8 @@ public class Test implements Executable {
                 );
         v.execute();
         */
-        new TestChart().execute();
+        //new TestChart().execute();
+        new HeatmapChartDemo().execute();
         //new TestTemplate().execute();
         //new TestFields().execute();
         //new TestAlert().execute();
@@ -193,6 +195,16 @@ public class Test implements Executable {
             System.err.println(json);
             return json;
         }
+
+        @Override
+        protected String customizeDataJSON(String json, AbstractDataProvider<?> data) throws Exception {
+            System.err.println("RAW DATA " + data.getSerial());
+            System.err.println(json);
+            System.err.println("PRETTY DATA " + data.getSerial());
+            json = JSON.create(json).toPrettyString();
+            System.err.println(json);
+            return json;
+        }
     }
 
     public static class M extends GridMenu {
@@ -229,6 +241,41 @@ public class Test implements Executable {
                 });
             }
             return false;
+        }
+    }
+
+    public static class HeatmapChartDemo extends View implements CloseableView {
+
+        public HeatmapChartDemo() {
+            super("Temperature");
+
+            // Creating a chart display area
+            SOChart soChart = new SOChart();
+            soChart.setSize("800px", "500px");
+
+            // Heatmap chart requires 2 category axes and then, values to be added for each data-point
+            CategoryData days = new CategoryData("Sun", "Mon", "Wed", "Thu", "Fri", "Sat");
+            CategoryData slots = new CategoryData("Morning", "Noon", "Afternoon", "Evening", "Night");
+
+            //Create the chart.
+            HeatmapChart chart = new HeatmapChart(days, slots);
+            chart.getLabel(true).show(); // Want to display the value as labels
+
+            // Add some data-points
+            chart.addData(0, 0, 27); // Sunday morning
+            chart.addData(0, 3, 28); // Sunday evening
+            chart.addData(1, 3, 31); // Monday evening
+            chart.addData(1, 4, 25); // Monday night
+            chart.addData("Wed", "Noon", 37);
+
+            // Heatmap charts should be plotted on a rectangular coordinate system
+            chart.plotOn(new RectangularCoordinate(new XAxis(days), new YAxis(slots)));
+
+            // Add to the chart display area
+            soChart.add(chart);
+
+            // Set the component for the view
+            setComponent(new HorizontalLayout(soChart));
         }
     }
 }
