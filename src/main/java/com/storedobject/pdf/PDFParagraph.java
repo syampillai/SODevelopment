@@ -1,33 +1,32 @@
 package com.storedobject.pdf;
 
-@SuppressWarnings("serial")
-public class PDFParagraph extends com.storedobject.pdf.PDFPhrase {
+public class PDFParagraph extends PDFPhrase {
 
     public PDFParagraph() {
     }
 
-    public PDFParagraph(com.storedobject.pdf.PDFChunk chunk) {
+    public PDFParagraph(PDFChunk chunk) {
         this();
     }
 
-    public PDFParagraph(float p1, com.storedobject.pdf.PDFChunk chunk) {
+    public PDFParagraph(float p1, PDFChunk chunk) {
         this();
     }
 
-    public PDFParagraph(java.lang.String text) {
+    public PDFParagraph(String text) {
         this();
     }
 
-    public PDFParagraph(java.lang.String text, com.storedobject.pdf.PDFFont font) {
+    public PDFParagraph(String text, PDFFont font) {
         this();
     }
 
-    public PDFParagraph(com.storedobject.pdf.PDFPhrase phrase) {
+    public PDFParagraph(PDFPhrase phrase) {
         this();
     }
 
 	@Override
-	public boolean add(com.storedobject.pdf.PDFElement element) {
+	public boolean add(PDFElement element) {
         return false;
     }
 

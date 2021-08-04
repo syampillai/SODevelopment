@@ -2,7 +2,7 @@ package com.storedobject.core;
 
 import java.io.*;
 
-public class StreamData extends StoredObject {
+public class StreamData extends StoredObject implements ContentType {
 	
 	public StreamData(String contentType) {
 	}
@@ -31,22 +31,6 @@ public class StreamData extends StoredObject {
 		return "";
 	}
 
-	public boolean isLink() {
-		return false;
-	}
-
-	public boolean isImage() {
-		return false;
-    }
-    
-    public boolean isVideo() {
-		return false;
-    }
-    
-    public boolean isAudio() {
-		return false;
-    }
-	
     public String getLink() {
     	return null;
     }

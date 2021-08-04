@@ -5,11 +5,10 @@ import com.storedobject.common.Executable;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-public interface ContentProducer extends Executable {
+public interface ContentProducer extends Executable, ContentType {
 
 	void produce();
 	InputStream getContent() throws Exception;
-	String getContentType();
 	String getFileExtension();
 	String getFileName();
 	void setTransactionManager(TransactionManager tm);
@@ -89,13 +88,5 @@ public interface ContentProducer extends Executable {
 
 	default FileData saveTo(FileData fileData, TransactionManager tm) throws Exception {
 		return fileData;
-	}
-
-	default boolean isLink() {
-		return false;
-	}
-
-	default String getLink() {
-		return null;
 	}
 }

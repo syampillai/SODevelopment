@@ -1,7 +1,5 @@
 package com.storedobject.core;
 
-import java.sql.Timestamp;
-
 /**
  * IoT (Internet of Things) object that is specially treated. When transacted singly, it doesn't maintain any
  * history or audit trail. This is not used for keeping normal transactional data and is mostly created or updated by
@@ -13,11 +11,11 @@ import java.sql.Timestamp;
 public abstract class IoTObject extends StoredObject{
 
     /**
-     * Mandatory attribute - data collection time.
+     * Mandatory attribute - data collection time (GMT).
      *
      * @param collectedAt Data collection time.
      */
-    public void setCollectedAt(Timestamp collectedAt) {
+    public void setCollectedAt(long collectedAt) {
     }
 
     /**
@@ -25,8 +23,8 @@ public abstract class IoTObject extends StoredObject{
      *
      * @return Data collection time.
      */
-    public Timestamp getCollectedAt() {
-        return DateUtility.now();
+    public long getCollectedAt() {
+        return 0;
     }
 
     /**

@@ -48,14 +48,10 @@ public class ReportEditor<T extends ReportDefinition> extends ObjectEditor<T> {
 
     private <O extends StoredObject> void genCols() {
         List<ReportColumnDefinition> colsRCD = new ArrayList<>();
-        @SuppressWarnings("unchecked") HasValue<?, String> dataClassField = (HasValue<?, String>) getField("DataClass");
-        String dClassName = dataClassField.getValue();
-        if(dClassName.isBlank()) {
-            warning("Enter name of the data class first!");
+        String dClassName = getReportClassName();
+        if(dClassName == null) {
             return;
         }
-        dClassName = ApplicationServer.guessClass(dClassName);
-        dataClassField.setValue(dClassName);
         try {
             Class<O> dClass;
             //noinspection unchecked
@@ -100,5 +96,17 @@ public class ReportEditor<T extends ReportDefinition> extends ObjectEditor<T> {
                 rcdField.add(rcd);
             }
         });
+    }
+
+    public String getReportClassName() {
+        @SuppressWarnings("unchecked") HasValue<?, String> dataClassField = (HasValue<?, String>) getField("DataClass");
+        String dClassName = dataClassField.getValue();
+        if(dClassName.isBlank()) {
+            warning("Enter name of the data class first!");
+            return null;
+        }
+        dClassName = ApplicationServer.guessClass(dClassName);
+        dataClassField.setValue(dClassName);
+        return dClassName;
     }
 }

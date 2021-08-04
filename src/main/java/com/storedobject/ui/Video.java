@@ -57,7 +57,8 @@ public class Video extends com.storedobject.vaadin.Video {
      * @param mediaFile Media file containing the video
      */
     public Video(MediaFile mediaFile) {
-        this(mediaFile != null && mediaFile.isVideo() ? ("media/" + mediaFile.getFileName()) : "", mediaFile != null && mediaFile.isVideo() ? mediaFile.getMimeType() : "");
+        this(mediaFile != null && mediaFile.isVideo() ? ("media/" + mediaFile.getFileName()) : "",
+                mediaFile != null && mediaFile.isVideo() ? mediaFile.getMimeType() : "");
     }
 
     /**

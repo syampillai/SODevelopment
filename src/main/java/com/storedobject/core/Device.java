@@ -31,7 +31,20 @@ public interface Device {
     }
 
     default void view(FileData fileData) {
-        view(fileData.getName(), fileData.getFile());
+        view(null, fileData);
+    }
+
+    default void view(String caption, FileData fileData) {
+        if(fileData == null) {
+            return;
+        }
+        if(caption == null || caption.isBlank()) {
+            caption = fileData.getName();
+            if(caption.contains("/")) {
+                caption = caption.substring(caption.lastIndexOf('/') + 1);
+            }
+        }
+        view(caption, fileData.getFile());
     }
 
     default void view(String caption, ContentProducer producer) {

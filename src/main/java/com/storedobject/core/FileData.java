@@ -2,7 +2,7 @@ package com.storedobject.core;
 
 import java.math.BigDecimal;
 
-public class FileData extends StoredObject implements Detail, HasParents {
+public class FileData extends StoredObject implements Detail, HasParents, ContentType {
 
     public FileData() {
     }
@@ -65,22 +65,6 @@ public class FileData extends StoredObject implements Detail, HasParents {
 		return true;
 	}
 	
-	public boolean isLink() {
-		return false;
-	}
-
-	public boolean isImage() {
-		return false;
-    }
-    
-    public boolean isVideo() {
-		return false;
-    }
-    
-    public boolean isAudio() {
-		return false;
-    }
-    
     public void saveInFolder(Transaction transaction, String folderPath) throws Exception {
     }
 	

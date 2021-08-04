@@ -5,12 +5,8 @@ import com.storedobject.core.ContentProducer;
 import com.storedobject.core.StreamData;
 import com.storedobject.office.PDFProperties;
 import com.storedobject.office.od.Office;
-import com.storedobject.ui.*;
-import com.storedobject.vaadin.CenteredLayout;
-import com.storedobject.vaadin.PDFViewer;
-import com.storedobject.vaadin.Viewer;
-import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.HasSize;
+import com.storedobject.ui.Application;
+import com.storedobject.ui.FileResource;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.WebBrowser;
 
@@ -23,8 +19,8 @@ public class ContentGenerator extends AbstractContentGenerator {
 
     private static final Sequencer sequencerFileId = new Sequencer();
     private boolean started = false, internal = false, download;
-    private String caption;
-    private PDFViewer viewer;
+    private final String caption;
+    private DocumentViewer viewer;
 
     public ContentGenerator(Application application, ContentProducer producer, String caption,
                             Consumer<AbstractContentGenerator> inform, Consumer<Long> timeTracker) {
@@ -40,20 +36,19 @@ public class ContentGenerator extends AbstractContentGenerator {
         start();
     }
 
-    public void setViewer(PDFViewer viewer) {
+    public void setViewer(DocumentViewer viewer) {
         this.viewer = viewer;
     }
 
     @Override
     public void run() {
         producer.setTransactionManager(application.getTransactionManager());
-        String ct = producer.getContentType();
         if(!download) {
             WebBrowser wb = application.getWebBrowser();
-            if(ct.equals(PDF_CONTENT)) {
+            if(producer.isPDF()) {
                 internal = !wb.isAndroid() && !wb.isIPhone();
             } else {
-                internal = ct.startsWith("video/") || ct.startsWith("image/") || ct.startsWith("audio/");
+                internal = producer.isMedia();
             }
         }
         if(!internal) {
@@ -79,45 +74,25 @@ public class ContentGenerator extends AbstractContentGenerator {
             return false;
         }
         String ct = getContentType();
-        if(viewer != null && ct.equals(PDF_CONTENT)) {
-            viewer.setSource(resource(ct));
+        if(viewer == null) {
+            viewer = new DocumentViewer();
+            viewer.contentType = producer;
+        }
+        if(producer.isPDF() || producer.isMedia()) {
+            viewer.view(resource(ct), caption);
             return true;
         }
-        if (ct.equals(PDF_CONTENT)) {
-            if (caption == null) {
-                caption = "Report";
-            }
-            show(new PDFViewer(resource(ct)));
-        } else if(ct.startsWith("video/")) {
-            if(caption == null) {
-                caption = "Video";
-            }
-            show(new CenteredLayout(new Video(resource(ct))));
-        } else if(ct.startsWith("audio/")) {
-            if(caption == null) {
-                caption = "Audio";
-            }
-            show(new CenteredLayout(new Audio(resource(ct))));
-        } else if(ct.startsWith("image/")) {
-            if(caption == null) {
-                caption = "Image";
-            }
-            show(new CenteredLayout(new Image(resource(ct))));
-        }
-        if(viewer != null) {
-            File file = createFile();
-            try {
-                String fileName = file.getAbsolutePath();
-                fileName = fileName.substring(0, fileName.lastIndexOf('.') + 1) + "pdf";
-                Office.convertToPDF(getContentStream(), new FileOutputStream(fileName), new PDFProperties(getExt().substring(1)));
-                file = new File(fileName);
-                viewer.setSource(new FileResource(file, PDF_CONTENT));
-            } catch (Throwable e) {
-                Application.error(e);
-                //noinspection ResultOfMethodCallIgnored
-                file.delete();
-                viewer.setSource((String) null);
-            }
+        File file = createFile();
+        try {
+            String fileName = file.getAbsolutePath();
+            fileName = fileName.substring(0, fileName.lastIndexOf('.') + 1) + "pdf";
+            Office.convertToPDF(getContentStream(), new FileOutputStream(fileName), new PDFProperties(getExt().substring(1)));
+            file = new File(fileName);
+            viewer.view(new FileResource(file, producer.getMimeType()), caption);
+        } catch (Throwable e) {
+            Application.error(e);
+            //noinspection ResultOfMethodCallIgnored
+            file.delete();
         }
         return true;
     }
@@ -151,10 +126,6 @@ public class ContentGenerator extends AbstractContentGenerator {
         });
     }
 
-    private void show(Component viewer) {
-        new ContentView(viewer).execute();
-    }
-
     @Override
     public DownloadStream getContent() throws Exception {
         kick();
@@ -167,7 +138,7 @@ public class ContentGenerator extends AbstractContentGenerator {
         content = producer.getContent();
         DownloadStream ds = new DownloadStream(content, ct, fileName);
         if(!download) {
-            if (!PDF_CONTENT.equals(ct)) {
+            if (!producer.isPDF()) {
                 application.log("File: " + fileName + ", Type: " + ct);
                 download = true;
             }
@@ -177,31 +148,5 @@ public class ContentGenerator extends AbstractContentGenerator {
         }
         ds.setCacheTime(0L);
         return ds;
-    }
-
-    private class ContentView extends Viewer {
-
-        ContentView(Component viewer) {
-            super(viewer, caption, !application.supportsCloseableView());
-            if(viewer instanceof HasSize hs) {
-                hs.setHeight("95%");
-            }
-        }
-
-        @Override
-        protected int getViewWidth() {
-            return 95;
-        }
-
-        @Override
-        protected int getViewHeight() {
-            return 95;
-        }
-
-        @Override
-        public void clean() {
-            generated();
-            super.clean();
-        }
     }
 }

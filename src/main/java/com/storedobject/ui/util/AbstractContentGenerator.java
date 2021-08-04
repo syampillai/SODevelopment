@@ -13,7 +13,6 @@ import java.util.function.Consumer;
 
 public abstract class AbstractContentGenerator extends Thread {
 
-    public static final String PDF_CONTENT = "application/pdf";
     long fileId;
     final ContentProducer producer;
     final Application application;

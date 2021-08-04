@@ -1,6 +1,9 @@
 package com.storedobject.core;
 
 import java.util.Date;
+import java.util.Iterator;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 /**
  * General utility methods.
@@ -34,5 +37,30 @@ public class Utility {
      */
     public static <D extends Date> boolean isEmpty(D dateTime) {
         return dateTime == null || dateTime.getTime() == BLANK_TIME;
+    }
+
+    /**
+     * Create a {@link Stream} from {@link Iterable}.
+     *
+     * @param iterable Iterable from which stream needs to be created.
+     * @param <O> Type of stream element.
+     * @return Stream.
+     */
+    public static <O> Stream<O> stream(Iterable<O> iterable) {
+        return StreamSupport.stream(iterable.spliterator(), false);
+    }
+
+    /**
+     * Create a {@link Stream} from {@link Iterator}.
+     *
+     * @param iterator Iterator from which stream needs to be created.
+     * @param <O> Type of stream element.
+     * @return Stream.
+     */
+    public static <O> Stream<O> stream(Iterator<O> iterator) {
+        return StreamSupport.stream((new ToIterable<>(iterator)).spliterator(), false);
+    }
+
+    private record ToIterable<O>(Iterator<O> iterator) implements Iterable<O> {
     }
 }

@@ -354,6 +354,9 @@ public class Application extends com.storedobject.vaadin.Application implements 
         }
         ApplicationServer as = server;
         server = null;
+        if(as == null) {
+            return;
+        }
         as.close();
         try {
             mainLayout.getComponent().getElement().removeFromParent();
@@ -546,69 +549,7 @@ public class Application extends com.storedobject.vaadin.Application implements 
     }
 
     public void view(String caption, MediaFile mediaFile) {
-        if(mediaFile == null) {
-            return;
-        }
-        if(caption == null || caption.isEmpty()) {
-            caption = "Media";
-        }
-        if(mediaFile.isImage()) {
-            infoView(new Image(mediaFile), caption);
-            return;
-        }
-        if(mediaFile.isAudio()) {
-            infoView(new Audio(mediaFile), caption);
-            return;
-        }
-        if(mediaFile.isVideo()) {
-            infoView(new Video(mediaFile), caption);
-            return;
-        }
-        if(mediaFile.getMimeType().equals(AbstractContentGenerator.PDF_CONTENT)) {
-            infoView(new PDFViewer("media/" + mediaFile.getFileName()), caption);
-        }
-    }
-
-    private void infoView(Component c, String caption) {
-        class V extends View implements CloseableView, InformationView {
-            private V(Component component, String caption) {
-                super(component, caption);
-            }
-        }
-        new V(c, caption).execute();
-    }
-
-    public void view(FileData fileData) {
-        String fn = fileData == null ? "" : fileData.getName();
-        if(fn.contains("/")) {
-            fn = fn.substring(fn.lastIndexOf('/') + 1);
-        }
-        view(fn, fileData);
-    }
-
-    public void view(String caption, FileData fileData) {
-        if(fileData == null) {
-            return;
-        }
-        if(caption == null || caption.isEmpty()) {
-            caption = "Media";
-        }
-        StreamData sd = fileData.getFile();
-        if(sd.isImage()) {
-            infoView(new Image(sd), caption);
-            return;
-        }
-        if(sd.isAudio()) {
-            infoView(new Audio(sd), caption);
-            return;
-        }
-        if(sd.isVideo()) {
-            infoView(new Video(sd), caption);
-            return;
-        }
-        if(sd.getContentType().equals(AbstractContentGenerator.PDF_CONTENT)) {
-            infoView(new DocumentViewer(sd), caption);
-        }
+        DocumentViewer.view(caption, mediaFile);
     }
 
     public void view(String caption, Id objectId) {

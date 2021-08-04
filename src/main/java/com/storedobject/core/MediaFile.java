@@ -2,7 +2,7 @@ package com.storedobject.core;
 
 import java.math.BigDecimal;
 
-public final class MediaFile extends Name {
+public final class MediaFile extends Name implements ContentType {
 
     public MediaFile() {
     }
@@ -10,7 +10,7 @@ public final class MediaFile extends Name {
     public static void columns(Columns columns) {
     }
 
-    public final void setFile(Id fileId) {
+    public void setFile(Id fileId) {
     }
 
     public void setFile(BigDecimal idValue) {
@@ -35,27 +35,11 @@ public final class MediaFile extends Name {
     }
 
     public String getContentType() {
-        return null;
-    }
-
-    public String getMimeType() {
         return "";
     }
 
     public String getFileName() {
         return null;
-    }
-
-    public boolean isImage() {
-        return false;
-    }
-
-    public boolean isAudio() {
-        return false;
-    }
-
-    public boolean isVideo() {
-        return false;
     }
 
     public static MediaFile get(String name) {

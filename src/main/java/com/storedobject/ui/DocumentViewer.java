@@ -1,65 +1,45 @@
 package com.storedobject.ui;
 
 import com.storedobject.core.*;
-import com.storedobject.ui.util.ContentGenerator;
-import com.storedobject.vaadin.PDFViewer;
-import com.storedobject.vaadin.View;
 
-public class DocumentViewer extends PDFViewer {
+public class DocumentViewer extends com.storedobject.ui.util.DocumentViewer {
 
     public DocumentViewer() {
+        super();
     }
 
     public DocumentViewer(Id streamDataId) {
-        this();
-        setDocument(streamDataId);
+        super(streamDataId);
     }
 
     public DocumentViewer(StreamData streamData) {
-        this();
-        setDocument(streamData);
+        super(streamData);
     }
 
     public DocumentViewer(ContentProducer contentProducer) {
-        if(contentProducer == null) {
-            return;
-        }
-        setDocument(contentProducer);
+        super(contentProducer);
     }
 
     public void setDocument(Id streamDataId) {
-        setDocument(StoredObject.get(StreamData.class, streamDataId));
+        super.setDocument(streamDataId);
     }
 
     public void setDocument(StreamData streamData) {
-        if (streamData == null) {
-            setSource((String) null);
-            return;
-        }
-        setDocument(new StreamDataContent(streamData));
-    }
-
-    public void view(String caption) {
-        View.createCloseableView(this, caption).execute();
+        super.setDocument(streamData);
     }
 
     public void setDocument(ContentProducer contentProducer) {
-        if (contentProducer == null) {
-            setSource((String) null);
-            return;
-        }
-        new Content(contentProducer).kick();
+        super.setDocument(contentProducer);
     }
 
-    private class Content extends ContentGenerator {
+    public void view(String caption) {
+        super.view(caption);
+    }
 
-        protected Content(ContentProducer producer) {
-            super(Application.get(), producer, null, null, null);
-            setViewer(DocumentViewer.this);
+    static void view(String caption, MediaFile mediaFile) {
+        if(mediaFile == null) {
+            return;
         }
-
-        @Override
-        protected void started() {
-        }
+        view("media/" + mediaFile.getFileName(), caption, mediaFile, mediaFile.getMimeType());
     }
 }

@@ -31,7 +31,7 @@ public class Audio extends com.storedobject.vaadin.Audio {
     }
 
     /**
-     * Consructor.
+     * Constructor.
      * @param resources Sources to be set
      */
     public Audio(StreamResource... resources) {
@@ -53,7 +53,8 @@ public class Audio extends com.storedobject.vaadin.Audio {
      * @param mediaFile Media file containing the audio
      */
     public Audio(MediaFile mediaFile) {
-        this(mediaFile != null && mediaFile.isAudio() ? ("media/" + mediaFile.getFileName()) : "", mediaFile != null && mediaFile.isAudio() ? mediaFile.getMimeType() : "");
+        this(mediaFile != null && mediaFile.isAudio() ? ("media/" + mediaFile.getFileName()) : "",
+                mediaFile != null && mediaFile.isAudio() ? mediaFile.getMimeType() : "");
     }
 
     /**

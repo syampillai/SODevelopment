@@ -1,7 +1,6 @@
 package com.storedobject.ui;
 
 import com.storedobject.core.ContentProducer;
-import com.storedobject.ui.util.AbstractContentGenerator;
 
 import java.io.InputStream;
 
@@ -19,6 +18,6 @@ public final class PDFContent extends Content {
      * @param content PDF content.
      */
     public PDFContent(InputStream content) {
-        super(content, AbstractContentGenerator.PDF_CONTENT, "pdf");
+        super(content, "application/pdf", "pdf");
     }
 }

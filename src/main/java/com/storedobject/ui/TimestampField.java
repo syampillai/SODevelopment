@@ -3,6 +3,7 @@ package com.storedobject.ui;
 import com.storedobject.core.DateUtility;
 import com.storedobject.core.Utility;
 import com.storedobject.vaadin.TranslatedField;
+import com.vaadin.flow.component.HasSize;
 import com.vaadin.flow.component.datetimepicker.DateTimePicker;
 
 import java.sql.Timestamp;
@@ -63,6 +64,15 @@ public class TimestampField extends TranslatedField<Timestamp, LocalDateTime> {
         super(new DateTimePicker(), (f, d) -> create(d), (f, d) -> create(d), null);
         this.resolution = resolution == null ? TimeResolution.MINUTES : resolution;
         getField().setStep(this.resolution == TimeResolution.SECONDS ? Duration.ofSeconds(30) : Duration.ofMinutes(30));
+        getField().getChildren().forEach(c -> {
+            if(c instanceof  HasSize hs) {
+                if(c.getClass().getName().endsWith("TimePicker")) {
+                    hs.setMaxWidth("13ch");
+                } else {
+                    hs.setMaxWidth("15ch");
+                }
+            }
+        });
     }
 
     /**
@@ -137,6 +147,7 @@ public class TimestampField extends TranslatedField<Timestamp, LocalDateTime> {
     public DateTimePicker getField() {
         return (DateTimePicker) super.getField();
     }
+
     /**
      * Set the minimum value allowed.
      *

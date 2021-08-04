@@ -2,6 +2,7 @@ package com.storedobject.ui;
 
 import com.storedobject.common.Range;
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.HasValidation;
 import com.vaadin.flow.component.HasValue;
 import com.vaadin.flow.component.customfield.CustomField;
 import com.vaadin.flow.component.html.Div;
@@ -9,7 +10,7 @@ import com.vaadin.flow.component.html.Span;
 
 import java.util.function.Function;
 
-public abstract class RangeField<T extends Range<P>, P> extends CustomField<T> {
+public abstract class RangeField<T extends Range<P>, P> extends CustomField<T> implements HasValidation {
 
     private final HasValue<?, P> field1;
     private final HasValue<?, P> field2;
@@ -26,6 +27,13 @@ public abstract class RangeField<T extends Range<P>, P> extends CustomField<T> {
         add(d);
     }
 
+    protected HasValue<?, P> getFromField() {
+        return field1;
+    }
+
+    protected HasValue<?, P> getToField() {
+        return field2;
+    }
 
     @Override
     protected T generateModelValue() {
@@ -47,4 +55,10 @@ public abstract class RangeField<T extends Range<P>, P> extends CustomField<T> {
     }
 
     protected abstract T create(P from, P to);
+
+    @Override
+    public boolean isInvalid() {
+        Range<P> v = getValue();
+        return v == null || !v.isValid() || super.isInvalid();
+    }
 }
