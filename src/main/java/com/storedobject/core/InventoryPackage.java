@@ -195,4 +195,8 @@ public final class InventoryPackage extends InventoryLocation implements HasChil
     public String getDimensions() {
         return "";
     }
+
+    public String getDimensions(boolean includeWeight) {
+        return getDimensions();
+    }
 }

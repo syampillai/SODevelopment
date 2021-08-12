@@ -206,8 +206,7 @@ public abstract class HtmlTemplate extends Component {
 
     private Element jsoupToFlow(Node node, BiConsumer<String, Element> idElementConsumer,
                                 BiConsumer<String, Component> idComponentConsumer) {
-        if (node instanceof org.jsoup.nodes.Element) {
-            org.jsoup.nodes.Element jsoupElement = (org.jsoup.nodes.Element) node;
+        if (node instanceof org.jsoup.nodes.Element jsoupElement) {
             Component c = null;
             String id = jsoupElement.attributes().get("id");
             if(!id.isEmpty()) {
@@ -255,13 +254,12 @@ public abstract class HtmlTemplate extends Component {
             });
             convertAndAppend(jsoupElement, flowElement, idElementConsumer, idComponentConsumer, null);
             return flowElement;
-        } else if (node instanceof TextNode) {
-            TextNode textNode = (TextNode) node;
+        } else if (node instanceof TextNode textNode) {
             return Element.createText(textNode.text());
         } else if (node instanceof Comment) {
             return null;
         } else {
-            throw new IllegalArgumentException("Unsupported tag: " + node.getClass().getName());
+            throw new IllegalArgumentException("Unsupported tag: " + node.nodeName());
         }
     }
 

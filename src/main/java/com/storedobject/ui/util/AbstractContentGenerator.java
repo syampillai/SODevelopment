@@ -77,7 +77,7 @@ public abstract class AbstractContentGenerator extends Thread {
     public InputStream getContentStream() {
         startedAt = System.currentTimeMillis();
         try {
-            int time = 100;
+            int time = 180;
             InputStream in;
             while ((in = producer.getContent()) == null && time-- > 0) {
                 if(isAlive()) {

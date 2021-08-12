@@ -120,6 +120,11 @@ public class ApplicationFrame extends com.storedobject.vaadin.ApplicationFrame i
     }
 
     @Override
+    public boolean isMenuVisible() {
+        return getDrawerToggle().isVisible();
+    }
+
+    @Override
     public void initialized() {
         if(searchMenu != null) {
             searchMenu.setVisible(true);

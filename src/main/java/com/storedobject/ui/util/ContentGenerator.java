@@ -40,6 +40,10 @@ public class ContentGenerator extends AbstractContentGenerator {
         this.viewer = viewer;
     }
 
+    private boolean canView() {
+        return producer.isMedia() || producer.isPDF() || producer.getContentType().equals("text/html");
+    }
+
     @Override
     public void run() {
         producer.setTransactionManager(application.getTransactionManager());
@@ -48,7 +52,7 @@ public class ContentGenerator extends AbstractContentGenerator {
             if(producer.isPDF()) {
                 internal = !wb.isAndroid() && !wb.isIPhone();
             } else {
-                internal = producer.isMedia();
+                internal = canView();
             }
         }
         if(!internal) {
@@ -73,13 +77,12 @@ public class ContentGenerator extends AbstractContentGenerator {
         if (!internal) {
             return false;
         }
-        String ct = getContentType();
         if(viewer == null) {
-            viewer = new DocumentViewer();
+            viewer = new DocumentViewer(null);
             viewer.contentType = producer;
         }
-        if(producer.isPDF() || producer.isMedia()) {
-            viewer.view(resource(ct), caption);
+        if(canView()) {
+            viewer.view(resource(getContentType()), getContentStream(), caption);
             return true;
         }
         File file = createFile();
@@ -88,7 +91,8 @@ public class ContentGenerator extends AbstractContentGenerator {
             fileName = fileName.substring(0, fileName.lastIndexOf('.') + 1) + "pdf";
             Office.convertToPDF(getContentStream(), new FileOutputStream(fileName), new PDFProperties(getExt().substring(1)));
             file = new File(fileName);
-            viewer.view(new FileResource(file, producer.getMimeType()), caption);
+            FileResource fr = new FileResource(file, producer.getMimeType());
+            viewer.view(fr, ((com.storedobject.ui.util.FileResource)fr).getInputStream(), caption);
         } catch (Throwable e) {
             Application.error(e);
             //noinspection ResultOfMethodCallIgnored

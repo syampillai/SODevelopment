@@ -1,14 +1,17 @@
 package com.storedobject.ui.util;
 
+import com.storedobject.common.IO;
 import com.storedobject.core.*;
+import com.storedobject.ui.Application;
+import com.storedobject.ui.HTMLView;
 import com.storedobject.ui.InformationView;
 import com.storedobject.vaadin.*;
-import com.storedobject.ui.Application;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasSize;
-import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.server.StreamResource;
+
+import java.io.InputStream;
 
 public class DocumentViewer extends PDFViewer {
 
@@ -17,40 +20,40 @@ public class DocumentViewer extends PDFViewer {
     private Content generator;
     private View view;
     private String caption;
+    private Component viewerComponent;
+    private final Runnable listener;
 
-    protected DocumentViewer() {
+    public DocumentViewer(Runnable listener) {
+        this.listener = listener;
         application = Application.get();
+        viewerComponent = this;
     }
 
-    protected DocumentViewer(Id streamDataId) {
-        this();
-        setDocument(streamDataId);
-    }
-
-    protected DocumentViewer(StreamData streamData) {
-        this();
-        setDocument(streamData);
-    }
-
-    protected DocumentViewer(ContentProducer contentProducer) {
-        this();
-        if(contentProducer == null) {
+    public static void view(String caption, MediaFile mediaFile) {
+        if(mediaFile == null) {
             return;
         }
-        setDocument(contentProducer);
+        if(caption == null) {
+            caption = mediaFile.getFileName();
+        }
+        DocumentViewer dv = new DocumentViewer(null);
+        dv.contentType = mediaFile;
+        dv.view("media/" + mediaFile.getFileName(), mediaFile.getFile(), caption);
     }
 
-    protected static void view(String uri, String caption, ContentType contentType, String mime) {
-        DocumentViewer dv = new DocumentViewer();
-        dv.contentType = contentType;
-        dv.view(uri, caption, mime);
+    @Override
+    public void setSource(String fileURL) {
+        super.setSource(fileURL);
+        if(listener != null) {
+            listener.run();
+        }
     }
 
-    protected void setDocument(Id streamDataId) {
+    public void setDocument(Id streamDataId) {
         setDocument(StoredObject.get(StreamData.class, streamDataId));
     }
 
-    protected void setDocument(StreamData streamData) {
+    public void setDocument(StreamData streamData) {
         if (streamData == null) {
             setSource((String) null);
             return;
@@ -58,7 +61,7 @@ public class DocumentViewer extends PDFViewer {
         setDocument(new StreamDataContent(streamData));
     }
 
-    protected void view(String caption) {
+    public void view(String caption) {
         this.caption = caption;
         if(view != null) {
             view.setCaption(caption);
@@ -82,7 +85,7 @@ public class DocumentViewer extends PDFViewer {
         }
     }
 
-    private void view(String resource, String mimeType, String caption) {
+    private void view(String resource, StreamData streamData, String caption) {
         if(contentType == null) {
             super.setSource(resource);
             return;
@@ -90,22 +93,32 @@ public class DocumentViewer extends PDFViewer {
         caption(caption);
         if(view == null) {
             if(contentType.isPDF()) {
-                view = new ContentView(this);
+                view = new ContentView(viewerComponent = this);
                 super.setSource(resource);
             } else if(contentType.isVideo()) {
-                view = new ContentView(new Video(resource, mimeType));
+                view = new ContentView(viewerComponent = new Video(resource, contentType.getMimeType()));
             } else if(contentType.isAudio()) {
-                view = new ContentView(new Audio(resource, mimeType));
+                view = new ContentView(viewerComponent = new Audio(resource, contentType.getMimeType()));
             } else if(contentType.isImage()) {
-                view = new ContentView(new Image(resource));
+                view = new ContentView(viewerComponent = new Image(resource));
+            } else if(contentType.getMimeType().equals("text/html")) {
+                if(streamData != null) {
+                    view = new HTMLView(IO.getReader(streamData.getContent()));
+                    viewerComponent = ((HTMLView) view).getViewerComponent();
+                }
             } else {
+                viewerComponent = null;
                 return;
             }
         }
-        view.execute();
+        if(listener == null) {
+            view.execute();
+        } else {
+            listener.run();
+        }
     }
 
-    void view(StreamResource resource, String caption) {
+    void view(StreamResource resource, InputStream input, String caption) {
         if(contentType == null) {
             super.setSource(resource);
             return;
@@ -113,22 +126,30 @@ public class DocumentViewer extends PDFViewer {
         caption(caption);
         if(view == null) {
             if(contentType.isPDF()) {
-                view = new ContentView(this);
+                view = new ContentView(viewerComponent = this);
                 super.setSource(resource);
             } else if(contentType.isVideo()) {
-                view = new ContentView(new Video(resource));
+                view = new ContentView(viewerComponent = new Video(resource));
             } else if(contentType.isAudio()) {
-                view = new ContentView(new Audio(resource));
+                view = new ContentView(viewerComponent = new Audio(resource));
             } else if(contentType.isImage()) {
-                view = new ContentView(new Image(resource));
+                view = new ContentView(viewerComponent = new Image(resource));
+            } else if(contentType.getMimeType().equals("text/html")) {
+                view = new HTMLView(IO.getReader(input));
+                viewerComponent = ((HTMLView)view).getViewerComponent();
             } else {
+                viewerComponent = null;
                 return;
             }
         }
-        view.execute();
+        if(listener == null) {
+            view.execute();
+        } else {
+            listener.run();
+        }
     }
 
-    protected void setDocument(ContentProducer contentProducer) {
+    public void setDocument(ContentProducer contentProducer) {
         this.contentType = contentProducer;
         if (contentProducer == null) {
             setSource((String) null);
@@ -136,6 +157,10 @@ public class DocumentViewer extends PDFViewer {
         }
         generator = new Content(contentProducer);
         generator.kick();
+    }
+
+    public Component getViewerComponent() {
+        return viewerComponent == null ? this : viewerComponent;
     }
 
     private class Content extends ContentGenerator {

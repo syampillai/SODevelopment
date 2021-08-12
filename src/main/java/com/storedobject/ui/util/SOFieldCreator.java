@@ -648,7 +648,7 @@ public class SOFieldCreator<T> implements ObjectFieldCreator<T> {
         if(Quantity.class == type) {
             return switch(fieldName) {
                 case "UnitOfMeasurement", "UnitOfIssue" ->
-                        new UOMField(objectClass == com.storedobject.iot.ValueLimit.class);
+                        new UOMField(objectClass.getName().equals("com.storedobject.iot.ValueLimit"));
                 default -> new QuantityField(label, md.getIntParameter(0, 0),
                         md.getIntParameter(6, 1));
             };

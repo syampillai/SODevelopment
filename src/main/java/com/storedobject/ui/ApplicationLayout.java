@@ -23,4 +23,8 @@ public interface ApplicationLayout extends com.storedobject.vaadin.ApplicationLa
     default void drawMenu(com.storedobject.vaadin.Application application) {
         ((Application) application).drawMenu(application);
     }
+
+    default boolean isMenuVisible() {
+        return true;
+    }
 }

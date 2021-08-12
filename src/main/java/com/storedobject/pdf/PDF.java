@@ -1488,6 +1488,14 @@ public abstract class PDF implements java.io.Closeable, com.storedobject.core.Co
     }
 
     /**
+     * Dump the error that happened during reporting.
+     *
+     * @param error Error o dump.
+     */
+    public void dumpError(Throwable error) {
+    }
+
+    /**
      * Define a table where {@link StoredObject} instances can be added as rows.
      *
      * @param <T> Class type of the {@link StoredObject} instance

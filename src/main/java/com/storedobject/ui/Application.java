@@ -30,7 +30,7 @@ import java.util.function.Consumer;
 
 public class Application extends com.storedobject.vaadin.Application implements Device, RunningLogic, RequiresApproval {
 
-    private static final String VERSION = "20.0.5";
+    private static final String VERSION = "20.0.6";
     private static final String COMPACT_STYLES =
             """
                     --lumo-size-xl: 3rem;
@@ -213,7 +213,7 @@ public class Application extends com.storedobject.vaadin.Application implements 
      * @return True/false. Default is true.
      */
     public boolean supportsCloseableView() {
-        return true;
+        return mainLayout == null || mainLayout.isMenuVisible();
     }
 
     @Override
@@ -549,7 +549,7 @@ public class Application extends com.storedobject.vaadin.Application implements 
     }
 
     public void view(String caption, MediaFile mediaFile) {
-        DocumentViewer.view(caption, mediaFile);
+        com.storedobject.ui.util.DocumentViewer.view(caption, mediaFile);
     }
 
     public void view(String caption, Id objectId) {
@@ -845,8 +845,9 @@ public class Application extends com.storedobject.vaadin.Application implements 
         Application a = (Application) application;
         List<Logic> autos;
         ApplicationMenu frameMenu = mainLayout.getMenu();
-        if(frameMenu instanceof com.storedobject.core.ApplicationMenu) {
-            autos = as.populateMenu((com.storedobject.core.ApplicationMenu) frameMenu, null);
+        int count = frameMenu.getMenuPane().getElement().getChildCount();
+        if(frameMenu instanceof com.storedobject.core.ApplicationMenu am) {
+            autos = as.populateMenu(am, null);
         } else {
             Application.Menu am;
             autos = as.populateMenu(am = new Application.Menu(frameMenu), null);
@@ -867,6 +868,23 @@ public class Application extends com.storedobject.vaadin.Application implements 
         }
         application.stopPolling(application);
         autos.forEach(as::execute);
+        if(autos.isEmpty()) {
+            count = frameMenu.getMenuPane().getElement().getChildCount() - count;
+            if(count == 0) {
+                ELabel info = new ELabel("Please contact support with the following details:");
+                info.newLine();
+                information(info);
+                new Viewer(new CenteredLayout(info), "Support", false).execute();
+            }
+        }
+    }
+
+    public void information(StyledBuilder appDetails) {
+        appDetails.append("Version: ").append(getDriverIdentifier()).
+                newLine().append("Device Size: ").append(getDeviceWidth()).append('x').append(getDeviceHeight()).
+                newLine().append("Biometric Available: ").append(isBiometricAvailable()).
+                newLine().append("Biometric Registered: ").append(isBiometricRegistered()).
+                update();
     }
 
     protected boolean canCreateMenu(Logic logic) {

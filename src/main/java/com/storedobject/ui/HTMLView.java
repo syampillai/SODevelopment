@@ -1,11 +1,17 @@
 package com.storedobject.ui;
 
+import com.storedobject.common.IO;
 import com.storedobject.common.SORuntimeException;
 import com.storedobject.core.TextContent;
 import com.storedobject.ui.util.SOServlet;
-import com.storedobject.vaadin.*;
+import com.storedobject.vaadin.ApplicationEnvironment;
+import com.storedobject.vaadin.View;
+import com.storedobject.vaadin.Viewer;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasSize;
+
+import java.io.BufferedReader;
+import java.io.Reader;
 
 /**
  * Create a {@link View} from some HTML content. The HTML may contain
@@ -19,9 +25,10 @@ import com.vaadin.flow.component.HasSize;
 public class HTMLView extends Viewer {
 
     private static final String MISSING = "HTML content missing!";
+    private Component component;
 
     /**
-     * Constructor. Currently running logic title will be used as the "text content name".
+     * Constructor. Currently, running logic title will be used as the "text content name".
      *
      * @param application Application instance.
      */
@@ -76,20 +83,60 @@ public class HTMLView extends Viewer {
     public HTMLView(TextContent textContent, boolean windowMode) {
         super(textContent == null ? "HTML" : textContent.getName());
         if(textContent == null) {
-            throw new SORuntimeException(MISSING);
+            setContent(MISSING, null, windowMode);
+        } else {
+            setContent(null, textContent, windowMode);
         }
-        boolean asIFrame = textContent.getContent().startsWith("<html");
-        Component component;
-        if(asIFrame) {
+    }
+
+    /**
+     * Constructor.
+     *
+     * @param htmlContent HTML content.
+     * @param windowMode Whether to show it in a window or not.
+     */
+    public HTMLView(Reader htmlContent, boolean windowMode) {
+        super("HTML");
+        setContent(html(htmlContent), null, windowMode);
+    }
+
+    /**
+     * Constructor.
+     *
+     * @param htmlContent HTML content.
+     */
+    public HTMLView(Reader htmlContent) {
+        this(htmlContent, false);
+    }
+
+    private void setContent(String content, TextContent textContent, boolean windowMode) {
+        if(content == null) {
+            content = textContent.getContent();
+        }
+        boolean asIFrame = isHTML(content);
+        if(asIFrame || textContent == null) {
             IFrame iFrame = new IFrame();
             iFrame.getElement().getStyle().set("display", "block").set("overflow", "hidden");
-            iFrame.setSourceDocument(textContent.getContent());
+            iFrame.setSourceDocument(content);
             component = iFrame;
         } else {
             component = new TemplateLayout(textContent);
         }
         ((HasSize)component).setSizeFull();
         setComponent(windowMode ? createWindow(component) : component);
+    }
+
+    public static boolean isHTML(String content) {
+        if(content.isBlank()) {
+            return false;
+        }
+        int i = 0;
+        while(Character.isSpaceChar(content.charAt(i)) || Character.isWhitespace(content.charAt(i))) {
+            if(++i == content.length()) {
+                return false;
+            }
+        }
+        return content.startsWith("<html", i);
     }
 
     private static TextContent tc(String name) {
@@ -101,5 +148,47 @@ public class HTMLView extends Viewer {
             throw new SORuntimeException(MISSING + " - " + name);
         }
         return tc;
+    }
+
+    private static String html(Reader reader) {
+        BufferedReader r = IO.get(reader);
+        StringBuilder s = new StringBuilder();
+        String line;
+        try {
+            while((line = r.readLine()) != null) {
+                if(s.length() > 0) {
+                    s.append('\n');
+                }
+                if((s.length() + line.length()) > (100 * 1024)) {
+                    return "Too big!";
+                }
+                s.append(line);
+            }
+        } catch(Throwable e) {
+            return errorHTML(e);
+        } finally {
+            IO.close(r);
+        }
+        return s.toString();
+    }
+
+    /**
+     * Get the component that is used internally to render the HTML.
+     *
+     * @return The viewer component.
+     */
+    public Component getViewerComponent() {
+        return component;
+    }
+
+    private static String errorHTML(Object anything) {
+        if(anything != null) {
+            anything = ApplicationEnvironment.get().toDisplay(anything);
+        }
+        if(anything == null) {
+            anything = "Nothing";
+        }
+        anything = HTMLText.encode(anything);
+        return "<html><h1>" + anything + "</h1></html>";
     }
 }

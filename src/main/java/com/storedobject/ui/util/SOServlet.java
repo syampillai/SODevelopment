@@ -7,6 +7,8 @@ import com.storedobject.ui.MediaCSS;
 import com.vaadin.flow.server.VaadinServlet;
 
 import javax.servlet.ServletException;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
 import javax.servlet.annotation.WebInitParam;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -181,8 +183,8 @@ public class SOServlet extends VaadinServlet {
     public static TextContent getTextContent(String id) {
         id = id.trim().toLowerCase();
         TextContent tc = null;
-        boolean isId;
-        if(isId = StringUtility.isDigit(id)) {
+        boolean isId = StringUtility.isDigit(id);
+        if(isId) {
             tc = tcCache.get("id:" + id);
         }
         if(tc == null) {
@@ -239,8 +241,8 @@ public class SOServlet extends VaadinServlet {
     public static MediaFile getMedia(String name) {
         name = name.trim().toLowerCase();
         MediaFile mf = null;
-        boolean isId;
-        if(isId = StringUtility.isDigit(name)) {
+        boolean isId = StringUtility.isDigit(name);
+        if(isId) {
             mf = mediaCache.get("id:" + name);
         }
         if(mf == null) {

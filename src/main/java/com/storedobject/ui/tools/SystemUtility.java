@@ -22,7 +22,6 @@ import java.io.InputStream;
 import java.io.Writer;
 import java.math.BigInteger;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Comparator;
 
@@ -89,13 +88,19 @@ public class SystemUtility extends View implements CloseableView, Transactional 
         form.add(label("View Transaction"));
         rawTranId = new LongField(0L, 10);
         buttons = new ButtonLayout();
-        buttons.add(new ELabel("Raw Transaction Id: "), rawTranId, viewTranRaw = new Button("View", this));
+        buttons.add(new ELabel("Raw Transaction Id: "),
+                rawTranId,
+                viewTranRaw = new Button("View", this));
         form.add(buttons);
         form.add(label("Upload Data"));
         DataLoader dataLoader = new DataLoader(getApplication());
+        UploadField dataUploadField = new UploadField(dataLoader::process);
+        dataUploadField.getUploadComponent().setMaxFileSize(100000000);
         buttons = new ButtonLayout();
-        buttons.add(new ELabel("Excel Data: "), new Button("Excel", e -> new ExcelDataUpload().execute()),
-                new ELabel("Raw Data: "), new UploadField(dataLoader::process));
+        buttons.add(new ELabel("Excel Data: "),
+                new Button("Excel", e -> new ExcelDataUpload().execute()),
+                new ELabel("Raw Data: "),
+                dataUploadField);
         form.add(buttons);
         form.add(label("Debug SQL Connections"));
         buttons = new ButtonLayout();
@@ -112,12 +117,7 @@ public class SystemUtility extends View implements CloseableView, Transactional 
         buttons.add(new Button("Speak out", VaadinIcon.VOLUME_DOWN, e -> speakOut()));
         form.add(buttons);
         ELabelField appDetails = new ELabelField("Application Details");
-        Application a = Application.get();
-        appDetails.append("Version: ").append(a.getDriverIdentifier()).
-                newLine().append("Device Size: ").append(a.getDeviceWidth()).append('x').append(a.getDeviceHeight()).
-                newLine().append("Biometric Available: ").append(a.isBiometricAvailable()).
-                newLine().append("Biometric Registered: ").append(a.isBiometricRegistered()).
-                update();
+        Application.get().information(appDetails);
         form.add(appDetails);
         setComponent(form);
         setFirstFocus(from);
