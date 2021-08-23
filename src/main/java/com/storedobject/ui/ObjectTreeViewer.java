@@ -1,6 +1,7 @@
 package com.storedobject.ui;
 
 import com.storedobject.core.*;
+import com.storedobject.ui.util.LogicParser;
 import com.vaadin.flow.component.Component;
 
 import java.lang.reflect.Constructor;
@@ -71,9 +72,10 @@ public class ObjectTreeViewer<T extends StoredObject> extends ObjectTreeBrowser<
     }
 
     @SuppressWarnings("unchecked")
-    public static <O extends StoredObject> ObjectTreeViewer<O> create(Class<O> objectClass, Iterable<String> columns, String title) {
+    public static <O extends StoredObject> ObjectTreeViewer<O> create(Class<O> objectClass, Iterable<String> columns,
+                                                                      String title) {
         try {
-            Class<?> logic = JavaClassLoader.getLogic(ApplicationServer.createLogicName(Application.getPackageTag(), objectClass, "TreeViewer"));
+            Class<?> logic = JavaClassLoader.getLogic(LogicParser.createLogicName(objectClass, "TreeViewer"));
             Constructor<?> c = null;
             try {
                 c = logic.getConstructor(Iterable.class);

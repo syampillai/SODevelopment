@@ -698,4 +698,17 @@ public class ObjectField<T extends StoredObject> extends CustomField<Id> impleme
     public View getDependentView() {
         return field instanceof ViewDependent ? ((ViewDependent) field).getDependentView() : null;
     }
+
+    /**
+     * Load allowed values from a list. Once invoked, only this list will be used for showing the allowed objects
+     * that can be selected via this field.
+     *
+     * @param objects Objects to load.
+     */
+    public void load(ObjectIterator<T> objects) {
+        if(objects == null) {
+            objects = ObjectIterator.create();
+        }
+        getField().load(objects);
+    }
 }

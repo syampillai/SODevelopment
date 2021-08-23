@@ -2,10 +2,12 @@ package com.storedobject.ui.util;
 
 import com.storedobject.common.IO;
 import com.storedobject.core.*;
+import com.storedobject.ui.*;
 import com.storedobject.ui.Application;
-import com.storedobject.ui.HTMLView;
-import com.storedobject.ui.InformationView;
 import com.storedobject.vaadin.*;
+import com.storedobject.vaadin.Audio;
+import com.storedobject.vaadin.Image;
+import com.storedobject.vaadin.Video;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasSize;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -110,6 +112,21 @@ public class DocumentViewer extends PDFViewer {
                 viewerComponent = null;
                 return;
             }
+        } else {
+            if(contentType.isPDF()) {
+                super.setSource(resource);
+            } else if(viewerComponent instanceof Video v) {
+                v.setSource(resource, contentType.getMimeType());
+            } else if(viewerComponent instanceof Audio a) {
+                a.setSource(resource, contentType.getMimeType());
+            } else if(viewerComponent instanceof Image i) {
+                i.setSource(resource);
+            } else if(viewerComponent instanceof IFrame html) {
+                html.setSourceDocument(IO.getReader(streamData.getContent()).toString());
+            } else {
+                viewerComponent = null;
+                return;
+            }
         }
         if(listener == null) {
             view.execute();
@@ -137,6 +154,21 @@ public class DocumentViewer extends PDFViewer {
             } else if(contentType.getMimeType().equals("text/html")) {
                 view = new HTMLView(IO.getReader(input));
                 viewerComponent = ((HTMLView)view).getViewerComponent();
+            } else {
+                viewerComponent = null;
+                return;
+            }
+        } else {
+            if(contentType.isPDF()) {
+                super.setSource(resource);
+            } else if(viewerComponent instanceof Video v) {
+                v.setSource(resource);
+            } else if(viewerComponent instanceof Audio a) {
+                a.setSource(resource);
+            } else if(viewerComponent instanceof Image i) {
+                i.setSource(resource);
+            } else if(viewerComponent instanceof IFrame html) {
+                html.setSourceDocument(IO.getReader(input).toString());
             } else {
                 viewerComponent = null;
                 return;

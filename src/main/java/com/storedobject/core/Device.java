@@ -101,9 +101,12 @@ public interface Device {
     void showNotification(String caption, String text);
     void showNotification(Throwable error);
     void showNotification(String caption, Throwable error);
-    String getDevicePackageTag();
     MessageViewer getMessageViewer();
 
     default void setDate(Date date) {
+    }
+
+    default void parse(Logic logic) throws SOException {
+        throw new SOException("Not supported");
     }
 }

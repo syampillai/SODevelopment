@@ -3,6 +3,7 @@ package com.storedobject.ui;
 import com.storedobject.common.FilterProvider;
 import com.storedobject.common.ResourceDisposal;
 import com.storedobject.common.ResourceOwner;
+import com.storedobject.core.ObjectIterator;
 import com.storedobject.core.ObjectSearchFilter;
 import com.storedobject.core.StoredObject;
 import com.storedobject.ui.util.*;
@@ -10,7 +11,6 @@ import com.storedobject.vaadin.ComboField;
 import com.storedobject.vaadin.ImageButton;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ItemLabelGenerator;
-import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.data.provider.BackEndDataProvider;
 import com.vaadin.flow.data.provider.DataProvider;
@@ -351,5 +351,14 @@ public class ObjectComboField<T extends StoredObject> extends ComboField<T> impl
     @Override
     public void focus() {
         super.focus();
+    }
+
+    @Override
+    public void load(ObjectIterator<T> objects) {
+        if(objects == null) {
+            objects = ObjectIterator.create();
+        }
+        clear();
+        setProvider(new ObjectListProvider<>(getObjectClass(), objects.filter(getLoadFilter()).toList()));
     }
 }

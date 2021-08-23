@@ -99,11 +99,6 @@ public abstract class SystemDevice implements Device {
 	}
 
 	@Override
-	public String getDevicePackageTag() {
-		return null;
-	}
-	
-	@Override
 	public MessageViewer getMessageViewer() {
 		return null;
 	}

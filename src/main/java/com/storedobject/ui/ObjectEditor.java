@@ -238,7 +238,7 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
                 logic = another.getClass();
                 objectClass = another.getObjectClass();
             } else {
-                logic = JavaClassLoader.getLogic(ApplicationServer.createLogicName(Application.getPackageTag(), objectClass, "Editor"));
+                logic = JavaClassLoader.getLogic(LogicParser.createLogicName(objectClass, "Editor"));
             }
             Constructor<?> c = null;
             try {
@@ -1288,7 +1288,7 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
      * This is equivalent to pressing the "Report" button.
      */
     public void doReport() {
-        new ObjectList<T>(getApplication(), getObjectClass()).execute();
+        new ObjectList<>(getApplication(), getObjectClass()).execute();
     }
 
     /**

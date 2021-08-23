@@ -22,7 +22,7 @@ public final class Logic extends StoredObject implements DisplayOrder {
 	}
 
 	public String getClassName() {
-		return null;
+		return "";
 	}
 
 	public void setClassName(String className) {

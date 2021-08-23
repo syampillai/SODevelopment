@@ -71,8 +71,14 @@ public class ObjectList<T extends StoredObject> extends PDFReport {
         return reportDefinition.getOrderBy();
     }
 
+    public void setExtraCondition(String extraCondition) {
+    }
+
     public String getExtraCondition() {
         return null;
+    }
+
+    public void setLoadFilter(Predicate<T> loadFilter) {
     }
 
     public Predicate<T> getLoadFilter() {

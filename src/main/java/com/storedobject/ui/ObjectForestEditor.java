@@ -4,6 +4,7 @@ import com.storedobject.core.ApplicationServer;
 import com.storedobject.core.JavaClassLoader;
 import com.storedobject.core.StoredObject;
 import com.storedobject.core.StoredObjectUtility;
+import com.storedobject.ui.util.LogicParser;
 import com.storedobject.ui.util.ObjectForestViewerSupplier;
 
 import java.lang.reflect.Constructor;
@@ -62,9 +63,10 @@ public class ObjectForestEditor<T extends StoredObject> extends ObjectForestBrow
     }
 
     @SuppressWarnings("unchecked")
-    public static <O extends StoredObject> ObjectForestEditor<O> create(Class<O> objectClass, Iterable<String> columns, int actions, String title) {
+    public static <O extends StoredObject> ObjectForestEditor<O> create(Class<O> objectClass, Iterable<String> columns,
+                                                                        int actions, String title) {
         try {
-            Class<?> logic = JavaClassLoader.getLogic(ApplicationServer.createLogicName(Application.getPackageTag(), objectClass, "ForestEditor"));
+            Class<?> logic = JavaClassLoader.getLogic(LogicParser.createLogicName(objectClass, "ForestEditor"));
             Constructor<?> c = null;
             try {
                 c = logic.getConstructor(Iterable.class, int.class, String.class);

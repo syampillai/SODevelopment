@@ -1,6 +1,7 @@
 package com.storedobject.ui;
 
 import com.storedobject.core.Id;
+import com.storedobject.core.ObjectIterator;
 import com.storedobject.core.StoredObject;
 import com.storedobject.ui.util.AbstractObjectInput;
 import com.vaadin.flow.component.ItemLabelGenerator;
@@ -76,4 +77,12 @@ public interface ObjectInput<T extends StoredObject> extends AbstractObjectInput
         setCached(v);
         setValue(v);
     }
+
+    /**
+     * Load allowed values from a list. Once invoked, only this list will be used for showing the allowed objects
+     * that can be selected via this field.
+     *
+     * @param objects Objects to load.
+     */
+    void load(ObjectIterator<T> objects);
 }

@@ -5,6 +5,7 @@ import com.storedobject.common.StringList;
 import com.storedobject.core.*;
 import com.storedobject.ui.inventory.POBrowser;
 import com.storedobject.ui.inventory.POItemBrowser;
+import com.storedobject.ui.util.LogicParser;
 import com.storedobject.ui.util.ObjectDataProvider;
 import com.storedobject.vaadin.*;
 import com.vaadin.flow.component.Component;
@@ -252,9 +253,10 @@ public class ObjectBrowser<T extends StoredObject> extends ObjectGrid<T> impleme
     }
 
     @SuppressWarnings("unchecked")
-    public static <O extends StoredObject> ObjectBrowser<O> create(Class<O> objectClass, Iterable<String> browseColumns, int actions, String title) {
+    public static <O extends StoredObject> ObjectBrowser<O> create(Class<O> objectClass, Iterable<String> browseColumns,
+                                                                   int actions, String title) {
         try {
-            Class<?> logic = JavaClassLoader.getLogic(ApplicationServer.createLogicName(Application.getPackageTag(), objectClass, "Browser"));
+            Class<?> logic = JavaClassLoader.getLogic(LogicParser.createLogicName(objectClass, "Browser"));
             Constructor<?> c = null;
             try {
                 c = logic.getConstructor(Iterable.class, int.class, String.class);

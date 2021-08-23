@@ -14,9 +14,6 @@ public final class ApplicationServer {
     public void doDeviceLayout() {
     }
 
-    protected static void revalidateDevice(DeviceLayout layout) {
-    }
-
     public Date getDate() {
         return DateUtility.today();
     }
@@ -46,7 +43,7 @@ public final class ApplicationServer {
     }
 
     public static String getPackageName() {
-        return null;
+        return "";
     }
 
     public static String getPackageId() {
@@ -66,10 +63,6 @@ public final class ApplicationServer {
     }
 
     public static String guessClass(String name) {
-        return null;
-    }
-
-    public final String getVersion() {
         return null;
     }
 
@@ -151,10 +144,6 @@ public final class ApplicationServer {
     }
 
     public synchronized static void initialize(String propertiesFileName, String link) {
-    }
-
-    public static String createLogicName(String deviceTag, Class<?> objectClass, String tag) {
-        return null;
     }
 
     public static String getCopyright() {

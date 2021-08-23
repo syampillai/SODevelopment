@@ -1,6 +1,7 @@
 package com.storedobject.ui;
 
 import com.storedobject.core.*;
+import com.storedobject.ui.util.LogicParser;
 
 import java.lang.reflect.Constructor;
 
@@ -60,7 +61,8 @@ public class ObjectForestViewer<T extends StoredObject> extends ObjectForestEdit
         this(objectClass, columns, null, caption, any, false);
     }
 
-    public ObjectForestViewer(Class<T> objectClass, Iterable<String> columns, boolean any, String caption, boolean splitView) {
+    public ObjectForestViewer(Class<T> objectClass, Iterable<String> columns, boolean any, String caption,
+                              boolean splitView) {
         this(objectClass, columns, null, caption, any, splitView);
     }
 
@@ -75,14 +77,16 @@ public class ObjectForestViewer<T extends StoredObject> extends ObjectForestEdit
         this((Class<T>) JavaClassLoader.getLogic(ObjectEditor.sanitize(className)));
     }
 
-    public static <O extends StoredObject> ObjectForestViewer<O> create(Class<O> objectClass, boolean any, String title) {
+    public static <O extends StoredObject> ObjectForestViewer<O> create(Class<O> objectClass, boolean any,
+                                                                        String title) {
         return create(objectClass, StoredObjectUtility.browseColumns(objectClass), any, title);
     }
 
     @SuppressWarnings("unchecked")
-    public static <O extends StoredObject> ObjectForestViewer<O> create(Class<O> objectClass, Iterable<String> columns, boolean any, String title) {
+    public static <O extends StoredObject> ObjectForestViewer<O> create(Class<O> objectClass, Iterable<String> columns,
+                                                                        boolean any, String title) {
         try {
-            Class<?> logic = JavaClassLoader.getLogic(ApplicationServer.createLogicName(Application.getPackageTag(), objectClass, "ForestViewer"));
+            Class<?> logic = JavaClassLoader.getLogic(LogicParser.createLogicName(objectClass, "ForestViewer"));
             Constructor<?> c = null;
             try {
                 c = logic.getConstructor(Iterable.class, boolean.class, String.class);

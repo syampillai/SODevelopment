@@ -409,6 +409,15 @@ public class ObjectFormField<T extends StoredObject> extends CustomField<T>
     public void focus() {
     }
 
+    /**
+     * This method does nothing in this field.
+     *
+     * @param objects Objects to load.
+     */
+    @Override
+    public void load(ObjectIterator<T> objects) {
+    }
+
     private class ErrorCapture implements HasText {
 
         @Override

@@ -149,7 +149,7 @@
     <orderEntry type="library" name="Maven: org.apache.xmlgraphics:batik-codec:1.14" level="project" />
     <orderEntry type="library" name="Maven: org.apache.xmlgraphics:batik-bridge:1.14" level="project" />
     <orderEntry type="library" name="Maven: org.apache.xmlgraphics:batik-transcoder:1.14" level="project" />
-    <orderEntry type="library" name="Maven: com.storedobject.chart:so-charts:2.2.0" level="project" />
+    <orderEntry type="library" name="Maven: com.storedobject.chart:so-charts:2.3.0" level="project" />
     <orderEntry type="library" name="Maven: com.vaadin:vaadin:20.0.6" level="project" />
     <orderEntry type="library" name="Maven: com.vaadin:vaadin-board-flow:20.0.6" level="project" />
     <orderEntry type="library" name="Maven: com.vaadin:vaadin-charts-flow:20.0.6" level="project" />

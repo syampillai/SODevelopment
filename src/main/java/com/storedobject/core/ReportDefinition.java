@@ -65,6 +65,13 @@ public class ReportDefinition extends Name {
         return "";
     }
 
+    public void setFilter(String filter) {
+    }
+
+    public String getFilter() {
+        return "";
+    }
+
     public void setOrderBy(String orderBy) {
     }
 

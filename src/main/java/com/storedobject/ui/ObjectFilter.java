@@ -5,6 +5,7 @@ import com.storedobject.common.SORuntimeException;
 import com.storedobject.common.Storable;
 import com.storedobject.common.StringList;
 import com.storedobject.core.*;
+import com.storedobject.ui.util.LogicParser;
 import com.storedobject.vaadin.*;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasComponents;
@@ -81,8 +82,7 @@ public class ObjectFilter<T extends StoredObject> extends Form implements Object
     @SuppressWarnings("unchecked")
     public static <O extends StoredObject> ObjectFilter<O> create(Class<O> objectClass, StringList columns) {
         try {
-            Class<?> logic = JavaClassLoader.getLogic(ApplicationServer.createLogicName(Application.getPackageTag(),
-                    objectClass, "Filter"));
+            Class<?> logic = JavaClassLoader.getLogic(LogicParser.createLogicName(objectClass, "Filter"));
             Constructor<?> c;
             try {
                 c = logic.getConstructor(StringList.class);

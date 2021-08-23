@@ -3,6 +3,7 @@ package com.storedobject.ui;
 import com.storedobject.common.FilterProvider;
 import com.storedobject.common.SORuntimeException;
 import com.storedobject.core.ClassAttribute;
+import com.storedobject.core.ObjectIterator;
 import com.storedobject.core.ObjectSearchFilter;
 import com.storedobject.core.StoredObject;
 import com.storedobject.vaadin.CustomTextField;
@@ -118,8 +119,10 @@ public class ObjectCodeField<T extends StoredObject> extends CustomTextField<T> 
         }
         this.objectClass = objectClass;
         codeMethod = ClassAttribute.get(objectClass).getMethod(codeAttribute);
-        if(codeMethod == null || codeMethod.getReturnType() != String.class || Modifier.isStatic(codeMethod.getModifiers())) {
-            throw new SORuntimeException(objectClass.getName() + " doesn't have => public String get" + codeAttribute + "()");
+        if(codeMethod == null || codeMethod.getReturnType() != String.class
+                || Modifier.isStatic(codeMethod.getModifiers())) {
+            throw new SORuntimeException(objectClass.getName() + " doesn't have => public String get"
+                    + codeAttribute + "()");
         }
         code = "lower(" + codeAttribute + ")";
     }
@@ -213,7 +216,8 @@ public class ObjectCodeField<T extends StoredObject> extends CustomTextField<T> 
         string = string.trim().toLowerCase();
         T v = StoredObject.get(objectClass, code + "='" + string + "'", isAllowAny());
         if(v == null) {
-            v = StoredObject.list(objectClass, code + " LIKE '" + string + "%'", isAllowAny()).single(false);
+            v = StoredObject.list(objectClass, code + " LIKE '" + string + "%'", isAllowAny())
+                    .single(false);
         }
         return v;
     }
@@ -225,5 +229,14 @@ public class ObjectCodeField<T extends StoredObject> extends CustomTextField<T> 
         } catch(Throwable ignored) {
         }
         return "";
+    }
+
+    /**
+     * This method does nothing in this field.
+     *
+     * @param objects Objects to load.
+     */
+    @Override
+    public void load(ObjectIterator<T> objects) {
     }
 }

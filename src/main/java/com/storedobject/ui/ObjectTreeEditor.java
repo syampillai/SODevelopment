@@ -1,9 +1,9 @@
 package com.storedobject.ui;
 
-import com.storedobject.core.ApplicationServer;
 import com.storedobject.core.JavaClassLoader;
 import com.storedobject.core.StoredObject;
 import com.storedobject.core.StoredObjectUtility;
+import com.storedobject.ui.util.LogicParser;
 
 import java.lang.reflect.Constructor;
 
@@ -77,9 +77,10 @@ public class ObjectTreeEditor<T extends StoredObject> extends ObjectTreeBrowser<
     }
 
     @SuppressWarnings("unchecked")
-    public static <O extends StoredObject> ObjectTreeEditor<O> create(Class<O> objectClass, Iterable<String> columns, int actions, String title) {
+    public static <O extends StoredObject> ObjectTreeEditor<O> create(Class<O> objectClass, Iterable<String> columns,
+                                                                      int actions, String title) {
         try {
-            Class<?> logic = JavaClassLoader.getLogic(ApplicationServer.createLogicName(Application.getPackageTag(), objectClass, "TreeEditor"));
+            Class<?> logic = JavaClassLoader.getLogic(LogicParser.createLogicName(objectClass, "TreeEditor"));
             Constructor<?> c = null;
             try {
                 c = logic.getConstructor(Iterable.class, int.class, String.class);

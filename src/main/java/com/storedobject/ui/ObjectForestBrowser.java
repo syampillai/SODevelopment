@@ -3,6 +3,7 @@ package com.storedobject.ui;
 import com.storedobject.common.StringList;
 import com.storedobject.core.*;
 import com.storedobject.ui.util.AbstractObjectForestSupplier;
+import com.storedobject.ui.util.LogicParser;
 import com.storedobject.ui.util.ObjectForestSupplier;
 import com.storedobject.vaadin.*;
 import com.vaadin.flow.component.Component;
@@ -138,9 +139,10 @@ public class ObjectForestBrowser<T extends StoredObject> extends ObjectForest<T>
     }
 
     @SuppressWarnings("unchecked")
-    public static <O extends StoredObject> ObjectForestBrowser<O> create(Class<O> objectClass, Iterable<String> columns, int actions, String title) {
+    public static <O extends StoredObject> ObjectForestBrowser<O> create(Class<O> objectClass, Iterable<String> columns,
+                                                                         int actions, String title) {
         try {
-            Class<?> logic = JavaClassLoader.getLogic(ApplicationServer.createLogicName(Application.getPackageTag(), objectClass, "ForestBrowser"));
+            Class<?> logic = JavaClassLoader.getLogic(LogicParser.createLogicName(objectClass, "ForestBrowser"));
             Constructor<?> c = null;
             try {
                 c = logic.getConstructor(Iterable.class, int.class, String.class);

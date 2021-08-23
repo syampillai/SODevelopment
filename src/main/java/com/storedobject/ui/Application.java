@@ -489,12 +489,8 @@ public class Application extends com.storedobject.vaadin.Application implements 
     }
 
     @Override
-    public String getDevicePackageTag() {
-        return getPackageTag();
-    }
-
-    public static String getPackageTag() {
-        return "ui";
+    public void parse(Logic logic) throws SOException {
+        LogicParser.parse(logic);
     }
 
     public String getDateFormat() {

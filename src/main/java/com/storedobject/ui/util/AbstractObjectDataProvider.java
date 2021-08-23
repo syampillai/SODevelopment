@@ -143,7 +143,8 @@ public interface AbstractObjectDataProvider<T extends StoredObject, M, F> extend
         private ObjectAdder() {
         }
 
-        public static <OT extends StoredObject> ObjectAdder<OT> create(AbstractObjectDataProvider<OT, ?, ?> dataProvider, ObjectInput<OT> field) {
+        public static <OT extends StoredObject> ObjectAdder<OT> create(
+                AbstractObjectDataProvider<OT, ?, ?> dataProvider, ObjectInput<OT> field) {
             ObjectAdder<OT> oa = new ObjectAdder<>();
             oa.dataProvider = dataProvider;
             oa.field = field;

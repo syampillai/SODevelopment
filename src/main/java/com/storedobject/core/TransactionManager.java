@@ -129,6 +129,30 @@ public final class TransactionManager {
         return date(date);
     }
 
+    /**
+     * Convert a period value from local to GMT.
+     *
+     * @param period Local value.
+     * @param <D> Date/date-time type.
+     * @param <P> Period type.
+     * @return GMT value.
+     */
+    public <D extends java.util.Date, P extends AbstractPeriod<D>> P periodGMT(P period) {
+        return period;
+    }
+
+    /**
+     * Convert a period value from GMT to local.
+     *
+     * @param periodGMT Local value.
+     * @param <D> Date/date-time type.
+     * @param <P> Period type.
+     * @return Local value.
+     */
+    public <D extends java.util.Date, P extends AbstractPeriod<D>> P period(P periodGMT) {
+        return periodGMT;
+    }
+
     public Id checkType(StoredObject host, Id id, Class<? extends StoredObject> objectClass) throws Exception {
         return new Id();
     }
@@ -155,5 +179,14 @@ public final class TransactionManager {
      */
     public void log(Object anything) {
         device.log(anything);
+    }
+
+    /**
+     * Get the time difference in minutes.
+     *
+     * @return Time difference.
+     */
+    public int getTimeDifference() {
+        return 0;
     }
 }

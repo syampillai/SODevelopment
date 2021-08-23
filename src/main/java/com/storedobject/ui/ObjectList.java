@@ -1,5 +1,6 @@
 package com.storedobject.ui;
 
+import com.storedobject.common.Executable;
 import com.storedobject.common.SORuntimeException;
 import com.storedobject.common.StringList;
 import com.storedobject.core.*;
@@ -13,12 +14,12 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.function.Predicate;
 
 /**
  * A list report that lists {@link StoredObject}s. The object class to be listed can be defined using
- * a {@link ReportDefinition} or directly specified as the data class name. Attribute filters can be defined and this
- * is the functionality that is added by this class on top of {@link com.storedobject.report.ObjectList}.
+ * a {@link ReportDefinition} or directly specified as the data class name. Attribute filters defined in the
+ * {@link ReportDefinition} instance is processed and filter variable values are accepted and applied while
+ * generating the output.
  *
  * @author Syam
  */
@@ -27,49 +28,46 @@ public class ObjectList extends DataForm {
     private static final double DIFF = 0.000000001;
     private final ReportDefinition definition;
     private final List<Field> fields = new ArrayList<>();
+    private final List<Field> filters = new ArrayList<>();
 
     /**
      * Constructor.
-     * <p>The parameter should primarily contain the name of the report (as specified in the {@link ReportDefinition},
-     * followed by field details for filters. If you want, you may use the fully qualified name of the data class
+     * <p>The parameter should contain the name of the report (as specified in the {@link ReportDefinition}.
+     * However, you may use the fully qualified name of the data class
      * instead of the report definition name and in that case, a default report definition will be generated.</p>
-     * <p>The field details are separated by the vertical bar '|' character as the delimiter. Each field can be
-     * specified as just the attribute name or the attribute name followed by its comparison indicators.</p>
-     * <p>Comparison indicators specify how the comparison is done. It is indicated by 2 characters - "EQ" for "equal
-     * to", "LT" for "less than", "GT" for "greater than", "LE" for "less than or equal to", "NE" for "not equal to"
-     * etc. If an invalid comparison indicator is specified or if no indicator is specified, "EQ" is assumed. The
-     * comparison indicator must be separated from the field attribute by a slash "/" character. A star "*" (asterisk
-     * character) may be added to indicate that the field is mandatory when value is being accepted from the user.</p>
-     * <p>Example: MY-PERSONS-LIST|Age/LT*</p>
-     * <p>Example: com.storedobject.core.Person|Gender/EQ|Age/GT</p>
-     * <p>The captions of the filter fields may be customized by adding " AS " followed by the customized caption.</p>
-     * <p>Example: com.storedobject.core.Person|Gender/EQ AS Gender equal to|Age/GT AS Age greater than</p>
-     * <p>Sub-fields may be accessed using the platform-specific "dot" notation.</p>
-     * <p>Example: com.storedobject.core.SystemUser|Person.Gender/EQ AS Gender equal to</p>
      *
-     * @param report Report name and further field details.
+     * @param report Report name.
      */
     public ObjectList(String report) {
-        this(definition(report), report);
+        this(definition(report));
     }
 
-    private <T extends StoredObject> ObjectList(ReportDefinition definition, String fields) {
+    /**
+     * Constructor.
+     *
+     * @param definition Report definition.
+     * @param <T> Type of objects to list.
+     */
+    public <T extends StoredObject> ObjectList(ReportDefinition definition) {
         super(definition.getTitle());
         this.definition = definition;
-        int p = fields.indexOf('|');
-        if(p < 0) {
+        StringList fList = StringList.create(definition.getFilter().split("\n"));
+        if(fList.isEmpty()) {
             return;
         }
-        StringList fList = StringList.create(fields.substring(p + 1).split("\\|"));
         @SuppressWarnings("unchecked") Class<T> dClass = (Class<T>) definition.getClassForData();
         SOFieldCreator<T> fc = fc(dClass);
         if(fc == null) {
             return;
         }
+        int p;
         StoredObjectUtility.MethodList m;
         String caption, compare;
         HasValue<?, ?> field;
         for(String fieldName: fList) {
+            if(fieldName.isBlank()) {
+                continue;
+            }
             p = fieldName.toLowerCase().indexOf(" as ");
             if(p > 0) {
                 caption = StringUtility.makeLabel(fieldName);
@@ -134,10 +132,6 @@ public class ObjectList extends DataForm {
     }
 
     private static ReportDefinition definition(String report) {
-        int p = report.indexOf('|');
-        if(p > 0) {
-            report = report.substring(0, p);
-        }
         ReportDefinition definition;
         if(report.indexOf('.') > 0) {
             report = ApplicationServer.guessClass(report);
@@ -165,14 +159,41 @@ public class ObjectList extends DataForm {
     @Override
     protected boolean process() {
         close();
-        new Report().execute();
+        report();
         return true;
+    }
+
+    private <T extends StoredObject> void report() {
+        filters.clear();
+        fields.stream().filter(f -> f.method != null && f.field.getValue() != null).forEach(filters::add);
+        Class<? extends Executable> logicClass = definition.getClassForLogic();
+        Executable logic;
+        try {
+            logic = Utility.construct(logicClass,
+                    new Class<?>[]{Device.class, ReportDefinition.class},
+                    new Object[]{Application.get(), definition});
+        } catch(LogicRedirected ld) {
+            logic = ld.getExecutable();
+        }
+        if(logic == null) {
+            error("Unable to create logic: " + logicClass.getName());
+            return;
+        }
+        if(logic instanceof com.storedobject.report.ObjectList) {
+            @SuppressWarnings("unchecked")
+            com.storedobject.report.ObjectList<T> report = (com.storedobject.report.ObjectList<T>) logic;
+            report.setExtraCondition(extraCondition());
+            if(!filters.isEmpty()) {
+                report.setLoadFilter(this::filter);
+            }
+        }
+        logic.execute();
     }
 
     @Override
     protected void execute(View parent, boolean doNotLock) {
         if(fields.isEmpty()) {
-            new Report().execute();
+            report();
             return;
         }
         super.execute(parent, doNotLock);
@@ -197,134 +218,117 @@ public class ObjectList extends DataForm {
         return definition;
     }
 
-    @SuppressWarnings("rawtypes")
-    private class Report extends com.storedobject.report.ObjectList {
-
-        private final List<Field> filters = new ArrayList<>();
-
-        public Report() {
-            super(Application.get(), definition);
-            fields.stream().filter(f -> f.method != null && f.field.getValue() != null).forEach(filters::add);
+    private <T extends StoredObject> boolean filter(T o) {
+        Object v, f;
+        for(Field field: filters) {
+            f = field.field.getValue();
+            if(f == null) {
+                continue;
+            }
+            try {
+                v = field.method.invoke(o);
+            } catch(Throwable ignored) {
+                continue;
+            }
+            switch(field.compare) {
+                case 'E' -> {
+                    if(compare(v, f) == 0) {
+                        continue;
+                    }
+                    return false;
+                }
+                case 'L' -> {
+                    if(compare(v, f) < 0) {
+                        continue;
+                    }
+                    return false;
+                }
+                case 'l' -> {
+                    if(compare(v, f) <= 0) {
+                        continue;
+                    }
+                    return false;
+                }
+                case 'G' -> {
+                    if(compare(v, f) > 0) {
+                        continue;
+                    }
+                    return false;
+                }
+                case 'g' -> {
+                    if(compare(v, f) >= 0) {
+                        continue;
+                    }
+                    return false;
+                }
+                case 'N' -> {
+                    if(compare(v, f) != 0) {
+                        continue;
+                    }
+                    return false;
+                }
+                case 'P' -> {
+                    if(f instanceof DatePeriod dp && v instanceof Date d) {
+                        if(dp.inside(d)) {
+                            continue;
+                        }
+                        return false;
+                    }
+                }
+            }
         }
+        return true;
+    }
 
-        @Override
-        public String getExtraCondition() {
-            if(fields.isEmpty()) {
-                return ObjectList.this.getExtraCondition();
-            }
-            Object value;
-            StringBuilder sb = new StringBuilder();
-            for(Field field: fields) {
-                if(field.method != null) {
-                    continue;
-                }
-                value = field.field.getValue();
-                if(value == null) {
-                    continue;
-                }
-                if(!sb.isEmpty()) {
-                    sb.append(" AND ");
-                }
-                if(value instanceof String) {
-                    sb.append("lower(").append(field.name).append(')');
-                } else {
-                    sb.append(field.name);
-                }
-                if(value instanceof String s) {
-                    value = "'" + s.toLowerCase().replace("'", "''") + "'";
-                }
-                if(value instanceof DatePeriod dp) {
-                    value = dp.getDBCondition();
-                }
-                if(value instanceof Date d) {
-                    value = "'" + Database.format(d) + "'";
-                }
-                switch(field.compare) {
-                    case 'E' -> sb.append('=');
-                    case 'L' -> sb.append('<');
-                    case 'l' -> sb.append("<=");
-                    case 'G' -> sb.append('>');
-                    case 'g' -> sb.append(">=");
-                    case 'N' -> sb.append("<>");
-                }
-                sb.append(value);
-            }
-            if(sb.isEmpty()) {
-                return ObjectList.this.getExtraCondition();
-            }
-            String c = ObjectList.this.getExtraCondition();
-            if(c == null) {
-                return sb.toString();
-            }
-            return c + " AND " + sb;
+    private String extraCondition() {
+        if(fields.isEmpty()) {
+            return getExtraCondition();
         }
-
-        @Override
-        public Predicate getLoadFilter() {
-            return filters.isEmpty() ? null : this::filter;
-        }
-
-        private boolean filter(Object o) {
-            Object v, f;
-            for(Field field: filters) {
-                f = field.field.getValue();
-                if(f == null) {
-                    continue;
-                }
-                try {
-                    v = field.method.invoke(o);
-                } catch(Throwable ignored) {
-                    continue;
-                }
-                switch(field.compare) {
-                    case 'E' -> {
-                        if(compare(v, f) == 0) {
-                            continue;
-                        }
-                        return false;
-                    }
-                    case 'L' -> {
-                        if(compare(v, f) < 0) {
-                            continue;
-                        }
-                        return false;
-                    }
-                    case 'l' -> {
-                        if(compare(v, f) <= 0) {
-                            continue;
-                        }
-                        return false;
-                    }
-                    case 'G' -> {
-                        if(compare(v, f) > 0) {
-                            continue;
-                        }
-                        return false;
-                    }
-                    case 'g' -> {
-                        if(compare(v, f) >= 0) {
-                            continue;
-                        }
-                        return false;
-                    }
-                    case 'N' -> {
-                        if(compare(v, f) != 0) {
-                            continue;
-                        }
-                        return false;
-                    }
-                    case 'P' -> {
-                        if(f instanceof DatePeriod dp && v instanceof Date d) {
-                            if(dp.inside(d)) {
-                                continue;
-                            }
-                            return false;
-                        }
-                    }
-                }
+        Object value;
+        StringBuilder sb = new StringBuilder();
+        for(Field field: fields) {
+            if(field.method != null) {
+                continue;
             }
-            return true;
+            value = field.field.getValue();
+            if(value == null) {
+                continue;
+            }
+            if(!sb.isEmpty()) {
+                sb.append(" AND ");
+            }
+            if(value instanceof String) {
+                sb.append("lower(").append(field.name).append(')');
+            } else {
+                sb.append(field.name);
+            }
+            if(value instanceof String s) {
+                value = "'" + s.toLowerCase().replace("'", "''") + "'";
+            }
+            if(value instanceof DatePeriod dp) {
+                value = dp.getDBCondition();
+            }
+            if(value instanceof Date d) {
+                value = "'" + Database.format(d) + "'";
+            }
+            switch(field.compare) {
+                case 'E' -> sb.append('=');
+                case 'L' -> sb.append('<');
+                case 'l' -> sb.append("<=");
+                case 'G' -> sb.append('>');
+                case 'g' -> sb.append(">=");
+                case 'N' -> sb.append("<>");
+            }
+            sb.append(value);
         }
+        if(sb.isEmpty()) {
+            return getExtraCondition();
+        }
+        String c = getExtraCondition();
+        if(c == null) {
+            return sb.toString();
+        }
+        return c + " AND " + sb;
     }
 
     private static int compare(Object v1, Object v2) {

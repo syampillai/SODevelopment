@@ -1,9 +1,9 @@
 package com.storedobject.ui;
 
-import com.storedobject.core.ApplicationServer;
 import com.storedobject.core.EditorAction;
 import com.storedobject.core.JavaClassLoader;
 import com.storedobject.core.StoredObject;
+import com.storedobject.ui.util.LogicParser;
 import com.storedobject.ui.util.ObjectDataProvider;
 
 import java.lang.reflect.Constructor;
@@ -60,9 +60,10 @@ public class ObjectBrowserViewer<T extends StoredObject> extends ObjectBrowser<T
     }
 
     @SuppressWarnings("unchecked")
-    public static <O extends StoredObject> ObjectBrowserViewer<O> create(Class<O> objectClass, Iterable<String> browseColumns, String title) {
+    public static <O extends StoredObject> ObjectBrowserViewer<O> create(Class<O> objectClass,
+                                                                         Iterable<String> browseColumns, String title) {
         try {
-            Class<?> logic = JavaClassLoader.getLogic(ApplicationServer.createLogicName(Application.getPackageTag(), objectClass, "Browser"));
+            Class<?> logic = JavaClassLoader.getLogic(LogicParser.createLogicName(objectClass, "Browser"));
             Constructor<?> c = null;
             try {
                 c = logic.getConstructor(Iterable.class);

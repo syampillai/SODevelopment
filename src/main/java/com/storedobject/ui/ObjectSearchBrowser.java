@@ -1,6 +1,7 @@
 package com.storedobject.ui;
 
 import com.storedobject.core.*;
+import com.storedobject.ui.util.LogicParser;
 import com.storedobject.ui.util.ObjectDataProvider;
 import com.storedobject.vaadin.View;
 import com.vaadin.flow.component.Component;
@@ -181,9 +182,11 @@ public class ObjectSearchBrowser<T extends StoredObject> extends ObjectBrowser<T
     }
 
     @SuppressWarnings("unchecked")
-    private static <O extends StoredObject> ObjectSearchBrowser<O> createInt(Class<O> objectClass, Iterable<String> browseColumns, String caption) {
+    private static <O extends StoredObject> ObjectSearchBrowser<O> createInt(Class<O> objectClass,
+                                                                             Iterable<String> browseColumns,
+                                                                             String caption) {
         try {
-            Class<?> logic = JavaClassLoader.getLogic(ApplicationServer.createLogicName(Application.getPackageTag(), objectClass, "SearchBrowser"));
+            Class<?> logic = JavaClassLoader.getLogic(LogicParser.createLogicName(objectClass, "SearchBrowser"));
             Constructor<?> c = null;
             try {
                 c = logic.getConstructor(Iterable.class, String.class);

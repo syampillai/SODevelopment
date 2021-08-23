@@ -3,19 +3,17 @@ package com.storedobject.ui.util;
 import com.storedobject.common.IO;
 import com.storedobject.common.JSON;
 import com.storedobject.core.*;
+import com.storedobject.ui.Application;
 import com.storedobject.ui.MediaCSS;
 import com.vaadin.flow.server.VaadinServlet;
 
 import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
 import javax.servlet.annotation.WebInitParam;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
-import java.util.Map;
-import java.util.WeakHashMap;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 @WebServlet(urlPatterns = "/*", name = "SOServlet", asyncSupported = true, loadOnStartup = 0, initParams = {
@@ -28,6 +26,7 @@ public class SOServlet extends VaadinServlet {
     private static final WeakHashMap<String, TextContent> tcCache = new WeakHashMap<>();
     private static final long CACHE_TIME_IN_MILLIS = TimeUnit.MILLISECONDS.convert(365, TimeUnit.DAYS);
     private static final long CACHE_TIME_IN_SECONDS = CACHE_TIME_IN_MILLIS / 1000;
+    private static final List<String> CORS = new ArrayList<>();
 
     @Override
     public void init() throws ServletException {
@@ -41,8 +40,26 @@ public class SOServlet extends VaadinServlet {
         ApplicationServer.initialize(null, link);
     }
 
+    private boolean isAllowedRequestOrigin(String origin) {
+        if(CORS.isEmpty()) {
+            Arrays.stream(GlobalProperty.get("SECURITY-CORS").split(","))
+                    .map(String::trim).filter(c -> !c.isBlank()).forEach(CORS::add);
+            if(CORS.isEmpty()) {
+                CORS.add(".*");
+            }
+        }
+        if(CORS.stream().anyMatch(origin::matches)) {
+            return true;
+        }
+        ApplicationServer.log(Application.get(), "CORS rejected: " + origin);
+        return false;
+    }
+
     @Override
-    protected void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    protected void service(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+
+        // Capture url from the first request that came in
         if(url == null) {
             url = request.getRequestURL().toString().replace("//" , "\n");
             int p = url.indexOf('/');
@@ -51,9 +68,44 @@ public class SOServlet extends VaadinServlet {
             }
             url = url.replace("\n", "//");
         }
+
+        // Check for CORS requests
+        String origin = request.getHeader("Origin");
+        if (origin != null) {
+
+            if(isAllowedRequestOrigin(origin)) { // Allowed
+                if("options".equalsIgnoreCase(request.getMethod())) { // Handle a preflight "option" requests
+                    response.addHeader("Access-Control-Allow-Origin", origin);
+                    response.setHeader("Allow", "GET, HEAD, POST, PUT, DELETE, TRACE, OPTIONS");
+
+                    // Allow the requested method
+                    String method = request.getHeader("Access-Control-Request-Method");
+                    response.addHeader("Access-Control-Allow-Methods", method);
+
+                    // Allow the requested headers
+                    String headers = request.getHeader("Access-Control-Request-Headers");
+                    response.addHeader("Access-Control-Allow-Headers", headers);
+
+                    response.addHeader("Access-Control-Allow-Credentials", "true");
+                    response.setContentType("text/plain");
+                    response.setCharacterEncoding("utf-8");
+                    response.getWriter().flush();
+                    return;
+                } else if("post".equalsIgnoreCase(request.getMethod())) { // Handle UIDL post requests
+                    response.addHeader("Access-Control-Allow-Origin", origin);
+                    response.addHeader("Access-Control-Allow-Credentials", "true");
+                }
+            } else { // Not allowed
+                response.sendError(HttpServletResponse.SC_FORBIDDEN);
+            }
+        }
+
+        // Check for controlled caches like media, text content etc.
         if(isMedia(request, response) || isTextContent(request, response)) {
             return;
         }
+
+        // Over to logic handlers
         super.service(request, response);
     }
 
@@ -316,5 +368,9 @@ public class SOServlet extends VaadinServlet {
 
     public static String getProtocol() {
         return url.substring(0, url.indexOf(':'));
+    }
+
+    public static void reloadCORS() {
+        CORS.clear();
     }
 }

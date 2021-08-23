@@ -1,6 +1,7 @@
 package com.storedobject.ui;
 
 import com.storedobject.core.*;
+import com.storedobject.ui.util.LogicParser;
 import com.storedobject.vaadin.Button;
 import com.storedobject.vaadin.ButtonLayout;
 import com.storedobject.vaadin.ConfirmButton;
@@ -139,9 +140,10 @@ public class ObjectTreeBrowser<T extends StoredObject> extends ObjectTree<T> {
     }
 
     @SuppressWarnings("unchecked")
-    public static <O extends StoredObject> ObjectTreeBrowser<O> create(Class<O> objectClass, Iterable<String> columns, int actions, String title) {
+    public static <O extends StoredObject> ObjectTreeBrowser<O> create(Class<O> objectClass, Iterable<String> columns,
+                                                                       int actions, String title) {
         try {
-            Class<?> logic = JavaClassLoader.getLogic(ApplicationServer.createLogicName(Application.getPackageTag(), objectClass, "TreeBrowser"));
+            Class<?> logic = JavaClassLoader.getLogic(LogicParser.createLogicName(objectClass, "TreeBrowser"));
             Constructor<?> c = null;
             try {
                 c = logic.getConstructor(Iterable.class, int.class, String.class);

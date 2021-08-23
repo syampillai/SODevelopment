@@ -1,13 +1,13 @@
 package com.storedobject.ui;
 
-import com.storedobject.core.ApplicationServer;
 import com.storedobject.core.JavaClassLoader;
 import com.storedobject.core.StoredObject;
+import com.storedobject.ui.util.LogicParser;
 import com.storedobject.ui.util.ObjectDataProvider;
 
 import java.lang.reflect.Constructor;
 
-import static com.storedobject.core.EditorAction.*;
+import static com.storedobject.core.EditorAction.ALL;
 
 public class ObjectBrowserEditor<T extends StoredObject> extends ObjectBrowser<T> {
 
@@ -86,9 +86,11 @@ public class ObjectBrowserEditor<T extends StoredObject> extends ObjectBrowser<T
     }
 
     @SuppressWarnings("unchecked")
-    public static <O extends StoredObject> ObjectBrowserEditor<O> create(Class<O> objectClass, Iterable<String> browseColumns, int actions, String title) {
+    public static <O extends StoredObject> ObjectBrowserEditor<O> create(Class<O> objectClass,
+                                                                         Iterable<String> browseColumns, int actions,
+                                                                         String title) {
         try {
-            Class<?> logic = JavaClassLoader.getLogic(ApplicationServer.createLogicName(Application.getPackageTag(), objectClass, "BrowserEditor"));
+            Class<?> logic = JavaClassLoader.getLogic(LogicParser.createLogicName(objectClass, "BrowserEditor"));
             Constructor<?> c = null;
             try {
                 c = logic.getConstructor(Iterable.class, int.class, String.class);

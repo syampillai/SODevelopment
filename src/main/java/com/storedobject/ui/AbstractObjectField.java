@@ -268,6 +268,12 @@ public abstract class AbstractObjectField<T extends StoredObject> extends Custom
         return searcher;
     }
 
+    @Override
+    public void load(ObjectIterator<T> objects) {
+        clear();
+        getSearcher().load(objects.filter(getLoadFilter()));
+    }
+
     /**
      * Get the searcher for this field.
      *

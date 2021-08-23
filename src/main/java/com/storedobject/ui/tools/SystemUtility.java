@@ -7,6 +7,7 @@ import com.storedobject.report.ObjectList;
 import com.storedobject.ui.Application;
 import com.storedobject.ui.*;
 import com.storedobject.ui.common.ExcelDataUpload;
+import com.storedobject.ui.util.SOServlet;
 import com.storedobject.vaadin.*;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.checkbox.Checkbox;
@@ -39,6 +40,8 @@ public class SystemUtility extends View implements CloseableView, Transactional 
     private final Button downloadExcelData;
     private final Button downloadData;
     private final Button updateData;
+    private final Button edit;
+    private final Button editRaw;
     private final Button loadRaw;
     private final Button executeRaw;
     private final Button viewTranRaw;
@@ -75,6 +78,8 @@ public class SystemUtility extends View implements CloseableView, Transactional 
         buttons.add(downloadExcelData = new Button("Excel", this));
         buttons.add(downloadData = new Button("Download", this));
         buttons.add(updateData = new ConfirmButton("Update", "lightbulb", this));
+        buttons.add(edit = new Button("Editor", VaadinIcon.EDIT, this));
+        buttons.add(editRaw = new Button("Raw Editor", VaadinIcon.LIFEBUOY, this));
         form.add(label("Execute Logic"));
         form.add(rawCommand = new TextField("Command"));
         buttons = new ButtonLayout();
@@ -116,6 +121,12 @@ public class SystemUtility extends View implements CloseableView, Transactional 
         buttons = new ButtonLayout();
         buttons.add(new Button("Speak out", VaadinIcon.VOLUME_DOWN, e -> speakOut()));
         form.add(buttons);
+        buttons = new ButtonLayout();
+        buttons.add(new Button("Reload CORS", VaadinIcon.SPECIALIST, e -> {
+            SOServlet.reloadCORS();
+            message("CORS reloaded!");
+        }));
+        form.add(buttons);
         ELabelField appDetails = new ELabelField("Application Details");
         Application.get().information(appDetails);
         form.add(appDetails);
@@ -148,6 +159,7 @@ public class SystemUtility extends View implements CloseableView, Transactional 
     @SuppressWarnings({ "rawtypes", "unchecked", "resource" })
     @Override
     public void clicked(Component c) {
+        clearAlerts();
         if(c == downloadConnInfo) {
             TextContentProducer cp = new TextContentProducer() {
                 @Override
@@ -209,7 +221,15 @@ public class SystemUtility extends View implements CloseableView, Transactional 
         }
         objectClass = from.getObjectClass();
         if(objectClass == null) {
-            error("Class not found: " + from.getValue());
+            warning("Class not found: " + from.getValue());
+            return;
+        }
+        if(c == edit) {
+            ObjectEditor.create(objectClass).execute();
+            return;
+        }
+        if(c == editRaw) {
+            new ObjectEditor(objectClass).execute();
             return;
         }
         if(c == downloadData) {
