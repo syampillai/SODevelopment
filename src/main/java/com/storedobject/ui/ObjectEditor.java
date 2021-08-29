@@ -622,9 +622,13 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
         } else {
             try {
                 instance = getObjectClass().getDeclaredConstructor().newInstance();
-            } catch(InstantiationException | NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
-                instance = super.createObjectInstance();
+            } catch(InstantiationException | NoSuchMethodException | IllegalAccessException
+                    | InvocationTargetException e) {
+                return null;
             }
+        }
+        if(instance != null) {
+            setFixedValues(instance);
         }
         if(instance instanceof OfEntity && Id.isNull(((OfEntity) instance).getSystemEntityId())) {
             try {

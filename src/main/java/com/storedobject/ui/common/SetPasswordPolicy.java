@@ -19,7 +19,7 @@ public class SetPasswordPolicy extends ObjectEditor<PasswordPolicy> {
     private void fConstructed() {
         PasswordPolicy policy = StoredObject.get(PasswordPolicy.class, "DataClass='" + SystemUser.class.getName() + "'");
         if(policy == null) {
-            policy = new PasswordPolicy();
+            policy = createObjectInstance();
         }
         setObject(policy, true);
     }
