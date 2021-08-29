@@ -440,7 +440,16 @@ public abstract class PDF implements java.io.Closeable, com.storedobject.core.Co
      * @return Report Format Definition for this report.
      */
     public ReportFormat getReportFormat() {
-        return null;
+        return new ReportFormat();
+    }
+
+    /**
+     * Set the 'Report Format Definition' for this report.
+     * This will override the default one.
+     *
+     * @param reportFormat Report Format Definition for this report.
+     */
+    public void setReportFormat(ReportFormat reportFormat) {
     }
 
     /**
@@ -1545,7 +1554,7 @@ public abstract class PDF implements java.io.Closeable, com.storedobject.core.Co
         }
 
         private ObjectTable(Class<T> objectClass, StringList attributes, boolean withHeadings) {
-            super(attributes.size());
+            super(objectClass == null && withHeadings ? 0 : attributes.size());
         }
 
         /**

@@ -89,6 +89,9 @@ public interface LinkGrid<T extends StoredObject> extends StoredObjectLink<T> {
         return getLink().getName();
     }
 
+    default void loaded() {
+    }
+
     default T selected() {
         if(size() == 0) {
             Application.warning("No entries exist");

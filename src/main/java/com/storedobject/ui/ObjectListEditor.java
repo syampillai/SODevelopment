@@ -213,11 +213,20 @@ public class ObjectListEditor<T extends StoredObject> extends EditableObjectGrid
     }
 
     /**
-     * Reload a selected instance. This will abandon all the changes already made to the instance.
+     * Reload a selected instance. This will abandon all the changes already made to the instance. If the instance
+     * was a newly added one, it will be removed.
      */
     public void reload() {
         cancelEdit();
-        reload(selected());
+        T selected = selected();
+        if(selected == null) {
+            return;
+        }
+        if(isAdded(selected)) {
+            delete();
+            return;
+        }
+        reload(selected);
     }
 
     private void reloadIf() {
@@ -278,8 +287,9 @@ public class ObjectListEditor<T extends StoredObject> extends EditableObjectGrid
      * @return Selected instance or <code>null</code>.
      */
     public T selected() {
+        clearAlerts();
         if(size() == 0) {
-            Application.warning("No entries exist");
+            warning("No entries exist");
             return null;
         }
         T selected = getSelected();
@@ -290,7 +300,7 @@ public class ObjectListEditor<T extends StoredObject> extends EditableObjectGrid
             return selected;
         }
         if(selected == null) {
-            Application.warning("Nothing selected");
+            warning("Nothing selected");
         }
         return selected;
     }

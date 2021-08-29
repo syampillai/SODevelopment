@@ -582,7 +582,7 @@ public class SOFieldCreator<T> implements ObjectFieldCreator<T> {
                 if(form == null) {
                     return null;
                 }
-                List<ObjectField.Type> types = objectFieldTypes(md.getStyle());
+                List<ObjectField.Type> types = objectFieldTypes(md);
                 try {
                     String[] mimes = (String[]) objectClass.getMethod("contentTypes", String.class)
                             .invoke(null, new Object[]{fieldName});
@@ -601,7 +601,7 @@ public class SOFieldCreator<T> implements ObjectFieldCreator<T> {
                 }
                 return new ObjectField<>(label, new FileField(types.toArray(new ObjectField.Type[0])));
             }
-            return new ObjectField<>(label, realObjectType, md.isAny(), objectFieldType(md.getStyle()),
+            return new ObjectField<>(label, realObjectType, md.isAny(), objectFieldType(md),
                     md.isAddAllowed());
         }
         if(JSON.class == type) {
@@ -865,8 +865,10 @@ public class SOFieldCreator<T> implements ObjectFieldCreator<T> {
             }
         }
         TextField field = new TextField(label);
-        if(md.isCode()) {
+        if(md.isCode() || md.isStyle("upper") || md.isStyle("uppercase")) {
             field.uppercase();
+        } else if(md.isStyle("lower") || md.isStyle("lowercase")) {
+            field.lowercase();
         }
         if(p1 <= 0) {
             field.setMinWidth("15em");
@@ -876,25 +878,25 @@ public class SOFieldCreator<T> implements ObjectFieldCreator<T> {
         return field;
     }
 
-    private static ObjectField.Type objectFieldType(String style) {
-        if(style == null) {
+    private static ObjectField.Type objectFieldType(UIFieldMetadata md) {
+        if(md.getMetadata() == null) {
             return ObjectField.Type.AUTO;
         }
         for(ObjectField.Type type : ObjectField.Type.values()) {
-            if(style.contains("(" + type + ")")) {
+            if(md.isStyle("" + type)) {
                 return type;
             }
         }
         return ObjectField.Type.AUTO;
     }
 
-    private static List<ObjectField.Type> objectFieldTypes(String style) {
+    private static List<ObjectField.Type> objectFieldTypes(UIFieldMetadata md) {
         List<ObjectField.Type> types = new ArrayListSet<>();
-        if(style == null) {
+        if(md.getMetadata() == null) {
             return types;
         }
         for(ObjectField.Type type : ObjectField.Type.values()) {
-            if(style.contains("(" + type + ")")) {
+            if(md.isStyle("" + type)) {
                 types.add(type);
             }
         }

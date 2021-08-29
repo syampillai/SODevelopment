@@ -175,6 +175,11 @@ public class DetailLinkGrid<T extends StoredObject> extends EditableObjectGrid<T
         }
     }
 
+    @Override
+    public void loaded() {
+        super.loaded();
+    }
+
     private boolean canReload(T item) {
         @SuppressWarnings("unchecked") T o = (T) StoredObject.get(item.getClass(), item.getId());
         return canChange(o, EditorAction.RELOAD);

@@ -162,7 +162,7 @@ public final class ObjectLinkField<T extends StoredObject>
         return grid.isDeleted(object);
     }
 
-    public final boolean isAllowAdd() {
+    public boolean isAllowAdd() {
         return grid.isAllowAdd();
     }
 
@@ -170,7 +170,7 @@ public final class ObjectLinkField<T extends StoredObject>
         grid.setAllowAdd(allowAdd);
     }
 
-    public final boolean isAllowEdit() {
+    public boolean isAllowEdit() {
         return grid.isAllowEdit();
     }
 
@@ -178,7 +178,7 @@ public final class ObjectLinkField<T extends StoredObject>
         grid.setAllowAdd(allowEdit);
     }
 
-    public final boolean isAllowDelete() {
+    public boolean isAllowDelete() {
         return grid.isAllowDelete();
     }
 
@@ -186,7 +186,7 @@ public final class ObjectLinkField<T extends StoredObject>
         grid.setAllowDelete(allowDelete);
     }
 
-    public final boolean isAllowReload() {
+    public boolean isAllowReload() {
         return grid.isAllowReload();
     }
 
@@ -194,7 +194,7 @@ public final class ObjectLinkField<T extends StoredObject>
         grid.setAllowReload(allowReload);
     }
 
-    public final boolean isAllowReloadAll() {
+    public boolean isAllowReloadAll() {
         return grid.isAllowReloadAll();
     }
 
@@ -320,6 +320,9 @@ public final class ObjectLinkField<T extends StoredObject>
     public void setValue(StoredObjectLink<T> value) {
         if(value == null) {
             clear();
+            if(grid != null) {
+                grid.loaded();
+            }
             return;
         }
         setFromClient(false);
@@ -327,6 +330,7 @@ public final class ObjectLinkField<T extends StoredObject>
             this.value = value;
         } else {
             grid.setValue(value);
+            grid.loaded();
         }
         setFromClient(true);
     }
@@ -340,7 +344,7 @@ public final class ObjectLinkField<T extends StoredObject>
         grid.setObjectEditor(editor);
     }
 
-    public final ObjectEditor<T> getObjectEditor() {
+    public ObjectEditor<T> getObjectEditor() {
         return grid.getObjectEditor();
     }
 

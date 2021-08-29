@@ -1,10 +1,15 @@
 package com.storedobject.core;
 
+import com.storedobject.core.annotation.Column;
+
 import java.lang.reflect.Method;
 
 public class UIFieldMetadata extends StoredObject implements Detail {
 
+	private Column metadata;
+
 	public UIFieldMetadata() {
+		metadata = null;
 	}
 
 	public UIFieldMetadata(String fieldName, Method getMethod) {
@@ -198,6 +203,10 @@ public class UIFieldMetadata extends StoredObject implements Detail {
 	public String getStyle() {
 		return null;
 	}
+
+	public boolean isStyle(String style) {
+		return false;
+	}
 	
 	public String getDisplayName() {
 		return null;
@@ -209,4 +218,8 @@ public class UIFieldMetadata extends StoredObject implements Detail {
     public boolean isSecret() {
 		return false;
     }
+
+	public Column getMetadata() {
+		return metadata;
+	}
 }
