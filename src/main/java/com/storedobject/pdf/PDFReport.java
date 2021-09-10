@@ -2,9 +2,11 @@ package com.storedobject.pdf;
 
 import com.storedobject.core.Device;
 import com.storedobject.core.HasContacts;
+import com.storedobject.core.MediaFile;
+import com.storedobject.core.SystemUser;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.io.InputStream;
+import java.util.*;
 import java.util.function.Function;
 
 /**
@@ -14,7 +16,10 @@ import java.util.function.Function;
  */
 public abstract class PDFReport extends PDF {
 
-	private Device device;
+	private static final Map<String, PDFImage> imageCache = new HashMap<>();
+	private final Device device;
+	private Object titleText;
+	private final boolean printLogo;
 
 	/**
 	 * Constructor.
@@ -22,8 +27,7 @@ public abstract class PDFReport extends PDF {
 	 * @param device Device on which the output will be rendered when viewing.
 	 */
 	public PDFReport(Device device) {
-		this(device, false, false);
-		this.device = device;
+		this(device, false, true);
 	}
 
 	/**
@@ -33,7 +37,7 @@ public abstract class PDFReport extends PDF {
 	 * @param letterhead Whether default letterhead needs to be printed or not.
 	 */
 	public PDFReport(Device device, boolean letterhead) {
-		this(device, letterhead, false);
+		this(device, letterhead, true);
 	}
 
 	/**
@@ -44,13 +48,24 @@ public abstract class PDFReport extends PDF {
 	 * @param printLogo Whether default logo needs to be printed or not.
 	 */
 	public PDFReport(Device device, boolean letterhead, boolean printLogo) {
-		super(letterhead);
+		super(letterhead, null);
+		this.device = device;
+		setTransactionManager(device.getServer().getTransactionManager());
+		if(printLogo) {
+			setLogo(getLogo());
+		}
+		this.printLogo = printLogo;
 	}
 
-	/**
-	 * View the content on the device.
-	 */
-	public void view() {
+	@Override
+	public InputStream extractContent() throws Exception {
+		produce();
+		return getContent();
+	}
+
+	@Override
+	public void execute() {
+		device.view(this);
 	}
 
 	/**
@@ -59,6 +74,20 @@ public abstract class PDFReport extends PDF {
 	 * @param caption Caption.
 	 */
 	public void execute(String caption) {
+		device.view(caption, this);
+	}
+
+	/**
+	 * View the content on the device.
+	 */
+	public void view() {
+		execute();
+	}
+
+	@Override
+	public SystemUser getUser() {
+		SystemUser su = super.getUser();
+		return su == null ? device.getServer().getTransactionManager().getUser() : su;
 	}
 
 	/**
@@ -67,7 +96,7 @@ public abstract class PDFReport extends PDF {
 	 * @return The device.
 	 */
 	public Device getDevice() {
-    	return device;
+		return device;
 	}
 
 	/**
@@ -76,7 +105,7 @@ public abstract class PDFReport extends PDF {
 	 * @return The configured logo.
 	 */
 	public PDFImage getLogo() {
-    	return null;
+		return logo(getLogoName());
 	}
 
 	/**
@@ -94,7 +123,7 @@ public abstract class PDFReport extends PDF {
 	 * @return The configured product logo.
 	 */
 	public PDFImage getProductLogo() {
-    	return null;
+		return logo(getProductLogoName());
 	}
 
 	/**
@@ -106,6 +135,27 @@ public abstract class PDFReport extends PDF {
 		return device.getDeviceLayout().getProductLogoName();
 	}
 
+	private PDFImage logo(String name) {
+		if(name == null || name.isEmpty()) {
+			return null;
+		}
+		MediaFile mf = MediaFile.get(name);
+		if(mf == null || !mf.isImage()) {
+			return null;
+		}
+		String key = mf.getId() + "/" + mf.getTransactionId();
+		PDFImage image = imageCache.get(key);
+		if(image == null) {
+			try {
+				image = createImage(mf.getFile().getContent());
+			} catch (Throwable e) {
+				return null;
+			}
+			imageCache.put(key, image);
+		}
+		return image;
+	}
+
 	/**
 	 * Get the position of the logo in this report. By default, it looks for the "report format" configuration
 	 * from which this value can be obtained. See {@link com.storedobject.core.ReportFormat}.
@@ -113,7 +163,7 @@ public abstract class PDFReport extends PDF {
 	 * @return Position.
 	 */
 	public int getLogoPosition() {
-    	return 0;
+		return getReportFormat().getLogoPosition();
 	}
 
 	/**
@@ -128,7 +178,60 @@ public abstract class PDFReport extends PDF {
 	 */
 	@Override
 	public Object getTitle() {
-    	return null;
+		if(printLetterhead()) {
+			return super.getTitle();
+		}
+		PDFImage left = null, center = null, right = null;
+		PDFTable table;
+		if(printLogo) {
+			switch(getLogoPosition()) {
+				case 0 -> {
+					left = getLogo();
+					right = getProductLogo();
+				}
+				case 1 -> left = getLogo();
+				case 2 -> {
+					left = getProductLogo();
+					right = getLogo();
+				}
+				case 3 -> right = getLogo();
+				case 4 -> center = getLogo();
+			}
+		}
+		PDFCell c;
+		float m = getPageSize().getWidth();
+		if(left != null && right != null) {
+			table = createTable(3, m < 800 ? 20 : 30, 3);
+		} else if(left != null) {
+			table = createTable(3, m < 800 ? 23 : 33);
+		} else if(right != null) {
+			table = createTable(m < 800 ? 23 : 33, 3);
+		} else {
+			table = createTable(1);
+		}
+		if(center != null) {
+			c = createCenteredCell(center);
+			c.setBorder(0);
+			table.addCell(c);
+		}
+		if(left != null) {
+			c = createCenteredCell(left);
+			c.setBorder(0);
+			c.setPaddingRight(3);
+			table.addCell(c);
+		}
+		PDFTable tt = getTitleTable();
+		c = createCenteredCell(Objects.requireNonNullElse(tt, ""));
+		c.setBorder(0);
+		table.addCell(c);
+		if(right != null) {
+			c = createCenteredCell(right);
+			c.setBorder(0);
+			c.setPaddingLeft(3);
+			table.addCell(c);
+		}
+		addBlankRow(table);
+		return table;
 	}
 
 	/**
@@ -140,6 +243,7 @@ public abstract class PDFReport extends PDF {
 	 * @param title Title text part of the report. Can be anything and will be converted appropriately.
 	 */
 	public void setTitleText(Object title) {
+		titleText = title;
 	}
 
 	/**
@@ -149,7 +253,7 @@ public abstract class PDFReport extends PDF {
 	 * @return "Title text" part of the report. (This is used by {@link #getTitleTable()} method).
 	 */
 	public Object getTitleText() {
-    	return null;
+		return titleText;
 	}
 
 	/**
@@ -160,7 +264,25 @@ public abstract class PDFReport extends PDF {
 	 * @return "Title table" part of the report.
 	 */
 	public PDFTable getTitleTable() {
-    	return null;
+		Object title = getTitleText();
+		if(title == null) {
+			return null;
+		}
+		if(title instanceof PDFTable) {
+			return (PDFTable)title;
+		}
+		PDFCell c;
+		if(title instanceof String) {
+			c = createCenteredCell(createTitleText((String)title, 14));
+		} else {
+			c = createCell(title);
+			c.setHorizontalAlignment(PDFElement.ALIGN_CENTER);
+			c.setVerticalAlignment(PDFElement.ALIGN_MIDDLE);
+		}
+		c.setPaddingBottom(5);
+		PDFTable t = createTable(1);
+		t.addCell(c);
+		return t;
 	}
 
 	/**
@@ -206,35 +328,48 @@ public abstract class PDFReport extends PDF {
 					c.setBorder(0);
 					return c;
 				};
-		PDFTable table = createTable(60, 40);
+		PDFTable table = createTable(40, 60);
 		table.setBorderWidth(0);
-		Text text = new Text(hasContacts.getName(), 14, PDFFont.BOLD);
-		StringBuilder a = new StringBuilder();
-		String s = hasContacts.getContact("Address");
-		if(s != null) {
-			a.append(s);
+		Text text;
+		if(hasContacts != null) {
+			text = new Text(hasContacts.getName(), 14, PDFFont.BOLD);
+			StringBuilder a = new StringBuilder();
+			String s = hasContacts.getContact("Address");
+			if(s != null) {
+				a.append(s);
+			}
+			s = hasContacts.getContact("Phone");
+			boolean phone = s != null;
+			if(phone) {
+				a.append("\nPhone: ").append(s);
+			}
+			s = hasContacts.getContact("Email");
+			if(s != null) {
+				a.append(phone ? ", " : "\n").append("Email: ").append(s);
+			}
+			text.newLine().append(a, 6, PDFFont.BOLD);
+		} else {
+			text = new Text();
 		}
-		s = hasContacts.getContact("Phone");
-		boolean phone;
-		if(phone = s != null) {
-			a.append("\nPhone: ").append(s);
-		}
-		s = hasContacts.getContact("Email");
-		if(s != null) {
-			a.append(phone ? ", " : "\n").append("Email: ").append(s);
-		}
-		text.newLine().append(a, 6, PDFFont.BOLD);
 		table.addCell(createCell(text, nb));
 		if(captions == null || captions.length == 0) {
 			table.addCell(createCell(""), nb);
 		} else {
 			text = new Text(captions[0], 12, PDFFont.BOLD).newLine();
 			for(int i = 1; i < captions.length; i++) {
+				if(captions[i] == null) {
+					continue;
+				}
 				text.newLine(true).append(captions[i], 10, PDFFont.BOLD);
 			}
 			table.addCell(createCell(text, true), nb);
 		}
 		return table;
+	}
+
+	@Override
+	public void dumpError(Throwable error) {
+		getDevice().log(error);
 	}
 
 	/**

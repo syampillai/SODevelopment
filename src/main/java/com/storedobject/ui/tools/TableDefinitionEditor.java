@@ -153,7 +153,18 @@ public class TableDefinitionEditor extends ObjectEditor<TableDefinition> {
         ContentProducer cp = new TextContentProducer() {
             @Override
             public void generateContent() throws Exception {
-                String filter = module == null || module.isEmpty() ? null : ("ClassName LIKE '%." + module + ".%'");
+                String filter;
+                if(module != null && !module.isEmpty()) {
+                    filter = "ClassName LIKE '%";
+                    if(module.contains(".")) {
+                        filter += module;
+                    } else {
+                        filter += "." + module + ".";
+                    }
+                    filter += "%'";
+                } else {
+                    filter = null;
+                }
                 Writer w = getWriter();
                 for(TableDefinition td: StoredObject.list(TableDefinition.class, filter)) {
                     td.save(w);
@@ -344,7 +355,7 @@ public class TableDefinitionEditor extends ObjectEditor<TableDefinition> {
 
         @Override
         protected void buildFields() {
-            addField(module = new TextField("Module Name"));
+            addField(module = new TextField("Module Name / Class Name"));
             module.setHelperText("Leave it empty for all");
             module.setSpellCheck(false);
         }

@@ -222,4 +222,8 @@ public class UIFieldMetadata extends StoredObject implements Detail {
 	public Column getMetadata() {
 		return metadata;
 	}
+
+	public String getTabName() {
+		return metadata == null ? null : metadata.tab();
+	}
 }

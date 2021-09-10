@@ -532,6 +532,10 @@ public class SOFieldCreator<T> implements ObjectFieldCreator<T> {
         return md;
     }
 
+    public UIFieldMetadata getMD(String fieldName) {
+        return mds == null ? null : mds.get(fieldName);
+    }
+
     @SuppressWarnings("unchecked")
     private HasValue<?, ?> createSOField(String fieldName, Class<?> type, String label) {
         Method getMethod = null;

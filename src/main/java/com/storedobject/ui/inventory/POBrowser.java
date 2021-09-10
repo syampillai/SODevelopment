@@ -258,10 +258,21 @@ public class POBrowser<T extends InventoryPO> extends ObjectBrowser<T> {
             return;
         }
         clearAlerts();
-        if(transact(po::placeOrder)) {
+        if(canPlaceOrder(po) && transact(po::placeOrder)) {
             refresh(po);
             message("Order placed");
         }
+    }
+
+    /**
+     * Check whether this PO can be placed now or not. Default implementation returns ture but this can be
+     * overridden to implement access control as per the organization's policy.
+     *
+     * @param po PO.
+     * @return True/false.
+     */
+    protected boolean canPlaceOrder(T po) {
+        return true;
     }
 
     private void receiveItems() {
@@ -282,6 +293,9 @@ public class POBrowser<T extends InventoryPO> extends ObjectBrowser<T> {
             default:
                 break;
         }
+        if(!canReceiveItems(po)) {
+            return;
+        }
         List<InventoryPOItem> items = po.listItems().filter(i -> i.getBalance().isPositive()).toList();
         if(items.isEmpty()) {
             message("No more items to receive.");
@@ -289,6 +303,18 @@ public class POBrowser<T extends InventoryPO> extends ObjectBrowser<T> {
         }
         deselectAll();
         new ReceiveItems(po, items).execute(this.getView());
+    }
+
+
+    /**
+     * Check whether items can be received form this PO or not. Default implementation returns ture but this can be
+     * overridden to implement access control as per the organization's policy.
+     *
+     * @param po PO.
+     * @return True/false.
+     */
+    protected boolean canReceiveItems(T po) {
+        return true;
     }
 
     private void closePO() {
@@ -306,7 +332,7 @@ public class POBrowser<T extends InventoryPO> extends ObjectBrowser<T> {
                 message("Can't proceed with Status = " + po.getStatusValue());
                 return;
         }
-        if(pendingGRNs(po)) {
+        if(pendingGRNs(po) || !canClosePO(po)) {
             return;
         }
         closePO(po);
@@ -327,7 +353,7 @@ public class POBrowser<T extends InventoryPO> extends ObjectBrowser<T> {
                 return;
             }
         }
-        if(pendingGRNs(po)) {
+        if(pendingGRNs(po) || !canClosePO(po)) {
             return;
         }
         String m = "Status of this order is '" + po.getStatusValue() + "'.\nDo you really want to foreclose this?";
@@ -339,6 +365,19 @@ public class POBrowser<T extends InventoryPO> extends ObjectBrowser<T> {
             refresh(po);
             message("Closed");
         }
+    }
+
+
+    /**
+     * Check whether this PO can be closed now or not. Default implementation returns ture but this can be
+     * overridden to implement access control as per the organization's policy.
+     *
+     * @param po PO.
+     * @return True/false.
+     */
+    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
+    protected boolean canClosePO(T po) {
+        return true;
     }
 
     private boolean pendingGRNs(T po) {

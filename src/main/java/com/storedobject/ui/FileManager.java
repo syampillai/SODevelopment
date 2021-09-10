@@ -11,6 +11,7 @@ import com.storedobject.vaadin.TokensField;
 import com.vaadin.flow.component.grid.contextmenu.GridContextMenu;
 import com.vaadin.flow.component.grid.contextmenu.GridMenuItem;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -315,8 +316,8 @@ public class FileManager extends ObjectForestBrowser<FileFolder> implements Tran
         void set(FileFolder ff, FileData f) {
             this.ff = ff;
             this.f = f;
-            ffCaption.clearContent().append("Members of folder ").
-                    append("'" + ff.getName() + "'", "blue").update();
+            ffCaption.clearContent().append("Members of folder ")
+                    .append("'" + ff.getName() + "'", "blue").update();
             ffGroup.setValue(new HashSet<>(ff.listLinks(SystemUserGroup.class).toList()));
             ffUser.setValue(new HashSet<>(ff.listLinks(SystemUser.class).toList()));
             setFieldReadOnly(f != null, ffGroup, ffUser);
@@ -328,8 +329,8 @@ public class FileManager extends ObjectForestBrowser<FileFolder> implements Tran
                 fCaption.setVisible(true);
                 fGroup.setVisible(true);
                 fUser.setVisible(true);
-                fCaption.clearContent().append("Members of document ").
-                        append("'" + f.getName() + "'", "blue").update();
+                fCaption.clearContent().append("Members of document ")
+                        .append("'" + f.getName() + "'", "blue").update();
                 fGroup.setValue(new HashSet<>(f.listLinks(SystemUserGroup.class).toList()));
                 fUser.setValue(new HashSet<>(f.listLinks(SystemUser.class).toList()));
             }
@@ -342,23 +343,30 @@ public class FileManager extends ObjectForestBrowser<FileFolder> implements Tran
 
         private void save(Transaction t) throws Exception {
             if(f == null) {
-                ff.removeAllLinks(t, SystemUserGroup.class);
-                ff.removeAllLinks(t, SystemUser.class);
-                for(SystemUserGroup sug : ffGroup.getValue()) {
-                    ff.addLink(t, sug);
-                }
-                for(SystemUser su : ffUser.getValue()) {
-                    ff.addLink(t, su);
-                }
+                saveLinks(t, SystemUserGroup.class, ff, ffGroup.getValue());
+                saveLinks(t, SystemUser.class, ff, ffUser.getValue());
                 return;
             }
-            f.removeAllLinks(t, SystemUserGroup.class);
-            f.removeAllLinks(t, SystemUser.class);
-            for(SystemUserGroup sug: fGroup.getValue()) {
-                f.addLink(t, sug);
+            saveLinks(t, SystemUserGroup.class, f, fGroup.getValue());
+            saveLinks(t, SystemUser.class, f, fUser.getValue());
+        }
+
+        private <T extends StoredObject> void saveLinks(Transaction t, Class<T> objectClass, StoredObject parent,
+                                                        Set<T> children) throws Exception {
+            List<T> all = parent.listLinks(objectClass).toList();
+            List<T> toAdd = new ArrayList<>();
+            children.forEach(c -> {
+                if(all.contains(c)) {
+                    all.remove(c);
+                } else  {
+                    toAdd.add(c);
+                }
+            });
+            for(T child: all) {
+                parent.removeLink(t, child);
             }
-            for(SystemUser su: fUser.getValue()) {
-                f.addLink(t, su);
+            for(T child: toAdd) {
+                parent.addLink(t, child);
             }
         }
     }

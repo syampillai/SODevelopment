@@ -791,10 +791,29 @@ public abstract class PDF implements java.io.Closeable, com.storedobject.core.Co
         return true;
     }
 
-    public void setLogo(PDFImage p1) {
+    /*
+     * Sets the logo for the letterhead
+     *
+     * @param logo Logo image
+     */
+    public void setLogo(PDFImage image) {
     }
 
-    public void setLogo(java.awt.Image p1) {
+    /*
+     * Sets the logo for the letterhead
+     *
+     * @param logo Logo image
+     */
+    public void setLogo(java.awt.Image image) {
+    }
+
+    /**
+     * Check whether the letterhead needs to be printed or not.
+     *
+     * @return True/false.
+     */
+    final boolean printLetterhead() {
+        return Math.random() > 0.5;
     }
 
     /**

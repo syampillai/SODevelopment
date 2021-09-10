@@ -17,6 +17,8 @@
 
 .menutext {
     display: block;
+    font-size: larger;
+    font-weight: bold;
     white-space: nowrap;
     overflow: hidden;
     background: rgba(0, 0, 0, 0.5);
@@ -27,5 +29,6 @@
     padding: 10px;
     margin: 0 auto;
     box-sizing: border-box;
+    text-align: center;
     text-overflow: ellipsis;
 }

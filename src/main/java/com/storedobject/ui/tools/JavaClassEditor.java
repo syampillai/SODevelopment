@@ -251,7 +251,13 @@ public class JavaClassEditor extends ObjectEditor<JavaClass> {
             public void generateContent() throws Exception {
                 String filter = "NOT Generated";
                 if(module != null && !module.isEmpty()) {
-                    filter += " AND Name LIKE '%." + module + ".%'";
+                    filter += " AND Name LIKE '%";
+                    if(module.contains(".")) {
+                        filter += module;
+                    } else {
+                        filter += "." + module + ".";
+                    }
+                    filter += "%'";
                 }
                 Writer w = getWriter();
                 for(JavaClass jc: StoredObject.list(JavaClass.class, filter)) {
@@ -377,7 +383,7 @@ public class JavaClassEditor extends ObjectEditor<JavaClass> {
 
         @Override
         protected void buildFields() {
-            addField(module = new TextField("Module Name"));
+            addField(module = new TextField("Module Name / Class Name"));
             module.setHelperText("Leave it empty for all");
             module.setSpellCheck(false);
         }

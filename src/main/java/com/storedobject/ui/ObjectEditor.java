@@ -3,6 +3,7 @@ package com.storedobject.ui;
 import com.storedobject.common.SORuntimeException;
 import com.storedobject.common.StringList;
 import com.storedobject.core.*;
+import com.storedobject.core.annotation.Table;
 import com.storedobject.report.ObjectList;
 import com.storedobject.ui.common.EntityRoleEditor;
 import com.storedobject.ui.common.PersonRoleEditor;
@@ -17,6 +18,7 @@ import com.vaadin.flow.component.HasComponents;
 import com.vaadin.flow.component.HasValue;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.editor.Editor;
+import com.vaadin.flow.component.tabs.Tab;
 
 import java.io.BufferedReader;
 import java.io.LineNumberReader;
@@ -24,10 +26,7 @@ import java.io.StringReader;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.TreeSet;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -121,6 +120,9 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
     private String savedInstance;
     private boolean buffered = false;
     boolean anchorAction = true;
+    private Map<String, FormLayout> tabs = new HashMap<>();
+    private final Map<String, FormLayout> tabList = tabs;
+    private FormLayout currentTab;
 
     /**
      * Constructor.
@@ -130,7 +132,6 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
     public ObjectEditor(Class<T> objectClass) {
         this(objectClass, 0, null);
     }
-
 
     /**
      * Constructor.
@@ -142,7 +143,6 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
         this(objectClass, actions, null);
     }
 
-
     /**
      * Constructor.
      *
@@ -153,7 +153,6 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
     public ObjectEditor(Class<T> objectClass, int actions, String caption) {
         this(objectClass, actions, caption, null);
     }
-
 
     /**
      * Constructor.
@@ -178,6 +177,13 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
      */
     protected ObjectEditor(Class<T> objectClass, int actions, String caption, String allowedActions) {
         super(objectClass, caption);
+        Table table = objectClass.getAnnotation(Table.class);
+        if(table != null) {
+            createTab(table.tab());
+            if(table.formStyle() != 0) {
+                setColumns(table.formStyle());
+            }
+        }
         this.allowedActions = allowedActions;
         this.actions = actions == 0 ? EditorAction.ALL : actions;
         this.actions = filterActions(this.actions);
@@ -190,7 +196,7 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
      *
      * @param objectClass {@link StoredObject} class.
      * @param <O> Type of {@link StoredObject} class.
-     * @return An instacne of {@link ObjectEditor} or its derivative.
+     * @return An instance of {@link ObjectEditor} or its derivative.
      */
     public static <O extends StoredObject> ObjectEditor<O> create(Class<O> objectClass) {
         return create(objectClass, EditorAction.ALL);
@@ -203,7 +209,7 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
      * @param objectClass {@link StoredObject} class.
      * @param actions {@link EditorAction} values ORed.
      * @param <O> Type of {@link StoredObject} class.
-     * @return An instacne of {@link ObjectEditor} or its derivative.
+     * @return An instance of {@link ObjectEditor} or its derivative.
      */
     public static <O extends StoredObject> ObjectEditor<O> create(Class<O> objectClass, int actions) {
         return create(objectClass, actions, null);
@@ -217,7 +223,7 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
      * @param actions {@link EditorAction} values ORed.
      * @param title Caption.
      * @param <O> Type of {@link StoredObject} class.
-     * @return An instacne of {@link ObjectEditor} or its derivative.
+     * @return An instance of {@link ObjectEditor} or its derivative.
      */
     public static <O extends StoredObject> ObjectEditor<O> create(Class<O> objectClass, int actions, String title) {
         return create(null, objectClass, actions, title);
@@ -293,11 +299,17 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
     }
 
     private void fConstructed() {
+        tabs = null;
         anchorForm = new AnchorForm();
         if(anchorForm.getFieldCount() == 0) {
             anchorForm = null;
         }
         setLinkTabColumns(getColumns());
+    }
+
+    @Override
+    public HasComponents getContainer() {
+        return currentTab == null ? super.getContainer() : currentTab;
     }
 
     /**
@@ -317,6 +329,7 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
     @Override
     public void setColumns(int columns) {
         super.setColumns(columns);
+        tabList.values().forEach(t -> t.setColumns(columns));
         setLinkTabColumns(columns);
     }
 
@@ -1924,6 +1937,58 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
         return null;
     }
 
+    /**
+     * Create a {@link FormLayout} instance, if not exists, for the given tab. If this method is ever invoked while
+     * creating the editor, the editor will become a multi-tabbed editor. If you call this method after the editor is
+     * constructed, it will return non-null only if the tab already exists and no attempt is made to create a new one.
+     *
+     * @param tabName Tab name for which {@link FormLayout} needs to be retrieved.
+     * @return {@link FormLayout} instance. The returned instance will become the current instance (fields and
+     * components added after this will go into this instance).
+     */
+    public FormLayout createTab(String tabName) {
+        if(tabName == null || tabName.isBlank()) {
+            return currentTab;
+        }
+        tabName = tabName.strip();
+        FormLayout layout = tabList.get(tabName);
+        if(tabs == null) {
+            if(layout != null) {
+                currentTab = layout;
+            }
+            return currentTab;
+        }
+        currentTab = layout;
+        if(currentTab == null) {
+            currentTab = new FormLayout();
+            currentTab.setColumns(getColumns());
+            tabs.put(tabName, currentTab);
+            if(linkTabs == null) {
+                linkTabs = new ObjectLinkField.Tabs();
+                linkTabs.add(new Tab(tabName), currentTab);
+                super.add(linkTabs);
+            } else {
+                linkTabs.add(new Tab(tabName), currentTab);
+            }
+        }
+        return currentTab;
+    }
+
+    @Override
+    public void add(Component... components) {
+        if(currentTab != null) {
+            currentTab.add(components);
+        } else {
+            super.add(components);
+        }
+    }
+
+    @Override
+    public void remove(Component... components) {
+        super.remove(components);
+        tabList.values().forEach(t -> t.remove(components));
+    }
+
     @Override
     protected void attachField(String fieldName, HasValue<?, ?> field) {
         if(field instanceof NoDisplayField && !((NoDisplayField) field).canDisplay()) {
@@ -1933,6 +1998,16 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
             f.setGrid(createLinkFieldGrid(f.getLink().getName() + ".l", f));
             customizeLinkField(f);
             attachLinkField(f);
+            return;
+        }
+        if(getFieldCreator() instanceof SOFieldCreator fc) {
+            UIFieldMetadata md = fc.getMD(fieldName);
+            if(md != null) {
+                createTab(md.getTabName());
+            }
+        }
+        if(currentTab != null) {
+            currentTab.add((Component) field);
             return;
         }
         super.attachField(fieldName, field);
@@ -1971,14 +2046,14 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
     }
 
     /**
-     * Attach the link field. By default it will be attached as a tab at the bottom of the view.
+     * Attach the link field. By default, it will be attached as a tab at the bottom of the view.
      *
      * @param field Field to attach.
      */
     protected void attachLinkField(ObjectLinkField<?> field) {
         if(linkTabs == null) {
             linkTabs = new ObjectLinkField.Tabs();
-            add(linkTabs);
+            super.add(linkTabs);
         }
         linkTabs.addField(field);
     }
