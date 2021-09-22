@@ -10,19 +10,23 @@ import com.vaadin.flow.component.grid.contextmenu.GridContextMenu;
 import com.vaadin.flow.component.grid.contextmenu.GridMenuItem;
 import com.vaadin.flow.component.icon.VaadinIcon;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 
-import static com.storedobject.core.EditorAction.*;
+import static com.storedobject.core.EditorAction.ALL;
 
 public class POBrowser<T extends InventoryPO> extends ObjectBrowser<T> {
 
     private final ELabel storeDisplay = new ELabel("Store: Not selected");
     private final Button switchStore = new Button("Switch Store", VaadinIcon.STORAGE, e -> switchStore());
     private POEditor<T> editor;
+    private final List<ProcessButton> processButtons = new ArrayList<>();
+    private final GridContextMenu<T> contextMenu;
 
     public POBrowser(Class<T> objectClass) {
         this(objectClass, (String)null);
@@ -45,14 +49,16 @@ public class POBrowser<T extends InventoryPO> extends ObjectBrowser<T> {
     }
 
     public POBrowser(Class<T> objectClass, int actions, String caption) {
-        this(objectClass, null, actions, caption);
+        this(objectClass, null,
+                actions, caption);
     }
 
     public POBrowser(Class<T> objectClass, Iterable<String> browseColumns, int actions) {
         this(objectClass, browseColumns, actions, null, null);
     }
 
-    public POBrowser(Class<T> objectClass, Iterable<String> browseColumns, int actions, Iterable<String> filterColumns) {
+    public POBrowser(Class<T> objectClass, Iterable<String> browseColumns, int actions,
+                     Iterable<String> filterColumns) {
         this(objectClass, browseColumns, actions, filterColumns, null);
     }
 
@@ -60,7 +66,8 @@ public class POBrowser<T extends InventoryPO> extends ObjectBrowser<T> {
         this(objectClass, browseColumns, actions, null, caption);
     }
 
-    public POBrowser(Class<T> objectClass, Iterable<String> browseColumns, int actions, Iterable<String> filterColumns, String caption) {
+    public POBrowser(Class<T> objectClass, Iterable<String> browseColumns, int actions,
+                     Iterable<String> filterColumns, String caption) {
         this(objectClass, browseColumns, actions, filterColumns, caption, null);
     }
 
@@ -74,53 +81,54 @@ public class POBrowser<T extends InventoryPO> extends ObjectBrowser<T> {
                 setCaption("Purchase Order");
             }
         });
-        GridContextMenu<T> cm = new GridContextMenu<>(this);
-        GridMenuItem<T> placeOrder = cm.addItem("Place the Order", e -> e.getItem().ifPresent(i -> placeOrder()));
-        GridMenuItem<T> receiveItems = cm.addItem("Receive Items", e -> e.getItem().ifPresent(i -> receiveItems()));
-        GridMenuItem<T> foreClose = cm.addItem("Foreclose", e -> e.getItem().ifPresent(i -> foreclosePO()));
-        GridMenuItem<T> close = cm.addItem("Close", e -> e.getItem().ifPresent(i -> closePO()));
-        GridMenuItem<T> preGRNs = cm.addItem("Associated GRNs", e -> e.getItem().ifPresent(i -> preGRNs()));
-        cm.setDynamicContentHandler(po -> {
+        contextMenu = new GridContextMenu<>(this);
+        GridMenuItem<T> placeOrder = contextMenu.addItem("Place the Order", e -> e.getItem().ifPresent(i -> placeOrder()));
+        GridMenuItem<T> receiveItems = contextMenu.addItem("Receive Items", e -> e.getItem().ifPresent(i -> receiveItems()));
+        GridMenuItem<T> foreClose = contextMenu.addItem("Foreclose", e -> e.getItem().ifPresent(i -> foreclosePO()));
+        GridMenuItem<T> close = contextMenu.addItem("Close", e -> e.getItem().ifPresent(i -> closePO()));
+        GridMenuItem<T> preGRNs = contextMenu.addItem("Associated GRNs", e -> e.getItem().ifPresent(i -> preGRNs()));
+        contextMenu.setDynamicContentHandler(po -> {
             deselectAll();
             if(po == null) {
                 return false;
             }
             select(po);
+            processButtons.forEach(b -> b.menu.setVisible(b.check.test(po)));
             switch(po.getStatus()) {
                 case 0 -> {
-                    placeOrder.setVisible(true);
+                    placeOrder.setVisible(canPlaceOrder(po));
                     receiveItems.setVisible(false);
-                    foreClose.setVisible(true);
+                    foreClose.setVisible(canClosePO(po));
                     close.setVisible(false);
                     preGRNs.setVisible(false);
                 }
                 case 1 -> {
                     placeOrder.setVisible(false);
-                    receiveItems.setVisible(true);
-                    foreClose.setVisible(true);
+                    receiveItems.setVisible(canReceiveItems(po));
+                    foreClose.setVisible(canClosePO(po));
                     close.setVisible(false);
                     preGRNs.setVisible(false);
                 }
                 case 2 -> {
                     placeOrder.setVisible(false);
-                    receiveItems.setVisible(true);
-                    foreClose.setVisible(true);
+                    receiveItems.setVisible(canReceiveItems(po));
+                    foreClose.setVisible(canClosePO(po));
                     close.setVisible(false);
-                    preGRNs.setVisible(true);
+                    preGRNs.setVisible(canProcessGRN(po));
                 }
                 case 3 -> {
                     placeOrder.setVisible(false);
                     receiveItems.setVisible(false);
                     foreClose.setVisible(false);
-                    close.setVisible(true);
-                    preGRNs.setVisible(true);
+                    close.setVisible(canClosePO(po));
+                    preGRNs.setVisible(canProcessGRN(po));
                 }
                 case 4 -> {
                     placeOrder.setVisible(false);
                     receiveItems.setVisible(false);
                     foreClose.setVisible(false);
                     close.setVisible(false);
-                    preGRNs.setVisible(true);
+                    preGRNs.setVisible(canProcessGRN(po));
                 }
             }
             return true;
@@ -175,13 +183,7 @@ public class POBrowser<T extends InventoryPO> extends ObjectBrowser<T> {
 
     @Override
     protected void addExtraButtons() {
-        PopupButton p = new PopupButton("Process");
-        p.add(new Button("Place the Order", VaadinIcon.PAPERPLANE_O, e -> placeOrder()));
-        p.add(new Button("Receive Items", VaadinIcon.STORAGE, e -> receiveItems()));
-        p.add(new Button("Foreclose the Order", "close", e -> foreclosePO()));
-        p.add(new Button("Close the Order", "close", e -> closePO()));
-        p.add(new Button("Associated GRNs", VaadinIcon.FILE_PROCESS, e -> preGRNs()));
-        buttonPanel.add(p, switchStore);
+        buttonPanel.add(switchStore);
         Checkbox h = new Checkbox("Include History");
         h.addValueChangeListener(e -> setExtraFilter(e.getValue() ? null : "Status<4"));
         buttonPanel.add(h);
@@ -388,9 +390,13 @@ public class POBrowser<T extends InventoryPO> extends ObjectBrowser<T> {
         return true;
     }
 
+    protected boolean canProcessGRN(T po) {
+        return true;
+    }
+
     private void preGRNs() {
         T po = selected();
-        if(po == null) {
+        if(po == null || !canProcessGRN(po)) {
             return;
         }
         List<InventoryGRN> grns = po.listLinks(InventoryGRN.class).filter(g -> !g.isClosed()).toList();
@@ -649,6 +655,28 @@ public class POBrowser<T extends InventoryPO> extends ObjectBrowser<T> {
             close();
             setAPN(item, apn, q);
             return true;
+        }
+    }
+
+    /**
+     * Add a process button that will be added to the process context menu.
+     *
+     * @param label Label for the button.
+     * @param check Check whether the button should be displayed or not.
+     * @param processor The processor.
+     */
+    protected void addProcessButton(String label, Predicate<T> check, Consumer<T> processor) {
+        processButtons.add(new ProcessButton(label, check, processor));
+    }
+
+    private class ProcessButton {
+
+        private final Predicate<T> check;
+        private final GridMenuItem<T> menu;
+
+        ProcessButton(String label, Predicate<T> check, Consumer<T> processor) {
+            this.check = check == null ? (po -> true) : check;
+            menu = contextMenu.addItem(label, e -> e.getItem().ifPresent(processor));
         }
     }
 }

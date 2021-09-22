@@ -16,6 +16,7 @@ import com.vaadin.flow.component.combobox.dataview.ComboBoxListDataView;
 import com.vaadin.flow.component.contextmenu.ContextMenu;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.data.provider.DataProvider;
 import com.vaadin.flow.data.provider.ListDataProvider;
 
@@ -107,7 +108,7 @@ public class ApplicationFrame extends com.storedobject.vaadin.ApplicationFrame i
             HasText user = getUserNameComponent();
             user.setText(su.getName());
             ((HtmlComponent) user).setTitle(sb.toString());
-            ButtonIcon logoutButton = new ButtonIcon("sign-out", e -> a.logout());
+            ButtonIcon logoutButton = new ButtonIcon("icons:exit-to-app", e -> a.logout());
             logoutButton.setStyle("color", "var(--lumo-error-color)");
             logoutButton.getElement().setAttribute("title", "Sign out");
             logoutButton.getElement().setAttribute("tabindex", "-1");
@@ -137,7 +138,7 @@ public class ApplicationFrame extends com.storedobject.vaadin.ApplicationFrame i
         private final ButtonIcon icon;
 
         public CompactSwitcher(Application a) {
-            icon = new ButtonIcon("vaadin:" + (a.isCompactTheme() ? "expand" : "compress") + "_square", e -> cSwitch());
+            icon = new ButtonIcon("icons:unfold-" + (a.isCompactTheme() ? "more" : "less"), e -> cSwitch());
             icon.getElement().getStyle().set("color", "var(--so-header-color)");
             icon.getElement().setAttribute("tabindex", "-1");
             icon.getElement().setAttribute("title", "Toggle compact view");
@@ -147,7 +148,7 @@ public class ApplicationFrame extends com.storedobject.vaadin.ApplicationFrame i
             Application a = Application.get();
             if(a != null) {
                 a.setCompactTheme(!a.isCompactTheme());
-                icon.setIcon("vaadin:" + (a.isCompactTheme() ? "expand" : "compress") + "_square");
+                icon.setIcon("icons:unfold-" + (a.isCompactTheme() ? "more" : "less"));
             }
         }
     }

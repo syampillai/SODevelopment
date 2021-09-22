@@ -15,7 +15,6 @@ import java.util.Collection;
 public class POEditor<T extends InventoryPO> extends ObjectEditor<T> {
 
     private ObjectField<Entity> supplierField;
-    private ObjectField<InventoryStore> storeField;
     InventoryStore store;
 
     public POEditor(Class<T> objectClass) {
@@ -128,15 +127,6 @@ public class POEditor<T extends InventoryPO> extends ObjectEditor<T> {
     }
 
     @Override
-    protected void customizeField(String fieldName, HasValue<?, ?> field) {
-        if("Store".equals(fieldName)) {
-            //noinspection unchecked
-            storeField = (ObjectField<InventoryStore>) field;
-        }
-        super.customizeField(fieldName, field);
-    }
-
-    @Override
     public ObjectSearcher<T> getSearcher() {
         return super.getSearcher();
     }
@@ -144,13 +134,6 @@ public class POEditor<T extends InventoryPO> extends ObjectEditor<T> {
     @Override
     protected void anchorsSet() throws Exception {
         super.anchorsSet();
-        store = storeField.getObject();
-        /*
-        newGRNItemForm.bField.setStore(store);
-        if(grnItemGrid.binEditor != null) {
-            grnItemGrid.binEditor.binField.setStore(store);
-        }
-
-         */
+        store = (InventoryStore) ((ObjectField<?>)getAnchorField("Store")).getObject();
     }
 }

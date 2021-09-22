@@ -113,7 +113,7 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
     private NewObject<T> newObject;
     private Transaction tran;
     private TransactionCreator tranCreator;
-    private List<String> fieldPositions;
+    private final List<FieldPosition> fieldPositions = new ArrayList<>();
     private ObjectInput<T> formField;
     private Logic logic;
     Grid<T> grid;
@@ -179,7 +179,7 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
         super(objectClass, caption);
         Table table = objectClass.getAnnotation(Table.class);
         if(table != null) {
-            createTab(table.tab());
+            setTab(table.tab());
             if(table.formStyle() != 0) {
                 setColumns(table.formStyle());
             }
@@ -385,12 +385,8 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
         return grid;
     }
 
-    List<String> fieldPositions() {
+    List<FieldPosition> fieldPositions() {
         return fieldPositions;
-    }
-
-    void fieldPositions(List<String> fieldPositions) {
-        this.fieldPositions = fieldPositions;
     }
 
     void formField(ObjectFormField<T> formField) {
@@ -444,8 +440,8 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
     }
 
     /**
-     * Get the filtered result of actions. This is invoked before allowing the actions and this can disable some of
-     * the actions allowed. The default implementation doesn't filter anything.
+     * Get the filtered result of actions. This is invoked before allowing the actions and this can disable some
+     * actions allowed. The default implementation doesn't filter anything.
      *
      * @param actions Actions to filter. (ORed values of {@link EditorAction})
      * @return Filtered action value.
@@ -759,7 +755,7 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
     }
 
     /**
-     * Eemove a validator that was added earlier.
+     * Remove a validator that was added earlier.
      *
      * @param validator Validator.
      */
@@ -1368,7 +1364,7 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
      * Do the delete operation of the current object instance.
      *
      * @return True if successful.
-     * @throws Exception Exception while deleting.
+     * @throws Exception If the deletion fails.
      */
     protected boolean delete() throws Exception {
         T object = getObject();
@@ -1572,7 +1568,7 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
     }
 
     /**
-     * View the current object. If the editor is in the editing mode, it will be cancelled and it will be switched
+     * View the current object. If the editor is in the editing mode, it will be cancelled and will be switched
      * to viewing mode.
      */
     public void viewObject() {
@@ -1580,7 +1576,7 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
     }
 
     /**
-     * View the the object that is passed. If the editor is in the editing mode, it will be cancelled and it will
+     * View the object that is passed. If the editor is in the editing mode, it will be cancelled and will
      * be switched to viewing mode.
      *
      * @param object Object to view. If null is passed, current object will be used.
@@ -1590,7 +1586,7 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
     }
 
     /**
-     * View the the object that is passed. If the editor is in the editing mode, it will be cancelled and it will
+     * View the object that is passed. If the editor is in the editing mode, it will be cancelled and will
      * be switched to viewing mode.
      *
      * @param object Object to view. If null is passed, current object will be used.
@@ -1601,7 +1597,7 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
     }
 
     /**
-     * View the the object that is passed. If the editor is in the editing mode, it will be cancelled and it will
+     * View the object that is passed. If the editor is in the editing mode, it will be cancelled and will
      * be switched to viewing mode.
      *
      * @param object Object to view. If null is passed, current object will be used.
@@ -1613,7 +1609,7 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
     }
 
     /**
-     * View the the object that is passed. If the editor is in the editing mode, it will be cancelled and it will
+     * View the object that is passed. If the editor is in the editing mode, it will be cancelled and will
      * be switched to viewing mode.
      *
      * @param actionName Name of the action to be allowed while viewing. This will be used only when an action is
@@ -1625,7 +1621,7 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
     }
 
     /**
-     * View the the object that is passed. If the editor is in the editing mode, it will be cancelled and it will
+     * View the object that is passed. If the editor is in the editing mode, it will be cancelled and will
      * be switched to viewing mode.
      *
      * @param object Object to view. If null is passed, current object will be used.
@@ -1638,7 +1634,7 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
     }
 
     /**
-     * View the the object that is passed. If the editor is in the editing mode, it will be cancelled and it will
+     * View the object that is passed. If the editor is in the editing mode, it will be cancelled and will
      * be switched to viewing mode.
      *
      * @param object Object to view. If null is passed, current object will be used.
@@ -1652,7 +1648,7 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
     }
 
     /**
-     * View the the object that is passed. If the editor is in the editing mode, it will be cancelled and it will
+     * View the object that is passed. If the editor is in the editing mode, it will be cancelled and will
      * be switched to viewing mode.
      *
      * @param action Action to carry out. A button will be displayed and that can be pressed for invoking the action.
@@ -1662,7 +1658,7 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
     }
 
     /**
-     * View the the object that is passed. If the editor is in the editing mode, it will be cancelled and it will
+     * View the object that is passed. If the editor is in the editing mode, it will be cancelled and will
      * be switched to viewing mode.
      *
      * @param object Object to view. If null is passed, current object will be used.
@@ -1673,7 +1669,7 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
     }
 
     /**
-     * View the the object that is passed. If the editor is in the editing mode, it will be cancelled and it will
+     * View the object that is passed. If the editor is in the editing mode, it will be cancelled and will
      * be switched to viewing mode.
      *
      * @param object Object to view. If null is passed, current object will be used.
@@ -1685,7 +1681,7 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
     }
 
     /**
-     * View the the object that is passed. If the editor is in the editing mode, it will be cancelled and it will
+     * View the object that is passed. If the editor is in the editing mode, it will be cancelled and will
      * be switched to viewing mode.
      *
      * @param object Object to view. If null is passed, current object will be used.
@@ -1698,7 +1694,7 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
     }
 
     /**
-     * View the the object that is passed. If the editor is in the editing mode, it will be cancelled and it will
+     * View the object that is passed. If the editor is in the editing mode, it will be cancelled and will
      * be switched to viewing mode.
      *
      * @param object Object to view. If null is passed, current object will be used.
@@ -1843,7 +1839,7 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
     /**
      * Set the parent object. This is used when this editor is used for editing links.
      *
-     * @param parentObject Parent object to set.
+     * @param parentObject The parent object to be set.
      * @param parentLinkType Link type of the object.
      */
     public void setParentObject(StoredObject parentObject, int parentLinkType) {
@@ -1889,7 +1885,7 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
 
     /**
      * Check whether the editor is in "view only" mode. The editor is in "view only" mode if the buttons are not
-     * available for editing (may be hidden or disabled too).
+     * available for editing (maybe hidden or disabled too).
      *
      * @return True/false.
      */
@@ -1908,7 +1904,7 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
     }
 
     /**
-     * Allow/disallow "Do not save" option. (See {@link #setDoNotSave(boolean)}.
+     * Allow/disallow "Do not save" option. (See {@link #setDoNotSave(boolean)}).
      *
      * @param allowDoNotSave True if link editing needs to be allowed
      */
@@ -1938,17 +1934,17 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
     }
 
     /**
-     * Create a {@link FormLayout} instance, if not exists, for the given tab. If this method is ever invoked while
-     * creating the editor, the editor will become a multi-tabbed editor. If you call this method after the editor is
-     * constructed, it will return non-null only if the tab already exists and no attempt is made to create a new one.
+     * Create (or select if already exists) a {@link FormLayout} instance as the tab for the editor. If this method is
+     * ever invoked while creating the editor, the editor will become a multi-tabbed editor. If you call this method
+     * after the editor is constructed, it will select the tab if one exists. All further fields added to the editor
+     * will go to the currently selected tab.
      *
-     * @param tabName Tab name for which {@link FormLayout} needs to be retrieved.
-     * @return {@link FormLayout} instance. The returned instance will become the current instance (fields and
-     * components added after this will go into this instance).
+     * @param tabName The tab name for which {@link FormLayout} needs to be created or selected. Null or empty tab names
+     *                will be ignored.
      */
-    public FormLayout createTab(String tabName) {
+    public void setTab(String tabName) {
         if(tabName == null || tabName.isBlank()) {
-            return currentTab;
+            return;
         }
         tabName = tabName.strip();
         FormLayout layout = tabList.get(tabName);
@@ -1956,7 +1952,7 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
             if(layout != null) {
                 currentTab = layout;
             }
-            return currentTab;
+            return;
         }
         currentTab = layout;
         if(currentTab == null) {
@@ -1971,7 +1967,14 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
                 linkTabs.add(new Tab(tabName), currentTab);
             }
         }
-        return currentTab;
+    }
+
+    /**
+     * If this method is invoked, tabbing stops and all further fields added without any tab name will go to the
+     * non-tab area of the editor.
+     */
+    public void setNoTab() {
+       currentTab = null;
     }
 
     @Override
@@ -2003,14 +2006,16 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
         if(getFieldCreator() instanceof SOFieldCreator fc) {
             UIFieldMetadata md = fc.getMD(fieldName);
             if(md != null) {
-                createTab(md.getTabName());
+                setTab(md.getTabName());
             }
         }
         if(currentTab != null) {
             currentTab.add((Component) field);
+            fieldPositions.add(new FieldPosition(fieldName, currentTab, fieldPos(currentTab)));
             return;
         }
         super.attachField(fieldName, field);
+        fieldPositions.add(new FieldPosition(fieldName, getForm().getContainer(), fieldPos(getForm().getContainer())));
     }
 
     @Override
@@ -2031,9 +2036,6 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
             if(attachment.isRequired()) {
                 setRequired(fieldName);
             }
-        }
-        if(fieldPositions != null) {
-            fieldPositions.add(fieldName);
         }
     }
 
@@ -2310,7 +2312,6 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
                     if(s.length() > 0) {
                         s.append(" AND ");
                     }
-                    v = f.getValue();
                     s.append(fieldName).append("=");
                     if(v instanceof String) {
                         s.append('\'');
@@ -2444,7 +2445,7 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
     }
 
     /**
-     * Set a instance of a {@link StoredObject} if it is compatible with this editor.
+     * Set an instance of a {@link StoredObject} if it is compatible with this editor.
      *
      * @param object Instance of the object to set.
      */
@@ -2471,4 +2472,10 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
     public <L extends StoredObject> boolean acceptValueChange(ObjectLinkField<L> linkField, L item, int changeAction) {
         return true;
     }
+
+    private int fieldPos(HasComponents container) {
+        return (int)fieldPositions.stream().filter(p -> p.container == container).count();
+    }
+
+    record FieldPosition(String name, HasComponents container, int position) {}
 }

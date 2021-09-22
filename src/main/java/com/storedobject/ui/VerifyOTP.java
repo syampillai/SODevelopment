@@ -31,6 +31,7 @@ public class VerifyOTP extends View implements CloseableView {
     private OTP phone, email;
     private volatile boolean closed = false;
     private final HorizontalLayout caption = new HorizontalLayout();
+    private String customTag;
 
     /**
      * Constructor.
@@ -57,8 +58,15 @@ public class VerifyOTP extends View implements CloseableView {
      *                          <code>null</code>).
      * @param singleOTP Whether the send the same OTP to both phone and email or not.
      */
-    public VerifyOTP(boolean singleOTP, String phone, String email, Runnable verified, Runnable cancelled, Runnable errorWhileSending) {
+    public VerifyOTP(boolean singleOTP, String phone, String email, Runnable verified, Runnable cancelled,
+                     Runnable errorWhileSending) {
         super("Verify OTP");
+        if(phone != null && phone.isBlank()) {
+            phone = null;
+        }
+        if(email != null && email.isBlank()) {
+            email = null;
+        }
         this.singleOTP = singleOTP;
         a = Application.get();
         if(a.getSMSSender() == null) {
@@ -160,8 +168,17 @@ public class VerifyOTP extends View implements CloseableView {
     }
 
     /**
+     * Set a custom tag that will be passed to the quick senders as an additional parameter.
+     *
+     * @param customTag Custom tag to be set.
+     */
+    public void setCustomTag(String customTag) {
+        this.customTag = customTag;
+    }
+
+    /**
      * Set the template name to be used for constructing the OTP message. If no template name is set,
-     * a default message is constructed and it will look like:
+     * a default message is constructed, and it will look like:
      * <p>"Your OTP is ABC:12345678"</p>
      *
      * @param templateName Name of the template to use.
@@ -247,7 +264,7 @@ public class VerifyOTP extends View implements CloseableView {
         @Override
         public void run() {
             status = 0; // Initiated
-            if(a.getSMSSender().send(sendTo, smsMessage(), otp.prefix + otp.otp)) {
+            if(a.getSMSSender().send(sendTo, smsMessage(), otp.prefix + otp.otp, customTag)) {
                 status = 1; // Send
             } else {
                 status = 2; // Can't send - error
@@ -286,7 +303,7 @@ public class VerifyOTP extends View implements CloseableView {
         public void run() {
             status = 0; // Initiated
             if(a.getMailSender().
-                    send(sendTo, emailMessage(), null, null, otp.prefix + otp.otp)) {
+                    send(sendTo, emailMessage(), null, null, otp.prefix + otp.otp, customTag)) {
                 status = 1; // Send
             } else {
                 status = 2; // Can't send - error

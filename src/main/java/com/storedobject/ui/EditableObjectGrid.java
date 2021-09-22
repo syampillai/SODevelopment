@@ -13,6 +13,7 @@ import com.vaadin.flow.component.grid.editor.Editor;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.shared.Registration;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -188,7 +189,6 @@ public class EditableObjectGrid<T extends StoredObject> extends AbstractEditable
         if(editor == null) {
             editor = ObjectEditor.create(getObjectClass());
         }
-        editor.fieldPositions(new ArrayList<>());
         customizeObjectEditor();
         editor.getComponent();
         String fieldName;
@@ -253,15 +253,15 @@ public class EditableObjectGrid<T extends StoredObject> extends AbstractEditable
         if(getEditor().isOpen()) {
             cancelEdit();
         }
-        HasValue<?, ?> field;
         String fieldName;
-        for(int i = 0; i < editor.fieldPositions().size(); i++) {
-            fieldName = editor.fieldPositions().get(i);
+        HasValue<?, ?> field;
+        for(ObjectEditor.FieldPosition p: editor.fieldPositions()) {
+            fieldName = p.name();
             field = fields.get(fieldName);
             if(field != null) {
                 spans.get(fieldName).removeAll();
                 editor.setFieldLabel(field, labels.get(fieldName));
-                editor.getForm().getContainer().addComponentAtIndex(i, (Component)field);
+                p.container().addComponentAtIndex(p.position(), (Component)field);
             }
         }
         rowMode = false;

@@ -31,7 +31,6 @@ public class SystemUserEditor extends ObjectEditor<SystemUser> {
 
     public SystemUserEditor(int actions, String caption) {
         super(SystemUser.class, actions, caption);
-        createTab("User");
     }
 
     @Override

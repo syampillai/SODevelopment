@@ -170,6 +170,8 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
         ((IdInput<InventoryStore>)storeField).setValue(store);
         storeField.setReadOnly(true);
         setExtraFilter("Status<2 AND Type=" + type);
+        editor.store = store;
+        displayStore();
     }
 
     public void processGRN(InventoryGRN grn) {
@@ -267,14 +269,18 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
         load.click();
     }
 
-    @Override
-    protected void anchorsSet() {
+    private void displayStore() {
         this.storeDisplay.clearContent().append("Store: ").
                 append(editor.store, "blue").
                 append(" | ", "green").
                 append("Note: ").
                 append("Double-click or right-click on the entry to receive/process items", "blue").
                 update();
+    }
+
+    @Override
+    protected void anchorsSet() {
+        displayStore();
     }
 
     @Override

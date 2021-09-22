@@ -838,13 +838,13 @@ public class ObjectBrowser<T extends StoredObject> extends ObjectGrid<T> impleme
         }
         HasValue<?, ?> field;
         String fieldName;
-        for(int i = 0; i < editor.fieldPositions().size(); i++) {
-            fieldName = editor.fieldPositions().get(i);
+        for(ObjectEditor.FieldPosition p: editor.fieldPositions()) {
+            fieldName = p.name();
             field = fields.get(fieldName);
             if(field != null) {
                 spans.get(fieldName).removeAll();
                 editor.setFieldLabel(field, labels.get(fieldName));
-                editor.getForm().getContainer().addComponentAtIndex(i, (Component)field);
+                p.container().addComponentAtIndex(p.position(), (Component)field);
             }
         }
         rowMode = false;
@@ -863,7 +863,6 @@ public class ObjectBrowser<T extends StoredObject> extends ObjectGrid<T> impleme
             editor.setCaption(getCaption());
         }
         if(layout == null) {
-            editor.fieldPositions(new ArrayList<>());
             editor.getComponent();
             String fieldName;
             HasValue<?, ?> field;
