@@ -122,6 +122,7 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
     boolean anchorAction = true;
     private Map<String, FormLayout> tabs = new HashMap<>();
     private final Map<String, FormLayout> tabList = tabs;
+    private String mainTabName;
     private FormLayout currentTab;
 
     /**
@@ -179,7 +180,7 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
         super(objectClass, caption);
         Table table = objectClass.getAnnotation(Table.class);
         if(table != null) {
-            setTab(table.tab());
+            setTab(table.tab(), true);
             if(table.formStyle() != 0) {
                 setColumns(table.formStyle());
             }
@@ -1942,11 +1943,19 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
      * @param tabName The tab name for which {@link FormLayout} needs to be created or selected. Null or empty tab names
      *                will be ignored.
      */
-    public void setTab(String tabName) {
+    public void setTabX(String tabName) {
+        setTab(tabName, true);
+    }
+
+    private void setTab(String tabName, boolean check) {
         if(tabName == null || tabName.isBlank()) {
             return;
         }
         tabName = tabName.strip();
+        if(check && tabList.isEmpty()) {
+            mainTabName = tabName;
+            return;
+        }
         FormLayout layout = tabList.get(tabName);
         if(tabs == null) {
             if(layout != null) {
@@ -2006,16 +2015,19 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
         if(getFieldCreator() instanceof SOFieldCreator fc) {
             UIFieldMetadata md = fc.getMD(fieldName);
             if(md != null) {
-                setTab(md.getTabName());
+                setTab(md.getTabName(), false);
             }
+        }
+        if(currentTab == null || mainTabName != null) {
+            setTab(mainTabName, false);
         }
         if(currentTab != null) {
             currentTab.add((Component) field);
             fieldPositions.add(new FieldPosition(fieldName, currentTab, fieldPos(currentTab)));
-            return;
+        } else {
+            fieldPositions.add(new FieldPosition(fieldName, getForm().getContainer(), fieldPos(getForm().getContainer())));
+            super.attachField(fieldName, field);
         }
-        super.attachField(fieldName, field);
-        fieldPositions.add(new FieldPosition(fieldName, getForm().getContainer(), fieldPos(getForm().getContainer())));
     }
 
     @Override

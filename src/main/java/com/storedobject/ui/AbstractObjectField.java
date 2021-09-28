@@ -24,6 +24,7 @@ public abstract class AbstractObjectField<T extends StoredObject> extends Custom
 
     private final Class<T> objectClass;
     private final boolean allowAny;
+    private boolean required = false;
     /**
      * The prefix component.
      */
@@ -379,5 +380,15 @@ public abstract class AbstractObjectField<T extends StoredObject> extends Custom
         if(prefixComponent != null) {
             prefixComponent.setVisible(!isReadOnly() && enabled);
         }
+    }
+
+    @Override
+    public boolean isRequired() {
+        return required;
+    }
+
+    @Override
+    public void setRequired(boolean required) {
+        this.required = required;
     }
 }

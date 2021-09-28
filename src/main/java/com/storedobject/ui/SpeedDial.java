@@ -100,15 +100,18 @@ public class SpeedDial extends Composite<github.tobsef.vaadin.paperfab.SpeedDial
     }
 
     private static com.vaadin.flow.component.icon.Icon icon(com.vaadin.flow.component.icon.Icon icon) {
-        return icon == null ? new Icon(VaadinIcon.ABACUS) : icon;
+        //return icon == null ? new Icon(VaadinIcon.ABACUS) : icon;
+        return null;
     }
 
     private static com.vaadin.flow.component.icon.Icon icon(String icon) {
-        return icon == null ? new Icon(VaadinIcon.ABACUS) : new Icon(icon);
+        //return icon == null ? new Icon(VaadinIcon.ABACUS) : new Icon(icon);
+        return null;
     }
 
     private static com.vaadin.flow.component.icon.Icon icon(VaadinIcon icon) {
-        return icon == null ? new Icon(VaadinIcon.ABACUS) : new Icon(icon);
+        //return icon == null ? new Icon(VaadinIcon.ABACUS) : new Icon(icon);
+        return null;
     }
 
     private static SpeedDialAction sanitize(SpeedDialAction sda) {

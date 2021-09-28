@@ -4,6 +4,7 @@ import com.storedobject.common.FilterProvider;
 import com.storedobject.core.*;
 import com.storedobject.ui.inventory.BinField;
 import com.storedobject.ui.inventory.ItemField;
+import com.storedobject.ui.inventory.ItemGetField;
 import com.storedobject.ui.inventory.ItemInput;
 import com.storedobject.ui.util.NoDisplayField;
 import com.storedobject.vaadin.CustomField;
@@ -610,7 +611,7 @@ public class ObjectField<T extends StoredObject> extends CustomField<Id> impleme
         if(field instanceof FileField) {
             return Type.FILE;
         }
-        if(field instanceof ItemField) {
+        if(field instanceof ItemField || field instanceof ItemGetField) {
             return Type.INVENTORY_ITEM;
         }
         if(field instanceof BinField) {

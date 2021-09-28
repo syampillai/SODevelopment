@@ -4,6 +4,8 @@ import com.storedobject.core.InventoryItem;
 import com.storedobject.ui.Application;
 import com.storedobject.vaadin.Button;
 import com.storedobject.vaadin.DataForm;
+import com.vaadin.flow.component.icon.Icon;
+import com.vaadin.flow.component.icon.IronIcon;
 
 public class ItemMovementReport extends DataForm {
 
