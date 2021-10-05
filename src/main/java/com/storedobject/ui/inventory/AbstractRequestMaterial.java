@@ -33,7 +33,7 @@ public abstract class AbstractRequestMaterial extends ObjectBrowser<MaterialRequ
 
     AbstractRequestMaterial(boolean issuing, int columnStyle, String fromOrTo, int noActions) {
         this(issuing, columnStyle, issuing ? LocationField.create(null, fromOrTo,0) :
-                LocationField.create(null, fromOrTo, 0, 4, 5, 10, 11),
+                LocationField.create(null, fromOrTo, 0, 4, 5, 10, 11, 16),
                 noActions);
         this.itemTypeClass = ParameterParser.itemTypeClass(fromOrTo);
     }

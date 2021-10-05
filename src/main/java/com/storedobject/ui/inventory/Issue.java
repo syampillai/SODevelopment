@@ -9,7 +9,7 @@ public class Issue extends DataForm {
     private static final String CAPTION = "Stock Issue";
     private final DateField dateField = new DateField("Date");
     private final LocationField locationFromField = LocationField.create("From", 0);
-    private final LocationField locationToField = LocationField.create("To", 0, 3, 5, 8, 11);
+    private final LocationField locationToField = LocationField.create("To", 0, 3, 5, 8, 11, 16);
 
     public Issue() {
         super(CAPTION);

@@ -30,7 +30,7 @@ import java.util.function.Consumer;
 
 public class Application extends com.storedobject.vaadin.Application implements Device, RunningLogic, RequiresApproval {
 
-    private static final String VERSION = "21.0.1";
+    private static final String VERSION = "21.0.2";
     private static final String COMPACT_STYLES =
             """
                     --lumo-size-xl: 3rem;
@@ -759,6 +759,42 @@ public class Application extends com.storedobject.vaadin.Application implements 
         return null;
     }
 
+    private boolean executePostLogin() {
+        PostLogin postLogin = createPostLogin();
+        if(postLogin == null) {
+            postLogin = createPostLoginInt();
+        }
+        if(postLogin != null && !postLogin.canLogin(getTransactionManager())) {
+            postLogin.informUser();
+            return false;
+        }
+        return true;
+    }
+
+    private PostLogin createPostLoginInt() {
+        String POST_LOGIN_LOGIC = "application.logic.postLogin";
+        String postLoginLogic = ApplicationServer.getGlobalProperty(POST_LOGIN_LOGIC, "");
+        if(postLoginLogic.isEmpty()) {
+            try {
+                postLoginLogic = GlobalProperty.get(POST_LOGIN_LOGIC);
+            } catch(Throwable ignored) {
+            }
+        }
+        if(postLoginLogic.isEmpty()) {
+            return null;
+        }
+        Logic logic = new Logic(postLoginLogic, "Check");
+        Object ex = server.execute(logic, false);
+        if(ex instanceof PostLogin) {
+            return (PostLogin) ex;
+        }
+        return null;
+    }
+
+    protected PostLogin createPostLogin() {
+        return null;
+    }
+
     private void loginDone() {
         Runnable r = loginForm;
         loginForm = null;
@@ -806,7 +842,9 @@ public class Application extends com.storedobject.vaadin.Application implements 
     @Override
     public final boolean loggedin(Login login) {
         if(loginForm != null && this.login != null && login == this.login) {
-            loginDone();
+            if(executePostLogin()) {
+                loginDone();
+            }
             return true;
         }
         return false;

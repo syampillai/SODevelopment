@@ -13,7 +13,7 @@ import java.util.List;
 public class RequestMaterial extends AbstractRequestMaterial {
 
     public RequestMaterial(String from) {
-        this(ParameterParser.itemTypeClass(from), ParameterParser.location(from, 0, 4, 5, 10, 11));
+        this(ParameterParser.itemTypeClass(from), ParameterParser.location(from, 0, 4, 5, 10, 11, 16));
     }
 
     public RequestMaterial(InventoryLocation from) {

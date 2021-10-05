@@ -247,7 +247,7 @@ public class SystemLogViewer extends View implements Transactional, CloseableVie
 
         public LogGrid() {
             super("/log/record", StringList.create("message", "level", "millis"));
-            setHeightByRows(true);
+            setAllRowsVisible(true);
             setDetailsVisibleOnClick(true);
             setItemDetailsRenderer(new ComponentRenderer<>(data -> new ELabel(restOf(data.getDataValue("message").toString()))));
         }

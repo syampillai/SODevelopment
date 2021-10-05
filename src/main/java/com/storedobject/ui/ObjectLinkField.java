@@ -65,7 +65,7 @@ public final class ObjectLinkField<T extends StoredObject>
         if(isReadOnly()) {
             grid.setReadOnly(true);
         }
-        ((Grid<?>)grid).setHeightByRows(true);
+        ((Grid<?>)grid).setAllRowsVisible(true);
         invisible.forEach(fieldName -> ((DataGrid<T>) grid).setColumnVisible(fieldName, false));
         invisible.clear();
         invisible = null;
