@@ -172,8 +172,10 @@ public class ObjectBrowser<T extends StoredObject> extends ObjectGrid<T> impleme
                 if(print != null) {
                     buttonPanel.add(print);
                 }
-                report = new Button("Report", this);
-                buttonPanel.add(report);
+                if(print == null && ((actions & AUDIT) == AUDIT)) {
+                    report = new Button("Report", this);
+                    buttonPanel.add(report);
+                }
             }
             if((actions & EXCEL) == EXCEL) {
                 excel = new Button("Excel", this);

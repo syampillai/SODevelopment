@@ -236,9 +236,6 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
 
     @SuppressWarnings({"unchecked"})
     private static <O extends StoredObject> ObjectEditor<O> create(ObjectEditor<O> another, Class<O> objectClass, int actions, String title) {
-        if(objectClass == SystemUser.class) {
-            return (ObjectEditor<O>) new SystemUserEditor(actions, title);
-        }
         try {
             Class<?> logic;
             if(another != null) {
@@ -502,7 +499,7 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
     }
 
     private static int allActions(boolean developer) {
-        return EditorAction.ALL | (developer ? (EditorAction.PDF | EditorAction.AUDIT) : 0);
+        return EditorAction.ALL | (developer ? EditorAction.AUDIT : 0);
     }
 
     @Override
@@ -689,7 +686,7 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
             }
         }
         print = PrintButton.create(this);
-        if((actions & EditorAction.PDF) == EditorAction.PDF) {
+        if(print == null && ((actions & EditorAction.AUDIT) == EditorAction.AUDIT)) {
             report = new Button("Report", this);
         }
         if(nm && ((actions & EditorAction.AUDIT) == EditorAction.AUDIT)) {

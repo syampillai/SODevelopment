@@ -283,17 +283,20 @@ public class POBrowser<T extends InventoryPO> extends ObjectBrowser<T> {
             return;
         }
         switch(po.getStatus()) {
-            case 0:
+            case 0 -> {
                 message("Order is not yet placed!");
                 return;
-            case 3:
+            }
+            case 3 -> {
                 message("All items were already received!");
                 return;
-            case 4:
+            }
+            case 4 -> {
                 message("Order is already closed!");
                 return;
-            default:
-                break;
+            }
+            default -> {
+            }
         }
         if(!canReceiveItems(po)) {
             return;

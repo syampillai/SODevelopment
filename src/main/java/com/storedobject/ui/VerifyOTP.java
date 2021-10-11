@@ -56,7 +56,7 @@ public class VerifyOTP extends View implements CloseableView {
      * @param cancelled Runnable to be invoked if verification is cancelled by the user. (Can not be <code>null</code>).
      * @param errorWhileSending Runnable to be invoked if technical issue with sending SMS/emails. (Can not be
      *                          <code>null</code>).
-     * @param singleOTP Whether the send the same OTP to both phone and email or not.
+     * @param singleOTP Whether to send the same OTP to both phone and email or not.
      */
     public VerifyOTP(boolean singleOTP, String phone, String email, Runnable verified, Runnable cancelled,
                      Runnable errorWhileSending) {

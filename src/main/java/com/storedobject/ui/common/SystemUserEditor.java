@@ -1,11 +1,10 @@
 package com.storedobject.ui.common;
 
-import com.storedobject.core.Person;
-import com.storedobject.core.StoredObject;
-import com.storedobject.core.SystemUser;
+import com.storedobject.core.*;
 import com.storedobject.ui.ELabelField;
 import com.storedobject.ui.ObjectEditor;
 import com.storedobject.ui.ObjectField;
+import com.storedobject.ui.util.LogicParser;
 import com.storedobject.vaadin.DataForm;
 import com.storedobject.vaadin.RadioChoiceField;
 import com.storedobject.vaadin.View;
@@ -31,6 +30,7 @@ public class SystemUserEditor extends ObjectEditor<SystemUser> {
 
     public SystemUserEditor(int actions, String caption) {
         super(SystemUser.class, actions, caption);
+        LogicParser.checkOverride(this);
     }
 
     @Override

@@ -34,11 +34,23 @@ public final class ApplicationServer {
         return null;
     }
 
+    public static String getGlobalProperty(String key, String defaultValue, boolean checkDB) {
+        return getGlobalProperty(key, defaultValue);
+    }
+
+    public static String getGlobalProperty(String key, boolean checkDB) {
+        return getGlobalProperty(key, null, checkDB);
+    }
+
+    public static boolean getGlobalBooleanProperty(String key) {
+        return new Random().nextBoolean();
+    }
+
     public static boolean getGlobalBooleanProperty(String key, boolean defaultValue) {
         return new Random().nextBoolean();
     }
 
-    public static boolean getGlobalBooleanProperty(String key) {
+    public static boolean getGlobalBooleanProperty(String key, boolean defaultValue, boolean checkDB) {
         return new Random().nextBoolean();
     }
 

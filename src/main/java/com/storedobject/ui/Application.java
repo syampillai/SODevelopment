@@ -348,7 +348,7 @@ public class Application extends com.storedobject.vaadin.Application implements 
                 }
             }
         }
-        String exit = ApplicationServer.getGlobalProperty("application.exit.site", null);
+        String exit = ApplicationServer.getGlobalProperty("application.exit.site", null, true);
         if(exit == null) {
             exit = layout == null ? "" : layout.getExitSite().trim();
         }
@@ -512,7 +512,7 @@ public class Application extends com.storedobject.vaadin.Application implements 
     }
 
     public final String getDisplayVersion() {
-        return ApplicationServer.getGlobalProperty("application.version", VERSION);
+        return ApplicationServer.getGlobalProperty("application.version", VERSION, true);
     }
 
     @Override
@@ -731,14 +731,8 @@ public class Application extends com.storedobject.vaadin.Application implements 
     }
 
     private Runnable createLoginInt() {
-        String LOGIN_LOGIC = "application.logic.login";
-        String loginLogic = ApplicationServer.getGlobalProperty(LOGIN_LOGIC, "");
-        if(loginLogic.isEmpty()) {
-            try {
-                loginLogic = GlobalProperty.get(LOGIN_LOGIC);
-            } catch(Throwable ignored) {
-            }
-        }
+        String loginLogic = ApplicationServer.getGlobalProperty("application.logic.login",
+                "", true);
         if(loginLogic.isEmpty()) {
             if(SOServlet.getTextContent("com.storedobject.ui.LoginForm") == null) {
                 loginForm = LoginForm.create();
@@ -772,14 +766,8 @@ public class Application extends com.storedobject.vaadin.Application implements 
     }
 
     private PostLogin createPostLoginInt() {
-        String POST_LOGIN_LOGIC = "application.logic.postLogin";
-        String postLoginLogic = ApplicationServer.getGlobalProperty(POST_LOGIN_LOGIC, "");
-        if(postLoginLogic.isEmpty()) {
-            try {
-                postLoginLogic = GlobalProperty.get(POST_LOGIN_LOGIC);
-            } catch(Throwable ignored) {
-            }
-        }
+        String postLoginLogic = ApplicationServer.getGlobalProperty("application.logic.postLogin",
+                "", true);
         if(postLoginLogic.isEmpty()) {
             return null;
         }
@@ -1639,7 +1627,8 @@ public class Application extends com.storedobject.vaadin.Application implements 
 
     public com.storedobject.sms.QuickSender getSMSSender() {
         if(smsSender == null) {
-            String sender = ApplicationServer.getGlobalProperty("application.quick.sms", "");
+            String sender = ApplicationServer.getGlobalProperty("application.quick.sms",
+                    "", true);
             if(!sender.isBlank()) {
                 try {
                     smsSender = (QuickSender) JavaClassLoader.getLogic(sender).getDeclaredConstructor().newInstance();
@@ -1653,7 +1642,8 @@ public class Application extends com.storedobject.vaadin.Application implements 
 
     public com.storedobject.mail.QuickSender getMailSender() {
         if(mailSender == null) {
-            String sender = ApplicationServer.getGlobalProperty("application.quick.mail", "");
+            String sender = ApplicationServer.getGlobalProperty("application.quick.mail",
+                    "", true);
             if(!sender.isBlank()) {
                 try {
                     mailSender = (com.storedobject.mail.QuickSender) JavaClassLoader.getLogic(sender).
@@ -1710,7 +1700,8 @@ public class Application extends com.storedobject.vaadin.Application implements 
         this.timer = new Timer();
         long t;
         try {
-            t = Long.parseLong(ApplicationServer.getGlobalProperty("application.refresh.timer", "600"));
+            t = Long.parseLong(ApplicationServer.getGlobalProperty("application.refresh.timer",
+                    "600", true));
         } catch(Throwable ignored) {
             t = 600;
         }

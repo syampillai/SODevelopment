@@ -1,6 +1,9 @@
 package com.storedobject.ui.util;
 
+import com.storedobject.common.SORuntimeException;
 import com.storedobject.core.*;
+import com.storedobject.ui.Application;
+import com.storedobject.ui.ObjectEditor;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -171,6 +174,12 @@ public class LogicParser {
             return JavaClassLoader.getLogic(name, false);
         } catch(ClassNotFoundException e) {
             return null;
+        }
+    }
+
+    public static <T extends StoredObject> void checkOverride(ObjectEditor<T> editor) {
+        if(!editor.getClass().getName().equals(createLogicName(editor.getObjectClass(), "Editor"))) {
+            throw new SORuntimeException("Illegal access!");
         }
     }
 }
