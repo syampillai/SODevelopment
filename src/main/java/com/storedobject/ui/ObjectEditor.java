@@ -1,5 +1,6 @@
 package com.storedobject.ui;
 
+import com.storedobject.common.FilterProvider;
 import com.storedobject.common.SORuntimeException;
 import com.storedobject.common.StringList;
 import com.storedobject.core.*;
@@ -98,6 +99,7 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
     private final List<ObjectEditorListener> objectEditorListeners = new ArrayList<>();
     private List<Predicate<T>> validators;
     private ObjectSearcher<T> searcher;
+    ObjectSearchFilter searchFilter;
     private Function<ObjectEditor<T>, Boolean> saver, deleter;
     private final TreeSet<String> setNotAllowed = new TreeSet<>();
     private final List<ObjectLinkField<?>> linkFields = new ArrayList<>();
@@ -2487,4 +2489,18 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
     }
 
     record FieldPosition(String name, HasComponents container, int position) {}
+
+    public void setSearchFilter(String filter) {
+        if(searchFilter == null) {
+            searchFilter = new ObjectSearchFilter();
+        }
+        searchFilter.setCondition(filter);
+    }
+
+    public void setSearchFilter(FilterProvider filter) {
+        if(searchFilter == null) {
+            searchFilter = new ObjectSearchFilter();
+        }
+        searchFilter.setFilterProvider(filter);
+    }
 }

@@ -13,8 +13,29 @@ public class ObjectSearchFilter {
 
 	private String condition;
 	private FilterProvider filterProvider;
+	private ObjectSearchFilter child;
+
+	/**
+	 * Add a child filter to this filter. The filter condition of the child will be appended to this filter condition.
+	 *
+	 * @param child Child to be added.
+	 */
+	public void add(ObjectSearchFilter child) {
+		if(child != null) {
+			if(this.child == null) {
+				this.child = child;
+			} else {
+				this.child.add(child);
+			}
+		}
+	}
 
 	private String getFilterInt() {
+		String f = getFilterOfThis();
+		return child == null ? f : and(f, child.getFilterInt());
+	}
+
+	private String getFilterOfThis() {
 		FilterProvider filterProvider = getFilterProvider();
 		String condition = getCondition();
 		if(filterProvider == null) {
@@ -72,6 +93,7 @@ public class ObjectSearchFilter {
 		}
 		condition = filter.condition;
 		filterProvider = filter.filterProvider;
+		child = filter.child;
 	}
 
 	/**
@@ -192,21 +214,31 @@ public class ObjectSearchFilter {
 		return StoredObject.get((Class<T>)object.getClass(), "T.Id=" + object.getId() + " AND (" + f + ")");
 	}
 
+	/**
+	 * Join 2 conditions via AND.
+	 *
+	 * @param one First condition (could be null).
+	 * @param two Second condition (could be null).
+	 * @return ANDed condition.
+	 */
+	public static String and(String one, String two) {
+		if(StringUtility.isWhite(one)) {
+			one = null;
+		}
+		if(StringUtility.isWhite(two)) {
+			two = null;
+		}
+		if(one != null && two != null) {
+			return "(" + one + ") AND (" + two + ")";
+		}
+		return one == null ? two : one;
+	}
+
 	private static record DualFilterProvider(FilterProvider one, FilterProvider two) implements FilterProvider {
 
 		@Override
 		public String getFilterCondition() {
-			String a = one.getFilterCondition(), b = two.getFilterCondition();
-			if(StringUtility.isWhite(a)) {
-				a = null;
-			}
-			if(StringUtility.isWhite(b)) {
-				b = null;
-			}
-			if(a != null && b != null) {
-				return "(" + a + ") AND (" + b + ")";
-			}
-			return a == null ? b : a;
+			return and(one.getFilterCondition(), two.getFilterCondition());
 		}
 	}
 }

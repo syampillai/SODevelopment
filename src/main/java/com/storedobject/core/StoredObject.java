@@ -651,6 +651,68 @@ public abstract class StoredObject implements Displayable {
         return (T)nextVersion();
     }
 
+    /**
+     * Create an "exists condition" that can be used for retrieving or querying {@link StoredObject} instances.
+     *
+     * @param objectClass The object class against which the existence should be checked.
+     * @param attributeName Attribute name that matches the {@link Id} of the object that is going to be
+     *                      retrieved or queried.
+     * @param <T> Type of this object class.
+     * @return Condition string suitable for retrieving or querying another type of {@link StoredObject} instances
+     * where this object is related.
+     */
+    public static <T extends StoredObject> String getExistsCondition(Class<T> objectClass, String attributeName) {
+        return getExistsCondition(objectClass, attributeName, null);
+    }
+
+    /**
+     * Create an "exists condition" that can be used for retrieving or querying {@link StoredObject} instances.
+     *
+     * @param objectClass The object class against which the existence should be checked.
+     * @param attributeName Attribute name that matches the {@link Id} of the object that is going to be
+     *                      retrieved or queried.
+     * @param condition Condition to be applied to this object class. Null should be passed if no condition needs
+     *                  to be applied.
+     * @param <T> Type of this object class.
+     * @return Condition string suitable for retrieving or querying another type of {@link StoredObject} instances
+     * where this object is related.
+     */
+    public static <T extends StoredObject> String getExistsCondition(Class<T> objectClass, String attributeName,
+                                                                     String condition) {
+        return condition;
+    }
+
+    /**
+     * Create a "not exists condition" that can be used for retrieving or querying {@link StoredObject} instances.
+     *
+     * @param objectClass The object class against which the existence should be checked.
+     * @param attributeName Attribute name that matches the {@link Id} of the object that is going to be
+     *                      retrieved or queried.
+     * @param <T> Type of this object class.
+     * @return Condition string suitable for retrieving or querying another type of {@link StoredObject} instances
+     * where this object is related.
+     */
+    public static <T extends StoredObject> String getNotExistsCondition(Class<T> objectClass, String attributeName) {
+        return getNotExistsCondition(objectClass, attributeName, null);
+    }
+
+    /**
+     * Create a "not exists condition" that can be used for retrieving or querying {@link StoredObject} instances.
+     *
+     * @param objectClass The object class against which the existence should be checked.
+     * @param attributeName Attribute name that matches the {@link Id} of the object that is going to be
+     *                      retrieved or queried.
+     * @param condition Condition to be applied to this object class. Null should be passed if no condition needs
+     *                  to be applied.
+     * @param <T> Type of this object class.
+     * @return Condition string suitable for retrieving or querying another type of {@link StoredObject} instances
+     * where this object is related.
+     */
+    public static <T extends StoredObject> String getNotExistsCondition(Class<T> objectClass, String attributeName,
+                                                                        String condition) {
+        return condition;
+    }
+
     public final StoredObject previousVersion() {
         return nextVersion();
     }

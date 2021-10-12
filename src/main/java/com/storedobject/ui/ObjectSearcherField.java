@@ -10,6 +10,7 @@ public class ObjectSearcherField<T extends StoredObject> extends ObjectGetField<
 
     private Registration registration;
     private T previous;
+    private ObjectEditor<T> editor;
 
     public ObjectSearcherField(Class<T> objectClass, Consumer<T> objectConsumer) {
         this(null, objectClass, objectConsumer);
@@ -30,6 +31,9 @@ public class ObjectSearcherField<T extends StoredObject> extends ObjectGetField<
     }
 
     public void setObjectConsumer(Consumer<T> objectConsumer) {
+        if(objectConsumer instanceof ObjectEditor) {
+            editor = (ObjectEditor<T>) objectConsumer;
+        }
         ObjectSetter<T> objectSetter;
         if(objectConsumer instanceof ObjectSetter) {
             objectSetter = (ObjectSetter<T>) objectConsumer;
@@ -57,5 +61,10 @@ public class ObjectSearcherField<T extends StoredObject> extends ObjectGetField<
     @Override
     T previousValue() {
         return previous;
+    }
+
+    @Override
+    protected ObjectEditor<T> editor() {
+        return editor;
     }
 }

@@ -1,32 +1,17 @@
 package com.storedobject.ui;
 
-import com.storedobject.core.TransactionManager;
-import com.storedobject.vaadin.ActionForm;
-import com.storedobject.vaadin.HomeView;
+import com.storedobject.core.Person;
+import com.storedobject.core.StoredObject;
+import com.storedobject.core.SystemUser;
 
-public class Test extends ActionForm implements HomeView, PostLogin {
+public class Test extends ObjectEditor<Person> {
 
     public Test() {
-        super("No Access",
-                "Access restricted!",
-                () -> Application.get().close(),
-                () -> Application.get().close());
+        super(Person.class);
+        setSearchFilter(StoredObject.getNotExistsCondition(SystemUser.class, "Person"));
     }
 
-    @Override
-    protected void buildButtons() {
-        super.buildButtons();
-        cancel.setVisible(false);
-        ok.setText("Ok");
-    }
-
-    @Override
-    public boolean canLogin(TransactionManager tm) {
-        return false;
-    }
-
-    @Override
-    public void informUser() {
-        execute();
+    public Test(String className) throws Exception {
+        this();
     }
 }

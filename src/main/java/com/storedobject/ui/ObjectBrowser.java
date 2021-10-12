@@ -565,6 +565,14 @@ public class ObjectBrowser<T extends StoredObject> extends ObjectGrid<T> impleme
         }
     }
 
+    @Override
+    public void load(String filterClause, String orderBy) {
+        if(editor != null && editor.searchFilter != null) {
+            filterClause = ObjectSearchFilter.and(filterClause, editor.searchFilter.getFilter());
+        }
+        super.load(filterClause, orderBy);
+    }
+
     private void confReloadButton() {
         if(load != null) {
             if ("Load".equals(load.getText())) {

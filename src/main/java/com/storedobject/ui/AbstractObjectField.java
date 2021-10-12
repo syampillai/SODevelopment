@@ -264,9 +264,20 @@ public abstract class AbstractObjectField<T extends StoredObject> extends Custom
             if(searcher == null) {
                 searcher = ObjectBrowser.create(getObjectClass(),
                         EditorAction.SEARCH | EditorAction.RELOAD | (isAllowAny() ? EditorAction.ALLOW_ANY : 0));
+                searcher.editor = editor();
             }
         }
         return searcher;
+    }
+
+    /**
+     * Return the {@link ObjectEditor} associated with this. This will be invoked when the searcher is set and the
+     * editor will be checked for additional filter conditions..
+     *
+     * @return Editor instance is available.
+     */
+    protected ObjectEditor<T> editor() {
+        return null;
     }
 
     @Override
