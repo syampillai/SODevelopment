@@ -25,7 +25,7 @@ public final class SystemUserGroup extends StoredObject {
      * @return The name
      */
     public String getName() {
-        return null;
+        return "";
     }
 
     /**
