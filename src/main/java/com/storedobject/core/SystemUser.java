@@ -6,9 +6,9 @@ import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Locale;
-import java.util.stream.Stream;
 
 /**
  * This class represents an person who is also a system user.
@@ -25,6 +25,34 @@ public final class SystemUser extends StoredObject implements RequiresApproval {
     public static void columns(Columns columns) {
     }
 
+    public static String[] getMenuStyleValues() {
+        return null;
+    }
+
+    public static String getMenuStyleValue(int value) {
+        return null;
+    }
+
+    public static String[] getPreferencesBitValues() {
+        return null;
+    }
+
+    public static String getPreferencesValue(int value) {
+        return null;
+    }
+
+    public static Locale getLocale(String localeCountry, String localeLanguage) {
+        return Locale.getDefault();
+    }
+
+    public static SystemUser get(String login) {
+        return null;
+    }
+
+    public static ObjectIterator<SystemUser> list(String login) {
+        return null;
+    }
+
     public String getName() {
         return null;
     }
@@ -33,14 +61,14 @@ public final class SystemUser extends StoredObject implements RequiresApproval {
         return null;
     }
 
+    public Person getPerson() {
+        return new Person();
+    }
+
     public void setPerson(Id id) {
     }
 
     public void setPerson(BigDecimal idValue) {
-    }
-
-    public Person getPerson() {
-        return new Person();
     }
 
     public String getLogin() {
@@ -95,67 +123,47 @@ public final class SystemUser extends StoredObject implements RequiresApproval {
         return false;
     }
 
-    public void setMenuStyle(int menuStyle) {
-    }
-
     public int getMenuStyle() {
         return 0;
     }
 
-    public static String[] getMenuStyleValues() {
-        return null;
-    }
-
-    public static String getMenuStyleValue(int value) {
-        return null;
+    public void setMenuStyle(int menuStyle) {
     }
 
     public String getMenuStyleValue() {
         return null;
     }
 
-    public void setPreferences(int preferences) {
-    }
-
     public int getPreferences() {
         return 0;
     }
 
-    public static String[] getPreferencesBitValues() {
-        return null;
-    }
-
-    public static String getPreferencesValue(int value) {
-        return null;
+    public void setPreferences(int preferences) {
     }
 
     public String getPreferencesValue() {
         return null;
     }
 
-    public void setLocaleLanguage(String localeLanguage) {
-    }
-
     public String getLocaleLanguage() {
         return "en";
     }
 
-    public void setLocaleCountry(String localeCountry) {
+    public void setLocaleLanguage(String localeLanguage) {
     }
 
     public String getLocaleCountry() {
         return "IN";
     }
 
-    public void setLocale(Locale locale) {
+    public void setLocaleCountry(String localeCountry) {
     }
 
     public Locale getLocale() {
         return Locale.getDefault();
     }
 
-    public static Locale getLocale(String localeCountry, String localeLanguage) {
-        return Locale.getDefault();
+    public void setLocale(Locale locale) {
     }
 
     public ObjectIterator<Logic> listQuickAccessLogic() {
@@ -164,14 +172,6 @@ public final class SystemUser extends StoredObject implements RequiresApproval {
 
     public ObjectIterator<Logic> listAutoLogic() {
         return ObjectIterator.create();
-    }
-
-    public static SystemUser get(String login) {
-        return null;
-    }
-
-    public static ObjectIterator<SystemUser> list(String login) {
-        return null;
     }
 
     public ObjectIterator<SystemUserGroup> listGroups() {
@@ -189,12 +189,20 @@ public final class SystemUser extends StoredObject implements RequiresApproval {
     public void unlock(TransactionManager tm) throws Exception {
     }
 
-    public Stream<SessionLog> getSessionLog(AbstractPeriod<?> period) {
+    public Iterable<SessionLog> getSessionLog(AbstractPeriod<?> period) {
         return getSessionLog(period, true);
     }
 
-    public Stream<SessionLog> getSessionLog(AbstractPeriod<?> period, boolean reverse) {
-        return Stream.empty();
+    public Iterable<SessionLog> getSessionLog(AbstractPeriod<?> period, boolean reverse) {
+        return new ArrayList<>();
+    }
+
+    public Iterable<StoredObject> getChangeLog(SessionLog sessionLog) {
+        return new ArrayList<>();
+    }
+
+    public Iterable<LogicHit> getLogicHit(SessionLog sessionLog) {
+        return new ArrayList<>();
     }
 
     public static final class SessionLog {
@@ -229,6 +237,34 @@ public final class SystemUser extends StoredObject implements RequiresApproval {
 
         public Timestamp getOutTime() {
             return out ? outTime : null;
+        }
+    }
+
+    public static final class LogicHit {
+
+        private Logic logic;
+        private Timestamp hitTime;
+        private boolean executed;
+
+        private LogicHit(ResultSet rs) {
+            try {
+                this.logic = get(Logic.class, new Id(rs.getBigDecimal(1)));
+                this.hitTime = rs.getTimestamp(2);
+                this.executed = rs.getBoolean(3);
+            } catch(SQLException ignored) {
+            }
+        }
+
+        public Logic getLogic() {
+            return logic;
+        }
+
+        public Timestamp getHitTime() {
+            return hitTime;
+        }
+
+        public boolean isExecuted() {
+            return executed;
         }
     }
 }

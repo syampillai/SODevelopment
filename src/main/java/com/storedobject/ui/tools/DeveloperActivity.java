@@ -3,8 +3,13 @@ package com.storedobject.ui.tools;
 import com.storedobject.core.*;
 import com.storedobject.pdf.PDFReport;
 import com.storedobject.pdf.PDFTable;
+import com.storedobject.tools.ColumnDefinition;
+import com.storedobject.tools.IndexDefinition;
+import com.storedobject.tools.LinkDefinition;
+import com.storedobject.tools.TableDefinition;
 import com.storedobject.ui.DatePeriodField;
 import com.storedobject.ui.ObjectField;
+import com.storedobject.ui.Transactional;
 import com.storedobject.vaadin.DataForm;
 
 import java.sql.Timestamp;
@@ -12,11 +17,13 @@ import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 
-public class DeveloperActivity extends DataForm {
+public class DeveloperActivity extends DataForm implements Transactional {
 
     private final ObjectField<SystemUser> userField;
     private final DatePeriodField periodField = new DatePeriodField("Period");
     private final boolean developer;
+    private final SystemUserGroup devGroup;
+    private final TransactionManager tm;
 
     public DeveloperActivity() {
         this(true);
@@ -28,6 +35,13 @@ public class DeveloperActivity extends DataForm {
         userField = new ObjectField<>((developer ? "Develop" : "Us") + "er (Leave it blank for all)",
                 SystemUser.class);
         addField(userField, periodField);
+        if(developer) {
+            devGroup = StoredObject.list(SystemUserGroup.class)
+                    .find(g -> g.getName().equalsIgnoreCase("Developer"));
+        } else {
+            devGroup = null;
+        }
+        tm = getTransactionManager();
     }
 
     @Override
@@ -77,17 +91,25 @@ public class DeveloperActivity extends DataForm {
                     }
                     table.addCell(createCell(trim(log.getSourceCode().getName(), 3)));
                     table.addCell(createCell(log.getActionValue()));
-                    table.addCell(createCell(DateUtility.trimMillis(log.getActionedAt())));
+                    table.addCell(createCell(DateUtility.trimMillis(tm.date(log.getActionedAt()))));
                     if((++rows %  80) == 0) {
                         add(table);
                     }
                 }
-                if(rows > 0) {
+                if(rows > 0 || isDev(u)) {
+                    if(rows == 0) {
+                        printUser(u);
+                        table.addRowCell(createCell("_"));
+                    }
                     add(table);
                     addGap(5);
                     printLog(u, false);
                 }
             }
+        }
+
+        private boolean isDev(SystemUser u) {
+            return devGroup != null && u.existsLink(devGroup);
         }
 
         private String trim(String s, int count) {
@@ -117,14 +139,25 @@ public class DeveloperActivity extends DataForm {
                     printUser(u);
                 }
                 count.incrementAndGet();
-                table.addCell(createCell(DateUtility.trimMillis(s.getInTime())));
+                table.addCell(createCell(DateUtility.trimMillis(tm.date(s.getInTime()))));
                 Timestamp ts = s.getOutTime();
                 if(ts != null) {
-                    ts = DateUtility.trimMillis(ts);
+                    ts = DateUtility.trimMillis(tm.date(ts));
                 }
                 table.addCell(createCell(Objects.requireNonNullElse(ts, "")));
                 table.addCell(createCell(s.getIPAddress()));
                 table.addCell(createCell(trim(s.getApplication())));
+                u.getChangeLog(s).forEach(so -> {
+                    String changed = changed(so);
+                    if(changed != null) {
+                        table.addRowCell(createCell(changed), c -> {
+                            c.setBorderWidthTop(0);
+                            c.setBorderWidthBottom(0);
+                            return c;
+                        });
+                        count.incrementAndGet();
+                    }
+                });
                 if((count.get() % 80) == 0) {
                     add(table);
                 }
@@ -132,6 +165,22 @@ public class DeveloperActivity extends DataForm {
             if(count.get() > 0) {
                 add(table);
             }
+        }
+
+        private String changed(StoredObject so) {
+            if(so instanceof ColumnDefinition || so instanceof IndexDefinition || so instanceof LinkDefinition) {
+                so = so.getMaster(TableDefinition.class);
+            }
+            if(so instanceof TableDefinition td) {
+                return trim(td.getClassName(), 3) + " (Structure modified)";
+            }
+            if(so instanceof JavaClass jc) {
+                return trim(jc.getName(), 3) + " (Modified)";
+            }
+            if(so == null || so instanceof DeveloperLog || so instanceof StreamData || so instanceof JavaInnerClass) {
+                return null;
+            }
+            return trim(so.getClass().getName(), 3) + " (" + (developer ? "Test" : "Chang") + "ed)";
         }
 
         private String trim(String s) {

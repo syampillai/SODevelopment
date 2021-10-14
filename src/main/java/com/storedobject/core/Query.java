@@ -5,6 +5,7 @@ import java.io.Closeable;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.function.Function;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -76,4 +77,8 @@ public class Query implements Iterator < ResultSet >, Iterable < ResultSet >, Cl
 	public Iterable<Id> idIterator(int column) {
 		return new ArrayList<>();
 	}
+
+    public <T> Iterable<T> objectIterator(Function<ResultSet, T> objectMapper) {
+        return new ArrayList<>();
+    }
 }
