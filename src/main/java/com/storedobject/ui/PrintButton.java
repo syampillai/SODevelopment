@@ -103,7 +103,9 @@ public final class PrintButton extends Composite<Button> {
         if(a != null) {
             StoredObject so = objectSupplier.get();
             if(so != null) {
-                new ObjectReport(a, printLogicDefinition, so);
+                if(new ObjectReport(a, printLogicDefinition, so).getExecutable() == null) {
+                    Application.error("An error has occurred, please contact the Technical Support");
+                }
             }
         }
     }

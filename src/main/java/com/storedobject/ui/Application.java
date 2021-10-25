@@ -1,6 +1,7 @@
 package com.storedobject.ui;
 
 import com.storedobject.common.ArrayListSet;
+import com.storedobject.common.FilterProvider;
 import com.storedobject.common.SORuntimeException;
 import com.storedobject.core.*;
 import com.storedobject.sms.QuickSender;
@@ -836,6 +837,25 @@ public class Application extends com.storedobject.vaadin.Application implements 
             return true;
         }
         return false;
+    }
+
+    public static FilterProvider getUserVisibility(String action) {
+        String filter = ApplicationServer.getGlobalProperty("application.login.visibility." + action,
+                "", true);
+        if(filter.isEmpty()) {
+            return null;
+        }
+        try {
+            return ((FilterProvider)JavaClassLoader.getLogic(filter).getDeclaredConstructor().newInstance());
+        } catch(Throwable error) {
+            Application a = get();
+            if(a == null) {
+                ApplicationServer.log(error);
+            } else {
+                a.log(error);
+            }
+        }
+        return () -> "false";
     }
 
     public BusyIndicator getProgressBar(boolean indeterminate) {

@@ -1,7 +1,10 @@
 package com.storedobject.ui.tools;
 
+import com.storedobject.common.FilterProvider;
 import com.storedobject.core.SystemUser;
+import com.storedobject.ui.Application;
 import com.storedobject.ui.ObjectField;
+import com.storedobject.ui.ObjectGetField;
 import com.storedobject.ui.Transactional;
 import com.storedobject.vaadin.DataForm;
 
@@ -11,7 +14,12 @@ public abstract class AbstractUserForm extends DataForm implements Transactional
 
     public AbstractUserForm(String caption, String okLabel) {
         super(caption, okLabel, "Cancel");
-        addField(user = new ObjectField<>("Login", SystemUser.class, ObjectField.Type.GET));
+        ObjectGetField<SystemUser> field = new ObjectGetField<>(SystemUser.class);
+        FilterProvider filter = Application.getUserVisibility(action());
+        if(filter != null) {
+            field.setFilter(filter);
+        }
+        addField(user = new ObjectField<>("Login", field));
     }
 
     @Override
@@ -25,4 +33,6 @@ public abstract class AbstractUserForm extends DataForm implements Transactional
     }
 
     protected abstract boolean processUser(SystemUser user);
+
+    protected abstract String action();
 }

@@ -200,7 +200,7 @@ public class AttachmentField extends TranslatedField<StreamAttachment, StreamDat
             });
             fileEditor.setWindowMode(true);
             fileEditor.getComponent();
-            if(fileEditor.streamFieldsCreated().count() == 0) {
+            if(fileEditor.streamFieldsCreated().findAny().isEmpty()) {
                 extra = null;
             } else {
                 extra = new ImageButton("More information", VaadinIcon.ELLIPSIS_DOTS_H, e -> popup()).withBox();

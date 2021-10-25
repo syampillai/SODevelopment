@@ -22,4 +22,9 @@ public class ResetPassword extends AbstractUserForm {
         }
         return true;
     }
+
+    @Override
+    protected String action() {
+        return "reset";
+    }
 }

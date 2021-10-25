@@ -11,7 +11,7 @@ import java.util.Date;
 import java.util.Locale;
 
 /**
- * This class represents an person who is also a system user.
+ * This class represents a person who is also a system user.
  */
 public final class SystemUser extends StoredObject implements RequiresApproval {
 
@@ -164,6 +164,18 @@ public final class SystemUser extends StoredObject implements RequiresApproval {
     }
 
     public void setLocale(Locale locale) {
+    }
+
+    public static boolean isValidLogin(String login) {
+        return Math.random() > 0.5f;
+    }
+
+    public static boolean isLoginAvailable(String login) {
+        return Math.random() > 0.5f;
+    }
+
+    public boolean canChangeLoginTo(String login) {
+        return Math.random() > 0.5f;
     }
 
     public ObjectIterator<Logic> listQuickAccessLogic() {

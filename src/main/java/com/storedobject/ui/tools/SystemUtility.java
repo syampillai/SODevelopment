@@ -295,7 +295,8 @@ public class SystemUtility extends View implements CloseableView, Transactional 
                 cols = sb.substring(1);
                 select.setValue(cols);
             }
-            Query query = StoredObject.query(objectClass, cols, where.getValue().trim(), orderBy.getValue().trim(), any.getValue());
+            Query query = StoredObject.query(objectClass, cols, where.getValue().trim(), orderBy.getValue().trim(),
+                    any.getValue());
             if(cols.startsWith("/")) {
                 cols = cols.substring(1);
             }
@@ -484,7 +485,8 @@ public class SystemUtility extends View implements CloseableView, Transactional 
                     }
                     types.add(family);
                     b = new Browser(so.getClass());
-                    b.setCaption(className(so) + " - " + (c == links ? "Link" : "Master") + "s of " + selected.getId() + "/" + selected.getTransactionId() + " " + className(getObjectClass()));
+                    b.setCaption(className(so) + " - " + (c == links ? "Link" : "Master") + "s of " + selected.getId()
+                            + "/" + selected.getTransactionId() + " " + className(getObjectClass()));
                     if(c == links) {
                         b.setObjects((Iterable<StoredObject>)selected.listLinks(so.getClass()));
                     } else {
@@ -500,7 +502,8 @@ public class SystemUtility extends View implements CloseableView, Transactional 
             if(c == view) {
                 T selected = getSelected();
                 if(selected != null) {
-                    getObjectEditor().setCaption(className(selected) + " Id " + selected.getId() + " Transaction " + selected.getTransactionId());
+                    getObjectEditor().setCaption(className(selected) + " Id " + selected.getId() + " Transaction "
+                            + selected.getTransactionId());
                 }
             }
             super.clicked(c);

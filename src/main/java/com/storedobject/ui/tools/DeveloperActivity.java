@@ -13,7 +13,7 @@ import com.storedobject.ui.Transactional;
 import com.storedobject.vaadin.DataForm;
 
 import java.sql.Timestamp;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 
@@ -24,6 +24,7 @@ public class DeveloperActivity extends DataForm implements Transactional {
     private final boolean developer;
     private final SystemUserGroup devGroup;
     private final TransactionManager tm;
+    private final Set<Id> changedObjects = new HashSet<>();
 
     public DeveloperActivity() {
         this(true);
@@ -147,17 +148,30 @@ public class DeveloperActivity extends DataForm implements Transactional {
                 table.addCell(createCell(Objects.requireNonNullElse(ts, "")));
                 table.addCell(createCell(s.getIPAddress()));
                 table.addCell(createCell(trim(s.getApplication())));
+                StringBuilder changes = new StringBuilder();
+                u.getLogicHit(s).forEach(h -> {
+                    if(changes.length() > 0) {
+                        changes.append('\n');
+                    }
+                    Logic logic = h.getLogic();
+                    changes.append(h.isExecuted() ? "Executed" : "Accessed").append(" [")
+                            .append(logic == null ? "* * *" : logic.getTitle()).append("] at ")
+                            .append(DateUtility.formatWithTimeHHMM(DateUtility.trimMillis(tm.date(h.getHitTime()))));
+                });
                 u.getChangeLog(s).forEach(so -> {
-                    String changed = changed(so);
+                    String changed = changedObjects.contains(so.getId()) ? null : changed(so);
                     if(changed != null) {
-                        table.addRowCell(createCell(changed), c -> {
-                            c.setBorderWidthTop(0);
-                            c.setBorderWidthBottom(0);
-                            return c;
-                        });
-                        count.incrementAndGet();
+                        if(changes.length() > 0) {
+                            changes.append('\n');
+                        }
+                        changes.append(changed);
                     }
                 });
+                changedObjects.clear();
+                if(changes.length() > 0) {
+                    table.addRowCell(createCell(changes));
+                    count.incrementAndGet();
+                }
                 if((count.get() % 80) == 0) {
                     add(table);
                 }
@@ -168,19 +182,26 @@ public class DeveloperActivity extends DataForm implements Transactional {
         }
 
         private String changed(StoredObject so) {
+            if(so != null) {
+                changedObjects.add(so.getId());
+            }
             if(so instanceof ColumnDefinition || so instanceof IndexDefinition || so instanceof LinkDefinition) {
                 so = so.getMaster(TableDefinition.class);
+                if(so == null || changedObjects.contains(so.getId())) {
+                    return null;
+                }
+                changedObjects.add(so.getId());
             }
             if(so instanceof TableDefinition td) {
                 return trim(td.getClassName(), 3) + " (Structure modified)";
             }
             if(so instanceof JavaClass jc) {
-                return trim(jc.getName(), 3) + " (Modified)";
+                return trim(jc.getName(), 3) + " (Logic modified)";
             }
             if(so == null || so instanceof DeveloperLog || so instanceof StreamData || so instanceof JavaInnerClass) {
                 return null;
             }
-            return trim(so.getClass().getName(), 3) + " (" + (developer ? "Test" : "Chang") + "ed)";
+            return trim(so.getClass().getName(), 3) + " (Modified)";
         }
 
         private String trim(String s) {

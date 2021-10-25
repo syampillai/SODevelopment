@@ -20,6 +20,7 @@ public class ChangePassword extends DataForm implements Transactional {
     private int attempts = 0;
     private String otp;
     private boolean expired = false;
+    private boolean aborting = false;
 
     public ChangePassword() {
         this(false, true);
@@ -104,7 +105,12 @@ public class ChangePassword extends DataForm implements Transactional {
 
     @Override
     public void abort() {
-        getApplication().close();
+        if(aborting) {
+            super.abort();
+        } else {
+            aborting = true;
+            getApplication().close();
+        }
     }
 
     private boolean proc() {

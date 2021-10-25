@@ -1,6 +1,7 @@
 package com.storedobject.ui.common;
 
 import com.storedobject.core.*;
+import com.storedobject.ui.Application;
 import com.storedobject.ui.ELabelField;
 import com.storedobject.ui.ObjectEditor;
 import com.storedobject.ui.ObjectField;
@@ -30,6 +31,7 @@ public class SystemUserEditor extends ObjectEditor<SystemUser> {
 
     public SystemUserEditor(int actions, String caption) {
         super(SystemUser.class, actions, caption);
+        setSearchFilter(Application.getUserVisibility("edit"));
         LogicParser.checkOverride(this);
     }
 

@@ -22,4 +22,9 @@ public class UnlockUser extends AbstractUserForm {
         }
         return true;
     }
+
+    @Override
+    protected String action() {
+        return "unlock";
+    }
 }

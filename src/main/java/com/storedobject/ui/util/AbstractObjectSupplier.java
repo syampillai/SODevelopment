@@ -86,11 +86,14 @@ public class AbstractObjectSupplier<T extends StoredObject, M, F> extends Callba
         supplier.linkType = linkType;
         supplier.condition = condition;
         supplier.orderBy = orderBy;
+        /*
         if(master != null) {
             supplier.unload();
         } else {
             supplier.reload();
         }
+        */
+        supplier.reload();
         super.refreshAll();
     }
 

@@ -8,7 +8,6 @@ import com.storedobject.core.annotation.Table;
 import com.storedobject.report.ObjectList;
 import com.storedobject.ui.common.EntityRoleEditor;
 import com.storedobject.ui.common.PersonRoleEditor;
-import com.storedobject.ui.common.SystemUserEditor;
 import com.storedobject.ui.inventory.POEditor;
 import com.storedobject.ui.inventory.POItemEditor;
 import com.storedobject.ui.util.*;
@@ -1495,6 +1494,9 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
                     }
                 }
             }
+        }
+        if(extraInfo != null) {
+            extraInfo.reloadMaster(object);
         }
         setObject(object, true);
     }

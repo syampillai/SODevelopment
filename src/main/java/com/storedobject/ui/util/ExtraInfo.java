@@ -18,6 +18,15 @@ public class ExtraInfo<T extends StoredObject> {
 
     public void setMaster(StoredObject master) {
         this.master = master;
+        ExtraInfoValue<T> infoValue = getValue();
+        if(infoValue != null && infoValue.getMaster() == master) {
+            return;
+        }
+        field.setValue(new ExtraInfoValue<>(this));
+    }
+
+    public void reloadMaster(StoredObject master) {
+        this.master = master;
         field.setValue(new ExtraInfoValue<>(this));
     }
 

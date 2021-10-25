@@ -1,17 +1,23 @@
 package com.storedobject.ui;
 
 import com.storedobject.core.Person;
+import com.storedobject.core.Rate;
 import com.storedobject.core.StoredObject;
 import com.storedobject.core.SystemUser;
+import com.storedobject.vaadin.DataForm;
 
-public class Test extends ObjectEditor<Person> {
+public class Test extends DataForm {
 
     public Test() {
-        super(Person.class);
-        setSearchFilter(StoredObject.getNotExistsCondition(SystemUser.class, "Person"));
+        super("Test");
+        RateField rf;
+        addField(rf = new RateField("Rate"));
+        Rate r = new Rate();
+        rf.setValue(r);
     }
 
-    public Test(String className) throws Exception {
-        this();
+    @Override
+    protected boolean process() {
+        return false;
     }
 }

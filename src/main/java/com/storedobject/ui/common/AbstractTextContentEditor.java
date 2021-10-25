@@ -3,6 +3,7 @@ package com.storedobject.ui.common;
 import com.storedobject.core.TextContent;
 import com.storedobject.ui.ObjectEditor;
 import com.storedobject.ui.util.SOServlet;
+import com.storedobject.vaadin.IntegerField;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasValue;
 
@@ -32,10 +33,8 @@ public class AbstractTextContentEditor<T extends TextContent> extends ObjectEdit
 
     @Override
     protected void customizeField(String fieldName, HasValue<?, ?> field) {
-        switch (fieldName) {
-            case "Notes":
-            case "Content":
-                ((Component)field).getElement().setAttribute("colspan", "2");
+        switch(fieldName) {
+            case "Notes", "Content" -> ((Component) field).getElement().setAttribute("colspan", "2");
         }
         super.customizeField(fieldName, field);
     }
