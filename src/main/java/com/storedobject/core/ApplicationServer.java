@@ -11,6 +11,10 @@ public final class ApplicationServer {
     public ApplicationServer(Device device, String link) {
     }
 
+    public static String getLicenseStatus() {
+        return "Developer";
+    }
+
     public void doDeviceLayout() {
     }
 

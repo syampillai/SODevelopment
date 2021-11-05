@@ -69,4 +69,7 @@ public final class PseudoTran extends StoredObject {
 
     public void delete(TransactionManager tm) throws Exception {
     }
+
+    public void buildView(TransactionManager tm) throws Exception {
+    }
 }

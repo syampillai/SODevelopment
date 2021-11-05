@@ -46,20 +46,20 @@ public class EntityEditor extends ObjectEditor<Entity> {
             addField(new TextArea("Relationships"), this::getRS);
             editRel = new Button("Define Relationships", VaadinIcon.CLUSTER, e -> editRel());
             String cName = GlobalProperty.get("SUPPLIER-CLASS");
-            if(cName != null) {
+            if(!cName.isEmpty()) {
                 try {
                     Class<?> scc = JavaClassLoader.getLogic(cName);
                     if(EntityRole.class.isAssignableFrom(scc)) {
                         //noinspection unchecked
                         supplierEditor = ObjectEditor.create((Class<EntityRole>)scc);
-                        supplierMenu = new PopupButton("Supplier", VaadinIcon.INVOICE);
+                        supplierMenu = new PopupButton("Vendor/Supplier", VaadinIcon.INVOICE);
                         setUpEditor(supplierEditor, supplierMenu);
                     }
                 } catch(ClassNotFoundException ignored) {
                 }
             }
             cName = GlobalProperty.get("CUSTOMER-CLASS");
-            if(cName != null) {
+            if(!cName.isEmpty()) {
                 try {
                     Class<?> ccc = JavaClassLoader.getLogic(cName);
                     if(EntityRole.class.isAssignableFrom(ccc)) {
@@ -92,7 +92,7 @@ public class EntityEditor extends ObjectEditor<Entity> {
                 return;
             }
             buttonPanel.add(editRel);
-            if(supplierEditor != null && (getR(e) & 1) == 1) {
+            if(supplierEditor != null && (getR(e) & 0b101) > 0) {
                 buttonPanel.add(supplierMenu);
             }
             if(customerEditor != null && (getR(e) & 2) == 2) {
@@ -102,7 +102,8 @@ public class EntityEditor extends ObjectEditor<Entity> {
     }
 
     private boolean us(Entity entity) {
-        return getTransactionManager().getEntity().getEntityId().equals(entity.getId());
+        SystemEntity se = getTransactionManager().getEntity();
+        return se != null && se.getEntityId().equals(entity.getId());
     }
 
     private String getRS(Entity entity) {

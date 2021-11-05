@@ -23,6 +23,13 @@ import java.util.List;
 public class LocateItem extends ListGrid<InventoryItem> implements CloseableView {
 
     private static final String INSPECT = "INSPECT";
+    private final ELabel filterLabel = new ELabel("Search: ");
+    private final ChoiceField filter = new ChoiceField(new String[] {
+            "Stores only",
+            "Other locations",
+            "Fitted on assembly",
+            "Everywhere"
+    });
     private final Class<? extends InventoryItem> itemClass;
     private final ObjectField<? extends InventoryItemType> pnField;
     private final TextField snField;
@@ -179,6 +186,7 @@ public class LocateItem extends ListGrid<InventoryItem> implements CloseableView
                 pnField.addValueChangeListener(e -> loadItems());
             }
         }
+        filter.addValueChangeListener(e -> loadItems());
         GridContextMenu<InventoryItem> cm = new GridContextMenu<>(this);
         cm.addItem("View Details", e -> e.getItem().ifPresent(this::view));
         GridMenuItem<InventoryItem> inspect =
@@ -261,6 +269,7 @@ public class LocateItem extends ListGrid<InventoryItem> implements CloseableView
     @Override
     public Component createHeader() {
         ButtonLayout b = new ButtonLayout(new Button("Exit", e -> close()));
+        b.add(filterLabel, filter);
         if(snField != null) {
             b.add(new ELabel("S/N: "), snField);
         }
@@ -378,6 +387,15 @@ public class LocateItem extends ListGrid<InventoryItem> implements CloseableView
                 return loc instanceof InventoryBin && ((InventoryBin)loc).getStoreId().equals(store.getId());
             });
         }
+        int filter = this.filter.getValue();
+        switch(filter) {
+            case 0 -> objects = objects.filter(ii -> ii.getLocation() instanceof InventoryBin);
+            case 1 -> objects = objects.filter(ii -> {
+                InventoryLocation loc = ii.getLocation();
+                return !(loc instanceof InventoryBin || loc instanceof InventoryFitmentPosition);
+            });
+            case 2 -> objects = objects.filter(ii -> ii.getLocation() instanceof InventoryFitmentPosition);
+        }
         objects = objects.limit(500);
         objects.forEach(this::add);
         objects.close();
@@ -420,6 +438,8 @@ public class LocateItem extends ListGrid<InventoryItem> implements CloseableView
 
     public void setStore(InventoryStore store) {
         this.store = store;
+        filterLabel.setVisible(false);
+        filter.setVisible(false);
     }
 
     public void setAllowBreaking(boolean allowBreaking) {

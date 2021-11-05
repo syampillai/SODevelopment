@@ -105,7 +105,9 @@ public class TimestampField extends TranslatedField<Timestamp, LocalDateTime> {
     public TimestampField(String label, Timestamp initialValue, TimeResolution resolution) {
         this(resolution);
         setLabel(label);
-        //setValue(initialValue);
+        if(initialValue != null) {
+            setValue(initialValue);
+        }
     }
 
     private static Timestamp create(LocalDateTime d) {

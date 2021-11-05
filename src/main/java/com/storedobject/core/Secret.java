@@ -1,7 +1,6 @@
 package com.storedobject.core;
 
 import com.storedobject.common.HTTP;
-import com.storedobject.common.IO;
 
 import javax.crypto.SecretKey;
 import java.io.IOException;
@@ -77,30 +76,6 @@ public final class Secret extends StoredObject {
     }
 
     /**
-     * Encrypt data.
-     *
-     * @param data Data to encrypt.
-     * @param keyIndex Index of the key to be used.
-     * @param tm Transaction manager.
-     * @return Encrypted text.
-     */
-    public static String encrypt(String data, int keyIndex, TransactionManager tm) {
-        return "";
-    }
-
-    /**
-     * Decrypt data.
-     *
-     * @param data Data to decrypt.
-     * @param keyIndex Index of the key to be used.
-     * @param tm Transaction manager.
-     * @return Decrypted text.
-     */
-    public static String decrypt(String data, int keyIndex, TransactionManager tm) {
-        return "";
-    }
-
-    /**
      * Decrypt the encrypted stream.
      *
      * @param encryptedStream Stream to decrypt.
@@ -108,8 +83,22 @@ public final class Secret extends StoredObject {
      * @param tm Transaction manager.
      * @return Decrypted stream.
      */
-    public static InputStream decrypt(InputStream encryptedStream, int keyIndex, TransactionManager tm) throws IOException {
-        return IO.getInput("");
+    public static InputStream decrypt(InputStream encryptedStream, int keyIndex, TransactionManager tm)
+            throws IOException {
+        return encryptedStream;
+    }
+
+    /**
+     * Decrypt the encrypted stream.
+     *
+     * @param encryptedStream Stream to decrypt.
+     * @param keyIndex Index of the key to be used.
+     * @param user Verified system user
+     * @return Decrypted stream.
+     */
+    public static InputStream decrypt(InputStream encryptedStream, int keyIndex, SystemUser user)
+            throws IOException {
+        return encryptedStream;
     }
 
     /**
@@ -120,8 +109,22 @@ public final class Secret extends StoredObject {
      * @param tm Transaction manager.
      * @return Encrypted stream.
      */
-    public static OutputStream encrypt(OutputStream clearStream, int keyIndex, TransactionManager tm) throws IOException {
-        return IO.getOutput("");
+    public static OutputStream encrypt(OutputStream clearStream, int keyIndex, TransactionManager tm)
+            throws IOException {
+        return clearStream;
+    }
+
+    /**
+     * Encrypt the encrypted stream.
+     *
+     * @param clearStream Stream to encrypt.
+     * @param keyIndex Index of the key to be used.
+     * @param user Verified system user
+     * @return Encrypted stream.
+     */
+    public static OutputStream encrypt(OutputStream clearStream, int keyIndex, SystemUser user)
+            throws IOException {
+        return clearStream;
     }
 
     /**
@@ -133,7 +136,21 @@ public final class Secret extends StoredObject {
      * @param tm Transaction manager.
      * @throws IOException If any IO exception occurs.
      */
-    public static void encrypt(InputStream clearStream, OutputStream encryptedStream, int keyIndex, TransactionManager tm) throws IOException {
+    public static void encrypt(InputStream clearStream, OutputStream encryptedStream, int keyIndex,
+                               TransactionManager tm) throws IOException {
+    }
+
+    /**
+     * Encrypt a clear stream and write it to an output stream.
+     *
+     * @param clearStream Clear stream to read from.
+     * @param encryptedStream Encrypted output stream.
+     * @param keyIndex Index of the key to be used.
+     * @param user Verified system user
+     * @throws IOException If any IO exception occurs.
+     */
+    public static void encrypt(InputStream clearStream, OutputStream encryptedStream, int keyIndex,
+                               SystemUser user) throws IOException {
     }
 
     /**
@@ -145,7 +162,21 @@ public final class Secret extends StoredObject {
      * @param tm Transaction manager.
      * @throws IOException If any IO exception occurs.
      */
-    public static void decrypt(InputStream encryptedStream, OutputStream clearStream, int keyIndex, TransactionManager tm) throws IOException {
+    public static void decrypt(InputStream encryptedStream, OutputStream clearStream, int keyIndex,
+                               TransactionManager tm) throws IOException {
+    }
+
+    /**
+     * Decrypt an encrypted stream and write it to an output stream.
+     *
+     * @param encryptedStream Encrypted stream to read from.
+     * @param clearStream Clear output stream.
+     * @param keyIndex Index of the key to be used.
+     * @param user Verified system user
+     * @throws IOException If any IO exception occurs.
+     */
+    public static void decrypt(InputStream encryptedStream, OutputStream clearStream, int keyIndex,
+                               SystemUser user) throws IOException {
     }
 
     /**

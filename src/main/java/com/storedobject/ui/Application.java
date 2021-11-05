@@ -926,6 +926,7 @@ public class Application extends com.storedobject.vaadin.Application implements 
                 newLine().append("Device Size: ").append(getDeviceWidth()).append('x').append(getDeviceHeight()).
                 newLine().append("Biometric Available: ").append(isBiometricAvailable()).
                 newLine().append("Biometric Registered: ").append(isBiometricRegistered()).
+                newLine().append("License Status: ").append(ApplicationServer.getLicenseStatus()).
                 update();
     }
 

@@ -65,7 +65,7 @@ public final class TransactionManager {
      * @return Newly created transaction.
      */
     public PseudoTransaction createPseudoTransaction() {
-        return new PseudoTransaction(this);
+        return new PseudoTransaction(this, false);
     }
 
     public boolean verify(char[] password) {

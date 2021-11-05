@@ -2,7 +2,7 @@ package com.storedobject.core;
 
 public final class PseudoTransaction extends AbstractTransaction {
 
-    PseudoTransaction(TransactionManager tm) {
+    PseudoTransaction(TransactionManager tm, @SuppressWarnings("unused") boolean forView) {
         super(tm);
     }
 

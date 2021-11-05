@@ -108,6 +108,10 @@ public final class SystemUser extends StoredObject implements RequiresApproval {
         return false;
     }
 
+    public boolean isVerified() {
+        return true;
+    }
+
     public void resetPassword() throws Exception {
     }
 

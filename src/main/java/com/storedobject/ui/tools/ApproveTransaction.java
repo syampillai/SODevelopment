@@ -1,10 +1,11 @@
 package com.storedobject.ui.tools;
 
 import com.storedobject.core.*;
+import com.storedobject.ui.*;
 import com.storedobject.ui.Application;
-import com.storedobject.ui.ELabel;
-import com.storedobject.ui.ObjectBrowser;
 import com.storedobject.vaadin.*;
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.HasValue;
 
 import java.sql.Date;
 import java.sql.ResultSet;
@@ -26,7 +27,7 @@ public class ApproveTransaction extends ObjectBrowser<PseudoTran> {
 
     private ApproveTransaction(boolean load) {
         super(PseudoTran.class, EditorAction.RELOAD, "Approve Transactions");
-        setFilter("status < 3");
+        setFilter("Status<3");
         setOrderBy("Date,No");
         if(load) {
             load();
@@ -132,6 +133,87 @@ public class ApproveTransaction extends ObjectBrowser<PseudoTran> {
         tranView.execute();
     }
 
+    @Override
+    protected ObjectEditor<PseudoTran> createObjectEditor() {
+        return new PTEditor();
+    }
+
+    private static class PTEditor extends ObjectEditor<PseudoTran> {
+
+        PTEditor() {
+            super(PseudoTran.class);
+            setColumns(4);
+            addField("Menu", pt -> pt.getLogic().getTitle(), null);
+        }
+
+        @Override
+        protected HasValue<?, ?> createField(String fieldName, String label) {
+            if("Menu".equals(fieldName)) {
+                return new TextField(label);
+            }
+            return super.createField(fieldName, label);
+        }
+
+        @Override
+        protected void customizeField(String fieldName, HasValue<?, ?> field) {
+            if("Menu".equals(fieldName)) {
+                setColumnSpan((Component) field, 4);
+            }
+        }
+
+        @Override
+        protected boolean includeField(String fieldName) {
+            if("LogicCode".equals(fieldName)) {
+                return false;
+            }
+            return super.includeField(fieldName);
+        }
+
+        @Override
+        protected String getLabel(String fieldName) {
+            if("Menu".equals(fieldName)) {
+                return "Menu Used";
+            }
+            return super.getLabel(fieldName);
+        }
+
+        @Override
+        protected int getFieldOrder(String fieldName) {
+            if("Menu".equals(fieldName)) {
+                return 2;
+            }
+            return super.getFieldOrder(fieldName);
+        }
+
+        @Override
+        protected void customizeLinkField(ObjectLinkField<?> field) {
+            if(field.getFieldName().equals("Details.l")) {
+                @SuppressWarnings("unchecked")
+                ObjectLinkField<PseudoTranDetail>f = (ObjectLinkField<PseudoTranDetail>) field;
+                f.setObjectEditor(new PTDetailEditor());
+                return;
+            }
+            super.customizeLinkField(field);
+        }
+
+        private static class PTDetailEditor extends ObjectEditor<PseudoTranDetail> {
+
+            public PTDetailEditor() {
+                super(PseudoTranDetail.class);
+                //addField("ApplicableTo", PseudoTranDetail::getObjectLabel, null);
+                addField("Changes", PseudoTranDetail::getChanges, null);
+            }
+
+            @Override
+            protected String getLabel(String fieldName) {
+                if("Changes".equals(fieldName)) {
+                    return "Data/Changes";
+                }
+                return super.getLabel(fieldName);
+            }
+        }
+    }
+
     private class View extends DataForm {
 
         private final DateField dateField = new DateField("Date");
@@ -140,6 +222,11 @@ public class ApproveTransaction extends ObjectBrowser<PseudoTran> {
 
         public View() {
             super("Select Transaction");
+        }
+
+        @Override
+        public int getMaximumContentWidth() {
+            return 25;
         }
 
         @Override
@@ -178,7 +265,11 @@ public class ApproveTransaction extends ObjectBrowser<PseudoTran> {
             try {
                 int min = rs.getInt(1), max = rs.getInt(2);
                 if(max > 0) {
-                    helpLabel.append("Range for No: " + min + " - " + max, "blue");
+                    if(min == max) {
+                        helpLabel.append("Only transaction available is No: " + min, "blue");
+                    } else {
+                        helpLabel.append("Range for No: " + min + " - " + max, "blue");
+                    }
                 } else {
                     helpLabel.append("No transactions found on this date!", "red");
                 }
