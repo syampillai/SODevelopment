@@ -75,6 +75,55 @@ public final class Secret extends StoredObject {
         return "";
     }
 
+
+    /**
+     * Encrypt data.
+     *
+     * @param data Data to encrypt.
+     * @param keyIndex Index of the key to be used.
+     * @param tm Transaction manager.
+     * @return Encrypted text.
+     */
+    public static String encrypt(String data, int keyIndex, TransactionManager tm) {
+        return data;
+    }
+
+    /**
+     * Encrypt data.
+     *
+     * @param data Data to encrypt.
+     * @param keyIndex Index of the key to be used.
+     * @param user Verified system user
+     * @return Encrypted text.
+     */
+    public static String encrypt(String data, int keyIndex, SystemUser user) {
+        return data;
+    }
+
+    /**
+     * Decrypt data.
+     *
+     * @param data Data to decrypt.
+     * @param keyIndex Index of the key to be used.
+     * @param tm Transaction manager.
+     * @return Decrypted text.
+     */
+    public static String decrypt(String data, int keyIndex, TransactionManager tm) {
+        return data;
+    }
+
+    /**
+     * Decrypt data.
+     *
+     * @param data Data to decrypt.
+     * @param keyIndex Index of the key to be used.
+     * @param user Verified system user
+     * @return Decrypted text.
+     */
+    public static String decrypt(String data, int keyIndex, SystemUser user) {
+        return data;
+    }
+
     /**
      * Decrypt the encrypted stream.
      *

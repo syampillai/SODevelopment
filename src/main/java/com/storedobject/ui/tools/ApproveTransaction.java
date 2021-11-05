@@ -200,16 +200,42 @@ public class ApproveTransaction extends ObjectBrowser<PseudoTran> {
 
             public PTDetailEditor() {
                 super(PseudoTranDetail.class);
-                //addField("ApplicableTo", PseudoTranDetail::getObjectLabel, null);
+                addField("ApplicableTo", PseudoTranDetail::getObjectLabel, null);
                 addField("Changes", PseudoTranDetail::getChanges, null);
             }
 
             @Override
             protected String getLabel(String fieldName) {
+                System.err.println("L: " + fieldName);
                 if("Changes".equals(fieldName)) {
                     return "Data/Changes";
                 }
                 return super.getLabel(fieldName);
+            }
+
+            @Override
+            protected void customizeField(String fieldName, HasValue<?, ?> field) {
+                System.err.println("Cu: " + fieldName + " " + (field != null));
+                super.customizeField(fieldName, field);
+            }
+
+
+            @Override
+            protected HasValue<?, ?> createField(String fieldName, String label) {
+                System.err.println("CF1: " + fieldName);
+                return super.createField(fieldName, label);
+            }
+
+            @Override
+            protected HasValue<?, ?> createField(String fieldName) {
+                System.err.println("CF2: " + fieldName);
+                return super.createField(fieldName);
+            }
+
+            @Override
+            protected HasValue<?, ?> createField(String fieldName, Class<?> fieldType, String label) {
+                System.err.println("CF3: " + fieldName);
+                return super.createField(fieldName, fieldType, label);
             }
         }
     }

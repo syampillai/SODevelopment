@@ -457,6 +457,15 @@ public class SOFieldCreator<T> implements ObjectFieldCreator<T> {
 
     @Override
     public HasValue<?, ?> createField(String fieldName, Class<?> fieldType, String label) {
+        System.err.println("SOF: " + fieldName);
+        HasValue<?, ?> f = createFieldX(fieldName, fieldType, label);
+        if(f == null) {
+            System.err.println("It's NULL");
+        }
+        return f;
+    }
+
+    public HasValue<?, ?> createFieldX(String fieldName, Class<?> fieldType, String label) {
         if(form == null && fieldName.contains(".")) {
             return null;
         }
