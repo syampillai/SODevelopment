@@ -1,6 +1,8 @@
 package com.storedobject.core;
 
 import java.sql.Date;
+import java.util.ArrayList;
+import java.util.List;
 
 public final class PseudoTran extends StoredObject {
 
@@ -70,6 +72,7 @@ public final class PseudoTran extends StoredObject {
     public void delete(TransactionManager tm) throws Exception {
     }
 
-    public void buildView(TransactionManager tm) throws Exception {
+    public List<PseudoTranDetail> buildView(TransactionManager tm) throws Exception {
+        return new ArrayList<>();
     }
 }

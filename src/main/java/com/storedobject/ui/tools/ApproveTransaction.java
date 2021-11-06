@@ -1,5 +1,6 @@
 package com.storedobject.ui.tools;
 
+import com.storedobject.common.StringList;
 import com.storedobject.core.*;
 import com.storedobject.ui.*;
 import com.storedobject.ui.Application;
@@ -10,6 +11,8 @@ import com.vaadin.flow.component.HasValue;
 import java.sql.Date;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ApproveTransaction extends ObjectBrowser<PseudoTran> {
 
@@ -140,6 +143,8 @@ public class ApproveTransaction extends ObjectBrowser<PseudoTran> {
 
     private static class PTEditor extends ObjectEditor<PseudoTran> {
 
+        private List<PseudoTranDetail> details = new ArrayList<>();
+
         PTEditor() {
             super(PseudoTran.class);
             setColumns(4);
@@ -185,57 +190,95 @@ public class ApproveTransaction extends ObjectBrowser<PseudoTran> {
             return super.getFieldOrder(fieldName);
         }
 
+        @SuppressWarnings("unchecked")
         @Override
-        protected void customizeLinkField(ObjectLinkField<?> field) {
-            if(field.getFieldName().equals("Details.l")) {
-                @SuppressWarnings("unchecked")
-                ObjectLinkField<PseudoTranDetail>f = (ObjectLinkField<PseudoTranDetail>) field;
-                f.setObjectEditor(new PTDetailEditor());
-                return;
+        protected LinkGrid<?> createLinkFieldGrid(String fieldName, ObjectLinkField<?> field) {
+            if(fieldName.equals("Details.l")) {
+                return new PTDetailBrowser((ObjectLinkField<PseudoTranDetail>) field);
             }
-            super.customizeLinkField(field);
+            return super.createLinkFieldGrid(fieldName, field);
         }
 
-        private static class PTDetailEditor extends ObjectEditor<PseudoTranDetail> {
-
-            public PTDetailEditor() {
-                super(PseudoTranDetail.class);
-                addField("ApplicableTo", PseudoTranDetail::getObjectLabel, null);
-                addField("Changes", PseudoTranDetail::getChanges, null);
-            }
-
-            @Override
-            protected String getLabel(String fieldName) {
-                System.err.println("L: " + fieldName);
-                if("Changes".equals(fieldName)) {
-                    return "Data/Changes";
+        @Override
+        public void setObject(PseudoTran object, boolean load) {
+            if(object != null && load) {
+                try {
+                    details = object.buildView(getTransactionManager());
+                } catch(Exception e) {
+                    details.clear();
+                    warning(e);
                 }
-                return super.getLabel(fieldName);
+            }
+            super.setObject(object, load);
+        }
+
+        private class PTDetailBrowser extends DetailLinkGrid<PseudoTranDetail> {
+
+            private PseudoTranDetail current;
+
+            @SuppressWarnings("unchecked")
+            public PTDetailBrowser(ObjectLinkField<PseudoTranDetail> linkField) {
+                super(linkField, StringList.create("Status", "ApplicableTo", "Changes"));
+                createColumn("ApplicableTo", this::appTo);
+                createColumn("Changes", this::changes);
             }
 
             @Override
-            protected void customizeField(String fieldName, HasValue<?, ?> field) {
-                System.err.println("Cu: " + fieldName + " " + (field != null));
-                super.customizeField(fieldName, field);
+            public ObjectEditor<PseudoTranDetail> constructObjectEditor() {
+                return new PTDetailEditor();
             }
 
-
-            @Override
-            protected HasValue<?, ?> createField(String fieldName, String label) {
-                System.err.println("CF1: " + fieldName);
-                return super.createField(fieldName, label);
+            private String appTo(PseudoTranDetail ptd) {
+                return curr(ptd).getObjectLabel();
             }
 
-            @Override
-            protected HasValue<?, ?> createField(String fieldName) {
-                System.err.println("CF2: " + fieldName);
-                return super.createField(fieldName);
+            private String changes(PseudoTranDetail ptd) {
+                return curr(ptd).getChanges();
             }
 
-            @Override
-            protected HasValue<?, ?> createField(String fieldName, Class<?> fieldType, String label) {
-                System.err.println("CF3: " + fieldName);
-                return super.createField(fieldName, fieldType, label);
+            private PseudoTranDetail curr(PseudoTranDetail ptd) {
+                if(current == null || !current.getId().equals(ptd.getId())) {
+                    Id id = ptd.getId();
+                    current = details.stream().filter(p -> p.getId().equals(id)).findAny().orElse(null);
+                    if(current == null) {
+                        current = ptd;
+                    }
+                }
+                return current;
+            }
+
+            private class PTDetailEditor extends ObjectEditor<PseudoTranDetail> {
+
+                public PTDetailEditor() {
+                    super(PseudoTranDetail.class);
+                    addField("ApplicableTo", this::appTo, null);
+                    addField("Changes", this::changes, null);
+                }
+
+                @Override
+                protected HasValue<?, ?> createField(String fieldName, String label) {
+                    return switch(fieldName) {
+                        case "ApplicableTo" -> new TextField(label);
+                        case "Changes" -> new TextArea("Data/Changes");
+                        default -> super.createField(fieldName, label);
+                    };
+                }
+
+                @Override
+                protected void customizeField(String fieldName, HasValue<?, ?> field) {
+                    if(fieldName.equals("Changes")) {
+                        setColumnSpan((Component) field, 2);
+                    }
+                    super.customizeField(fieldName, field);
+                }
+
+                private String appTo(PseudoTranDetail ptd) {
+                    return ptd == null ? "" : curr(ptd).getObjectLabel();
+                }
+
+                private String changes(PseudoTranDetail ptd) {
+                    return ptd == null ? "" : curr(ptd).getChanges();
+                }
             }
         }
     }
