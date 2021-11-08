@@ -25,4 +25,29 @@ public class JavaClassLoader extends ClassLoader {
     public static boolean loaded(String name) {
         return exists("O");
     }
+
+
+    public static Class<?> createClassFromProperty(String propertyName) throws SOException {
+        String logicName = ApplicationServer.getGlobalProperty(propertyName, "", true);
+        if(!logicName.isBlank()) {
+            try {
+                return getLogic(logicName);
+            } catch(Throwable e) {
+                throw new SOException("Can't create logic associated with " + propertyName);
+            }
+        }
+        return null;
+    }
+
+    public static Object createInstanceFromProperty(String propertyName) throws SOException {
+        Class<?> c = createClassFromProperty(propertyName);
+        if(c == null) {
+            return null;
+        }
+        try {
+            return c.getDeclaredConstructor().newInstance();
+        } catch(Throwable e) {
+            throw new SOException("Can't create logic instance associated with " + propertyName);
+        }
+    }
 }

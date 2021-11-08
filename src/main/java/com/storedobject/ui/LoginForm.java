@@ -8,6 +8,7 @@ import com.storedobject.vaadin.*;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.template.Id;
 import com.vaadin.flow.shared.Registration;
 
@@ -24,6 +25,7 @@ import com.vaadin.flow.shared.Registration;
  * <p>id = "biometric" (Should be a so-auth tag. Used for showing biometric option. This is optional)</p>
  * <p>id = "ok" ('OK' or 'Sign in' button. This should be a vaadin-button tag)</p>
  * <p>id = "cancel" ('Cancel' button. This should be a vaadin-button tag)</p>
+ * <p>id = "forgot" ('Forgot Password' button. This should be a vaadin-button tag)</p>
  *
  * @author Syam
  */
@@ -54,6 +56,9 @@ public class LoginForm extends TemplateView implements HomeView {
 
     @Id
     private Checkbox remember;
+
+    @Id
+    private Button forgot;
 
     private SystemUser user;
     private boolean init;
@@ -122,7 +127,7 @@ public class LoginForm extends TemplateView implements HomeView {
         }
     }
 
-    private void process() {
+    private void process(boolean forgot) {
         internal.clearAlerts();
         Login login = getA().getLogin();
         setBioStatus();
@@ -135,9 +140,9 @@ public class LoginForm extends TemplateView implements HomeView {
         }
         try {
             boolean wrongCram = cramField != null && !cramField.verified();
-            if(wrongCram || user == null ||
+            if(wrongCram || user == null || (forgot ? !login.forgotPassword(u) :
                     !login.login(u, passwordField == null ? new char[] {} :
-                            passwordField.getValue().toCharArray(), true)) {
+                            passwordField.getValue().toCharArray(), true))) {
                 if(login.canRetry()) {
                     speak("Please check the " + (wrongCram ? "captcha" : "password"), false);
                     if(wrongCram) {
@@ -235,8 +240,9 @@ public class LoginForm extends TemplateView implements HomeView {
             case "password" -> passwordField;
             case "cram" -> new CRAMField();
             case "biometric" -> new BiometricButton(this::biometricLogin, getA().getLogin());
-            case "ok" -> new Button("Sign-in", "ok", e -> process());
+            case "ok" -> new Button("Sign-in", "ok", e -> process(false));
             case "cancel" -> new Button("Cancel", e -> getA().close());
+            case "forgot" -> new Button("Forgot Password", VaadinIcon.QUESTION_CIRCLE_O, e -> process(true));
             default -> super.createComponentForId(id);
         };
     }
@@ -280,6 +286,7 @@ public class LoginForm extends TemplateView implements HomeView {
         protected void buildButtons() {
             super.buildButtons();
             buttonPanel.add(biometricButton = (BiometricButton) createComponentForId("biometric"));
+            //buttonPanel.add(forgot = (Button) createComponentForId("forgot"));
         }
 
         @Override
@@ -343,7 +350,7 @@ public class LoginForm extends TemplateView implements HomeView {
 
         @Override
         protected boolean process() {
-            LoginForm.this.process();
+            LoginForm.this.process(false);
             return false;
         }
     }

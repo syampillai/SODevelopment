@@ -1,12 +1,11 @@
 package com.storedobject.ui;
 
-import com.storedobject.core.Person;
-import com.storedobject.core.Rate;
-import com.storedobject.core.StoredObject;
-import com.storedobject.core.SystemUser;
+import com.storedobject.core.*;
 import com.storedobject.vaadin.DataForm;
 
-public class Test extends DataForm {
+public class Test extends DataForm implements IdentityCheck {
+
+    private SystemUser user;
 
     public Test() {
         super("Test");
@@ -18,6 +17,18 @@ public class Test extends DataForm {
 
     @Override
     protected boolean process() {
-        return false;
+        close();
+        Application.get().forgotPassword(this);
+        return true;
+    }
+
+    @Override
+    public void setUser(SystemUser systemUser) {
+        this.user = systemUser;
+    }
+
+    @Override
+    public SystemUser getUser() {
+        return user;
     }
 }

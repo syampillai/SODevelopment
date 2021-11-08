@@ -88,6 +88,10 @@ public final class SystemUser extends StoredObject implements RequiresApproval {
     public void changePassword(char[] currentPassword, char[] newPassword) throws SOException {
     }
 
+    public char[] generateSecretToken() {
+        return new char[2];
+    }
+
     public java.sql.Date getPasswordExpiry() {
         return null;
     }

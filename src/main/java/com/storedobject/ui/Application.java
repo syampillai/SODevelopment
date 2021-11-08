@@ -1,6 +1,7 @@
 package com.storedobject.ui;
 
 import com.storedobject.common.ArrayListSet;
+import com.storedobject.common.Executable;
 import com.storedobject.common.FilterProvider;
 import com.storedobject.common.SORuntimeException;
 import com.storedobject.core.*;
@@ -31,7 +32,7 @@ import java.util.function.Consumer;
 
 public class Application extends com.storedobject.vaadin.Application implements Device, RunningLogic, RequiresApproval {
 
-    private static final String VERSION = "21.0.2";
+    private static final String VERSION = "21.0.3";
     private static final String COMPACT_STYLES =
             """
                     --lumo-size-xl: 3rem;
@@ -95,6 +96,7 @@ public class Application extends com.storedobject.vaadin.Application implements 
     private Login login;
     private boolean compactTheme = false;
     private Runnable loginForm;
+    private IdentityCheck identityCheck;
 
     public Application() {
         this(new ApplicationFrame());
@@ -784,23 +786,6 @@ public class Application extends com.storedobject.vaadin.Application implements 
         return null;
     }
 
-    private void loginDone() {
-        Runnable r = loginForm;
-        loginForm = null;
-        if(r instanceof ExecutableView v) {
-            v.close();
-        }
-        SystemUser su = server.getTransactionManager().getUser();
-        boolean checkPassword = !su.isAdmin();
-        if(checkPassword && !"demo".equals(ApplicationServer.runMode())) {
-            checkPassword = !"guest".equals(su.getLogin());
-        }
-        Login l = login;
-        login = null;
-        boolean cp = checkPassword;
-        selectEntity(cp && l.isWelcomePassword(), cp && su.isPasswordExpired());
-    }
-
     private void startApp(boolean welcomePassword, boolean passwordExpired) {
         if(welcomePassword || passwordExpired) {
             new ChangePassword(passwordExpired).execute();
@@ -829,7 +814,7 @@ public class Application extends com.storedobject.vaadin.Application implements 
     }
 
     @Override
-    public final boolean loggedin(Login login) {
+    public final boolean loggedIn(Login login) {
         if(loginForm != null && this.login != null && login == this.login) {
             if(executePostLogin()) {
                 loginDone();
@@ -839,21 +824,96 @@ public class Application extends com.storedobject.vaadin.Application implements 
         return false;
     }
 
-    public static FilterProvider getUserVisibility(String action) {
-        String filter = ApplicationServer.getGlobalProperty("application.login.visibility." + action,
-                "", true);
-        if(filter.isEmpty()) {
-            return null;
+    private void loginDone() {
+        Runnable r = loginForm;
+        loginForm = null;
+        if(r instanceof ExecutableView v) {
+            v.close();
         }
+        SystemUser su = server.getTransactionManager().getUser();
+        boolean checkPassword = !su.isAdmin();
+        if(checkPassword && !"demo".equals(ApplicationServer.runMode())) {
+            checkPassword = !"guest".equals(su.getLogin());
+        }
+        Login l = login;
+        login = null;
+        boolean cp = checkPassword;
+        selectEntity(cp && l.isWelcomePassword(), cp && su.isPasswordExpired());
+    }
+
+    @Override
+    public final boolean forgotPassword(Login login) {
+        if(loginForm != null && this.login != null && login == this.login) {
+            forgotPassword();
+            return true;
+        }
+        return false;
+    }
+
+    private void forgotPassword() {
+        Runnable r = loginForm;
+        loginForm = null;
+        if(r instanceof ExecutableView v) {
+            v.close();
+        }
+        login = null;
+        identityCheck = null;
         try {
-            return ((FilterProvider)JavaClassLoader.getLogic(filter).getDeclaredConstructor().newInstance());
-        } catch(Throwable error) {
-            Application a = get();
-            if(a == null) {
-                ApplicationServer.log(error);
-            } else {
-                a.log(error);
+            identityCheck = (IdentityCheck) JavaClassLoader
+                    .createInstanceFromProperty("application.login.password.forgot");
+            if(identityCheck != null) {
+                identityCheck.setUser(getTransactionManager().getUser());
+                if(identityCheck instanceof Executable executable) {
+                    executable.execute();
+                } else if(identityCheck instanceof Runnable runnable) {
+                    runnable.run();
+                }
             }
+        } catch(Throwable e) {
+            log(e);
+        }
+        if(identityCheck == null) {
+            close();
+        }
+    }
+
+    public final void forgotPassword(IdentityCheck identityCheck) {
+        if(identityCheck != this.identityCheck) {
+            close();
+            return;
+        }
+        VerifyOTP verifyOTP = new VerifyOTP(identityCheck.isSingleOTP(), identityCheck.getMobile(),
+                identityCheck.getEmail(), () -> new SetNewPassword().execute(), this::close, this::close);
+        String otpTemplate = identityCheck.getOTPTemplate();
+        if(otpTemplate != null) {
+            verifyOTP.setTemplateName(otpTemplate);
+        }
+        verifyOTP.execute();
+    }
+
+    private class SetNewPassword extends com.storedobject.ui.tools.ChangePassword {
+
+        private SetNewPassword() {
+            super(Application.this.getTransactionManager().getUser());
+        }
+
+        @Override
+        protected boolean process() {
+            if(super.process()) {
+                close();
+                Application.this.close();
+                return true;
+            }
+            return false;
+        }
+    }
+
+
+    public static FilterProvider getUserVisibility(String action) {
+        try {
+            return (FilterProvider) createInstance("application.login.visibility."
+                    + action, true, true);
+        } catch(Throwable ignored) {
         }
         return () -> "false";
     }
@@ -1648,37 +1708,35 @@ public class Application extends com.storedobject.vaadin.Application implements 
 
     public com.storedobject.sms.QuickSender getSMSSender() {
         if(smsSender == null) {
-            String sender = ApplicationServer.getGlobalProperty("application.quick.sms",
-                    "", true);
-            if(!sender.isBlank()) {
-                try {
-                    smsSender = (QuickSender) JavaClassLoader.getLogic(sender).getDeclaredConstructor().newInstance();
-                } catch(Throwable e) {
-                    ApplicationServer.log(Application.get(), e);
-                }
-            }
+            smsSender = (QuickSender) createInstance("application.quick.sms", true, false);
         }
         return smsSender;
     }
 
     public com.storedobject.mail.QuickSender getMailSender() {
         if(mailSender == null) {
-            String sender = ApplicationServer.getGlobalProperty("application.quick.mail",
-                    "", true);
-            if(!sender.isBlank()) {
-                try {
-                    mailSender = (com.storedobject.mail.QuickSender) JavaClassLoader.getLogic(sender).
-                            getDeclaredConstructor().newInstance();
-                } catch(Throwable e) {
-                    ApplicationServer.log(Application.get(), e);
-                }
-            }
+            mailSender = (com.storedobject.mail.QuickSender)
+                    createInstance("application.quick.mail", true, false);
         }
         return mailSender;
     }
 
-    // Viewer for login messages and alerts.
+    public static Object createInstance(String propertyName, boolean showError, boolean raiseError) {
+        try {
+            return JavaClassLoader.createInstanceFromProperty(propertyName);
+        } catch(SOException e) {
+            ApplicationServer.log(e);
+            if(showError) {
+                Application.warning(e);
+            }
+            if(raiseError) {
+                throw new SORuntimeException(e);
+            }
+        }
+        return null;
+    }
 
+    // Viewer for login messages and alerts.
     private final MV messageViewer = new MV(this);
 
     private static class MV implements MessageViewer {

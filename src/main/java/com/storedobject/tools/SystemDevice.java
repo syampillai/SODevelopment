@@ -23,7 +23,7 @@ public abstract class SystemDevice implements Device {
 	}
 
 	@Override
-	public boolean loggedin(Login login) {
+	public boolean loggedIn(Login login) {
 		return false;
 	}
 

@@ -30,6 +30,10 @@ public final class Login {
         return false;
     }
 
+    public boolean forgotPassword(String user) {
+        return false;
+    }
+
     public boolean isBlocked() {
         return false;
     }

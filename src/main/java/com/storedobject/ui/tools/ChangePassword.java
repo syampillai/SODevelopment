@@ -18,7 +18,7 @@ public class ChangePassword extends DataForm implements Transactional {
     private PasswordField password, newPassword, repeatNewPassword;
     private final SystemUser su;
     private int attempts = 0;
-    private String otp;
+    private boolean forgot;
     private boolean expired = false;
     private boolean aborting = false;
 
@@ -33,10 +33,10 @@ public class ChangePassword extends DataForm implements Transactional {
         addConstructedListener(o -> fConstructed());
     }
 
-    public ChangePassword(SystemUser su, String otp) {
-        super("Change Password");
+    public ChangePassword(SystemUser su) {
+        super("Set New Password");
         this.su = su;
-        this.otp = otp;
+        this.forgot = true;
         addConstructedListener(o -> fConstructed());
     }
 
@@ -55,9 +55,13 @@ public class ChangePassword extends DataForm implements Transactional {
         return f.getValue().trim();
     }
 
+    private char[] valueChars(HasValue<?, String> f) {
+        return value(f).toCharArray();
+    }
+
     @Override
     protected void execute(View parent, boolean doNotLock) {
-        if(otp == null) {
+        if(!forgot) {
             if(getTransactionManager().getUser().getLogin().equals("guest") && ApplicationServer.runMode().equals("demo")) {
                 warning("Password change not allowed for 'guest' user in demo mode");
                 return;
@@ -79,7 +83,10 @@ public class ChangePassword extends DataForm implements Transactional {
         user.setReadOnly(true);
         user.setTabIndex(-1);
         user.setValue(su.getId() + ":" + su.getLogin());
-        addField(password = createPasswordField(otp != null ? "OTP Received on Your Mobile" : "Current Password"));
+        password = createPasswordField("Current Password");
+        if(!forgot) {
+            addField(password);
+        }
         addField(newPassword = createPasswordField("New Password"));
         addField(repeatNewPassword = createPasswordField("Repeat New Password"));
         TextArea condition = new TextArea();
@@ -96,7 +103,6 @@ public class ChangePassword extends DataForm implements Transactional {
         if(!proc()) {
             if(++attempts > 2) {
                 abort();
-                getApplication().close();
             }
             return false;
         }
@@ -114,16 +120,11 @@ public class ChangePassword extends DataForm implements Transactional {
     }
 
     private boolean proc() {
-        if(otp != null) {
-            if(!value(password).equals(otp)) {
-                error("Incorrect OTP");
-                return false;
-            }
-        }
         String p = value(newPassword);
+        char[] pc = p.toCharArray();
         if(!su.isAdmin()) {
             try {
-                su.validateNewPassword(value(password).toCharArray(), p.toCharArray());
+                su.validateNewPassword(valueChars(password), pc);
             } catch (SOException e) {
                 warning(e);
                 return false;
@@ -134,17 +135,27 @@ public class ChangePassword extends DataForm implements Transactional {
             return false;
         }
         attempts = 0;
+        if(forgot) {
+            close();
+            try {
+                getTransactionManager().forgotPassword(pc);
+            } catch(Exception e) {
+                error(e);
+            }
+            getApplication().close();
+            return true;
+        }
         Transaction t = null;
         try {
             t = getTransactionManager().createTransaction();
             su.setTransaction(t);
-            su.changePassword(value(password).toCharArray(), p.toCharArray());
+            su.changePassword(valueChars(password), pc);
             t.commit();
             if(!su.verifyPasswordUpdate()) {
                 throw new SOException("Password change failed, please report to Technical Support!");
             }
             message("Password changed successfully");
-            getTransactionManager().reinit(p.toCharArray());
+            getTransactionManager().reinit(pc);
         } catch(Exception e) {
             try {
                 if(t != null) {

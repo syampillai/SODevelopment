@@ -68,6 +68,9 @@ public final class TransactionManager {
         return new PseudoTransaction(this, false);
     }
 
+    public void forgotPassword(char[] newPassword) throws Exception {
+    }
+
     public boolean verify(char[] password) {
         return false;
     }

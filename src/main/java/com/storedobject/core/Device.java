@@ -20,7 +20,11 @@ public interface Device {
     DeviceLayout getDeviceLayout();
     void setDeviceLayout(DeviceLayout layout);
     void setLocale(Locale locale);
-    boolean loggedin(Login login);
+    boolean loggedIn(Login login);
+
+    default boolean forgotPassword(Login login) {
+        return false;
+    }
 
     default void view(String caption, StreamData streamData) {
         view(caption, new StreamDataContent(streamData, caption));
