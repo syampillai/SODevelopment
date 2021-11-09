@@ -104,6 +104,10 @@ public final class SystemUser extends StoredObject implements RequiresApproval {
         return false;
     }
 
+    public boolean verify(char[] password, boolean ignoreAuthenticator) {
+        return false;
+    }
+
     public boolean verify(char[] password) {
         return false;
     }

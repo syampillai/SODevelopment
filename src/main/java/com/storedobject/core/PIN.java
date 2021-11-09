@@ -69,7 +69,7 @@ public final class PIN extends StoredObject {
 	public void resetPIN() throws Exception {
 	}
 
-	public boolean verify(char[] pin) {
+	public boolean verify(char[] pin, boolean ignoreAuthenticator) {
 		return false;
 	}
 

@@ -16,7 +16,7 @@ public class ChangeObjectPassword<T extends StoredObject> extends DataForm imple
 
     private final ObjectField<T> objectField;
     private PasswordField password, newPassword, repeatNewPassword;
-    private String pinType;
+    private final String pinType;
     private int attempts = 0;
     private PIN pin;
     private ConfirmButton deletePassword;
@@ -143,7 +143,7 @@ public class ChangeObjectPassword<T extends StoredObject> extends DataForm imple
     }
 
     private boolean isCurrentInvalid() {
-        if(pin != null && !pin.verify(value(password).toCharArray())) {
+        if(pin != null && !pin.verify(value(password).toCharArray(), false)) {
             error("Current password is incorrect!");
             return true;
         }
