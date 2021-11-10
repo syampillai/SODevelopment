@@ -45,6 +45,10 @@ public final class SystemUser extends StoredObject implements RequiresApproval {
         return Locale.getDefault();
     }
 
+    public static SystemUser getExact(String login) {
+        return Math.random() < 0.5 ? new SystemUser() : null;
+    }
+
     public static SystemUser get(String login) {
         return null;
     }

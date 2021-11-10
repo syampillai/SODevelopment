@@ -878,7 +878,8 @@ public class Application extends com.storedobject.vaadin.Application implements 
     }
 
     public final void forgotPassword(IdentityCheck identityCheck) {
-        if(identityCheck != this.identityCheck) {
+        //noinspection NewObjectEquality
+        if(identityCheck != this.identityCheck || identityCheck.getUser() != getTransactionManager().getUser()) {
             close();
             return;
         }

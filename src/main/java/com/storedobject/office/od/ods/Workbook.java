@@ -11,6 +11,7 @@ import org.apache.poi.ss.usermodel.*;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -66,7 +67,7 @@ public class Workbook implements org.apache.poi.ss.usermodel.Workbook {
 
     @Override
     public Font getFontAt(int index) {
-        return getFontAt((short)index);
+        return null;
     }
 
     @Override
@@ -115,7 +116,6 @@ public class Workbook implements org.apache.poi.ss.usermodel.Workbook {
 
     @Override
     public void removeName(Name name) {
-
     }
 
     @Override
@@ -125,12 +125,10 @@ public class Workbook implements org.apache.poi.ss.usermodel.Workbook {
 
     @Override
     public void setPrintArea(int index, String area) {
-
     }
 
     @Override
     public void setPrintArea(int i, int i1, int i2, int i3, int i4) {
-
     }
 
     @Override
@@ -140,7 +138,6 @@ public class Workbook implements org.apache.poi.ss.usermodel.Workbook {
 
     @Override
     public void removePrintArea(int i) {
-
     }
 
     @Override
@@ -179,7 +176,6 @@ public class Workbook implements org.apache.poi.ss.usermodel.Workbook {
 
     @Override
     public void setHidden(boolean b) {
-
     }
 
     @Override
@@ -194,7 +190,6 @@ public class Workbook implements org.apache.poi.ss.usermodel.Workbook {
 
     @Override
     public void setSheetHidden(int i, boolean b) {
-
     }
 
     @Override
@@ -204,17 +199,14 @@ public class Workbook implements org.apache.poi.ss.usermodel.Workbook {
 
     @Override
     public void setSheetVisibility(int index, SheetVisibility sheetVisibility) {
-
     }
 
     @Override
     public void addToolPack(UDFFinder udfFinder) {
-
     }
 
     @Override
     public void setForceFormulaRecalculation(boolean b) {
-
     }
 
     @Override
@@ -244,7 +236,6 @@ public class Workbook implements org.apache.poi.ss.usermodel.Workbook {
 
     @Override
     public void setActiveSheet(int i) {
-
     }
 
     @Override
@@ -254,22 +245,18 @@ public class Workbook implements org.apache.poi.ss.usermodel.Workbook {
 
     @Override
     public void setFirstVisibleTab(int i) {
-
     }
 
     @Override
     public void setSheetOrder(String s, int i) {
-
     }
 
     @Override
     public void setSelectedTab(int i) {
-
     }
 
     @Override
     public void setSheetName(int i, String s) {
-
     }
 
     @Override
@@ -318,7 +305,7 @@ public class Workbook implements org.apache.poi.ss.usermodel.Workbook {
 
     @Override
     public Iterator<Sheet> iterator() {
-        return null;
+        return Collections.emptyIterator();
     }
 
     public void reload() {

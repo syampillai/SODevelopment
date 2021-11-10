@@ -55,16 +55,6 @@ public interface Authenticator {
     boolean resetPassword(Id passwordOwner) throws Exception;
 
     /**
-     * Set the current transaction manager. This will be invoked before any other method is invoked. The transaction
-     * manager instance passed is not yet verified at this stage but will be verified eventually.
-     * The default implementation doesn't do anything.
-     *
-     * @param tm Transaction manager.
-     */
-    default void setTransactionManager(TransactionManager tm) {
-    }
-
-    /**
      * This method is invoked when a user is locked because of invalid login attempts.
      *
      * @param passwordOwner {@link Id} of the password owner.

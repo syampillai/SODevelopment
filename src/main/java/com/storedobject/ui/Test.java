@@ -3,32 +3,29 @@ package com.storedobject.ui;
 import com.storedobject.core.*;
 import com.storedobject.vaadin.DataForm;
 
-public class Test extends DataForm implements IdentityCheck {
+public class Test implements FallbackAuthenticator {
 
-    private SystemUser user;
-
-    public Test() {
-        super("Test");
-        RateField rf;
-        addField(rf = new RateField("Rate"));
-        Rate r = new Rate();
-        rf.setValue(r);
+    @Override
+    public boolean login(Id id, char[] chars) throws Exception {
+        System.err.println("Id: " + id);
+        if(id.toString().equals("87726")) {
+            System.err.println("Here");
+            return true;
+        }
+        Thread.dumpStack();
+        return false;
     }
 
     @Override
-    protected boolean process() {
-        close();
-        Application.get().forgotPassword(this);
+    public boolean login(Id passwordOwner, char[] password, int authenticatorCode) throws Exception {
+        if(authenticatorCode == -1 && password == null) {
+            return true;
+        }
+        return login(passwordOwner, password);
+    }
+
+    @Override
+    public boolean exists(Id passwordOwner) {
         return true;
-    }
-
-    @Override
-    public void setUser(SystemUser systemUser) {
-        this.user = systemUser;
-    }
-
-    @Override
-    public SystemUser getUser() {
-        return user;
     }
 }
