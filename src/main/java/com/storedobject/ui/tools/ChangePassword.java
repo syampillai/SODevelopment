@@ -33,7 +33,7 @@ public class ChangePassword extends DataForm implements Transactional {
         addConstructedListener(o -> fConstructed());
     }
 
-    public ChangePassword(SystemUser su) {
+    protected ChangePassword(SystemUser su) {
         super("Set New Password");
         this.su = su;
         this.forgot = true;
@@ -142,7 +142,6 @@ public class ChangePassword extends DataForm implements Transactional {
             } catch(Exception e) {
                 error(e);
             }
-            getApplication().close();
             return true;
         }
         Transaction t = null;

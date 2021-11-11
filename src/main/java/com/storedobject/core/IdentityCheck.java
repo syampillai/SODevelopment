@@ -58,4 +58,34 @@ public interface IdentityCheck {
     default String getOTPTemplate() {
         return null;
     }
+
+    /**
+     * This method is invoked when a "password change" is carried out successfully.
+     */
+    default void passwordChangeSucceeded() {
+    }
+
+    /**
+     * Get the message to be shown when a "password change" is done successfully.
+     *
+     * @return Message to display.
+     */
+    default String getSuccessMessage() {
+        return null;
+    }
+
+    /**
+     * This method is invoked when a "password change" fails.
+     */
+    default void passwordChangeFailed() {
+    }
+
+    /**
+     * Get the message to be shown when a "password change" fails.
+     *
+     * @return Message to display.
+     */
+    default String getFailureMessage() {
+        return null;
+    }
 }

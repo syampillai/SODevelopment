@@ -1,31 +1,33 @@
 package com.storedobject.ui;
 
-import com.storedobject.core.*;
+import com.storedobject.core.FallbackAuthenticator;
+import com.storedobject.core.Id;
+import com.storedobject.core.IdentityCheck;
+import com.storedobject.core.SystemUser;
 import com.storedobject.vaadin.DataForm;
 
-public class Test implements FallbackAuthenticator {
+public class Test extends DataForm implements IdentityCheck {
 
-    @Override
-    public boolean login(Id id, char[] chars) throws Exception {
-        System.err.println("Id: " + id);
-        if(id.toString().equals("87726")) {
-            System.err.println("Here");
-            return true;
-        }
-        Thread.dumpStack();
-        return false;
+    private SystemUser su;
+
+    public Test() {
+        super("New Pass");
     }
 
     @Override
-    public boolean login(Id passwordOwner, char[] password, int authenticatorCode) throws Exception {
-        if(authenticatorCode == -1 && password == null) {
-            return true;
-        }
-        return login(passwordOwner, password);
-    }
-
-    @Override
-    public boolean exists(Id passwordOwner) {
+    protected boolean process() {
+        close();
+        Application.get().forgotPassword(this);
         return true;
+    }
+
+    @Override
+    public void setUser(SystemUser systemUser) {
+        su = systemUser;
+    }
+
+    @Override
+    public SystemUser getUser() {
+        return su;
     }
 }

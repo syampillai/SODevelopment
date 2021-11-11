@@ -32,7 +32,7 @@ import java.util.function.Consumer;
 
 public class Application extends com.storedobject.vaadin.Application implements Device, RunningLogic, RequiresApproval {
 
-    private static final String VERSION = "21.0.3";
+    private static final String VERSION = "21.0.4";
     private static final String COMPACT_STYLES =
             """
                     --lumo-size-xl: 3rem;
@@ -868,6 +868,7 @@ public class Application extends com.storedobject.vaadin.Application implements 
                 } else if(identityCheck instanceof Runnable runnable) {
                     runnable.run();
                 }
+                closeMenu();
             }
         } catch(Throwable e) {
             log(e);
@@ -878,7 +879,6 @@ public class Application extends com.storedobject.vaadin.Application implements 
     }
 
     public final void forgotPassword(IdentityCheck identityCheck) {
-        //noinspection NewObjectEquality
         if(identityCheck != this.identityCheck || identityCheck.getUser() != getTransactionManager().getUser()) {
             close();
             return;
@@ -890,6 +890,7 @@ public class Application extends com.storedobject.vaadin.Application implements 
             verifyOTP.setTemplateName(otpTemplate);
         }
         verifyOTP.execute();
+        closeMenu();
     }
 
     private class SetNewPassword extends com.storedobject.ui.tools.ChangePassword {
@@ -902,13 +903,36 @@ public class Application extends com.storedobject.vaadin.Application implements 
         protected boolean process() {
             if(super.process()) {
                 close();
-                Application.this.close();
+                identityCheck.passwordChangeSucceeded();
+                String m = identityCheck.getSuccessMessage();
+                if(m == null) {
+                    m = "New Password is set successfully! Please log in again to start using the application!!";
+                }
+                InformationMessage.execute(new ELabel(m, "blue"), Application.this::close);
+                closeMenu();
                 return true;
             }
             return false;
         }
-    }
 
+        @Override
+        protected void execute(View parent, boolean doNotLock) {
+            super.execute(parent, doNotLock);
+            closeMenu();
+        }
+
+        @Override
+        public void abort() {
+            close();
+            identityCheck.passwordChangeFailed();
+            String m = identityCheck.getFailureMessage();
+            if(m == null) {
+                m = "Password not set! Please contact Technical Support for any help!!";
+            }
+            InformationMessage.execute(new ELabel(m, "red"), Application.this::close);
+            closeMenu();
+        }
+    }
 
     public static FilterProvider getUserVisibility(String action) {
         try {
