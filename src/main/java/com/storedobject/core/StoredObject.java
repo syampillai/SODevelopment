@@ -796,9 +796,10 @@ public abstract class StoredObject implements Displayable {
         return list(null, objectClass, condition, order);
     }
 
-    public static <T extends StoredObject> ObjectIterator<T> list(Transaction transaction, Class<T> objectClass, String condition, String order) {
+    public static <T extends StoredObject> ObjectIterator<T> list(Transaction transaction, Class<T> objectClass,
+                                                                  String condition, String order) {
         ClassAttribute<T> ca = StoredObjectUtility.classAttribute(objectClass);
-        return list(transaction, ca, "T.T_Family=" + condition, order);
+        return list(transaction, StoredObjectUtility.classAttribute(objectClass), condition, order, false);
     }
 
     public static <T extends StoredObject> ObjectIterator<T> list(Class<T> objectClass, boolean any) {
@@ -817,15 +818,13 @@ public abstract class StoredObject implements Displayable {
         return list(null, objectClass, condition, order, any);
     }
 
-    public static <T extends StoredObject> ObjectIterator<T> list(Transaction transaction, Class<T> objectClass, String condition, String order, boolean any) {
-        if(!any) {
-            return list(transaction, objectClass, condition, order);
-        }
-        return list(transaction, StoredObjectUtility.classAttribute(objectClass), condition, order);
+    public static <T extends StoredObject> ObjectIterator<T> list(Transaction transaction, Class<T> objectClass,
+                                                                  String condition, String order, boolean any) {
+        return list(transaction, StoredObjectUtility.classAttribute(objectClass), condition, order, any);
     }
 
-    public static <T extends StoredObject> ObjectIterator<T> list(Transaction transaction, ClassAttribute<T> ca, String condition,
-                                                                  String order) {
+    public static <T extends StoredObject> ObjectIterator<T> list(Transaction transaction, ClassAttribute<T> ca,
+                                                                  String condition, String order, boolean any) {
         return ObjectIterator.create();
     }
 

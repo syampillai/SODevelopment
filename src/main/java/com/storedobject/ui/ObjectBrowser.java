@@ -605,8 +605,7 @@ public class ObjectBrowser<T extends StoredObject> extends ObjectGrid<T> impleme
             cancelRowEdit();
         }
         if(searchBuilder == null) {
-            clear(false);
-            load();
+            filteredFullReload();
         } else {
             if(searchBuilder instanceof Form && !((Form)searchBuilder).commit()) {
                 return;
@@ -616,17 +615,7 @@ public class ObjectBrowser<T extends StoredObject> extends ObjectGrid<T> impleme
                 if(!again && isFullyLoaded()) {
                     filter(null);
                 } else {
-                    clear(false);
-                    filter = anchorFilter;
-                    String ef = extraFilter.getFilter();
-                    if(ef != null) {
-                        if(filter == null) {
-                            filter = ef;
-                        } else {
-                            filter += " AND (" + ef + ")";
-                        }
-                    }
-                    load(filter);
+                    filteredFullReload();
                 }
             } else {
                 Predicate<T> filterFunction = null;
@@ -650,6 +639,21 @@ public class ObjectBrowser<T extends StoredObject> extends ObjectGrid<T> impleme
                 }
             }
         }
+    }
+
+    // Invoked from reload(boolean)
+    private void filteredFullReload() {
+        clear(false);
+        String filter = anchorFilter; // Made sure that this is already set in reload(boolean)
+        String ef = extraFilter.getFilter();
+        if(ef != null) {
+            if(filter == null) {
+                filter = ef;
+            } else {
+                filter += " AND (" + ef + ")";
+            }
+        }
+        load(filter);
     }
 
     public void setExtraFilter(FilterProvider filterProvider) {

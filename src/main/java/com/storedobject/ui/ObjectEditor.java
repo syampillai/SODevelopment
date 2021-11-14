@@ -2325,13 +2325,11 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
                     if(s.length() > 0) {
                         s.append(" AND ");
                     }
-                    s.append(fieldName).append("=");
                     if(v instanceof String) {
-                        s.append('\'');
-                    }
-                    s.append(v);
-                    if(v instanceof String) {
-                        s.append('\'');
+                        s.append("lower(").append(fieldName).append(")='").append(((String) v).toLowerCase())
+                                .append('\'');
+                    } else {
+                        s.append(fieldName).append("=").append(v);
                     }
                 }
             });
