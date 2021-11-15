@@ -439,4 +439,23 @@ public class PDFCell extends PDFRectangle implements PDFElement {
      */
     public void setRowSpan(int rows) {
     }
+
+    /**
+     * Set a background image in this cell (The cell content will go above this image).
+     *
+     * @param image Background image to set.
+     */
+    public void setBackgroundImage(PDFImage image) {
+        setBackgroundImage(image, false);
+    }
+
+    /**
+     * Set a background image in this cell (The cell content will go above this image).
+     *
+     * @param image Background image to set.
+     * @param scale Whether to scale image to the cell size or not. If <code>false</code> is passed, it will
+     *              make sure that the cell has at least the height of the image.
+     */
+    public void setBackgroundImage(PDFImage image, boolean scale) {
+    }
 }

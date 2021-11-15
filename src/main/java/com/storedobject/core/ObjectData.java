@@ -4,6 +4,8 @@ import com.storedobject.common.DataSet;
 import com.storedobject.common.StringList;
 
 import java.lang.reflect.Method;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
 
 public class ObjectData<T extends StoredObject> implements DataSet {
 
@@ -64,6 +66,13 @@ public class ObjectData<T extends StoredObject> implements DataSet {
 
 	public void setObject(T object) {
 		this.object = object;
+	}
+
+	public void add(String key, Function<T, ?> getFunction) {
+		add(key, getFunction, null);
+	}
+
+	public void add(String key, Function<T, ?> getFunction, BiConsumer<T, Object> setFunction) {
 	}
 
 	@Override

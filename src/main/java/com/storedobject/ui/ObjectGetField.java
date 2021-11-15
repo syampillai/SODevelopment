@@ -242,7 +242,8 @@ public class ObjectGetField<T extends StoredObject> extends AbstractObjectField<
 
     private ObjectIterator<T> filteredList(String text) {
         try {
-            return filteredList(getProvider().listTextObjects(Application.get().getTransactionManager().getEntity(), text));
+            return filteredList(getProvider().listTextObjects(Application.get()
+                    .getTransactionManager().getEntity(), text));
         } catch (Exception e) {
             return ObjectIterator.create();
         }

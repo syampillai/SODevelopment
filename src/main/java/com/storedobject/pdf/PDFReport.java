@@ -20,6 +20,8 @@ public abstract class PDFReport extends PDF {
 	private final Device device;
 	private Object titleText;
 	private final boolean printLogo;
+	private PDFTable titleTable;
+	private Text titleCellText;
 
 	/**
 	 * Constructor.
@@ -181,54 +183,114 @@ public abstract class PDFReport extends PDF {
 		if(printLetterhead()) {
 			return super.getTitle();
 		}
+		int p = getLogoPosition();
 		PDFImage left = null, center = null, right = null;
 		PDFTable table;
 		if(printLogo) {
-			switch(getLogoPosition()) {
-				case 0 -> {
+			switch(p) {
+				case 0, 6 -> {
 					left = getLogo();
 					right = getProductLogo();
 				}
-				case 1 -> left = getLogo();
-				case 2 -> {
+				case 1, 7 -> left = getLogo();
+				case 2, 8 -> {
 					left = getProductLogo();
 					right = getLogo();
 				}
-				case 3 -> right = getLogo();
+				case 3, 9 -> right = getLogo();
 				case 4 -> center = getLogo();
 			}
 		}
 		PDFCell c;
 		float m = getPageSize().getWidth();
 		if(left != null && right != null) {
-			table = createTable(3, m < 800 ? 20 : 30, 3);
+			if(p < 5) {
+				table = createTable(3, m < 800 ? 20 : 30, 3);
+			} else {
+				if(p == 6) {
+					table = createTable(m < 800 ? 23 : 33, 3);
+				} else { // p == 8
+					table = createTable(3, m < 800 ? 23 : 33);
+				}
+			}
 		} else if(left != null) {
-			table = createTable(3, m < 800 ? 23 : 33);
+			if(p < 5) {
+				table = createTable(3, m < 800 ? 23 : 33);
+			} else { // p == 7
+				table = createTable(1);
+			}
 		} else if(right != null) {
-			table = createTable(m < 800 ? 23 : 33, 3);
+			if(p < 5) {
+				table = createTable(m < 800 ? 23 : 33, 3);
+			} else { // p == 9
+				table = createTable(1);
+			}
 		} else {
+			p = 5;
 			table = createTable(1);
 		}
-		if(center != null) {
-			c = createCenteredCell(center);
+		PDFTable tt;
+		if(p <= 5) { // Logo based or none
+			if(center != null) {
+				c = createCenteredCell(center);
+				c.setBorder(0);
+				table.addCell(c);
+			}
+			if(left != null) {
+				c = createCenteredCell(left);
+				c.setBorder(0);
+				c.setPaddingRight(3);
+				table.addCell(c);
+			}
+			tt = getTitleTable();
+			c = createCenteredCell(Objects.requireNonNullElse(tt, ""));
 			c.setBorder(0);
 			table.addCell(c);
-		}
-		if(left != null) {
-			c = createCenteredCell(left);
+			if(right != null) {
+				c = createCenteredCell(right);
+				c.setBorder(0);
+				c.setPaddingLeft(3);
+				table.addCell(c);
+			}
+		} else { // Image based
+			if(left != null && p == 8) {
+				c = createCenteredCell(left);
+				c.setBorder(0);
+				c.setPaddingRight(3);
+				table.addCell(c);
+				left = right;
+			}
+			if(left == null) {
+				left = right;
+				right = null;
+			}
+			Function<PDFCell, PDFCell> nb =
+					cell -> {
+						cell.setBorder(0);
+						return cell;
+					};
+			titleTable = table;
+			tt = getTitleTable();
+			if(tt == titleTable && titleCellText != null) {
+				c = createCell(titleCellText, p == 6 || p == 7, nb);
+			} else {
+				c = createCell("");
+			}
+			c.setBackgroundImage(left);
 			c.setBorder(0);
-			c.setPaddingRight(3);
 			table.addCell(c);
-		}
-		PDFTable tt = getTitleTable();
-		c = createCenteredCell(Objects.requireNonNullElse(tt, ""));
-		c.setBorder(0);
-		table.addCell(c);
-		if(right != null) {
-			c = createCenteredCell(right);
-			c.setBorder(0);
-			c.setPaddingLeft(3);
-			table.addCell(c);
+			if(right != null && p == 6) {
+				c = createCenteredCell(right);
+				c.setBorder(0);
+				c.setPaddingLeft(3);
+				table.addCell(c);
+			}
+			if(!(tt == titleTable && titleCellText != null)) {
+				c = createCenteredCell(Objects.requireNonNullElse(tt, ""));
+				c.setBorder(0);
+				c.setColumnSpan(table.getNumberOfColumns());
+				table.addCell(c);
+			}
 		}
 		addBlankRow(table);
 		return table;
@@ -257,23 +319,33 @@ public abstract class PDFReport extends PDF {
 	}
 
 	/**
-	 * Get the "title table" part of the report. It builds a {@link PDFTable} from the "title text" part returned
+	 * <p>Get the "title table" part of the report. It builds a {@link PDFTable} from the "title text" part returned
 	 * by the {@link #getTitleText()} method. The {@link #getTitle()} method uses the return value of this
-	 * to build the "title" part of the report.
+	 * to build the "title" part of the report.</p>
+	 * <p>Typically, you may override this method and return one of the createTitleTable methods</p>
+	 * <p>Example:</p>
+	 * <pre>{@code
+	 *   public PDFTable getTitleTable() {
+	 *       return createTitleTable("Stock Report", "Dated: Nov 15, 2021", "Store: Main Store");
+	 *   }
+	 * }</pre>
 	 *
 	 * @return "Title table" part of the report.
 	 */
 	public PDFTable getTitleTable() {
 		Object title = getTitleText();
 		if(title == null) {
-			return null;
+			return titleTable;
 		}
 		if(title instanceof PDFTable) {
 			return (PDFTable)title;
 		}
 		PDFCell c;
-		if(title instanceof String) {
-			c = createCenteredCell(createTitleText((String)title, 14));
+		if(title instanceof String titleS) {
+			if(titleTable != null) {
+				return createTitleTable(titleS);
+			}
+			c = createCenteredCell(createTitleText(titleS, 14));
 		} else {
 			c = createCell(title);
 			c.setHorizontalAlignment(PDFElement.ALIGN_CENTER);
@@ -283,6 +355,30 @@ public abstract class PDFReport extends PDF {
 		PDFTable t = createTable(1);
 		t.addCell(c);
 		return t;
+	}
+
+	/**
+	 * This is a helper method to create a "title table" from a list of captions. The
+	 * {@link #getTitleTable()} can use this to create a "title table" quickly with no {@link HasContacts} details
+	 * because the address part of the "letter head" is already in the header-image.
+	 *
+	 * @param captions Caption to be printed. The fist caption will be more highlighted than the subsequent ones.
+	 * @return A table instance that can be used as a "title table".
+	 */
+	public PDFTable createTitleTable(Iterable<String> captions) {
+		return createTitleTable(null, captions);
+	}
+
+	/**
+	 * This is a helper method to create a "title table" from a list of captions. The
+	 * {@link #getTitleTable()} can use this to create a "title table" quickly with no {@link HasContacts} details
+	 * because the address part of the "letter head" is already in the header-image.
+	 *
+	 * @param captions Caption to be printed. The fist caption will be more highlighted than the subsequent ones.
+	 * @return A table instance that can be used as a "title table".
+	 */
+	public PDFTable createTitleTable(String... captions) {
+		return createTitleTable(null, captions);
 	}
 
 	/**
@@ -328,8 +424,12 @@ public abstract class PDFReport extends PDF {
 					c.setBorder(0);
 					return c;
 				};
-		PDFTable table = createTable(40, 60);
-		table.setBorderWidth(0);
+		PDFTable table = titleTable == null ? createTable(40, 60) : titleTable;
+		if(titleTable == null) {
+			table.setBorderWidth(0);
+		} else {
+			hasContacts = null;
+		}
 		Text text;
 		if(hasContacts != null) {
 			text = new Text(hasContacts.getName(), 14, PDFFont.BOLD);
@@ -351,9 +451,11 @@ public abstract class PDFReport extends PDF {
 		} else {
 			text = new Text();
 		}
-		table.addCell(createCell(text, nb));
+		if(titleTable == null) {
+			table.addCell(createCell(text, nb));
+		}
 		if(captions == null || captions.length == 0) {
-			table.addCell(createCell(""), nb);
+			text = new Text();
 		} else {
 			text = new Text(captions[0], 12, PDFFont.BOLD).newLine();
 			for(int i = 1; i < captions.length; i++) {
@@ -362,14 +464,18 @@ public abstract class PDFReport extends PDF {
 				}
 				text.newLine(true).append(captions[i], 10, PDFFont.BOLD);
 			}
+		}
+		if(titleTable == null) {
 			table.addCell(createCell(text, true), nb);
+		} else {
+			titleCellText = text;
 		}
 		return table;
 	}
 
 	@Override
 	public void dumpError(Throwable error) {
-		getDevice().log(error);
+		log(error);
 	}
 
 	/**

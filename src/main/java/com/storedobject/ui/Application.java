@@ -334,6 +334,17 @@ public class Application extends com.storedobject.vaadin.Application implements 
         if(server == null) {
             return;
         }
+        String exit = ApplicationServer.getGlobalProperty("application.exit.site", null, true);
+        if(exit == null) {
+            exit = layout == null ? "" : layout.getExitSite().trim();
+        }
+        close(exit);
+    }
+
+    public void close(final String exitSite) {
+        if(server == null) {
+            return;
+        }
         closeTimer();
         ArrayList<View> views = new ArrayList<>();
         getActiveViews().forEach(views::add);
@@ -351,10 +362,6 @@ public class Application extends com.storedobject.vaadin.Application implements 
                 }
             }
         }
-        String exit = ApplicationServer.getGlobalProperty("application.exit.site", null, true);
-        if(exit == null) {
-            exit = layout == null ? "" : layout.getExitSite().trim();
-        }
         ApplicationServer as = server;
         server = null;
         if(as == null) {
@@ -371,15 +378,15 @@ public class Application extends com.storedobject.vaadin.Application implements 
             return;
         }
         StringBuilder script = new StringBuilder("navigator.credentials.preventSilentAccess();");
-        if(exit.isEmpty()) {
+        if(exitSite.isEmpty()) {
             script.append("window.close();");
         }
         if(isSpeakerOn()) {
             script.append("window.speechSynthesis.speak(new SpeechSynthesisUtterance('Goodbye'));");
         }
         ui.getPage().executeJs(script.toString());
-        if(!exit.isEmpty()) {
-            ui.getPage().setLocation(exit);
+        if(!exitSite.isEmpty()) {
+            ui.getPage().setLocation(exitSite);
         }
     }
 

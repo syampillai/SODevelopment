@@ -31,13 +31,15 @@ public class LogicParser {
         if(JavaClassLoader.exists(p)) {
             return p;
         }
-        p = SO_DOT + DEVICE_TAG + ".common" + c;
-        if(JavaClassLoader.exists(p)) {
-            return p;
-        }
-        p = SO_DOT + DEVICE_TAG + ".tools" + c;
-        if(JavaClassLoader.exists(p)) {
-            return p;
+        if(objectName.startsWith(SO_DOT)) {
+            p = SO_DOT + DEVICE_TAG + ".common" + c;
+            if(JavaClassLoader.exists(p)) {
+                return p;
+            }
+            p = SO_DOT + DEVICE_TAG + ".tools" + c;
+            if(JavaClassLoader.exists(p)) {
+                return p;
+            }
         }
         if("Editor".equals(tag)) {
             if(objectClass == null) {

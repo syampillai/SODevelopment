@@ -1610,6 +1610,24 @@ public abstract class PDF implements java.io.Closeable, com.storedobject.core.Co
         protected PDFCell createValueCell(String attribute, Object value) {
             return createCell(createCell(value));
         }
+
+        /**
+         * By invoking this method, the output can be made available as stringified (decoded) values.
+         * <p>Note: This needs to be invoked before adding any objects to the table</p>
+         */
+        public void stringifyValues() {
+        }
+
+        /**
+         * Configure the given attribute to use the supplied function for obtaining its values instead of the
+         * method of the object's class.
+         * <p>Note: This needs to be invoked before adding any objects to the table</p>
+         *
+         * @param attribute Name of the attribute to configure.
+         * @param valueFunction Function to obtain the attribute value.
+         */
+        public void configureAttribute(String attribute, Function<T, ?> valueFunction) {
+        }
     }
 
     /**
@@ -1668,6 +1686,24 @@ public abstract class PDF implements java.io.Closeable, com.storedobject.core.Co
          */
         protected PDFCell createValueCell(String attribute, Object value) {
             return createCell(createCell(value));
+        }
+
+        /**
+         * By invoking this method, the output can be made available as stringified (decoded) values.
+         * <p>Note: This needs to be invoked before adding any objects to the table</p>
+         */
+        public void stringifyValues() {
+        }
+
+        /**
+         * Configure the given attribute to use the supplied function for obtaining its values instead of the
+         * method of the object's class.
+         * <p>Note: This needs to be invoked before adding any objects to the table</p>
+         *
+         * @param attribute Name of the attribute to configure.
+         * @param valueFunction Function to obtain the attribute value.
+         */
+        public void configureAttribute(String attribute, Function<T, ?> valueFunction) {
         }
     }
 

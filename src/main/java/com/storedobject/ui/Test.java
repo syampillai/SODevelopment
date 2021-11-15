@@ -1,33 +1,26 @@
 package com.storedobject.ui;
 
-import com.storedobject.core.FallbackAuthenticator;
-import com.storedobject.core.Id;
-import com.storedobject.core.IdentityCheck;
-import com.storedobject.core.SystemUser;
+import com.storedobject.common.Barcode;
+import com.storedobject.core.*;
+import com.storedobject.pdf.*;
 import com.storedobject.vaadin.DataForm;
 
-public class Test extends DataForm implements IdentityCheck {
-
-    private SystemUser su;
+public class Test extends PDFReport {
 
     public Test() {
-        super("New Pass");
+        super(Application.get());
     }
 
     @Override
-    protected boolean process() {
-        close();
-        Application.get().forgotPassword(this);
-        return true;
+    public PDFTable getTitleTable() {
+        return createTitleTable("Stock Report", "Store: Main Store", "As of today");
     }
 
     @Override
-    public void setUser(SystemUser systemUser) {
-        su = systemUser;
-    }
-
-    @Override
-    public SystemUser getUser() {
-        return su;
+    public void generateContent() throws Exception {
+        ObjectTable<Person> p = new ObjectTable<>(Person.class);
+        p.configureAttribute("LastName", o -> "Who cares?");
+        StoredObject.list(Person.class).forEach(p::addObject);
+        add(p);
     }
 }
