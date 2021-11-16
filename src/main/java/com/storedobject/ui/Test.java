@@ -1,9 +1,9 @@
 package com.storedobject.ui;
 
-import com.storedobject.common.Barcode;
-import com.storedobject.core.*;
-import com.storedobject.pdf.*;
-import com.storedobject.vaadin.DataForm;
+import com.storedobject.core.Person;
+import com.storedobject.core.StoredObject;
+import com.storedobject.pdf.PDFReport;
+import com.storedobject.pdf.PDFTable;
 
 public class Test extends PDFReport {
 
