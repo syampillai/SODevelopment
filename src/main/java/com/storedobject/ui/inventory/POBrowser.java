@@ -195,6 +195,21 @@ public class POBrowser<T extends InventoryPO> extends ObjectBrowser<T> implement
         prependHeader().join().setComponent(storeDisplay);
     }
 
+    /**
+     * Set a store so that it will not be selectable any more.
+     *
+     * @param store Store to set.
+     */
+    public void setStore(InventoryStore store) {
+        ObjectField<?> storeField = (ObjectField<?>) editor().getAnchorField("Store");
+        storeField.setReadOnly(store != null);
+        if(store != null) {
+            storeField.setObject(store);
+            editor().executeAnchorForm();
+        }
+        switchStore.setVisible(store == null);
+    }
+
     private POEditor<T> editor() {
         if(editor == null) {
             ObjectEditor<T> oe = getObjectEditor();

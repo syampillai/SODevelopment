@@ -146,6 +146,7 @@ class ExtraInfoObjectField<T extends StoredObject> extends CustomField<T>
                         for(ObjectLinkField<?> linkField : formEditor.linkFields()) {
                             linkField.getValue().copy().attach();
                         }
+                        masterView.savingExtraInfo(object);
                         formEditor.validateData();
                         object.validateData(masterView.getTransactionManager());
                         objectId = object.save(masterView.getTransaction(true));

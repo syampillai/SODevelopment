@@ -160,19 +160,15 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
         });
     }
 
-    private void setStore(InventoryStore store) {
-        switchStore.setVisible(false);
-        resetAnchor();
-        if(store == null) {
-            return;
+    public void setStore(InventoryStore store) {
+        ObjectField<?> storeField = (ObjectField<?>) editor.getAnchorField("Store");
+        storeField.setReadOnly(store != null);
+        if(store != null) {
+            storeField.setObject(store);
+            editor.executeAnchorForm();
         }
-        HasValue<?, ?> storeField = editor.getAnchorField("Store");
-        //noinspection unchecked
-        ((IdInput<InventoryStore>)storeField).setValue(store);
-        storeField.setReadOnly(true);
+        switchStore.setVisible(store == null);
         setExtraFilter("Status<2 AND Type=" + type);
-        editor.store = store;
-        displayStore();
     }
 
     public void processGRN(InventoryGRN grn) {
@@ -310,14 +306,51 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
         }
     }
 
-    private static class GRNEditor extends ObjectEditor<InventoryGRN> {
+    /**
+     * This is invoked when an "Extra Information" instance is created. At this point, you may set your own values
+     * if required.
+     *
+     * @param extraInfo Newly created "Extra Information" instance.
+     */
+    protected void extraInfoCreated(StoredObject extraInfo) {
+    }
+
+    /**
+     * This is invoked when an existing "Extra Information" instance is loaded for the current GRN.
+     * At this point, you may set your own values if required.
+     *
+     * @param extraInfo The "Extra Information" instance loaded now.
+     */
+    protected void extraInfoLoaded(StoredObject extraInfo) {
+    }
+
+    /**
+     * This is invoked when an existing "Extra Information" instance is being saved.
+     * At this point, you may set your own values if required. ({@link ObjectEditor#validateData()} and
+     * {@link StoredObject#validateData(TransactionManager)} are be invoked after this).
+     * <p>If an exception is thrown from this method, the save process will not happen.</p>
+     *
+     * @param extraInfo The "Extra Information" instance to be saved.
+     * @throws Exception if any validation error to be notified.
+     */
+    protected void savingExtraInfo(StoredObject extraInfo) throws Exception {
+    }
+
+    /**
+     * This is invoked whenever the GRN status is changed.
+     *
+     * @param grn Current GRN.
+     */
+    protected void statusChanged(InventoryGRN grn) {
+    }
+
+    private class GRNEditor extends ObjectEditor<InventoryGRN> {
 
         private ObjectEditorProvider editorProvider = new ObjectEditorProvider() {};
         private final int type;
         private ObjectField<Entity> supplierField;
         private ObjectLinkField<InventoryGRNItem> grnItemsField;
         private GRNItemGrid grnItemGrid;
-        private ObjectField<InventoryStore> storeField;
         private InventoryStore store;
         private final NewGRNItemForm newGRNItemForm = new NewGRNItemForm();
         private final Button process = new Button("Mark as Inspected", VaadinIcon.CHECK, e -> process());
@@ -356,7 +389,10 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
         protected void formConstructed() {
             super.formConstructed();
             add.setVisible(false);
-            setFieldReadOnly("ReferenceNumber");
+            setFieldReadOnly("ReferenceNumber", "Items.l");
+            if(edit != null) {
+                edit.setVisible(getExtraInfoField() != null);
+            }
         }
 
         @Override
@@ -366,15 +402,6 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
                 return supplierField;
             }
             return super.createField(fieldName, label);
-        }
-
-        @Override
-        protected void customizeField(String fieldName, HasValue<?, ?> field) {
-            if("Store".equals(fieldName)) {
-                //noinspection unchecked
-                storeField = (ObjectField<InventoryStore>) field;
-            }
-            super.customizeField(fieldName, field);
         }
 
         @SuppressWarnings("unchecked")
@@ -391,7 +418,7 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
         @Override
         protected void anchorsSet() throws Exception {
             super.anchorsSet();
-            store = storeField.getObject();
+            store = (InventoryStore) ((ObjectField<?>)getAnchorField("Store")).getObject();
             newGRNItemForm.bField.setStore(store);
             if(grnItemGrid.binEditor != null) {
                 grnItemGrid.binEditor.binField.setStore(store);
@@ -555,6 +582,7 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
                     close();
                 }
             }
+            statusChanged(grn);
         }
 
         @Override
@@ -599,6 +627,21 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
         public void editingCancelled() {
             super.editingCancelled();
             enableExtraButtons();
+        }
+
+        @Override
+        public void extraInfoCreated(StoredObject extraInfo) {
+            GRN.this.extraInfoCreated(extraInfo);
+        }
+
+        @Override
+        public void extraInfoLoaded(StoredObject extraInfo) {
+            GRN.this.extraInfoLoaded(extraInfo);
+        }
+
+        @Override
+        public void savingExtraInfo(StoredObject extraInfo) throws Exception {
+            GRN.this.savingExtraInfo(extraInfo);
         }
 
         private class GRNItemGrid extends DetailLinkGrid<InventoryGRNItem> {
@@ -725,7 +768,7 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
                     itemEditor = null;
                 }
                 if(itemEditor == null) {
-                    itemEditor = ObjectEditor.create(item.getClass());
+                    itemEditor = editorProvider.createEditor(item.getClass());
                     itemEditor.setCaption("Inspect Item");
                     itemEditor.setFieldHidden("Location");
                     itemEditor.setFieldReadOnly("Quantity", "Cost", "Location", "PartNumber", "SerialNumber");

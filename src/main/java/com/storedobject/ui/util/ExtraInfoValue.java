@@ -3,6 +3,7 @@ package com.storedobject.ui.util;
 import com.storedobject.common.SORuntimeException;
 import com.storedobject.core.StoredObject;
 import com.storedobject.core.StoredObjectLink;
+import com.storedobject.ui.ObjectEditor;
 
 import java.util.Objects;
 import java.util.stream.Stream;
@@ -39,6 +40,7 @@ public class ExtraInfoValue<T extends StoredObject> implements StoredObjectLink<
         if(info == null) {
             try {
                 info = extraInfo.infoClass.getDeclaredConstructor().newInstance();
+                ((ObjectEditor<?>)extraInfo.field.getDependentView()).extraInfoCreated(info);
                 status = 0;
             } catch(Throwable ignored) {
             }
@@ -47,6 +49,7 @@ public class ExtraInfoValue<T extends StoredObject> implements StoredObjectLink<
             status = -1;
             try {
                 old = info.stringify();
+                ((ObjectEditor<?>)extraInfo.field.getDependentView()).extraInfoLoaded(info);
             } catch(Exception e) {
                 throw new SORuntimeException(e);
             }

@@ -2503,4 +2503,34 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
         }
         searchFilter.setFilterProvider(filter);
     }
+
+    /**
+     * This is invoked when an "Extra Information" instance is created. At this point, you may set your own values
+     * if required.
+     *
+     * @param extraInfo Newly created "Extra Information" instance.
+     */
+    public void extraInfoCreated(StoredObject extraInfo) {
+    }
+
+    /**
+     * This is invoked when an existing "Extra Information" instance is loaded for the current object.
+     * At this point, you may set your own values if required.
+     *
+     * @param extraInfo The "Extra Information" instance loaded now.
+     */
+    public void extraInfoLoaded(StoredObject extraInfo) {
+    }
+
+    /**
+     * This is invoked when an existing "Extra Information" instance is being saved.
+     * At this point, you may set your own values if required. ({@link ObjectEditor#validateData()} and
+     * {@link StoredObject#validateData(TransactionManager)} are be invoked after this).
+     * <p>If an exception is thrown from this method, the save process will not happen.</p>
+     *
+     * @param extraInfo The "Extra Information" instance to be saved.
+     * @throws Exception if any validation error to be notified.
+     */
+    public void savingExtraInfo(StoredObject extraInfo) throws Exception {
+    }
 }

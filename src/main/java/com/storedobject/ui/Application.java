@@ -378,14 +378,14 @@ public class Application extends com.storedobject.vaadin.Application implements 
             return;
         }
         StringBuilder script = new StringBuilder("navigator.credentials.preventSilentAccess();");
-        if(exitSite.isEmpty()) {
+        if(exitSite == null || exitSite.isEmpty()) {
             script.append("window.close();");
         }
         if(isSpeakerOn()) {
             script.append("window.speechSynthesis.speak(new SpeechSynthesisUtterance('Goodbye'));");
         }
         ui.getPage().executeJs(script.toString());
-        if(!exitSite.isEmpty()) {
+        if(exitSite != null && !exitSite.isEmpty()) {
             ui.getPage().setLocation(exitSite);
         }
     }
@@ -1407,7 +1407,7 @@ public class Application extends com.storedobject.vaadin.Application implements 
     private void selectEntity(boolean welcomePassword, boolean passwordExpired) {
         ArrayList<SystemEntity> entities = new ArrayList<>();
         SystemUser su = getTransactionManager().getUser();
-        if(su.isSS() || su.isAppAdmin() || su.isAdmin()) {
+        if(su.isAppAdmin() || su.isAdmin()) {
             StoredObject.list(SystemEntity.class, null,"Id").collectAll(entities);
         } else {
             su.listLinks(SystemEntity.class, null, "Id").collectAll(entities);
