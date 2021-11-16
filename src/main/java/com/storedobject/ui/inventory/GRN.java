@@ -140,7 +140,8 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
         this(type, InventoryItemType.class, actions, caption, store);
     }
 
-    private GRN(int type, Class<? extends InventoryItemType> pnClass, int actions, String caption, InventoryStore store) {
+    private GRN(int type, Class<? extends InventoryItemType> pnClass, int actions, String caption,
+                InventoryStore store) {
         super(InventoryGRN.class, actions, caption);
         this.type = type;
         editor = new GRNEditor(type, pnClass, actions, caption);
@@ -303,8 +304,15 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
                 map(InventoryVirtualLocation::getEntity).toList();
     }
 
+    public void setEditorProvider(ObjectEditorProvider editorProvider) {
+        if(editorProvider != null) {
+            editor.editorProvider = editorProvider;
+        }
+    }
+
     private static class GRNEditor extends ObjectEditor<InventoryGRN> {
 
+        private ObjectEditorProvider editorProvider = new ObjectEditorProvider() {};
         private final int type;
         private ObjectField<Entity> supplierField;
         private ObjectLinkField<InventoryGRNItem> grnItemsField;
@@ -314,10 +322,13 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
         private final NewGRNItemForm newGRNItemForm = new NewGRNItemForm();
         private final Button process = new Button("Mark as Inspected", VaadinIcon.CHECK, e -> process());
         private final Button close = new Button("Mark as Received", VaadinIcon.THUMBS_UP_O, e -> process());
-        private final Button inspect = new Button("Inspect", VaadinIcon.STOCK, e -> grnItemGrid.inspectSel()).asSmall();
+        private final Button inspect = new Button("Inspect", VaadinIcon.STOCK, e -> grnItemGrid.inspectSel())
+                .asSmall();
         private final Button bin = new Button("Bin", VaadinIcon.STORAGE, e -> grnItemGrid.binSel()).asSmall();
-        private final Button assemble = new Button("Assemble", VaadinIcon.COMPILE, e -> grnItemGrid.assembleSel()).asSmall();
-        private final ELabel hint = new ELabel("You may also right-click on the entry to inspect/bin/assemble.", "blue");
+        private final Button assemble = new Button("Assemble", VaadinIcon.COMPILE, e -> grnItemGrid.assembleSel())
+                .asSmall();
+        private final ELabel hint = new ELabel("You may also right-click on the entry to inspect/bin/assemble.",
+                "blue");
         private final Class<? extends InventoryItemType> pnClass;
 
         GRNEditor(int type, Class<? extends InventoryItemType> pnClass, int actions, String caption) {
@@ -433,7 +444,8 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
                 return;
             }
             ActionForm af = new ActionForm(
-                    "Entry will be removed but this will not affect the items received via this GRN.\nAre you sure?",
+                    "Entry will be removed but this will not affect the items received via this GRN." +
+                            "\nAre you sure?",
                     () -> how.accept(object));
             af.execute();
         }
@@ -452,7 +464,8 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
         }
 
         private void preProcessGRN(InventoryGRN grn) {
-            InventoryGRNItem grnItem = grn.listLinks(InventoryGRNItem.class).filter(gi -> Id.isNull(gi.getItemId())).findFirst();
+            InventoryGRNItem grnItem = grn.listLinks(InventoryGRNItem.class).filter(gi -> Id.isNull(gi.getItemId())).
+                    findFirst();
             if(grnItem != null) {
                 warning("Kindly inspect - " + grnItem.toDisplay());
                 return;
@@ -598,13 +611,15 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
             private boolean invokeBin = false;
 
             public GRNItemGrid() {
-                super(grnItemsField, StringList.create("Item", "PartNumber", "SerialNumber", "Inspected", "Quantity", "UnitCost", "Bin"));
+                super(grnItemsField, StringList.create("Item", "PartNumber", "SerialNumber", "Inspected", "Quantity",
+                        "UnitCost", "Bin"));
                 setObjectEditor(new GRNItemEditor());
                 getButtonPanel().add(inspect, bin, assemble, hint);
                 GridContextMenu<InventoryGRNItem> contextMenu = new GridContextMenu<>(this);
                 contextMenu.addItem("Inspect", e -> e.getItem().ifPresent(x -> inspect()));
                 contextMenu.addItem("Bin", e -> e.getItem().ifPresent(x -> bin()));
-                GridMenuItem<InventoryGRNItem> assembleRC = contextMenu.addItem("Assemble", e -> e.getItem().ifPresent(x -> assemble()));
+                GridMenuItem<InventoryGRNItem> assembleRC = contextMenu.addItem("Assemble", e -> e.getItem().
+                        ifPresent(x -> assemble()));
                 contextMenu.setDynamicContentHandler(r -> {
                     deselectAll();
                     if(r == null || !inspect.isVisible()) {
@@ -684,7 +699,8 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
                     if(itemType.isSerialized()) {
                         item = InventoryItem.get(grnItem.getSerialNumber(), itemType);
                         if(item != null && item.getSerialNumber().equals(grnItem.getSerialNumber())) {
-                            warning("An item with the same " + itemType.getPartNumberShortName() + " already exists: " + item.toDisplay());
+                            warning("An item with the same " + itemType.getPartNumberShortName() + " already exists: "
+                                    + item.toDisplay());
                             snEditor().editObject();
                             return;
                         }
@@ -741,7 +757,8 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
                 InventoryItem ii = grnItem.getItem();
                 if(ii.isBlocked()) {
                     if(ii.isServiceable()) {
-                        warning("This is a blocked item and its status is still set as serviceable. GRN processing will fail unless the status is changed!");
+                        warning("This is a blocked item and its status is still set as serviceable. " +
+                                "GRN processing will fail unless the status is changed!");
                     } else {
                         warning("This is a blocked item! Please take appropriate steps to return it.");
                     }
@@ -750,7 +767,8 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
                     bin();
                 } else {
                     if(Id.isNull(grnItem.getBinId()) && bin != null) {
-                        warning("This item can't be stored at the previously selected location '" + bin.toDisplay() + "', Kindly set the correct bin.");
+                        warning("This item can't be stored at the previously selected location '" + bin.toDisplay() +
+                                "', Kindly set the correct bin.");
                     }
                 }
                 return true;
@@ -967,7 +985,8 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
                     return false;
                 }
                 if(!q.isCompatible(pn.getUnitOfMeasurement())) {
-                    warning("Unit used in quantity (" + q + ") is not compatible with the unit of measurement of " + pn.toDisplay());
+                    warning("Unit used in quantity (" + q + ") is not compatible with the unit of measurement of "
+                            + pn.toDisplay());
                     return false;
                 }
                 InventoryBin bin = bField.getValue();
@@ -1011,7 +1030,8 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
         private static class ConfirmGrid extends ActionGrid<InventoryGRNItem> {
 
             public ConfirmGrid(List<InventoryGRNItem> items, String message, Runnable action) {
-                super(InventoryGRNItem.class, items, StringList.create("Item.PartNumber", "Item.SerialNumber"), message, action);
+                super(InventoryGRNItem.class, items, StringList.create("Item.PartNumber", "Item.SerialNumber"),
+                        message, action);
                 execute();
             }
         }

@@ -20,6 +20,10 @@ public class InventoryPO extends StoredObject implements HasChildren {
         return 0;
     }
 
+    protected String getSerialNoTag() {
+        return "PO";
+    }
+
     public void setDate(Date date) {
     }
 

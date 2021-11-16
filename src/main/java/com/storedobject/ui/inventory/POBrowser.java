@@ -20,10 +20,10 @@ import java.util.function.Predicate;
 
 import static com.storedobject.core.EditorAction.ALL;
 
-public class POBrowser<T extends InventoryPO> extends ObjectBrowser<T> {
+public class POBrowser<T extends InventoryPO> extends ObjectBrowser<T> implements ObjectEditorProvider {
 
     private final ELabel storeDisplay = new ELabel("Store: Not selected");
-    private final Button switchStore = new Button("Switch Store", VaadinIcon.STORAGE, e -> switchStore());
+    protected final Button switchStore = new Button("Switch Store", VaadinIcon.STORAGE, e -> switchStore());
     private POEditor<T> editor;
     private final List<ProcessButton> processButtons = new ArrayList<>();
     private final GridContextMenu<T> contextMenu;
@@ -590,6 +590,7 @@ public class POBrowser<T extends InventoryPO> extends ObjectBrowser<T> {
     private void processGRN(InventoryGRN g) {
         clearAlerts();
         GRN grnView = new GRN(g.getStore());
+        grnView.setEditorProvider(this);
         grnView.execute();
         grnView.processGRN(g);
     }
