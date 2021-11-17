@@ -51,6 +51,15 @@ public interface IdentityCheck {
     }
 
     /**
+     * Get the OTP tag that needs to be used when sending OTP.
+     *
+     * @return OTP tag. (Default value is "FP").
+     */
+    default String getOTPTag() {
+        return "FP";
+    }
+
+    /**
      * Get the template t be used when sending OTP messages while verifying.
      *
      * @return The name of the OTP message template.

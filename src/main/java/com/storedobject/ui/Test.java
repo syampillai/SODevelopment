@@ -12,6 +12,11 @@ public class Test extends PDFReport {
     }
 
     @Override
+    public int getPageOrientation() {
+        return ORIENTATION_LANDSCAPE;
+    }
+
+    @Override
     public PDFTable getTitleTable() {
         return createTitleTable("Stock Report", "Store: Main Store", "As of today");
     }

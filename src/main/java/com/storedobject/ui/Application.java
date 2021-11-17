@@ -896,6 +896,7 @@ public class Application extends com.storedobject.vaadin.Application implements 
         if(otpTemplate != null) {
             verifyOTP.setTemplateName(otpTemplate);
         }
+        verifyOTP.setCustomTag(identityCheck.getOTPTag());
         verifyOTP.execute();
         closeMenu();
     }
