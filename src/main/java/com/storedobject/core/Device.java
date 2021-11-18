@@ -113,4 +113,8 @@ public interface Device {
     default void parse(Logic logic) throws SOException {
         throw new SOException("Not supported");
     }
+
+    default SystemEntity getDefaultEntity(SystemUser user) {
+        return null;
+    }
 }

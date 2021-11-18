@@ -196,7 +196,7 @@ public class POBrowser<T extends InventoryPO> extends ObjectBrowser<T> implement
     }
 
     /**
-     * Set a store so that it will not be selectable any more.
+     * Set a store so that it will not be selectable anymore.
      *
      * @param store Store to set.
      */
