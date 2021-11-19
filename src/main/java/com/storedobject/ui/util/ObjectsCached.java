@@ -7,10 +7,7 @@ import com.storedobject.core.StoredObject;
 import com.vaadin.flow.data.provider.CallbackDataProvider;
 import com.vaadin.flow.data.provider.Query;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
@@ -36,7 +33,8 @@ public class ObjectsCached<T extends StoredObject, M, F> {
     private final List<T> added = new ArrayList<>();
     private ObjectDataLoadedListener dataLoadedListener;
 
-    ObjectsCached(int linkType, StoredObject master, Class<T> objectClass, String condition, String orderBy, boolean any, boolean allowSorting) {
+    ObjectsCached(int linkType, StoredObject master, Class<T> objectClass, String condition, String orderBy,
+                  boolean any, boolean allowSorting) {
         this.allowSorting = allowSorting;
         this.linkType = linkType;
         this.master = master;
@@ -98,7 +96,8 @@ public class ObjectsCached<T extends StoredObject, M, F> {
                 }
                 fullyLoaded = nullCond(condition);
             } else {
-                com.storedobject.core.Query q = master.queryLinks(linkType, objectClass, "T.Id", cond(), orderBy, any);
+                com.storedobject.core.Query q = master.queryLinks(linkType, objectClass, "T.Id", cond(),
+                        orderBy, any);
                 cache = new ObjectCache<>(objectClass, q);
             }
             if(loadFilter != null) {
@@ -172,7 +171,8 @@ public class ObjectsCached<T extends StoredObject, M, F> {
     }
 
     private String cond() {
-        return filterDB == null ? condition : filterDB.getFilter(condition);
+        return filterDB == null || Objects.equals(filterDB.getCondition(), condition)  ? condition
+                : filterDB.getFilter(condition);
     }
 
     private void applyFilter() {
@@ -344,7 +344,8 @@ public class ObjectsCached<T extends StoredObject, M, F> {
             }
             end = added.size();
             limit -= (end - start);
-            return Stream.concat((Stream<M>)added.subList(start, end).stream(), fetch(0, limit, false));
+            return Stream.concat((Stream<M>)added.subList(start, end).stream(),
+                    fetch(0, limit, false));
         }
 
         private Stream<M> fetch(int offset, int limit, boolean viewFilterChanged) {

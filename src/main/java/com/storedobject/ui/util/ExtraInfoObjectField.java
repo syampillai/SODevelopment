@@ -2,10 +2,7 @@ package com.storedobject.ui.util;
 
 import com.storedobject.common.FilterProvider;
 import com.storedobject.core.*;
-import com.storedobject.ui.Application;
-import com.storedobject.ui.ObjectEditor;
-import com.storedobject.ui.ObjectInput;
-import com.storedobject.ui.ObjectLinkField;
+import com.storedobject.ui.*;
 import com.storedobject.vaadin.ValueRequired;
 import com.storedobject.vaadin.View;
 import com.storedobject.vaadin.ViewDependent;
@@ -13,6 +10,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasText;
 import com.vaadin.flow.component.HasValidation;
 import com.vaadin.flow.component.customfield.CustomField;
+import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.shared.Registration;
 
@@ -147,6 +145,11 @@ class ExtraInfoObjectField<T extends StoredObject> extends CustomField<T>
                             linkField.getValue().copy().attach();
                         }
                         masterView.savingExtraInfo(object);
+                        Grid<?> grid = masterView.getGrid();
+                        if(grid instanceof ObjectBrowser ob) {
+                            //noinspection unchecked
+                            ob.extraInfoLoaded(masterView.getObject(), object);
+                        }
                         formEditor.validateData();
                         object.validateData(masterView.getTransactionManager());
                         objectId = object.save(masterView.getTransaction(true));

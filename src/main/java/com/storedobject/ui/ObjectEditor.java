@@ -940,6 +940,7 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
     }
 
     private boolean doSaveInt() {
+        clearAlerts();
         if(!form.commit()) {
             return false;
         }

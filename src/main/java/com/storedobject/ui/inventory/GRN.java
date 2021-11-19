@@ -26,6 +26,7 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
     private final ELabel storeDisplay = new ELabel("Store: Not selected");
     private final Button switchStore = new Button("Switch Store", VaadinIcon.STORAGE, e -> switchStore());
     private final int type;
+    private ProducesGRN grnProducer;
 
     /**
      * Constructor.
@@ -158,6 +159,14 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
             select(grn);
             return grn != null && grn.getStatus() <= 1;
         });
+    }
+
+    public void setGRNProducer(ProducesGRN grnProducer) {
+        this.grnProducer = grnProducer;
+    }
+
+    public ProducesGRN getGRNProducer() {
+        return grnProducer;
     }
 
     public void setStore(InventoryStore store) {
@@ -307,41 +316,18 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
     }
 
     /**
-     * This is invoked when an "Extra Information" instance is created. At this point, you may set your own values
-     * if required.
-     *
-     * @param extraInfo Newly created "Extra Information" instance.
-     */
-    protected void extraInfoCreated(StoredObject extraInfo) {
-    }
-
-    /**
-     * This is invoked when an existing "Extra Information" instance is loaded for the current GRN.
-     * At this point, you may set your own values if required.
-     *
-     * @param extraInfo The "Extra Information" instance loaded now.
-     */
-    protected void extraInfoLoaded(StoredObject extraInfo) {
-    }
-
-    /**
-     * This is invoked when an existing "Extra Information" instance is being saved.
-     * At this point, you may set your own values if required. ({@link ObjectEditor#validateData()} and
-     * {@link StoredObject#validateData(TransactionManager)} are be invoked after this).
-     * <p>If an exception is thrown from this method, the save process will not happen.</p>
-     *
-     * @param extraInfo The "Extra Information" instance to be saved.
-     * @throws Exception if any validation error to be notified.
-     */
-    protected void savingExtraInfo(StoredObject extraInfo) throws Exception {
-    }
-
-    /**
      * This is invoked whenever the GRN status is changed.
      *
      * @param grn Current GRN.
      */
     protected void statusChanged(InventoryGRN grn) {
+    }
+
+    private void changedStatus(InventoryGRN grn) {
+        statusChanged(grn);
+        if(grnProducer != null) {
+            grnProducer.statusOfGRNChanged(grn);
+        }
     }
 
     private class GRNEditor extends ObjectEditor<InventoryGRN> {
@@ -582,7 +568,7 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
                     close();
                 }
             }
-            statusChanged(grn);
+            changedStatus(grn);
         }
 
         @Override
@@ -631,17 +617,23 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
 
         @Override
         public void extraInfoCreated(StoredObject extraInfo) {
-            GRN.this.extraInfoCreated(extraInfo);
+            if(grnProducer != null) {
+                grnProducer.extraGRNInfoCreated(getObject(), extraInfo);
+            }
         }
 
         @Override
         public void extraInfoLoaded(StoredObject extraInfo) {
-            GRN.this.extraInfoLoaded(extraInfo);
+            if(grnProducer != null) {
+                grnProducer.extraGRNInfoLoaded(getObject(), extraInfo);
+            }
         }
 
         @Override
         public void savingExtraInfo(StoredObject extraInfo) throws Exception {
-            GRN.this.savingExtraInfo(extraInfo);
+            if(grnProducer != null) {
+                grnProducer.savingGRNExtraInfo(getObject(), extraInfo);
+            }
         }
 
         private class GRNItemGrid extends DetailLinkGrid<InventoryGRNItem> {

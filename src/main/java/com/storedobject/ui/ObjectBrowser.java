@@ -1015,4 +1015,37 @@ public class ObjectBrowser<T extends StoredObject> extends ObjectGrid<T> impleme
     public final T getEditingItem() {
         return editingItem;
     }
+
+    /**
+     * This is invoked when an "Extra Information" instance is created. At this point, you may set your own values
+     * if required.
+     *
+     * @param object The object instance for which the "Extra Information" is created.
+     * @param extraInfo Newly created "Extra Information" instance.
+     */
+    public void extraInfoCreated(T object, StoredObject extraInfo) {
+    }
+
+    /**
+     * This is invoked when an existing "Extra Information" instance is loaded for the current object.
+     * At this point, you may set your own values if required.
+     *
+     * @param object The object instance for which the "Extra Information" is loaded.
+     * @param extraInfo The "Extra Information" instance loaded now.
+     */
+    public void extraInfoLoaded(T object, StoredObject extraInfo) {
+    }
+
+    /**
+     * This is invoked when an existing "Extra Information" instance is being saved.
+     * At this point, you may set your own values if required. ({@link ObjectEditor#validateData()} and
+     * {@link StoredObject#validateData(TransactionManager)} are be invoked after this).
+     * <p>If an exception is thrown from this method, the save process will not happen.</p>
+     *
+     * @param object The object instance for which the "Extra Information" is getting saved.
+     * @param extraInfo The "Extra Information" instance to be saved.
+     * @throws Exception if any validation error to be notified.
+     */
+    public void savingExtraInfo(T object, StoredObject extraInfo) throws Exception {
+    }
 }

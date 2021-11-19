@@ -20,7 +20,7 @@ import java.util.function.Predicate;
 
 import static com.storedobject.core.EditorAction.ALL;
 
-public class POBrowser<T extends InventoryPO> extends ObjectBrowser<T> implements ObjectEditorProvider {
+public class POBrowser<T extends InventoryPO> extends ObjectBrowser<T> implements ObjectEditorProvider, ProducesGRN {
 
     private final ELabel storeDisplay = new ELabel("Store: Not selected");
     protected final Button switchStore = new Button("Switch Store", VaadinIcon.STORAGE, e -> switchStore());
@@ -217,7 +217,7 @@ public class POBrowser<T extends InventoryPO> extends ObjectBrowser<T> implement
                 editor = new POEditor<>(getObjectClass());
                 setObjectEditor(editor);
             } else {
-                editor = (POEditor<T>) getObjectEditor();
+                editor = (POEditor<T>) oe;
             }
         }
         return editor;
@@ -604,10 +604,15 @@ public class POBrowser<T extends InventoryPO> extends ObjectBrowser<T> implement
 
     private void processGRN(InventoryGRN g) {
         clearAlerts();
-        GRN grnView = new GRN(g.getStore());
+        GRN grnView = getGRNBrowser(g.getStore());
+        grnView.setGRNProducer(this);
         grnView.setEditorProvider(this);
         grnView.execute();
         grnView.processGRN(g);
+    }
+
+    public GRN getGRNBrowser(InventoryStore store) {
+        return new GRN(store);
     }
 
     private static class GRNs extends SelectGrid<InventoryGRN> {
