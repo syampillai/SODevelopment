@@ -3,6 +3,8 @@ package com.storedobject.ui;
 import com.storedobject.core.ObjectIterator;
 import com.storedobject.core.StoredObject;
 
+import java.util.Collection;
+
 public interface ObjectLoader<T extends StoredObject> {
 
     default String getCondition() {
@@ -51,6 +53,10 @@ public interface ObjectLoader<T extends StoredObject> {
 
     @SuppressWarnings("unchecked")
     default void load(T... objects) {
+        load(ObjectIterator.create(objects));
+    }
+
+    default void load(Collection<T> objects) {
         load(ObjectIterator.create(objects));
     }
 

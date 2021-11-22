@@ -1,0 +1,546 @@
+package com.storedobject.core;
+
+import javax.annotation.Nonnull;
+import java.util.*;
+import java.util.function.Predicate;
+import java.util.stream.Stream;
+
+public class ObjectCacheList<T extends StoredObject> implements List<T>, AutoCloseable {
+
+    private ObjectCache<T> cache;
+    private ObjectCache<T> original;
+    private Predicate<? super T> currentFilter;
+    private Comparator<? super T> currentComparator;
+
+    public ObjectCacheList(Class<T> objectClass) {
+        this(objectClass, false);
+    }
+
+    public ObjectCacheList(Class<T> objectClass, boolean any) {
+        this(objectClass, "false", null, any);
+    }
+
+    public ObjectCacheList(Class<T> objectClass, String condition) {
+        this(objectClass, condition, null, false);
+    }
+
+    public ObjectCacheList(Class<T> objectClass, String condition, boolean any) {
+        this(objectClass, condition, null, any);
+    }
+
+    public ObjectCacheList(Class<T> objectClass, String condition, String orderedBy) {
+        this(objectClass, condition, orderedBy, false);
+    }
+
+    public ObjectCacheList(Class<T> objectClass, String condition, String orderedBy, boolean any) {
+        this(objectClass, StoredObject.query(objectClass, "T.Id", condition, orderedBy, any), any);
+    }
+
+    public ObjectCacheList(Class<T> objectClass, Query query) {
+        this(objectClass, query, true);
+    }
+
+    public ObjectCacheList(Class<T> objectClass, Query query, boolean any) {
+        this(new ObjectCache<>(objectClass, query, any));
+    }
+
+    public ObjectCacheList(Class<T> objectClass, Iterable<Id> idList) {
+        this(new ObjectCache<>(objectClass, idList));
+    }
+
+    public ObjectCacheList(Class<T> objectClass, ObjectIterator<T> objects) {
+        this(new ObjectCache<>(objectClass, objects));
+    }
+
+    public ObjectCacheList(Class<T> objectClass, Stream<T> objects) {
+        this(new ObjectCache<>(objectClass, objects));
+    }
+
+    private ObjectCacheList(ObjectCache<T> cache) {
+        this.original = cache;
+        this.cache = cache;
+    }
+
+    public void load() {
+        load((String) null, null);
+    }
+
+    public void load(boolean any) {
+        load((String) null, null, any);
+    }
+
+    public void load(String condition) {
+        load(condition, null);
+    }
+
+    public void load(String condition, boolean any) {
+        load(condition, null, any);
+    }
+
+    public void load(String condition, String orderedBy) {
+        load(condition, orderedBy, getAllowAny());
+    }
+
+    public void load(String condition, String orderedBy, boolean any) {
+        original.load(condition, orderedBy, any);
+        apply();
+    }
+
+    public void load(StoredObject master) {
+        load(master, null);
+    }
+
+    public void load(StoredObject master, boolean any) {
+        load(master, null, any);
+    }
+
+    public void load(StoredObject master, String condition) {
+        load(master, condition, null);
+    }
+
+    public void load(StoredObject master, String condition, boolean any) {
+        load(master, condition, null, any);
+    }
+
+    public void load(StoredObject master, String condition, String orderedBy) {
+        load(master, condition, orderedBy, getAllowAny());
+    }
+
+    public void load(StoredObject master, String condition, String orderedBy, boolean any) {
+        load(0, master, condition, orderedBy, any);
+    }
+
+    public void load(int linkType, StoredObject master) {
+        load(linkType, master, null);
+    }
+
+    public void load(int linkType, StoredObject master, boolean any) {
+        load(linkType, master, null, any);
+    }
+
+    public void load(int linkType, StoredObject master, String condition) {
+        load(linkType, master, condition, null);
+    }
+
+    public void load(int linkType, StoredObject master, String condition, boolean any) {
+        load(linkType, master, condition, null, any);
+    }
+
+    public void load(int linkType, StoredObject master, String condition, String orderedBy) {
+        load(linkType, master, condition, orderedBy, getAllowAny());
+    }
+
+    public void load(int linkType, StoredObject master, String condition, String orderedBy, boolean any) {
+        load(master.queryLinks(linkType, getObjectClass(), "T.Id", condition, orderedBy, any), any);
+    }
+
+    public void load(Query query) {
+        load(query, getAllowAny());
+    }
+
+    public void load(Query query, boolean any) {
+        original.load(query, any);
+        apply();
+    }
+
+    public void load(Iterable<Id> idList) {
+        original.load(idList);
+        apply();
+    }
+
+    public void load(ObjectIterator<T> objects) {
+        original.load(objects);
+        apply();
+    }
+
+    public void load(Stream<T> objects) {
+        original.load(objects);
+        apply();
+    }
+
+    public void close() {
+        currentFilter = null;
+        currentComparator = null;
+        if(cache != original) {
+            cache.close();
+        }
+        load(ObjectIterator.create());
+    }
+
+    public boolean isAllowAny() {
+        return original.isAllowAny();
+    }
+
+    public boolean getAllowAny() {
+        return original.getAllowAny();
+    }
+
+    public Class<T> getObjectClass() {
+        return original.getObjectClass();
+    }
+
+    @Override
+    public int size() {
+        return cache.size();
+    }
+
+    public int size(int startingIndex, int endingIndex) {
+        return cache.size(startingIndex, endingIndex);
+    }
+
+    @Override
+    public boolean isEmpty() {
+        return size() == 0;
+    }
+
+    @Override
+    public boolean contains(Object o) {
+        //noinspection unchecked
+        return getObjectClass().isAssignableFrom(o.getClass()) && original.contains((T) o);
+    }
+
+    @Override
+    public Iterator<T> iterator() {
+        return cache.loop();
+    }
+
+    @Override
+    public Object[] toArray() {
+        Object[] a = new Object[size()];
+        int i = 0;
+        for(T object: cache) {
+            a[i++] = object;
+        }
+        return a;
+    }
+
+    @Override
+    public <O> O[] toArray(O[] a) {
+        int size = size();
+        if (a.length < size) {
+            //noinspection unchecked
+            return (O[]) Arrays.copyOf(toArray(), size, a.getClass());
+        }
+        for(int i = 0; i < a.length; i++) {
+            //noinspection unchecked
+            a[i] = (O)get(i);
+        }
+        if (a.length > size) {
+            a[size] = null;
+        }
+        return a;
+    }
+
+    @Override
+    public boolean add(T object) {
+        return add(object.getId());
+    }
+
+    public boolean add(Id id) {
+        if(!Id.isNull(id)) {
+            ArrayList<Id> a = new ArrayList<>();
+            a.add(id);
+            ObjectCache<T> c = new ObjectCache<>(getObjectClass(), ObjectIterator.create());
+            IdIterable ids = new IdIterable();
+            ids.add(original.loopIds());
+            ids.add(a);
+            c.load(ids);
+            original.close();
+            original = c;
+            apply();
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public boolean remove(Object object) {
+        if(getObjectClass().isAssignableFrom(object.getClass())) {
+            //noinspection unchecked
+            return remove(((T)object).getId());
+        }
+        return false;
+    }
+
+    private boolean remove(Id id) {
+        if(!Id.isNull(id)) {
+            if(original.contains(id)) {
+                ObjectCache<T> c = original.delete(id);
+                if(c != original) {
+                    original.close();
+                    original = c;
+                    apply();
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public boolean containsAll(Collection<?> c) {
+        for(Object o: c) {
+            if(!contains(o)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    @Override
+    public boolean addAll(@Nonnull Collection<? extends T> collection) {
+        if(collection.isEmpty()) {
+            return false;
+        }
+        ObjectCache<T> c = new ObjectCache<>(getObjectClass(), ObjectIterator.create());
+        IdIterable ids = new IdIterable();
+        ids.add(original.loopIds());
+        ids.addObjects(collection);
+        c.load(ids);
+        original.close();
+        original = c;
+        apply();
+        return true;
+    }
+
+    @Override
+    public boolean addAll(int index, @Nonnull Collection<? extends T> collection) {
+        if(index >= size()) {
+            return addAll(collection);
+        }
+        if(collection.isEmpty()) {
+            return false;
+        }
+        ObjectCache<T> c = new ObjectCache<>(getObjectClass(), ObjectIterator.create());
+        IdIterable ids = new IdIterable();
+        ids.add(original.loopIds(0, index));
+        ids.addObjects(collection);
+        ids.add(original.loopIds(index));
+        c.load(ids);
+        original.close();
+        original = c;
+        return true;
+    }
+
+    @Override
+    public boolean removeAll(@Nonnull Collection<?> collection) {
+        if(collection.isEmpty()) {
+            return true;
+        }
+        ObjectCache<T> c = original.filter(o -> !collection.contains(o));
+        if(c != original) {
+            original.close();
+            original = c;
+            apply();
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public boolean removeIf(Predicate<? super T> filter) {
+        ObjectCache<T> c = original.filter(filter);
+        if(c != original) {
+            original.close();
+            original = c;
+            apply();
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public boolean retainAll(@Nonnull Collection<?> collection) {
+        if(collection.isEmpty()) {
+            clear();
+            return true;
+        }
+        boolean all = containsAll(collection);
+        ObjectCache<T> c = original.filter(collection::contains);
+        if(c != original) {
+            original.close();
+            original = c;
+            apply();
+        }
+        return all;
+    }
+
+    @Override
+    public void clear() {
+        close();
+    }
+
+    @Override
+    public T get(int index) {
+        return get(index, cache);
+    }
+
+    private static <O extends StoredObject> O get(int index, ObjectCache<O> cache) {
+        return index >= 0 && index < cache.size() ? cache.get(index) : null;
+    }
+
+    @Override
+    public T set(int index, T element) {
+        T set = get(index);
+        ObjectCache<T> c = new ObjectCache<>(getObjectClass(), ObjectIterator.create());
+        IdIterable ids = new IdIterable();
+        ids.add(original.loopIds(0, index));
+        List<Id> id = new ArrayList<>();
+        id.add(element.getId());
+        ids.add(id);
+        ids.add(original.loopIds(index + 1));
+        c.load(ids);
+        original.close();
+        original = c;
+        apply();
+        return set;
+    }
+
+    @Override
+    public void add(int index, T element) {
+        List<T> a = new ArrayList<>();
+        a.add(element);
+        addAll(index, a);
+    }
+
+    @Override
+    public T remove(int index) {
+        T object = get(index, original);
+        if(object == null) {
+            return null;
+        }
+        remove(object);
+        return object;
+    }
+
+    @Override
+    public int indexOf(Object o) {
+        //noinspection unchecked
+        return getObjectClass().isAssignableFrom(o.getClass()) ? cache.indexOf((T)o) : -1;
+    }
+
+    @Override
+    public int lastIndexOf(Object o) {
+        return indexOf(o);
+    }
+
+    @Override
+    public ListIterator<T> listIterator() {
+        return cache.loop();
+    }
+
+    @Override
+    public ListIterator<T> listIterator(int index) {
+        return cache.loop(index);
+    }
+
+    @Override
+    public List<T> subList(int fromIndex, int toIndex) {
+        return cache.list(fromIndex, toIndex);
+    }
+
+    public void refresh() {
+        original.refresh();
+        if(cache != null) {
+            cache.refresh();
+        }
+    }
+
+    public void refresh(Id id) {
+        original.refresh(id);
+        if(cache != null) {
+            cache.refresh(id);
+        }
+    }
+
+    public void refresh(T object) {
+        original.refresh(object);
+        if(cache != null) {
+            cache.refresh(object);
+        }
+    }
+
+    @Override
+    public void sort(Comparator<? super T> comparator) {
+        if(comparator == null) {
+            return;
+        }
+        currentComparator = null;
+        if(cache != original) {
+            cache.close();
+        }
+        ObjectCache<T> c = original.sort(comparator);
+        cache = c;
+        if(c == original) {
+            return;
+        }
+        original.close();
+        original = c;
+    }
+
+    public void order(Comparator<? super T> comparator) {
+        filter(currentFilter, comparator);
+    }
+
+    public void filter(Predicate<? super T> filter) {
+        filter(filter, currentComparator);
+    }
+
+    public void filter(Predicate<? super T> filter, Comparator<? super T> comparator) {
+        if(filter == currentFilter && comparator == currentComparator) { // No change
+            return;
+        }
+        if(filter == null && comparator == null) { // No filter or sort
+            apply(null, null); // Reset to original
+            return;
+        }
+        if(filter == currentFilter) {
+            apply(comparator);
+            return;
+        }
+        apply(filter, comparator); // Apply both
+    }
+
+    private void apply(Comparator<? super T> comparator) {
+        currentComparator = comparator;
+        ObjectCache<T> c = cache.sort(currentComparator); // Cache contains already filtered data
+        if(c == cache) {
+            return;
+        }
+        if(cache != original) {
+            cache.close();
+        }
+        cache = c;
+    }
+
+    private void apply(Predicate<? super T> filter, Comparator<? super T> comparator) {
+        currentFilter = filter;
+        currentComparator = comparator;
+        apply();
+    }
+
+    private void apply() {
+        if(cache != original) {
+            cache.close();
+            cache = original;
+        }
+        if(currentFilter != null) {
+            cache = cache.filter(currentFilter);
+        }
+        if(currentComparator != null) {
+            apply(currentComparator);
+        }
+    }
+
+    public final Predicate<? super T> getFilter() {
+        return currentFilter;
+    }
+
+    public final Comparator<? super T> getComparator() {
+        return currentComparator;
+    }
+
+    public Stream<T> stream(int startingIndex, int endingIndex) {
+        return cache.stream(startingIndex, endingIndex);
+    }
+}

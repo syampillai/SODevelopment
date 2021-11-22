@@ -155,8 +155,7 @@ public class SOFieldCreator<T> implements ObjectFieldCreator<T> {
         if(ca == null || form == null) {
             return null;
         }
-        ExtraInfoDefinition def = StoredObject.get(ExtraInfoDefinition.class, "ClassName='"
-                + ca.getObjectClass().getName() + "'");
+        ExtraInfoDefinition def = ca.getExtraInfo();
         if(def != null) {
             extraInfo = new ExtraInfo<>(def);
         }

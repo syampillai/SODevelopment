@@ -114,7 +114,11 @@ public class ObjectCache<T extends StoredObject> implements Iterable<T> {
 	public int size() {
 		return 0;
 	}
-	
+
+	public int size(int startingIndex, int endingIndex) {
+		return 0;
+	}
+
 	public Id getId(int index) {
 		return null;
 	}
@@ -186,11 +190,11 @@ public class ObjectCache<T extends StoredObject> implements Iterable<T> {
 		return null;
 	}
 
-	public ObjectCache<T> filter(Predicate<T> filter) {
+	public ObjectCache<T> filter(Predicate<? super T> filter) {
 		return null;
 	}
 	
-	public ObjectCache<T> sort(Comparator<T> comparator) {
+	public ObjectCache<T> sort(Comparator<? super T> comparator) {
 		return null;
 	}
 	
@@ -221,5 +225,9 @@ public class ObjectCache<T extends StoredObject> implements Iterable<T> {
 	@Override
 	public Iterator<T> iterator() {
 		return loop();
+	}
+
+	public Stream<T> stream(int startingIndex, int endingIndex) {
+		return Stream.empty();
 	}
 }

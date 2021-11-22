@@ -103,10 +103,24 @@ public class ObjectBrowser<T extends StoredObject> extends ObjectGrid<T> impleme
                 (InventoryPO.class.isAssignableFrom(getObjectClass()) && !(this instanceof POBrowser)) ||
                         (InventoryPOItem.class.isAssignableFrom(getObjectClass()) && !(this instanceof POItemBrowser))
         ) {
+            boolean a = actions < 0;
+            if(a) {
+                actions = -actions;
+            }
             actions &= (~NEW) & (~EDIT) & (~DELETE);
+            if(a) {
+                actions = -actions;
+            }
         }
         if(InventoryItem.class.isAssignableFrom(getObjectClass())) {
+            boolean a = actions < 0;
+            if(a) {
+                actions = -actions;
+            }
             actions &= (~NEW) & (~DELETE);
+            if(a) {
+                actions = -actions;
+            }
         }
         anchorsExist = !ClassAttribute.get(getObjectClass()).getAnchors().isEmpty();
         addConstructedListener(o -> gridCreated());
@@ -320,22 +334,8 @@ public class ObjectBrowser<T extends StoredObject> extends ObjectGrid<T> impleme
     public final void setLogic(Logic logic) {
         if(this.logic == null) {
             this.logic = logic;
-            if(logic.getApprovalCount() > 0 && getTransactionManager().needsApprovals()) {
-                if(add != null) {
-                    buttonPanel.remove(add);
-                    add = null;
-                }
-                if(edit != null) {
-                    buttonPanel.remove(edit);
-                    edit = null;
-                }
-                if(delete != null) {
-                    buttonPanel.remove(delete);
-                    delete = null;
-                }
-                if(editor != null) {
-                    editor.setLogic(logic);
-                }
+            if(editor != null) {
+                editor.setLogic(logic);
             }
         }
     }

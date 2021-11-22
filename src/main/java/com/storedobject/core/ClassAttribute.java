@@ -69,6 +69,10 @@ public final class ClassAttribute<T extends StoredObject> {
     public void unload() {
     }
 
+    public ExtraInfoDefinition getExtraInfo() {
+        return null;
+    }
+
     public ClassAttribute<?> getParent() {
         return Math.random() > 0.5 ? new ClassAttribute<>() : null;
     }

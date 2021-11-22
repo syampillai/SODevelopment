@@ -130,7 +130,7 @@ public class ObjectComboField<T extends StoredObject> extends ComboField<T> impl
         this(label, new ObjectListProvider<>(objectClass, list), allowAdd);
     }
 
-    private ObjectComboField(String label, ObjectDataProvider<T, String> objectProvider, boolean allowAdd) {
+    protected ObjectComboField(String label, ObjectDataProvider<T, String> objectProvider, boolean allowAdd) {
         super(label);
         setProvider(objectProvider);
         setItemLabelGenerator(StoredObject::toDisplay);

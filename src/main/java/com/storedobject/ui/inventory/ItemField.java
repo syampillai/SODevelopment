@@ -25,7 +25,7 @@ public class ItemField<I extends InventoryItem> extends ObjectGetField<I> implem
             "PartNumber.PartNumber AS Part/Model Number",
             "SerialNumberDisplay AS Serial/Batch",
             "Quantity", "InTransit", "Serviceable", "LocationDisplay as Location", "Owner");
-    private final ItemTypeField<?> typeField;
+    private final PNField<?> typeField;
     private ObjectProvider<? extends InventoryStore> storeField;
     private ObjectProvider<? extends InventoryLocation> locationField;
     private FilterProvider extraFilterProvider;
@@ -71,7 +71,7 @@ public class ItemField<I extends InventoryItem> extends ObjectGetField<I> implem
     public ItemField(String label, Class<I> objectClass, boolean allowAny) {
         super(objectClass, allowAny);
         super.setDisplayDetail(this::displayDetail);
-        typeField = new ItemTypeField<>(typeClass(), allowAny, null);
+        typeField = new PNField<>(typeClass(), allowAny);
         setFilter(filterProvider = new InventoryFilterProvider());
         setLabel(label);
     }
@@ -276,22 +276,11 @@ public class ItemField<I extends InventoryItem> extends ObjectGetField<I> implem
         return s;
     }
 
-    private class ItemTypeField<T extends InventoryItemType> extends ObjectField<T> {
+    static class ItemTypeField<T extends InventoryItemType> extends ObjectField<T> {
 
-        public ItemTypeField(Class<T> objectClass, boolean allowAny, GetProvider<T> getProvider) {
-            super(null, objectClass, allowAny, getProvider, false);
+        public ItemTypeField(Class<T> objectClass, boolean allowAny) {
+            super(null, objectClass, allowAny, (GetProvider<T>)null, false);
             this.setDetailComponent(null);
-            this.setDisplayDetail(ItemField.this::displayDetail);
-            addValueChangeListener(e -> {
-                InventoryItemType itemType = getObject();
-                if(itemType == null) {
-                    focus();
-                } else {
-                    sSet(itemType.getPartNumber());
-                    doSearchLoadAll(e.isFromClient());
-                    ItemField.this.getSearchField().focus();
-                }
-            });
         }
 
         @Override
@@ -306,6 +295,24 @@ public class ItemField<I extends InventoryItem> extends ObjectGetField<I> implem
             } catch(Throwable ignored) {
             }
             return "P/N";
+        }
+    }
+
+    private class PNField<T extends InventoryItemType> extends ItemTypeField<T> {
+
+        public PNField(Class<T> objectClass, boolean allowAny) {
+            super(objectClass, allowAny);
+            this.setDisplayDetail(ItemField.this::displayDetail);
+            addValueChangeListener(e -> {
+                InventoryItemType itemType = getObject();
+                if(itemType == null) {
+                    focus();
+                } else {
+                    sSet(itemType.getPartNumber());
+                    doSearchLoadAll(e.isFromClient());
+                    ItemField.this.getSearchField().focus();
+                }
+            });
         }
 
         private void sSet(String text) {
