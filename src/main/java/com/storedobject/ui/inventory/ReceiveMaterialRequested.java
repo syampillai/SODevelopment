@@ -3,7 +3,6 @@ package com.storedobject.ui.inventory;
 import com.storedobject.common.StringList;
 import com.storedobject.core.*;
 import com.storedobject.ui.ELabel;
-import com.storedobject.ui.util.AbstractObjectForestSupplier;
 import com.storedobject.vaadin.Button;
 import com.storedobject.vaadin.ButtonLayout;
 import com.storedobject.vaadin.DataTreeGrid;
@@ -34,7 +33,7 @@ public class ReceiveMaterialRequested extends AbstractRequestMaterial {
     @Override
     void created() {
         super.created();
-        setExtraFilter("Status<4");
+        setFixedFilter("Status<4");
         setCaption("Receive Materials");
     }
 
@@ -51,9 +50,9 @@ public class ReceiveMaterialRequested extends AbstractRequestMaterial {
         cb.addValueChangeListener(e -> {
             deselectAll();
             if(e.getValue()) {
-                setExtraFilter((String)null);
+                setFixedFilter((String)null);
             } else {
-                setExtraFilter("Status<4");
+                setFixedFilter("Status<4");
             }
         });
         buttonPanel.add(cb);
@@ -246,18 +245,20 @@ public class ReceiveMaterialRequested extends AbstractRequestMaterial {
             public int getChildCount(HierarchicalQuery<Object, String> query) {
                 Object parent = query.getParent();
                 if(parent == null) {
-                    return AbstractObjectForestSupplier.subListSize(miList, query);
+                    return Utility.size(miList, query.getOffset(), query.getOffset() + query.getLimit());
                 }
-                return AbstractObjectForestSupplier.subListSize(items(parent), query);
+                return Utility.size(items(parent), query.getOffset(), query.getOffset() + query.getLimit());
             }
 
             @Override
             public Stream<Object> fetchChildren(HierarchicalQuery<Object, String> query) {
                 Object parent = query.getParent();
                 if(parent == null) {
-                    return AbstractObjectForestSupplier.subList(miList, query).stream().map(o -> o);
+                    return Utility.stream(miList, query.getOffset(), query.getOffset() + query.getLimit())
+                                    .map(o -> o);
                 }
-                return AbstractObjectForestSupplier.subList(items(parent), query).stream().map(o -> o);
+                return Utility.stream(items(parent), query.getOffset(), query.getOffset() + query.getLimit())
+                        .map(o -> o);
             }
 
             @Override

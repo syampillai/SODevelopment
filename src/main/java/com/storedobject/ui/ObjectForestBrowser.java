@@ -1,16 +1,15 @@
 package com.storedobject.ui;
 
-import com.storedobject.common.StringList;
 import com.storedobject.core.*;
-import com.storedobject.ui.util.AbstractObjectForestSupplier;
+import com.storedobject.ui.util.LoadFilterButtons;
 import com.storedobject.ui.util.LogicParser;
-import com.storedobject.ui.util.ObjectForestSupplier;
-import com.storedobject.vaadin.*;
+import com.storedobject.vaadin.Button;
+import com.storedobject.vaadin.ButtonLayout;
+import com.storedobject.vaadin.ConfirmButton;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 
 import java.lang.reflect.Constructor;
-import java.util.function.Predicate;
 
 import static com.storedobject.core.EditorAction.*;
 
@@ -19,7 +18,8 @@ public class ObjectForestBrowser<T extends StoredObject> extends ObjectForest<T>
     protected final ButtonLayout buttonPanel = new ButtonLayout();
     protected Button add, edit, delete, filter, load, view, report, excel, audit, exit;
     private String allowedActions;
-    private ObjectSearchBuilder<T> searchBuilder;
+    private LoadFilterButtons<T> loadFilterButtons;
+    private final boolean anchorsExist;
 
     public ObjectForestBrowser(Class<T> objectClass) {
         this(objectClass, ALL);
@@ -51,14 +51,10 @@ public class ObjectForestBrowser<T extends StoredObject> extends ObjectForest<T>
 
     ObjectForestBrowser(Class<T> objectClass, Iterable<String> columns, int actions, Iterable<String> filterColumns,
                         String caption, String allowedActions) {
-        this(columns, actions, filterColumns, caption, allowedActions,
-                new ObjectForestSupplier<>(objectClass, null, null, (actions & ALLOW_ANY) == ALLOW_ANY));
-    }
-
-    ObjectForestBrowser(Iterable<String> columns, int actions, Iterable<String> filterColumns,
-                        String caption, String allowedActions, AbstractObjectForestSupplier<T, Void> dataProvider) {
-        super(columns, dataProvider);
+        super(objectClass, columns, (actions & ALLOW_ANY) == ALLOW_ANY);
+        anchorsExist = !ClassAttribute.get(getObjectClass()).getAnchors().isEmpty();
         addConstructedListener(o -> con());
+        getObjectLoader().setLoadCallBack(this::loadInt);
         setCaption(caption);
         this.allowedActions = allowedActions;
         if(actions < 0) {
@@ -84,17 +80,10 @@ public class ObjectForestBrowser<T extends StoredObject> extends ObjectForest<T>
                 buttonPanel.add(delete);
             }
             if((actions & RELOAD) == RELOAD) {
-                boolean smallList = filterColumns == null && ObjectHint.isSmallList(getObjectClass(), isAllowAny());
-                if(!smallList) {
-                    filter = new Button("Filter", e -> reload(false));
-                    buttonPanel.add(filter);
-                }
-                load = new Button("Load", e -> reload(true));
-                buttonPanel.add(load);
-                if(smallList) {
-                    actions &= ~RELOAD;
-                    load();
-                }
+                loadFilterButtons = new LoadFilterButtons<>(this, filterColumns);
+                filter = loadFilterButtons.getFilterButton();
+                load = loadFilterButtons.getLoadButton();
+                loadFilterButtons.addTo(buttonPanel);
             }
             if((actions & VIEW) == VIEW) {
                 view = new Button("View", this);
@@ -114,9 +103,6 @@ public class ObjectForestBrowser<T extends StoredObject> extends ObjectForest<T>
             }
         }
         exit = new Button("Exit", this);
-        if((actions & RELOAD) == RELOAD) {
-            searchBuilder = createSearchBuilder(filterColumns == null ? null : StringList.create(filterColumns));
-        }
     }
 
     @SuppressWarnings("unchecked")
@@ -210,13 +196,14 @@ public class ObjectForestBrowser<T extends StoredObject> extends ObjectForest<T>
 
     @Override
     public Component createHeader() {
-        if(searchBuilder == null) {
+        ObjectSearchBuilder<?> sb;
+        if(loadFilterButtons == null || (sb = loadFilterButtons.getSearchBuilder()) == null) {
             return buttonPanel;
         }
         VerticalLayout v = new VerticalLayout(buttonPanel);
         Component f = null;
-        if(searchBuilder instanceof Component) {
-            f = (Component) searchBuilder;
+        if(sb instanceof Component) {
+            f = (Component) sb;
         }
         if(f != null) {
             v.add(f);
@@ -225,10 +212,6 @@ public class ObjectForestBrowser<T extends StoredObject> extends ObjectForest<T>
         v.setMargin(false);
         v.setSpacing(false);
         return v;
-    }
-
-    public ObjectSearchBuilder<T> createSearchBuilder(StringList searchColumns) {
-        return new ObjectFilter<>(getObjectClass(), searchColumns, s -> filter.addTheme(ThemeStyle.ERROR));
     }
 
     protected boolean isActionAllowed(String action) {
@@ -298,60 +281,20 @@ public class ObjectForestBrowser<T extends StoredObject> extends ObjectForest<T>
         super.clicked(c);
     }
 
-    @Override
-    public void loaded() {
-        super.loaded();
-        Application a = Application.get();
-        if(a == null) {
-            confReloadButton();
-        } else {
-            a.access(this::confReloadButton);
-        }
-    }
-
-    private void confReloadButton() {
-        if(load != null) {
-            if ("Load".equals(load.getText())) {
-                load.setIcon("reload");
-                load.setText("Reload");
-            }
-            load.setVisible(isFullyLoaded());
-        }
-    }
-
-    private void reload(boolean again) {
-        if(filter != null) {
-            filter.removeTheme(ThemeStyle.ERROR);
-        }
-        if(searchBuilder == null) {
-            getDataSupplier().clear(false);
-            load();
-        } else {
-            if(searchBuilder instanceof Form && !((Form)searchBuilder).commit()) {
+    private void loadInt(Runnable loadFunction) {
+        if(anchorsExist) {
+            ObjectEditor<T> oe = getObjectEditor(getObjectClass());
+            if(oe.anchorAction) {
+                oe.executeAnchorForm(() -> loadInt(loadFunction));
                 return;
             }
-            String filter = searchBuilder.getFilterText();
-            if(filter == null) {
-                if(!again && isFullyLoaded()) {
-                    filter(null);
-                } else {
-                    getDataSupplier().clear(false);
-                    load();
-                }
-            } else {
-                Predicate<T> filterFunction = null;
-                if(!again && isFullyLoaded() && isFullyCached()) {
-                    filterFunction = searchBuilder.getFilterPredicate();
-                }
-                if(again || filterFunction == null) {
-                    if(again) {
-                        getDataSupplier().clear(false);
-                    }
-                    load(filter);
-                } else {
-                    filter(filterFunction);
-                }
-            }
+            getObjectLoader().getSystemFilter().setCondition(oe.getAnchorFilter());
+        }
+        Application a = Application.get();
+        if(a == null) {
+            loadFunction.run();
+        } else {
+            a.access(loadFunction::run);
         }
     }
 
@@ -367,7 +310,7 @@ public class ObjectForestBrowser<T extends StoredObject> extends ObjectForest<T>
                 oe.addObject(getView(), true);
                 return true;
             }
-            if(o instanceof ObjectForestSupplier.LinkNode) {
+            if(o instanceof com.storedobject.core.ObjectForest.LinkNode) {
                 if(currentLinkNode.getLink().isDetail()) {
                     ObjectEditor<?> oe = getObjectEditor(currentLinkNode.getLink().getObjectClass());
                     StoredObject parent = currentLinkNode.getParent();
@@ -419,7 +362,7 @@ public class ObjectForestBrowser<T extends StoredObject> extends ObjectForest<T>
                 return true;
             }
             if(!getObjectClass().isAssignableFrom(o.getClass())) {
-                if(!(o instanceof ObjectForestSupplier.LinkObject)) {
+                if(!(o instanceof com.storedobject.core.ObjectForest.LinkObject)) {
                     actionWarn(c);
                     return true;
                 }
@@ -466,7 +409,7 @@ public class ObjectForestBrowser<T extends StoredObject> extends ObjectForest<T>
             //noinspection unchecked
             return canDelete((T)o);
         }
-        if(!(o instanceof ObjectForestSupplier.LinkObject)) {
+        if(!(o instanceof com.storedobject.core.ObjectForest.LinkObject)) {
             warning("That can't be deleted!");
             return false;
         }

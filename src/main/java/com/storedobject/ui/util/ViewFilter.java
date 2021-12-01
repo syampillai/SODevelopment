@@ -4,42 +4,38 @@ import com.storedobject.common.LogicalOperator;
 import com.storedobject.core.ClassAttribute;
 import com.storedobject.core.ObjectToString;
 import com.storedobject.core.StoredObject;
+import com.storedobject.core.StringUtility;
 
 import java.util.function.BiFunction;
+import java.util.function.Function;
+import java.util.function.Predicate;
 
-public class ViewFilter<T extends StoredObject> {
+public class ViewFilter<T> {
 
     private static final String[] EMPTY = new String[] {};
-    private AbstractObjectDataProvider<T, ?, ?> dataProvider;
     private String[] matches = EMPTY;
     private BiFunction<T, String[], Boolean> matcher;
-    private ObjectToString<T> objectConverter;
-    private final ObjectToString<T> defaultObjectConverter;
+    private Function<T, String> objectConverter;
+    private final Function<T, String> defaultObjectConverter;
     private LogicalOperator filterLogic = LogicalOperator.OR;
 
-    public ViewFilter(AbstractObjectDataProvider<T, ?, ?> dataProvider) {
-        this.dataProvider = dataProvider;
-        this.dataProvider.setViewFilter(this);
-        defaultObjectConverter = ObjectToString.create(dataProvider.getObjectClass(), ClassAttribute.get(dataProvider.getObjectClass()).getAttributes());
+    public <O extends StoredObject> ViewFilter(Class<T> forClass) {
+        if(StoredObject.class.isAssignableFrom(forClass)) {
+            @SuppressWarnings("unchecked") Class<O> objectClass = (Class<O>) forClass;
+            //noinspection unchecked
+            defaultObjectConverter = (Function<T, String>)
+                    ObjectToString.create(objectClass, ClassAttribute.get(objectClass).getAttributes());
+        } else {
+            defaultObjectConverter = StringUtility::toString;
+        }
     }
 
-    public void setDataProvider(AbstractObjectDataProvider<T, ?, ?> dataProvider) {
-        this.dataProvider = dataProvider;
-        matches = EMPTY;
-        this.dataProvider.setViewFilter(this);
-    }
-
-    public boolean setObjectConverter(ObjectToString<T> objectConverter) {
+    public boolean setObjectConverter(Function<T, String> objectConverter) {
         if(this.objectConverter == objectConverter) {
             return false;
         }
         this.matches = EMPTY;
         this.matcher = null;
-        if(this.objectConverter != null && objectConverter == null) {
-            for(int i = 0; i < matches.length; i++) {
-                matches[i] = matches[i].toUpperCase();
-            }
-        }
         this.objectConverter = objectConverter;
         return true;
     }
@@ -115,7 +111,7 @@ public class ViewFilter<T extends StoredObject> {
         return true;
     }
 
-    boolean skipMatching() {
+    private boolean skipMatching() {
         for(String m: matches) {
             if(!m.isEmpty()) {
                 return false;
@@ -124,24 +120,20 @@ public class ViewFilter<T extends StoredObject> {
         return true;
     }
 
-    boolean match(T o) {
+    private boolean match(T o) {
         if(matcher != null) {
             return matcher.apply(o, matches);
         }
-        String item = ((objectConverter == null) ? defaultObjectConverter : objectConverter).toString(o);
+        String item = (objectConverter == null ? defaultObjectConverter : objectConverter).apply(o);
         if(item == null) {
             return false;
         }
         item = item.toUpperCase();
         boolean contains, truth;
-        switch (filterLogic) {
-            case OR:
-            case NOT_AND:
-                truth = false;
-                break;
-            default:
-                truth = true;
-        }
+        truth = switch(filterLogic) {
+            case OR, NOT_AND -> false;
+            default -> true;
+        };
         for(String m: matches) {
             contains = item.contains(m);
             switch (filterLogic) {
@@ -169,12 +161,23 @@ public class ViewFilter<T extends StoredObject> {
         return truth;
     }
 
-    boolean setMatchTokens(String tokens) { // Returns !changed
+    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
+    private boolean setMatchTokens(String tokens) { // Returns !changed
         String[] m = matchTokens(tokens);
         if(same(m)) {
             return true;
         }
         matches = m;
         return false;
+    }
+
+    public Predicate<T> getPredicate(String tokens, Predicate<T> extraFilter) {
+        if(setMatchTokens(tokens) || skipMatching()) {
+            return extraFilter;
+        }
+        if(extraFilter == null) {
+            return this::match;
+        }
+        return item -> match(item) && extraFilter.test(item);
     }
 }

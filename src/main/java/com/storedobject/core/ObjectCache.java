@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
-public class ObjectCache<T extends StoredObject> implements Iterable<T> {
+public class ObjectCache<T extends StoredObject> implements Iterable<T>, ObjectLoader<T> {
 
 	public ObjectCache(Class<T> objectClass) {
 	}
@@ -44,52 +44,35 @@ public class ObjectCache<T extends StoredObject> implements Iterable<T> {
 	public ObjectCache(Class<T> objectClass, Stream<T> objects) {
 	}
 
-	public void load() {
-	}
-	
-	public void load(boolean any) {
-	}
-	
-	public void load(String condition) {
-	}
-	
-	public void load(String condition, boolean any) {
-	}
-	
-	public void load(String condition, String orderedBy) {
-	}
-	
-	public void load(String condition, String orderedBy, boolean any) {
-	}
-
-	public void load(Query query) {
-	}
-	
-	public void load(Query query, boolean any) {
-	}
-	
-	public void load(Iterable<Id> idList) {
-	}
-
-	public void load(ObjectIterator<T> objects) {
-	}
-
-	public void load(Stream<T> objects) {
-	}
-
 	public Class<T> getObjectClass() {
 		return null;
 	}
 	
 	public final void setAllowAny(boolean any) {
 	}
-	
+
+	@Override
+	public void load(Iterable<Id> idList) {
+	}
+
+	@Override
+	public void load(ObjectIterator<T> objects) {
+	}
+
+	@Override
+	public void load(Stream<T> objects) {
+	}
+
 	public boolean isAllowAny() {
 		return false;
 	}
 
 	public boolean getAllowAny() {
 		return false;
+	}
+
+	public int getCacheLevel() {
+		return 0;
 	}
 
 	public void setCacheSize(int size) {

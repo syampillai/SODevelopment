@@ -1,6 +1,7 @@
 package com.storedobject.ui.tools;
 
 import com.storedobject.common.SOException;
+import com.storedobject.core.ObjectTree;
 import com.storedobject.core.*;
 import com.storedobject.pdf.*;
 import com.storedobject.tools.ColumnDefinition;
@@ -683,11 +684,12 @@ public class TableDefinitionEditor extends ObjectEditor<TableDefinition> {
 
         public ClassTreeBrowser(TableDefinition root) {
             this("Child Data Classes");
-            load(root);
+            setRoots(root);
         }
 
         public ClassTreeBrowser(String caption) {
-            super(TableDefinition.class, new ClassTreeBuilder(), caption);
+            super(TableDefinition.class, 0, caption);
+            getDataProvider().getTree().setBuilder(new ClassTreeBuilder());
         }
 
         @Override
@@ -722,20 +724,19 @@ public class TableDefinitionEditor extends ObjectEditor<TableDefinition> {
         }
     }
 
-    private static class ClassTreeBuilder implements ObjectTreeBuilder {
+    private static class ClassTreeBuilder implements ObjectTree.Builder<TableDefinition> {
 
-        @SuppressWarnings("unchecked")
         @Override
-        public <O extends StoredObject> ObjectIterator<O> listChildren(O parent) {
-            return (ObjectIterator<O>) StoredObject.list(TableDefinition.class, "lower(ParentClassName)='" +
-                    ((TableDefinition)parent).getClassName().trim().toLowerCase() + "'");
+        public ObjectIterator<TableDefinition> listChildren(ObjectTree<TableDefinition> objectTree, TableDefinition parent) {
+            return StoredObject.list(TableDefinition.class, "lower(ParentClassName)='" +
+                    parent.getClassName().trim().toLowerCase() + "'");
         }
 
-        @SuppressWarnings("unchecked")
         @Override
-        public <O extends StoredObject> O getParent(O child) {
-            String pcn = ((TableDefinition)child).getParentClassName().trim().toLowerCase();
-            return pcn.isEmpty() ? null : (O)StoredObject.get(TableDefinition.class, "lower(ClassName)='" + pcn + "'");
+        public TableDefinition getParent(ObjectTree<TableDefinition> objectTree, TableDefinition child) {
+            String pcn = child.getParentClassName().trim().toLowerCase();
+            return pcn.isEmpty() ? null : StoredObject.get(TableDefinition.class,
+                    "lower(ClassName)='" + pcn + "'");
         }
     }
 

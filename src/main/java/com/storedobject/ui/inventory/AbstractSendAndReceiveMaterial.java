@@ -127,15 +127,15 @@ public abstract class AbstractSendAndReceiveMaterial<T extends InventoryTransfer
     }
 
     @Override
-    public void setExtraFilter(String extraFilter) {
+    public void setFixedFilter(String fixedFilter) {
         String f = getFixedSide() + "Location=" + this.fromOrTo.getId();
         if(otherLocation != null) {
             f += " AND " + ("To".equals(getFixedSide()) ? "From" : "To") + "Location=" + this.otherLocation.getId();
         }
-        if(extraFilter != null) {
-            f += " AND (" + extraFilter + ")";
+        if(fixedFilter != null) {
+            f += " AND (" + fixedFilter + ")";
         }
-        super.setExtraFilter(f);
+        super.setFixedFilter(f);
     }
 
     String getFixedSide() {

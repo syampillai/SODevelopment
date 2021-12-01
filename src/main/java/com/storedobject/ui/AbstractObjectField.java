@@ -1,6 +1,5 @@
 package com.storedobject.ui;
 
-import com.storedobject.common.FilterProvider;
 import com.storedobject.core.*;
 import com.storedobject.vaadin.ButtonLayout;
 import com.storedobject.vaadin.CustomField;
@@ -10,8 +9,8 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasText;
 import com.vaadin.flow.component.ItemLabelGenerator;
 
+import javax.annotation.Nonnull;
 import java.util.function.Consumer;
-import java.util.function.Predicate;
 
 /**
  * The base field for accepting a {@link StoredObject} instance. (This is the base for a couple of fields that
@@ -20,7 +19,8 @@ import java.util.function.Predicate;
  * @param <T> Type of object instance accepted.
  * @author Syam
  */
-public abstract class AbstractObjectField<T extends StoredObject> extends CustomField<T> implements ObjectInput<T>, ValueRequired {
+public abstract class AbstractObjectField<T extends StoredObject> extends CustomField<T>
+        implements ObjectInput<T>, ValueRequired {
 
     private final Class<T> objectClass;
     private final boolean allowAny;
@@ -191,48 +191,16 @@ public abstract class AbstractObjectField<T extends StoredObject> extends Custom
         }
     }
 
+    @Nonnull
     @Override
-    public void setFilter(ObjectSearchFilter filter) {
-        getSearcher().setFilter(filter);
-        reget();
+    public ObjectLoadFilter<T> getLoadFilter() {
+        return getSearcher().getLoadFilter();
     }
 
     @Override
-    public void setFilter(FilterProvider filterProvider, String extraFilterClause) {
-        getSearcher().setFilter(filterProvider, extraFilterClause);
-        reget();
-    }
-
-    @Override
-    public void filter(Predicate<T> filter) {
-        getSearcher().filter(filter);
-    }
-
-    @Override
-    public Predicate<T> getFilterPredicate() {
-        return searcher == null ? null : searcher.getFilterPredicate();
-    }
-
-    @Override
-    public void setLoadFilter(Predicate<T> filter) {
-        getSearcher().setLoadFilter(filter);
-        reget();
-    }
-
-    @Override
-    public Predicate<T> getLoadFilter() {
-        return searcher == null ? null : searcher.getLoadFilter();
-    }
-
-    @Override
-    public ObjectSearchFilter getFilter(boolean create) {
-        return (create || searcher != null) ? getSearcher().getFilter(create) : null;
-    }
-
-    @Override
-    public void filterChanged() {
+    public void applyFilter() {
         if(searcher != null) {
-            searcher.filterChanged();
+            searcher.applyFilter();
         }
         reget();
     }
@@ -283,7 +251,7 @@ public abstract class AbstractObjectField<T extends StoredObject> extends Custom
     @Override
     public void load(ObjectIterator<T> objects) {
         clear();
-        getSearcher().load(objects.filter(getLoadFilter()));
+        getSearcher().load(objects); // TODO May require filtering
     }
 
     /**

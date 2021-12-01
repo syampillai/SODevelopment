@@ -1,6 +1,7 @@
 package com.storedobject.ui;
 
 import com.storedobject.vaadin.*;
+import com.storedobject.vaadin.ListGrid;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.html.Div;
 

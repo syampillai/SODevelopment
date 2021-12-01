@@ -3,7 +3,6 @@ package com.storedobject.ui.inventory;
 import com.storedobject.common.SORuntimeException;
 import com.storedobject.core.*;
 import com.storedobject.ui.ObjectComboField;
-import com.storedobject.ui.util.ObjectListProvider;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -204,8 +203,7 @@ public class LocationField extends ObjectComboField<InventoryLocation> {
             return this;
         }
         boolean sameValue = location.equals(getValue());
-        //noinspection unchecked
-        ((ObjectListProvider<InventoryLocation, ?>)getDataProvider()).delete(location);
+        getObjectLoader().deleted(location);
         if(sameValue) {
             setValue(locations.isEmpty() ? null : locations.get(0));
         }

@@ -2,7 +2,6 @@ package com.storedobject.ui;
 
 import com.storedobject.common.StringList;
 import com.storedobject.core.Logic;
-import com.storedobject.core.Person;
 import com.storedobject.core.ReportDefinition;
 import com.storedobject.core.SingletonLogic;
 import com.storedobject.report.ObjectList;

@@ -1,182 +1,91 @@
-package com.storedobject.ui.util;
+package com.storedobject.ui;
 
-import com.storedobject.common.FilterProvider;
+import com.storedobject.common.StringList;
 import com.storedobject.core.*;
-import com.storedobject.ui.*;
 import com.storedobject.vaadin.HasColumns;
 import com.storedobject.vaadin.View;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridSelectionModel;
 import com.vaadin.flow.data.selection.SelectionModel;
 
-import java.util.Iterator;
+import javax.annotation.Nonnull;
 import java.util.List;
-import java.util.Objects;
 import java.util.function.Consumer;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
-public interface ObjectGridData<T extends StoredObject> extends HasColumns<T>, ObjectChangedListener<T>,
-        ObjectsSetter<T>, ObjectSearcher<T>, Transactional, ObjectEditorListener, FilterMethods<T> {
+public interface ObjectGridData<T extends StoredObject, ROOT> extends HasColumns<ROOT>, ObjectChangedListener<T>,
+        ObjectsSetter<T>, ObjectSearcher<T>, Transactional, ObjectEditorListener, ObjectLoader<T> {
 
-    ObjectDataProvider<T, Void> getDataProvider();
+    @Nonnull
+    @Override
+    default ObjectLoadFilter<T> getLoadFilter() {
+        return ObjectLoader.super.getLoadFilter();
+    }
 
-    void deselectAll();
+    @Override
+    default boolean isAllowAny() {
+        return getObjectLoader().isAllowAny();
+    }
 
-    void select(T object);
+    default ObjectSearchBuilder<T> createSearchBuilder(StringList searchColumns,
+                                                       Consumer<ObjectSearchBuilder<T>> changeConsumer) {
+        return new ObjectFilter<>(getObjectClass(), searchColumns, changeConsumer);
+    }
 
-    default List<ObjectChangedListener<T>> getObjectChangedListeners() {
-        return getObjectChangedListeners(false);
+    @Override
+    default int getObjectCount() {
+        return getObjectLoader().getObjectCount();
+    }
+
+    @Override
+    default Class<T> getObjectClass() {
+        return getObjectLoader().getObjectClass();
+    }
+
+    default void deselectAll() {
+        if(this instanceof Grid) {
+            ((Grid<?>)this).deselectAll();
+        }
+    }
+
+    default void select(T object) {
+        if(this instanceof Grid) {
+            //noinspection unchecked
+            ((Grid<T>)this).select(object);
+        }
+    }
+
+    default void deselect(T object) {
+        if(this instanceof Grid) {
+            //noinspection unchecked
+            ((Grid<T>)this).deselect(object);
+        }
+    }
+
+    @Override
+    default void setLoadFilter(ObjectLoadFilter<T> objectLoadFilter) {
+
+        setFilter(objectLoadFilter, false);
     }
 
     default List<ObjectChangedListener<T>> getObjectChangedListeners(boolean create) {
         return null;
     }
 
-    @Override
-    default Class<T> getObjectClass() {
-        return getDataClass();
-    }
-
-    @Override
-    default boolean isAllowAny() {
-        return getDataProvider().isAllowAny();
-    }
-
-    void setOrderBy(String orderBy);
-
-    String getOrderBy();
-
-    default void load() {
-        load(null, getOrderBy());
-    }
-
-    default void load(String filterClause) {
-        load(filterClause, getOrderBy());
-    }
-
-    default void load(String filterClause, String orderBy) {
-        deselectAll();
-        getDataProvider().load(filterClause, orderBy);
-    }
-
-    default void load(StoredObject master) {
-        load(0, master, null, getOrderBy());
-    }
-
-    default void load(StoredObject master, String filterClause, String orderBy) {
-        load(0, master, filterClause, orderBy);
-    }
-
-    default void load(int linkType, StoredObject master) {
-        load(linkType, master, null, getOrderBy());
-    }
-
-    default void load(int linkType, StoredObject master, String filterClause, String orderBy) {
-        deselectAll();
-        getDataProvider().load(linkType, master, filterClause, orderBy);
-    }
-
-    default void load(Stream<T> objects) {
-        load(objects.collect(Collectors.toList()));
-    }
-
-    default void load(Iterator<T> objects) {
-        load(ObjectIterator.create(objects));
-    }
-
-    default void load(ObjectIterator<T> objects) {
-        deselectAll();
-        getDataProvider().load(objects);
-    }
-
-    default void load(Iterable<T> objects) {
-        load(objects.iterator());
-    }
-
-    /**
-     * This will be invoked whenever a new set of rows are loaded.
-     */
-    default void loaded() {
-    }
-
-    default void clear() {
-        getDataProvider().clear();
-    }
-
-    default void clear(boolean refresh) {
-        getDataProvider().clear(refresh);
-    }
-
-    default boolean isFullyLoaded() {
-        return getDataProvider().isFullyLoaded();
-    }
-
-    @Override
-    default void setLoadFilter(Predicate<T> filter) {
-        getDataProvider().setLoadFilter(filter);
-    }
-
-    @Override
-    default Predicate<T> getLoadFilter() {
-        return getDataProvider().getLoadFilter();
-    }
-
-    @Override
-    default void setFilter(String filterClause) {
-        setFilter(null, filterClause);
-    }
-
-    @Override
-    default void setFilter(FilterProvider filterProvider) {
-        setFilter(filterProvider, null);
-    }
-
-    @Override
-    default void setFilter(FilterProvider filterProvider, String extraFilterClause) {
-        getDataProvider().setFilter(filterProvider, extraFilterClause);
-    }
-
-    @Override
-    default void filter(Predicate<T> filter) {
-        getDataProvider().filter(filter);
-    }
-
-    @Override
-    default Predicate<T> getFilterPredicate() {
-        return getDataProvider().getFilterPredicate();
-    }
-
-    @Override
-    default ObjectSearchFilter getFilter(boolean create) {
-        return getDataProvider().getFilter(true);
-    }
-
-    @Override
-    default ObjectSearchFilter getFilter() {
-        return getFilter(true);
-    }
-
-    @Override
-    default void filterChanged() {
-        getDataProvider().filterChanged();
-    }
-
     default void scrollTo(T object) {
         if(object != null) {
-            ((Grid<?>)this).scrollToIndex(getDataProvider().indexOf(object));
+            ((Grid<?>)this).scrollToIndex(getObjectLoader().indexOf(object));
         }
     }
 
     default T getItem(int index) {
-        return getDataProvider().getItem(index);
+        return get(index);
     }
 
     @Override
     default void updated(T object) {
-        refresh(object);
-        List<ObjectChangedListener<T>> listeners = getObjectChangedListeners();
+        //noinspection unchecked
+        ((ObjectChangedListener<T>)getObjectLoader()).updated(object);
+        List<ObjectChangedListener<T>> listeners = getObjectChangedListeners(false);
         if(listeners != null) {
             listeners.forEach(ocl -> ocl.updated(object));
         }
@@ -184,9 +93,9 @@ public interface ObjectGridData<T extends StoredObject> extends HasColumns<T>, O
 
     @Override
     default void inserted(T object) {
-        getDataProvider().added(object);
-        refresh();
-        List<ObjectChangedListener<T>> listeners = getObjectChangedListeners();
+        //noinspection unchecked
+        ((ObjectChangedListener<T>)getObjectLoader()).inserted(object);
+        List<ObjectChangedListener<T>> listeners = getObjectChangedListeners(false);
         if(listeners != null) {
             listeners.forEach(ocl -> ocl.inserted(object));
         }
@@ -196,13 +105,11 @@ public interface ObjectGridData<T extends StoredObject> extends HasColumns<T>, O
 
     @Override
     default void deleted(T object) {
-        if(this instanceof Grid) {
-            //noinspection unchecked
-            ((Grid<T>)this).deselect(object);
-        }
-        getDataProvider().deleted(object);
+        deselect(object);
+        //noinspection unchecked
+        ((ObjectChangedListener<T>)getObjectLoader()).deleted(object);
         refresh();
-        List<ObjectChangedListener<T>> listeners = getObjectChangedListeners();
+        List<ObjectChangedListener<T>> listeners = getObjectChangedListeners(false);
         if(listeners != null) {
             listeners.forEach(ocl -> ocl.deleted(object));
         }
@@ -220,19 +127,18 @@ public interface ObjectGridData<T extends StoredObject> extends HasColumns<T>, O
 
     @Override
     default void setObjects(Iterable<T> objects) {
-        deselectAll();
-        ObjectIterator<T> oi = ObjectIterator.create(objects.iterator()).filter(Objects::nonNull);
-        getDataProvider().load(oi.map(this::convert).filter(Objects::nonNull));
+        load(ObjectIterator.create(objects.iterator()));
     }
 
-    default T convert(T so) {
+    default T convert(StoredObject so) {
         if(so == null || !getObjectClass().isAssignableFrom(so.getClass())) {
             return null;
         }
         if(!isAllowAny() && getObjectClass() != so.getClass()) {
             return null;
         }
-        return so;
+        //noinspection unchecked
+        return (T)so;
     }
 
     default void addObjectChangedListener(ObjectChangedListener<T> listener) {
@@ -245,40 +151,14 @@ public interface ObjectGridData<T extends StoredObject> extends HasColumns<T>, O
     }
 
     default void removeObjectChangedListener(ObjectChangedListener<T> listener) {
-        List<ObjectChangedListener<T>> objectChangedListeners = getObjectChangedListeners();
+        List<ObjectChangedListener<T>> objectChangedListeners = getObjectChangedListeners(false);
         if(objectChangedListeners != null) {
-            getObjectChangedListeners().remove(listener);
+            objectChangedListeners.remove(listener);
         }
     }
 
-    default boolean isFullyCached() {
-        return getDataProvider().isFullyCached();
-    }
-
-    default int size() {
-        return getDataProvider().getObjectCount();
-    }
-
-    @Override
-    default void setFilter(ObjectSearchFilter objectSearchFilter) {
-        getDataProvider().setFilter(objectSearchFilter);
-    }
-
-    @Override
-    default int getObjectCount() {
-        return size();
-    }
-
-    default Stream<T> streamAll() {
-        return getDataProvider().streamAll();
-    }
-
-    default Stream<T> streamFiltered() {
-        return getDataProvider().streamFiltered();
-    }
-
     default boolean validateFilterCondition(T value) {
-        return getDataProvider().validateFilterCondition(value);
+        return getObjectLoader().getLoadFilter().filter(value) != null;
     }
 
     @Override
@@ -350,9 +230,9 @@ public interface ObjectGridData<T extends StoredObject> extends HasColumns<T>, O
         return false;
     }
 
-    GridSelectionModel<T> setSelectionMode(Grid.SelectionMode selectionMode);
+    GridSelectionModel<?> setSelectionMode(Grid.SelectionMode selectionMode);
 
-    GridSelectionModel<T> getSelectionModel();
+    GridSelectionModel<?> getSelectionModel();
 
     void setObjectSetter(ObjectSetter<T> setter);
 
@@ -384,17 +264,13 @@ public interface ObjectGridData<T extends StoredObject> extends HasColumns<T>, O
             Id sid = systemEntity.getId();
             load(objectIterator.filter(obj -> ((OfEntity)obj).getSystemEntityId().equals(sid)));
         } else {
-            load(objectIterator.iterator());
+            load(objectIterator);
         }
     }
 
     @Override
     default ObjectSearchBuilder<T> getSearchBuilder() {
         return null;
-    }
-
-    default List<ObjectEditorListener> getObjectEditorListeners() {
-        return getObjectEditorListeners(false);
     }
 
     default List<ObjectEditorListener> getObjectEditorListeners(boolean create) {
@@ -411,7 +287,7 @@ public interface ObjectGridData<T extends StoredObject> extends HasColumns<T>, O
     }
 
     default void removeObjectEditorListener(ObjectEditorListener listener) {
-        List<ObjectEditorListener> objectEditorListeners = getObjectEditorListeners();
+        List<ObjectEditorListener> objectEditorListeners = getObjectEditorListeners(false);
         if(objectEditorListeners != null) {
             objectEditorListeners.remove(listener);
         }
@@ -419,7 +295,7 @@ public interface ObjectGridData<T extends StoredObject> extends HasColumns<T>, O
 
     @Override
     default void editingStarted() {
-        List<ObjectEditorListener> objectEditorListeners = getObjectEditorListeners();
+        List<ObjectEditorListener> objectEditorListeners = getObjectEditorListeners(false);
         if(objectEditorListeners != null && !objectEditorListeners.isEmpty()) {
             objectEditorListeners.forEach(ObjectEditorListener::editingStarted);
         }
@@ -427,7 +303,7 @@ public interface ObjectGridData<T extends StoredObject> extends HasColumns<T>, O
 
     @Override
     default void editingEnded() {
-        List<ObjectEditorListener> objectEditorListeners = getObjectEditorListeners();
+        List<ObjectEditorListener> objectEditorListeners = getObjectEditorListeners(false);
         if(objectEditorListeners != null && !objectEditorListeners.isEmpty()) {
             objectEditorListeners.forEach(ObjectEditorListener::editingEnded);
         }
@@ -435,7 +311,7 @@ public interface ObjectGridData<T extends StoredObject> extends HasColumns<T>, O
 
     @Override
     default void editingCancelled() {
-        List<ObjectEditorListener> objectEditorListeners = getObjectEditorListeners();
+        List<ObjectEditorListener> objectEditorListeners = getObjectEditorListeners(false);
         if(objectEditorListeners != null && !objectEditorListeners.isEmpty()) {
             objectEditorListeners.forEach(ObjectEditorListener::editingCancelled);
         }

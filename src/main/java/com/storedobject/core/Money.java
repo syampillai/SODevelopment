@@ -414,4 +414,12 @@ public final class Money implements Storable, Comparable<Money> {
 			default -> false;
 		};
 	}
+
+	public int getFractionDigits() {
+		return getFractionDigits(getCurrency());
+	}
+
+	public static int getFractionDigits(Currency currency) {
+		return Math.max(currency.getDefaultFractionDigits(), 0);
+	}
 }

@@ -13,32 +13,15 @@ public class ObjectTreeViewer<T extends StoredObject> extends ObjectTreeBrowser<
     }
 
     public ObjectTreeViewer(Class<T> objectClass, String caption) {
-        this(objectClass, (Iterable<String>)null, caption);
+        this(objectClass, null, caption);
     }
 
     public ObjectTreeViewer(Class<T> objectClass, Iterable<String> columns) {
-        this(objectClass, columns, (String)null);
+        this(objectClass, columns, null);
     }
 
     public ObjectTreeViewer(Class<T> objectClass, Iterable<String> columns, String caption) {
-        super(objectClass, columns, EditorAction.RELOAD, caption, null);
-        init();
-    }
-
-    public ObjectTreeViewer(Class<T> objectClass, ObjectTreeBuilder treeBuilder) {
-        this(objectClass, null, treeBuilder, null);
-    }
-
-    public ObjectTreeViewer(Class<T> objectClass, Iterable<String> columns, ObjectTreeBuilder treeBuilder) {
-        this(objectClass, columns, treeBuilder, null);
-    }
-
-    public ObjectTreeViewer(Class<T> objectClass, ObjectTreeBuilder treeBuilder, String caption) {
-        this(objectClass, null, treeBuilder, caption);
-    }
-
-    public ObjectTreeViewer(Class<T> objectClass, Iterable<String> columns, ObjectTreeBuilder treeBuilder, String caption) {
-        super(objectClass, columns, 0, caption, null, treeBuilder);
+        super(objectClass, columns, 0, caption, null);
         init();
     }
 

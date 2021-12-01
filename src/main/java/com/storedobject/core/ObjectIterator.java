@@ -35,7 +35,7 @@ public abstract class ObjectIterator<O extends StoredObject> implements Iterator
     }
 
     /**
-     * Concatenate an another instance by adding to the head of it.
+     * Concatenate another instance by adding to the head of it.
      * @param iterator Another instance.
      * @return A new instance that contains objects from the added instance followed by objects from this instance.
      * There is no need to maintain any references to this instance or to the added one for the purpose of closing etc.

@@ -1,74 +1,187 @@
 package com.storedobject.ui;
 
-import com.storedobject.core.ObjectIterator;
-import com.storedobject.core.StoredObject;
+import com.storedobject.common.FilterProvider;
+import com.storedobject.core.*;
+import com.storedobject.ui.util.DataLoadedListener;
+import com.vaadin.flow.shared.Registration;
 
-import java.util.Collection;
+import java.util.Objects;
+import java.util.stream.Stream;
 
-public interface ObjectLoader<T extends StoredObject> {
+public interface ObjectLoader<T extends StoredObject> extends com.storedobject.core.ObjectLoader<T>, FilterMethods<T> {
 
-    default String getCondition() {
-        return null;
+    default Class<T> getObjectClass() {
+        return getObjectLoader().getObjectClass();
     }
 
+    default int size() {
+        return getObjectCount();
+    }
+
+    @Override
+    default String getFilterCondition() {
+        return getObjectLoader().getFilterCondition();
+    }
+
+    @Override
     default String getOrderBy() {
-        return null;
+        return getObjectLoader().getOrderBy();
     }
 
-    boolean isAllowAny();
-
-    default void load() {
-        load(getCondition(), getOrderBy());
+    default void setOrderBy(String orderBy) {
+        getObjectLoader().setOrderBy(orderBy);
     }
 
-    default void load(String condition) {
-        load(condition, getOrderBy());
+    @Override
+    default boolean isAllowAny() {
+        return getObjectLoader().isAllowAny();
     }
 
-    void load(String condition, String orderBy);
-
-    default void load(StoredObject master) {
-        load(master, getCondition(), getOrderBy());
+    default void load(String condition, String orderBy, boolean any) {
+        getObjectLoader().load(condition, orderBy, any);
     }
 
-    default void load(StoredObject master, String condition) {
-        load(master, condition, getOrderBy());
+    @Override
+    default void load(int linkType, StoredObject master, String condition, String orderBy, boolean any) {
+        getObjectLoader().load(linkType, master, condition, orderBy, any);
     }
 
-    default void load(StoredObject master, String condition, String orderBy) {
-        load(0, master, condition, orderBy);
+    @Override
+    default void load(Iterable<Id> idList) {
+        getObjectLoader().load(idList);
     }
 
-    default void load(int linkType, StoredObject master) {
-        load(linkType, master, getCondition(), getOrderBy());
+    @Override
+    default void load(ObjectIterator<T> objects) {
+        getObjectLoader().load(objects);
     }
 
-    default void load(int linkType, StoredObject master, String condition) {
-        load(linkType, master, condition, getOrderBy());
+    @Override
+    default void load(Stream<T> objects) {
+        getObjectLoader().load(objects);
     }
-
-    void load(int linkType, StoredObject master, String condition, String orderBy);
-
-    void load(ObjectIterator<T> objects);
-
-    @SuppressWarnings("unchecked")
-    default void load(T... objects) {
-        load(ObjectIterator.create(objects));
-    }
-
-    default void load(Collection<T> objects) {
-        load(ObjectIterator.create(objects));
-    }
-
-    void clear();
 
     default void reload() {
         load();
     }
 
-    void added(T item);
+    @Override
+    default void applyFilter() {
+        getObjectLoader().load();
+    }
 
-    void edited(T item);
+    @Override
+    default void applyFilterPredicate() {
+        getObjectLoader().applyFilterPredicate();
+    }
 
-    void deleted(T item);
+    default void clear() {
+        getObjectLoader().clear();
+    }
+
+    default int getObjectCount() {
+        return getObjectLoader().getObjectCount();
+    }
+
+    default T get(int index) {
+        return getObjectLoader().get(index);
+    }
+
+    default int indexOf(T object) {
+        return getObjectLoader().indexOf(object);
+    }
+
+    default Stream<T> streamAll() {
+        return getObjectLoader().streamAll();
+    }
+
+    default Stream<T> streamFiltered() {
+        return getObjectLoader().streamFiltered();
+    }
+
+    default int getCacheLevel() {
+        return getObjectLoader().getCacheLevel();
+    }
+
+    default ObjectLoadFilter<T> getFixedFilter() {
+        return getObjectLoader().getFixedFilter();
+    }
+
+    /**
+     * Set a fixed filter that will be automatically added to any filter that is set later.
+     *
+     * @param fixedFilterProvider Filter condition to set.
+     * @deprecated Please use {@link #setFixedFilter(FilterProvider)} instead.
+     */
+    @Deprecated
+    default void setExtraFilter(FilterProvider fixedFilterProvider) {
+        setFixedFilter(fixedFilterProvider);
+    }
+
+    /**
+     * Set a fixed filter that will be automatically added to any filter that is set later.
+     *
+     * @param fixedFilterProvider Filter condition to set.
+     */
+    default void setFixedFilter(FilterProvider fixedFilterProvider) {
+        setFixedFilter(fixedFilterProvider, true);
+    }
+
+    /**
+     * Set a fixed filter that will be automatically added to any filter that is set later.
+     *
+     * @param fixedFilterProvider Filter condition to set.
+     * @param apply Whether to apply immediately or not.
+     */
+    default void setFixedFilter(FilterProvider fixedFilterProvider, boolean apply) {
+        ObjectLoadFilter<T> extraFilter = getObjectLoader().getFixedFilter();
+        if(extraFilter.getFilterProvider() == fixedFilterProvider) {
+            return;
+        }
+        extraFilter.setFilterProvider(fixedFilterProvider);
+        if(apply) {
+            load();
+        }
+    }
+
+    /**
+     * Set a fixed filter that will be automatically added to any filter that is set later.
+     *
+     * @param fixedFilter Filter condition to set.
+     * @deprecated Please use {@link #setFixedFilter(String)} instead.
+     */
+    @Deprecated
+    default void setExtraFilter(String fixedFilter) {
+        setFixedFilter(fixedFilter, true);
+    }
+
+    /**
+     * Set a fixed filter that will be automatically added to any filter that is set later.
+     *
+     * @param fixedFilter Filter condition to set.
+     */
+    default void setFixedFilter(String fixedFilter) {
+        setFixedFilter(fixedFilter, true);
+    }
+
+    /**
+     * Set a fixed filter that will be automatically added to any filter that is set later.
+     *
+     * @param fixedFilter Filter condition to set.
+     * @param apply Whether to apply immediately or not.
+     */
+    default void setFixedFilter(String fixedFilter, boolean apply) {
+        ObjectLoadFilter<T> filter = getObjectLoader().getFixedFilter();
+        if(Objects.equals(fixedFilter, filter.getCondition())) {
+            return;
+        }
+        filter.setCondition(fixedFilter);
+        if(apply) {
+            load();
+        }
+    }
+
+    default Registration addDataLoadedListener(DataLoadedListener listener) {
+        return getObjectLoader().addDataLoadedListener(listener);
+    }
 }

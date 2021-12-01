@@ -3,7 +3,7 @@ package com.storedobject.ui;
 import com.storedobject.common.SORuntimeException;
 import com.storedobject.common.StringList;
 import com.storedobject.core.*;
-import com.storedobject.ui.util.ObjectForestSupplier;
+import com.storedobject.core.ObjectForest;
 import com.storedobject.vaadin.ActionForm;
 import com.storedobject.vaadin.DataForm;
 import com.storedobject.vaadin.MultiSelectGrid;
@@ -40,7 +40,7 @@ public class FileManager extends ObjectForestBrowser<FileFolder> implements Tran
 
     public FileManager(String path, String caption) {
         super(FileFolder.class, StringList.EMPTY);
-        getDataSupplier().setListLinks(new FileViewer.FolderLister());
+        getDataProvider().getForest().setListLinks(FileViewer::list);
         if(path == null) {
             path = caption;
         }
@@ -97,7 +97,7 @@ public class FileManager extends ObjectForestBrowser<FileFolder> implements Tran
         });
         contextMenu.setDynamicContentHandler(o -> {
             clearAlerts();
-            if(o instanceof ObjectForestSupplier.LinkObject lo) {
+            if(o instanceof ObjectForest.LinkObject lo) {
                 select(o);
                 getSelected();
                 o = lo.getObject();
@@ -127,7 +127,7 @@ public class FileManager extends ObjectForestBrowser<FileFolder> implements Tran
     }
 
     private Object o(Object o) {
-        return o instanceof ObjectForestSupplier.LinkObject lo ? lo.getObject() : o;
+        return o instanceof ObjectForest.LinkObject lo ? lo.getObject() : o;
     }
 
     @Override

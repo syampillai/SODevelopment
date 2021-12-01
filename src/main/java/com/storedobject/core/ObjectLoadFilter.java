@@ -7,20 +7,22 @@ import java.util.function.Predicate;
 /**
  * Class that maintains a filter condition that can be used in {@link StoredObject}'s query/list/get methods.
  *
+ * @param <T> Type of object.
  * @author Syam
  */
-public class ObjectSearchFilter {
+public class ObjectLoadFilter<T extends StoredObject> {
 
 	private String condition;
 	private FilterProvider filterProvider;
-	private ObjectSearchFilter child;
+	private ObjectLoadFilter<T> child;
+	private Predicate<T> loadedPredicate;
 
 	/**
 	 * Add a child filter to this filter. The filter condition of the child will be appended to this filter condition.
 	 *
 	 * @param child Child to be added.
 	 */
-	public void add(ObjectSearchFilter child) {
+	public void add(ObjectLoadFilter<T> child) {
 		if(child != null) {
 			if(this.child == null) {
 				this.child = child;
@@ -85,15 +87,25 @@ public class ObjectSearchFilter {
 	 *
 	 * @param filter Another filter from which values will be set.
 	 */
-	public void set(ObjectSearchFilter filter) {
+	public void set(ObjectLoadFilter<T> filter) {
 		if(filter == null) {
 			condition = null;
 			filterProvider = null;
+			child = null;
+			loadedPredicate = null;
 			return;
 		}
 		condition = filter.condition;
 		filterProvider = filter.filterProvider;
 		child = filter.child;
+		loadedPredicate = filter.loadedPredicate;
+	}
+
+	/**
+	 * Clear all values.
+	 */
+	public void reset() {
+		set(null);
 	}
 
 	/**
@@ -166,34 +178,51 @@ public class ObjectSearchFilter {
 	}
 
 	/**
+	 * Set the filter that needs to be applied after loading into the memory from the DB.
+	 *
+	 * @param loadedPredicate Filter predicate.
+	 */
+	public void setLoadedPredicate(Predicate<T> loadedPredicate) {
+		this.loadedPredicate = loadedPredicate;
+	}
+
+	/**
+	 * Get the filter that needs to be applied after loading into the memory from the DB.
+	 *
+	 * @return Filter predicate.
+	 */
+	public Predicate<T> getLoadedPredicate() {
+		return loadedPredicate;
+	}
+
+	/**
 	 * Create a "predicate" that can be used in the Java program to apply the equivalent filter condition of using
-	 * {@link #getFilter()}.
+	 * {@link #getFilter()} and {@link #getLoadedPredicate()}.
 	 *
 	 * @return Predicate.
 	 */
-	public Predicate<StoredObject> getPredicate() {
+	public Predicate<T> getPredicate() {
 		return getPredicate(null);
 	}
 
 	/**
 	 * Create a "predicate" that can be used in the Java program to apply the equivalent filter condition of using
-	 * {@link #getFilter(String)}.
+	 * {@link #getFilter(String)} and {@link #getLoadedPredicate()}.
 	 *
 	 * @param extraCondition Extra condition.
 	 * @return Predicate.
 	 */
-	public Predicate<StoredObject> getPredicate(String extraCondition) {
-		return so -> filter(so) != null;
+	public Predicate<T> getPredicate(String extraCondition) {
+		return so -> filter(so, extraCondition) != null;
 	}
 
 	/**
 	 * Apply filter to an object instance.
 	 *
 	 * @param object Object to filter.
-	 * @param <T> Type of the object.
 	 * @return The object is returned if the filter condition is satisfied. Otherwise, <code>null</code>.
 	 */
-	public <T extends StoredObject> T filter(T object) {
+	public T filter(T object) {
 		return filter(object, null);
 	}
 
@@ -202,10 +231,13 @@ public class ObjectSearchFilter {
 	 *
 	 * @param object Object to filter.
 	 * @param extraCondition Extra condition.
-	 * @param <T> Type of the object.
 	 * @return The object is returned if the filter condition is satisfied. Otherwise, <code>null</code>.
 	 */
-	public <T extends StoredObject> T filter(T object, String extraCondition) {
+	public T filter(T object, String extraCondition) {
+		Predicate<T> lf = getLoadedPredicate();
+		if(lf != null && !lf.test(object)) {
+			return null;
+		}
 		String f = getFilter(extraCondition);
 		if(f == null) {
 			return object;
@@ -234,7 +266,7 @@ public class ObjectSearchFilter {
 		return one == null ? two : one;
 	}
 
-	private static record DualFilterProvider(FilterProvider one, FilterProvider two) implements FilterProvider {
+	private record DualFilterProvider(FilterProvider one, FilterProvider two) implements FilterProvider {
 
 		@Override
 		public String getFilterCondition() {

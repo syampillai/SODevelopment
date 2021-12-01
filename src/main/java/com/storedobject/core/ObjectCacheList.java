@@ -5,10 +5,9 @@ import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
-public class ObjectCacheList<T extends StoredObject> implements List<T>, AutoCloseable {
+public class ObjectCacheList<T extends StoredObject> implements ObjectList<T>, AutoCloseable {
 
-    private ObjectCache<T> cache;
-    private ObjectCache<T> original;
+    private ObjectCache<T> original, sorted, filtered;
     private Predicate<? super T> currentFilter;
     private Comparator<? super T> currentComparator;
 
@@ -57,135 +56,79 @@ public class ObjectCacheList<T extends StoredObject> implements List<T>, AutoClo
     }
 
     private ObjectCacheList(ObjectCache<T> cache) {
-        this.original = cache;
-        this.cache = cache;
+        this.original = this.sorted = this.filtered = cache;
     }
 
-    public void load() {
-        load((String) null, null);
+    private static <O extends StoredObject> O get(int index, ObjectCache<O> cache) {
+        return index >= 0 && index < cache.size() ? cache.get(index) : null;
     }
 
-    public void load(boolean any) {
-        load((String) null, null, any);
-    }
-
-    public void load(String condition) {
-        load(condition, null);
-    }
-
-    public void load(String condition, boolean any) {
-        load(condition, null, any);
-    }
-
-    public void load(String condition, String orderedBy) {
-        load(condition, orderedBy, getAllowAny());
-    }
-
+    @Override
     public void load(String condition, String orderedBy, boolean any) {
         original.load(condition, orderedBy, any);
-        apply();
+        rebuild();
     }
 
-    public void load(StoredObject master) {
-        load(master, null);
-    }
-
-    public void load(StoredObject master, boolean any) {
-        load(master, null, any);
-    }
-
-    public void load(StoredObject master, String condition) {
-        load(master, condition, null);
-    }
-
-    public void load(StoredObject master, String condition, boolean any) {
-        load(master, condition, null, any);
-    }
-
-    public void load(StoredObject master, String condition, String orderedBy) {
-        load(master, condition, orderedBy, getAllowAny());
-    }
-
-    public void load(StoredObject master, String condition, String orderedBy, boolean any) {
-        load(0, master, condition, orderedBy, any);
-    }
-
-    public void load(int linkType, StoredObject master) {
-        load(linkType, master, null);
-    }
-
-    public void load(int linkType, StoredObject master, boolean any) {
-        load(linkType, master, null, any);
-    }
-
-    public void load(int linkType, StoredObject master, String condition) {
-        load(linkType, master, condition, null);
-    }
-
-    public void load(int linkType, StoredObject master, String condition, boolean any) {
-        load(linkType, master, condition, null, any);
-    }
-
-    public void load(int linkType, StoredObject master, String condition, String orderedBy) {
-        load(linkType, master, condition, orderedBy, getAllowAny());
-    }
-
-    public void load(int linkType, StoredObject master, String condition, String orderedBy, boolean any) {
-        load(master.queryLinks(linkType, getObjectClass(), "T.Id", condition, orderedBy, any), any);
-    }
-
-    public void load(Query query) {
-        load(query, getAllowAny());
-    }
-
+    @Override
     public void load(Query query, boolean any) {
         original.load(query, any);
-        apply();
+        rebuild();
     }
 
+    @Override
     public void load(Iterable<Id> idList) {
         original.load(idList);
-        apply();
+        rebuild();
     }
 
+    @Override
     public void load(ObjectIterator<T> objects) {
         original.load(objects);
-        apply();
+        rebuild();
     }
 
+    @Override
     public void load(Stream<T> objects) {
         original.load(objects);
-        apply();
+        rebuild();
     }
 
+    @Override
     public void close() {
         currentFilter = null;
         currentComparator = null;
-        if(cache != original) {
-            cache.close();
+        if(sorted != original) {
+            sorted.close();
+        }
+        if(filtered != original) {
+            filtered.close();
         }
         load(ObjectIterator.create());
     }
 
+    @Override
     public boolean isAllowAny() {
         return original.isAllowAny();
     }
 
-    public boolean getAllowAny() {
-        return original.getAllowAny();
-    }
-
+    @Override
     public Class<T> getObjectClass() {
         return original.getObjectClass();
     }
 
     @Override
     public int size() {
-        return cache.size();
+        return sorted.size();
     }
 
+    @Override
     public int size(int startingIndex, int endingIndex) {
-        return cache.size(startingIndex, endingIndex);
+        return sorted.size(startingIndex, endingIndex);
+    }
+
+    @Override
+    public int sizeAll() {
+        return original.size();
     }
 
     @Override
@@ -201,14 +144,14 @@ public class ObjectCacheList<T extends StoredObject> implements List<T>, AutoClo
 
     @Override
     public Iterator<T> iterator() {
-        return cache.loop();
+        return sorted.loop();
     }
 
     @Override
     public Object[] toArray() {
         Object[] a = new Object[size()];
         int i = 0;
-        for(T object: cache) {
+        for(T object: sorted) {
             a[i++] = object;
         }
         return a;
@@ -236,6 +179,7 @@ public class ObjectCacheList<T extends StoredObject> implements List<T>, AutoClo
         return add(object.getId());
     }
 
+    @Override
     public boolean add(Id id) {
         if(!Id.isNull(id)) {
             ArrayList<Id> a = new ArrayList<>();
@@ -247,7 +191,7 @@ public class ObjectCacheList<T extends StoredObject> implements List<T>, AutoClo
             c.load(ids);
             original.close();
             original = c;
-            apply();
+            rebuild();
             return true;
         }
         return false;
@@ -269,7 +213,7 @@ public class ObjectCacheList<T extends StoredObject> implements List<T>, AutoClo
                 if(c != original) {
                     original.close();
                     original = c;
-                    apply();
+                    rebuild();
                     return true;
                 }
             }
@@ -299,7 +243,7 @@ public class ObjectCacheList<T extends StoredObject> implements List<T>, AutoClo
         c.load(ids);
         original.close();
         original = c;
-        apply();
+        rebuild();
         return true;
     }
 
@@ -319,6 +263,7 @@ public class ObjectCacheList<T extends StoredObject> implements List<T>, AutoClo
         c.load(ids);
         original.close();
         original = c;
+        rebuild();
         return true;
     }
 
@@ -331,7 +276,7 @@ public class ObjectCacheList<T extends StoredObject> implements List<T>, AutoClo
         if(c != original) {
             original.close();
             original = c;
-            apply();
+            rebuild();
             return true;
         }
         return false;
@@ -343,7 +288,7 @@ public class ObjectCacheList<T extends StoredObject> implements List<T>, AutoClo
         if(c != original) {
             original.close();
             original = c;
-            apply();
+            rebuild();
             return true;
         }
         return false;
@@ -360,7 +305,7 @@ public class ObjectCacheList<T extends StoredObject> implements List<T>, AutoClo
         if(c != original) {
             original.close();
             original = c;
-            apply();
+            rebuild();
         }
         return all;
     }
@@ -372,11 +317,7 @@ public class ObjectCacheList<T extends StoredObject> implements List<T>, AutoClo
 
     @Override
     public T get(int index) {
-        return get(index, cache);
-    }
-
-    private static <O extends StoredObject> O get(int index, ObjectCache<O> cache) {
-        return index >= 0 && index < cache.size() ? cache.get(index) : null;
+        return get(index, sorted);
     }
 
     @Override
@@ -392,7 +333,7 @@ public class ObjectCacheList<T extends StoredObject> implements List<T>, AutoClo
         c.load(ids);
         original.close();
         original = c;
-        apply();
+        rebuild();
         return set;
     }
 
@@ -414,9 +355,14 @@ public class ObjectCacheList<T extends StoredObject> implements List<T>, AutoClo
     }
 
     @Override
+    public int indexOf(Id id) {
+        return sorted.indexOf(id);
+    }
+
+    @Override
     public int indexOf(Object o) {
         //noinspection unchecked
-        return getObjectClass().isAssignableFrom(o.getClass()) ? cache.indexOf((T)o) : -1;
+        return getObjectClass().isAssignableFrom(o.getClass()) ? sorted.indexOf((T)o) : -1;
     }
 
     @Override
@@ -426,38 +372,32 @@ public class ObjectCacheList<T extends StoredObject> implements List<T>, AutoClo
 
     @Override
     public ListIterator<T> listIterator() {
-        return cache.loop();
+        return sorted.loop();
     }
 
     @Override
     public ListIterator<T> listIterator(int index) {
-        return cache.loop(index);
+        return sorted.loop(index);
     }
 
     @Override
     public List<T> subList(int fromIndex, int toIndex) {
-        return cache.list(fromIndex, toIndex);
+        return sorted.list(fromIndex, toIndex);
     }
 
+    @Override
     public void refresh() {
         original.refresh();
-        if(cache != null) {
-            cache.refresh();
-        }
     }
 
+    @Override
     public void refresh(Id id) {
         original.refresh(id);
-        if(cache != null) {
-            cache.refresh(id);
-        }
     }
 
+    @Override
     public void refresh(T object) {
         original.refresh(object);
-        if(cache != null) {
-            cache.refresh(object);
-        }
     }
 
     @Override
@@ -465,82 +405,119 @@ public class ObjectCacheList<T extends StoredObject> implements List<T>, AutoClo
         if(comparator == null) {
             return;
         }
-        currentComparator = null;
-        if(cache != original) {
-            cache.close();
-        }
         ObjectCache<T> c = original.sort(comparator);
-        cache = c;
         if(c == original) {
             return;
         }
         original.close();
         original = c;
+        rebuild();
     }
 
+    @Override
     public void order(Comparator<? super T> comparator) {
-        filter(currentFilter, comparator);
+        if(comparator == currentComparator) {
+            return;
+        }
+        if(comparator == null) {
+            currentComparator = null;
+            if(sorted == filtered) {
+                return;
+            }
+            sorted.close();
+            sorted = filtered;
+            return;
+        }
+        if(sorted != filtered) {
+            sorted.close();
+        }
+        currentComparator = comparator;
+        sorted = filtered.sort(currentComparator);
     }
 
+    @Override
     public void filter(Predicate<? super T> filter) {
-        filter(filter, currentComparator);
-    }
-
-    public void filter(Predicate<? super T> filter, Comparator<? super T> comparator) {
-        if(filter == currentFilter && comparator == currentComparator) { // No change
-            return;
-        }
-        if(filter == null && comparator == null) { // No filter or sort
-            apply(null, null); // Reset to original
-            return;
-        }
         if(filter == currentFilter) {
-            apply(comparator);
             return;
         }
-        apply(filter, comparator); // Apply both
-    }
-
-    private void apply(Comparator<? super T> comparator) {
-        currentComparator = comparator;
-        ObjectCache<T> c = cache.sort(currentComparator); // Cache contains already filtered data
-        if(c == cache) {
+        if(filter == null) {
+            currentFilter = null;
+            if(filtered == original) {
+                return;
+            }
+            if(sorted != filtered) {
+                sorted.close();
+            }
+            filtered.close();
+            filtered = original;
+            sorted = currentComparator == null ? filtered : filtered.sort(currentComparator);
             return;
         }
-        if(cache != original) {
-            cache.close();
-        }
-        cache = c;
-    }
-
-    private void apply(Predicate<? super T> filter, Comparator<? super T> comparator) {
         currentFilter = filter;
+        rebuild();
+    }
+
+    @Override
+    public void filter(Predicate<? super T> filter, Comparator<? super T> comparator) {
+        if(filter == currentFilter && comparator == currentComparator) {
+            return;
+        }
+        if(filter == null && comparator == null) {
+            if(sorted != filtered) {
+                sorted.close();
+            }
+            if(filtered != original) {
+                filtered.close();
+            }
+            sorted = filtered = original;
+            return;
+        }
+        if(filter == currentFilter) { // Filter not changed
+            order(comparator);
+            return;
+        }
+        if(comparator == currentComparator) { // Sorter not changed
+            filter(filter);
+            return;
+        }
         currentComparator = comparator;
-        apply();
+        currentFilter = filter;
+        rebuild();
     }
 
-    private void apply() {
-        if(cache != original) {
-            cache.close();
-            cache = original;
+    private void rebuild() {
+        if(sorted != filtered) {
+            sorted.close();
         }
-        if(currentFilter != null) {
-            cache = cache.filter(currentFilter);
+        if(filtered != original) {
+            filtered.close();
         }
-        if(currentComparator != null) {
-            apply(currentComparator);
-        }
+        filtered = currentFilter == null ? original : original.filter(currentFilter);
+        sorted = currentComparator == null ? filtered : filtered.sort(currentComparator);
     }
 
+    @Override
     public final Predicate<? super T> getFilter() {
         return currentFilter;
     }
 
+    @Override
     public final Comparator<? super T> getComparator() {
         return currentComparator;
     }
 
+    @Override
     public Stream<T> stream(int startingIndex, int endingIndex) {
-        return cache.stream(startingIndex, endingIndex);
+        return sorted.stream(startingIndex, endingIndex);
+    }
+
+    @Override
+    public Stream<T> streamAll(int startingIndex, int endingIndex) {
+        return original.stream(startingIndex, endingIndex);
+    }
+
+    @Override
+    public int getCacheLevel() {
+        return original.getCacheLevel();
     }
 }

@@ -2,6 +2,7 @@ package com.storedobject.ui;
 
 import com.storedobject.core.*;
 import com.storedobject.ui.util.LinkGridButtons;
+import com.storedobject.vaadin.DataList;
 import com.storedobject.vaadin.View;
 
 import java.util.stream.Stream;
@@ -39,7 +40,7 @@ public class ReferenceLinkGrid<T extends StoredObject> extends ObjectGrid<T> imp
 
         @Override
         public boolean isAllowAny() {
-            return getDataProvider().isAllowAny();
+            return getObjectLoader().isAllowAny();
         }
     };
 
@@ -48,12 +49,22 @@ public class ReferenceLinkGrid<T extends StoredObject> extends ObjectGrid<T> imp
     }
 
     public ReferenceLinkGrid(ObjectLinkField<T> linkField, Iterable<String> columns) {
-        super(linkField.getObjectClass(), columns, new EditableObjectList<>(linkField.getObjectClass(), linkField.isAllowAny()));
+        super(new ObjectMemoryList<>(linkField.getObjectClass(), linkField.isAllowAny()), columns);
         this.linkField = linkField;
         this.link = linkField.getLink();
         buttonPanel = new LinkGridButtons<>(this);
         //noinspection unchecked
         createColumn("*", o -> isEdited(o) ? "*" : (isAdded(o) ? "+" : (isDeleted(o) ? "-" : "")));
+    }
+
+    @Override
+    protected EditableObjectListProvider<T> createListDataProvider(DataList<T> data) {
+        return new EditableObjectListProvider<>(getObjectClass(), data);
+    }
+
+    @Override
+    public EditableObjectListProvider<T> getDataProvider() {
+        return (EditableObjectListProvider<T>) super.getDataProvider();
     }
 
     @Override
@@ -83,11 +94,6 @@ public class ReferenceLinkGrid<T extends StoredObject> extends ObjectGrid<T> imp
     }
 
     @Override
-    public Class<T> getObjectClass() {
-        return super.getObjectClass();
-    }
-
-    @Override
     public StoredObjectUtility.Link<T> getLink() {
         return link;
     }
@@ -108,8 +114,8 @@ public class ReferenceLinkGrid<T extends StoredObject> extends ObjectGrid<T> imp
     }
 
     @Override
-    public EditableObjectList<T> getEditableList() {
-        return (EditableObjectList<T>) getDataProvider();
+    public EditableObjectListProvider<T> getEditableList() {
+        return (EditableObjectListProvider<T>) getObjectLoader();
     }
 
     @Override
@@ -127,7 +133,6 @@ public class ReferenceLinkGrid<T extends StoredObject> extends ObjectGrid<T> imp
         return null;
     }
 
-    @Override
     public boolean contains(T object) {
         return getEditableList().contains(object);
     }
@@ -155,7 +160,7 @@ public class ReferenceLinkGrid<T extends StoredObject> extends ObjectGrid<T> imp
         if(contains(object)) {
             return;
         }
-        add(object);
+        getEditableList().add(object);
         if(size() == 1) {
             buttonPanel.changed();
         }
@@ -163,7 +168,7 @@ public class ReferenceLinkGrid<T extends StoredObject> extends ObjectGrid<T> imp
 
     @Override
     public void deleted(T object) {
-        delete(object);
+        getEditableList().delete(object);
         if(size() == 0) {
             buttonPanel.changed();
         }
@@ -280,5 +285,10 @@ public class ReferenceLinkGrid<T extends StoredObject> extends ObjectGrid<T> imp
     @Override
     public Stream<T> streamAll() {
         return super.streamAll();
+    }
+
+    @Override
+    public Stream<T> stream() {
+        return super.stream();
     }
 }

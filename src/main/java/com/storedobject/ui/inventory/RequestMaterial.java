@@ -30,7 +30,7 @@ public class RequestMaterial extends AbstractRequestMaterial {
     @Override
     void created() {
         super.created();
-        setExtraFilter("Status<=1");
+        setFixedFilter("Status<=1");
     }
 
     @Override
@@ -44,7 +44,7 @@ public class RequestMaterial extends AbstractRequestMaterial {
         buttonPanel.add(new Button("Send Request", VaadinIcon.PAPERPLANE, e -> send()));
         buttonPanel.add(new ConfirmButton("Foreclose", "close", e -> foreclose()));
         Checkbox h = new Checkbox("Include History");
-        h.addValueChangeListener(e -> setExtraFilter(e.getValue() ? null : "Status<=1"));
+        h.addValueChangeListener(e -> setFixedFilter(e.getValue() ? null : "Status<=1"));
         buttonPanel.add(h);
         buttonPanel.add(new Button("\u21f0 Receive Screen", VaadinIcon.TRUCK, e -> receive()));
     }

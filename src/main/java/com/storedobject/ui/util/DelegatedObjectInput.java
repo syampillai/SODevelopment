@@ -6,7 +6,6 @@ import com.storedobject.ui.ObjectInput;
 import com.vaadin.flow.component.Component;
 
 import java.util.function.Consumer;
-import java.util.function.Predicate;
 
 public interface DelegatedObjectInput<T extends StoredObject> extends ObjectInput<T> {
     
@@ -25,11 +24,6 @@ public interface DelegatedObjectInput<T extends StoredObject> extends ObjectInpu
     @Override
     default void setFilter(FilterProvider filterProvider) {
         getObjectInput().setFilter(filterProvider);
-    }
-
-    @Override
-    default void filter(Predicate<T> filter) {
-        getObjectInput().filter(filter);
     }
 
     @Override

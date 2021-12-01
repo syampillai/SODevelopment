@@ -1,30 +1,29 @@
 package com.storedobject.ui;
 
-import com.storedobject.common.FilterProvider;
 import com.storedobject.common.ResourceDisposal;
 import com.storedobject.common.ResourceOwner;
-import com.storedobject.core.ObjectIterator;
-import com.storedobject.core.ObjectSearchFilter;
-import com.storedobject.core.StoredObject;
-import com.storedobject.ui.util.*;
+import com.storedobject.common.SORuntimeException;
+import com.storedobject.core.ObjectList;
+import com.storedobject.core.*;
+import com.storedobject.ui.util.ObjectAdder;
+import com.storedobject.ui.util.ViewFilter;
 import com.storedobject.vaadin.ComboField;
 import com.storedobject.vaadin.ImageButton;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ItemLabelGenerator;
 import com.vaadin.flow.component.icon.VaadinIcon;
-import com.vaadin.flow.data.provider.BackEndDataProvider;
-import com.vaadin.flow.data.provider.DataProvider;
 
+import javax.annotation.Nonnull;
 import java.util.List;
 import java.util.function.Consumer;
-import java.util.function.Predicate;
 
-public class ObjectComboField<T extends StoredObject> extends ComboField<T> implements ObjectInput<T>, ResourceOwner {
+public class ObjectComboField<T extends StoredObject> extends ComboField<T>
+        implements ObjectInput<T>, ResourceOwner, ObjectLoader<T> {
 
-    private ObjectDataProvider<T, String> objectProvider;
+    private final ObjectListProvider<T> objectProvider;
     private String label;
     private ImageButton addButton;
-    private AbstractObjectDataProvider.ObjectAdder<T> objectAdder;
+    private ObjectAdder<T> objectAdder;
 
     public ObjectComboField(Class<T> objectClass) {
         this(objectClass, false);
@@ -94,8 +93,9 @@ public class ObjectComboField<T extends StoredObject> extends ComboField<T> impl
         this(label, objectClass, condition, orderBy, any,false);
     }
 
-    public ObjectComboField(String label, Class<T> objectClass, String condition, String orderBy, boolean any, boolean allowAdd) {
-        this(label, new ObjectSupplier<>(objectClass, condition, orderBy, any, true), allowAdd);
+    public ObjectComboField(String label, Class<T> objectClass, String condition, String orderBy, boolean any,
+                            boolean allowAdd) {
+        this(label, new ObjectCacheList<>(objectClass, condition, orderBy, any), allowAdd);
     }
 
     public ObjectComboField(List<T> list) {
@@ -127,12 +127,14 @@ public class ObjectComboField<T extends StoredObject> extends ComboField<T> impl
     }
 
     public ObjectComboField(String label, Class<T> objectClass, List<T> list, boolean allowAdd) {
-        this(label, new ObjectListProvider<>(objectClass, list), allowAdd);
+        this(label, new ObjectMemoryList<>(checkClass(objectClass, list)), allowAdd);
+        objectProvider.load(list);
     }
 
-    protected ObjectComboField(String label, ObjectDataProvider<T, String> objectProvider, boolean allowAdd) {
+    protected ObjectComboField(String label, ObjectList<T> objectCache, boolean allowAdd) {
         super(label);
-        setProvider(objectProvider);
+        this.objectProvider = new ObjectListProvider<>(objectCache);
+        setItems(objectProvider);
         setItemLabelGenerator(StoredObject::toDisplay);
         if(allowAdd && !isAllowAny()) {
             ObjectField.checkDetailClass(this.objectProvider.getObjectClass(), label);
@@ -143,23 +145,24 @@ public class ObjectComboField<T extends StoredObject> extends ComboField<T> impl
         setSpellCheck(false);
     }
 
-    private void addNew() {
-        if(objectAdder == null) {
-            objectAdder = ObjectDataProvider.ObjectAdder.create(objectProvider,this);
-        }
-        getElement().callJsFunction("close").then(r -> objectAdder.add());
-    }
-
-    private void setProvider(DataProvider<T, String> dataProvider) {
-        if(dataProvider instanceof ObjectDataProvider) {
-            this.objectProvider = (ObjectDataProvider<T, String>) dataProvider;
-            if(this.objectProvider instanceof BackEndDataProvider) {
+    private static <O extends StoredObject> Class<O> checkClass(Class<O> objectClass, List<O> list) {
+        if(objectClass == null) {
+            if(list != null && !list.isEmpty()) {
                 //noinspection unchecked
-                setItems((BackEndDataProvider<T, String>)this.objectProvider);
-            } else {
-                setItems(this.objectProvider);
+                objectClass = (Class<O>) list.get(0).getClass();
             }
         }
+        if(objectClass == null) {
+            throw new SORuntimeException("Can't determine Object's class!");
+        }
+        return objectClass;
+    }
+
+    private void addNew() {
+        if(objectAdder == null) {
+            objectAdder = ObjectAdder.create(objectProvider,this);
+        }
+        getElement().callJsFunction("close").then(r -> objectAdder.add());
     }
 
     @Override
@@ -168,37 +171,36 @@ public class ObjectComboField<T extends StoredObject> extends ComboField<T> impl
     }
 
     @Override
+    public ObjectListProvider<T> getObjectLoader() {
+        return objectProvider;
+    }
+
+    @Override
     public void setItemLabelGenerator(ItemLabelGenerator<T> itemLabelGenerator) {
         ViewFilter<T> viewFilter = objectProvider.getViewFilter();
-        if(viewFilter == null) {
-            viewFilter = new ViewFilter<>(objectProvider);
-        }
-        if(itemLabelGenerator == null) {
-            viewFilter.setObjectConverter(null);
-        } else {
-            viewFilter.setObjectConverter(itemLabelGenerator::apply);
-        }
+        viewFilter.setObjectConverter(itemLabelGenerator);
         super.setItemLabelGenerator(itemLabelGenerator);
     }
 
     @Override
-    public Class<T> getObjectClass() {
-        return objectProvider.getObjectClass();
+    public void load(String condition, String orderBy) {
+        objectProvider.load(condition, orderBy);
     }
 
     @Override
-    public boolean isAllowAny() {
-        return objectProvider.isAllowAny();
+    public void load(int linkType, StoredObject master, String condition, String orderBy) {
+        objectProvider.load(linkType, master, condition, orderBy);
+    }
+
+    @Nonnull
+    @Override
+    public ObjectLoadFilter<T> getLoadFilter() {
+        return objectProvider.getLoadFilter();
     }
 
     @Override
-    public void setFilter(FilterProvider filterProvider) {
-        objectProvider.setFilter(filterProvider);
-    }
-
-    @Override
-    public void filter(Predicate<T> filter) {
-        objectProvider.filter(filter);
+    public void applyFilter() {
+        objectProvider.applyFilter();
     }
 
     @Override
@@ -227,8 +229,18 @@ public class ObjectComboField<T extends StoredObject> extends ComboField<T> impl
         return objectProvider.getObjectCount();
     }
 
+    @Override
+    public T get(int index) {
+        return objectProvider.get(index);
+    }
+
+    @Override
+    public int indexOf(T object) {
+        return objectProvider.indexOf(object);
+    }
+
     public T getObject(int index) {
-        return objectProvider.getItem(index);
+        return objectProvider.get(index);
     }
 
     public void setFirstValue() {
@@ -236,6 +248,11 @@ public class ObjectComboField<T extends StoredObject> extends ComboField<T> impl
             setValue(getObject(0));
         }
         setPlaceholder("");
+    }
+
+    @Override
+    public Class<T> getObjectClass() {
+        return objectProvider.getObjectClass();
     }
 
     @Override
@@ -270,82 +287,8 @@ public class ObjectComboField<T extends StoredObject> extends ComboField<T> impl
     }
 
     @Override
-    public Predicate<T> getFilterPredicate() {
-        return objectProvider.getFilterPredicate();
-    }
-
-    @Override
-    public void setLoadFilter(Predicate<T> filter) {
-        objectProvider.setLoadFilter(filter);
-        reget();
-    }
-
-    @Override
-    public Predicate<T> getLoadFilter() {
-        return objectProvider.getLoadFilter();
-    }
-
-    @Override
-    public void setFilter(FilterProvider filterProvider, String extraFilterClause) {
-        objectProvider.setFilter(filterProvider, extraFilterClause);
-        reget();
-    }
-
-    @Override
-    public void setFilter(ObjectSearchFilter filter) {
-        objectProvider.setFilter(filter);
-        reget();
-    }
-
-    @Override
-    public ObjectSearchFilter getFilter(boolean create) {
-        return objectProvider.getFilter(create);
-    }
-
-    @Override
-    public void setFilter(String filterClause) {
-        objectProvider.setFilter(filterClause);
-        reget();
-    }
-
-    protected T filter(T value) {
-        if(value == null) {
-            return null;
-        }
-        Predicate<T> predicate = getFilterPredicate();
-        if(predicate != null && !predicate.test(value)) {
-            return null;
-        }
-        predicate = getLoadFilter();
-        if(predicate != null && !predicate.test(value)) {
-            return null;
-        }
-        ObjectSearchFilter filter = objectProvider.getFilter(false);
-        if(filter == null) {
-            return value;
-        }
-        String c = filter.getFilter(null);
-        if(c == null || c.isEmpty()) {
-            return value;
-        }
-        //noinspection unchecked
-        return (T) StoredObject.get(value.getClass(), "T.Id=" + value.getId() + " AND (" + c + ")");
-    }
-
-    private void reget() {
-        T v1 = getValue();
-        if(v1 == null) {
-            return;
-        }
-        T v2 = filter(v1);
-        if(v2 == null) {
-            setValue((T)null);
-        }
-    }
-
-    @Override
-    public void filterChanged() {
-        objectProvider.filterChanged();
+    public void load(ObjectIterator<T> objects) {
+        objectProvider.load(objects);
     }
 
     @Override
@@ -354,11 +297,17 @@ public class ObjectComboField<T extends StoredObject> extends ComboField<T> impl
     }
 
     @Override
-    public void load(ObjectIterator<T> objects) {
-        if(objects == null) {
-            objects = ObjectIterator.create();
-        }
-        clear();
-        setProvider(new ObjectListProvider<>(getObjectClass(), objects.filter(getLoadFilter()).toList()));
+    public void clear() {
+        super.clear();
+    }
+
+    @Override
+    public void setFilter(String filterClause) {
+        super.setFilter(filterClause);
+    }
+
+    @Override
+    public boolean isAllowAny() {
+        return objectProvider.isAllowAny();
     }
 }

@@ -3,7 +3,6 @@ package com.storedobject.ui;
 import com.storedobject.core.JavaClassLoader;
 import com.storedobject.core.StoredObject;
 import com.storedobject.ui.util.LogicParser;
-import com.storedobject.ui.util.ObjectDataProvider;
 
 import java.lang.reflect.Constructor;
 
@@ -36,7 +35,7 @@ public class ObjectBrowserEditor<T extends StoredObject> extends ObjectBrowser<T
     }
 
     public ObjectBrowserEditor(Class<T> objectClass, Iterable<String> browseColumns, int actions) {
-        this(objectClass, browseColumns, actions, null, (String)null);
+        this(objectClass, browseColumns, actions, null, null);
     }
 
     public ObjectBrowserEditor(Class<T> objectClass, Iterable<String> browseColumns, int actions, Iterable<String> filterColumns) {
@@ -49,15 +48,6 @@ public class ObjectBrowserEditor<T extends StoredObject> extends ObjectBrowser<T
 
     public ObjectBrowserEditor(Class<T> objectClass, Iterable<String> browseColumns, int actions, Iterable<String> filterColumns, String caption) {
         this(objectClass, browseColumns, actions, filterColumns, caption, null);
-    }
-
-    public ObjectBrowserEditor(Class<T> objectClass, int actions, String caption, ObjectDataProvider<T, Void> dataProvider) {
-        this(objectClass, null, actions, caption, dataProvider);
-    }
-
-    public ObjectBrowserEditor(Class<T> objectClass, Iterable<String> browseColumns, int actions, String caption, ObjectDataProvider<T, Void> dataProvider) {
-        super(objectClass, browseColumns, actions, caption, dataProvider);
-        setSplitView();
     }
 
     ObjectBrowserEditor(Class<T> objectClass, Iterable<String> browseColumns, int actions, Iterable<String> filterColumns,

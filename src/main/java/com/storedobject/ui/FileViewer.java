@@ -2,8 +2,8 @@ package com.storedobject.ui;
 
 import com.storedobject.common.SORuntimeException;
 import com.storedobject.common.StringList;
+import com.storedobject.core.ObjectForest;
 import com.storedobject.core.*;
-import com.storedobject.ui.util.ObjectForestSupplier;
 import com.storedobject.vaadin.ActionForm;
 import com.storedobject.vaadin.Button;
 import com.storedobject.vaadin.CloseableView;
@@ -11,7 +11,11 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.VaadinIcon;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 public class FileViewer extends ObjectForestViewer<FileFolder> implements CloseableView {
@@ -38,9 +42,9 @@ public class FileViewer extends ObjectForestViewer<FileFolder> implements Closea
 
     public FileViewer(String path, String caption) {
         super(FileFolder.class, StringList.EMPTY);
+        getDataProvider().getForest().setListLinks(FileViewer::list);
         filter.setVisible(false);
         addConstructedListener(o -> con());
-        getDataSupplier().setListLinks(new FolderLister());
         if(path == null) {
             path = caption;
         }
@@ -71,8 +75,9 @@ public class FileViewer extends ObjectForestViewer<FileFolder> implements Closea
     }
 
     @Override
-    public ObjectSearchBuilder<FileFolder> createSearchBuilder(StringList searchColumns) {
-        return null;
+    public ObjectSearchBuilder<FileFolder> createSearchBuilder(StringList searchColumns,
+                                                               Consumer<ObjectSearchBuilder<FileFolder>> changeConsumer) {
+        return super.createSearchBuilder(searchColumns, changeConsumer);
     }
 
     @Override
@@ -86,8 +91,8 @@ public class FileViewer extends ObjectForestViewer<FileFolder> implements Closea
     }
 
     private String nodeDisplay(Object item) {
-        if(item instanceof ObjectForestSupplier.LinkObject) {
-            item = ((ObjectForestSupplier.LinkObject) item).getObject();
+        if(item instanceof ObjectForest.LinkObject) {
+            item = ((ObjectForest.LinkObject) item).getObject();
         }
         return "<iron-icon icon='vaadin:" +
                 (item instanceof FileData ? "file-o" : "folder-o") +
@@ -110,7 +115,7 @@ public class FileViewer extends ObjectForestViewer<FileFolder> implements Closea
 
     private Component createViewMenu2(Object item) {
         Object o = item;
-        if(item instanceof ObjectForestSupplier.LinkObject lo) {
+        if(item instanceof ObjectForest.LinkObject lo) {
             o = lo.getObject();
         }
         if(o instanceof FileData fileData) {
@@ -138,7 +143,7 @@ public class FileViewer extends ObjectForestViewer<FileFolder> implements Closea
     }
 
     private void opened(Object item) {
-        if(item instanceof ObjectForestSupplier.LinkObject lo) {
+        if(item instanceof ObjectForest.LinkObject lo) {
             if(lo.getObject() instanceof FileData fileData) {
                 FileCirculation fc = circ(fileData);
                 if(fc != null && fc.getStatus() == 0) {
@@ -154,7 +159,7 @@ public class FileViewer extends ObjectForestViewer<FileFolder> implements Closea
     }
 
     private Component createDownloadMenu(Object item) {
-        if(item instanceof ObjectForestSupplier.LinkObject lo) {
+        if(item instanceof ObjectForest.LinkObject lo) {
             if(lo.getObject() instanceof FileData fileData) {
                 return new Button("Download", e -> getApplication().download(fileData.getFile())).asSmall();
             }
@@ -163,7 +168,7 @@ public class FileViewer extends ObjectForestViewer<FileFolder> implements Closea
     }
 
     private Component createReadStamp(Object item) {
-        if(item instanceof ObjectForestSupplier.LinkObject lo) {
+        if(item instanceof ObjectForest.LinkObject lo) {
             if(lo.getObject() instanceof FileData fileData) {
                 String rs = fileData.getReadStamp();
                 if(rs != null) {
@@ -184,7 +189,7 @@ public class FileViewer extends ObjectForestViewer<FileFolder> implements Closea
     }
 
     private void markAsRead(Object item) {
-        if(item instanceof ObjectForestSupplier.LinkObject lo) {
+        if(item instanceof ObjectForest.LinkObject lo) {
             if(lo.getObject() instanceof FileData fileData) {
                 final StreamData sd = fileData.getFile();
                 ELabel m = new ELabel("I confirm that I ");
@@ -213,25 +218,21 @@ public class FileViewer extends ObjectForestViewer<FileFolder> implements Closea
         }
     }
 
-    static class FolderLister implements ObjectForestSupplier.ListLinks {
-
-        @Override
-        public ObjectIterator<? extends StoredObject> list(StoredObjectUtility.Link<?> link, StoredObject master) {
-            if(master instanceof FileFolder) {
-                if(FileFolder.class.isAssignableFrom(link.getObjectClass())) {
-                    return ((FileFolder) master).listFolders();
-                }
-                return ((FileFolder) master).listFiles();
+    public static ObjectIterator<? extends StoredObject> list(StoredObjectUtility.Link<?> link, StoredObject master) {
+        if(master instanceof FileFolder) {
+            if(FileFolder.class.isAssignableFrom(link.getObjectClass())) {
+                return ((FileFolder) master).listFolders();
             }
-            return null;
+            return ((FileFolder) master).listFiles();
         }
+        return ObjectIterator.create();
     }
 
     private FileCirculation circ(Object o) {
         if(o == null) {
             return null;
         }
-        if(o instanceof ObjectForestSupplier.LinkObject lo) {
+        if(o instanceof ObjectForest.LinkObject lo) {
             o = lo.getObject();
         }
         return o instanceof FileData f ? circ(f) : null;

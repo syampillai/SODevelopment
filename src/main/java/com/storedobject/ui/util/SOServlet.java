@@ -41,15 +41,20 @@ public class SOServlet extends VaadinServlet {
     }
 
     private boolean isAllowedRequestOrigin(String origin) {
-        if(CORS.isEmpty()) {
-            Arrays.stream(GlobalProperty.get("SECURITY-CORS").split(","))
-                    .map(String::trim).filter(c -> !c.isBlank()).forEach(CORS::add);
+        try {
             if(CORS.isEmpty()) {
-                CORS.add(".*");
+                Arrays.stream(GlobalProperty.get("SECURITY-CORS").split(","))
+                        .map(String::trim).filter(c -> !c.isBlank()).forEach(CORS::add);
+                if(CORS.isEmpty()) {
+                    CORS.add(".*");
+                }
             }
-        }
-        if(CORS.stream().anyMatch(origin::matches)) {
-            return true;
+            if(CORS.stream().anyMatch(origin::matches)) {
+                return true;
+            }
+        } catch(Throwable error) {
+            CORS.add("_");
+            return false;
         }
         ApplicationServer.log(Application.get(), "CORS rejected: " + origin);
         return false;

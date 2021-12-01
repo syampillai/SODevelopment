@@ -1,6 +1,6 @@
 package com.storedobject.ui.util;
 
 @FunctionalInterface
-public interface ObjectDataLoadedListener {
+public interface DataLoadedListener {
     void dataLoaded();
 }

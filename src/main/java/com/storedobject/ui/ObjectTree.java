@@ -1,31 +1,26 @@
 package com.storedobject.ui;
 
 import com.storedobject.core.*;
-import com.storedobject.ui.util.ObjectDataLoadedListener;
-import com.storedobject.ui.util.ObjectTreeListProvider;
+import com.storedobject.ui.util.DataLoadedListener;
 import com.storedobject.vaadin.DataTreeGrid;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ItemLabelGenerator;
 import com.vaadin.flow.component.splitlayout.SplitLayout;
-import com.vaadin.flow.data.provider.hierarchy.HierarchicalDataProvider;
-import com.vaadin.flow.data.provider.hierarchy.HierarchicalQuery;
 import com.vaadin.flow.shared.Registration;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
+import java.util.function.Consumer;
 
-public class ObjectTree<T extends StoredObject> extends DataTreeGrid<T> implements Transactional, ObjectsSetter<T> {
+public class ObjectTree<T extends StoredObject> extends DataTreeGrid<T> implements ObjectGridData<T, T> {
 
-    private final List<ObjectDataLoadedListener> dataLoadedListeners = new ArrayList<>();
-    ObjectTreeListProvider<T> dataProvider;
-    private final List<ObjectChangedListener<T>> objectChangedListeners = new ArrayList<>();
+    private final List<DataLoadedListener> dataLoadedListeners = new ArrayList<>();
+    private List<ObjectChangedListener<T>> objectChangedListeners;
     private ObjectEditor<T> editor;
     private InternalChangedListener internalChangedListener;
     private NOGenerator noGenerator;
     private NewObject<T> newObject;
     private Logic logic;
-    private Registration loadedIndicator;
     private SplitLayout layout;
 
     public ObjectTree(Class<T> objectClass) {
@@ -57,29 +52,23 @@ public class ObjectTree<T extends StoredObject> extends DataTreeGrid<T> implemen
     }
 
     public ObjectTree(Class<T> objectClass, Iterable<String> columns, boolean any, int linkType) {
-        this(objectClass, columns, ObjectTreeBuilder.create(linkType, any));
+        this(false, objectClass, columns, any, linkType);
     }
 
-    public ObjectTree(Class<T> objectClass, ObjectTreeBuilder treeBuilder) {
-        this(objectClass, null, treeBuilder);
-    }
-
-    public ObjectTree(Class<T> objectClass, Iterable<String> columns, ObjectTreeBuilder treeBuilder) {
+    public ObjectTree(boolean large, Class<T> objectClass, Iterable<String> columns, boolean any, int linkType) {
         super(objectClass, columns);
-        setDataProvider(new ObjectTreeListProvider<>(new ArrayList<>(), treeBuilder));
+        setDataProvider(new ObjectTreeProvider<>(new com.storedobject.core.ObjectTree<>(large, linkType, objectClass, any)));
+        getDataProvider().addDataLoadedListener(this::loadedInt);
     }
 
     @Override
-    public void setDataProvider(HierarchicalDataProvider<T, ?> dataProvider) {
-        if(dataProvider instanceof ObjectTreeListProvider) {
-            //noinspection unchecked
-            this.dataProvider = (ObjectTreeListProvider<T>) dataProvider;
-            if(loadedIndicator != null) {
-                loadedIndicator.remove();
-            }
-            loadedIndicator = this.dataProvider.addObjectDataLoadedListener(this::loadedInt);
-            super.setDataProvider(dataProvider);
-        }
+    public final ObjectTreeProvider<T> getObjectLoader() {
+        return getDataProvider();
+    }
+
+    @Override
+    public final ObjectTreeProvider<T> getDataProvider() {
+        return (ObjectTreeProvider<T>) super.getDataProvider();
     }
 
     @Override
@@ -87,13 +76,13 @@ public class ObjectTree<T extends StoredObject> extends DataTreeGrid<T> implemen
         return super.getDataClass();
     }
 
-    public Registration addObjectDataLoadedListener(ObjectDataLoadedListener listener) {
+    public Registration addObjectDataLoadedListener(DataLoadedListener listener) {
         dataLoadedListeners.add(listener);
         return () -> dataLoadedListeners.remove(listener);
     }
 
     public void setItemLabelGenerator(ItemLabelGenerator<T> itemLabelGenerator) {
-        dataProvider.setItemLabelGenerator(itemLabelGenerator);
+        getDataProvider().setItemLabelGenerator(itemLabelGenerator);
     }
 
     void protect() {
@@ -117,46 +106,12 @@ public class ObjectTree<T extends StoredObject> extends DataTreeGrid<T> implemen
         return logic;
     }
 
-    @SuppressWarnings("unchecked")
-    private void loadFiltered(Iterable<? extends StoredObject> list, boolean filter) {
-        deselectAll();
-        ObjectIterator<T> oi;
-        if(list == null) {
-            oi = ObjectIterator.create();
-        } else {
-            ObjectIterator<StoredObject> oiSO = (ObjectIterator<StoredObject>)ObjectIterator.create(list.iterator()).filter(Objects::nonNull);
-            oi = oiSO.map(this::convert).filter(Objects::nonNull);
-        }
-        if(filter) {
-            oi = oi.filter(o -> dataProvider.getTreeBuilder().getParent(o) == null);
-        }
-        setDataProvider(new ObjectTreeListProvider<>(oi, dataProvider.getTreeBuilder()));
-        oi.close();
-        refresh();
-    }
-
-    private void loadFiltered(Iterable<? extends StoredObject> list) {
-        loadFiltered(list, true);
-    }
-
-    public void load() {
-        loadFiltered(StoredObject.list(getObjectClass()));
-    }
-
-    public void load(Iterable<? extends StoredObject> list) {
-        loadFiltered(list, false);
-    }
-
-    public void load(T root) {
-        load(ObjectIterator.create(root));
-    }
-
     public void loaded() {
     }
 
     private void loadedInt() {
         loaded();
-        dataLoadedListeners.forEach(ObjectDataLoadedListener::dataLoaded);
+        dataLoadedListeners.forEach(DataLoadedListener::dataLoaded);
     }
 
     @Override
@@ -203,39 +158,37 @@ public class ObjectTree<T extends StoredObject> extends DataTreeGrid<T> implemen
 
     @Override
     public void setObjects(Iterable<T> objects) {
-        load(objects);
+        load(ObjectIterator.create(objects.iterator()));
     }
 
-    @SuppressWarnings("unchecked")
-    private T convert(StoredObject so) {
-        if(so == null || !getObjectClass().isAssignableFrom(so.getClass())) {
-            return null;
-        }
-        if(!dataProvider.getTreeBuilder().isAllowAny() && getObjectClass() != so.getClass()) {
-            return null;
-        }
-        return (T)so;
+    @Override
+    public void setObjectSetter(ObjectSetter<T> setter) {
     }
 
     public T getRoot() {
-        List<T> roots = dataProvider.listRoots();
+        List<T> roots = listRoots();
         return roots.size() == 1 ? roots.get(0) : null;
     }
 
     public List<T> listRoots() {
-        return dataProvider.listRoots();
+        return getDataProvider().getRoots();
     }
 
-    public void addObjectChangedListener(ObjectChangedListener<T> listener) {
-        if(listener != null) {
-            objectChangedListeners.add(listener);
+    @Override
+    public List<ObjectChangedListener<T>> getObjectChangedListeners(boolean create) {
+        if(objectChangedListeners == null && create) {
+            objectChangedListeners = new ArrayList<>();
         }
+        return objectChangedListeners;
     }
 
-    public void removeObjectChangedListener(ObjectChangedListener<T> listener) {
-        if(listener != internalChangedListener) {
-            objectChangedListeners.remove(listener);
-        }
+    @SafeVarargs
+    public final void setRoots(T... roots) {
+        setRoots(ObjectIterator.create(roots));
+    }
+
+    public final void setRoots(ObjectIterator<T> roots) {
+        load(roots);
     }
 
     @SuppressWarnings("unchecked")
@@ -243,7 +196,6 @@ public class ObjectTree<T extends StoredObject> extends DataTreeGrid<T> implemen
     public Application getApplication() {
         return super.getApplication();
     }
-
 
     public void setObjectEditor(ObjectEditor<T> editor) {
         if(this.editor != null) {
@@ -361,13 +313,7 @@ public class ObjectTree<T extends StoredObject> extends DataTreeGrid<T> implemen
      * @param includeGrandChildren Whether recursively include grand-children or not.
      */
     public void selectChildren(T parent, boolean includeGrandChildren) {
-        HierarchicalQuery<T, String> q = new HierarchicalQuery<>(null, parent);
-        dataProvider.fetchChildren(q).forEach(o -> {
-            select(o);
-            if(includeGrandChildren) {
-                selectChildren(o, true);
-            }
-        });
+        visitChildren(parent, this::select, includeGrandChildren);
     }
 
     /**
@@ -377,12 +323,17 @@ public class ObjectTree<T extends StoredObject> extends DataTreeGrid<T> implemen
      * @param includeGrandChildren Whether recursively include grand-children or not.
      */
     public void deselectChildren(T parent, boolean includeGrandChildren) {
-        HierarchicalQuery<T, String> q = new HierarchicalQuery<>(null, parent);
-        dataProvider.fetchChildren(q).forEach(o -> {
-            deselect(o);
-            if(includeGrandChildren) {
-                deselectChildren(o, true);
-            }
-        });
+        visitChildren(parent, this::deselect, includeGrandChildren);
+    }
+
+    /**
+     * Visit the children of the parent item.
+     *
+     * @param parent Parent item.
+     * @param consumer Consumer to consume the visit purpose.
+     * @param includeGrandChildren Whether recursively include grand-children or not.
+     */
+    public void visitChildren(T parent, Consumer<T> consumer, boolean includeGrandChildren) {
+        getDataProvider().visitChildren(parent, consumer, includeGrandChildren);
     }
 }

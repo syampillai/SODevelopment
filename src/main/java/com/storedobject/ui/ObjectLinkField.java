@@ -2,7 +2,6 @@ package com.storedobject.ui;
 
 import com.storedobject.common.ArrayListSet;
 import com.storedobject.core.*;
-import com.storedobject.ui.util.ObjectGridData;
 import com.storedobject.vaadin.View;
 import com.storedobject.vaadin.ViewDependent;
 import com.vaadin.flow.component.Component;
@@ -262,7 +261,7 @@ public final class ObjectLinkField<T extends StoredObject>
 
     @Override
     public void setObject(T object) {
-        @SuppressWarnings("unchecked") ObjectGridData<T> g = (ObjectGridData<T>) grid;
+        @SuppressWarnings("unchecked") ObjectGridData<T, ?> g = (ObjectGridData<T, ?>) grid;
         T o = g.convert(object);
         if(o == null) {
             return;
@@ -274,7 +273,7 @@ public final class ObjectLinkField<T extends StoredObject>
 
     @Override
     public void setObjects(Iterable<T> objects) {
-        @SuppressWarnings("unchecked") ObjectGridData<T> g = (ObjectGridData<T>) grid;
+        @SuppressWarnings("unchecked") ObjectGridData<T, ?> g = (ObjectGridData<T, ?>) grid;
         g.deselectAll();
         ObjectIterator<T> oi = ObjectIterator.create(objects.iterator()).filter(Objects::nonNull);
         add(oi.map(g::convert).filter(Objects::nonNull));
@@ -365,7 +364,7 @@ public final class ObjectLinkField<T extends StoredObject>
     }
 
     void trackChanges(BiConsumer<ObjectLinkField<T>, Boolean> tracker) {
-        BiConsumer<EditableObjectList<T>, Boolean> t = (list, fromClient) -> tracker.accept(this, fromClient);
+        BiConsumer<EditableObjectListProvider<T>, Boolean> t = (list, fromClient) -> tracker.accept(this, fromClient);
         if (grid == null) {
             new TrackerRegistration(t);
         } else {
@@ -375,7 +374,7 @@ public final class ObjectLinkField<T extends StoredObject>
 
     @Override
     public Registration addValueChangeListener(ValueChangeListener<? super ValueChangeEvent<StoredObjectLink<T>>> valueChangeListener) {
-        BiConsumer<EditableObjectList<T>, Boolean> t = (list, fromClient) -> {
+        BiConsumer<EditableObjectListProvider<T>, Boolean> t = (list, fromClient) -> {
             ValueChangeEvent<StoredObjectLink<T>> e = new ValueChangeEvent<>() {
                 @Override
                 public HasValue<?, StoredObjectLink<T>> getHasValue() {
@@ -443,9 +442,9 @@ public final class ObjectLinkField<T extends StoredObject>
     private class TrackerRegistration implements Registration {
 
         private Registration gridRegistration;
-        private final BiConsumer<EditableObjectList<T>, Boolean> tracker;
+        private final BiConsumer<EditableObjectListProvider<T>, Boolean> tracker;
 
-        private TrackerRegistration(BiConsumer<EditableObjectList<T>, Boolean> tracker) {
+        private TrackerRegistration(BiConsumer<EditableObjectListProvider<T>, Boolean> tracker) {
             this.tracker = tracker;
             if(registrations == null) {
                 registrations = new ArrayList<>();

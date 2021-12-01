@@ -1,8 +1,6 @@
 package com.storedobject.ui;
 
-import com.storedobject.common.IO;
-import com.storedobject.common.ResourceDisposal;
-import com.storedobject.common.ResourceOwner;
+import com.storedobject.core.Filtered;
 import com.storedobject.core.EditableList;
 import com.storedobject.core.EditorAction;
 import com.vaadin.flow.component.Focusable;
@@ -10,10 +8,7 @@ import com.vaadin.flow.component.HasValue;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.grid.ColumnTextAlign;
 import com.vaadin.flow.component.grid.Grid;
-import com.vaadin.flow.component.grid.dataview.GridDataView;
-import com.vaadin.flow.component.grid.dataview.GridListDataView;
 import com.vaadin.flow.component.grid.editor.Editor;
-import com.vaadin.flow.data.provider.DataProvider;
 import com.vaadin.flow.data.provider.ListDataProvider;
 import com.vaadin.flow.shared.Registration;
 
@@ -27,7 +22,7 @@ import java.util.stream.Stream;
  * @author Syam
  */
 @CssImport(value =  "./so/editable-grid/styles.css", themeFor = "vaadin-grid")
-public abstract class AbstractEditableGrid<T> extends DataGrid<T> implements EditableList<T>, ResourceOwner {
+public abstract class AbstractEditableGrid<T> extends AbstractListGrid<T> implements EditableList<T> {
 
     static final String NONE_MARK = "", EDITED_MARK = "*", ADDED_MARK = "+", DELETED_MARK = "-";
     private Column<T> markerColumn;
@@ -38,8 +33,8 @@ public abstract class AbstractEditableGrid<T> extends DataGrid<T> implements Edi
      *
      * @param objectClass Bean type
      */
-    public AbstractEditableGrid(Class<T> objectClass) {
-        this(objectClass, null);
+    public AbstractEditableGrid(Class<T> objectClass, Filtered<T> list) {
+        this(objectClass, list, null);
     }
 
     /**
@@ -47,26 +42,10 @@ public abstract class AbstractEditableGrid<T> extends DataGrid<T> implements Edi
      *
      * @param objectClass Bean type
      * @param columns Column names
-     */
-    public AbstractEditableGrid(Class<T> objectClass, Iterable<String> columns) {
-        this(objectClass, columns, null);
-    }
-
-    /**
-     * Constructor that will generate columns from the column names passed.
-     *
-     * @param objectClass Bean type
-     * @param columns Column names
-     * @param dataProvider Data provider.
      */
     @SuppressWarnings("unchecked")
-    public AbstractEditableGrid(Class<T> objectClass, Iterable<String> columns, EditableList<T> dataProvider) {
-        super(objectClass, columns);
-        if(dataProvider instanceof ListDataProvider) {
-            setItems((ListDataProvider<T>)dataProvider);
-        } else if(dataProvider instanceof DataProvider) {
-            setItems((DataProvider<T, Void>)dataProvider);
-        }
+    public AbstractEditableGrid(Class<T> objectClass, Filtered<T> list, Iterable<String> columns) {
+        super(objectClass, list, columns);
         //noinspection unchecked
         createColumn(EDITED_MARK, this::editMark);
         setClassNameGenerator(this::styleName);
@@ -75,16 +54,6 @@ public abstract class AbstractEditableGrid<T> extends DataGrid<T> implements Edi
         getElement().getClassList().add("so-editable-grid");
         getElement().setAttribute("theme", "wrap-cell-content");
         addConstructedListener(o -> addItemDoubleClickListener(e -> editItem(e.getItem(), e.getColumn())));
-    }
-
-    @SuppressWarnings("unchecked")
-    void resetProvider() {
-        DataProvider<T, ?> dp = getDataProvider();
-        if(dp instanceof ListDataProvider) {
-            setItems((ListDataProvider<T>)dp);
-        } else if(dp != null) {
-            setItems((DataProvider<T, Void>)dp);
-        }
     }
 
     /**
@@ -103,6 +72,11 @@ public abstract class AbstractEditableGrid<T> extends DataGrid<T> implements Edi
                 singleClick = null;
             }
         }
+    }
+
+    @Override
+    protected boolean isValid(ListDataProvider<T> dataProvider) {
+        return dataProvider instanceof EditableList;
     }
 
     /**
@@ -158,55 +132,12 @@ public abstract class AbstractEditableGrid<T> extends DataGrid<T> implements Edi
     }
 
     private String styleName(T item) {
-        switch (editMark(item)) {
-            case ADDED_MARK:
-                return "so-added";
-            case EDITED_MARK:
-                return "so-edited";
-            case DELETED_MARK:
-                return "so-deleted";
-        }
-        return null;
-    }
-
-    @Override
-    public final GridDataView<T> setItems(DataProvider<T, Void> dataProvider) {
-        GridDataView<T> gv = null;
-        if(dataProvider instanceof EditableList) {
-            DataProvider<T, ?> dp = super.getDataProvider();
-            boolean different = dataProvider != dp;
-            if(different && dp instanceof AutoCloseable) {
-                IO.close((AutoCloseable) dp);
-            }
-            gv = super.setItems(dataProvider);
-            if(different && dataProvider instanceof AutoCloseable) {
-                ResourceDisposal.register(this);
-            }
-        }
-        return gv;
-    }
-
-    @Override
-    public final GridListDataView<T> setItems(ListDataProvider<T> dataProvider) {
-        GridListDataView<T> gv = null;
-        if(dataProvider instanceof EditableList) {
-            DataProvider<T, ?> dp = super.getDataProvider();
-            boolean different = dataProvider != dp;
-            if(different && dp instanceof AutoCloseable) {
-                IO.close((AutoCloseable) dp);
-            }
-            gv = super.setItems(dataProvider);
-            if(different && dataProvider instanceof AutoCloseable) {
-                ResourceDisposal.register(this);
-            }
-        }
-        return gv;
-    }
-
-    @Override
-    public final AutoCloseable getResource() {
-        DataProvider<?,?> dp = getDataProvider();
-        return dp instanceof ResourceOwner ? ((ResourceOwner)dp).getResource() : null;
+        return switch(editMark(item)) {
+            case ADDED_MARK -> "so-added";
+            case EDITED_MARK -> "so-edited";
+            case DELETED_MARK -> "so-deleted";
+            default -> null;
+        };
     }
 
     /**
@@ -249,7 +180,7 @@ public abstract class AbstractEditableGrid<T> extends DataGrid<T> implements Edi
     }
 
     @Override
-    public boolean contains(T item) {
+    public boolean contains(Object item) {
         return getEditableList().contains(item);
     }
 
@@ -271,6 +202,11 @@ public abstract class AbstractEditableGrid<T> extends DataGrid<T> implements Edi
     @Override
     public Stream<T> streamAll() {
         return getEditableList().streamAll();
+    }
+
+    @Override
+    public Stream<T> stream() {
+        return getEditableList().stream();
     }
 
     @Override

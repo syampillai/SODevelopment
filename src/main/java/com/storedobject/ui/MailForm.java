@@ -62,7 +62,7 @@ public class MailForm extends DataForm implements Transactional {
         String userEmail = getTransactionManager().getUser().getPerson().getContact("email");
         senderField = new ObjectField<>("From", SenderGroup.class, ObjectField.Type.CHOICE);
         senderField.setValue((Id)null);
-        senderField.setLoadFilter(g -> {
+        senderField.setFilter(g -> {
             for(Sender s: StoredObject.list(Sender.class, "SenderGroup=" + g.getId(), true)) {
                 if(s.getFromAddress().equalsIgnoreCase(userEmail) || s.getReplyToAddress().equalsIgnoreCase(userEmail)) {
                     senderGroup = g;

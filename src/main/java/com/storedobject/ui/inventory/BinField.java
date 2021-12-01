@@ -41,9 +41,7 @@ public class BinField extends ObjectGetField<InventoryBin> {
         this.getter = getter;
         setStoreField(storeField);
         getSearcher().getSearchBuilder().removeSearchField("Store.Name");
-        filter = new ObjectSearchFilter();
-        filter.setFilterProvider(new InventoryFilterProvider());
-        super.setFilter(filter);
+        setFilter(new InventoryFilterProvider());
     }
 
     @Override
@@ -52,45 +50,29 @@ public class BinField extends ObjectGetField<InventoryBin> {
         if(getter.storeProvider == null) {
             getter.findStore(this.getParent().orElse(null));
         }
+        setFilter("");
     }
 
     @Override
-    public void setFilter(FilterProvider filterProvider, String extraFilterClause) {
-        extraFilterProvider = filterProvider;
-        filter.setCondition(extraFilterClause);
-        filterChanged();
-    }
-
-    @Override
-    public void setFilter(ObjectSearchFilter filter) {
+    public void setFilter(ObjectLoadFilter<InventoryBin> filter) {
         throw new UnsupportedOperationException();
     }
 
     public void setStore(InventoryStore store) {
         getter.storeProvider = store == null ? null : () -> store;
-        filterChanged();
+        applyFilter();
     }
 
     public void setStoreField(ObjectProvider<? extends InventoryStore> storeField) {
         getter.storeProvider = storeField;
-        filterChanged();
+        applyFilter();
     }
-
-    private final ObjectSearchFilter filter;
-    private FilterProvider extraFilterProvider;
 
     private class InventoryFilterProvider implements FilterProvider {
 
         @Override
         public String getFilterCondition() {
-            if(getter.storeProvider == null) {
-                return extraFilterProvider == null ? null : extraFilterProvider.getFilterCondition();
-            }
-            String f = "Store=" + getter.storeProvider.getObjectId();
-            if(extraFilterProvider != null) {
-                f += " AND (" + extraFilterProvider.getFilterCondition() + ")";
-            }
-            return f;
+            return getter.storeProvider == null ? null : ("Store=" + getter.storeProvider.getObjectId());
         }
     }
 

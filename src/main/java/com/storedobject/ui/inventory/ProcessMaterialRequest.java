@@ -6,7 +6,6 @@ import com.storedobject.ui.ELabel;
 import com.storedobject.ui.ELabelField;
 import com.storedobject.ui.HTMLText;
 import com.storedobject.ui.QuantityField;
-import com.storedobject.ui.util.AbstractObjectForestSupplier;
 import com.storedobject.vaadin.*;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.checkbox.Checkbox;
@@ -44,7 +43,7 @@ public class ProcessMaterialRequest extends AbstractRequestMaterial {
     @Override
     void created() {
         super.created();
-        setExtraFilter("Status IN (1,2)");
+        setFixedFilter("Status IN (1,2)");
     }
 
     @Override
@@ -56,7 +55,7 @@ public class ProcessMaterialRequest extends AbstractRequestMaterial {
     protected void addExtraButtons() {
         super.addExtraButtons();
         Checkbox h = new Checkbox("Include History");
-        h.addValueChangeListener(e -> setExtraFilter(e.getValue() ? null : "Status IN (1,2)"));
+        h.addValueChangeListener(e -> setFixedFilter(e.getValue() ? null : "Status IN (1,2)"));
         buttonPanel.add(new Button("Process", e -> processRequest()), h);
     }
 
@@ -692,18 +691,20 @@ public class ProcessMaterialRequest extends AbstractRequestMaterial {
             public int getChildCount(HierarchicalQuery<Object, String> query) {
                 Object parent = query.getParent();
                 if(parent == null) {
-                    return AbstractObjectForestSupplier.subListSize(mriList, query);
+                    return Utility.size(mriList, query.getOffset(), query.getOffset() + query.getLimit());
                 }
-                return AbstractObjectForestSupplier.subListSize(items(parent), query);
+                return Utility.size(items(parent), query.getOffset(), query.getOffset() + query.getLimit());
             }
 
             @Override
             public Stream<Object> fetchChildren(HierarchicalQuery<Object, String> query) {
                 Object parent = query.getParent();
                 if(parent == null) {
-                    return AbstractObjectForestSupplier.subList(mriList, query).stream().map(o -> o);
+                    return Utility.stream(mriList, query.getOffset(), query.getOffset() + query.getLimit())
+                            .map(o -> o);
                 }
-                return AbstractObjectForestSupplier.subList(items(parent), query).stream().map(o -> o);
+                return Utility.stream(items(parent), query.getOffset(), query.getOffset() + query.getLimit())
+                        .map(o -> o);
             }
 
             @Override

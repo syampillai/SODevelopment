@@ -585,7 +585,6 @@ public class ObjectListEditor<T extends StoredObject> extends EditableObjectGrid
 
     private void savedAll() {
         getEditableList().savedAll();
-        resetProvider();
     }
 
     /**

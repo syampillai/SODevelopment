@@ -1,5 +1,6 @@
 package com.storedobject.ui;
 
+import com.storedobject.core.MemoryCache;
 import com.storedobject.core.EditableList;
 import com.storedobject.ui.util.SOFieldCreator;
 import com.storedobject.vaadin.DataList;
@@ -53,12 +54,22 @@ public class EditableGrid<T> extends AbstractEditableGrid<T> implements Editable
      * @param columns Columns for the grid.
      */
     public EditableGrid(Class<T> objectClass, Iterable<String> columns) {
-        super(objectClass, columns, new Data<>());
+        super(objectClass, new MemoryCache<>(), columns);
         binder = new Binder<>(objectClass);
         refresher.change();
         setHeight("100%");
         setWidth("100%");
         addConstructedListener(o -> con());
+    }
+
+    @Override
+    protected boolean isValid(ListDataProvider<T> dataProvider) {
+        return dataProvider instanceof ListProvider && super.isValid(dataProvider);
+    }
+
+    @Override
+    protected ListProvider<T> createListDataProvider(DataList<T> data) {
+        return new ListProvider<>(getDataClass(), data);
     }
 
     @Override
@@ -371,14 +382,14 @@ public class EditableGrid<T> extends AbstractEditableGrid<T> implements Editable
         void change() {
             if(registration != null) {
                 registration.remove();
-                registration = ((Data<T>)getEditableList()).data.addRefreshListener(this);
+                registration = ((Data<T>)getEditableList()).getItems().addRefreshListener(this);
                 refresh();
             }
         }
 
         void set() {
             if(registration == null) {
-                registration = ((Data<T>)getEditableList()).data.addRefreshListener(this);
+                registration = ((Data<T>)getEditableList()).getItems().addRefreshListener(this);
                 refresh();
             }
         }
@@ -401,21 +412,15 @@ public class EditableGrid<T> extends AbstractEditableGrid<T> implements Editable
         }
     }
 
-    static class Data<O> extends ListDataProvider<O> implements EditableList<O> {
+    static class Data<O> extends ListProvider<O> implements EditableList<O> {
 
-        private final DataList<O> data;
         private final Set<O> added = new HashSet<>();
         private final Set<O> edited = new HashSet<>();
         private final Set<O> deleted = new HashSet<>();
         private boolean fromClient = true;
 
-        public Data() {
-            this(new DataList<>());
-        }
-
-        private Data(DataList<O> data) {
-            super(data);
-            this.data = data;
+        public Data(Class<O> dataClass, DataList<O> data) {
+            super(dataClass, data);
         }
 
         public boolean isChanged() {
@@ -432,7 +437,7 @@ public class EditableGrid<T> extends AbstractEditableGrid<T> implements Editable
 
         public void clear() {
             savedAll();
-            data.clear();
+            getItems().clear();
         }
 
         public void savedAll() {
@@ -442,8 +447,9 @@ public class EditableGrid<T> extends AbstractEditableGrid<T> implements Editable
         }
 
         @Override
-        public boolean contains(O item) {
-            return data.contains(item);
+        public boolean contains(Object item) {
+            //noinspection SuspiciousMethodCalls
+            return getItems().contains(item);
         }
 
         @Override
@@ -463,23 +469,23 @@ public class EditableGrid<T> extends AbstractEditableGrid<T> implements Editable
 
         @Override
         public Stream<O> streamAll() {
-            return data.stream();
+            return getItems().stream();
         }
 
         @Override
         public int size() {
-            return data.size();
+            return getItems().size();
         }
 
         @Override
         public boolean append(O item) {
-            return data.add(item);
+            return getItems().add(item);
         }
 
         @Override
         public boolean add(O item) {
             added.add(item);
-            return data.add(item);
+            return getItems().add(item);
         }
 
         @Override
@@ -517,7 +523,7 @@ public class EditableGrid<T> extends AbstractEditableGrid<T> implements Editable
         }
 
         public void removeDeleted() {
-            data.removeIf(deleted::contains);
+            getItems().removeIf(deleted::contains);
             deleted.clear();
         }
     }

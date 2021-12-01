@@ -149,7 +149,7 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
         if(store != null) {
             addConstructedListener(f -> setStore(store));
         } else {
-            setExtraFilter("Status<2 AND Type=" + type, false);
+            setFixedFilter("Status<2 AND Type=" + type, false);
         }
         setCaption("GRN (" + InventoryGRN.getTypeValues()[type] + ")");
         GridContextMenu<InventoryGRN> cm = new GridContextMenu<>(this);
@@ -177,7 +177,7 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
             editor.executeAnchorForm();
         }
         switchStore.setVisible(store == null);
-        setExtraFilter("Status<2 AND Type=" + type);
+        setFixedFilter("Status<2 AND Type=" + type);
     }
 
     public void processGRN(InventoryGRN grn) {
@@ -225,7 +225,7 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
     protected void addExtraButtons() {
         buttonPanel.add(switchStore);
         Checkbox h = new Checkbox("Include History");
-        h.addValueChangeListener(e -> setExtraFilter("Type=" + type + (e.getValue() ? "" : " AND Status<2")));
+        h.addValueChangeListener(e -> setFixedFilter("Type=" + type + (e.getValue() ? "" : " AND Status<2")));
         buttonPanel.add(h);
         super.addExtraButtons();
     }

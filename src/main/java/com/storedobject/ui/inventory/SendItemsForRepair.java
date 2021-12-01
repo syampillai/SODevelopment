@@ -20,8 +20,8 @@ public final class SendItemsForRepair extends AbstractSendAndReceiveMaterial<Inv
     protected void addExtraButtons() {
         super.addExtraButtons();
         Checkbox h = new Checkbox("Include History");
-        h.addValueChangeListener(e -> setExtraFilter(e.getValue() ? null : "Status<2"));
+        h.addValueChangeListener(e -> setFixedFilter(e.getValue() ? null : "Status<2"));
         buttonPanel.add(PrintButton.create(this), h);
-        setExtraFilter("Status<2");
+        setFixedFilter("Status<2");
     }
 }

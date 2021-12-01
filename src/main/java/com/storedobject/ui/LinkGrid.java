@@ -43,7 +43,7 @@ public interface LinkGrid<T extends StoredObject> extends StoredObjectLink<T> {
 
     void setMaster(StoredObject master, boolean load);
 
-    EditableObjectList<T> getEditableList();
+    EditableObjectListProvider<T> getEditableList();
 
     LinkGridButtons<T> getButtonPanel();
 

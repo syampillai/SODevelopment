@@ -1,70 +1,43 @@
 package com.storedobject.ui;
 
-import com.storedobject.common.FilterProvider;
 import com.storedobject.common.StringList;
+import com.storedobject.core.ObjectForest;
 import com.storedobject.core.*;
-import com.storedobject.ui.util.AbstractObjectForestSupplier;
-import com.storedobject.ui.util.ObjectDataLoadedListener;
-import com.storedobject.ui.util.ObjectForestSupplier;
 import com.storedobject.vaadin.DataTreeGrid;
-import com.vaadin.flow.data.provider.DataProvider;
-import com.vaadin.flow.data.provider.hierarchy.HierarchicalDataProvider;
-import com.vaadin.flow.data.provider.hierarchy.HierarchicalQuery;
-import com.vaadin.flow.shared.Registration;
 
-import java.util.*;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.function.Consumer;
 
-public abstract class AbstractObjectForest<T extends StoredObject> extends DataTreeGrid<Object> implements ObjectsSetter<T>, Transactional {
+public abstract class AbstractObjectForest<T extends StoredObject> extends DataTreeGrid<Object>
+        implements ObjectGridData<T, Object> {
 
-    private final List<ObjectDataLoadedListener> dataLoadedListeners = new ArrayList<>();
     private static final StringList NAME = StringList.create("_Name");
-    private AbstractObjectForestSupplier<T, Void> dataProvider;
     private final Class<T> objectClass;
-    private String orderBy;
     private boolean keepCache = false;
     Logic logic;
-    private Registration loadedIndicator;
 
-    public AbstractObjectForest(Class<T> objectClass) {
-        this(objectClass, null);
-    }
-
-    public AbstractObjectForest(Class<T> objectClass, Iterable<String> columns) {
+    public AbstractObjectForest(boolean large, Class<T> objectClass, Iterable<String> columns, boolean any) {
         super(Object.class, NAME.concat(columns == null ? StoredObjectUtility.browseColumns(objectClass) : StringList.create(columns)));
         this.objectClass = objectClass;
+        setDataProvider(new ObjectForestProvider<>(new ObjectForest<>(large, 0, objectClass, any)));
+        addDataLoadedListener(this::loadedInt);
         addDetachListener(e -> {
             if(!keepCache) {
-                dataProvider.close();
+                getDataProvider().close();
             }
         });
     }
 
     @Override
-    public final void setDataProvider(DataProvider<Object, ?> dataProvider) {
+    public final ObjectForestProvider<T> getObjectLoader() {
+        return getDataProvider();
     }
 
     @Override
-    public final void setDataProvider(HierarchicalDataProvider<Object, ?> hierarchicalDataProvider) {
-    }
-
-    public final void setDataSupplier(AbstractObjectForestSupplier<T, Void> dataProvider) {
-        if(loadedIndicator != null) {
-            loadedIndicator.remove();
-        }
-        this.dataProvider = dataProvider;
-        loadedIndicator = dataProvider.addObjectDataLoadedListener(this::loadedInt);
-        Customizer customizer = dataProvider.getCustomizer();
-        if(customizer != null) {
-            customizer.setForest(this);
-        }
-        super.setDataProvider(dataProvider);
-    }
-
-    public AbstractObjectForestSupplier<T, Void> getDataSupplier() {
-        return dataProvider;
+    public final ObjectForestProvider<T> getDataProvider() {
+        return (ObjectForestProvider<T>) super.getDataProvider();
     }
 
     @Override
@@ -76,7 +49,7 @@ public abstract class AbstractObjectForest<T extends StoredObject> extends DataT
     public void setKeepCache(boolean keepCache) {
         this.keepCache = keepCache;
         if(getParent().isEmpty() && !keepCache) {
-            dataProvider.close();
+            getDataProvider().close();
         }
     }
 
@@ -97,11 +70,6 @@ public abstract class AbstractObjectForest<T extends StoredObject> extends DataT
         return false;
     }
 
-    public Registration addObjectDataLoadedListener(ObjectDataLoadedListener listener) {
-        dataLoadedListeners.add(listener);
-        return () -> dataLoadedListeners.remove(listener);
-    }
-
     @Override
     public Class<T> getObjectClass() {
         return objectClass;
@@ -109,8 +77,8 @@ public abstract class AbstractObjectForest<T extends StoredObject> extends DataT
 
     @Override
     public Object unwrap(Object object) {
-        if(object instanceof ObjectForestSupplier.LinkObject) {
-            object = ((ObjectForestSupplier.LinkObject) object).getObject();
+        if(object instanceof ObjectForest.LinkObject lo) {
+            object = lo.getObject();
         }
         return object;
     }
@@ -129,58 +97,6 @@ public abstract class AbstractObjectForest<T extends StoredObject> extends DataT
         return super.getApplication();
     }
 
-    @Override
-    public boolean isAllowAny() {
-        return dataProvider.isAllowAny();
-    }
-
-    public void setOrderBy(String orderBy) {
-        this.orderBy = orderBy;
-    }
-
-    public String getOrderBy() {
-        return orderBy;
-    }
-
-    public void load() {
-        load(null, getOrderBy());
-    }
-
-    public void load(String filterClause) {
-        load(filterClause, getOrderBy());
-    }
-
-    public void load(String filterClause, String orderBy) {
-        deselectAll();
-        dataProvider.load(filterClause, orderBy);
-    }
-
-    public void load(StoredObject master, String filterClause, String orderBy) {
-        load(0, master, filterClause, orderBy);
-    }
-
-    public void load(int linkType, StoredObject master, String filterClause, String orderBy) {
-        deselectAll();
-        dataProvider.load(linkType, master, filterClause, orderBy);
-    }
-
-    public void load(Stream<T> objects) {
-        load(objects.collect(Collectors.toList()));
-    }
-
-    public void load(Iterator<T> objects) {
-        load(ObjectIterator.create(objects));
-    }
-
-    public void load(ObjectIterator<T> objects) {
-        deselectAll();
-        dataProvider.load(objects);
-    }
-
-    public void load(Iterable<T> objects) {
-        load(objects.iterator());
-    }
-
     public void setRoot(T root) {
         load(ObjectIterator.create(root));
     }
@@ -193,55 +109,29 @@ public abstract class AbstractObjectForest<T extends StoredObject> extends DataT
 
     private void loadedInt() {
         loaded();
-        dataLoadedListeners.forEach(ObjectDataLoadedListener::dataLoaded);
     }
 
     public void clear() {
-        dataProvider.clear();
-    }
-
-    boolean isFullyLoaded() {
-        return dataProvider.isFullyLoaded();
-    }
-
-    public void setFilter(String filterClause) {
-        setFilter(null, filterClause);
-    }
-
-    public void setFilter(FilterProvider filterProvider) {
-        setFilter(filterProvider, null);
-    }
-
-    public void setFilter(FilterProvider filterProvider, String extraFilterClause) {
-        dataProvider.setFilter(filterProvider);
-        dataProvider.setFilter(extraFilterClause);
-    }
-
-    public void filter(Predicate<T> filter) {
-        dataProvider.filter(filter);
-    }
-
-    public ObjectSearchFilter getFilter() {
-        return dataProvider.getFilter();
+        getDataProvider().clear();
     }
 
     public void scrollTo(T object) {
         if(object != null) {
-            scrollToIndex(dataProvider.indexOf(object));
+            scrollToIndex(getDataProvider().indexOf(object));
         }
     }
 
     public T getRoot() {
-        List<T> roots = dataProvider.listRoots();
+        List<T> roots = listRoots();
         return roots.size() == 1 ? roots.get(0) : null;
     }
 
     public List<T> listRoots() {
-        return dataProvider.listRoots();
+        return getDataProvider().getRoots();
     }
 
     public T getItem(int index) {
-        return dataProvider.getItem(index);
+        return getDataProvider().get(index);
     }
 
     @Override
@@ -256,27 +146,20 @@ public abstract class AbstractObjectForest<T extends StoredObject> extends DataT
 
     @Override
     public void setObjects(Iterable<T> objects) {
-        deselectAll();
-        ObjectIterator<T> oi = ObjectIterator.create(objects.iterator()).filter(Objects::nonNull);
-        dataProvider.load(oi.map(this::convert).filter(Objects::nonNull));
+        load(ObjectIterator.create(objects.iterator()));
     }
 
-    @SuppressWarnings("unchecked")
-    private T convert(StoredObject so) {
-        if(so == null || !getObjectClass().isAssignableFrom(so.getClass())) {
-            return null;
-        }
-        if(!isAllowAny() && getObjectClass() != so.getClass()) {
-            return null;
-        }
-        return (T)so;
-    }
-    public final boolean isFullyCached() {
-        return dataProvider.isFullyCached();
+    @SafeVarargs
+    public final void setRoots(T... roots) {
+        setRoots(ObjectIterator.create(roots));
     }
 
-    public int size() {
-        return dataProvider.getObjectCount();
+    public final void setRoots(ObjectIterator<T> roots) {
+        load(roots);
+    }
+
+    @Override
+    public void setObjectSetter(ObjectSetter<T> setter) {
     }
 
     public Set<StoredObject> getSelectedObjects() {
@@ -284,8 +167,8 @@ public abstract class AbstractObjectForest<T extends StoredObject> extends DataT
         getSelectedItems().forEach(o -> {
             if(o instanceof StoredObject) {
                 set.add((StoredObject)o);
-            } else if(o instanceof ObjectForestSupplier.LinkObject) {
-                set.add(((ObjectForestSupplier.LinkObject) o).getObject());
+            } else if(o instanceof ObjectForest.LinkObject) {
+                set.add(((ObjectForest.LinkObject) o).getObject());
             }
         });
         return set;
@@ -298,13 +181,7 @@ public abstract class AbstractObjectForest<T extends StoredObject> extends DataT
      * @param includeGrandChildren Whether recursively include grand-children or not.
      */
     public void selectChildren(Object parent, boolean includeGrandChildren) {
-        HierarchicalQuery<Object, Void> q = new HierarchicalQuery<>(null, parent);
-        dataProvider.fetchChildren(q).forEach(o -> {
-            select(o);
-            if(includeGrandChildren) {
-                selectChildren(o, true);
-            }
-        });
+        visitChildren(parent, this::select, includeGrandChildren);
     }
 
     /**
@@ -314,13 +191,18 @@ public abstract class AbstractObjectForest<T extends StoredObject> extends DataT
      * @param includeGrandChildren Whether recursively include grand-children or not.
      */
     public void deselectChildren(Object parent, boolean includeGrandChildren) {
-        HierarchicalQuery<Object, Void> q = new HierarchicalQuery<>(null, parent);
-        dataProvider.fetchChildren(q).forEach(o -> {
-            deselect(o);
-            if(includeGrandChildren) {
-                deselectChildren(o, true);
-            }
-        });
+        visitChildren(parent, this::deselect, includeGrandChildren);
+    }
+
+    /**
+     * Visit the children of the parent item.
+     *
+     * @param parent Parent item.
+     * @param consumer Consumer to consume the visit purpose.
+     * @param includeGrandChildren Whether recursively include grand-children or not.
+     */
+    public void visitChildren(Object parent, Consumer<Object> consumer, boolean includeGrandChildren) {
+        getDataProvider().visitChildren(parent, consumer, includeGrandChildren);
     }
 
     /**
@@ -336,22 +218,19 @@ public abstract class AbstractObjectForest<T extends StoredObject> extends DataT
         return false;
     }
 
-    Customizer getCustomizer() {
-        return dataProvider.getCustomizer();
+    @Override
+    public final void inserted(T object) {
     }
 
-    public static class Customizer implements Predicate<StoredObjectUtility.Link<?>> {
+    @Override
+    public final void updated(T object) {
+    }
 
-        private AbstractObjectForest<?> forest;
+    @Override
+    public final void deleted(T object) {
+    }
 
-        public void setForest(AbstractObjectForest<?> forest) {
-            this.forest = forest;
-        }
-
-        @Override
-        public boolean test(StoredObjectUtility.Link<?> link) {
-            return forest != null &&
-                    forest.hideLink(link.getMasterClass(), link.getName());
-        }
+    @Override
+    public final void addObjectChangedListener(ObjectChangedListener<T> listener) {
     }
 }

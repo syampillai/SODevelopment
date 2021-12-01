@@ -8,7 +8,6 @@ import com.storedobject.ui.util.LogicParser;
 import java.lang.reflect.Constructor;
 
 import static com.storedobject.core.EditorAction.ALL;
-import static com.storedobject.core.EditorAction.ALLOW_ANY;
 
 public class ObjectTreeEditor<T extends StoredObject> extends ObjectTreeBrowser<T> {
 
@@ -40,28 +39,8 @@ public class ObjectTreeEditor<T extends StoredObject> extends ObjectTreeBrowser<
         this(objectClass, columns, actions, caption, null);
     }
 
-    public ObjectTreeEditor(Class<T> objectClass, ObjectTreeBuilder treeBuilder) {
-        this(objectClass, null, treeBuilder, null);
-    }
-
-    public ObjectTreeEditor(Class<T> objectClass, Iterable<String> columns, ObjectTreeBuilder treeBuilder) {
-        this(objectClass, columns, treeBuilder, null);
-    }
-
-    public ObjectTreeEditor(Class<T> objectClass, ObjectTreeBuilder treeBuilder, String caption) {
-        this(objectClass, null, treeBuilder, caption);
-    }
-
-    public ObjectTreeEditor(Class<T> objectClass, Iterable<String> columns, ObjectTreeBuilder treeBuilder, String caption) {
-        this(objectClass, columns, 0, caption, null, treeBuilder);
-    }
-
     ObjectTreeEditor(Class<T> objectClass, Iterable<String> columns, int actions, String caption, String allowedActions) {
-        this(objectClass, columns, actions, caption, allowedActions, ObjectTreeBuilder.create((actions & ALLOW_ANY) == ALLOW_ANY));
-    }
-
-    ObjectTreeEditor(Class<T> objectClass, Iterable<String> columns, int actions, String caption, String allowedActions, ObjectTreeBuilder treeBuilder) {
-        super(objectClass, columns, actions, caption, allowedActions, treeBuilder);
+        super(objectClass, columns, actions, caption, allowedActions);
         setSplitView();
     }
 

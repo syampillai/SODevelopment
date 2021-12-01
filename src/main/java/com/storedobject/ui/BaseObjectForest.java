@@ -4,7 +4,6 @@ import com.storedobject.core.EditorAction;
 import com.storedobject.core.Logic;
 import com.storedobject.core.ObjectSearcher;
 import com.storedobject.core.StoredObject;
-import com.storedobject.ui.util.AbstractObjectForestSupplier;
 import com.storedobject.vaadin.View;
 import com.storedobject.vaadin.ViewOpenedListener;
 import com.vaadin.flow.component.Component;
@@ -28,9 +27,8 @@ public abstract class BaseObjectForest<T extends StoredObject> extends AbstractO
     private final ViewOpenedCheck viewOpenedCheck = new ViewOpenedCheck();
     private ObjectEditor<?> currentEditor;
 
-    BaseObjectForest(Iterable<String> columns, AbstractObjectForestSupplier<T, Void> dataProvider) {
-        super(dataProvider.getObjectClass(), columns);
-        setDataSupplier(dataProvider);
+    BaseObjectForest(boolean large, Class<T> objectClass, Iterable<String> columns, boolean any) {
+        super(large, objectClass, columns, any);
     }
 
     public <O extends StoredObject> void addObjectChangedListener(Class<O> objectClass, ObjectChangedListener<O> listener) {

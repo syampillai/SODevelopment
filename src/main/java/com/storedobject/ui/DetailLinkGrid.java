@@ -63,11 +63,6 @@ public class DetailLinkGrid<T extends StoredObject> extends EditableObjectGrid<T
     }
 
     @Override
-    public Class<T> getObjectClass() {
-        return super.getObjectClass();
-    }
-
-    @Override
     public StoredObjectUtility.Link<T> getLink() {
         return link;
     }
@@ -105,19 +100,19 @@ public class DetailLinkGrid<T extends StoredObject> extends EditableObjectGrid<T
     @Override
     public void edited(T object) {
         cancelEdit();
-        update(object);
+        getEditableList().update(object);
     }
 
     @Override
     public void added(T object) {
         cancelEdit();
-        add(object);
+        getEditableList().add(object);
     }
 
     @Override
     public void deleted(T object) {
         cancelEdit();
-        delete(object);
+        getEditableList().delete(object);
     }
 
     @Override
@@ -175,11 +170,6 @@ public class DetailLinkGrid<T extends StoredObject> extends EditableObjectGrid<T
         }
     }
 
-    @Override
-    public void loaded() {
-        super.loaded();
-    }
-
     private boolean canReload(T item) {
         @SuppressWarnings("unchecked") T o = (T) StoredObject.get(item.getClass(), item.getId());
         return canChange(o, EditorAction.RELOAD);
@@ -226,7 +216,7 @@ public class DetailLinkGrid<T extends StoredObject> extends EditableObjectGrid<T
     public void clear() {
         cancelEdit();
         LinkGrid.super.clear();
-        resetProvider();
+        super.clear();
     }
 
     @Override

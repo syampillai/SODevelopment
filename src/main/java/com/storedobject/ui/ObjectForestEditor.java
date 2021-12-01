@@ -1,16 +1,13 @@
 package com.storedobject.ui;
 
-import com.storedobject.core.ApplicationServer;
 import com.storedobject.core.JavaClassLoader;
 import com.storedobject.core.StoredObject;
 import com.storedobject.core.StoredObjectUtility;
 import com.storedobject.ui.util.LogicParser;
-import com.storedobject.ui.util.ObjectForestViewerSupplier;
 
 import java.lang.reflect.Constructor;
 
 import static com.storedobject.core.EditorAction.ALL;
-import static com.storedobject.core.EditorAction.ALLOW_ANY;
 
 public class ObjectForestEditor<T extends StoredObject> extends ObjectForestBrowser<T> {
 
@@ -44,8 +41,7 @@ public class ObjectForestEditor<T extends StoredObject> extends ObjectForestBrow
 
     ObjectForestEditor(Class<T> objectClass, Iterable<String> columns, int actions, Iterable<String> filterColumns,
                         String caption, String allowedActions, boolean splitView) {
-        super(columns, actions, filterColumns, caption, allowedActions,
-                new ObjectForestViewerSupplier<>(objectClass, null, null, (actions & ALLOW_ANY) == ALLOW_ANY));
+        super(objectClass, columns, actions, filterColumns, caption, allowedActions);
         if(splitView) {
             setSplitView();
         }

@@ -19,7 +19,7 @@ public interface ObjectChangedListener<T extends StoredObject> {
     }
 
     /**
-     * Fired when a new object is updated. The default implementation invokes {@link #saved(StoredObject)}.
+     * Fired when an object is updated. The default implementation invokes {@link #saved(StoredObject)}.
      *
      * @param object Object.
      */
@@ -28,7 +28,7 @@ public interface ObjectChangedListener<T extends StoredObject> {
     }
 
     /**
-     * Fired when a new object is saved. The default implementation does nothing.
+     * Fired when an object is saved. The default implementation does nothing.
      *
      * @param object Object.
      */
@@ -36,7 +36,7 @@ public interface ObjectChangedListener<T extends StoredObject> {
     }
 
     /**
-     * Fired when a new object is deleted. The default implementation does nothing.
+     * Fired when an object is deleted. The default implementation does nothing.
      *
      * @param object Object.
      */
@@ -44,7 +44,7 @@ public interface ObjectChangedListener<T extends StoredObject> {
     }
 
     /**
-     * Fired when a new object is undeleted. The default implementation does nothing.
+     * Fired when an object is undeleted. The default implementation does nothing.
      *
      * @param object Object.
      */

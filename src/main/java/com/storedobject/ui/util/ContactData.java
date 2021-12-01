@@ -95,7 +95,7 @@ public class ContactData implements StoredObjectLink<Contact> {
     }
 
     @Override
-    public boolean contains(Contact contact) {
+    public boolean contains(Object contact) {
         return streamAll().anyMatch(f -> f == contact);
     }
 

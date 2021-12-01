@@ -19,8 +19,8 @@ public final class TransferMaterial extends AbstractSendAndReceiveMaterial<Mater
     protected void addExtraButtons() {
         super.addExtraButtons();
         Checkbox h = new Checkbox("Include History");
-        h.addValueChangeListener(e -> setExtraFilter(e.getValue() ? null : "Status<2"));
+        h.addValueChangeListener(e -> setFixedFilter(e.getValue() ? null : "Status<2"));
         buttonPanel.add(h);
-        setExtraFilter("Status<2");
+        setFixedFilter("Status<2");
     }
 }

@@ -4,7 +4,6 @@ import com.storedobject.core.EditorAction;
 import com.storedobject.core.JavaClassLoader;
 import com.storedobject.core.StoredObject;
 import com.storedobject.ui.util.LogicParser;
-import com.storedobject.ui.util.ObjectDataProvider;
 
 import java.lang.reflect.Constructor;
 
@@ -33,15 +32,6 @@ public class ObjectBrowserViewer<T extends StoredObject> extends ObjectBrowser<T
 
     public ObjectBrowserViewer(Class<T> objectClass, Iterable<String> browseColumns, Iterable<String> filterColumns, String caption) {
         super(objectClass, browseColumns, EditorAction.RELOAD, filterColumns, caption);
-        setSplitView();
-    }
-
-    public ObjectBrowserViewer(Class<T> objectClass, String caption, ObjectDataProvider<T, Void> dataProvider) {
-        this(objectClass, null, caption, dataProvider);
-    }
-
-    public ObjectBrowserViewer(Class<T> objectClass, Iterable<String> browseColumns, String caption, ObjectDataProvider<T, Void> dataProvider) {
-        super(objectClass, browseColumns, EditorAction.RELOAD, caption, dataProvider);
         setSplitView();
     }
 

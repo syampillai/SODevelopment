@@ -47,28 +47,8 @@ public class ObjectTreeBrowser<T extends StoredObject> extends ObjectTree<T> {
         this(objectClass, columns, actions, caption, null);
     }
 
-    public ObjectTreeBrowser(Class<T> objectClass, ObjectTreeBuilder treeBuilder) {
-        this(objectClass, null, treeBuilder, null);
-    }
-
-    public ObjectTreeBrowser(Class<T> objectClass, Iterable<String> columns, ObjectTreeBuilder treeBuilder) {
-        this(objectClass, columns, treeBuilder, null);
-    }
-
-    public ObjectTreeBrowser(Class<T> objectClass, ObjectTreeBuilder treeBuilder, String caption) {
-        this(objectClass, null, treeBuilder, caption);
-    }
-
-    public ObjectTreeBrowser(Class<T> objectClass, Iterable<String> columns, ObjectTreeBuilder treeBuilder, String caption) {
-        this(objectClass, columns, 0, caption, null, treeBuilder);
-    }
-
     ObjectTreeBrowser(Class<T> objectClass, Iterable<String> columns, int actions, String caption, String allowedActions) {
-        this(objectClass, columns, actions, caption, allowedActions, ObjectTreeBuilder.create((actions & ALLOW_ANY) == ALLOW_ANY));
-    }
-
-    ObjectTreeBrowser(Class<T> objectClass, Iterable<String> columns, int actions, String caption, String allowedActions, ObjectTreeBuilder treeBuilder) {
-        super(objectClass, columns, treeBuilder);
+        super(objectClass, columns);
         addConstructedListener(o -> con());
         setCaption(caption);
         this.allowedActions = allowedActions;
@@ -270,6 +250,7 @@ public class ObjectTreeBrowser<T extends StoredObject> extends ObjectTree<T> {
 
     @Override
     public void clicked(Component c) {
+        clearAlerts();
         if (c == exit) {
             close();
             return;
@@ -277,12 +258,12 @@ public class ObjectTreeBrowser<T extends StoredObject> extends ObjectTree<T> {
         if(c == add) {
             T object;
             object = getSelected();
-            if(object == null && dataProvider.getObjectCount() > 0) {
+            if(object == null && getDataProvider().getObjectCount() > 0) {
                 Application.warning(ObjectBrowser.NOTHING_SELECTED);
                 return;
             }
             ObjectEditor<T> editor = getObjectEditor();
-            editor.setParentObject(object, dataProvider.getTreeBuilder().getLinkType());
+            editor.setParentObject(object, getDataProvider().getLinkType());
             editor.addObject(getView());
             return;
         }

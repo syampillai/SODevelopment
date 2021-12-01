@@ -1,18 +1,17 @@
 package com.storedobject.ui;
 
-import com.storedobject.common.FilterProvider;
 import com.storedobject.common.SORuntimeException;
 import com.storedobject.core.ClassAttribute;
 import com.storedobject.core.ObjectIterator;
-import com.storedobject.core.ObjectSearchFilter;
+import com.storedobject.core.ObjectLoadFilter;
 import com.storedobject.core.StoredObject;
 import com.storedobject.vaadin.CustomTextField;
 import com.vaadin.flow.component.Component;
 
+import javax.annotation.Nonnull;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.function.Consumer;
-import java.util.function.Predicate;
 
 /**
  * In many situations, a {@link StoredObject} instance may contain a code attribute (a String attribute that looks
@@ -173,39 +172,14 @@ public class ObjectCodeField<T extends StoredObject> extends CustomTextField<T> 
     public void setPrefixFieldControl(boolean prefixFieldControl) {
     }
 
+    @Nonnull
     @Override
-    public void filter(Predicate<T> filter) {
+    public ObjectLoadFilter<T> getLoadFilter() {
+        throw new SORuntimeException();
     }
 
     @Override
-    public Predicate<T> getFilterPredicate() {
-        return null;
-    }
-
-    @Override
-    public void setLoadFilter(Predicate<T> filter) {
-    }
-
-    @Override
-    public Predicate<T> getLoadFilter() {
-        return null;
-    }
-
-    @Override
-    public void setFilter(FilterProvider filterProvider, String extraFilterClause) {
-    }
-
-    @Override
-    public void setFilter(ObjectSearchFilter filter) {
-    }
-
-    @Override
-    public ObjectSearchFilter getFilter(boolean create) {
-        return null;
-    }
-
-    @Override
-    public void filterChanged() {
+    public void applyFilter() {
     }
 
     @Override

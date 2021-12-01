@@ -6,7 +6,6 @@ import com.storedobject.core.*;
 import com.storedobject.pdf.*;
 import com.storedobject.ui.HTMLText;
 import com.storedobject.ui.Transactional;
-import com.storedobject.ui.util.AbstractObjectForestSupplier;
 import com.storedobject.vaadin.*;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasValue;
@@ -306,7 +305,8 @@ public abstract class AbstractAssembly<T extends InventoryItem, C extends Invent
             if(fitmentPosition == null) {
                 return root == null ? 0 : 1;
             }
-            return AbstractObjectForestSupplier.subListSize(subassemblies(fitmentPosition), query);
+            return Utility.size(subassemblies(fitmentPosition), query.getOffset(),
+                    query.getOffset() + query.getLimit());
         }
 
         @Override
@@ -315,7 +315,8 @@ public abstract class AbstractAssembly<T extends InventoryItem, C extends Invent
             if(fitmentPosition == null) {
                 return Stream.ofNullable(root);
             }
-            return AbstractObjectForestSupplier.subList(subassemblies(fitmentPosition), query).stream();
+            return Utility.stream(subassemblies(fitmentPosition), query.getOffset(),
+                    query.getOffset() + query.getLimit());
         }
 
         @Override

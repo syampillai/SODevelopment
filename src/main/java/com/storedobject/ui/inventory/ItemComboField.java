@@ -84,7 +84,7 @@ public class ItemComboField<I extends InventoryItem> extends ObjectComboField<I>
         this.storeField = storeField;
         newFilter();
         if(storeField instanceof HasValue) {
-           forStore = ((HasValue<?, ?>) storeField).addValueChangeListener(e -> filterChanged());
+           forStore = ((HasValue<?, ?>) storeField).addValueChangeListener(e -> applyFilter());
         }
     }
 
@@ -103,7 +103,7 @@ public class ItemComboField<I extends InventoryItem> extends ObjectComboField<I>
         this.locationField = locationField;
         newFilter();
         if(locationField instanceof HasValue) {
-            forLocation = ((HasValue<?, ?>) locationField).addValueChangeListener(e -> filterChanged());
+            forLocation = ((HasValue<?, ?>) locationField).addValueChangeListener(e -> applyFilter());
         }
     }
 
@@ -121,7 +121,7 @@ public class ItemComboField<I extends InventoryItem> extends ObjectComboField<I>
 
     private void newFilter() {
         setFilter(filter);
-        filterChanged();
+        applyFilter();
     }
 
     private class InventoryFilterProvider implements FilterProvider {

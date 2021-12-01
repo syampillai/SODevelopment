@@ -4,6 +4,7 @@ import com.storedobject.common.StringList;
 import com.storedobject.core.*;
 import com.storedobject.ui.*;
 import com.storedobject.vaadin.*;
+import com.storedobject.vaadin.ListGrid;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.grid.contextmenu.GridContextMenu;
@@ -76,7 +77,7 @@ public class POBrowser<T extends InventoryPO> extends ObjectBrowser<T> implement
         super(objectClass, browseColumns, actions, filterColumns, caption, allowedActions);
         addConstructedListener(b -> {
             editor();
-            setExtraFilter("Status<4", false);
+            setFixedFilter("Status<4", false);
             if(getObjectClass() == InventoryPO.class) {
                 setCaption("Purchase Order");
             }
@@ -185,7 +186,7 @@ public class POBrowser<T extends InventoryPO> extends ObjectBrowser<T> implement
     protected void addExtraButtons() {
         buttonPanel.add(switchStore);
         Checkbox h = new Checkbox("Include History");
-        h.addValueChangeListener(e -> setExtraFilter(e.getValue() ? null : "Status<4"));
+        h.addValueChangeListener(e -> setFixedFilter(e.getValue() ? null : "Status<4"));
         buttonPanel.add(h);
         super.addExtraButtons();
     }

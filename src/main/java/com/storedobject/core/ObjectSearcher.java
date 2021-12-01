@@ -1,8 +1,8 @@
 package  com.storedobject.core;
 
 public interface ObjectSearcher<T extends StoredObject> {
-    void setFilter(ObjectSearchFilter filter);
-    ObjectSearchFilter getFilter();
+    void setLoadFilter(ObjectLoadFilter<T> filter);
+    ObjectLoadFilter<T> getLoadFilter();
     void search(SystemEntity systemEntity, ObjectSetter<T> setter);
     void search(SystemEntity systemEntity, ObjectSetter<T> setter, String extraFilter);
     void resetSearch();

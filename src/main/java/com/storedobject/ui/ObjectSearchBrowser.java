@@ -2,7 +2,6 @@ package com.storedobject.ui;
 
 import com.storedobject.core.*;
 import com.storedobject.ui.util.LogicParser;
-import com.storedobject.ui.util.ObjectDataProvider;
 import com.storedobject.vaadin.View;
 import com.vaadin.flow.component.Component;
 
@@ -82,29 +81,6 @@ public class ObjectSearchBrowser<T extends StoredObject> extends ObjectBrowser<T
      */
     public ObjectSearchBrowser(Class<T> objectClass, Iterable<String> browseColumns, Iterable<String> filterColumns, String caption) {
         this(objectClass, browseColumns, filterColumns, caption, null);
-    }
-
-    /**
-     * Constructor.
-     *
-     * @param objectClass Class of the object type.
-     * @param caption Caption of the view.
-     * @param dataProvider Data provider.
-     */
-    public ObjectSearchBrowser(Class<T> objectClass, String caption, ObjectDataProvider<T, Void> dataProvider) {
-        this(objectClass, null, caption, dataProvider);
-    }
-
-    /**
-     * Constructor.
-     *
-     * @param objectClass Class of the object type.
-     * @param browseColumns Browse columns.
-     * @param caption Caption of the view.
-     * @param dataProvider Data provider.
-     */
-    public ObjectSearchBrowser(Class<T> objectClass, Iterable<String> browseColumns, String caption, ObjectDataProvider<T, Void> dataProvider) {
-        super(objectClass, browseColumns, EditorAction.SEARCH | EditorAction.RELOAD, caption, dataProvider);
     }
 
     /**

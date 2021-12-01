@@ -5,18 +5,20 @@ import java.util.function.Predicate;
 public interface ObjectSearchBuilder<T extends StoredObject> {
 
 	Class<T> getObjectClass();
-	
-	boolean addSearchField(String fieldName);
-    
-	boolean removeSearchField(String fieldName);
-	
+
 	String getFilterText();
 
-	default int getSearchFieldCount() {
-		return 0;
+	Predicate<T> getFilterPredicate();
+
+	default boolean addSearchField(String fieldName) {
+		return false;
 	}
-	
-	default Predicate<T> getFilterPredicate() {
-		return null;
+
+	default boolean removeSearchField(String fieldName) {
+		return false;
+	}
+
+	default int getSearchFieldCount() {
+		return Integer.MAX_VALUE;
 	}
 }

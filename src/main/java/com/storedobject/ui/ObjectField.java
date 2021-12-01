@@ -1,6 +1,5 @@
 package com.storedobject.ui;
 
-import com.storedobject.common.FilterProvider;
 import com.storedobject.core.*;
 import com.storedobject.ui.inventory.BinField;
 import com.storedobject.ui.inventory.ItemField;
@@ -10,8 +9,12 @@ import com.storedobject.ui.util.NoDisplayField;
 import com.storedobject.vaadin.CustomField;
 import com.storedobject.vaadin.View;
 import com.storedobject.vaadin.ViewDependent;
-import com.vaadin.flow.component.*;
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.HasSize;
+import com.vaadin.flow.component.HasValidation;
+import com.vaadin.flow.component.ItemLabelGenerator;
 
+import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
@@ -349,6 +352,17 @@ public class ObjectField<T extends StoredObject> extends CustomField<Id> impleme
         }
     }
 
+    /**
+     * Set a predicate that will be used for filtering the object after loading is done.
+     *
+     * @param predicate Filter to apply after loaded.
+     * @deprecated Please use {@link #setFilter(Predicate)} instead.
+     */
+    @Deprecated
+    public void filter(Predicate<T> predicate) {
+        setFilter(predicate);
+    }
+
     private static <O extends StoredObject> List<O> list(Iterable<O> iterable) {
         ArrayList<O> list = new ArrayList<>();
         iterable.forEach(list::add);
@@ -451,48 +465,14 @@ public class ObjectField<T extends StoredObject> extends CustomField<Id> impleme
     }
 
     @Override
-    public void setFilter(FilterProvider filterProvider) {
-        field.setFilter(filterProvider);
+    public void applyFilter() {
+        field.applyFilter();
     }
 
+    @Nonnull
     @Override
-    public void setFilter(FilterProvider filterProvider, String extraFilterClause) {
-        field.setFilter(filterProvider, extraFilterClause);
-    }
-
-    @Override
-    public void setFilter(ObjectSearchFilter filter) {
-        field.setFilter(filter);
-    }
-
-    @Override
-    public ObjectSearchFilter getFilter(boolean create) {
-        return field.getFilter();
-    }
-
-    @Override
-    public void filter(Predicate<T> filter) {
-        field.filter(filter);
-    }
-
-    @Override
-    public Predicate<T> getFilterPredicate() {
-        return field.getFilterPredicate();
-    }
-
-    @Override
-    public void setLoadFilter(Predicate<T> filter) {
-        field.setLoadFilter(filter);
-    }
-
-    @Override
-    public Predicate<T> getLoadFilter() {
+    public ObjectLoadFilter<T> getLoadFilter() {
         return field.getLoadFilter();
-    }
-
-    @Override
-    public void filterChanged() {
-        field.filterChanged();
     }
 
     @Override

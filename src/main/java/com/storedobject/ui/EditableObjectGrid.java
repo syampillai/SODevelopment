@@ -1,19 +1,14 @@
 package com.storedobject.ui;
 
-import com.storedobject.common.ResourceDisposal;
-import com.storedobject.core.EditableList;
-import com.storedobject.core.EditorAction;
-import com.storedobject.core.ObjectSetter;
-import com.storedobject.core.StoredObject;
-import com.storedobject.ui.util.ObjectDataProvider;
-import com.storedobject.ui.util.ObjectGridData;
+import com.storedobject.core.*;
+import com.storedobject.vaadin.DataList;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasValue;
 import com.vaadin.flow.component.grid.editor.Editor;
 import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.data.provider.ListDataProvider;
 import com.vaadin.flow.shared.Registration;
 
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -27,7 +22,8 @@ import java.util.stream.Stream;
  * @param <T> Type of object to edit.
  * @author Syam
  */
-public class EditableObjectGrid<T extends StoredObject> extends AbstractEditableGrid<T> implements ObjectGridData<T>, EditableDataGrid<T> {
+public class EditableObjectGrid<T extends StoredObject> extends AbstractEditableGrid<T>
+        implements ObjectGridData<T, T>, EditableDataGrid<T> {
 
     private String orderBy;
     private List<ObjectChangedListener<T>> objectChangedListeners;
@@ -54,32 +50,34 @@ public class EditableObjectGrid<T extends StoredObject> extends AbstractEditable
     }
 
     public EditableObjectGrid(Class<T> objectClass, Iterable<String> columns, boolean any) {
-        this(objectClass, columns, new EditableObjectList<>(objectClass, any));
-    }
-
-    public EditableObjectGrid(Class<T> objectClass, EditableList<T> dataProvider) {
-        this(objectClass, null, dataProvider);
-    }
-
-    public EditableObjectGrid(Class<T> objectClass, Iterable<String> columns, EditableList<T> dataProvider) {
-        super(objectClass, columns, dataProvider);
-        addDetachListener(e -> ResourceDisposal.gc());
-        addConstructedListener(g -> getRowEditor().addConstructedListener(e -> getEditor().setBinder(editor.getForm().getBinder())));
+        super(objectClass, new ObjectMemoryList<>(objectClass, any),
+                columns == null ? StoredObjectUtility.browseColumns(objectClass) : columns);
+        addConstructedListener(g ->
+                getRowEditor().addConstructedListener(e -> getEditor().setBinder(editor.getForm().getBinder())));
     }
 
     @Override
-    public ObjectDataProvider<T, Void> getDataProvider() {
-        //noinspection unchecked
-        return (ObjectDataProvider<T, Void>) super.getDataProvider();
+    protected boolean isValid(ListDataProvider<T> dataProvider) {
+        return dataProvider instanceof ObjectListProvider && super.isValid(dataProvider);
     }
 
     @Override
-    public EditableObjectList<T> getEditableList() {
-        return (EditableObjectList<T>) super.getEditableList();
+    protected EditableObjectListProvider<T> createListDataProvider(DataList<T> data) {
+        return new EditableObjectListProvider<>(getObjectClass(), data);
     }
 
-    public Registration addValueChangeTracker(BiConsumer<EditableObjectList<T>, Boolean> tracker) {
+    @Override
+    public EditableObjectListProvider<T> getEditableList() {
+        return (EditableObjectListProvider<T>) super.getEditableList();
+    }
+
+    public Registration addValueChangeTracker(BiConsumer<EditableObjectListProvider<T>, Boolean> tracker) {
         return getEditableList().addValueChangeTracker(tracker);
+    }
+
+    @Override
+    public ObjectListProvider<T> getObjectLoader() {
+        return (ObjectListProvider<T>) super.getDataProvider();
     }
 
     @Override
@@ -130,7 +128,7 @@ public class EditableObjectGrid<T extends StoredObject> extends AbstractEditable
 
     public void reloadAll() {
         cancelEdit();
-        getEditableList().reloadAll();
+        getEditableList().reload();
         fireChanged(null, EditorAction.ALL);
     }
 
@@ -340,7 +338,7 @@ public class EditableObjectGrid<T extends StoredObject> extends AbstractEditable
         T item = editingItem;
         if(editor != null && item != null && getRowEditor().saveEdited()) {
             editingItem = null;
-            getEditableList().fireChanges(null);
+            getEditableList().fireChanges();
             select(item);
         }
     }

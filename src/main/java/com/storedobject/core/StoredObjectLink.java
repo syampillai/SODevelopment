@@ -50,7 +50,7 @@ public interface StoredObjectLink<T extends StoredObject> extends EditableList<T
         }
 
         @Override
-        public boolean contains(StoredObject item) {
+        public boolean contains(Object item) {
             return false;
         }
 

@@ -8,7 +8,6 @@ import com.storedobject.pdf.PDFReport;
 import com.storedobject.pdf.PDFTable;
 import com.storedobject.ui.Application;
 import com.storedobject.ui.*;
-import com.storedobject.ui.util.AbstractObjectForestSupplier;
 import com.storedobject.vaadin.*;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasValue;
@@ -200,7 +199,7 @@ public class DefineAssembly<T extends InventoryItemType, C extends InventoryItem
             if(ia == null) {
                 return root == null ? 0 : 1;
             }
-            return AbstractObjectForestSupplier.subListSize(subassemblies(ia), query);
+            return Utility.size(subassemblies(ia), query.getOffset(), query.getOffset() + query.getLimit());
         }
 
         @Override
@@ -209,7 +208,7 @@ public class DefineAssembly<T extends InventoryItemType, C extends InventoryItem
             if(ia == null) {
                 return Stream.ofNullable(root);
             }
-            return AbstractObjectForestSupplier.subList(subassemblies(ia), query).stream();
+            return Utility.stream(subassemblies(ia), query.getOffset(), query.getOffset() + query.getLimit());
         }
 
         @Override

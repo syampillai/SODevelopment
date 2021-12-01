@@ -1,13 +1,13 @@
 package com.storedobject.ui;
 
-import com.storedobject.common.FilterProvider;
-import com.storedobject.common.StringList;
 import com.storedobject.core.*;
 import com.storedobject.ui.inventory.POBrowser;
 import com.storedobject.ui.inventory.POItemBrowser;
+import com.storedobject.ui.util.LoadFilterButtons;
 import com.storedobject.ui.util.LogicParser;
-import com.storedobject.ui.util.ObjectDataProvider;
-import com.storedobject.vaadin.*;
+import com.storedobject.vaadin.Button;
+import com.storedobject.vaadin.ButtonLayout;
+import com.storedobject.vaadin.ConfirmButton;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasValue;
 import com.vaadin.flow.component.grid.editor.Editor;
@@ -17,14 +17,13 @@ import com.vaadin.flow.component.splitlayout.SplitLayout;
 
 import java.lang.reflect.Constructor;
 import java.util.*;
-import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import static com.storedobject.core.EditorAction.*;
 
 public class ObjectBrowser<T extends StoredObject> extends ObjectGrid<T> implements EditableDataGrid<T> {
 
-    private ObjectSearchBuilder<T> searchBuilder;
+    private LoadFilterButtons<T> loadFilterButtons;
     protected final ButtonLayout buttonPanel = new ButtonLayout();
     protected PrintButton print;
     protected Button add, edit, delete, search, filter, load, view, report, excel, audit, exit, save, cancel;
@@ -39,9 +38,7 @@ public class ObjectBrowser<T extends StoredObject> extends ObjectGrid<T> impleme
     private final Map<String, Span> spans = new HashMap<>();
     private Logic logic;
     private SplitLayout layout;
-    private boolean anchorsExist;
-    private String anchorFilter;
-    private final ObjectSearchFilter extraFilter = new ObjectSearchFilter();
+    private final boolean anchorsExist;
 
     public ObjectBrowser(Class<T> objectClass) {
         this(objectClass, (String)null);
@@ -68,7 +65,7 @@ public class ObjectBrowser<T extends StoredObject> extends ObjectGrid<T> impleme
     }
 
     public ObjectBrowser(Class<T> objectClass, Iterable<String> browseColumns, int actions) {
-        this(objectClass, browseColumns, actions, null, (String)null);
+        this(objectClass, browseColumns, actions, null, null);
     }
 
     public ObjectBrowser(Class<T> objectClass, Iterable<String> browseColumns, int actions, Iterable<String> filterColumns) {
@@ -79,26 +76,21 @@ public class ObjectBrowser<T extends StoredObject> extends ObjectGrid<T> impleme
         this(objectClass, browseColumns, actions, null, caption);
     }
 
-    public ObjectBrowser(Class<T> objectClass, Iterable<String> browseColumns, int actions, Iterable<String> filterColumns, String caption) {
+    public ObjectBrowser(Class<T> objectClass, Iterable<String> browseColumns, int actions,
+                         Iterable<String> filterColumns, String caption) {
         this(objectClass, browseColumns, actions, filterColumns, caption, null);
     }
 
-    public ObjectBrowser(Class<T> objectClass, int actions, String caption, ObjectDataProvider<T, Void> dataProvider) {
-        this(objectClass, null, actions, caption, dataProvider);
-    }
-
-    public ObjectBrowser(Class<T> objectClass, Iterable<String> browseColumns, int actions, String caption, ObjectDataProvider<T, Void> dataProvider) {
-        super(objectClass, browseColumns, dataProvider);
-        init(actions & (~RELOAD), null, caption, null);
-    }
-
-    protected ObjectBrowser(Class<T> objectClass, Iterable<String> browseColumns, int actions, Iterable<String> filterColumns,
-                  String caption, String allowedActions) {
+    protected ObjectBrowser(Class<T> objectClass, Iterable<String> browseColumns, int actions,
+                            Iterable<String> filterColumns, String caption, String allowedActions) {
         super(objectClass, browseColumns, (actions & ALLOW_ANY) == ALLOW_ANY);
-        init(actions, filterColumns, caption, allowedActions);
-    }
-
-    private void init(int actions, Iterable<String> filterColumns, String caption, String allowedActions) {
+        addItemDoubleClickListener(e -> {
+            T item = e.getItem();
+            if(item != null) {
+                rowDoubleClicked(item);
+            }
+        });
+        getObjectLoader().setLoadCallBack(this::loadInt);
         if( // Do not allow certain special classes to directly inherit this class with etitability
                 (InventoryPO.class.isAssignableFrom(getObjectClass()) && !(this instanceof POBrowser)) ||
                         (InventoryPOItem.class.isAssignableFrom(getObjectClass()) && !(this instanceof POItemBrowser))
@@ -165,17 +157,10 @@ public class ObjectBrowser<T extends StoredObject> extends ObjectGrid<T> impleme
                 buttonPanel.add(delete);
             }
             if((actions & RELOAD) == RELOAD) {
-                boolean smallList = filterColumns == null && ObjectHint.isSmallList(getObjectClass(), isAllowAny());
-                if(!smallList) {
-                    filter = new Button("Filter", e -> reload(false));
-                    buttonPanel.add(filter);
-                }
-                load = new Button("Load", e -> reload(true));
-                buttonPanel.add(load);
-                if(smallList) {
-                    actions &= ~RELOAD;
-                    load();
-                }
+                loadFilterButtons = new LoadFilterButtons<>(this, filterColumns);
+                filter = loadFilterButtons.getFilterButton();
+                load = loadFilterButtons.getLoadButton();
+                loadFilterButtons.addTo(buttonPanel);
             }
             if((actions & VIEW) == VIEW) {
                 view = new Button("View", this);
@@ -200,27 +185,7 @@ public class ObjectBrowser<T extends StoredObject> extends ObjectGrid<T> impleme
                 buttonPanel.add(audit);
             }
         }
-        exit = new Button(actions == SEARCH ? "Quit" : "Exit", this);
-        if((actions & RELOAD) == RELOAD) {
-            StringList filters = null;
-            if(filterColumns != null) {
-                if(filterColumns instanceof StringList) {
-                    filters = (StringList)filterColumns;
-                } else {
-                    filters = StringList.create(filterColumns);
-                }
-            }
-            searchBuilder = createSearchBuilder(filters);
-            if(searchBuilder != null && searchBuilder.getSearchFieldCount() == 0) {
-                searchBuilder = null;
-            }
-        }
-        addItemDoubleClickListener(e -> {
-            T item = e.getItem();
-            if(item != null) {
-                rowDoubleClicked(item);
-            }
-        });
+        exit = new Button(search == null ? "Exit" : "Quit", this);
     }
 
     @SuppressWarnings("unchecked")
@@ -363,13 +328,14 @@ public class ObjectBrowser<T extends StoredObject> extends ObjectGrid<T> impleme
 
     @Override
     public Component createHeader() {
-        if(searchBuilder == null) {
+        ObjectSearchBuilder<?> sb;
+        if(loadFilterButtons == null || (sb = loadFilterButtons.getSearchBuilder()) == null) {
             return buttonPanel;
         }
         VerticalLayout v = new VerticalLayout(buttonPanel);
         Component f = null;
-        if(searchBuilder instanceof Component) {
-            f = (Component) searchBuilder;
+        if(sb instanceof Component) {
+            f = (Component) sb;
         }
         if(f != null) {
             v.add(f);
@@ -378,10 +344,6 @@ public class ObjectBrowser<T extends StoredObject> extends ObjectGrid<T> impleme
         v.setMargin(false);
         v.setSpacing(false);
         return v;
-    }
-
-    public ObjectSearchBuilder<T> createSearchBuilder(StringList searchColumns) {
-        return new ObjectFilter<>(getObjectClass(), searchColumns, s -> filter.addTheme(ThemeStyle.ERROR));
     }
 
     static int actions(String className, boolean developer) {
@@ -486,6 +448,7 @@ public class ObjectBrowser<T extends StoredObject> extends ObjectGrid<T> impleme
 
     @Override
     public void clicked(Component c) {
+        clearAlerts();
         if(c == exit) {
             close();
             return;
@@ -533,7 +496,7 @@ public class ObjectBrowser<T extends StoredObject> extends ObjectGrid<T> impleme
             }
             if(selection != null && selection.size() == 0) {
                 if(size() == 1) {
-                    select(getDataProvider().getItem(0));
+                    select(getObjectLoader().get(0));
                     selection = getSelectedItems();
                 } else {
                     selection = null;
@@ -554,133 +517,25 @@ public class ObjectBrowser<T extends StoredObject> extends ObjectGrid<T> impleme
         super.clicked(c);
     }
 
-    @Override
-    public void loaded() {
-        super.loaded();
-        Application a = Application.get();
-        if(a == null) {
-            confReloadButton();
-        } else {
-            a.access(this::confReloadButton);
+    private void loadInt(Runnable loadFunction) {
+        if(getEditor().isOpen()) {
+            cancelRowEdit();
         }
-    }
-
-    @Override
-    public void load(String filterClause, String orderBy) {
-        if(editor != null && editor.searchFilter != null) {
-            filterClause = ObjectSearchFilter.and(filterClause, editor.searchFilter.getFilter());
-        }
-        super.load(filterClause, orderBy);
-    }
-
-    private void confReloadButton() {
-        if(load != null) {
-            if ("Load".equals(load.getText())) {
-                load.setIcon("reload");
-                load.setText("Reload");
-            }
-            load.setVisible(isFullyLoaded());
-        }
-    }
-
-    private void reload(boolean again) {
         if(anchorsExist) {
             ObjectEditor<T> oe = getObjectEditor();
             if(oe != null) {
                 if(oe.anchorAction) {
-                    oe.executeAnchorForm(() -> reload(true));
+                    oe.executeAnchorForm(() -> loadInt(loadFunction));
                     return;
                 }
-                String af = oe.getAnchorFilter();
-                again = !Objects.equals(anchorFilter, af);
-                if(again) {
-                    anchorFilter = af;
-                }
+                getObjectLoader().getSystemFilter().setCondition(oe.getAnchorFilter());
             }
         }
-        if(filter != null) {
-            filter.removeTheme(ThemeStyle.ERROR);
-        }
-        if(getEditor().isOpen()) {
-            cancelRowEdit();
-        }
-        if(searchBuilder == null) {
-            filteredFullReload();
+        Application a = Application.get();
+        if(a == null) {
+            loadFunction.run();
         } else {
-            if(searchBuilder instanceof Form && !((Form)searchBuilder).commit()) {
-                return;
-            }
-            String filter = searchBuilder.getFilterText();
-            if(filter == null) {
-                if(!again && isFullyLoaded()) {
-                    filter(null);
-                } else {
-                    filteredFullReload();
-                }
-            } else {
-                Predicate<T> filterFunction = null;
-                if(!again && isFullyLoaded() && isFullyCached()) {
-                    filterFunction = searchBuilder.getFilterPredicate();
-                }
-                if(again || filterFunction == null) {
-                    if(again) {
-                        clear(false);
-                    }
-                    if(anchorFilter != null) {
-                        filter += " AND (" + anchorFilter + ")";
-                    }
-                    String ef = extraFilter.getFilter();
-                    if(ef != null) {
-                        filter += " AND (" + ef + ")";
-                    }
-                    load(filter);
-                } else {
-                    filter(filterFunction);
-                }
-            }
-        }
-    }
-
-    // Invoked from reload(boolean)
-    private void filteredFullReload() {
-        clear(false);
-        String filter = anchorFilter; // Made sure that this is already set in reload(boolean)
-        String ef = extraFilter.getFilter();
-        if(ef != null) {
-            if(filter == null) {
-                filter = ef;
-            } else {
-                filter += " AND (" + ef + ")";
-            }
-        }
-        load(filter);
-    }
-
-    public void setExtraFilter(FilterProvider filterProvider) {
-        setExtraFilter(filterProvider, true);
-    }
-
-    public void setExtraFilter(FilterProvider filterProvider, boolean reload) {
-        if(extraFilter.getFilterProvider() == filterProvider) {
-            return;
-        }
-        extraFilter.setFilterProvider(filterProvider);
-        if(reload) {
-            reload(true);
-        }
-    }
-
-    public void setExtraFilter(String extraFilter) {
-        setExtraFilter(extraFilter, true);
-    }
-
-    public void setExtraFilter(String extraFilter, boolean reload) {
-        if(Objects.equals(extraFilter, this.extraFilter.getCondition())) {
-            return;
-        }
-        this.extraFilter.setCondition(extraFilter);
-        if(reload) {
-            reload(true);
+            a.access(loadFunction::run);
         }
     }
 
@@ -707,7 +562,7 @@ public class ObjectBrowser<T extends StoredObject> extends ObjectGrid<T> impleme
 
     /**
      * This method is invoked when anchor values are set via the anchor form and if any exception is
-     * thrown from this method, anchor values will asked again.
+     * thrown from this method, anchor values will be asked again.
      *
      * @throws Exception If anchor values are not acceptable for some reason.
      */
@@ -945,7 +800,7 @@ public class ObjectBrowser<T extends StoredObject> extends ObjectGrid<T> impleme
 
     @Override
     public ObjectSearchBuilder<T> getSearchBuilder() {
-        return searchBuilder;
+        return loadFilterButtons == null ? null : loadFilterButtons.getSearchBuilder();
     }
 
     public void setReadOnly(boolean readOnly) {

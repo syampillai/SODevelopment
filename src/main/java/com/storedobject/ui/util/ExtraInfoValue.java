@@ -96,7 +96,7 @@ public class ExtraInfoValue<T extends StoredObject> implements StoredObjectLink<
     }
 
     @Override
-    public boolean contains(T info) {
+    public boolean contains(Object info) {
         return this.info.equals(info);
     }
 

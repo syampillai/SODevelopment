@@ -98,7 +98,7 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
     private final List<ObjectEditorListener> objectEditorListeners = new ArrayList<>();
     private List<Predicate<T>> validators;
     private ObjectSearcher<T> searcher;
-    ObjectSearchFilter searchFilter;
+    private ObjectLoadFilter<T> searchFilter;
     private Function<ObjectEditor<T>, Boolean> saver, deleter;
     private final TreeSet<String> setNotAllowed = new TreeSet<>();
     private final List<ObjectLinkField<?>> linkFields = new ArrayList<>();
@@ -1336,9 +1336,14 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
     }
 
     private void configureSearch() {
-        if(searcher instanceof ObjectBrowser) {
-            ((ObjectBrowser<T>)searcher).setCaption("Search: " + getCaption());
-            ((ObjectBrowser<T>)searcher).editor = this;
+        if(searcher instanceof ObjectBrowser<T> b) {
+            b.setCaption("Search: " + getCaption());
+            b.editor = this;
+            ObjectLoadFilter<T> f = b.getFixedFilter();
+            if(searchFilter != null) {
+                f.set(searchFilter);
+            }
+            searchFilter = f;
         }
     }
 
@@ -2352,7 +2357,7 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
             close();
             ObjectSearcher<T> searcher = getSearcher();
             if(searcher != null && searcher != grid) {
-                searcher.getFilter().setCondition(filter);
+                searcher.getLoadFilter().setCondition(filter);
             }
             anchorAction = false;
             if(action != null) {
@@ -2493,16 +2498,19 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
 
     public void setSearchFilter(String filter) {
         if(searchFilter == null) {
-            searchFilter = new ObjectSearchFilter();
+            searchFilter = new ObjectLoadFilter<>();
         }
         searchFilter.setCondition(filter);
     }
 
     public void setSearchFilter(FilterProvider filter) {
         if(searchFilter == null) {
-            searchFilter = new ObjectSearchFilter();
+            searchFilter = new ObjectLoadFilter<>();
         }
         searchFilter.setFilterProvider(filter);
+        if(searcher instanceof ObjectBrowser<T> b) {
+            b.applyFilter();
+        }
     }
 
     /**

@@ -1,17 +1,19 @@
 package com.storedobject.ui;
 
 import com.storedobject.common.LogicalOperator;
-import com.storedobject.core.ObjectToString;
 import com.storedobject.core.StoredObject;
+import com.storedobject.ui.util.ViewFilterSupport;
 import com.storedobject.vaadin.SearchField;
+import com.vaadin.flow.data.provider.DataProvider;
 
 import java.util.function.BiFunction;
+import java.util.function.Function;
 
-public class GridSearchField<T extends StoredObject> extends SearchField {
+public class GridSearchField<T extends StoredObject> extends SearchField implements ViewFilterSupport<T> {
 
-    private final ObjectGrid<T> grid;
+    private final ViewFilterSupport<T> grid;
 
-    public GridSearchField(ObjectGrid<T> grid) {
+    public GridSearchField(ViewFilterSupport<T> grid) {
         super(grid::filterView);
         this.grid = grid;
     }
@@ -20,19 +22,33 @@ public class GridSearchField<T extends StoredObject> extends SearchField {
         grid.filterView(filters);
     }
 
-    public void configure(BiFunction<T, String[], Boolean> matchFunction) {
-        grid.configureFilterView(matchFunction);
+    @Override
+    public void configureMatch(BiFunction<T, String[], Boolean> matchFunction) {
+        grid.configureMatch(matchFunction);
     }
 
-    public void configure(ObjectToString<T> objectToString) {
-        grid.configureFilterView(objectToString);
+    @Override
+    public void configure(Function<T, String> toString) {
+        grid.configure(toString);
     }
 
+    @Override
     public void configure(String... attributes) {
-        grid.configureFilterView(attributes);
+        grid.configure(attributes);
     }
 
+    @Override
     public void configure(LogicalOperator logicalOperator) {
-        grid.configureFilterView(logicalOperator);
+        grid.configure(logicalOperator);
+    }
+
+    @Override
+    public DataProvider<?, ?> getDataProvider() {
+        return grid.getDataProvider();
+    }
+
+    @Override
+    public Class<? extends T> getObjectClass() {
+        return grid.getObjectClass();
     }
 }

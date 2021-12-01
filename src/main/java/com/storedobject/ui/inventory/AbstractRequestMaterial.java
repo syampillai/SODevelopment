@@ -80,12 +80,12 @@ public abstract class AbstractRequestMaterial extends ObjectBrowser<MaterialRequ
     }
 
     @Override
-    public void setExtraFilter(String extraFilter) {
+    public void setFixedFilter(String fixedFilter) {
         String f = getFixedSide() + "Location=" + fromOrTo.getId();
-        if(extraFilter != null) {
-            f += " AND (" + extraFilter + ")";
+        if(fixedFilter != null) {
+            f += " AND (" + fixedFilter + ")";
         }
-        super.setExtraFilter(f);
+        super.setFixedFilter(f);
     }
 
     InventoryLocation getFromOrTo() {

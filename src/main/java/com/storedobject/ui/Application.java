@@ -32,7 +32,7 @@ import java.util.function.Consumer;
 
 public class Application extends com.storedobject.vaadin.Application implements Device, RunningLogic, RequiresApproval {
 
-    private static final String VERSION = "21.0.7";
+    private static final String VERSION = "21.0.8";
     private static final String COMPACT_STYLES =
             """
                     --lumo-size-xl: 3rem;

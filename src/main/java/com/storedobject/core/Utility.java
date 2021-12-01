@@ -2,6 +2,8 @@ package com.storedobject.core;
 
 import java.util.Date;
 import java.util.Iterator;
+import java.util.List;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -11,6 +13,44 @@ import java.util.stream.StreamSupport;
  * @author Syam
  */
 public class Utility {
+
+    /**
+     * Get the size of a sub-list. Index values will be re-adjusted to the valid range automatically to eliminate
+     * any exceptions.
+     *
+     * @param list List from which sub-list to be obtained.
+     * @param startingIndex Starting index.
+     * @param endingIndex Ending index.
+     * @return Size.
+     */
+    public static int size(List<?> list, int startingIndex, int endingIndex) {
+        if(endingIndex < 0) {
+            endingIndex = Integer.MAX_VALUE;
+        }
+        endingIndex = Math.min(endingIndex, list.size());
+        startingIndex = Math.max(startingIndex, 0);
+        startingIndex = Math.min(startingIndex, endingIndex);
+        return endingIndex - startingIndex;
+    }
+
+    /**
+     * Get the stream of a sub-list. Index values will be re-adjusted to the valid range automatically to eliminate
+     * any exceptions.
+     *
+     * @param list List from which sub-list to be obtained.
+     * @param startingIndex Starting index.
+     * @param endingIndex Ending index.
+     * @return Stream.
+     */
+    public static <T> Stream<T> stream(List<T> list, int startingIndex, int endingIndex) {
+        if(endingIndex < 0) {
+            endingIndex = Integer.MAX_VALUE;
+        }
+        endingIndex = Math.min(endingIndex, list.size());
+        startingIndex = Math.max(startingIndex, 0);
+        startingIndex = Math.min(startingIndex, endingIndex);
+        return IntStream.range(startingIndex, endingIndex).mapToObj(list::get);
+    }
 
     /**
      * Blank time: The local time Jan 1, 1800 0:00 is considered blank by the platform for internal purposes.

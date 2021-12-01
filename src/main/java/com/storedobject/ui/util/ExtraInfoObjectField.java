@@ -1,6 +1,6 @@
 package com.storedobject.ui.util;
 
-import com.storedobject.common.FilterProvider;
+import com.storedobject.common.SORuntimeException;
 import com.storedobject.core.*;
 import com.storedobject.ui.*;
 import com.storedobject.vaadin.ValueRequired;
@@ -14,8 +14,8 @@ import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.shared.Registration;
 
+import javax.annotation.Nonnull;
 import java.util.function.Consumer;
-import java.util.function.Predicate;
 
 class ExtraInfoObjectField<T extends StoredObject> extends CustomField<T>
         implements ObjectInput<T>, ViewDependent, NoDisplayField, HasValidation, ValueRequired {
@@ -267,39 +267,14 @@ class ExtraInfoObjectField<T extends StoredObject> extends CustomField<T>
         ((PseudoTransaction) transaction).replace(objectId, object);
     }
 
+    @Nonnull
     @Override
-    public void filter(Predicate<T> filter) {
+    public ObjectLoadFilter<T> getLoadFilter() {
+        throw new SORuntimeException();
     }
 
     @Override
-    public Predicate<T> getFilterPredicate() {
-        return null;
-    }
-
-    @Override
-    public void setLoadFilter(Predicate<T> filter) {
-    }
-
-    @Override
-    public Predicate<T> getLoadFilter() {
-        return null;
-    }
-
-    @Override
-    public void setFilter(FilterProvider filterProvider, String extraFilterClause) {
-    }
-
-    @Override
-    public void setFilter(ObjectSearchFilter filter) {
-    }
-
-    @Override
-    public ObjectSearchFilter getFilter(boolean create) {
-        return null;
-    }
-
-    @Override
-    public void filterChanged() {
+    public void applyFilter() {
     }
 
     @Override

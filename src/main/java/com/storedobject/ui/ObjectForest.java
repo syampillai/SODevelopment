@@ -1,15 +1,13 @@
 package com.storedobject.ui;
 
 import com.storedobject.core.StoredObject;
-import com.storedobject.ui.util.AbstractObjectForestSupplier;
-import com.storedobject.ui.util.ObjectForestSupplier;
 
 import java.util.List;
 
 public class ObjectForest<T extends StoredObject> extends BaseObjectForest<T> {
 
-    ObjectForestSupplier.LinkNode currentLinkNode;
-    ObjectForestSupplier.LinkObject currentLinkObject;
+    com.storedobject.core.ObjectForest.LinkNode currentLinkNode;
+    com.storedobject.core.ObjectForest.LinkObject currentLinkObject;
 
     public ObjectForest(Class<T> objectClass) {
         this(objectClass, false);
@@ -24,21 +22,17 @@ public class ObjectForest<T extends StoredObject> extends BaseObjectForest<T> {
     }
 
     public ObjectForest(Class<T> objectClass, Iterable<String> columns, boolean any) {
-        this(columns, new ObjectForestSupplier<>(objectClass, null, null, any));
-    }
-
-    ObjectForest(Iterable<String> columns, AbstractObjectForestSupplier<T, Void> dataProvider) {
-        super(columns, dataProvider);
+        super(false, objectClass, columns, any);
     }
 
     @Override
     public Object getSelected() {
         Object o = super.getSelected();
-        if(o instanceof ObjectForestSupplier.LinkNode) {
-            currentLinkNode = (ObjectForestSupplier.LinkNode) o;
+        if(o instanceof com.storedobject.core.ObjectForest.LinkNode) {
+            currentLinkNode = (com.storedobject.core.ObjectForest.LinkNode) o;
             currentLinkObject = null;
-        } else if(o instanceof ObjectForestSupplier.LinkObject) {
-            currentLinkObject = (ObjectForestSupplier.LinkObject) o;
+        } else if(o instanceof com.storedobject.core.ObjectForest.LinkObject) {
+            currentLinkObject = (com.storedobject.core.ObjectForest.LinkObject) o;
             currentLinkNode = currentLinkObject.getLinkNode();
         } else {
             currentLinkNode = null;
@@ -53,8 +47,8 @@ public class ObjectForest<T extends StoredObject> extends BaseObjectForest<T> {
         if(o == null) {
             return null;
         }
-        if(o instanceof ObjectForestSupplier.LinkObject) {
-            o = ((ObjectForestSupplier.LinkObject) o).getObject();
+        if(o instanceof com.storedobject.core.ObjectForest.LinkObject) {
+            o = ((com.storedobject.core.ObjectForest.LinkObject) o).getObject();
         }
         if(!StoredObject.class.isAssignableFrom(o.getClass())) {
             return null;
@@ -63,6 +57,7 @@ public class ObjectForest<T extends StoredObject> extends BaseObjectForest<T> {
         return (O)o;
     }
 
+    @Override
     <O extends StoredObject> ObjectChangedListener<O> createInternalChangedListener() {
         return new InternalChangedListener<>();
     }
@@ -87,14 +82,13 @@ public class ObjectForest<T extends StoredObject> extends BaseObjectForest<T> {
         @Override
         public final void inserted(O object) {
             if(currentLinkNode == null && currentLinkObject == null) { // Added at root
-                //noinspection unchecked
-                getDataSupplier().added((T)object);
-                refresh();
+                load();
                 select(object);
             } else if(currentLinkNode != null) {
-                refresh(currentLinkNode);
+                refresh(currentLinkNode, true);
                 expand(currentLinkNode);
-                currentLinkNode.links().stream().filter(lo -> object.getId().equals(lo.getObject().getId())).findAny().ifPresent(ObjectForest.this::select);
+                currentLinkNode.links(true).stream().filter(lo -> object.getId().equals(lo.getObject().getId()))
+                        .findAny().ifPresent(ObjectForest.this::select);
             }
             fireInserted(object);
         }
@@ -111,11 +105,9 @@ public class ObjectForest<T extends StoredObject> extends BaseObjectForest<T> {
         public final void deleted(O object) {
             deselectAll();
             if(currentLinkNode == null && currentLinkObject == null) { // Deleted from root
-                //noinspection unchecked
-                getDataSupplier().deleted((T)object);
-                refresh();
+                load();
             } else if(currentLinkObject != null) {
-                refresh(currentLinkNode);
+                refresh(currentLinkNode, true);
                 expand(currentLinkNode);
             }
             fireDeleted(object);

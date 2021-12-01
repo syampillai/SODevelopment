@@ -22,14 +22,14 @@ public abstract class AbstractReceiveMaterialTransferred extends AbstractSendAnd
     @Override
     void created() {
         super.created();
-        setExtraFilter("Status=1");
+        setFixedFilter("Status=1");
     }
 
     @Override
     protected void addExtraButtons() {
         super.addExtraButtons();
         Checkbox h = new Checkbox("Include History");
-        h.addValueChangeListener(e -> setExtraFilter(e.getValue() ? null : "Status=1"));
+        h.addValueChangeListener(e -> setFixedFilter(e.getValue() ? null : "Status=1"));
         buttonPanel.add(h);
     }
 }

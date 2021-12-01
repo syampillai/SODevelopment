@@ -53,7 +53,7 @@ public class StreamAttachmentData implements StoredObjectLink<FileData> {
     }
 
     @Override
-    public boolean contains(FileData file) {
+    public boolean contains(Object file) {
         return streamAll().anyMatch(f -> f == file);
     }
 
