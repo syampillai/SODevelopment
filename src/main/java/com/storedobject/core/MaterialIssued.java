@@ -98,4 +98,15 @@ public final class MaterialIssued extends StoredObject {
 
     public void close(Transaction transaction) throws Exception {
     }
+
+    public void issueReserved(Transaction transaction) throws Exception {
+    }
+
+    public boolean isReserved() {
+        return Math.random() > 0.5;
+    }
+
+    public boolean getReserved() {
+        return isReserved();
+    }
 }

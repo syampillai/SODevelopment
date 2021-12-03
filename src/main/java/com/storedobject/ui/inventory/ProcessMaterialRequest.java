@@ -2,10 +2,7 @@ package com.storedobject.ui.inventory;
 
 import com.storedobject.common.StringList;
 import com.storedobject.core.*;
-import com.storedobject.ui.ELabel;
-import com.storedobject.ui.ELabelField;
-import com.storedobject.ui.HTMLText;
-import com.storedobject.ui.QuantityField;
+import com.storedobject.ui.*;
 import com.storedobject.vaadin.*;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.checkbox.Checkbox;
@@ -26,6 +23,7 @@ import java.util.stream.Stream;
 public class ProcessMaterialRequest extends AbstractRequestMaterial {
 
     private final IssueTreeGrid issueTreeGrid = new IssueTreeGrid();
+    private ReservedMIIGrid reservedMIIGrid;
 
     public ProcessMaterialRequest(String store) {
         super(true, store, NO_ACTIONS);
@@ -43,7 +41,7 @@ public class ProcessMaterialRequest extends AbstractRequestMaterial {
     @Override
     void created() {
         super.created();
-        setFixedFilter("Status IN (1,2)");
+        setFixedFilter("(Status>0 AND Status<3) OR Reserved");
     }
 
     @Override
@@ -55,7 +53,7 @@ public class ProcessMaterialRequest extends AbstractRequestMaterial {
     protected void addExtraButtons() {
         super.addExtraButtons();
         Checkbox h = new Checkbox("Include History");
-        h.addValueChangeListener(e -> setFixedFilter(e.getValue() ? null : "Status IN (1,2)"));
+        h.addValueChangeListener(e -> setFixedFilter(e.getValue() ? null : "(Status>0 AND Status<3) OR Reserved"));
         buttonPanel.add(new Button("Process", e -> processRequest()), h);
     }
 
@@ -65,13 +63,33 @@ public class ProcessMaterialRequest extends AbstractRequestMaterial {
             return;
         }
         mr.reload();
+        if(mr.getStatus() > 4) { // Reserved - issue now
+            ELabel m = new ELabel("Items were reserved!", "red");
+            m.newLine().append("Do you want to issue them?").update();
+            new ActionForm("Confirm Issuance", m, () -> issueReserved(mr)).execute();
+            return;
+        }
         if(mr.getStatus() > 2) {
             warning("Can not process, status is '" + mr.getStatusValue() + "'");
             refresh(mr);
             return;
         }
         issueTreeGrid.setMaterialRequest(mr);
+        issueTreeGrid.processButton.setText((mr.getReserved() ? "Reserv" : "Issu") + "e Items");
         issueTreeGrid.execute(getView());
+    }
+
+    private void issueReserved(MaterialRequest mr) {
+        if(reservedMIIGrid == null) {
+            reservedMIIGrid = new ReservedMIIGrid();
+        }
+        reservedMIIGrid.fill(mr);
+        if(reservedMIIGrid.isEmpty()) {
+            transact(mr::requestForIssuance);
+            refresh(mr);
+            return;
+        }
+        reservedMIIGrid.execute(getView());
     }
 
     private class IssueTreeGrid extends DataTreeGrid<Object> {
@@ -107,8 +125,8 @@ public class ProcessMaterialRequest extends AbstractRequestMaterial {
         private boolean uninitialized;
 
         IssueTreeGrid() {
-            super(Object.class,
-                    StringList.create("PartNumber", "SerialNumber AS Serial/Batch", "Requested", "ReadyToIssue", "Shortfall", "ItemBin as Item/Bin"));
+            super(Object.class, StringList.create("PartNumber", "SerialNumber AS Serial/Batch", "Requested",
+                    "ReadyToIssue", "Shortfall", "ItemBin as Item/Bin"));
             createHTMLHierarchyColumn("PartNumber", this::getPartNumber);
             createHTMLColumn("Shortfall", this::getShortfall);
             createHTMLColumn("ItemBin", this::getItemBin);
@@ -889,6 +907,85 @@ public class ProcessMaterialRequest extends AbstractRequestMaterial {
                 quantityField.setValue(mii.getQuantity());
                 execute();
             }
+        }
+    }
+
+    private static List<MaterialIssuedItem> reservedItems(List<MaterialIssued> mis) {
+        List<MaterialIssuedItem> miis = new ArrayList<>();
+        mis.forEach(mi -> mi.listLinks(MaterialIssuedItem.class).collectAll(miis));
+        miis.sort(new MIIOrder());
+        return miis;
+    }
+
+    private static List<MaterialIssued> reservedIssues(MaterialRequest mr) {
+        return StoredObject.list(MaterialIssued.class, "Request=" + mr.getId() + " AND Status=3").toList();
+    }
+
+    private static class MIIOrder implements Comparator<MaterialIssuedItem> {
+
+        @Override
+        public int compare(MaterialIssuedItem mii1, MaterialIssuedItem mii2) {
+            return Integer.compare(pOrder(mii1), pOrder(mii2));
+        }
+
+        private int pOrder(MaterialIssuedItem mii) {
+            InventoryLocation loc = mii.getItem().getLocation();
+            return loc instanceof InventoryBin b ? b.getPickingOrder() : 0;
+        }
+    }
+
+    private class ReservedMIIGrid extends ObjectGrid<MaterialIssuedItem> {
+
+        private MaterialRequest mr;
+        private List<MaterialIssued> mis;
+
+        ReservedMIIGrid() {
+            super(MaterialIssuedItem.class, StringList.create(
+                    "Item.PartNumber.Name AS Item",
+                    "Item.PartNumber.PartNumber AS Part Number",
+                    "Item.SerialNumber AS Serial Number",
+                    "Quantity",
+                    "Location"
+                    ));
+            setCaption("Issue Reserved Items");
+        }
+
+        @Override
+        public Component createHeader() {
+            return new ButtonLayout(new Button("Issue Items", VaadinIcon.TRUCK, e -> issue()),
+                    new Button("Quit", e -> close()));
+        }
+
+        void fill(MaterialRequest mr) {
+            this.mr = mr;
+            mis = reservedIssues(mr);
+            load(ObjectIterator.create(reservedItems(mis)));
+        }
+
+        private void issue() {
+            if(transact(this::issue)) {
+                ProcessMaterialRequest.this.refresh(mr);
+                fill(mr);
+                if(size() == 0) {
+                    transact(mr::requestForIssuance);
+                }
+                message("Items issued successfully");
+            }
+            close();
+        }
+
+        private void issue(Transaction transaction) throws Exception {
+            for(MaterialIssued mi: mis) {
+                mi.issueReserved(transaction);
+            }
+        }
+
+        public String getLocation(MaterialIssuedItem mii) {
+            return mii.getItem().getLocation().toDisplay();
+        }
+
+        public Quantity getQuantity(MaterialIssuedItem mii) {
+            return mii.getItem().getQuantity();
         }
     }
 }

@@ -3,11 +3,14 @@ package com.storedobject.ui.inventory;
 import com.storedobject.common.StringList;
 import com.storedobject.core.*;
 import com.storedobject.ui.ELabel;
+import com.storedobject.vaadin.ActionForm;
 import com.storedobject.vaadin.Button;
 import com.storedobject.vaadin.ButtonLayout;
 import com.storedobject.vaadin.DataTreeGrid;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.checkbox.Checkbox;
+import com.vaadin.flow.component.grid.contextmenu.GridContextMenu;
+import com.vaadin.flow.component.grid.contextmenu.GridMenuItem;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.data.provider.hierarchy.AbstractHierarchicalDataProvider;
 import com.vaadin.flow.data.provider.hierarchy.HierarchicalQuery;
@@ -21,6 +24,7 @@ import java.util.stream.Stream;
 public class ReceiveMaterialRequested extends AbstractRequestMaterial {
 
     private final ReceiveTreeGrid receiveTreeGrid = new ReceiveTreeGrid();
+    private ELabel footer;
 
     public ReceiveMaterialRequested(String from) {
         super(false, 2, from, NO_ACTIONS);
@@ -28,13 +32,52 @@ public class ReceiveMaterialRequested extends AbstractRequestMaterial {
 
     public ReceiveMaterialRequested(InventoryLocation from) {
         super(false, 2, from, NO_ACTIONS);
+        GridContextMenu<MaterialRequest> contextMenu = new GridContextMenu<>(this);
+        GridMenuItem<MaterialRequest> receive = contextMenu.addItem("Receive Materials", e -> receive());
+        GridMenuItem<MaterialRequest> request = contextMenu.addItem("Request to issue", e -> receive());
+        GridMenuItem<MaterialRequest> release = contextMenu.addItem("Cancel Reservation",
+                e -> releaseReservation(e.getItem().orElse(null)));
+        contextMenu.setDynamicContentHandler(o -> {
+            deselectAll();
+            select(o);
+            if(switch(o.getStatus()) {
+                case 0, 4 -> true;
+                default -> false;
+            }) {
+                return false;
+            }
+            receive.setVisible(o.getStatus() != 1 && !o.getReserved());
+            request.setVisible(o.getStatus() != 1 && o.getReserved());
+            release.setVisible(o.getReserved());
+            return true;
+        });
     }
 
     @Override
     void created() {
         super.created();
-        setFixedFilter("Status<4");
+        setFixedFilter("Status>0 AND Status<4");
         setCaption("Receive Materials");
+    }
+
+    @Override
+    public void createFooters() {
+        footer = new ELabel();
+        appendFooter().join().setComponent(footer);
+    }
+
+    @Override
+    public void loaded() {
+        if(footer == null) {
+            return;
+        }
+        footer.clearContent();
+        if(isEmpty()) {
+            footer.append("No entries loaded", "red");
+        } else {
+            footer.append("Right-click on the entry for entry-specific options", "blue");
+        }
+        footer.update();
     }
 
     @Override
@@ -52,7 +95,7 @@ public class ReceiveMaterialRequested extends AbstractRequestMaterial {
             if(e.getValue()) {
                 setFixedFilter((String)null);
             } else {
-                setFixedFilter("Status<4");
+                setFixedFilter("Status>0 AND Status<4");
             }
         });
         buttonPanel.add(cb);
@@ -66,6 +109,28 @@ public class ReceiveMaterialRequested extends AbstractRequestMaterial {
         new RequestMaterial(getFromOrTo()).execute();
     }
 
+    private void releaseReservation(MaterialRequest mr) {
+        if(mr == null || !mr.getReserved()) {
+            return;
+        }
+        ELabel m = new ELabel();
+        String ask = "Do you want to cancel the reservation?";
+        if(mr.getStatus() == 1) {
+            m.append("Items are not yet reserved.", "red");
+            m.newLine().append(ask).update();
+        } else {
+            m.append("Not yet issued but items are " + (mr.getStatus() == 2 ? "partially" : "fully")
+                    + " reserved.", "red");
+        }
+        m.newLine().append("Do you really want to cancel the reservation?").update();
+        new ActionForm("Cancel Reservation", m, () -> {
+            if(transact(mr::releaseReservation)) {
+                refresh(mr);
+                message("Reservation cancelled!");
+            }
+        }).execute();
+    }
+
     private void receive() {
         MaterialRequest mr = selected();
         if(mr == null) {
@@ -74,17 +139,35 @@ public class ReceiveMaterialRequested extends AbstractRequestMaterial {
         if(mr.getReceived()) {
             message("Whatever sent earlier was already received");
         }
+        if(mr.getReserved() && mr.getStatus() == 1) {
+            ELabel m = new ELabel("Items are not yet reserved.", "red");
+            m.newLine().append("Do you want to request for issuance instead of reservation?").update();
+            new ActionForm("Confirm Issuance", m, () -> requestForIssuance(mr)).execute();
+            return;
+        }
         switch(mr.getStatus()) {
             case 2:
             case 3:
-            case 4:
                 break;
             default:
                 warning("Status is '" + mr.getStatusValue() + "'");
                 return;
         }
+        if(mr.getReserved()) {
+            ELabel m = new ELabel("Not yet issued but items are " + (mr.getStatus() == 2 ? "partially" : "fully")
+                    + " reserved.", "red");
+            m.newLine().append("Do you want to request for issuance of the reserved items?").update();
+            new ActionForm("Confirm Issuance", m, () -> requestForIssuance(mr)).execute();
+            return;
+        }
         receiveTreeGrid.setMaterialRequest(mr);
         receiveTreeGrid.execute(getView());
+    }
+
+    private void requestForIssuance(MaterialRequest mr) {
+        if(transact(mr::requestForIssuance)) {
+           refresh(mr);
+        }
     }
 
     private class ReceiveTreeGrid extends DataTreeGrid<Object> {

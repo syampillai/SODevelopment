@@ -99,7 +99,8 @@ public class Assembly<T extends InventoryItem, C extends InventoryItem> extends 
         private final ELabelField assemblyDetails = new ELabelField("Assembly Position");
         private final DateField dateField = new DateField("Date");
         private final TextField refField = new TextField("Reference");
-        private final ObjectListField<InventoryItemType> partNumbersField = new ObjectListField<>("Part Number", InventoryItemType.class);
+        private final ObjectListField<InventoryItemType> partNumbersField =
+                new ObjectListField<>("Part Number", InventoryItemType.class);
         private final ItemField<C> itemField;
         private final QuantityField qRequiredField = new QuantityField("Quantity Required");
         private final QuantityField qAvailableField = new QuantityField("Quantity Available");
@@ -111,7 +112,8 @@ public class Assembly<T extends InventoryItem, C extends InventoryItem> extends 
         public ItemFit(Class<C> itemClass) {
             super("Select Item to Fit", false);
             itemField = new ItemField<>(StringUtility.makeLabel(itemClass), itemClass, true);
-            addField(assemblyDetails, dateField, refField, partNumbersField, itemField, qRequiredField, qAvailableField, qFitField);
+            addField(assemblyDetails, dateField, refField, partNumbersField, itemField, qRequiredField,
+                    qAvailableField, qFitField);
             qRequiredField.setEnabled(false);
             qAvailableField.setEnabled(false);
             setRequired(refField);
@@ -220,7 +222,8 @@ public class Assembly<T extends InventoryItem, C extends InventoryItem> extends 
         private InventoryTransaction inventoryTransaction;
         private InventoryItem item;
         private final InventoryLocation scrap = new InventoryStoreBin(), specificBin = new InventoryStoreBin();
-        private final ObjectListField<InventoryLocation> binField = new ObjectListField<>("Remove to", InventoryLocation.class);
+        private final ObjectListField<InventoryLocation> binField =
+                new ObjectListField<>("Remove to", InventoryLocation.class);
         private boolean binPopulated = false;
         private final BinField specificBinField = new BinField("Specific Bin");
 
@@ -229,7 +232,8 @@ public class Assembly<T extends InventoryItem, C extends InventoryItem> extends 
             itemField = new ItemField<>("To remove", InventoryItem.class, true);
             itemField.setEnabled(false);
             qFittedField.setEnabled(false);
-            addField(assemblyDetails, dateField, refField, itemField, qFittedField, qToRemoveField, binField, specificBinField);
+            addField(assemblyDetails, dateField, refField, itemField, qFittedField, qToRemoveField, binField,
+                    specificBinField);
             setFieldHidden(specificBinField);
             binField.addValueChangeListener(e -> {
                if(e.isFromClient()) {

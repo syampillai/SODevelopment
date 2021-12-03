@@ -80,6 +80,7 @@ public class SystemUtility extends View implements CloseableView, Transactional 
         buttons.add(updateData = new ConfirmButton("Update", "lightbulb", this));
         buttons.add(edit = new Button("Editor", VaadinIcon.EDIT, this));
         buttons.add(editRaw = new Button("Raw Editor", VaadinIcon.LIFEBUOY, this));
+        buttons.add(new Button("View SQL", VaadinIcon.BUG, e -> viewSQL()));
         form.add(label("Execute Logic"));
         form.add(rawCommand = new TextField("Command"));
         buttons = new ButtonLayout();
@@ -195,7 +196,8 @@ public class SystemUtility extends View implements CloseableView, Transactional 
                 getApplication().view("Id " + so.getId() + ", Transaction " + so.getTransactionId(), (StreamData)so);
                 return;
             }
-            getApplication().view(StringUtility.makeLabel(so.getClass()) + " (Id " + so.getId() + ", Transaction " + so.getTransactionId() + ")", so);
+            getApplication().view(StringUtility.makeLabel(so.getClass()) + " (Id " + so.getId()
+                    + ", Transaction " + so.getTransactionId() + ")", so);
             return;
         }
         if(c == viewTranRaw) {
@@ -219,9 +221,7 @@ public class SystemUtility extends View implements CloseableView, Transactional 
             getApplication().getServer().execute(command);
             return;
         }
-        objectClass = from.getObjectClass();
-        if(objectClass == null) {
-            warning("Class not found: " + from.getValue());
+        if(objectClass() == null) {
             return;
         }
         if(c == edit) {
@@ -229,6 +229,7 @@ public class SystemUtility extends View implements CloseableView, Transactional 
             return;
         }
         if(c == editRaw) {
+            //noinspection rawtypes
             new ObjectEditor(objectClass).execute();
             return;
         }
@@ -329,6 +330,35 @@ public class SystemUtility extends View implements CloseableView, Transactional 
             };
             getApplication().view(excel);
         }
+    }
+
+    private Class<? extends StoredObject> objectClass() {
+        objectClass = from.getObjectClass();
+        if(objectClass == null) {
+            warning("Class not found: " + from.getValue());
+            return null;
+        }
+        return objectClass;
+    }
+
+    private void viewSQL() {
+        if(objectClass() == null) {
+            return;
+        }
+        String cols = select.getValue().trim();
+        if(cols.isEmpty()) {
+            cols = StoredObjectUtility.browseColumns(objectClass).toString(", ");
+            select.setValue(cols);
+        } else {
+            if(!cols.startsWith("/")) {
+                cols = StringList.create(cols).toString(", ");
+            }
+        }
+        TextView tv = new TextView("SQL");
+        tv.append(StoredObjectUtility.createSQL(ClassAttribute.get(objectClass), cols, where.getValue().trim(),
+                orderBy.getValue().trim(), !any.getValue(), false));
+        tv.update();
+        tv.execute();
     }
 
     class DataLoader implements Comparator<CharSequence> {

@@ -5,6 +5,7 @@ import com.storedobject.core.*;
 import com.storedobject.ui.MessageGrid;
 import com.storedobject.vaadin.Button;
 import com.storedobject.vaadin.ConfirmButton;
+import com.storedobject.vaadin.PopupButton;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.icon.VaadinIcon;
 
@@ -41,7 +42,10 @@ public class RequestMaterial extends AbstractRequestMaterial {
     @Override
     protected void addExtraButtons() {
         super.addExtraButtons();
-        buttonPanel.add(new Button("Send Request", VaadinIcon.PAPERPLANE, e -> send()));
+        PopupButton sendRequest = new PopupButton("Send Request", VaadinIcon.PAPERPLANE);
+        sendRequest.add(new Button("Immediate Requirement", "", e -> send(false)));
+        sendRequest.add(new Button("Reserve Items", "", e -> send(true)));
+        buttonPanel.add(sendRequest);
         buttonPanel.add(new ConfirmButton("Foreclose", "close", e -> foreclose()));
         Checkbox h = new Checkbox("Include History");
         h.addValueChangeListener(e -> setFixedFilter(e.getValue() ? null : "Status<=1"));
@@ -49,7 +53,7 @@ public class RequestMaterial extends AbstractRequestMaterial {
         buttonPanel.add(new Button("\u21f0 Receive Screen", VaadinIcon.TRUCK, e -> receive()));
     }
 
-    private void send() {
+    private void send(boolean reserve) {
         MaterialRequest mr = selected();
         if(mr == null) {
             return;
@@ -66,9 +70,9 @@ public class RequestMaterial extends AbstractRequestMaterial {
             warning("No items to request");
             return;
         }
-        if(transact(mr::request)) {
+        if(reserve ? transact(mr::reserve) : transact(mr::request)) {
             refresh(mr);
-            message("Request sent");
+            message("R" + (reserve ? "eservation r" : "") + "equest sent");
         }
     }
 

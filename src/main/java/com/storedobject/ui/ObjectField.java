@@ -1,10 +1,7 @@
 package com.storedobject.ui;
 
 import com.storedobject.core.*;
-import com.storedobject.ui.inventory.BinField;
-import com.storedobject.ui.inventory.ItemField;
-import com.storedobject.ui.inventory.ItemGetField;
-import com.storedobject.ui.inventory.ItemInput;
+import com.storedobject.ui.inventory.*;
 import com.storedobject.ui.util.NoDisplayField;
 import com.storedobject.vaadin.CustomField;
 import com.storedobject.vaadin.View;
@@ -542,10 +539,23 @@ public class ObjectField<T extends StoredObject> extends CustomField<Id> impleme
     }
 
     @SuppressWarnings("unchecked")
-    private static <O extends StoredObject> ObjectInput<O> createField(Class<O> objectClass, Type type, boolean any,
-                                                                       ObjectGetField.GetProvider<O> getProvider, boolean addAllowed) {
+    private static <O extends StoredObject, IT extends InventoryItemType> ObjectInput<O> createField(
+            Class<O> objectClass, Type type, boolean any, ObjectGetField.GetProvider<O> getProvider,
+            boolean addAllowed) {
         if(StreamData.class.isAssignableFrom(objectClass)) {
             return (ObjectInput<O>) new FileField(type);
+        }
+        if(type == Type.AUTO && InventoryItemType.class.isAssignableFrom(objectClass) && getProvider == null) {
+            Class<IT> itClass = (Class<IT>) objectClass;
+            String pn;
+            try {
+                pn = itClass.getDeclaredConstructor().newInstance().getPartNumberShortName();
+            } catch(Throwable e) {
+                pn = "P/N";
+            }
+            ItemTypeGetField<IT> itField = new ItemTypeGetField<>(itClass, any, addAllowed);
+            itField.setPlaceholder(pn);
+            return (ObjectInput<O>) itField;
         }
         if(InventoryItem.class.isAssignableFrom(objectClass)) {
             Class<? extends InventoryItem> iClass = (Class<? extends InventoryItem>) objectClass;

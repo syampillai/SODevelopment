@@ -11,6 +11,11 @@ public final class InventoryFitmentPosition extends InventoryLocation {
     public static void columns(Columns columns) {
     }
 
+    @Override
+    public Id getEntityId() {
+        return Id.ZERO;
+    }
+
     public void setItem(Id itemId) {
     }
 

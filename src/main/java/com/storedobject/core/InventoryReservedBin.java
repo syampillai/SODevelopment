@@ -44,18 +44,6 @@ public final class InventoryReservedBin extends InventoryBin {
         return new MaterialRequest();
     }
 
-    public void release(Transaction transaction) throws Exception {
-    }
-
-    public static InventoryReservedBin getFor(InventoryBin bin, MaterialRequest materialRequest) {
-        return new InventoryReservedBin();
-    }
-
-    public static InventoryReservedBin createFor(TransactionManager transactionManager, InventoryBin bin,
-                                                 MaterialRequest materialRequest) throws Exception {
-        return new InventoryReservedBin();
-    }
-
     public static InventoryReservedBin createFor(Transaction transaction, InventoryBin bin,
                                                  MaterialRequest materialRequest) throws Exception {
         return new InventoryReservedBin();

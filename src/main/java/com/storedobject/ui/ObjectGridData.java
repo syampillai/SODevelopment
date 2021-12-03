@@ -108,7 +108,6 @@ public interface ObjectGridData<T extends StoredObject, ROOT> extends HasColumns
         deselect(object);
         //noinspection unchecked
         ((ObjectChangedListener<T>)getObjectLoader()).deleted(object);
-        refresh();
         List<ObjectChangedListener<T>> listeners = getObjectChangedListeners(false);
         if(listeners != null) {
             listeners.forEach(ocl -> ocl.deleted(object));

@@ -127,7 +127,7 @@ public class ObjectComboField<T extends StoredObject> extends ComboField<T>
     }
 
     public ObjectComboField(String label, Class<T> objectClass, List<T> list, boolean allowAdd) {
-        this(label, new ObjectMemoryList<>(checkClass(objectClass, list)), allowAdd);
+        this(label, new ObjectMemoryList<>(checkClass(objectClass, list), true), allowAdd);
         objectProvider.load(list);
     }
 
@@ -183,12 +183,12 @@ public class ObjectComboField<T extends StoredObject> extends ComboField<T>
     }
 
     @Override
-    public void load(String condition, String orderBy) {
+    public void load(String condition, String orderBy, boolean any) {
         objectProvider.load(condition, orderBy);
     }
 
     @Override
-    public void load(int linkType, StoredObject master, String condition, String orderBy) {
+    public void load(int linkType, StoredObject master, String condition, String orderBy, boolean any) {
         objectProvider.load(linkType, master, condition, orderBy);
     }
 

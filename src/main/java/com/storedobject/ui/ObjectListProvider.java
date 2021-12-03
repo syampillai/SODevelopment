@@ -210,7 +210,7 @@ public class ObjectListProvider<T extends StoredObject> extends AbstractListProv
 
     @Override
     public void inserted(T object) {
-        getItems().add(object);
+        load();
     }
 
     @Override
@@ -222,7 +222,7 @@ public class ObjectListProvider<T extends StoredObject> extends AbstractListProv
     @Override
     public void deleted(T object) {
         getData().remove(object);
-        refreshAll();
+        load();
     }
 
     @Override
