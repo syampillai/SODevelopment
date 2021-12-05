@@ -12,7 +12,7 @@ import javax.annotation.Nonnull;
 import java.util.function.Consumer;
 
 public interface ObjectGridData<T extends StoredObject, ROOT> extends HasColumns<ROOT>, ObjectsSetter<T>,
-        ObjectSearcher<T>, Transactional, ObjectLoader<T> {
+        ObjectSearcher<T>, ObjectLoader<T> {
 
     @Nonnull
     @Override

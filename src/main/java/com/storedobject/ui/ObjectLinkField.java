@@ -2,6 +2,7 @@ package com.storedobject.ui;
 
 import com.storedobject.common.ArrayListSet;
 import com.storedobject.core.*;
+import com.storedobject.vaadin.DataGrid;
 import com.storedobject.vaadin.View;
 import com.storedobject.vaadin.ViewDependent;
 import com.vaadin.flow.component.Component;
@@ -422,9 +423,9 @@ public final class ObjectLinkField<T extends StoredObject>
         }
     }
 
-    public DataGrid<T> getGrid() {
+    public AbstractListGrid<T> getGrid() {
         //noinspection unchecked
-        return (DataGrid<T>) grid;
+        return (AbstractListGrid<T>) grid;
     }
 
     public static class Tabs extends com.storedobject.vaadin.Tabs {

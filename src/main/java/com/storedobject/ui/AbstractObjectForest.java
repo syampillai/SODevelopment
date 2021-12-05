@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
 
-public abstract class AbstractObjectForest<T extends StoredObject> extends DataTreeGrid<Object>
+public abstract class AbstractObjectForest<T extends StoredObject> extends AbstractTreeGrid<Object>
         implements ObjectGridData<T, Object> {
 
     private static final StringList NAME = StringList.create("_Name");

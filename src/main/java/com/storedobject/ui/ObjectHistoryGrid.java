@@ -1,17 +1,15 @@
 package com.storedobject.ui;
 
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.BiPredicate;
-
 import com.storedobject.common.StringList;
 import com.storedobject.core.*;
 import com.storedobject.core.StoredObjectUtility.Link;
 import com.storedobject.vaadin.CloseableView;
-import com.vaadin.flow.data.provider.ListDataProvider;
 
-public class ObjectHistoryGrid<T extends StoredObject> extends DataGrid<T> implements CloseableView {
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.function.BiPredicate;
+
+public class ObjectHistoryGrid<T extends StoredObject> extends ListGrid<T> implements CloseableView {
 
     private final T object;
     private final BiPredicate<T, T> viewFilter;
@@ -74,13 +72,11 @@ public class ObjectHistoryGrid<T extends StoredObject> extends DataGrid<T> imple
 
     @Override
     public String getColumnCaption(String columnName) {
-        switch (columnName) {
-            case "Timestamp":
-                return "Timestamp (UTC)";
-            case "TransactionIP":
-                return "IP Address";
-        }
-        return super.getColumnCaption(columnName);
+        return switch(columnName) {
+            case "Timestamp" -> "Timestamp (UTC)";
+            case "TransactionIP" -> "IP Address";
+            default -> super.getColumnCaption(columnName);
+        };
     }
 
     public Timestamp getTimestamp(T object) {
@@ -99,16 +95,12 @@ public class ObjectHistoryGrid<T extends StoredObject> extends DataGrid<T> imple
         return object.getTransactionIP();
     }
 
-    @SuppressWarnings("unchecked")
-    public void load() {
-        ObjectIterator<T> objects = (ObjectIterator<T>)object.listHistory();
+    private void load() {
+        @SuppressWarnings("unchecked") ObjectIterator<T> objects = (ObjectIterator<T>)object.listHistory();
         if(viewFilter != null) {
             objects = objects.filter(viewFilter);
         }
-        List<T> list = new ArrayList<>();
-        list.add(object);
-        objects.collectAll(list);
-        setItems(new ListDataProvider<>(list));
+        objects.collectAll(this);
     }
 
     public void executeAll() {

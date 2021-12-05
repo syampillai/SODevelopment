@@ -14,7 +14,8 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 
-public abstract class AbstractListGrid<T> extends com.storedobject.vaadin.ListGrid<T> implements ViewFilterSupport<T> {
+public abstract class AbstractListGrid<T> extends com.storedobject.vaadin.ListGrid<T>
+        implements ViewFilterSupport<T>, Transactional {
 
     static final String NOTHING_SELECTED = "Nothing selected";
     private GridListDataView<T> dataView;
