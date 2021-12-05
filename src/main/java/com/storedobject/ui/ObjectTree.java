@@ -2,7 +2,6 @@ package com.storedobject.ui;
 
 import com.storedobject.core.*;
 import com.storedobject.ui.util.DataLoadedListener;
-import com.storedobject.vaadin.DataTreeGrid;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ItemLabelGenerator;
 import com.vaadin.flow.component.splitlayout.SplitLayout;
@@ -12,7 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
-public class ObjectTree<T extends StoredObject> extends AbstractTreeGrid<T> implements ObjectGridData<T, T> {
+public class ObjectTree<T extends StoredObject> extends DataTreeGrid<T> implements ObjectGridData<T, T> {
 
     private final List<DataLoadedListener> dataLoadedListeners = new ArrayList<>();
     private ObjectEditor<T> editor;

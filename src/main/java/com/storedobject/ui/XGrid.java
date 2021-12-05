@@ -1,10 +1,8 @@
 package com.storedobject.ui;
 
-import com.storedobject.vaadin.DataGrid;
-
 import java.util.function.Function;
 
-public class XGrid<X extends XGrid.XData> extends DataGrid<X> {
+public class XGrid<X extends XGrid.XData> extends ListGrid<X> {
 
     public XGrid(Class<X> objectClass) {
         this(objectClass,null);

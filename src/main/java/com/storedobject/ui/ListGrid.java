@@ -5,7 +5,7 @@ import com.storedobject.core.Filtered;
 import com.storedobject.vaadin.DataList;
 import com.vaadin.flow.data.provider.ListDataProvider;
 
-public class ListGrid<T> extends AbstractListGrid<T> {
+public class ListGrid<T> extends DataGrid<T> {
 
     public ListGrid(Class<T> objectClass) {
         this(objectClass, null);

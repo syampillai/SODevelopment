@@ -13,7 +13,8 @@ import java.util.function.Function;
 
 /**
  * This class can be used to edit a list of any kind of Object instances. This may be used directly as a
- * {@link com.storedobject.vaadin.View} (since it is a {@link DataGrid}) or it can be embedded in other layouts.
+ * {@link com.storedobject.vaadin.View} (since it is a {@link com.storedobject.vaadin.DataGrid}) or
+ * it can be embedded in other layouts.
  *
  * @param <T> Type of objects to edit.
  * @author Syam

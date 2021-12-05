@@ -8,6 +8,7 @@ import com.storedobject.pdf.PDFReport;
 import com.storedobject.pdf.PDFTable;
 import com.storedobject.ui.Application;
 import com.storedobject.ui.*;
+import com.storedobject.ui.DataTreeGrid;
 import com.storedobject.vaadin.*;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasValue;
@@ -21,7 +22,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Stream;
 
-public class DefineAssembly<T extends InventoryItemType, C extends InventoryItemType> extends DataTreeGrid<InventoryAssembly> implements Transactional {
+public class DefineAssembly<T extends InventoryItemType, C extends InventoryItemType> extends DataTreeGrid<InventoryAssembly> {
 
     private static final StringList COLUMNS = StringList.create("ItemType", "Position", "Quantity", "Accessory", "Optional");
     private final ButtonLayout buttonLayout = new ButtonLayout();

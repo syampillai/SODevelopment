@@ -14,13 +14,13 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 
-public abstract class AbstractListGrid<T> extends com.storedobject.vaadin.ListGrid<T>
+public abstract class DataGrid<T> extends com.storedobject.vaadin.ListGrid<T>
         implements ViewFilterSupport<T>, Transactional {
 
     static final String NOTHING_SELECTED = "Nothing selected";
     private GridListDataView<T> dataView;
 
-    public AbstractListGrid(Class<T> objectClass, Filtered<T> list, Iterable<String> columns) {
+    public DataGrid(Class<T> objectClass, Filtered<T> list, Iterable<String> columns) {
         //noinspection unchecked
         super(objectClass, (List<T>)list, columns);
     }

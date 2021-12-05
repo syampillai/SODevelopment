@@ -3,6 +3,7 @@ package com.storedobject.ui.inventory;
 import com.storedobject.common.StringList;
 import com.storedobject.core.*;
 import com.storedobject.ui.*;
+import com.storedobject.ui.DataTreeGrid;
 import com.storedobject.vaadin.*;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.checkbox.Checkbox;

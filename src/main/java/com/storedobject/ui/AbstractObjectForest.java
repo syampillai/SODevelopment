@@ -3,14 +3,13 @@ package com.storedobject.ui;
 import com.storedobject.common.StringList;
 import com.storedobject.core.ObjectForest;
 import com.storedobject.core.*;
-import com.storedobject.vaadin.DataTreeGrid;
 
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
 
-public abstract class AbstractObjectForest<T extends StoredObject> extends AbstractTreeGrid<Object>
+public abstract class AbstractObjectForest<T extends StoredObject> extends DataTreeGrid<Object>
         implements ObjectGridData<T, Object> {
 
     private static final StringList NAME = StringList.create("_Name");

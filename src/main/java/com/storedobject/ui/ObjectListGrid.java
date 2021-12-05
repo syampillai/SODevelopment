@@ -11,7 +11,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.function.Predicate;
 
-public class ObjectListGrid<T extends StoredObject> extends AbstractListGrid<T> implements ObjectLoader<T> {
+public class ObjectListGrid<T extends StoredObject> extends DataGrid<T> implements ObjectLoader<T> {
 
     List<ObjectChangedListener<T>> objectChangedListeners;
 

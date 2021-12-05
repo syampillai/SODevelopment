@@ -22,7 +22,7 @@ import java.util.stream.Stream;
  * @author Syam
  */
 @CssImport(value =  "./so/editable-grid/styles.css", themeFor = "vaadin-grid")
-public abstract class AbstractEditableGrid<T> extends AbstractListGrid<T> {
+public abstract class AbstractEditableGrid<T> extends DataGrid<T> {
 
     static final String NONE_MARK = "", EDITED_MARK = "*", ADDED_MARK = "+", DELETED_MARK = "-";
     private Column<T> markerColumn;

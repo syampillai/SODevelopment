@@ -2,7 +2,6 @@ package com.storedobject.ui;
 
 import com.storedobject.common.ArrayListSet;
 import com.storedobject.core.*;
-import com.storedobject.vaadin.DataGrid;
 import com.storedobject.vaadin.View;
 import com.storedobject.vaadin.ViewDependent;
 import com.vaadin.flow.component.Component;
@@ -66,7 +65,7 @@ public final class ObjectLinkField<T extends StoredObject>
             grid.setReadOnly(true);
         }
         ((Grid<?>)grid).setAllRowsVisible(true);
-        invisible.forEach(fieldName -> ((DataGrid<T>) grid).setColumnVisible(fieldName, false));
+        invisible.forEach(fieldName -> ((com.storedobject.vaadin.DataGrid<T>) grid).setColumnVisible(fieldName, false));
         invisible.clear();
         invisible = null;
         grid.setValue(value);
@@ -111,8 +110,8 @@ public final class ObjectLinkField<T extends StoredObject>
             invisible.add(columnName);
             return;
         }
-        if(grid instanceof DataGrid) {
-            ((DataGrid<?>) grid).setColumnVisible(columnName, false);
+        if(grid instanceof com.storedobject.vaadin.DataGrid) {
+            ((com.storedobject.vaadin.DataGrid<?>) grid).setColumnVisible(columnName, false);
         }
     }
 
@@ -121,8 +120,8 @@ public final class ObjectLinkField<T extends StoredObject>
             invisible.remove(columnName);
             return;
         }
-        if(grid instanceof DataGrid) {
-            ((DataGrid<?>) grid).setColumnVisible(columnName, true);
+        if(grid instanceof com.storedobject.vaadin.DataGrid) {
+            ((com.storedobject.vaadin.DataGrid<?>) grid).setColumnVisible(columnName, true);
         }
     }
 
@@ -401,7 +400,7 @@ public final class ObjectLinkField<T extends StoredObject>
 
     private EditableProvider<T> provider() {
         //noinspection unchecked
-        return (EditableProvider<T>) ((AbstractListGrid<T>)grid).getDataProvider();
+        return (EditableProvider<T>) ((DataGrid<T>)grid).getDataProvider();
     }
 
     public boolean isColumnEditable(String columnName) {
@@ -423,9 +422,9 @@ public final class ObjectLinkField<T extends StoredObject>
         }
     }
 
-    public AbstractListGrid<T> getGrid() {
+    public DataGrid<T> getGrid() {
         //noinspection unchecked
-        return (AbstractListGrid<T>) grid;
+        return (DataGrid<T>) grid;
     }
 
     public static class Tabs extends com.storedobject.vaadin.Tabs {

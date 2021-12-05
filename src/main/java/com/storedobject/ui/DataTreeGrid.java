@@ -2,15 +2,14 @@ package com.storedobject.ui;
 
 import com.storedobject.core.StoredObject;
 import com.storedobject.core.StoredObjectUtility;
-import com.storedobject.vaadin.DataTreeGrid;
 
-public abstract class AbstractTreeGrid<T> extends DataTreeGrid<T> implements Transactional {
+public abstract class DataTreeGrid<T> extends com.storedobject.vaadin.DataTreeGrid<T> implements Transactional {
 
-    public AbstractTreeGrid(Class<T> objectClass) {
+    public DataTreeGrid(Class<T> objectClass) {
         this(objectClass, null);
     }
 
-    public AbstractTreeGrid(Class<T> objectClass, Iterable<String> columns) {
+    public DataTreeGrid(Class<T> objectClass, Iterable<String> columns) {
         super(objectClass, cols(objectClass, columns));
     }
 
