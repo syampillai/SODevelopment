@@ -9,25 +9,20 @@ import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.data.provider.ListDataProvider;
 import com.vaadin.flow.shared.Registration;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.stream.Stream;
 /**
  * An editable grid of objects. It internally maintains an {@link EditableList} that provides status information on each row
- * of the grid. (See {@link #getEditableList()}).
+ * of the grid.
  *
  * @param <T> Type of object to edit.
  * @author Syam
  */
 public class EditableObjectGrid<T extends StoredObject> extends AbstractEditableGrid<T>
-        implements ObjectGridData<T, T>, EditableDataGrid<T> {
+        implements ObjectGridData<T, T>, EditableDataGrid<T>, ObjectEditorListener {
 
-    private String orderBy;
-    private List<ObjectChangedListener<T>> objectChangedListeners;
-    private List<ObjectEditorListener> objectEditorListeners;
+    List<ObjectChangedListener<T>> objectChangedListeners;
     private ObjectEditor<T> editor;
     T editingItem;
     private boolean autoSave = false;
@@ -36,6 +31,7 @@ public class EditableObjectGrid<T extends StoredObject> extends AbstractEditable
     private final Map<String, HasValue<?, ?>> fields = new HashMap<>();
     private final Map<String, String> labels = new HashMap<>();
     private final Map<String, Span> spans = new HashMap<>();
+    private final InternalObjectChangedListener internalObjectChangedListener = new InternalObjectChangedListener();
 
     public EditableObjectGrid(Class<T> objectClass) {
         this(objectClass, false);
@@ -50,7 +46,13 @@ public class EditableObjectGrid<T extends StoredObject> extends AbstractEditable
     }
 
     public EditableObjectGrid(Class<T> objectClass, Iterable<String> columns, boolean any) {
-        super(objectClass, new ObjectMemoryList<>(objectClass, any),
+        this(objectClass, new ObjectMemoryList<>(objectClass, any), columns);
+        addConstructedListener(g ->
+                getRowEditor().addConstructedListener(e -> getEditor().setBinder(editor.getForm().getBinder())));
+    }
+
+    protected EditableObjectGrid(Class<T> objectClass, Filtered<T> list, Iterable<String> columns) {
+        super(objectClass, list,
                 columns == null ? StoredObjectUtility.browseColumns(objectClass) : columns);
         addConstructedListener(g ->
                 getRowEditor().addConstructedListener(e -> getEditor().setBinder(editor.getForm().getBinder())));
@@ -58,56 +60,30 @@ public class EditableObjectGrid<T extends StoredObject> extends AbstractEditable
 
     @Override
     protected boolean isValid(ListDataProvider<T> dataProvider) {
-        return dataProvider instanceof ObjectListProvider && super.isValid(dataProvider);
+        return dataProvider instanceof EditableObjectListProvider && super.isValid(dataProvider);
     }
 
     @Override
-    protected EditableObjectListProvider<T> createListDataProvider(DataList<T> data) {
+    protected AbstractListProvider<T> createListDataProvider(DataList<T> data) {
         return new EditableObjectListProvider<>(getObjectClass(), data);
     }
 
-    @Override
-    public EditableObjectListProvider<T> getEditableList() {
-        return (EditableObjectListProvider<T>) super.getEditableList();
-    }
-
-    public Registration addValueChangeTracker(BiConsumer<EditableObjectListProvider<T>, Boolean> tracker) {
-        return getEditableList().addValueChangeTracker(tracker);
+    public Registration addValueChangeTracker(BiConsumer<AbstractListProvider<T>, Boolean> tracker) {
+        return provider().addValueChangeTracker(tracker);
     }
 
     @Override
-    public ObjectListProvider<T> getObjectLoader() {
-        return (ObjectListProvider<T>) super.getDataProvider();
-    }
-
-    @Override
-    public List<ObjectChangedListener<T>> getObjectChangedListeners(boolean create) {
-        if(objectChangedListeners == null && create) {
-            objectChangedListeners = new ArrayList<>();
-        }
-        return objectChangedListeners;
-    }
-
-    @Override
-    public void setOrderBy(String orderBy) {
-        this.orderBy = orderBy;
-    }
-
-    @Override
-    public String getOrderBy() {
-        return orderBy;
+    public ObjectLoader<T> getObjectLoader() {
+        //noinspection unchecked
+        return (ObjectLoader<T>) getDataProvider();
     }
 
     @Override
     public void setObjectSetter(ObjectSetter<T> setter) {
     }
 
-    @Override
-    public List<ObjectEditorListener> getObjectEditorListeners(boolean create) {
-        if(objectEditorListeners == null && create) {
-            objectEditorListeners = new ArrayList<>();
-        }
-        return objectEditorListeners;
+    private EditableObjectListProvider<T> provider() {
+        return (EditableObjectListProvider<T>) getDataProvider();
     }
 
     /**
@@ -122,18 +98,12 @@ public class EditableObjectGrid<T extends StoredObject> extends AbstractEditable
 
     public void reload(T object) {
         cancelEdit();
-        getEditableList().reload(object);
         fireChanged(object, EditorAction.RELOAD);
     }
 
     public void reloadAll() {
         cancelEdit();
-        getEditableList().reload();
         fireChanged(null, EditorAction.ALL);
-    }
-
-    public void setFromClient(boolean fromClient) {
-        getEditableList().setFromClient(fromClient);
     }
 
     /**
@@ -215,6 +185,7 @@ public class EditableObjectGrid<T extends StoredObject> extends AbstractEditable
         editor.grid = this;
         editor.addValidator(this::validate);
         editor.setBuffered(true);
+        internalObjectChangedListener.set(editor);
     }
 
     public final ObjectEditor<T> getRowEditor() {
@@ -338,7 +309,7 @@ public class EditableObjectGrid<T extends StoredObject> extends AbstractEditable
         T item = editingItem;
         if(editor != null && item != null && getRowEditor().saveEdited()) {
             editingItem = null;
-            getEditableList().fireChanges();
+            provider().fireChanges(isFromClient());
             select(item);
         }
     }
@@ -368,7 +339,152 @@ public class EditableObjectGrid<T extends StoredObject> extends AbstractEditable
 
     @Override
     public void clear() {
+        cancelEdit();
         ObjectGridData.super.clear();
         super.clear();
+    }
+
+    @SuppressWarnings("unchecked")
+    public void load(T... items) {
+        provider().load(items);
+    }
+
+    public void load(Collection<T> items) {
+        provider().load(items);
+    }
+
+    public Registration addObjectChangedListener(ObjectChangedListener<T> listener) {
+        if(listener == null) {
+            return null;
+        }
+        if(objectChangedListeners == null) {
+            objectChangedListeners = new ArrayList<>();
+        }
+        objectChangedListeners.add(listener);
+        return () -> objectChangedListeners.remove(listener);
+    }
+
+    public void removeObjectChangedListener(ObjectChangedListener<T> listener) {
+        if(objectChangedListeners != null) {
+            objectChangedListeners.remove(listener);
+        }
+    }
+
+    @Override
+    protected void doInsertAction(T object) {
+        if(provider().add(object, true)) {
+            if(objectChangedListeners != null) {
+                objectChangedListeners.stream().filter(l -> !(l instanceof InternalObjectChangedListener))
+                        .forEach(l -> l.inserted(object));
+            }
+            select(object);
+        }
+    }
+
+    @Override
+    protected void doUpdateAction(T object) {
+        if(provider().update(object, true)) {
+            if(objectChangedListeners != null) {
+                objectChangedListeners.stream().filter(l -> !(l instanceof InternalObjectChangedListener))
+                        .forEach(l -> l.updated(object));
+            }
+            select(object);
+        }
+    }
+
+    @Override
+    protected void doDeleteAction(T object) {
+        if(provider().delete(object, true)) {
+            if(objectChangedListeners != null) {
+                objectChangedListeners.stream().filter(l -> !(l instanceof InternalObjectChangedListener))
+                        .forEach(l -> l.deleted(object));
+            }
+        }
+    }
+
+    @Override
+    protected void doUndeleteAction(T object) {
+        if(provider().undelete(object, true)) {
+            if(objectChangedListeners != null) {
+                objectChangedListeners.stream().filter(l -> !(l instanceof InternalObjectChangedListener))
+                        .forEach(l -> l.undeleted(object));
+            }
+            select(object);
+        }
+    }
+
+    @Override
+    protected void doReloadAction(T object) {
+        int action = provider().reload(object, true);
+        if(action > 0 && objectChangedListeners != null) {
+            objectChangedListeners.stream().filter(l -> !(l instanceof InternalObjectChangedListener))
+                    .forEach(l -> {
+                        if(action == EditorAction.DELETE) {
+                            l.deleted(object);
+                        } else if(action == EditorAction.RELOAD) {
+                            l.undeleted(object);
+                        }
+                    });
+            select(object);
+        }
+    }
+
+    private class InternalObjectChangedListener implements ObjectChangedListener<T> {
+
+        private Registration registration;
+        private ObjectEditor<T> editor;
+
+        private InternalObjectChangedListener() {
+        }
+
+        private void set(ObjectEditor<T> editor) {
+            if(this.editor == editor) {
+                return;
+            }
+            if(registration != null) {
+                registration.remove();
+            }
+            this.editor = editor;
+            registration = editor.addObjectChangedListener(this);
+        }
+
+        @Override
+        public void inserted(T object) {
+            if(canChange(object, EditorAction.NEW)) {
+                itemInserted(object);
+            }
+        }
+
+        @Override
+        public void updated(T object) {
+            if(canChange(object, EditorAction.EDIT)) {
+                itemUpdated(object);
+            }
+        }
+
+        @Override
+        public void deleted(T object) {
+            if(canChange(object, EditorAction.DELETE)) {
+                itemDeleted(object);
+            }
+        }
+
+        @Override
+        public void undeleted(T object) {
+            if(canChange(object, EditorAction.RELOAD)) {
+                itemUndeleted(object);
+            }
+        }
+    }
+
+    /**
+     * Invoked to check whether a change is allowed from the client side or not.
+     *
+     * @param item Item to change.
+     * @param editorAction Editor action (One of the static values from {@link EditorAction}).
+     * @return True if change is acceptable. If returned false, change will be ignored.
+     */
+    protected boolean canChange(T item, int editorAction) {
+        return true;
     }
 }

@@ -155,30 +155,34 @@ public class ObjectMemoryList<T extends StoredObject> extends MemoryCache<T> imp
     public void refresh() {
         ArrayList<T> a = new ArrayList<>();
         ObjectIterator.create(original).map(o -> load(o.getId()))
-                .filter(Objects::nonNull).toList();
+                .filter(Objects::nonNull).collectAll(a);
         original = a;
         rebuild();
     }
 
     @Override
-    public void refresh(Id id) {
+    public T refresh(Id id) {
         int index = indexOf(id, original);
         if(index < 0) {
-            return;
+            return null;
         }
         T so = original.get(index);
+        so = load(so.getId());
         original.set(index, load(so.getId()));
         rebuild();
+        return so;
     }
 
     @Override
-    public void refresh(T object) {
+    public T refresh(T object) {
         int index = original.indexOf(object);
         if(index < 0) {
-            return;
+            return null;
         }
-        original.set(index, load(object.getId()));
+        object = load(object.getId());
+        original.set(index, object);
         rebuild();
+        return object;
     }
 
     @Override

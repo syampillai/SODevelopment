@@ -31,7 +31,7 @@ public class ApproveTransaction extends ObjectBrowser<PseudoTran> {
     private ApproveTransaction(boolean load) {
         super(PseudoTran.class, EditorAction.RELOAD, "Approve Transactions");
         setFilter("Status<3");
-        setOrderBy("Date,No");
+        setOrderBy("Date,No", false);
         if(load) {
             load();
         }

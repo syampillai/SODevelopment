@@ -9,11 +9,10 @@ import com.vaadin.flow.component.grid.GridSelectionModel;
 import com.vaadin.flow.data.selection.SelectionModel;
 
 import javax.annotation.Nonnull;
-import java.util.List;
 import java.util.function.Consumer;
 
-public interface ObjectGridData<T extends StoredObject, ROOT> extends HasColumns<ROOT>, ObjectChangedListener<T>,
-        ObjectsSetter<T>, ObjectSearcher<T>, Transactional, ObjectEditorListener, ObjectLoader<T> {
+public interface ObjectGridData<T extends StoredObject, ROOT> extends HasColumns<ROOT>, ObjectsSetter<T>,
+        ObjectSearcher<T>, Transactional, ObjectLoader<T> {
 
     @Nonnull
     @Override
@@ -67,10 +66,6 @@ public interface ObjectGridData<T extends StoredObject, ROOT> extends HasColumns
         setFilter(objectLoadFilter, false);
     }
 
-    default List<ObjectChangedListener<T>> getObjectChangedListeners(boolean create) {
-        return null;
-    }
-
     default void scrollTo(T object) {
         if(object != null) {
             ((Grid<?>)this).scrollToIndex(getObjectLoader().indexOf(object));
@@ -79,39 +74,6 @@ public interface ObjectGridData<T extends StoredObject, ROOT> extends HasColumns
 
     default T getItem(int index) {
         return get(index);
-    }
-
-    @Override
-    default void updated(T object) {
-        //noinspection unchecked
-        ((ObjectChangedListener<T>)getObjectLoader()).updated(object);
-        List<ObjectChangedListener<T>> listeners = getObjectChangedListeners(false);
-        if(listeners != null) {
-            listeners.forEach(ocl -> ocl.updated(object));
-        }
-    }
-
-    @Override
-    default void inserted(T object) {
-        //noinspection unchecked
-        ((ObjectChangedListener<T>)getObjectLoader()).inserted(object);
-        List<ObjectChangedListener<T>> listeners = getObjectChangedListeners(false);
-        if(listeners != null) {
-            listeners.forEach(ocl -> ocl.inserted(object));
-        }
-        select(object);
-        scrollTo(object);
-    }
-
-    @Override
-    default void deleted(T object) {
-        deselect(object);
-        //noinspection unchecked
-        ((ObjectChangedListener<T>)getObjectLoader()).deleted(object);
-        List<ObjectChangedListener<T>> listeners = getObjectChangedListeners(false);
-        if(listeners != null) {
-            listeners.forEach(ocl -> ocl.deleted(object));
-        }
     }
 
     @Override
@@ -138,22 +100,6 @@ public interface ObjectGridData<T extends StoredObject, ROOT> extends HasColumns
         }
         //noinspection unchecked
         return (T)so;
-    }
-
-    default void addObjectChangedListener(ObjectChangedListener<T> listener) {
-        if(listener != null && listener != this) {
-            List<ObjectChangedListener<T>> objectChangedListeners = getObjectChangedListeners(true);
-            if(objectChangedListeners != null) {
-                objectChangedListeners.add(listener);
-            }
-        }
-    }
-
-    default void removeObjectChangedListener(ObjectChangedListener<T> listener) {
-        List<ObjectChangedListener<T>> objectChangedListeners = getObjectChangedListeners(false);
-        if(objectChangedListeners != null) {
-            objectChangedListeners.remove(listener);
-        }
     }
 
     default boolean validateFilterCondition(T value) {
@@ -270,49 +216,5 @@ public interface ObjectGridData<T extends StoredObject, ROOT> extends HasColumns
     @Override
     default ObjectSearchBuilder<T> getSearchBuilder() {
         return null;
-    }
-
-    default List<ObjectEditorListener> getObjectEditorListeners(boolean create) {
-        return null;
-    }
-
-    default void addObjectEditorListener(ObjectEditorListener listener) {
-        if (listener != null && listener != this) {
-            List<ObjectEditorListener> objectEditorListeners = getObjectEditorListeners(true);
-            if(objectEditorListeners != null) {
-                objectEditorListeners.add(listener);
-            }
-        }
-    }
-
-    default void removeObjectEditorListener(ObjectEditorListener listener) {
-        List<ObjectEditorListener> objectEditorListeners = getObjectEditorListeners(false);
-        if(objectEditorListeners != null) {
-            objectEditorListeners.remove(listener);
-        }
-    }
-
-    @Override
-    default void editingStarted() {
-        List<ObjectEditorListener> objectEditorListeners = getObjectEditorListeners(false);
-        if(objectEditorListeners != null && !objectEditorListeners.isEmpty()) {
-            objectEditorListeners.forEach(ObjectEditorListener::editingStarted);
-        }
-    }
-
-    @Override
-    default void editingEnded() {
-        List<ObjectEditorListener> objectEditorListeners = getObjectEditorListeners(false);
-        if(objectEditorListeners != null && !objectEditorListeners.isEmpty()) {
-            objectEditorListeners.forEach(ObjectEditorListener::editingEnded);
-        }
-    }
-
-    @Override
-    default void editingCancelled() {
-        List<ObjectEditorListener> objectEditorListeners = getObjectEditorListeners(false);
-        if(objectEditorListeners != null && !objectEditorListeners.isEmpty()) {
-            objectEditorListeners.forEach(ObjectEditorListener::editingCancelled);
-        }
     }
 }

@@ -1,16 +1,19 @@
 package com.storedobject.ui;
 
-import com.storedobject.core.ObjectCacheList;
 import com.storedobject.core.ObjectList;
-import com.storedobject.core.ObjectToString;
-import com.storedobject.core.StoredObject;
-import com.storedobject.core.StoredObjectUtility;
+import com.storedobject.core.*;
 import com.storedobject.vaadin.DataList;
 import com.vaadin.flow.data.provider.ListDataProvider;
+import com.vaadin.flow.shared.Registration;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import java.util.function.Predicate;
 
 public class ObjectListGrid<T extends StoredObject> extends AbstractListGrid<T> implements ObjectLoader<T> {
+
+    List<ObjectChangedListener<T>> objectChangedListeners;
 
     public ObjectListGrid(Class<T> objectClass) {
         this(objectClass, false);
@@ -77,5 +80,61 @@ public class ObjectListGrid<T extends StoredObject> extends AbstractListGrid<T> 
     @Override
     public void setFilter(Predicate<T> filter) {
         getDataProvider().setFilter(filter);
+    }
+
+    @SuppressWarnings("unchecked")
+    public void load(T... items) {
+        getDataProvider().load(items);
+    }
+
+    public void load(Collection<T> items) {
+        getDataProvider().load(items);
+    }
+
+    public Registration addObjectChangedListener(ObjectChangedListener<T> listener) {
+        System.err.println("Adding: " + listener.getClass());
+        if(objectChangedListeners == null) {
+            objectChangedListeners = new ArrayList<>();
+        }
+        objectChangedListeners.add(listener);
+        return () -> objectChangedListeners.remove(listener);
+    }
+
+    public void removeObjectChangedListener(ObjectChangedListener<T> listener) {
+        if(objectChangedListeners != null) {
+            objectChangedListeners.remove(listener);
+        }
+    }
+
+    @Override
+    protected void doInsertAction(T object) {
+        super.doInsertAction(object);
+        if(objectChangedListeners != null) {
+            objectChangedListeners.forEach(l -> l.inserted(object));
+        }
+    }
+
+    @Override
+    protected void doUpdateAction(T object) {
+        super.doUpdateAction(object);
+        if(objectChangedListeners != null) {
+            objectChangedListeners.forEach(l -> l.updated(object));
+        }
+    }
+
+    @Override
+    protected void doDeleteAction(T object) {
+        super.doDeleteAction(object);
+        if(objectChangedListeners != null) {
+            objectChangedListeners.forEach(l -> l.deleted(object));
+        }
+    }
+
+    @Override
+    protected void doUndeleteAction(T object) {
+        super.doUndeleteAction(object);
+        if(objectChangedListeners != null) {
+            objectChangedListeners.forEach(l -> l.undeleted(object));
+        }
     }
 }

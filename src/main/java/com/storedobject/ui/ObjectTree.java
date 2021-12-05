@@ -15,7 +15,6 @@ import java.util.function.Consumer;
 public class ObjectTree<T extends StoredObject> extends DataTreeGrid<T> implements ObjectGridData<T, T> {
 
     private final List<DataLoadedListener> dataLoadedListeners = new ArrayList<>();
-    private List<ObjectChangedListener<T>> objectChangedListeners;
     private ObjectEditor<T> editor;
     private InternalChangedListener internalChangedListener;
     private NOGenerator noGenerator;
@@ -174,14 +173,6 @@ public class ObjectTree<T extends StoredObject> extends DataTreeGrid<T> implemen
         return getDataProvider().getRoots();
     }
 
-    @Override
-    public List<ObjectChangedListener<T>> getObjectChangedListeners(boolean create) {
-        if(objectChangedListeners == null && create) {
-            objectChangedListeners = new ArrayList<>();
-        }
-        return objectChangedListeners;
-    }
-
     @SafeVarargs
     public final void setRoots(T... roots) {
         setRoots(ObjectIterator.create(roots));
@@ -289,20 +280,17 @@ public class ObjectTree<T extends StoredObject> extends DataTreeGrid<T> implemen
         @Override
         public final void updated(T object) {
             refresh(object);
-            objectChangedListeners.forEach(ocl -> ocl.updated(object));
         }
 
         @Override
         public final void inserted(T object) {
             refresh();
-            objectChangedListeners.forEach(ocl -> ocl.inserted(object));
             select(object);
         }
 
         @Override
         public final void deleted(T object) {
             load();
-            objectChangedListeners.forEach(ocl -> ocl.deleted(object));
         }
     }
 

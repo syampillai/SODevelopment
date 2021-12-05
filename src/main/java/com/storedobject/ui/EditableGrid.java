@@ -155,7 +155,8 @@ public class EditableGrid<T> extends AbstractEditableGrid<T> implements Editable
         constructEditor();
         Editor<T> editor = getEditor();
         editor.setBinder(binder);
-        editor.addSaveListener(e -> getEditableList().update(e.getItem()));
+        // TODO
+        //editor.addSaveListener(e -> getEditableList().update(e.getItem()));
     }
 
     private void constructEditor() {
@@ -290,7 +291,7 @@ public class EditableGrid<T> extends AbstractEditableGrid<T> implements Editable
      * Clear all the entries.
      */
     public void clear() {
-        ((Data<T>)getEditableList()).clear();
+        super.clear();  // TODO
     }
 
     /**
@@ -382,14 +383,16 @@ public class EditableGrid<T> extends AbstractEditableGrid<T> implements Editable
         void change() {
             if(registration != null) {
                 registration.remove();
-                registration = ((Data<T>)getEditableList()).getItems().addRefreshListener(this);
+                // TODO
+                //registration = ((Data<T>)getEditableList()).getItems().addRefreshListener(this);
                 refresh();
             }
         }
 
         void set() {
             if(registration == null) {
-                registration = ((Data<T>)getEditableList()).getItems().addRefreshListener(this);
+                // TODO
+                //registration = ((Data<T>)getEditableList()).getItems().addRefreshListener(this);
                 refresh();
             }
         }

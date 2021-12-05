@@ -160,7 +160,10 @@ public class ObjectComboField<T extends StoredObject> extends ComboField<T>
 
     private void addNew() {
         if(objectAdder == null) {
-            objectAdder = ObjectAdder.create(objectProvider,this);
+            objectAdder = ObjectAdder.create(o -> {
+                objectProvider.getData().add(o);
+                objectProvider.refreshAll();
+            },this);
         }
         getElement().callJsFunction("close").then(r -> objectAdder.add());
     }

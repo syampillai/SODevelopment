@@ -134,31 +134,31 @@ public final class ObjectLinkField<T extends StoredObject>
     }
 
     public void edited(T object) {
-        grid.edited(object);
+        grid.itemUpdated(object);
     }
 
     public void added(T object) {
-        grid.added(object);
+        grid.itemInserted(object);
     }
 
     public void deleted(T object) {
-        grid.deleted(object);
+        grid.itemDeleted(object);
     }
 
     public void reloaded(T object) {
-        grid.reloaded(object);
+        grid.itemReloaded(object);
     }
 
     public boolean isEdited(T object) {
-        return grid.isEdited(object);
+        return grid.getLinkGrid().isEdited(object);
     }
 
     public boolean isAdded(T object) {
-        return grid.isAdded(object);
+        return grid.getLinkGrid().isAdded(object);
     }
 
     public boolean isDeleted(T object) {
-        return grid.isDeleted(object);
+        return grid.getLinkGrid().isDeleted(object);
     }
 
     public boolean isAllowAdd() {
@@ -231,7 +231,7 @@ public final class ObjectLinkField<T extends StoredObject>
     }
 
     public Stream<T> getItems() {
-        return grid.streamAll();
+        return grid.getLinkGrid().streamAll();
     }
 
     public void add(T object) {
@@ -249,7 +249,7 @@ public final class ObjectLinkField<T extends StoredObject>
     public void add(ObjectIterator<T> objects) {
         //noinspection unchecked
         ((Grid<T>)grid).deselectAll();
-        objects.forEach(grid::add);
+        objects.forEach(grid::itemInserted);
     }
 
     public void add(Iterable<T> objects) {
@@ -319,9 +319,6 @@ public final class ObjectLinkField<T extends StoredObject>
     public void setValue(StoredObjectLink<T> value) {
         if(value == null) {
             clear();
-            if(grid != null) {
-                grid.loaded();
-            }
             return;
         }
         setFromClient(false);
@@ -329,14 +326,13 @@ public final class ObjectLinkField<T extends StoredObject>
             this.value = value;
         } else {
             grid.setValue(value);
-            grid.loaded();
         }
         setFromClient(true);
     }
 
     @Override
     public StoredObjectLink<T> getValue() {
-        return grid == null ? value : grid;
+        return grid == null ? value : grid.getLinkGrid();
     }
 
     public void setObjectEditor(ObjectEditor<T> editor) {
@@ -360,21 +356,22 @@ public final class ObjectLinkField<T extends StoredObject>
     }
 
     public void setFromClient(boolean fromClient) {
-        grid.getEditableList().setFromClient(fromClient);
+        //noinspection unchecked
+        ((AbstractEditableGrid<T>)grid).setFromClient(fromClient);
     }
 
     void trackChanges(BiConsumer<ObjectLinkField<T>, Boolean> tracker) {
-        BiConsumer<EditableObjectListProvider<T>, Boolean> t = (list, fromClient) -> tracker.accept(this, fromClient);
+        BiConsumer<AbstractListProvider<T>, Boolean> t = (list, fromClient) -> tracker.accept(this, fromClient);
         if (grid == null) {
             new TrackerRegistration(t);
         } else {
-            grid.getEditableList().addValueChangeTracker(t);
+            provider().addValueChangeTracker(t);
         }
     }
 
     @Override
     public Registration addValueChangeListener(ValueChangeListener<? super ValueChangeEvent<StoredObjectLink<T>>> valueChangeListener) {
-        BiConsumer<EditableObjectListProvider<T>, Boolean> t = (list, fromClient) -> {
+        BiConsumer<AbstractListProvider<T>, Boolean> t = (list, fromClient) -> {
             ValueChangeEvent<StoredObjectLink<T>> e = new ValueChangeEvent<>() {
                 @Override
                 public HasValue<?, StoredObjectLink<T>> getHasValue() {
@@ -393,12 +390,17 @@ public final class ObjectLinkField<T extends StoredObject>
 
                 @Override
                 public StoredObjectLink<T> getValue() {
-                    return grid;
+                    return grid.getLinkGrid();
                 }
             };
             valueChangeListener.valueChanged(e);
         };
-        return grid == null ? new TrackerRegistration(t) : grid.getEditableList().addValueChangeTracker(t);
+        return grid == null ? new TrackerRegistration(t) : provider().addValueChangeTracker(t);
+    }
+
+    private EditableProvider<T> provider() {
+        //noinspection unchecked
+        return (EditableProvider<T>) ((AbstractListGrid<T>)grid).getDataProvider();
     }
 
     public boolean isColumnEditable(String columnName) {
@@ -442,9 +444,9 @@ public final class ObjectLinkField<T extends StoredObject>
     private class TrackerRegistration implements Registration {
 
         private Registration gridRegistration;
-        private final BiConsumer<EditableObjectListProvider<T>, Boolean> tracker;
+        private final BiConsumer<AbstractListProvider<T>, Boolean> tracker;
 
-        private TrackerRegistration(BiConsumer<EditableObjectListProvider<T>, Boolean> tracker) {
+        private TrackerRegistration(BiConsumer<AbstractListProvider<T>, Boolean> tracker) {
             this.tracker = tracker;
             if(registrations == null) {
                 registrations = new ArrayList<>();
@@ -463,7 +465,7 @@ public final class ObjectLinkField<T extends StoredObject>
         }
 
         private void attachGrid() {
-            gridRegistration = grid.getEditableList().addValueChangeTracker(tracker);
+            gridRegistration = provider().addValueChangeTracker(tracker);
         }
     }
 }

@@ -22,11 +22,13 @@ import java.util.stream.Stream;
  * @author Syam
  */
 @CssImport(value =  "./so/editable-grid/styles.css", themeFor = "vaadin-grid")
-public abstract class AbstractEditableGrid<T> extends AbstractListGrid<T> implements EditableList<T> {
+public abstract class AbstractEditableGrid<T> extends AbstractListGrid<T> {
 
     static final String NONE_MARK = "", EDITED_MARK = "*", ADDED_MARK = "+", DELETED_MARK = "-";
     private Column<T> markerColumn;
     private Registration singleClick;
+    private boolean fromClient = true;
+    private final EditableList<T> eList;
 
     /**
      * Constructor that will generate columns from the Bean's properties.
@@ -54,6 +56,7 @@ public abstract class AbstractEditableGrid<T> extends AbstractListGrid<T> implem
         getElement().getClassList().add("so-editable-grid");
         getElement().setAttribute("theme", "wrap-cell-content");
         addConstructedListener(o -> addItemDoubleClickListener(e -> editItem(e.getItem(), e.getColumn())));
+        eList = createEditableList();
     }
 
     /**
@@ -74,9 +77,30 @@ public abstract class AbstractEditableGrid<T> extends AbstractListGrid<T> implem
         }
     }
 
+    protected EditableList<T> createEditableList() {
+        return new EList();
+    }
+
     @Override
     protected boolean isValid(ListDataProvider<T> dataProvider) {
         return dataProvider instanceof EditableList;
+    }
+
+    public void setFromClient(boolean fromClient) {
+        this.fromClient = fromClient;
+    }
+
+    public boolean isFromClient() {
+        return fromClient;
+    }
+
+    /**
+     * Get the editable list maintained by this grid.
+     *
+     * @return Editable list instance.
+     */
+    public final EditableList<T> getEditableList() {
+        return eList;
     }
 
     /**
@@ -124,11 +148,8 @@ public abstract class AbstractEditableGrid<T> extends AbstractListGrid<T> implem
     }
 
     private String editMark(T item) {
-        EditableList<T> e = getEditableList();
-        if(e == null) {
-            return NONE_MARK;
-        }
-        return e.isEdited(item) ? EDITED_MARK : (e.isAdded(item) ? ADDED_MARK : (e.isDeleted(item) ? DELETED_MARK : NONE_MARK));
+        return eList.isEdited(item) ? EDITED_MARK : (eList.isAdded(item) ? ADDED_MARK
+                : (eList.isDeleted(item) ? DELETED_MARK : NONE_MARK));
     }
 
     private String styleName(T item) {
@@ -140,14 +161,9 @@ public abstract class AbstractEditableGrid<T> extends AbstractListGrid<T> implem
         };
     }
 
-    /**
-     * Get the "editable list" from this grid.
-     *
-     * @return The embedded "editable list".
-     */
-    public EditableList<T> getEditableList() {
+    private EditableProvider<T> eprovider() {
         //noinspection unchecked
-        return (EditableList<T>) getDataProvider();
+        return (EditableProvider<T>) getDataProvider();
     }
 
     @Override
@@ -179,118 +195,44 @@ public abstract class AbstractEditableGrid<T> extends AbstractListGrid<T> implem
         return 30;
     }
 
-    @Override
-    public boolean contains(Object item) {
-        return getEditableList().contains(item);
-    }
-
-    @Override
-    public boolean isAdded(T item) {
-        return getEditableList().isAdded(item);
-    }
-
-    @Override
-    public boolean isDeleted(T item) {
-        return getEditableList().isDeleted(item);
-    }
-
-    @Override
-    public boolean isEdited(T item) {
-        return getEditableList().isEdited(item);
-    }
-
-    @Override
-    public Stream<T> streamAll() {
-        return getEditableList().streamAll();
-    }
-
-    @Override
-    public Stream<T> stream() {
-        return getEditableList().stream();
-    }
-
-    @Override
-    public int size() {
-        return getEditableList().size();
-    }
-
-    @Override
-    public boolean append(T item) {
-        cancelEdit();
-        if(getEditableList().append(item)) {
-            fireChanged(item, EditorAction.APPEND);
-            return true;
-        }
-        return false;
-    }
-
-    @Override
-    public boolean add(T item) {
-        cancelEdit();
-        if(getEditableList().add(item)) {
-            fireChanged(item, EditorAction.NEW);
-            return true;
-        }
-        return false;
-    }
-
-    @Override
-    public boolean delete(T item) {
-        cancelEdit();
-        deselect(item);
-        if(getEditableList().delete(item)) {
-            fireChanged(item, EditorAction.DELETE);
-            return true;
-        }
-        return false;
-    }
-
-    @Override
-    public boolean undelete(T item) {
-        cancelEdit();
-        if(getEditableList().undelete(item)) {
-            fireChanged(item, EditorAction.RELOAD);
-            return true;
-        }
-        return false;
-    }
-
-    @Override
-    public boolean update(T item) {
-        cancelEdit();
-        if(getEditableList().update(item)) {
-            fireChanged(item, EditorAction.EDIT);
-            return true;
-        }
-        return false;
-    }
-
     /**
      * Cancel the editing if it is active.
      */
     protected abstract void cancelEdit();
 
     /**
-     * For internal use only.
-     */
-    void changed() {
-    }
-
-    /**
      * This method doesn't clear the items. Instead, it just invokes the {@link #fireChanged(Object, int)} method with
-     * <code>null</code> as the item value and {@link EditorAction#ALL} as the "change action". Sun-classes should
+     * <code>null</code> as the item value and {@link EditorAction#ALL} as the "change action". Subclasses should
      * implement the real "clear" functionality.
      */
     public void clear() {
+        cancelEdit();
+        //noinspection unchecked
+        ((EditableProvider<T>)getDataProvider()).clear();
         fireChanged(null, EditorAction.ALL);
     }
 
     /**
-     * For internal use only.
+     * For internal use for firing change events.
+     *
+     * @param item Item that is changed. For changes affecting more than one item, this will be <code>null</code>.
+     * @param changeAction Change action (One of the static values defined in the {@link EditorAction}). For changes
+     *                     affecting more than one item, this will be {@link EditorAction#ALL}.
      */
     void fireChanged(T item, int changeAction) {
+        switch(changeAction) {
+            case EditorAction.APPEND -> super.add(item);
+            case EditorAction.ADD -> doInsertAction(item);
+            case EditorAction.EDIT -> doUpdateAction(item);
+            case EditorAction.DELETE -> doDeleteAction(item);
+            case EditorAction.RELOAD -> doReloadAction(item);
+            case EditorAction.ALL -> refresh();
+        }
         changed();
         changed(item, changeAction);
+    }
+
+    void changed() {
     }
 
     /**
@@ -301,5 +243,122 @@ public abstract class AbstractEditableGrid<T> extends AbstractListGrid<T> implem
      *                     affecting more than one item, this will be {@link EditorAction#ALL}.
      */
     public void changed(T item, int changeAction) {
+    }
+
+    public final boolean isAdded(T item) {
+        return eprovider().isAdded(item);
+    }
+
+    public final boolean isDeleted(T item) {
+        return eprovider().isDeleted(item);
+    }
+
+    public final boolean isEdited(T item) {
+        return eprovider().isEdited(item);
+    }
+
+    class EList implements EditableList<T> {
+
+        @Override
+        public boolean contains(Object item) {
+            return AbstractEditableGrid.this.contains(item);
+        }
+
+        @Override
+        public boolean isAdded(T item) {
+            return eprovider().isAdded(item);
+        }
+
+        @Override
+        public boolean isDeleted(T item) {
+            return eprovider().isDeleted(item);
+        }
+
+        @Override
+        public boolean isEdited(T item) {
+            return eprovider().isEdited(item);
+        }
+
+        @Override
+        public Stream<T> stream() {
+            return EditableList.super.stream();
+        }
+
+        @Override
+        public Stream<T> streamAll() {
+            return eprovider().streamAll();
+        }
+
+        @Override
+        public Stream<T> streamAdded() {
+            return eprovider().streamAdded();
+        }
+
+        @Override
+        public Stream<T> streamEdited() {
+            return eprovider().streamEdited();
+        }
+
+        @Override
+        public Stream<T> streamDeleted() {
+            return eprovider().streamDeleted();
+        }
+
+        @Override
+        public int size() {
+            return AbstractEditableGrid.this.size();
+        }
+
+        @Override
+        public boolean append(T item) {
+            cancelEdit();
+            if(eprovider().append(item, false)) {
+                fireChanged(item, EditorAction.APPEND);
+                return true;
+            }
+            return false;
+        }
+
+        @Override
+        public boolean add(T item) {
+            cancelEdit();
+            if(shouldInsert(item) && eprovider().add(item, false)) {
+                fireChanged(item, EditorAction.NEW);
+                select(item);
+                return true;
+            }
+            return false;
+        }
+
+        @Override
+        public boolean delete(T item) {
+            cancelEdit();
+            if(shouldDelete(item) && eprovider().delete(item, false)) {
+                deselect(item);
+                fireChanged(item, EditorAction.DELETE);
+                return true;
+            }
+            return false;
+        }
+
+        @Override
+        public boolean undelete(T item) {
+            cancelEdit();
+            if(shouldUndelete(item) && eprovider().undelete(item, false)) {
+                fireChanged(item, EditorAction.RELOAD);
+                return true;
+            }
+            return false;
+        }
+
+        @Override
+        public boolean update(T item) {
+            cancelEdit();
+            if(shouldUpdate(item) && eprovider().update(item, false)) {
+                fireChanged(item, EditorAction.EDIT);
+                return true;
+            }
+            return false;
+        }
     }
 }

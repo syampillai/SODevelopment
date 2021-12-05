@@ -11,7 +11,7 @@ import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 public class ObjectListProvider<T extends StoredObject> extends AbstractListProvider<T>
-        implements ObjectLoader<T>, ObjectChangedListener<T>, AutoCloseable, ResourceOwner {
+        implements ObjectLoader<T>, AutoCloseable, ResourceOwner {
 
     private int linkType = 0;
     private StoredObject master;
@@ -69,9 +69,11 @@ public class ObjectListProvider<T extends StoredObject> extends AbstractListProv
         return loadFilter.getFilter();
     }
 
-    public final void setOrderBy(String orderBy) {
+    public final void setOrderBy(String orderBy, boolean load) {
         this.orderBy = orderBy;
-        reload();
+        if(load) {
+            reload();
+        }
     }
 
     @Override
@@ -84,19 +86,21 @@ public class ObjectListProvider<T extends StoredObject> extends AbstractListProv
         return getData().isAllowAny();
     }
 
-    public final void setMaster(StoredObject master) {
-        load(linkType, master);
+    public final void setMaster(StoredObject master, boolean load) {
+        this.master = master;
+        if(load) {
+            load(linkType, master);
+        }
     }
 
     public final StoredObject getMaster() {
         return master;
     }
 
-    public void setLinkType(int linkType) {
-        if(master != null) {
+    public void setLinkType(int linkType, boolean load) {
+        this.linkType = linkType;
+        if(master != null && load) {
             load(linkType, master);
-        } else {
-            this.linkType = linkType;
         }
     }
 
@@ -206,23 +210,6 @@ public class ObjectListProvider<T extends StoredObject> extends AbstractListProv
     @Override
     public final void close() {
         clear();
-    }
-
-    @Override
-    public void inserted(T object) {
-        load();
-    }
-
-    @Override
-    public void updated(T object) {
-        getData().refresh(object);
-        refreshItem(object);
-    }
-
-    @Override
-    public void deleted(T object) {
-        getData().remove(object);
-        load();
     }
 
     @Override

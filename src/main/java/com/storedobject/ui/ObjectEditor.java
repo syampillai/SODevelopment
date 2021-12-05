@@ -19,6 +19,7 @@ import com.vaadin.flow.component.HasValue;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.editor.Editor;
 import com.vaadin.flow.component.tabs.Tab;
+import com.vaadin.flow.shared.Registration;
 
 import java.io.BufferedReader;
 import java.io.LineNumberReader;
@@ -705,17 +706,14 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
      *
      * @param listener Listener to add.
      */
-    public void addObjectChangedListener(ObjectChangedListener<T> listener) {
+    public Registration addObjectChangedListener(ObjectChangedListener<T> listener) {
         if(listener != null && listener != this) {
             objectChangedListeners.add(listener);
+            return () -> objectChangedListeners.remove(listener);
         }
+        return null;
     }
 
-    /**
-     * Remove the "object changed" listener previously added.
-     *
-     * @param listener Listener to remove.
-     */
     public void removeObjectChangedListener(ObjectChangedListener<T> listener) {
         objectChangedListeners.remove(listener);
     }
@@ -726,17 +724,14 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
      *
      * @param listener Listener to add.
      */
-    public void addObjectEditorListener(ObjectEditorListener listener) {
+    public Registration addObjectEditorListener(ObjectEditorListener listener) {
         if(listener != null && listener != this) {
             objectEditorListeners.add(listener);
+            return () -> objectEditorListeners.remove(listener);
         }
+        return null;
     }
 
-    /**
-     * Remove the "object editor" listener previously added.
-     *
-     * @param listener Listener to remove.
-     */
     public void removeObjectEditorListener(ObjectEditorListener listener) {
         objectEditorListeners.remove(listener);
     }
@@ -746,18 +741,14 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
      *
      * @param validator Validator.
      */
-    public void addValidator(Predicate<T> validator) {
+    public Registration addValidator(Predicate<T> validator) {
         if(validators == null) {
             validators = new ArrayList<>();
         }
         validators.add(validator);
+        return () -> validators.remove(validator);
     }
 
-    /**
-     * Remove a validator that was added earlier.
-     *
-     * @param validator Validator.
-     */
     public void removeValidator(Predicate<T> validator) {
         if(validators != null) {
             validators.remove(validator);
@@ -1003,9 +994,9 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
             close();
         }
         if(created) {
-            inserted(object);
+            insertedInternal(object);
         } else {
-            updated(object);
+            updatedInternal(object);
         }
         return true;
     }
@@ -1276,7 +1267,7 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
         }
         if(deleted) {
             setObject(null, true);
-            deleted(object);
+            deletedInternal(object);
         } else {
             reloadInt();
         }
@@ -1531,10 +1522,15 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
      */
     @Override
     public void inserted(T object) {
+    }
+
+    void insertedInternal(T object) {
         objectChangedListeners.forEach(ocl -> ocl.inserted(object));
+        inserted(object);
         saved(object);
-        if(!doNotSave && searcher instanceof ObjectBrowser) {
-            ((ObjectBrowser<T>) searcher).inserted(object);
+        if(!doNotSave && searcher instanceof ObjectChangedListener) {
+            //noinspection unchecked
+            ((ObjectChangedListener<T>) searcher).inserted(object);
         }
     }
 
@@ -1543,15 +1539,20 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
      *
      * @param object Object being updated
      */
-    @Override
+    //@Override
     public void updated(T object) {
+    }
+
+    void updatedInternal(T object) {
         if(object.equals(getObject())) {
             interruptEditing(object);
         }
+        updated(object);
         saved(object);
         objectChangedListeners.forEach(ocl -> ocl.updated(object));
-        if(!doNotSave && searcher instanceof ObjectBrowser) {
-            ((ObjectBrowser<T>) searcher).updated(object);
+        if(!doNotSave && searcher instanceof ObjectChangedListener) {
+            //noinspection unchecked
+            ((ObjectChangedListener<T>) searcher).updated(object);
         }
     }
 
@@ -1562,17 +1563,26 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
      */
     @Override
     public void deleted(T object) {
+    }
+
+    void deletedInternal(T object) {
         if(object.equals(getObject())) {
             interruptEditing(null);
         }
+        deleted(object);
         objectChangedListeners.forEach(ocl -> ocl.deleted(object));
-        if(searcher instanceof ObjectBrowser) {
-            ((ObjectBrowser<T>) searcher).deleted(object);
+        if(searcher instanceof ObjectChangedListener) {
+            //noinspection unchecked
+            ((ObjectChangedListener<T>) searcher).deleted(object);
         }
     }
 
     @Override
     public void saved(T object) {
+    }
+
+    void savedInternal(T object) {
+        saved(object);
     }
 
     /**

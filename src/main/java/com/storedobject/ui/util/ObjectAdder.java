@@ -7,6 +7,8 @@ import com.storedobject.ui.ObjectChangedListener;
 import com.storedobject.ui.ObjectEditor;
 import com.storedobject.ui.ObjectInput;
 
+import java.util.function.Consumer;
+
 /**
  * A utility editor class to dynamically create and add a new {@link StoredObject} instance to an
  * {@link ObjectInput} field.
@@ -17,7 +19,7 @@ import com.storedobject.ui.ObjectInput;
 public class ObjectAdder<O extends StoredObject> {
 
     private ObjectEditor<O> adder;
-    private ObjectChangedListener<O> listener;
+    private Consumer<O> consumer;
     private ObjectInput<O> field;
 
     private ObjectAdder() {
@@ -26,15 +28,14 @@ public class ObjectAdder<O extends StoredObject> {
     /**
      * Static method to create the adder instance.
      *
-     * @param listener Listener to inform.
+     * @param consumer Listener to inform.
      * @param field The {@link ObjectInput} field.
      * @param <OT> Type of object being created.
      * @return Adder instance.
      */
-    public static <OT extends StoredObject> ObjectAdder<OT> create(ObjectChangedListener<OT> listener,
-                                                                   ObjectInput<OT> field) {
+    public static <OT extends StoredObject> ObjectAdder<OT> create(Consumer<OT> consumer, ObjectInput<OT> field) {
         ObjectAdder<OT> oa = new ObjectAdder<>();
-        oa.listener = listener;
+        oa.consumer = consumer;
         oa.field = field;
         return oa;
     }
@@ -54,22 +55,8 @@ public class ObjectAdder<O extends StoredObject> {
 
         @Override
         public void inserted(O object) {
-            listener.inserted(object);
+            consumer.accept(object);
             field.setValue(object);
-        }
-
-        @Override
-        public void updated(O object) {
-            listener.updated(object);
-            field.setValue(object);
-        }
-
-        @Override
-        public void deleted(O object) {
-            listener.deleted(object);
-            if(field.getValue().equals(object)) {
-                field.setValue((O)null);
-            }
         }
     }
 }

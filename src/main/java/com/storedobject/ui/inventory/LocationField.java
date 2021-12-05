@@ -203,7 +203,8 @@ public class LocationField extends ObjectComboField<InventoryLocation> {
             return this;
         }
         boolean sameValue = location.equals(getValue());
-        getObjectLoader().deleted(location);
+        getObjectLoader().getData().remove(location);
+        getObjectLoader().refreshAll();
         if(sameValue) {
             setValue(locations.isEmpty() ? null : locations.get(0));
         }

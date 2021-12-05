@@ -12,7 +12,6 @@ public class ObjectGrid<T extends StoredObject> extends ObjectListGrid<T> implem
 
     static final String NOTHING_SELECTED = "Nothing selected";
     ObjectSetter<T> objectSetter;
-    private List<ObjectChangedListener<T>> objectChangedListeners;
 
     public ObjectGrid(Class<T> objectClass) {
         this(objectClass, false);
@@ -32,14 +31,6 @@ public class ObjectGrid<T extends StoredObject> extends ObjectListGrid<T> implem
 
     public ObjectGrid(ObjectList<T> objectList, Iterable<String> columns) {
         super(objectList, columns);
-    }
-
-    @Override
-    public List<ObjectChangedListener<T>> getObjectChangedListeners(boolean create) {
-        if(objectChangedListeners == null && create) {
-            objectChangedListeners = new ArrayList<>();
-        }
-        return objectChangedListeners;
     }
 
     @Override

@@ -1,9 +1,7 @@
 package com.storedobject.ui;
 
 import com.storedobject.common.SORuntimeException;
-import com.storedobject.core.EditorAction;
-import com.storedobject.core.StoredObject;
-import com.storedobject.core.StoredObjectUtility;
+import com.storedobject.core.*;
 import com.storedobject.ui.util.AcceptAbandonButtons;
 import com.storedobject.ui.util.LinkGridButtons;
 import com.storedobject.vaadin.View;
@@ -15,7 +13,6 @@ public class DetailLinkGrid<T extends StoredObject> extends EditableObjectGrid<T
     private final ObjectLinkField<T> linkField;
     private final StoredObjectUtility.Link<T> link;
     private final LinkGridButtons<T> buttonPanel;
-    private StoredObject master;
     private final AcceptAbandonButtons acceptAbandonButtons;
 
     public DetailLinkGrid(ObjectLinkField<T> linkField) {
@@ -32,6 +29,8 @@ public class DetailLinkGrid<T extends StoredObject> extends EditableObjectGrid<T
         buttonPanel = new LinkGridButtons<>(this);
         acceptAbandonButtons = new AcceptAbandonButtons(this::saveEdited, this::cancelEdit);
         addValueChangeTracker((e, fromClient) -> buttonPanel.changed());
+        addDataLoadedListener(buttonPanel::changed);
+        setLinkType(link.getType(), false);
     }
 
     @Override
@@ -57,29 +56,13 @@ public class DetailLinkGrid<T extends StoredObject> extends EditableObjectGrid<T
         return super.getColumnField(columnName);
     }
 
-    @Override
-    public LinkGridButtons<T> getButtonPanel() {
-        return buttonPanel;
-    }
-
-    @Override
-    public StoredObjectUtility.Link<T> getLink() {
-        return link;
-    }
-
-    @Override
-    public boolean isAllowAny() {
-        return super.isAllowAny();
+    protected final EditableList<T> createEditableList() {
+        return new DList();
     }
 
     @Override
     public T getSelected() {
         return super.getSelected();
-    }
-
-    @Override
-    public final boolean isDetail() {
-        return true;
     }
 
     @Override
@@ -98,26 +81,8 @@ public class DetailLinkGrid<T extends StoredObject> extends EditableObjectGrid<T
     }
 
     @Override
-    public void edited(T object) {
-        cancelEdit();
-        getEditableList().update(object);
-    }
-
-    @Override
-    public void added(T object) {
-        cancelEdit();
-        getEditableList().add(object);
-    }
-
-    @Override
-    public void deleted(T object) {
-        cancelEdit();
-        getEditableList().delete(object);
-    }
-
-    @Override
-    public void reloaded(T object) {
-        reload(object);
+    public boolean canDelete(T item) {
+        return canChange(item, EditorAction.DELETE);
     }
 
     @Override
@@ -153,21 +118,23 @@ public class DetailLinkGrid<T extends StoredObject> extends EditableObjectGrid<T
             return;
         }
         if(canDelete(object)) {
-            delete(object);
+            itemDeleted(object);
         }
-    }
-
-    @Override
-    public boolean canDelete(T item) {
-        return canChange(item, EditorAction.DELETE);
     }
 
     @Override
     public void reload() {
         T item = selected();
         if(item != null && canReload(item)) {
-            reload(item);
+            cancelEdit();
+            itemReloaded(item);
         }
+    }
+
+    @Override
+    public void reloadAll() {
+        cancelEdit();
+        setMaster(getMaster(), true);
     }
 
     private boolean canReload(T item) {
@@ -186,22 +153,34 @@ public class DetailLinkGrid<T extends StoredObject> extends EditableObjectGrid<T
     }
 
     @Override
+    public boolean isDetail() {
+        return true;
+    }
+
+    @Override
+    public LinkGridButtons<T> getButtonPanel() {
+        return buttonPanel;
+    }
+
+    @Override
+    public StoredObjectUtility.Link<T> getLink() {
+        return link;
+    }
+
+    @Override
     public void setReadOnly(boolean readOnly) {
         super.setReadOnly(readOnly);
         buttonPanel.changed();
     }
 
     @Override
-    public StoredObject getMaster() {
-        return master;
+    public int getType() {
+        return link.getType();
     }
 
     @Override
-    public void setMaster(StoredObject master, boolean load) {
-        this.master = master;
-        if(load) {
-            loadMaster();
-        }
+    public String getName() {
+        return link.getName();
     }
 
     @Override
@@ -215,24 +194,12 @@ public class DetailLinkGrid<T extends StoredObject> extends EditableObjectGrid<T
     @Override
     public void clear() {
         cancelEdit();
-        LinkGrid.super.clear();
         super.clear();
     }
 
     @Override
     public T getItem(int index) {
         return super.getItem(index);
-    }
-
-    @Override
-    public void view() {
-        cancelEdit();
-        LinkGrid.super.view();
-    }
-
-    @Override
-    public ObjectLinkField<T> getField() {
-        return linkField;
     }
 
     @Override
@@ -263,7 +230,12 @@ public class DetailLinkGrid<T extends StoredObject> extends EditableObjectGrid<T
             select(selected);
             return selected;
         }
-        return LinkGrid.super.selected();
+        return super.selected();
+    }
+
+    @Override
+    public ObjectLinkField<T> getField() {
+        return linkField;
     }
 
     @Override
@@ -274,5 +246,57 @@ public class DetailLinkGrid<T extends StoredObject> extends EditableObjectGrid<T
             return e.isOpen();
         }
         return false;
+    }
+
+    @Override
+    public LinkValue<T> getLinkGrid() {
+        return (DList)getEditableList();
+    }
+
+    @Override
+    public void setMaster(StoredObject master, boolean load) {
+        clear();
+        if(master != null) {
+            super.setMaster(master, load);
+        }
+    }
+
+    @Override
+    public StoredObject getMaster() {
+        return super.getMaster();
+    }
+
+    @Override
+    protected final boolean canChange(T item, int editorAction) {
+        return ((ObjectEditor<?>)getButtonPanel().getMasterView()).acceptValueChange(getField(), item, editorAction);
+    }
+
+    class DList extends EList implements LinkValue<T> {
+
+        @Override
+        public StoredObjectUtility.Link<T> getLink() {
+            return link;
+        }
+
+        @Override
+        public EditableProvider<T> getEditableList() {
+            //noinspection unchecked
+            return (EditableProvider<T>) getDataProvider();
+        }
+
+        @Override
+        public void clear() {
+            DetailLinkGrid.this.clear();
+        }
+
+        @Override
+        public ObjectLinkField<T> getField() {
+            return linkField;
+        }
+
+        @Override
+        public StoredObject getMaster() {
+            return getObjectLoader().getMaster();
+        }
     }
 }

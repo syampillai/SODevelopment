@@ -4,17 +4,17 @@ import com.storedobject.core.*;
 import com.storedobject.ui.util.LinkGridButtons;
 import com.storedobject.vaadin.DataList;
 import com.storedobject.vaadin.View;
+import com.vaadin.flow.data.provider.ListDataProvider;
 
 import java.util.stream.Stream;
 
-public class ReferenceLinkGrid<T extends StoredObject> extends ObjectGrid<T> implements LinkGrid<T>, StoredObjectLink<T> {
+public class ReferenceLinkGrid<T extends StoredObject> extends EditableObjectGrid<T> implements LinkGrid<T> {
 
     private final StoredObjectUtility.Link<T> link;
     private final ObjectLinkField<T> linkField;
     private final LinkGridButtons<T> buttonPanel;
     private ObjectSearcher<T> searcher;
-    private StoredObject master;
-    private boolean readOnly;
+    private boolean fromClient;
 
     private final ObjectSetter<T> setter = new ObjectsSetter<>() {
 
@@ -23,7 +23,7 @@ public class ReferenceLinkGrid<T extends StoredObject> extends ObjectGrid<T> imp
             objects.forEach(so -> {
                 T o = convert(so);
                 if(o != null && canChange(o, EditorAction.NEW)) {
-                    added(o);
+                    ReferenceLinkGrid.this.itemInserted(o);
                 }
             });
         }
@@ -49,22 +49,42 @@ public class ReferenceLinkGrid<T extends StoredObject> extends ObjectGrid<T> imp
     }
 
     public ReferenceLinkGrid(ObjectLinkField<T> linkField, Iterable<String> columns) {
-        super(new ObjectMemoryList<>(linkField.getObjectClass(), linkField.isAllowAny()), columns);
+        super(linkField.getObjectClass(), new ObjectMemoryList<>(linkField.getObjectClass(), linkField.isAllowAny()), columns);
         this.linkField = linkField;
         this.link = linkField.getLink();
         buttonPanel = new LinkGridButtons<>(this);
         //noinspection unchecked
         createColumn("*", o -> isEdited(o) ? "*" : (isAdded(o) ? "+" : (isDeleted(o) ? "-" : "")));
+        addDataLoadedListener(buttonPanel::changed);
+        setLinkType(link.getType(), false);
+    }
+
+    protected final EditableList<T> createEditableList() {
+        return new RList();
     }
 
     @Override
-    protected EditableObjectListProvider<T> createListDataProvider(DataList<T> data) {
-        return new EditableObjectListProvider<>(getObjectClass(), data);
+    protected boolean isValid(ListDataProvider<T> dataProvider) {
+        return dataProvider instanceof ReferenceLinkListProvider<T> && super.isValid(dataProvider);
     }
 
     @Override
-    public EditableObjectListProvider<T> getDataProvider() {
-        return (EditableObjectListProvider<T>) super.getDataProvider();
+    protected AbstractListProvider<T> createListDataProvider(DataList<T> data) {
+        return new ReferenceLinkListProvider<>(getObjectClass(), data);
+    }
+
+    private ReferenceLinkListProvider<T> provider() {
+        return (ReferenceLinkListProvider<T>)getDataProvider();
+    }
+
+    @Override
+    public void setFromClient(boolean fromClient) {
+        this.fromClient = fromClient;
+    }
+
+    @Override
+    public boolean isFromClient() {
+        return fromClient;
     }
 
     @Override
@@ -114,11 +134,6 @@ public class ReferenceLinkGrid<T extends StoredObject> extends ObjectGrid<T> imp
     }
 
     @Override
-    public EditableObjectListProvider<T> getEditableList() {
-        return (EditableObjectListProvider<T>) getObjectLoader();
-    }
-
-    @Override
     public View createView() {
         return null;
     }
@@ -134,48 +149,7 @@ public class ReferenceLinkGrid<T extends StoredObject> extends ObjectGrid<T> imp
     }
 
     public boolean contains(T object) {
-        return getEditableList().contains(object);
-    }
-
-    @Override
-    public void edited(T object) {
-    }
-
-    @Override
-    public boolean append(T object) {
-        if(contains(object)) {
-            return false;
-        }
-        try {
-            return getEditableList().append(object);
-        } finally {
-            if(size() == 1) {
-                buttonPanel.changed();
-            }
-        }
-    }
-
-    @Override
-    public void added(T object) {
-        if(contains(object)) {
-            return;
-        }
-        getEditableList().add(object);
-        if(size() == 1) {
-            buttonPanel.changed();
-        }
-    }
-
-    @Override
-    public void deleted(T object) {
-        getEditableList().delete(object);
-        if(size() == 0) {
-            buttonPanel.changed();
-        }
-    }
-
-    @Override
-    public void reloaded(T object) {
+        return provider().contains(object);
     }
 
     @Override
@@ -203,21 +177,19 @@ public class ReferenceLinkGrid<T extends StoredObject> extends ObjectGrid<T> imp
             return;
         }
         if(canChange(object, EditorAction.DELETE)) {
-            delete(object);
+            itemDeleted(object);
         }
     }
 
     @Override
     public void reload() {
-        T item = selected();
-        if(item != null && canReload(item)) {
-            getEditableList().reload(selected());
+        T object = selected();
+        if(object == null) {
+            return;
         }
-    }
-
-    private boolean canReload(T item) {
-        @SuppressWarnings("unchecked") T o = (T) StoredObject.get(item.getClass(), item.getId());
-        return canChange(o, EditorAction.RELOAD);
+        if(canChange(object, EditorAction.RELOAD)) {
+            itemUndeleted(object);
+        }
     }
 
     @Override
@@ -228,7 +200,8 @@ public class ReferenceLinkGrid<T extends StoredObject> extends ObjectGrid<T> imp
     public ObjectSearcher<T> getSearcher() {
         if (searcher == null) {
             searcher = ObjectBrowser.create(getObjectClass(), null,
-                    EditorAction.SEARCH | EditorAction.RELOAD | (isAllowAny() ? EditorAction.ALLOW_ANY : 0), null);
+                    EditorAction.SEARCH | EditorAction.RELOAD | (isAllowAny() ? EditorAction.ALLOW_ANY : 0),
+                    null);
         }
         return searcher;
     }
@@ -239,37 +212,24 @@ public class ReferenceLinkGrid<T extends StoredObject> extends ObjectGrid<T> imp
     }
 
     @Override
-    public final boolean isReadOnly() {
-        return readOnly;
-    }
-
-    @Override
     public void setReadOnly(boolean readOnly) {
-        this.readOnly = readOnly;
+        super.setReadOnly(readOnly);
         buttonPanel.changed();
     }
 
     @Override
-    public StoredObject getMaster() {
-        return master;
+    public int getType() {
+        return link.getType();
     }
 
     @Override
-    public void setMaster(StoredObject master, boolean load) {
-        this.master = master;
-        if(load) {
-            loadMaster();
-        }
+    public String getName() {
+        return link.getName();
     }
 
     @Override
     public int size() {
-        return LinkGrid.super.size();
-    }
-
-    @Override
-    public void clear() {
-        LinkGrid.super.clear();
+        return super.size();
     }
 
     @Override
@@ -290,5 +250,106 @@ public class ReferenceLinkGrid<T extends StoredObject> extends ObjectGrid<T> imp
     @Override
     public Stream<T> stream() {
         return super.stream();
+    }
+
+    public final ObjectEditor<T> createObjectEditor() {
+        return null;
+    }
+
+    @Override
+    public final ObjectEditor<T> constructObjectEditor() {
+        return null;
+    }
+
+    @Override
+    public LinkValue<T> getLinkGrid() {
+        return (RList)getEditableList();
+    }
+
+
+    @Override
+    public void setMaster(StoredObject master, boolean load) {
+        clear();
+        if(master != null) {
+            super.setMaster(master, load);
+        }
+    }
+
+    @Override
+    public StoredObject getMaster() {
+        return super.getMaster();
+    }
+
+    @Override
+    protected void doInsertAction(T object) {
+        if(provider().add(object, true)) {
+            if(objectChangedListeners != null) {
+                objectChangedListeners.forEach(l -> l.inserted(object));
+            }
+            select(object);
+        }
+    }
+
+    @Override
+    protected void doUpdateAction(T object) {
+        if(provider().update(object, true)) {
+            if(objectChangedListeners != null) {
+                objectChangedListeners.forEach(l -> l.updated(object));
+            }
+            select(object);
+        }
+    }
+
+    @Override
+    protected void doDeleteAction(T object) {
+        if(provider().delete(object, true)) {
+            if(objectChangedListeners != null) {
+                objectChangedListeners.forEach(l -> l.deleted(object));
+            }
+        }
+    }
+
+    @Override
+    protected void doUndeleteAction(T object) {
+        if(provider().undelete(object, true)) {
+            if(objectChangedListeners != null) {
+                objectChangedListeners.forEach(l -> l.undeleted(object));
+            }
+            select(object);
+        }
+    }
+
+    @Override
+    protected final boolean canChange(T item, int editorAction) {
+        return ((ObjectEditor<?>)getButtonPanel().getMasterView()).acceptValueChange(getField(), item, editorAction);
+    }
+
+    private class RList extends EList implements LinkValue<T> {
+
+        @Override
+        public StoredObjectUtility.Link<T> getLink() {
+            return link;
+        }
+
+        @Override
+        public EditableProvider<T> getEditableList() {
+            //noinspection unchecked
+            return (EditableProvider<T>) getDataProvider();
+        }
+
+        @Override
+        public void clear() {
+            ReferenceLinkGrid.this.clear();
+        }
+
+        @Override
+        public ObjectLinkField<T> getField() {
+            return linkField;
+        }
+
+        @Override
+        public StoredObject getMaster() {
+            return getObjectLoader().getMaster();
+        }
     }
 }

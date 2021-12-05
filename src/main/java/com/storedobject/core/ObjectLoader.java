@@ -13,12 +13,21 @@ public interface ObjectLoader<T extends StoredObject> {
         return null;
     }
 
+    default void setOrderBy(String orderBy, boolean load) {
+    }
+
     default StoredObject getMaster() {
         return null;
     }
 
+    default void setMaster(StoredObject master, boolean load) {
+    }
+
     default int getLinkType() {
         return 0;
+    }
+
+    default void setLinkType(int linkType, boolean load) {
     }
 
     default void load() {

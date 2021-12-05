@@ -217,20 +217,4 @@ public abstract class AbstractObjectForest<T extends StoredObject> extends DataT
     public <M extends StoredObject> boolean hideLink(Class<M> masterClass, String linkName) {
         return false;
     }
-
-    @Override
-    public final void inserted(T object) {
-    }
-
-    @Override
-    public final void updated(T object) {
-    }
-
-    @Override
-    public final void deleted(T object) {
-    }
-
-    @Override
-    public final void addObjectChangedListener(ObjectChangedListener<T> listener) {
-    }
 }

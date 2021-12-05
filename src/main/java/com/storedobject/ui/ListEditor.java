@@ -168,7 +168,7 @@ public class ListEditor<T> extends EditableGrid<T> {
             return;
         }
         if(canDelete(object)) {
-            delete(object);
+            itemDeleted(object);
         }
     }
 
@@ -308,7 +308,7 @@ public class ListEditor<T> extends EditableGrid<T> {
             add.setVisible(v && allowAdd);
             edit.setVisible(v && allowEdit);
             delete.setVisible(v && allowDelete);
-            saveAll.setVisible(allowSaveAll && isSavePending());
+            saveAll.setVisible(allowSaveAll && getEditableList().isSavePending());
         }
     }
 
@@ -326,8 +326,7 @@ public class ListEditor<T> extends EditableGrid<T> {
     /**
      * Save the currently accumulated changes. Errors if any will be displayed in the UI.
      * <p>If a saver is set via {@link #setSaver(Function)}, that saver will be used for saving the changes.
-     * Otherwise, all values are updated in the internal list and that can be accessed via
-     * {@link #getEditableList()}.</p>
+     * Otherwise, all values are updated in the internal list.
      */
     public void save() {
         if(isReadOnly()) {
@@ -343,10 +342,12 @@ public class ListEditor<T> extends EditableGrid<T> {
             return;
         }
         if(saver == null) {
-            ((Data<T>)getEditableList()).removeDeleted();
+            // TODO
+            //((Data<T>)getEditableList()).removeDeleted();
         }
-        if(saver == null || saver.apply(this)) {
-            ((Data<T>)getEditableList()).savedAll();
+        if(saver == null || saver.apply(this.getEditableList())) {
+            // TODO
+            //((Data<T>)getEditableList()).savedAll();
             changed();
             refresh();
         }

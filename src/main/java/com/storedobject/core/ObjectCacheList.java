@@ -391,13 +391,16 @@ public class ObjectCacheList<T extends StoredObject> implements ObjectList<T>, A
     }
 
     @Override
-    public void refresh(Id id) {
+    public T refresh(Id id) {
         original.refresh(id);
+        return original.get(id);
     }
 
     @Override
-    public void refresh(T object) {
+    public T refresh(T object) {
+        Id id = object.getId();
         original.refresh(object);
+        return original.get(id);
     }
 
     @Override

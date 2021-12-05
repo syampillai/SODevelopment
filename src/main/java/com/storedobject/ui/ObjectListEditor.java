@@ -70,14 +70,14 @@ public class ObjectListEditor<T extends StoredObject> extends EditableObjectGrid
 
         @Override
         public void updated(T object) {
-            update(object);
+            itemUpdated(object);
             reload.setVisible(allowReload);
             reloadAll.setVisible(allowReloadAll);
         }
 
         @Override
         public void deleted(T object) {
-            delete(object);
+            itemDeleted(object);
             changed();
         }
 
@@ -202,7 +202,7 @@ public class ObjectListEditor<T extends StoredObject> extends EditableObjectGrid
             return;
         }
         if(canDelete(object)) {
-            delete(object);
+            itemDeleted(object);
         }
     }
 
@@ -482,7 +482,7 @@ public class ObjectListEditor<T extends StoredObject> extends EditableObjectGrid
         edit.setVisible(v && allowEdit);
         delete.setVisible(v && allowDelete);
         if(allowReload || allowReloadAll) {
-            v = isSavePending();
+            v = getEditableList().isSavePending();
             reload.setVisible(v && allowReload);
             reloadAll.setVisible(v && allowReloadAll);
             saveAll.setVisible(v && allowSaveAll);
@@ -494,7 +494,7 @@ public class ObjectListEditor<T extends StoredObject> extends EditableObjectGrid
         edit.setVisible(edit.isVisible() && v && allowEdit);
         delete.setVisible(delete.isVisible() && v && allowDelete);
         if(allowReload || allowReloadAll) {
-            v = isSavePending();
+            v = getEditableList().isSavePending();
             reload.setVisible(reload.isVisible() && v && allowReload);
             reloadAll.setVisible(reloadAll.isVisible() && v && allowReloadAll);
             saveAll.setVisible(saveAll.isVisible() && v && allowSaveAll);
@@ -584,7 +584,8 @@ public class ObjectListEditor<T extends StoredObject> extends EditableObjectGrid
     }
 
     private void savedAll() {
-        getEditableList().savedAll();
+        //noinspection unchecked
+        ((EditableProvider<T>)getDataProvider()).savedAll();
     }
 
     /**
@@ -611,7 +612,7 @@ public class ObjectListEditor<T extends StoredObject> extends EditableObjectGrid
             transact(this::save);
             return;
         }
-        boolean saved = saver.apply(this);
+        boolean saved = saver.apply(this.getEditableList());
         if(saved) {
             reload.setVisible(false);
             reloadAll.setVisible(false);

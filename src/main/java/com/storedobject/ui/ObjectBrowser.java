@@ -14,14 +14,18 @@ import com.vaadin.flow.component.grid.editor.Editor;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.splitlayout.SplitLayout;
+import com.vaadin.flow.shared.Registration;
 
 import java.lang.reflect.Constructor;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import static com.storedobject.core.EditorAction.*;
 
-public class ObjectBrowser<T extends StoredObject> extends ObjectGrid<T> implements EditableDataGrid<T> {
+public class ObjectBrowser<T extends StoredObject> extends ObjectGrid<T>
+        implements EditableDataGrid<T>, ObjectEditorListener {
 
     private LoadFilterButtons<T> loadFilterButtons;
     protected final ButtonLayout buttonPanel = new ButtonLayout();
@@ -29,7 +33,6 @@ public class ObjectBrowser<T extends StoredObject> extends ObjectGrid<T> impleme
     protected Button add, edit, delete, search, filter, load, view, report, excel, audit, exit, save, cancel;
     private String allowedActions;
     ObjectEditor<T> editor;
-    private List<ObjectEditorListener> objectEditorListeners;
     private T editingItem;
     private boolean rowMode = false;
     private boolean readOnly = false;
@@ -39,6 +42,7 @@ public class ObjectBrowser<T extends StoredObject> extends ObjectGrid<T> impleme
     private Logic logic;
     private SplitLayout layout;
     private final boolean anchorsExist;
+    private final InternalObjectChangedListener internalObjectChangedListener = new InternalObjectChangedListener();
 
     public ObjectBrowser(Class<T> objectClass) {
         this(objectClass, (String)null);
@@ -589,14 +593,6 @@ public class ObjectBrowser<T extends StoredObject> extends ObjectGrid<T> impleme
         }
     }
 
-    @Override
-    public List<ObjectEditorListener> getObjectEditorListeners(boolean create) {
-        if(objectEditorListeners == null && create) {
-            objectEditorListeners = new ArrayList<>();
-        }
-        return objectEditorListeners;
-    }
-
     private boolean checkDelete() {
         T object = getSelected();
         if(object == null) {
@@ -763,7 +759,7 @@ public class ObjectBrowser<T extends StoredObject> extends ObjectGrid<T> impleme
                 }
             }
         }
-        editor.addObjectChangedListener(this);
+        internalObjectChangedListener.set(editor);
         editor.addObjectEditorListener(this);
         editor.grid = this;
         editor.setLogic(logic);
@@ -902,5 +898,53 @@ public class ObjectBrowser<T extends StoredObject> extends ObjectGrid<T> impleme
      * @throws Exception if any validation error to be notified.
      */
     public void savingExtraInfo(T object, StoredObject extraInfo) throws Exception {
+    }
+
+    private class InternalObjectChangedListener implements ObjectChangedListener<T> {
+
+        private Registration registration;
+        private ObjectEditor<T> editor;
+
+        private InternalObjectChangedListener() {
+        }
+
+        private void set(ObjectEditor<T> editor) {
+            if(this.editor == editor) {
+                return;
+            }
+            if(registration != null) {
+                registration.remove();
+            }
+            this.editor = editor;
+            registration = editor.addObjectChangedListener(this);
+        }
+
+        @Override
+        public void inserted(T object) {
+            if(objectChangedListeners != null) {
+                objectChangedListeners.forEach(l -> inserted(object));
+            }
+        }
+
+        @Override
+        public void updated(T object) {
+            if(objectChangedListeners != null) {
+                objectChangedListeners.forEach(l -> updated(object));
+            }
+        }
+
+        @Override
+        public void deleted(T object) {
+            if(objectChangedListeners != null) {
+                objectChangedListeners.forEach(l -> deleted(object));
+            }
+        }
+
+        @Override
+        public void undeleted(T object) {
+            if(objectChangedListeners != null) {
+                objectChangedListeners.forEach(l -> undeleted(object));
+            }
+        }
     }
 }

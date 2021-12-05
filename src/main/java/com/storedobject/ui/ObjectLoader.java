@@ -29,7 +29,40 @@ public interface ObjectLoader<T extends StoredObject> extends com.storedobject.c
     }
 
     default void setOrderBy(String orderBy) {
-        getObjectLoader().setOrderBy(orderBy);
+        setOrderBy(orderBy, false);
+    }
+
+    @Override
+    default void setOrderBy(String orderBy, boolean load) {
+        getObjectLoader().setOrderBy(orderBy, load);
+    }
+
+    default void setMaster(StoredObject master) {
+        setMaster(master, true);
+    }
+
+    @Override
+    default void setMaster(StoredObject master, boolean load) {
+        getObjectLoader().setMaster(master, load);
+    }
+
+    @Override
+    default StoredObject getMaster() {
+        return getObjectLoader().getMaster();
+    }
+
+    default void setLinkType(int linkType) {
+        setLinkType(linkType, false);
+    }
+
+    @Override
+    default void setLinkType(int linkType, boolean load) {
+        getObjectLoader().setLinkType(linkType, load);
+    }
+
+    @Override
+    default int getLinkType() {
+        return getObjectLoader().getLinkType();
     }
 
     @Override

@@ -7,21 +7,46 @@ import com.storedobject.core.StoredObjectUtility;
 import com.storedobject.ui.util.LinkGridButtons;
 import com.storedobject.vaadin.View;
 
-import java.util.stream.Stream;
-
-public interface LinkGrid<T extends StoredObject> extends StoredObjectLink<T> {
+public interface LinkGrid<T extends StoredObject> {
 
     Class<T> getObjectClass();
 
+    LinkValue<T> getLinkGrid();
+
+    void itemAppended(T object);
+
+    void itemInserted(T object);
+
+    void itemUpdated(T object);
+
+    void itemDeleted(T object);
+
+    void itemUndeleted(T object);
+
+    void itemReloaded(T object);
+
+    default void setValue(StoredObjectLink<T> value) {
+        if(value == getLinkGrid()) {
+            getButtonPanel().changed();
+            return;
+        }
+        setMaster(value.getMaster(), false);
+        clear();
+        value.streamAll().forEach(o -> {
+            if(value.isAdded(o)) {
+                itemInserted(o);
+            } else if(value.isEdited(o)) {
+                itemUpdated(o);
+            } else if(value.isDeleted(o)) {
+                itemDeleted(o);
+            } else {
+                itemAppended(o);
+            }
+        });
+        getButtonPanel().changed();
+    }
+
     T getSelected();
-
-    void added(T object);
-
-    void edited(T object);
-
-    void deleted(T object);
-
-    void reloaded(T object);
 
     void add();
 
@@ -43,71 +68,21 @@ public interface LinkGrid<T extends StoredObject> extends StoredObjectLink<T> {
 
     void setMaster(StoredObject master, boolean load);
 
-    EditableObjectListProvider<T> getEditableList();
-
     LinkGridButtons<T> getButtonPanel();
 
     StoredObjectUtility.Link<T> getLink();
 
-    default void loadMaster() {
-        getEditableList().load(getType(), getMaster(), null, getLink().getOrderBy());
-        getButtonPanel().changed();
-    }
-
-    default void setValue(StoredObjectLink<T> value) {
-        if(value == this) {
-            getButtonPanel().changed();
-            return;
-        }
-        setMaster(value.getMaster(), false);
-        clear();
-        value.streamAll().forEach(o -> {
-            if(value.isAdded(o)) {
-                added(o);
-            } else if(value.isEdited(o)) {
-                edited(o);
-            } else if(value.isDeleted(o)) {
-                deleted(o);
-            } else {
-                append(o);
-            }
-        });
-        getButtonPanel().changed();
-    }
+    void clear();
 
     default StoredObjectLink<T> getOldValue() {
         return StoredObjectLink.create(getLink(), getMaster());
     }
 
-    @Override
-    default int getType() {
-        return getLink().getType();
-    }
+    StoredObject getMaster();
 
-    @Override
-    default String getName() {
-        return getLink().getName();
-    }
+    int getType();
 
-    default void loaded() {
-    }
-
-    default T selected() {
-        if(size() == 0) {
-            Application.warning("No entries exist");
-            return null;
-        }
-        T object = getSelected();
-        if(object == null) {
-            if(size() == 1) {
-                object = getItem(0);
-                select(object);
-                return object;
-            }
-            Application.warning("Nothing selected");
-        }
-        return object;
-    }
+    String getName();
 
     T getItem(int index);
 
@@ -189,6 +164,8 @@ public interface LinkGrid<T extends StoredObject> extends StoredObjectLink<T> {
         getButtonPanel().setMasterView(masterView);
     }
 
+    T selected();
+
     default void view() {
         T object = selected();
         if(object == null) {
@@ -197,65 +174,7 @@ public interface LinkGrid<T extends StoredObject> extends StoredObjectLink<T> {
         getObjectEditor().viewObject(object, getButtonPanel().getMasterView());
     }
 
-    @Override
-    default boolean isAdded(T item) {
-        return getEditableList().isAdded(item);
-    }
-
-    @Override
-    default boolean isDeleted(T item) {
-        return getEditableList().isDeleted(item);
-    }
-
-    @Override
-    default boolean isEdited(T item) {
-        return getEditableList().isEdited(item);
-    }
-
-    @Override
-    default Stream<T> streamAll() {
-        return getEditableList().streamAll();
-    }
-
-    @Override
-    default int size() {
-        return getEditableList().size();
-    }
-
-    @Override
-    default boolean add(T item) {
-        return getEditableList().add(item);
-    }
-
-    @Override
-    default boolean delete(T item) {
-        return getEditableList().delete(item);
-    }
-
-    @Override
-    default boolean undelete(T item) {
-        return getEditableList().undelete(item);
-    }
-
-    @Override
-    default boolean update(T item) {
-        return getEditableList().update(item);
-    }
-
-    default void clear() {
-        getEditableList().clear();
-    }
-
     ObjectLinkField<T> getField();
 
-    /**
-     * Invoked to check whether a change is allowed from the client side or not.
-     *
-     * @param item Item to change.
-     * @param editorAction Editor action (One of the static values from {@link EditorAction}).
-     * @return True if change is acceptable. If returned false, change will be ignored.
-     */
-    default boolean canChange(T item, int editorAction) {
-        return ((ObjectEditor<?>)getButtonPanel().getMasterView()).acceptValueChange(getField(), item, editorAction);
-    }
+    int size();
 }

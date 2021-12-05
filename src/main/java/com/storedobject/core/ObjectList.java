@@ -19,9 +19,9 @@ public interface ObjectList<T extends StoredObject> extends List<T>, ObjectLoade
 
     void refresh();
 
-    void refresh(Id id);
+    T refresh(Id id);
 
-    void refresh(T object);
+    T refresh(T object);
 
     int getCacheLevel();
 }
