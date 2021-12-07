@@ -2,7 +2,7 @@ package com.storedobject.ui;
 
 import java.util.function.Function;
 
-public class XGrid<X extends XGrid.XData> extends ListGrid<X> {
+public class XGrid<X extends XGrid.XData> extends DataGrid<X> {
 
     public XGrid(Class<X> objectClass) {
         this(objectClass,null);

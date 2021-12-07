@@ -102,16 +102,6 @@ public abstract class InventoryLocation extends StoredObject {
         return true;
     }
 
-    /**
-     * Can this out be moved out from this bin?
-     *
-     * @param item Item to check.
-     * @return True or false.
-     */
-    protected boolean canMoveOut(InventoryItem item) {
-        return true;
-    }
-
     public void setCategory(Id category) {
     }
 

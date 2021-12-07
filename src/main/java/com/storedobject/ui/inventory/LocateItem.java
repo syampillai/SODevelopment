@@ -4,7 +4,7 @@ import com.storedobject.common.SORuntimeException;
 import com.storedobject.common.StringList;
 import com.storedobject.core.*;
 import com.storedobject.ui.*;
-import com.storedobject.ui.ListGrid;
+import com.storedobject.ui.DataGrid;
 import com.storedobject.vaadin.*;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.Component;
@@ -21,7 +21,7 @@ import java.util.List;
  *
  * @author Syam
  */
-public class LocateItem extends ListGrid<InventoryItem> implements CloseableView {
+public class LocateItem extends DataGrid<InventoryItem> implements CloseableView {
 
     private static final String INSPECT = "INSPECT";
     private final ELabel filterLabel = new ELabel("Search: ");

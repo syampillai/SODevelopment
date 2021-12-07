@@ -193,31 +193,6 @@ public class ListEditor<T> extends EditableGrid<T> {
     }
 
     /**
-     * Get the currently selected instance. If nothing is selected, a warning message is displayed and
-     * <code>null</code> is returned. (If you simply want to a find the selected instance without displaying
-     * a warning message, you may use {@link #getSelected()}).
-     *
-     * @return Selected instance or <code>null</code>.
-     */
-    public T selected() {
-        if(size() == 0) {
-            Application.warning("No entries exist");
-            return null;
-        }
-        T selected = getSelected();
-        if(selected == null && getEditor().isOpen()) {
-            selected = getEditingItem();
-            getEditor().cancel();
-            select(selected);
-            return selected;
-        }
-        if(selected == null) {
-            Application.warning("Nothing selected");
-        }
-        return selected;
-    }
-
-    /**
      * Check if this editor is in an invalid state or not. (It will be in invalid state if the current row
      * editor can not be closed because the data is invalid).
      *

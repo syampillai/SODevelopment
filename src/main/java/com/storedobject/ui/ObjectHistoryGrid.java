@@ -9,7 +9,7 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.function.BiPredicate;
 
-public class ObjectHistoryGrid<T extends StoredObject> extends ListGrid<T> implements CloseableView {
+public class ObjectHistoryGrid<T extends StoredObject> extends DataGrid<T> implements CloseableView {
 
     private final T object;
     private final BiPredicate<T, T> viewFilter;

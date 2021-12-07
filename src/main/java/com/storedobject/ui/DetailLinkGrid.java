@@ -31,6 +31,7 @@ public class DetailLinkGrid<T extends StoredObject> extends EditableObjectGrid<T
         addValueChangeTracker((e, fromClient) -> buttonPanel.changed());
         addDataLoadedListener(buttonPanel::changed);
         setLinkType(link.getType(), false);
+        itemAppended(null);
     }
 
     @Override
@@ -83,6 +84,15 @@ public class DetailLinkGrid<T extends StoredObject> extends EditableObjectGrid<T
     @Override
     public boolean canDelete(T item) {
         return canChange(item, EditorAction.DELETE);
+    }
+
+    @Override
+    public boolean add(T item) {
+        if(item != null && Id.isNull(item.getId())) {
+            itemInserted(item);
+            return true;
+        }
+        return super.add(item);
     }
 
     @Override

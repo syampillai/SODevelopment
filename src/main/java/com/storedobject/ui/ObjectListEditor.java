@@ -21,7 +21,7 @@ import java.util.function.Function;
  * @param <T> Type of objects to edit.
  * @author Syam
  */
-public class ObjectListEditor<T extends StoredObject> extends EditableObjectGrid<T> implements Transactional {
+public class ObjectListEditor<T extends StoredObject> extends EditableObjectGrid<T> {
 
     /**
      * Button panel.
@@ -288,22 +288,7 @@ public class ObjectListEditor<T extends StoredObject> extends EditableObjectGrid
      * @return Selected instance or <code>null</code>.
      */
     public T selected() {
-        clearAlerts();
-        if(size() == 0) {
-            warning("No entries exist");
-            return null;
-        }
-        T selected = getSelected();
-        if(selected == null && getEditor().isOpen()) {
-            selected = getEditingItem();
-            getEditor().cancel();
-            select(selected);
-            return selected;
-        }
-        if(selected == null) {
-            warning("Nothing selected");
-        }
-        return selected;
+        return selected(getEditor());
     }
 
     /**

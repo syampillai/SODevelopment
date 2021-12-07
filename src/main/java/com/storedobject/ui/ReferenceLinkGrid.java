@@ -153,6 +153,15 @@ public class ReferenceLinkGrid<T extends StoredObject> extends EditableObjectGri
     }
 
     @Override
+    public boolean add(T item) {
+        if(item != null && Id.isNull(item.getId())) {
+            itemInserted(item);
+            return true;
+        }
+        return super.add(item);
+    }
+
+    @Override
     public void add() {
         if(!buttonPanel.isAllowAdd()) {
             return;

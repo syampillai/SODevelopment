@@ -96,6 +96,15 @@ public class EditableObjectGrid<T extends StoredObject> extends AbstractEditable
         this.autoSave = autoSave;
     }
 
+    @Override
+    public boolean add(T item) {
+        if(item != null && Id.isNull(item.getId())) {
+            itemInserted(item);
+            return true;
+        }
+        return super.add(item);
+    }
+
     public void reload(T object) {
         cancelEdit();
         fireChanged(object, EditorAction.RELOAD);

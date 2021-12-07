@@ -1,12 +1,16 @@
 package com.storedobject.ui;
 
 import com.storedobject.core.Filtered;
+import com.storedobject.core.MemoryCache;
+import com.storedobject.core.StoredObject;
+import com.storedobject.core.StoredObjectUtility;
 import com.storedobject.ui.util.ViewFilterSupport;
 import com.storedobject.vaadin.DataList;
 import com.vaadin.flow.component.grid.GridSortOrder;
 import com.vaadin.flow.component.grid.dataview.GridDataView;
 import com.vaadin.flow.component.grid.dataview.GridLazyDataView;
 import com.vaadin.flow.component.grid.dataview.GridListDataView;
+import com.vaadin.flow.component.grid.editor.Editor;
 import com.vaadin.flow.data.provider.*;
 
 import java.util.Arrays;
@@ -14,21 +18,45 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 
-public abstract class DataGrid<T> extends com.storedobject.vaadin.ListGrid<T>
+public class DataGrid<T> extends com.storedobject.vaadin.ListGrid<T>
         implements ViewFilterSupport<T>, Transactional {
 
     static final String NOTHING_SELECTED = "Nothing selected";
+    static final String NOTHING_TO_SELECT = "No item available to select!";
     private GridListDataView<T> dataView;
+
+    public DataGrid(Class<T> objectClass) {
+        this(objectClass, null);
+    }
+
+    public DataGrid(Class<T> objectClass, Iterable<String> columns) {
+        this(objectClass, new MemoryCache<>(), columns);
+    }
 
     public DataGrid(Class<T> objectClass, Filtered<T> list, Iterable<String> columns) {
         //noinspection unchecked
-        super(objectClass, (List<T>)list, columns);
+        super(objectClass, (List<T>)list, columns(objectClass, columns));
     }
 
-    protected abstract boolean isValid(ListDataProvider<T> dataProvider);
+    static <O extends StoredObject> Iterable<String> columns(Class<?> objectClass, Iterable<String> columns) {
+        if(columns != null) {
+            return columns;
+        }
+        if(!StoredObject.class.isAssignableFrom(objectClass)) {
+            return null;
+        }
+        @SuppressWarnings("unchecked") Class<O> oClass = (Class<O>) objectClass;
+        return StoredObjectUtility.browseColumns(oClass);
+    }
+
+    protected boolean isValid(ListDataProvider<T> dataProvider) {
+        return dataProvider instanceof ListProvider;
+    }
 
     @Override
-    protected abstract AbstractListProvider<T> createListDataProvider(DataList<T> data);
+    protected ListDataProvider<T> createListDataProvider(DataList<T> data) {
+        return new ListProvider<>(getDataClass(), data);
+    }
 
     @Override
     public AbstractListProvider<T> getDataProvider() {
@@ -101,13 +129,19 @@ public abstract class DataGrid<T> extends com.storedobject.vaadin.ListGrid<T>
         addAll(items);
     }
 
-    public T selected() {
+    protected T selected(Editor<T> editor) {
         clearAlerts();
         T o = getSelected();
         if(o == null) {
+            if(editor != null && editor.isOpen()) {
+                o = editor.getItem();
+                editor.cancel();
+                select(o);
+                return o;
+            }
             switch(size()) {
                 case 0 -> {
-                    warning("No item to select!");
+                    warning(NOTHING_TO_SELECT);
                     return null;
                 }
                 case 1 -> {
@@ -119,6 +153,10 @@ public abstract class DataGrid<T> extends com.storedobject.vaadin.ListGrid<T>
             warning(NOTHING_SELECTED);
         }
         return o;
+    }
+
+    public T selected() {
+        return selected(null);
     }
 
     @Override
@@ -215,6 +253,18 @@ public abstract class DataGrid<T> extends com.storedobject.vaadin.ListGrid<T>
             return false;
         }
         return true;
+    }
+
+    /**
+     * Inform the grid that we have appended an item.
+     * It will append the item to the grid only if {@link #validateAppend(Object)} doesn't raise any exception.
+     * For appending the item, it invokes {@link #doAppendAction(Object)} method.
+     * <p>Note: This method is an alias to {@link #itemAppended(Object)} method.</p>
+     *
+     * @param object Item that is newly added.
+     */
+    public void append(T object) {
+        itemAppended(object);
     }
 
     /**
