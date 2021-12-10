@@ -2,21 +2,26 @@ package com.storedobject.ui;
 
 import com.storedobject.core.InventoryLocation;
 import com.storedobject.core.JavaClassLoader;
+import com.storedobject.core.Person;
 import com.storedobject.core.StoredObject;
 import com.storedobject.ui.inventory.LocationField;
 import com.storedobject.vaadin.DataForm;
 
-public class Test extends DataForm {
+public class Test extends ObjectListEditor<Person> {
 
-    public Test() throws ClassNotFoundException {
-        super("Test");
-        Class<? extends StoredObject> c = (Class<? extends StoredObject>) JavaClassLoader.getLogic("com.engravsystems.emqim.engineering.ItemType");
-        System.err.println(c);
-        System.err.println(ObjectGetField.canCreate(c));
+    public Test() {
+        super(Person.class);
+        Person p;
+        for(int i = 0; i < 5; i++) {
+            p = new Person("Name " + i, "", "Test " + 0);
+            itemInserted(p);
+        }
     }
 
     @Override
-    protected boolean process() {
-        return false;
+    protected ObjectEditor<Person> createObjectEditor() {
+        ObjectEditor<Person> pe = ObjectEditor.create(Person.class);
+        pe.setCaption("Hello");
+        return pe;
     }
 }

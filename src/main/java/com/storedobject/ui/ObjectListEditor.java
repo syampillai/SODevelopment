@@ -503,7 +503,17 @@ public class ObjectListEditor<T extends StoredObject> extends EditableObjectGrid
     @Override
     protected void customizeObjectEditor() {
         ObjectEditor<T> editor = getObjectEditor();
-        editor.setIncludeFieldChecker(fieldName -> !fieldName.endsWith(".l") && !fieldName.endsWith(".a") && !fieldName.endsWith(".c"));
+        editor.setIncludeFieldChecker(fieldName -> !fieldName.endsWith(".l") && !fieldName.endsWith(".a")
+                && !fieldName.endsWith(".c"));
+        setExternalEditor(editor);
+    }
+
+    /**
+     * Set an external editor to edit objects of this list editor.
+     *
+     * @param editor Editor to set.
+     */
+    public void setExternalEditor(ObjectEditor<T> editor) {
         editor.removeObjectChangedListener(objectChanges);
         editor.addObjectChangedListener(objectChanges);
         editor.setDoNotSave(true);
@@ -553,7 +563,13 @@ public class ObjectListEditor<T extends StoredObject> extends EditableObjectGrid
         try {
             streamAll().forEach(o -> {
                     try {
-                        if(isAdded(o) || isEdited(o)) {
+                        boolean added;
+                        if((added = isAdded(o)) || isEdited(o)) {
+                            if(added) {
+                                if(o.isVirtual()) {
+                                    o.makeNew();
+                                }
+                            }
                             o.save(transaction);
                         } else if(isDeleted(o)) {
                             o.delete(transaction);

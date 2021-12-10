@@ -921,7 +921,9 @@ public class ObjectBrowser<T extends StoredObject> extends ObjectGrid<T>
 
         @Override
         public void inserted(T object) {
-            refresh();
+            reload();
+            select(object);
+            scrollTo(object);
             if(objectChangedListeners != null) {
                 objectChangedListeners.forEach(l -> inserted(object));
             }
@@ -930,6 +932,8 @@ public class ObjectBrowser<T extends StoredObject> extends ObjectGrid<T>
         @Override
         public void updated(T object) {
             refresh(object);
+            select(object);
+            scrollTo(object);
             if(objectChangedListeners != null) {
                 objectChangedListeners.forEach(l -> updated(object));
             }
@@ -937,7 +941,8 @@ public class ObjectBrowser<T extends StoredObject> extends ObjectGrid<T>
 
         @Override
         public void deleted(T object) {
-            refresh();
+            reload();
+            deselectAll();
             if(objectChangedListeners != null) {
                 objectChangedListeners.forEach(l -> deleted(object));
             }
@@ -945,7 +950,9 @@ public class ObjectBrowser<T extends StoredObject> extends ObjectGrid<T>
 
         @Override
         public void undeleted(T object) {
-            refresh();
+            reload();
+            select(object);
+            scrollTo(object);
             if(objectChangedListeners != null) {
                 objectChangedListeners.forEach(l -> undeleted(object));
             }
