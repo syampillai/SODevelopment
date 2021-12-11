@@ -67,6 +67,7 @@ public class DocumentViewer extends PDFViewer {
         this.caption = caption;
         if(view != null) {
             view.setCaption(caption);
+            view.execute();
         }
     }
 

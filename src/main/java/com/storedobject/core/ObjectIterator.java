@@ -6,7 +6,6 @@ import javax.annotation.Nonnull;
 import java.io.Closeable;
 import java.util.*;
 import java.util.function.*;
-import java.util.stream.Stream;
 
 /**
  * Helper class that allows you to iterate through objects retrieved from the DB. Several methods of
@@ -24,7 +23,7 @@ public abstract class ObjectIterator<O extends StoredObject> implements Iterator
     }
 
     /**
-     * Concatenate an another instance.
+     * Concatenate another instance.
      * @param iterator Another instance.
      * @return A new instance that contains objects from this instance followed by objects from the added instance.
      * There is no need to maintain any references to this instance or to the added one for the purpose of closing etc.
@@ -70,7 +69,7 @@ public abstract class ObjectIterator<O extends StoredObject> implements Iterator
     }
 
     /**
-     * Close the this instance and release all associated resources.
+     * Close this instance and release all associated resources.
      */
     @Override
     public void close() {
@@ -656,6 +655,34 @@ public abstract class ObjectIterator<O extends StoredObject> implements Iterator
      */
     public static <FROM extends StoredObject, TO extends StoredObject> ObjectIterator<TO>create(
             ObjectIterator<FROM> iterator, ObjectConverter<FROM, TO> converter) {
+        return create();
+    }
+
+    /**
+     * Create an iterator from some source.
+     *
+     * @param from Source.
+     * @param converter Converter to convert the source to an instance of TO.
+     * @param <TO> Type of object of the iterator to create.
+     * @param <FROM> Type of the source.
+     * @return Iterator created.
+     */
+    public static <TO extends StoredObject, FROM> ObjectIterator<TO> create(Iterable<FROM> from,
+                                                                            Function<FROM, TO> converter) {
+        return create();
+    }
+
+    /**
+     * Create an iterator from some source.
+     *
+     * @param from Source.
+     * @param converter Converter to convert the source to an instance of TO.
+     * @param <TO> Type of object of the iterator to create.
+     * @param <FROM> Type of the source.
+     * @return Iterator created.
+     */
+    public static <TO extends StoredObject, FROM> ObjectIterator<TO> create(Iterator<FROM> from,
+                                                                            Function<FROM, TO> converter) {
         return create();
     }
 }

@@ -1,10 +1,7 @@
-package com.storedobject.ui;
+package com.storedobject.core;
 
 import com.storedobject.common.FilterProvider;
-import com.storedobject.core.ObjectLoadFilter;
-import com.storedobject.core.StoredObject;
 
-import javax.annotation.Nonnull;
 import java.util.Objects;
 import java.util.function.Predicate;
 
@@ -45,7 +42,7 @@ public interface FilterMethods<T extends StoredObject> {
     }
 
     /**
-     * Set a filter clause.
+     * Set a filter clause to be used when loading takes place.
      *
      * @param filterClause Filter clause to set.
      */
@@ -54,7 +51,7 @@ public interface FilterMethods<T extends StoredObject> {
     }
 
     /**
-     * Set a filter clause.
+     * Set a filter clause to be used when loading takes place.
      *
      * @param filterClause Filter clause to set.
      * @param apply Whether to apply it immediately or not.
@@ -73,7 +70,7 @@ public interface FilterMethods<T extends StoredObject> {
     }
 
     /**
-     * Set a filter provider.
+     * Set a filter provider to be used when loading takes place.
      *
      * @param filterProvider Filter provider.
      */
@@ -82,7 +79,7 @@ public interface FilterMethods<T extends StoredObject> {
     }
 
     /**
-     * Set a filter provider.
+     * Set a filter provider to be used when loading takes place.
      *
      * @param filterProvider Filter provider.
      * @param apply Whether to apply it immediately or not.
@@ -101,18 +98,18 @@ public interface FilterMethods<T extends StoredObject> {
     }
 
     /**
-     * Set a search filter.
+     * Set a filter to be applied when loading takes place.
      *
-     * @param filter Search filter.
+     * @param filter Filter to apply.
      */
     default void setFilter(ObjectLoadFilter<T> filter) {
         setFilter(filter, true);
     }
 
     /**
-     * Set a search filter.
+     * Set a filter to be applied when loading takes place.
      *
-     * @param filter Search filter.
+     * @param filter Filter to apply.
      * @param apply Whether to apply it immediately or not.
      */
     default void setFilter(ObjectLoadFilter<T> filter, boolean apply) {
@@ -149,13 +146,16 @@ public interface FilterMethods<T extends StoredObject> {
     }
 
     /**
-     * Get the search filter.
+     * Get the load filter.
      *
-     * @return Search filter.
+     * @return Current load filter.
      */
-    @Nonnull
     default ObjectLoadFilter<T> getLoadFilter() {
-        return getObjectLoader().getLoadFilter();
+        if(this instanceof ObjectLoader ol) {
+            //noinspection unchecked
+            return ((ObjectLoader<T>) ol).getLoadFilter();
+        }
+        return null;
     }
 
     /**
@@ -164,9 +164,17 @@ public interface FilterMethods<T extends StoredObject> {
      * @return Object loader.
      */
     default ObjectLoader<T> getObjectLoader() {
-        if(this instanceof ObjectLoader<T> ol) {
-            return ol;
+        if(this instanceof ObjectLoader ol) {
+            //noinspection unchecked
+            return (ObjectLoader<T>) ol;
         }
         return null;
+    }
+
+    /**
+     * Set the load filter. This will be applied whenever loading takes place.
+     * @param loadFilter Load filter to be applied while loading.
+     */
+    default void setLoadFilter(Predicate<T> loadFilter) {
     }
 }

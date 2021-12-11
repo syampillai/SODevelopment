@@ -13,9 +13,26 @@ public class GridSearchField<T extends StoredObject> extends SearchField impleme
 
     private final ViewFilterSupport<T> grid;
 
+    /**
+     * Constructor.
+     *
+     * @param grid Grid to search.
+     */
     public GridSearchField(ViewFilterSupport<T> grid) {
         super(grid::filterView);
         this.grid = grid;
+    }
+
+    /**
+     * Constructor.
+     *
+     * @param grid Grid to search.
+     * @deprecated This constructor exists for backward compatibility. To eliminate deprecation warning, you can
+     * cast the parameter grid as {@link ViewFilterSupport}.
+     */
+    @Deprecated
+    public GridSearchField(ObjectGrid<T> grid) {
+        this((ViewFilterSupport<T>) grid);
     }
 
     public void filter(String filters) {

@@ -312,4 +312,9 @@ public class ObjectTreeProvider<T extends StoredObject> extends AbstractTreeProv
     public boolean hasChildren(T parent) {
         return tree.size(parent, 0, Integer.MAX_VALUE) > 0;
     }
+
+    @Override
+    public void setLoadFilter(Predicate<T> loadFilter) {
+        tree.setLoadFilter(loadFilter);
+    }
 }

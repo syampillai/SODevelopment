@@ -45,6 +45,10 @@ public class DocumentViewer extends Composite<VerticalLayout> implements HasSize
         docViewer.setDocument(contentProducer);
     }
 
+    public void view(String caption) {
+        docViewer.view(caption);
+    }
+
     @Override
     protected final VerticalLayout initContent() {
         return layout;

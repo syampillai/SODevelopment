@@ -63,6 +63,9 @@ public class ObjectCache<T extends StoredObject> implements Iterable<T>, ObjectL
 	public void load(Stream<T> objects) {
 	}
 
+	public void setLoadFilter(Predicate<T> loadFilter) {
+	}
+
 	public boolean isAllowAny() {
 		return false;
 	}

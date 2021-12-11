@@ -4,7 +4,6 @@ import com.storedobject.core.Id;
 import com.storedobject.core.ObjectIterator;
 import com.storedobject.core.StoredObject;
 import com.storedobject.ui.util.AbstractObjectInput;
-import com.vaadin.flow.component.ItemLabelGenerator;
 
 /**
  * Fields that can input a given type of {@link StoredObject} value.

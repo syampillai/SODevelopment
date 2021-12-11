@@ -257,6 +257,26 @@ public abstract class AbstractEditableGrid<T> extends DataGrid<T> {
         return eprovider().isEdited(item);
     }
 
+    public Stream<T> streamAll() {
+        return eprovider().streamAll();
+    }
+
+    public Stream<T> streamAdded() {
+        return eprovider().streamAdded();
+    }
+
+    public Stream<T> streamEdited() {
+        return eprovider().streamEdited();
+    }
+
+    public Stream<T> streamDeleted() {
+        return eprovider().streamDeleted();
+    }
+
+    public boolean isSavePending() {
+        return eprovider().isSavePending();
+    }
+
     class EList implements EditableList<T> {
 
         @Override

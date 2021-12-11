@@ -227,6 +227,11 @@ public class ObjectListProvider<T extends StoredObject> extends AbstractListProv
         this.loadCallBack = loadCallBack;
     }
 
+    @Override
+    public void setLoadFilter(Predicate<T> loadFilter) {
+        getData().setLoadFilter(loadFilter);
+    }
+
     private record Cleaner(ObjectList<?> cache) implements AutoCloseable {
 
         @Override

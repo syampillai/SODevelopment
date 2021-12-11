@@ -1,6 +1,7 @@
 package com.storedobject.ui;
 
 import com.storedobject.core.*;
+import com.storedobject.core.ObjectLoader;
 import com.storedobject.ui.inventory.*;
 import com.storedobject.ui.util.NoDisplayField;
 import com.storedobject.vaadin.CustomField;
@@ -358,6 +359,18 @@ public class ObjectField<T extends StoredObject> extends CustomField<Id> impleme
     @Deprecated
     public void filter(Predicate<T> predicate) {
         setFilter(predicate);
+    }
+
+    /**
+     * Set a filter predicate that will be used while loading.
+     *
+     * @param loadFilter Filter to apply while loading.
+     */
+    public void setLoadFilter(Predicate<T> loadFilter) {
+        if(field instanceof ObjectLoader) {
+            //noinspection unchecked
+            ((ObjectLoader<T>)field).setLoadFilter(loadFilter);
+        }
     }
 
     private static <O extends StoredObject> List<O> list(Iterable<O> iterable) {

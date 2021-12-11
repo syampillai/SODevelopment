@@ -3,7 +3,6 @@ package com.storedobject.ui.util;
 import com.storedobject.common.StringList;
 import com.storedobject.core.ObjectHint;
 import com.storedobject.core.ObjectSearchBuilder;
-import com.storedobject.core.Person;
 import com.storedobject.core.StoredObject;
 import com.storedobject.ui.Application;
 import com.storedobject.ui.ObjectGridData;
@@ -43,7 +42,7 @@ public final class LoadFilterButtons<T extends StoredObject> {
             }
         }
         ObjectSearchBuilder<T> sb = null;
-        if(!smallList) {
+        if(!smallList && grid.canSearch()) {
             sb = grid.createSearchBuilder(filters, x -> filterChanged());
         }
         if(sb != null && sb.getSearchFieldCount() == 0) {

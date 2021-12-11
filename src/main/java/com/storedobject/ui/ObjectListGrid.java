@@ -71,6 +71,12 @@ public class ObjectListGrid<T extends StoredObject> extends DataGrid<T> implemen
         configure(ObjectToString.create(getObjectClass(), attributes));
     }
 
+    @Override
+    public void loadOne(T object) {
+        ObjectLoader.super.loadOne(object);
+        select(object);
+    }
+
     /**
      * This method will be invoked whenever data is loaded.
      */
@@ -82,17 +88,11 @@ public class ObjectListGrid<T extends StoredObject> extends DataGrid<T> implemen
         getDataProvider().setFilter(filter);
     }
 
-    @SuppressWarnings("unchecked")
-    public void load(T... items) {
-        getDataProvider().load(items);
-    }
-
     public void load(Collection<T> items) {
         getDataProvider().load(items);
     }
 
     public Registration addObjectChangedListener(ObjectChangedListener<T> listener) {
-        System.err.println("Adding: " + listener.getClass());
         if(objectChangedListeners == null) {
             objectChangedListeners = new ArrayList<>();
         }

@@ -64,6 +64,11 @@ public class ObjectCacheList<T extends StoredObject> implements ObjectList<T>, A
     }
 
     @Override
+    public void setLoadFilter(Predicate<T> loadFilter) {
+        original.setLoadFilter(loadFilter);
+    }
+
+    @Override
     public void load(String condition, String orderedBy, boolean any) {
         original.load(condition, orderedBy, any);
         rebuild();
@@ -312,7 +317,7 @@ public class ObjectCacheList<T extends StoredObject> implements ObjectList<T>, A
 
     @Override
     public void clear() {
-        close();
+        load(ObjectIterator.create());
     }
 
     @Override

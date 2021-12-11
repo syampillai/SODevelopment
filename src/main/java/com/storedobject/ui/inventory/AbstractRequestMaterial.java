@@ -48,7 +48,7 @@ public abstract class AbstractRequestMaterial extends ObjectBrowser<MaterialRequ
         addConstructedListener(v -> created());
         this.issuing = issuing;
         if(issuing) {
-            fromField = new ObjectField<>("From", LocationField.create(4, 5, 10, 11));
+            fromField = new ObjectField<>("From", LocationField.create(4, 5, 10, 11, 16));
             toField = new ObjectField<>("Send to", fromOrTo);
         } else {
             fromField = new ObjectField<>("From", fromOrTo);

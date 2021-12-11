@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 public class ObjectMemoryList<T extends StoredObject> extends MemoryCache<T> implements ObjectList<T> {
@@ -11,6 +12,7 @@ public class ObjectMemoryList<T extends StoredObject> extends MemoryCache<T> imp
     private final Class<T> objectClass;
     private boolean any;
     private Function<Id, T> loader;
+    private Predicate<T> loadFilter;
 
     public ObjectMemoryList(Class<T> objectClass) {
         this(objectClass, false);
@@ -78,17 +80,6 @@ public class ObjectMemoryList<T extends StoredObject> extends MemoryCache<T> imp
     @Override
     public void load(Query query, boolean any) {
         this.any = any;
-        original.clear();
-        query.forEach(rs -> {
-            try {
-                T so = load(new Id(rs.getBigDecimal(1)));
-                if(so != null) {
-                    original.add(so);
-                }
-            } catch(Exception ignored) {
-            }
-        });
-        rebuild();
     }
 
     @Override
@@ -97,7 +88,9 @@ public class ObjectMemoryList<T extends StoredObject> extends MemoryCache<T> imp
         idList.forEach(id -> {
             T so = load(id);
             if(so != null) {
-                original.add(so);
+                if(loadFilter == null || loadFilter.test(so)) {
+                    original.add(so);
+                }
             }
         });
         rebuild();
@@ -106,6 +99,9 @@ public class ObjectMemoryList<T extends StoredObject> extends MemoryCache<T> imp
     @Override
     public void load(ObjectIterator<T> objects) {
         original.clear();
+        if(loadFilter != null) {
+            objects = objects.filter(loadFilter);
+        }
         for(T object : objects) {
             original.add(object);
         }
@@ -115,8 +111,16 @@ public class ObjectMemoryList<T extends StoredObject> extends MemoryCache<T> imp
     @Override
     public void load(Stream<T> objects) {
         original.clear();
+        if(loadFilter != null) {
+            objects = objects.filter(loadFilter);
+        }
         objects.forEach(original::add);
         rebuild();
+    }
+
+    @Override
+    public void setLoadFilter(Predicate<T> loadFilter) {
+        this.loadFilter = loadFilter;
     }
 
     @Override

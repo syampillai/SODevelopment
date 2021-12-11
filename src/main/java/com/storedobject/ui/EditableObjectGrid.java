@@ -105,6 +105,18 @@ public class EditableObjectGrid<T extends StoredObject> extends AbstractEditable
         return super.add(item);
     }
 
+    public void delete(T item) {
+        if(item != null) {
+            itemDeleted(item);
+        }
+    }
+
+    public void update(T item) {
+        if(item != null) {
+            itemUpdated(item);
+        }
+    }
+
     public void reload(T object) {
         cancelEdit();
         fireChanged(object, EditorAction.RELOAD);

@@ -1,27 +1,25 @@
 package com.storedobject.ui;
 
-import com.storedobject.core.InventoryLocation;
-import com.storedobject.core.JavaClassLoader;
 import com.storedobject.core.Person;
 import com.storedobject.core.StoredObject;
-import com.storedobject.ui.inventory.LocationField;
-import com.storedobject.vaadin.DataForm;
+import com.storedobject.vaadin.Button;
+import com.storedobject.vaadin.ButtonLayout;
+import com.vaadin.flow.component.Component;
 
-public class Test extends ObjectListEditor<Person> {
+public class Test extends ObjectGrid<Person> {
 
     public Test() {
         super(Person.class);
-        Person p;
-        for(int i = 0; i < 5; i++) {
-            p = new Person("Name " + i, "", "Test " + 0);
-            itemInserted(p);
-        }
     }
 
     @Override
-    protected ObjectEditor<Person> createObjectEditor() {
-        ObjectEditor<Person> pe = ObjectEditor.create(Person.class);
-        pe.setCaption("Hello");
-        return pe;
+    public Component createHeader() {
+        return new ButtonLayout(
+                new Button("Load", e -> myLoad())
+        );
+    }
+
+    private void myLoad() {
+        loadOne(StoredObject.get(Person.class));
     }
 }

@@ -1,14 +1,17 @@
 package com.storedobject.ui;
 
 import com.storedobject.common.FilterProvider;
-import com.storedobject.core.*;
+import com.storedobject.core.ObjectIterator;
+import com.storedobject.core.ObjectLoadFilter;
+import com.storedobject.core.StoredObject;
 import com.storedobject.ui.util.DataLoadedListener;
 import com.vaadin.flow.shared.Registration;
 
 import java.util.Objects;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
 
-public interface ObjectLoader<T extends StoredObject> extends com.storedobject.core.ObjectLoader<T>, FilterMethods<T> {
+public interface ObjectLoader<T extends StoredObject> extends com.storedobject.core.ObjectLoader<T> {
 
     default Class<T> getObjectClass() {
         return getObjectLoader().getObjectClass();
@@ -80,17 +83,7 @@ public interface ObjectLoader<T extends StoredObject> extends com.storedobject.c
     }
 
     @Override
-    default void load(Iterable<Id> idList) {
-        getObjectLoader().load(idList);
-    }
-
-    @Override
     default void load(ObjectIterator<T> objects) {
-        getObjectLoader().load(objects);
-    }
-
-    @Override
-    default void load(Stream<T> objects) {
         getObjectLoader().load(objects);
     }
 
@@ -110,6 +103,16 @@ public interface ObjectLoader<T extends StoredObject> extends com.storedobject.c
 
     default void clear() {
         getObjectLoader().clear();
+    }
+
+    /**
+     * Clear the entries and refresh it.
+     * @param refresh Whether to refresh or not.
+     * @deprecated Just use {{@link #clear()}} only, "refresh" flag is not more required.
+     */
+    @Deprecated
+    default void clear(boolean refresh) {
+        clear();
     }
 
     default int getObjectCount() {
@@ -216,5 +219,14 @@ public interface ObjectLoader<T extends StoredObject> extends com.storedobject.c
 
     default Registration addDataLoadedListener(DataLoadedListener listener) {
         return getObjectLoader().addDataLoadedListener(listener);
+    }
+
+    @Override
+    default void setLoadFilter(Predicate<T> loadFilter) {
+        getObjectLoader().setLoadFilter(loadFilter);
+    }
+
+    default ObjectLoader<T> getObjectLoader() {
+        return (ObjectLoader<T>) com.storedobject.core.ObjectLoader.super.getObjectLoader();
     }
 }

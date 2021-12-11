@@ -1,10 +1,6 @@
 package com.storedobject.ui.util;
 
-import com.storedobject.core.Id;
-import com.storedobject.core.ObjectGetter;
-import com.storedobject.core.ObjectSetter;
-import com.storedobject.core.StoredObject;
-import com.storedobject.ui.FilterMethods;
+import com.storedobject.core.*;
 import com.storedobject.ui.ObjectProvider;
 import com.storedobject.vaadin.HasElement;
 import com.vaadin.flow.component.Component;
@@ -174,12 +170,12 @@ public interface AbstractObjectInput<T extends StoredObject>
 
     /**
      * Decide whether "prefix components" needs to be controlled by this field or not. "Prefix components" are
-     * parts of the field that display extra information and it needs to be turned on or off
+     * parts of the field that display extra information, and it needs to be turned on or off
      * when the status of the field changes via methods such as {@link #setEnabled(boolean)},
      * {@link #setReadOnly(boolean)} etc. In some cases, prefix components may be displayed elsewhere and needs to
      * be controlled outside the field.
      *
-     * @param prefixFieldControl True if needs to be controlled by this field.
+     * @param prefixFieldControl True if it needs to be controlled by this field.
      */
     void setPrefixFieldControl(boolean prefixFieldControl);
 

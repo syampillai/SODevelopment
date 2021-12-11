@@ -131,6 +131,10 @@ public interface ObjectGridData<T extends StoredObject, ROOT> extends HasColumns
         return extraFilter;
     }
 
+    default boolean canSearch() {
+        return true;
+    }
+
     @Override
     default void search(SystemEntity systemEntity, ObjectSetter<T> setter, String extraFilter) {
         extraFilter = getEntityFilter(systemEntity, extraFilter);

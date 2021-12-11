@@ -397,10 +397,6 @@ public class ObjectBrowser<T extends StoredObject> extends ObjectGrid<T>
         return true;
     }
 
-    protected boolean canSearch() {
-        return true;
-    }
-
     @Override
     public void close() {
         if(getEditor().isOpen()) {

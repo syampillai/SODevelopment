@@ -16,6 +16,7 @@ import com.vaadin.flow.component.icon.VaadinIcon;
 import javax.annotation.Nonnull;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 public class ObjectComboField<T extends StoredObject> extends ComboField<T>
         implements ObjectInput<T>, ResourceOwner, ObjectLoader<T> {
@@ -195,6 +196,16 @@ public class ObjectComboField<T extends StoredObject> extends ComboField<T>
         objectProvider.load(linkType, master, condition, orderBy);
     }
 
+    @Override
+    public void load(ObjectIterator<T> objects) {
+        objectProvider.load(objects);
+    }
+
+    @Override
+    public void setLoadFilter(Predicate<T> loadFilter) {
+        objectProvider.setLoadFilter(loadFilter);
+    }
+
     @Nonnull
     @Override
     public ObjectLoadFilter<T> getLoadFilter() {
@@ -290,11 +301,6 @@ public class ObjectComboField<T extends StoredObject> extends ComboField<T>
     }
 
     @Override
-    public void load(ObjectIterator<T> objects) {
-        objectProvider.load(objects);
-    }
-
-    @Override
     public void focus() {
         super.focus();
     }
@@ -306,7 +312,18 @@ public class ObjectComboField<T extends StoredObject> extends ComboField<T>
 
     @Override
     public void setFilter(String filterClause) {
-        super.setFilter(filterClause);
+        ObjectLoader.super.setFilter(filterClause);
+    }
+
+    /**
+     * Set the filter predicate.
+     *
+     * @param predicate Filter predicate.
+     * @deprecated Please use {@link #setFilter(Predicate)} instead.
+     */
+    @Deprecated
+    public void filter(Predicate<T> predicate) {
+        ObjectInput.super.setFilter(predicate);
     }
 
     @Override

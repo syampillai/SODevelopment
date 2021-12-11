@@ -22,4 +22,8 @@ public interface EditableProvider<T> {
     Stream<T> streamEdited();
     Stream<T> streamDeleted();
     void clear();
+
+    default boolean isSavePending() {
+        return streamAll().anyMatch(o -> isAdded(o) || isEdited(o) || isDeleted(o));
+    }
 }
