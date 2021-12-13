@@ -13,9 +13,7 @@ import java.util.stream.Stream;
 public class ObjectListProvider<T extends StoredObject> extends AbstractListProvider<T>
         implements ObjectLoader<T>, AutoCloseable, ResourceOwner {
 
-    private final ObjectLoadFilter<T> loadFilter = new ObjectLoadFilter<>(),
-            systemFilter = new ObjectLoadFilter<>(),
-            fixedFilter = new ObjectLoadFilter<>();
+    private final ObjectLoadFilter<T> systemFilter = new ObjectLoadFilter<>(), fixedFilter = new ObjectLoadFilter<>();
     private LoadCallBack loadCallBack;
 
     public ObjectListProvider(Class<T> objectClass, DataList<T> data) {
@@ -58,7 +56,7 @@ public class ObjectListProvider<T extends StoredObject> extends AbstractListProv
 
     @Override
     Predicate<T> retrieveFilter() {
-        return loadFilter.getLoadingPredicate();
+        return getData().getLoadFilter().getLoadingPredicate();
     }
 
     private String cond(String cond) {
@@ -120,7 +118,7 @@ public class ObjectListProvider<T extends StoredObject> extends AbstractListProv
 
     @Override
     public void applyFilterPredicate() {
-        getData().filter(loadFilter.getViewFilter());
+        getData().filter(getLoadFilter().getViewFilter());
         refreshAll();
     }
 
@@ -173,7 +171,7 @@ public class ObjectListProvider<T extends StoredObject> extends AbstractListProv
     @Nonnull
     @Override
     public ObjectLoadFilter<T> getLoadFilter() {
-        return loadFilter;
+        return getData().getLoadFilter();
     }
 
     void setLoadCallBack(LoadCallBack loadCallBack) {

@@ -17,10 +17,15 @@ public abstract class AbstractObjectForest<T extends StoredObject> extends DataT
     private boolean keepCache = false;
     Logic logic;
 
-    public AbstractObjectForest(boolean large, Class<T> objectClass, Iterable<String> columns, boolean any) {
-        super(Object.class, NAME.concat(columns == null ? StoredObjectUtility.browseColumns(objectClass) : StringList.create(columns)));
+    public AbstractObjectForest(boolean large, boolean forViewing, Class<T> objectClass, Iterable<String> columns, boolean any) {
+        super(Object.class, NAME.concat(columns == null ? StoredObjectUtility.browseColumns(objectClass)
+                : StringList.create(columns)));
         this.objectClass = objectClass;
-        setDataProvider(new ObjectForestProvider<>(new ObjectForest<>(large, 0, objectClass, any)));
+        ObjectForest<T> forest = new ObjectForest<>(large, 0, objectClass, any);
+        if(forViewing) {
+            forest.hideLinkLabels();
+        }
+        setDataProvider(new ObjectForestProvider<>(forest));
         addDataLoadedListener(this::loadedInt);
         addDetachListener(e -> {
             if(!keepCache) {

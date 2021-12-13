@@ -16,16 +16,13 @@ import java.util.stream.Stream;
 public class ObjectTreeProvider<T extends StoredObject> extends AbstractTreeProvider<T, T>
         implements ObjectLoader<T>, ObjectChangedListener<T>, AutoCloseable, ResourceOwner, FilterMethods<T> {
 
-    private final ObjectLoadFilter<T> loadFilter = new ObjectLoadFilter<>(),
-            systemFilter = new ObjectLoadFilter<>(),
-            fixedFilter = new ObjectLoadFilter<>();
+    private final ObjectLoadFilter<T> systemFilter = new ObjectLoadFilter<>(), fixedFilter = new ObjectLoadFilter<>();
     private LoadCallBack loadCallBack;
     private final ObjectTree<T> tree;
 
     public ObjectTreeProvider(ObjectTree<T> tree) {
         super(tree.getObjectClass());
         this.tree = tree;
-        loadFilter.setAny(tree.isAllowAny());
     }
 
     public ObjectTree<T> getTree() {
@@ -67,7 +64,7 @@ public class ObjectTreeProvider<T extends StoredObject> extends AbstractTreeProv
 
     @Override
     Predicate<T> retrieveFilter() {
-        return loadFilter.getLoadingPredicate();
+        return tree.getLoadFilter().getLoadingPredicate();
     }
 
     private String cond(String cond) {
@@ -156,17 +153,6 @@ public class ObjectTreeProvider<T extends StoredObject> extends AbstractTreeProv
     }
 
     @Override
-    public void clear() {
-        tree.close();
-        refreshAll();
-    }
-
-    @Override
-    public final void close() {
-        clear();
-    }
-
-    @Override
     public void refreshAll() {
         tree.refresh();
         super.refreshAll();
@@ -208,7 +194,7 @@ public class ObjectTreeProvider<T extends StoredObject> extends AbstractTreeProv
     @Nonnull
     @Override
     public ObjectLoadFilter<T> getLoadFilter() {
-        return loadFilter;
+        return tree.getLoadFilter();
     }
 
     void setLoadCallBack(LoadCallBack loadCallBack) {
@@ -274,5 +260,10 @@ public class ObjectTreeProvider<T extends StoredObject> extends AbstractTreeProv
     @Override
     public void setLoadFilter(Predicate<T> loadFilter) {
         tree.setLoadFilter(loadFilter);
+    }
+
+    @Override
+    public int size() {
+        return tree.size();
     }
 }

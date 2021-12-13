@@ -16,16 +16,13 @@ import java.util.stream.Stream;
 public class ObjectForestProvider<T extends StoredObject> extends AbstractTreeProvider<Object, T>
         implements ObjectLoader<T>, ObjectChangedListener<T>, AutoCloseable, ResourceOwner, FilterMethods<T> {
 
-    private final ObjectLoadFilter<T> loadFilter = new ObjectLoadFilter<>(),
-            systemFilter = new ObjectLoadFilter<>(),
-            fixedFilter = new ObjectLoadFilter<>();
+    private final ObjectLoadFilter<T> systemFilter = new ObjectLoadFilter<>(), fixedFilter = new ObjectLoadFilter<>();
     private LoadCallBack loadCallBack;
     private final ObjectForest<T> forest;
 
     public ObjectForestProvider(ObjectForest<T> forest) {
         super(forest.getObjectClass());
         this.forest = forest;
-        loadFilter.setAny(forest.isAllowAny());
     }
 
     public ObjectForest<T> getForest() {
@@ -77,7 +74,7 @@ public class ObjectForestProvider<T extends StoredObject> extends AbstractTreePr
 
     @Override
     Predicate<Object> retrieveFilter() {
-        Predicate<T> predicate = loadFilter.getLoadingPredicate();
+        Predicate<T> predicate = getLoadFilter().getLoadingPredicate();
         return predicate == null ? null : ((WrappedPredicate<T>)predicate).predicate;
     }
 
@@ -141,16 +138,6 @@ public class ObjectForestProvider<T extends StoredObject> extends AbstractTreePr
     }
 
     @Override
-    public void reload() {
-        load();
-    }
-
-    @Override
-    public int getObjectCount() {
-        return getRoots().size();
-    }
-
-    @Override
     public T get(int index) {
         return getRoots().get(index);
     }
@@ -183,11 +170,6 @@ public class ObjectForestProvider<T extends StoredObject> extends AbstractTreePr
     public void clear() {
         forest.close();
         refreshAll();
-    }
-
-    @Override
-    public final void close() {
-        clear();
     }
 
     @Override
@@ -232,7 +214,7 @@ public class ObjectForestProvider<T extends StoredObject> extends AbstractTreePr
     @Nonnull
     @Override
     public ObjectLoadFilter<T> getLoadFilter() {
-        return loadFilter;
+        return forest.getLoadFilter();
     }
 
     void setLoadCallBack(LoadCallBack loadCallBack) {
@@ -287,5 +269,10 @@ public class ObjectForestProvider<T extends StoredObject> extends AbstractTreePr
     @Override
     public void setLoadFilter(Predicate<T> loadFilter) {
         forest.setLoadFilter(loadFilter);
+    }
+
+    @Override
+    public int size() {
+        return forest.size();
     }
 }

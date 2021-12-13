@@ -12,13 +12,13 @@ public class ObjectForest<T extends StoredObject> implements Filtered<T>, Object
     private final Function<Class<T>, ObjectList<T>> listSupplier;
     private ObjectList<T> list;
     private final Class<T> objectClass;
-    private final int linkType;
     private Comparator<? super T> comparator;
     private final ObjectLoadFilter<T> filter = new ObjectLoadFilter<>();
     private Map<Class<? extends StoredObject>, List<StoredObjectUtility.Link<?>>> linkMaps;
     private final Map<StoredObjectUtility.Link<?>, Map<Id, LinkNode>> linkNodeMap = new HashMap<>();
     private BiFunction<StoredObjectUtility.Link<?>, StoredObject, ObjectIterator<? extends StoredObject>> listLinks;
     private Predicate<StoredObjectUtility.Link<?>> linkVisibility;
+    private boolean hideLinkLabels;
 
     public ObjectForest(boolean large, int linkType, Class<T> objectClass, boolean any) {
         this(linkType, objectClass, any, large ? ObjectCacheList::new : ObjectMemoryList::new);
@@ -27,18 +27,17 @@ public class ObjectForest<T extends StoredObject> implements Filtered<T>, Object
     public ObjectForest(int linkType, Class<T> objectClass, boolean any, Function<Class<T>,
             ObjectList<T>> listSupplier) {
         this.objectClass = objectClass;
-        this.linkType = linkType;
+        this.filter.setLinkType(linkType);
         this.filter.setAny(any);
         this.listSupplier = listSupplier;
     }
 
-    public void setLinkVisibility(Predicate<StoredObjectUtility.Link<?>> linkVisibility) {
-        this.linkVisibility = linkVisibility;
+    public void hideLinkLabels() {
+        this.hideLinkLabels = true;
     }
 
-    @Override
-    public int getLinkType() {
-        return linkType;
+    public void setLinkVisibility(Predicate<StoredObjectUtility.Link<?>> linkVisibility) {
+        this.linkVisibility = linkVisibility;
     }
 
     public Predicate<StoredObjectUtility.Link<?>> getLinkVisibility() {
@@ -69,7 +68,6 @@ public class ObjectForest<T extends StoredObject> implements Filtered<T>, Object
             linkMaps = new HashMap<>();
             Class<? extends StoredObject> ks = getObjectClass();
             List<StoredObjectUtility.Link<?>> links = linkDetails(ks);
-            //supplier.tree = links.stream().anyMatch(link -> link.getObjectClass() == ks); Recursive? TODO
             linkMaps.put(ks, links);
             if(klass == ks) {
                 return links;
@@ -155,17 +153,31 @@ public class ObjectForest<T extends StoredObject> implements Filtered<T>, Object
         if(parent == null) {
             return list;
         }
-        if(parent instanceof StoredObject p) {
-            return links(create, p.getClass()).stream().map(link -> getLinkNode(link, p, listLinks)).toList();
+        if(parent instanceof LinkObject p) {
+            if(hideLinkLabels) {
+                parent = p.getObject();
+            } else {
+                if(p.linkNode.link.isDetail()) {
+                    return links(create, p.object.getClass()).stream().map(link -> getLinkNode(link, p.object, listLinks))
+                            .toList();
+                }
+            }
         }
         if(parent instanceof LinkNode p) {
             return p.links(create);
         }
-        if(parent instanceof LinkObject p) {
-            if(p.linkNode.link.isDetail()) {
-                return links(create, p.object.getClass()).stream().map(link -> getLinkNode(link, p.object, listLinks))
-                        .toList();
+        if(parent instanceof StoredObject p) {
+            List<LinkNode> linkNodes = links(create, p.getClass()).stream()
+                    .map(link -> getLinkNode(link, p, listLinks)).toList();
+            if(!hideLinkLabels) {
+                return linkNodes;
             }
+            if(linkNodes.isEmpty()) {
+                return Collections.emptyList();
+            }
+            List<LinkObject> linkObjects = new ArrayList<>();
+            linkNodes.forEach(linkNode -> linkObjects.addAll(linkNode.links(true)));
+            return linkObjects;
         }
         return null;
     }

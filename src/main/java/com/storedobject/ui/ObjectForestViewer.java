@@ -58,18 +58,18 @@ public class ObjectForestViewer<T extends StoredObject> extends ObjectForestEdit
     }
 
     public ObjectForestViewer(Class<T> objectClass, Iterable<String> columns, boolean any, String caption) {
-        this(objectClass, columns, null, caption, any, false);
+        this(objectClass, columns, any, caption, false);
     }
 
     public ObjectForestViewer(Class<T> objectClass, Iterable<String> columns, boolean any, String caption,
                               boolean splitView) {
-        this(objectClass, columns, null, caption, any, splitView);
+        this(false, objectClass, columns, null, any, caption, splitView);
     }
 
-    ObjectForestViewer(Class<T> objectClass, Iterable<String> columns, Iterable<String> filterColumns,
-                       String caption, boolean any, boolean splitView) {
-        super(objectClass, columns, EditorAction.RELOAD | (any ? ALLOW_ANY : 0),
-                filterColumns, caption, null, splitView);
+    ObjectForestViewer(boolean large, Class<T> objectClass, Iterable<String> columns, Iterable<String> filterColumns,
+                       boolean any, String caption, boolean splitView) {
+        super(large, true, objectClass, columns, any ? ALLOW_ANY : 0, filterColumns, caption,
+                null, splitView);
     }
 
     public ObjectForestViewer(String className) throws Exception {

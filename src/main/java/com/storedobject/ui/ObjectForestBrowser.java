@@ -46,12 +46,15 @@ public class ObjectForestBrowser<T extends StoredObject> extends ObjectForest<T>
     }
 
     public ObjectForestBrowser(Class<T> objectClass, Iterable<String> columns, int actions, String caption) {
-        this(objectClass, columns, actions, null, caption, null);
+        this(false, false, objectClass, columns, actions, null, caption, null);
     }
 
-    ObjectForestBrowser(Class<T> objectClass, Iterable<String> columns, int actions, Iterable<String> filterColumns,
-                        String caption, String allowedActions) {
-        super(objectClass, columns, (actions & ALLOW_ANY) == ALLOW_ANY);
+    ObjectForestBrowser(boolean large, boolean forViewing, Class<T> objectClass, Iterable<String> columns, int actions,
+                        Iterable<String> filterColumns, String caption, String allowedActions) {
+        super(large, forViewing, objectClass, columns, (actions & ALLOW_ANY) == ALLOW_ANY);
+        if(forViewing) {
+            actions = EditorAction.RELOAD;
+        }
         anchorsExist = !ClassAttribute.get(getObjectClass()).getAnchors().isEmpty();
         addConstructedListener(o -> con());
         getDataProvider().setLoadCallBack(this::loadInt);
@@ -107,9 +110,9 @@ public class ObjectForestBrowser<T extends StoredObject> extends ObjectForest<T>
 
     @SuppressWarnings("unchecked")
     public ObjectForestBrowser(String className) throws Exception {
-        this((Class<T>) JavaClassLoader.getLogic(ObjectEditor.sanitize(className)), null,
-                ObjectBrowser.actions(className, Application.get().getServer().isDeveloper()), null,
-                Application.get().getRunningLogic().getTitle(), ObjectEditor.allowedActions(className));
+        this(false, false, (Class<T>) JavaClassLoader.getLogic(ObjectEditor.sanitize(className)),
+                null, ObjectBrowser.actions(className, Application.get().getServer().isDeveloper()),
+                null, Application.get().getRunningLogic().getTitle(), ObjectEditor.allowedActions(className));
     }
 
     private void con() {

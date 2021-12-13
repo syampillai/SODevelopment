@@ -31,8 +31,7 @@ public class ObjectListGrid<T extends StoredObject> extends DataGrid<T> implemen
     }
 
     public ObjectListGrid(ObjectList<T> objectList, Iterable<String> columns) {
-        super(objectList.getObjectClass(), objectList,
-                columns == null ? StoredObjectUtility.browseColumns(objectList.getObjectClass()) : columns);
+        super(objectList.getObjectClass(), objectList, columns);
         getDelegatedLoader().addDataLoadedListener(this::loaded);
     }
 

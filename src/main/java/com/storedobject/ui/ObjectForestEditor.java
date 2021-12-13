@@ -36,12 +36,13 @@ public class ObjectForestEditor<T extends StoredObject> extends ObjectForestBrow
     }
 
     public ObjectForestEditor(Class<T> objectClass, Iterable<String> columns, int actions, String caption) {
-        this(objectClass, columns, actions, null, caption, null, true);
+        this(false, false, objectClass, columns, actions, null, caption,
+                null, true);
     }
 
-    ObjectForestEditor(Class<T> objectClass, Iterable<String> columns, int actions, Iterable<String> filterColumns,
-                        String caption, String allowedActions, boolean splitView) {
-        super(objectClass, columns, actions, filterColumns, caption, allowedActions);
+    ObjectForestEditor(boolean large, boolean forViewing, Class<T> objectClass, Iterable<String> columns, int actions,
+                       Iterable<String> filterColumns, String caption, String allowedActions, boolean splitView) {
+        super(large, forViewing, objectClass, columns, actions, filterColumns, caption, allowedActions);
         if(splitView) {
             setSplitView();
         }
@@ -49,9 +50,10 @@ public class ObjectForestEditor<T extends StoredObject> extends ObjectForestBrow
 
     @SuppressWarnings("unchecked")
     public ObjectForestEditor(String className) throws Exception {
-        this((Class<T>) JavaClassLoader.getLogic(ObjectEditor.sanitize(className)), null,
-                ObjectBrowser.actions(className, Application.get().getServer().isDeveloper()), null,
-                Application.get().getRunningLogic().getTitle(), ObjectEditor.allowedActions(className), true);
+        this(false, false, (Class<T>) JavaClassLoader.getLogic(ObjectEditor.sanitize(className)),
+                null, ObjectBrowser.actions(className, Application.get().getServer().isDeveloper()),
+                null, Application.get().getRunningLogic().getTitle(), ObjectEditor.allowedActions(className),
+                true);
     }
 
     public static <O extends StoredObject> ObjectForestEditor<O> create(Class<O> objectClass, int actions, String title) {

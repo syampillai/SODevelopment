@@ -1,26 +1,17 @@
 package com.storedobject.ui;
 
-import com.storedobject.core.Person;
+import com.storedobject.core.FileData;
 import com.storedobject.core.StoredObject;
-import com.storedobject.vaadin.Button;
-import com.storedobject.vaadin.ButtonLayout;
-import com.vaadin.flow.component.Component;
 
-public class Test extends ObjectGrid<Person> {
+public class Test extends FileViewerGrid {
 
     public Test() {
-        super(Person.class);
-        load();
-    }
-
-    @Override
-    public Component createHeader() {
-        return new ButtonLayout(
-                new Button("Filter", e -> myLoad())
-        );
-    }
-
-    private void myLoad() {
-        setViewFilter(p -> p.getFirstName().startsWith("S"), true);
+        StoredObject.list(FileData.class, true).limit(10).forEach(f -> {
+            FileData fd = new FileData();
+            fd.setName(f.getName());
+            fd.setFile(f.getFile());
+            fd.makeVirtual();
+            add(fd);
+        });
     }
 }

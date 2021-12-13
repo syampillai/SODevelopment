@@ -152,8 +152,7 @@ public class FileViewer extends ObjectForestViewer<FileFolder> implements Closea
                     circs.remove(fileData.getId());
                     refresh(lo.getLinkNode());
                 }
-                StreamData sd = fileData.getFile();
-                getApplication().view(fileData.getName(), sd);
+                getApplication().view(fileData.getName(), fileData.getFile());
             }
         }
     }

@@ -27,7 +27,7 @@ public class ContentGenerator extends AbstractContentGenerator {
         this(application, producer, false, caption, inform, timeTracker);
     }
 
-    private ContentGenerator(Application application, ContentProducer producer, boolean download, String caption,
+    public ContentGenerator(Application application, ContentProducer producer, boolean download, String caption,
                              Consumer<AbstractContentGenerator>  inform, Consumer<Long> timeTracker) {
         super(application, producer, inform, timeTracker);
         this.download = download;

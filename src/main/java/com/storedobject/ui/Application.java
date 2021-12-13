@@ -620,7 +620,7 @@ public class Application extends com.storedobject.vaadin.Application implements 
 
     @Override
     public void download(ContentProducer producer, Consumer<Long> informMe) {
-        new ContentGenerator(this, producer, null, this::remove, informMe).kick();
+        new ContentGenerator(this, producer, true, null, this::remove, informMe).kick();
     }
 
     public String addResource(ContentProducer producer) {

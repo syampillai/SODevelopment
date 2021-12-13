@@ -22,7 +22,11 @@ public class ObjectForest<T extends StoredObject> extends BaseObjectForest<T> {
     }
 
     public ObjectForest(Class<T> objectClass, Iterable<String> columns, boolean any) {
-        super(false, objectClass, columns, any);
+        this(false, false, objectClass, columns, any);
+    }
+
+    ObjectForest(boolean large, boolean forViewing, Class<T> objectClass, Iterable<String> columns, boolean any) {
+        super(large, forViewing, objectClass, columns, any);
     }
 
     @Override

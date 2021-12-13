@@ -27,8 +27,8 @@ public abstract class BaseObjectForest<T extends StoredObject> extends AbstractO
     private final ViewOpenedCheck viewOpenedCheck = new ViewOpenedCheck();
     private ObjectEditor<?> currentEditor;
 
-    BaseObjectForest(boolean large, Class<T> objectClass, Iterable<String> columns, boolean any) {
-        super(large, objectClass, columns, any);
+    BaseObjectForest(boolean large, boolean forViewing, Class<T> objectClass, Iterable<String> columns, boolean any) {
+        super(large, forViewing, objectClass, columns, any);
     }
 
     public <O extends StoredObject> void addObjectChangedListener(Class<O> objectClass, ObjectChangedListener<O> listener) {
