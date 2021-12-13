@@ -10,6 +10,7 @@ import com.vaadin.flow.shared.Registration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 public class ObjectTree<T extends StoredObject> extends DataTreeGrid<T> implements ObjectGridData<T, T> {
 
@@ -60,7 +61,7 @@ public class ObjectTree<T extends StoredObject> extends DataTreeGrid<T> implemen
     }
 
     @Override
-    public final ObjectTreeProvider<T> getObjectLoader() {
+    public final ObjectTreeProvider<T> getDelegatedLoader() {
         return getDataProvider();
     }
 

@@ -16,9 +16,6 @@ import java.util.stream.Stream;
 public class ObjectTreeProvider<T extends StoredObject> extends AbstractTreeProvider<T, T>
         implements ObjectLoader<T>, ObjectChangedListener<T>, AutoCloseable, ResourceOwner, FilterMethods<T> {
 
-    private int linkType = 0;
-    private StoredObject master;
-    private String orderBy;
     private final ObjectLoadFilter<T> loadFilter = new ObjectLoadFilter<>(),
             systemFilter = new ObjectLoadFilter<>(),
             fixedFilter = new ObjectLoadFilter<>();
@@ -28,6 +25,7 @@ public class ObjectTreeProvider<T extends StoredObject> extends AbstractTreeProv
     public ObjectTreeProvider(ObjectTree<T> tree) {
         super(tree.getObjectClass());
         this.tree = tree;
+        loadFilter.setAny(tree.isAllowAny());
     }
 
     public ObjectTree<T> getTree() {
@@ -64,52 +62,12 @@ public class ObjectTreeProvider<T extends StoredObject> extends AbstractTreeProv
 
     @Override
     void saveFilter(Predicate<T> filter) {
-        ObjectLoader.super.setFilter(filter);
+        ObjectLoader.super.setViewFilter(filter);
     }
 
     @Override
     Predicate<T> retrieveFilter() {
-        return loadFilter.getLoadedPredicate();
-    }
-
-    @Override
-    public String getFilterCondition() {
-        return loadFilter.getFilter();
-    }
-
-    public void setOrderBy(String orderBy) {
-        this.orderBy = orderBy;
-        load();
-    }
-
-    @Override
-    public String getOrderBy() {
-        return orderBy;
-    }
-
-    @Override
-    public boolean isAllowAny() {
-        return tree.isAllowAny();
-    }
-
-    public void setMaster(StoredObject master) {
-        load(linkType, master);
-    }
-
-    public StoredObject getMaster() {
-        return master;
-    }
-
-    public void setLinkType(int linkType) {
-        if(master != null) {
-            load(linkType, master);
-        } else {
-            this.linkType = linkType;
-        }
-    }
-
-    public int getLinkType() {
-        return linkType;
+        return loadFilter.getLoadingPredicate();
     }
 
     private String cond(String cond) {
@@ -126,8 +84,8 @@ public class ObjectTreeProvider<T extends StoredObject> extends AbstractTreeProv
     }
 
     private void loadInt(String condition, String orderBy, boolean any) {
-        this.orderBy = orderBy;
-        this.master = null;
+        setOrderBy(orderBy, false);
+        setMaster(null, false);
         tree.load(cond(condition), orderBy, any);
         refreshAll();
     }
@@ -142,9 +100,9 @@ public class ObjectTreeProvider<T extends StoredObject> extends AbstractTreeProv
     }
 
     private void loadInt(int linkType, StoredObject master, String condition, String orderBy, boolean any) {
-        this.orderBy = orderBy;
-        this.master = master;
-        this.linkType = linkType;
+        setOrderBy(orderBy, false);
+        setMaster(master, false);
+        setLinkType(linkType, false);
         tree.load(linkType, master, cond(condition), orderBy, any);
         refreshAll();
     }

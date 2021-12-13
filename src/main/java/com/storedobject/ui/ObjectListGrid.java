@@ -7,7 +7,6 @@ import com.vaadin.flow.data.provider.ListDataProvider;
 import com.vaadin.flow.shared.Registration;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.function.Predicate;
 
@@ -34,7 +33,7 @@ public class ObjectListGrid<T extends StoredObject> extends DataGrid<T> implemen
     public ObjectListGrid(ObjectList<T> objectList, Iterable<String> columns) {
         super(objectList.getObjectClass(), objectList,
                 columns == null ? StoredObjectUtility.browseColumns(objectList.getObjectClass()) : columns);
-        getObjectLoader().addDataLoadedListener(this::loaded);
+        getDelegatedLoader().addDataLoadedListener(this::loaded);
     }
 
     @Override
@@ -48,7 +47,7 @@ public class ObjectListGrid<T extends StoredObject> extends DataGrid<T> implemen
     }
 
     @Override
-    public final ObjectListProvider<T> getObjectLoader() {
+    public final ObjectListProvider<T> getDelegatedLoader() {
         return getDataProvider();
     }
 
@@ -71,9 +70,8 @@ public class ObjectListGrid<T extends StoredObject> extends DataGrid<T> implemen
         configure(ObjectToString.create(getObjectClass(), attributes));
     }
 
-    @Override
-    public void loadOne(T object) {
-        ObjectLoader.super.loadOne(object);
+    public void load(T object) {
+        ObjectLoader.super.load(ObjectIterator.create(object));
         select(object);
     }
 
@@ -81,15 +79,6 @@ public class ObjectListGrid<T extends StoredObject> extends DataGrid<T> implemen
      * This method will be invoked whenever data is loaded.
      */
     public void loaded() {
-    }
-
-    @Override
-    public void setFilter(Predicate<T> filter) {
-        getDataProvider().setFilter(filter);
-    }
-
-    public void load(Collection<T> items) {
-        getDataProvider().load(items);
     }
 
     public Registration addObjectChangedListener(ObjectChangedListener<T> listener) {
@@ -136,5 +125,11 @@ public class ObjectListGrid<T extends StoredObject> extends DataGrid<T> implemen
         if(objectChangedListeners != null) {
             objectChangedListeners.forEach(l -> l.undeleted(object));
         }
+    }
+
+    @SuppressWarnings("deprecation")
+    @Override
+    public void setFilter(Predicate<T> filter) {
+        setViewFilter(filter);
     }
 }

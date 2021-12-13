@@ -94,7 +94,7 @@ public class ObjectBrowser<T extends StoredObject> extends ObjectGrid<T>
                 rowDoubleClicked(item);
             }
         });
-        getObjectLoader().setLoadCallBack(this::loadInt);
+        getDataProvider().setLoadCallBack(this::loadInt);
         if( // Do not allow certain special classes to directly inherit this class with etitability
                 (InventoryPO.class.isAssignableFrom(getObjectClass()) && !(this instanceof POBrowser)) ||
                         (InventoryPOItem.class.isAssignableFrom(getObjectClass()) && !(this instanceof POItemBrowser))
@@ -496,7 +496,7 @@ public class ObjectBrowser<T extends StoredObject> extends ObjectGrid<T>
             }
             if(selection != null && selection.size() == 0) {
                 if(size() == 1) {
-                    select(getObjectLoader().get(0));
+                    select(getDataProvider().get(0));
                     selection = getSelectedItems();
                 } else {
                     selection = null;
@@ -528,7 +528,7 @@ public class ObjectBrowser<T extends StoredObject> extends ObjectGrid<T>
                     oe.executeAnchorForm(() -> loadInt(loadFunction));
                     return;
                 }
-                getObjectLoader().getSystemFilter().setCondition(oe.getAnchorFilter());
+                getDataProvider().getSystemFilter().setCondition(oe.getAnchorFilter());
             }
         }
         Application a = Application.get();

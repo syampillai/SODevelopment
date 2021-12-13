@@ -1,5 +1,6 @@
 package com.storedobject.core;
 
+import javax.annotation.Nonnull;
 import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -12,9 +13,8 @@ public class ObjectForest<T extends StoredObject> implements Filtered<T>, Object
     private ObjectList<T> list;
     private final Class<T> objectClass;
     private final int linkType;
-    private final boolean any;
     private Comparator<? super T> comparator;
-    private Predicate<? super T> filter;
+    private final ObjectLoadFilter<T> filter = new ObjectLoadFilter<>();
     private Map<Class<? extends StoredObject>, List<StoredObjectUtility.Link<?>>> linkMaps;
     private final Map<StoredObjectUtility.Link<?>, Map<Id, LinkNode>> linkNodeMap = new HashMap<>();
     private BiFunction<StoredObjectUtility.Link<?>, StoredObject, ObjectIterator<? extends StoredObject>> listLinks;
@@ -28,7 +28,7 @@ public class ObjectForest<T extends StoredObject> implements Filtered<T>, Object
             ObjectList<T>> listSupplier) {
         this.objectClass = objectClass;
         this.linkType = linkType;
-        this.any = any;
+        this.filter.setAny(any);
         this.listSupplier = listSupplier;
     }
 
@@ -69,6 +69,7 @@ public class ObjectForest<T extends StoredObject> implements Filtered<T>, Object
             linkMaps = new HashMap<>();
             Class<? extends StoredObject> ks = getObjectClass();
             List<StoredObjectUtility.Link<?>> links = linkDetails(ks);
+            //supplier.tree = links.stream().anyMatch(link -> link.getObjectClass() == ks); Recursive? TODO
             linkMaps.put(ks, links);
             if(klass == ks) {
                 return links;
@@ -77,11 +78,32 @@ public class ObjectForest<T extends StoredObject> implements Filtered<T>, Object
         return linkMaps.computeIfAbsent(klass, k -> linkDetails(klass));
     }
 
+    @Override
+    public void setLoadFilter(Predicate<T> loadFilter) {
+        this.filter.setLoadingPredicate(loadFilter);
+        if(list != null) {
+            list.setLoadFilter(loadFilter);
+        }
+    }
+
+    @Override
+    public void applyFilterPredicate() {
+        if(list != null) {
+            list.filter(filter.getViewFilter());
+        }
+    }
+
+    @Nonnull
+    @Override
+    public ObjectLoadFilter<T> getLoadFilter() {
+        return filter;
+    }
 
     private ObjectList<T> list() {
         if(list == null) {
             list = listSupplier.apply(objectClass);
-            list.filter(filter, comparator);
+            list.setLoadFilter(filter.getLoadingPredicate());
+            list.filter(filter.getViewFilter(), comparator);
         }
         return list;
     }
@@ -100,7 +122,7 @@ public class ObjectForest<T extends StoredObject> implements Filtered<T>, Object
 
     @Override
     public void filter(Predicate<? super T> filter) {
-        this.filter = filter;
+        this.filter.setViewFilter(filter);
         if(list != null) {
             list.filter(filter);
         }
@@ -109,7 +131,7 @@ public class ObjectForest<T extends StoredObject> implements Filtered<T>, Object
     @Override
     public void filter(Predicate<? super T> filter, Comparator<? super T> comparator) {
         this.comparator = comparator;
-        this.filter = filter;
+        this.filter.setViewFilter(filter);
         if(list != null) {
             list.filter(filter, comparator);
         }
@@ -117,7 +139,7 @@ public class ObjectForest<T extends StoredObject> implements Filtered<T>, Object
 
     @Override
     public Predicate<? super T> getFilter() {
-        return filter;
+        return filter.getViewFilter();
     }
 
     @Override
@@ -284,7 +306,7 @@ public class ObjectForest<T extends StoredObject> implements Filtered<T>, Object
 
     @Override
     public final boolean isAllowAny() {
-        return any;
+        return ObjectLoader.super.isAllowAny();
     }
 
     @Override

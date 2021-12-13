@@ -10,16 +10,17 @@ public class Test extends ObjectGrid<Person> {
 
     public Test() {
         super(Person.class);
+        load();
     }
 
     @Override
     public Component createHeader() {
         return new ButtonLayout(
-                new Button("Load", e -> myLoad())
+                new Button("Filter", e -> myLoad())
         );
     }
 
     private void myLoad() {
-        loadOne(StoredObject.get(Person.class));
+        setViewFilter(p -> p.getFirstName().startsWith("S"), true);
     }
 }

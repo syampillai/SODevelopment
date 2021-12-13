@@ -2,6 +2,7 @@ package com.storedobject.core;
 
 import com.storedobject.common.FilterProvider;
 
+import javax.annotation.Nonnull;
 import java.util.Objects;
 import java.util.function.Predicate;
 
@@ -14,30 +15,30 @@ import java.util.function.Predicate;
 public interface FilterMethods<T extends StoredObject> {
 
     /**
-     * Set a predicate that will be used for filtering the object after loading is done.
+     * Set a predicate that will be used for filtering the object after loading is done - for viewing purposes.
      *
      * @param predicate Filter to apply after loaded.
      */
-    default void setFilter(Predicate<T> predicate) {
-        setFilter(predicate, true);
+    default void setViewFilter(Predicate<T> predicate) {
+        setViewFilter(predicate, true);
     }
 
     /**
-     * Set a predicate that will be used for filtering the object after loading is done.
+     * Set a predicate that will be used for filtering the object after loading is done - for viewing purposes.
      *
      * @param predicate Filter to apply after loaded.
      * @param apply Whether to apply it immediately or not.
      */
-    default void setFilter(Predicate<T> predicate, boolean apply) {
+    default void setViewFilter(Predicate<T> predicate, boolean apply) {
         ObjectLoadFilter<T> f = getLoadFilter();
         if(apply) {
-            boolean changed = predicate != f.getLoadedPredicate();
-            f.setLoadedPredicate(predicate);
+            boolean changed = predicate != f.getViewFilter();
+            f.setViewFilter(predicate);
             if(changed) {
                 applyFilterPredicate();
             }
         } else {
-            f.setLoadedPredicate(predicate);
+            f.setViewFilter(predicate);
         }
     }
 
@@ -129,12 +130,27 @@ public interface FilterMethods<T extends StoredObject> {
     }
 
     /**
+     * Set the load filter. This will be applied whenever loading takes place.
+     * @param loadFilter Load filter to be applied while loading.
+     */
+    default void setLoadFilter(Predicate<T> loadFilter) {
+        getLoadFilter().setLoadingPredicate(loadFilter);
+    }
+
+    /**
+     * Get the current filter condition that is applicable when loading the instances.
+     * @return Current filter condition.
+     */
+    default String getFilterCondition() {
+        return getLoadFilter().getFilter();
+    }
+
+    /**
      * This method is called whenever a filter condition is changed. Methods with default implementation already
      * invoke this method. If any of those methods are overridden, make sure that it invokes this method so that logic
      * to handle filter changes can be coded here.
      */
-    default void applyFilter() {
-    }
+    void applyFilter();
 
     /**
      * This method is called whenever a filter predicate is changed. Methods with default implementation already
@@ -142,39 +158,13 @@ public interface FilterMethods<T extends StoredObject> {
      * to handle filter changes can be coded here.
      * <p>Note: This method is used to show the filtered result of the existing entries</p>
      */
-    default void applyFilterPredicate() {
-    }
+    void applyFilterPredicate();
 
     /**
      * Get the load filter.
      *
      * @return Current load filter.
      */
-    default ObjectLoadFilter<T> getLoadFilter() {
-        if(this instanceof ObjectLoader ol) {
-            //noinspection unchecked
-            return ((ObjectLoader<T>) ol).getLoadFilter();
-        }
-        return null;
-    }
-
-    /**
-     * Get the object loader that implements these filter methods.
-     *
-     * @return Object loader.
-     */
-    default ObjectLoader<T> getObjectLoader() {
-        if(this instanceof ObjectLoader ol) {
-            //noinspection unchecked
-            return (ObjectLoader<T>) ol;
-        }
-        return null;
-    }
-
-    /**
-     * Set the load filter. This will be applied whenever loading takes place.
-     * @param loadFilter Load filter to be applied while loading.
-     */
-    default void setLoadFilter(Predicate<T> loadFilter) {
-    }
+    @Nonnull
+    ObjectLoadFilter<T> getLoadFilter();
 }

@@ -30,7 +30,7 @@ public abstract class AbstractObjectForest<T extends StoredObject> extends DataT
     }
 
     @Override
-    public final ObjectForestProvider<T> getObjectLoader() {
+    public final ObjectForestProvider<T> getDelegatedLoader() {
         return getDataProvider();
     }
 
@@ -108,10 +108,6 @@ public abstract class AbstractObjectForest<T extends StoredObject> extends DataT
 
     private void loadedInt() {
         loaded();
-    }
-
-    public void clear() {
-        getDataProvider().clear();
     }
 
     public void scrollTo(T object) {

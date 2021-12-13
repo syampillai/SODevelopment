@@ -9,6 +9,11 @@ public interface ObjectList<T extends StoredObject> extends List<T>, ObjectLoade
     }
 
     @Override
+    default void clear() {
+        ObjectLoader.super.clear();
+    }
+
+    @Override
     default boolean isEmpty() {
         return size() == 0;
     }

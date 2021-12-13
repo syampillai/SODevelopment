@@ -3,6 +3,7 @@ package com.storedobject.core;
 import com.storedobject.common.ListLoop;
 import com.storedobject.common.Loop;
 
+import javax.annotation.Nonnull;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
@@ -64,6 +65,16 @@ public class ObjectCache<T extends StoredObject> implements Iterable<T>, ObjectL
 	}
 
 	public void setLoadFilter(Predicate<T> loadFilter) {
+	}
+
+	@Override
+	public void applyFilterPredicate() {
+	}
+
+	@Nonnull
+	@Override
+	public ObjectLoadFilter<T> getLoadFilter() {
+		return new ObjectLoadFilter<>();
 	}
 
 	public boolean isAllowAny() {

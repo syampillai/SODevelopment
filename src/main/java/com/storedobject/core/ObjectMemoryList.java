@@ -1,5 +1,6 @@
 package com.storedobject.core;
 
+import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -10,9 +11,8 @@ import java.util.stream.Stream;
 public class ObjectMemoryList<T extends StoredObject> extends MemoryCache<T> implements ObjectList<T> {
 
     private final Class<T> objectClass;
-    private boolean any;
     private Function<Id, T> loader;
-    private Predicate<T> loadFilter;
+    private final ObjectLoadFilter<T> filter = new ObjectLoadFilter<>();
 
     public ObjectMemoryList(Class<T> objectClass) {
         this(objectClass, false);
@@ -36,7 +36,7 @@ public class ObjectMemoryList<T extends StoredObject> extends MemoryCache<T> imp
 
     public ObjectMemoryList(Class<T> objectClass, String condition, String orderedBy, boolean any) {
         this.objectClass = objectClass;
-        this.any = any;
+        this.filter.setAny(any);
         load(condition, orderedBy, any);
     }
 
@@ -46,7 +46,7 @@ public class ObjectMemoryList<T extends StoredObject> extends MemoryCache<T> imp
 
     public ObjectMemoryList(Class<T> objectClass, Query query, boolean any) {
         this.objectClass = objectClass;
-        this.any = any;
+        this.filter.setAny(any);
         load(query, any);
     }
 
@@ -67,24 +67,25 @@ public class ObjectMemoryList<T extends StoredObject> extends MemoryCache<T> imp
 
     @Override
     public void load(String condition, String orderedBy, boolean any) {
-        this.any = any;
+        this.filter.setAny(any);
         ObjectList.super.load(condition, orderedBy, any);
     }
 
     @Override
     public void load(int linkType, StoredObject master, String condition, boolean any) {
-        this.any = any;
+        this.filter.setAny(any);
         ObjectList.super.load(linkType, master, condition, any);
     }
 
     @Override
     public void load(Query query, boolean any) {
-        this.any = any;
+        this.filter.setAny(any);
     }
 
     @Override
     public void load(Iterable<Id> idList) {
         original.clear();
+        Predicate<T> loadFilter = filter.getLoadingPredicate();
         idList.forEach(id -> {
             T so = load(id);
             if(so != null) {
@@ -99,8 +100,12 @@ public class ObjectMemoryList<T extends StoredObject> extends MemoryCache<T> imp
     @Override
     public void load(ObjectIterator<T> objects) {
         original.clear();
+        Predicate<T> loadFilter = filter.getLoadingPredicate();
         if(loadFilter != null) {
             objects = objects.filter(loadFilter);
+        }
+        if(!filter.isAny()) {
+            objects = objects.filter(o -> o.getClass() == objectClass);
         }
         for(T object : objects) {
             original.add(object);
@@ -111,21 +116,26 @@ public class ObjectMemoryList<T extends StoredObject> extends MemoryCache<T> imp
     @Override
     public void load(Stream<T> objects) {
         original.clear();
+        Predicate<T> loadFilter = filter.getLoadingPredicate();
         if(loadFilter != null) {
             objects = objects.filter(loadFilter);
+        }
+        if(!filter.isAny()) {
+            objects = objects.filter(o -> o.getClass() == objectClass);
         }
         objects.forEach(original::add);
         rebuild();
     }
 
     @Override
-    public void setLoadFilter(Predicate<T> loadFilter) {
-        this.loadFilter = loadFilter;
+    public void applyFilterPredicate() {
+        filter(filter.getViewFilter());
     }
 
+    @Nonnull
     @Override
-    public boolean isAllowAny() {
-        return any;
+    public ObjectLoadFilter<T> getLoadFilter() {
+        return filter;
     }
 
     @Override
@@ -196,7 +206,7 @@ public class ObjectMemoryList<T extends StoredObject> extends MemoryCache<T> imp
 
     private T load(Id id) {
         T item = loader == null ? null : loader.apply(id);
-        return item == null ? StoredObject.get(objectClass, id, any) : item;
+        return item == null ? StoredObject.get(objectClass, id, filter.isAny()) : item;
     }
 
     public void setLoader(Function<Id, T> loader) {

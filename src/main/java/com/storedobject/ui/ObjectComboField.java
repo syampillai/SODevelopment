@@ -13,7 +13,6 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ItemLabelGenerator;
 import com.vaadin.flow.component.icon.VaadinIcon;
 
-import javax.annotation.Nonnull;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
@@ -175,46 +174,10 @@ public class ObjectComboField<T extends StoredObject> extends ComboField<T>
     }
 
     @Override
-    public ObjectListProvider<T> getObjectLoader() {
-        return objectProvider;
-    }
-
-    @Override
     public void setItemLabelGenerator(ItemLabelGenerator<T> itemLabelGenerator) {
         ViewFilter<T> viewFilter = objectProvider.getViewFilter();
         viewFilter.setObjectConverter(itemLabelGenerator);
         super.setItemLabelGenerator(itemLabelGenerator);
-    }
-
-    @Override
-    public void load(String condition, String orderBy, boolean any) {
-        objectProvider.load(condition, orderBy);
-    }
-
-    @Override
-    public void load(int linkType, StoredObject master, String condition, String orderBy, boolean any) {
-        objectProvider.load(linkType, master, condition, orderBy);
-    }
-
-    @Override
-    public void load(ObjectIterator<T> objects) {
-        objectProvider.load(objects);
-    }
-
-    @Override
-    public void setLoadFilter(Predicate<T> loadFilter) {
-        objectProvider.setLoadFilter(loadFilter);
-    }
-
-    @Nonnull
-    @Override
-    public ObjectLoadFilter<T> getLoadFilter() {
-        return objectProvider.getLoadFilter();
-    }
-
-    @Override
-    public void applyFilter() {
-        objectProvider.applyFilter();
     }
 
     @Override
@@ -301,6 +264,11 @@ public class ObjectComboField<T extends StoredObject> extends ComboField<T>
     }
 
     @Override
+    public void load(ObjectIterator<T> objects) {
+        objectProvider.load(objects);
+    }
+
+    @Override
     public void focus() {
         super.focus();
     }
@@ -323,7 +291,17 @@ public class ObjectComboField<T extends StoredObject> extends ComboField<T>
      */
     @Deprecated
     public void filter(Predicate<T> predicate) {
-        ObjectInput.super.setFilter(predicate);
+        ObjectInput.super.setViewFilter(predicate);
+    }
+
+    @Override
+    public final void applyFilterPredicate() {
+        objectProvider.applyFilterPredicate();
+    }
+
+    @Override
+    public final ObjectListProvider<T> getDelegatedLoader() {
+        return objectProvider;
     }
 
     @Override

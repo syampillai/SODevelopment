@@ -1,109 +1,19 @@
 package com.storedobject.ui;
 
 import com.storedobject.common.FilterProvider;
+import com.storedobject.common.SORuntimeException;
 import com.storedobject.core.ObjectIterator;
 import com.storedobject.core.ObjectLoadFilter;
 import com.storedobject.core.StoredObject;
 import com.storedobject.ui.util.DataLoadedListener;
 import com.vaadin.flow.shared.Registration;
 
+import javax.annotation.Nonnull;
 import java.util.Objects;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 public interface ObjectLoader<T extends StoredObject> extends com.storedobject.core.ObjectLoader<T> {
-
-    default Class<T> getObjectClass() {
-        return getObjectLoader().getObjectClass();
-    }
-
-    default int size() {
-        return getObjectCount();
-    }
-
-    @Override
-    default String getFilterCondition() {
-        return getObjectLoader().getFilterCondition();
-    }
-
-    @Override
-    default String getOrderBy() {
-        return getObjectLoader().getOrderBy();
-    }
-
-    default void setOrderBy(String orderBy) {
-        setOrderBy(orderBy, false);
-    }
-
-    @Override
-    default void setOrderBy(String orderBy, boolean load) {
-        getObjectLoader().setOrderBy(orderBy, load);
-    }
-
-    default void setMaster(StoredObject master) {
-        setMaster(master, true);
-    }
-
-    @Override
-    default void setMaster(StoredObject master, boolean load) {
-        getObjectLoader().setMaster(master, load);
-    }
-
-    @Override
-    default StoredObject getMaster() {
-        return getObjectLoader().getMaster();
-    }
-
-    default void setLinkType(int linkType) {
-        setLinkType(linkType, false);
-    }
-
-    @Override
-    default void setLinkType(int linkType, boolean load) {
-        getObjectLoader().setLinkType(linkType, load);
-    }
-
-    @Override
-    default int getLinkType() {
-        return getObjectLoader().getLinkType();
-    }
-
-    @Override
-    default boolean isAllowAny() {
-        return getObjectLoader().isAllowAny();
-    }
-
-    default void load(String condition, String orderBy, boolean any) {
-        getObjectLoader().load(condition, orderBy, any);
-    }
-
-    @Override
-    default void load(int linkType, StoredObject master, String condition, String orderBy, boolean any) {
-        getObjectLoader().load(linkType, master, condition, orderBy, any);
-    }
-
-    @Override
-    default void load(ObjectIterator<T> objects) {
-        getObjectLoader().load(objects);
-    }
-
-    default void reload() {
-        load();
-    }
-
-    @Override
-    default void applyFilter() {
-        getObjectLoader().load();
-    }
-
-    @Override
-    default void applyFilterPredicate() {
-        getObjectLoader().applyFilterPredicate();
-    }
-
-    default void clear() {
-        getObjectLoader().clear();
-    }
 
     /**
      * Clear the entries and refresh it.
@@ -115,32 +25,37 @@ public interface ObjectLoader<T extends StoredObject> extends com.storedobject.c
         clear();
     }
 
+    @Override
+    default int size() {
+        return delegate().size();
+    }
+
     default int getObjectCount() {
-        return getObjectLoader().getObjectCount();
+        return size();
     }
 
     default T get(int index) {
-        return getObjectLoader().get(index);
+        return delegate().get(index);
     }
 
     default int indexOf(T object) {
-        return getObjectLoader().indexOf(object);
+        return delegate().indexOf(object);
     }
 
     default Stream<T> streamAll() {
-        return getObjectLoader().streamAll();
+        return delegate().streamAll();
     }
 
     default Stream<T> streamFiltered() {
-        return getObjectLoader().streamFiltered();
+        return delegate().streamFiltered();
     }
 
     default int getCacheLevel() {
-        return getObjectLoader().getCacheLevel();
+        return delegate().getCacheLevel();
     }
 
     default ObjectLoadFilter<T> getFixedFilter() {
-        return getObjectLoader().getFixedFilter();
+        return delegate().getFixedFilter();
     }
 
     /**
@@ -170,11 +85,11 @@ public interface ObjectLoader<T extends StoredObject> extends com.storedobject.c
      * @param apply Whether to apply immediately or not.
      */
     default void setFixedFilter(FilterProvider fixedFilterProvider, boolean apply) {
-        ObjectLoadFilter<T> extraFilter = getObjectLoader().getFixedFilter();
-        if(extraFilter.getFilterProvider() == fixedFilterProvider) {
+        ObjectLoadFilter<T> filter = getFixedFilter();
+        if(filter.getFilterProvider() == fixedFilterProvider) {
             return;
         }
-        extraFilter.setFilterProvider(fixedFilterProvider);
+        filter.setFilterProvider(fixedFilterProvider);
         if(apply) {
             load();
         }
@@ -207,7 +122,7 @@ public interface ObjectLoader<T extends StoredObject> extends com.storedobject.c
      * @param apply Whether to apply immediately or not.
      */
     default void setFixedFilter(String fixedFilter, boolean apply) {
-        ObjectLoadFilter<T> filter = getObjectLoader().getFixedFilter();
+        ObjectLoadFilter<T> filter = getFixedFilter();
         if(Objects.equals(fixedFilter, filter.getCondition())) {
             return;
         }
@@ -217,16 +132,58 @@ public interface ObjectLoader<T extends StoredObject> extends com.storedobject.c
         }
     }
 
-    default Registration addDataLoadedListener(DataLoadedListener listener) {
-        return getObjectLoader().addDataLoadedListener(listener);
+    @Override
+    default void load(ObjectIterator<T> objectIterator) {
+        delegate().load(objectIterator);
+    }
+
+    @Nonnull
+    @Override
+    default ObjectLoadFilter<T> getLoadFilter() {
+        return delegate().getLoadFilter();
     }
 
     @Override
-    default void setLoadFilter(Predicate<T> loadFilter) {
-        getObjectLoader().setLoadFilter(loadFilter);
+    default void applyFilterPredicate() {
+        delegate().applyFilterPredicate();
     }
 
-    default ObjectLoader<T> getObjectLoader() {
-        return (ObjectLoader<T>) com.storedobject.core.ObjectLoader.super.getObjectLoader();
+    /**
+     * Set view filter.
+     *
+     * @param predicate Predicate to set.
+     * @deprecated Use {@link #setViewFilter(Predicate)} instead.
+     */
+    @Deprecated
+    default void setFilter(Predicate<T> predicate) {
+        setViewFilter(predicate);
+    }
+
+    /**
+     * Set view filter.
+     *
+     * @param predicate Predicate to set.
+     * @param refresh Whether to refresh the view immediately or not.
+     * @deprecated Use {@link #setViewFilter(Predicate, boolean)} instead.
+     */
+    @Deprecated
+    default void setFilter(Predicate<T> predicate, boolean refresh) {
+        setViewFilter(predicate, refresh);
+    }
+
+    default Registration addDataLoadedListener(DataLoadedListener listener) {
+        return delegate().addDataLoadedListener(listener);
+    }
+
+    private ObjectLoader<T> delegate() {
+        ObjectLoader<T> delegate = getDelegatedLoader();
+        if(delegate == this) {
+            throw new SORuntimeException("Implement OL - " + getClass());
+        }
+        return delegate;
+    }
+
+    default ObjectLoader<T> getDelegatedLoader() {
+        return this;
     }
 }

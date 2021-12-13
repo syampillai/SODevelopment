@@ -9,8 +9,12 @@ import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.data.provider.ListDataProvider;
 import com.vaadin.flow.shared.Registration;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.function.BiConsumer;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
 /**
  * An editable grid of objects. It internally maintains an {@link EditableList} that provides status information on each row
@@ -73,7 +77,7 @@ public class EditableObjectGrid<T extends StoredObject> extends AbstractEditable
     }
 
     @Override
-    public ObjectLoader<T> getObjectLoader() {
+    public ObjectLoader<T> getDelegatedLoader() {
         //noinspection unchecked
         return (ObjectLoader<T>) getDataProvider();
     }
@@ -83,7 +87,7 @@ public class EditableObjectGrid<T extends StoredObject> extends AbstractEditable
     }
 
     private EditableObjectListProvider<T> provider() {
-        return (EditableObjectListProvider<T>) getDataProvider();
+        return (EditableObjectListProvider<T>) getDelegatedLoader();
     }
 
     /**
@@ -365,15 +369,6 @@ public class EditableObjectGrid<T extends StoredObject> extends AbstractEditable
         super.clear();
     }
 
-    @SuppressWarnings("unchecked")
-    public void load(T... items) {
-        provider().load(items);
-    }
-
-    public void load(Collection<T> items) {
-        provider().load(items);
-    }
-
     public Registration addObjectChangedListener(ObjectChangedListener<T> listener) {
         if(listener == null) {
             return null;
@@ -507,5 +502,11 @@ public class EditableObjectGrid<T extends StoredObject> extends AbstractEditable
      */
     protected boolean canChange(T item, int editorAction) {
         return true;
+    }
+
+    @SuppressWarnings("deprecation")
+    @Override
+    public void setFilter(Predicate<T> filter) {
+        setViewFilter(filter);
     }
 }

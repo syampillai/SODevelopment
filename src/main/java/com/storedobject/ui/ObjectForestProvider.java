@@ -16,9 +16,6 @@ import java.util.stream.Stream;
 public class ObjectForestProvider<T extends StoredObject> extends AbstractTreeProvider<Object, T>
         implements ObjectLoader<T>, ObjectChangedListener<T>, AutoCloseable, ResourceOwner, FilterMethods<T> {
 
-    private int linkType = 0;
-    private StoredObject master;
-    private String orderBy;
     private final ObjectLoadFilter<T> loadFilter = new ObjectLoadFilter<>(),
             systemFilter = new ObjectLoadFilter<>(),
             fixedFilter = new ObjectLoadFilter<>();
@@ -28,6 +25,7 @@ public class ObjectForestProvider<T extends StoredObject> extends AbstractTreePr
     public ObjectForestProvider(ObjectForest<T> forest) {
         super(forest.getObjectClass());
         this.forest = forest;
+        loadFilter.setAny(forest.isAllowAny());
     }
 
     public ObjectForest<T> getForest() {
@@ -71,15 +69,15 @@ public class ObjectForestProvider<T extends StoredObject> extends AbstractTreePr
     @Override
     void saveFilter(Predicate<Object> filter) {
         if(filter == null) {
-            ObjectLoader.super.setFilter((Predicate<T>) null, false);
+            ObjectLoader.super.setViewFilter(null, false);
         } else {
-            ObjectLoader.super.setFilter(new WrappedPredicate<>(filter), false);
+            ObjectLoader.super.setViewFilter(new WrappedPredicate<>(filter), false);
         }
     }
 
     @Override
     Predicate<Object> retrieveFilter() {
-        Predicate<T> predicate = loadFilter.getLoadedPredicate();
+        Predicate<T> predicate = loadFilter.getLoadingPredicate();
         return predicate == null ? null : ((WrappedPredicate<T>)predicate).predicate;
     }
 
@@ -89,46 +87,6 @@ public class ObjectForestProvider<T extends StoredObject> extends AbstractTreePr
         public boolean test(T item) {
             return predicate.test(item);
         }
-    }
-
-    @Override
-    public String getFilterCondition() {
-        return loadFilter.getFilter();
-    }
-
-    public void setOrderBy(String orderBy) {
-        this.orderBy = orderBy;
-        reload();
-    }
-
-    @Override
-    public String getOrderBy() {
-        return orderBy;
-    }
-
-    @Override
-    public boolean isAllowAny() {
-        return forest.isAllowAny();
-    }
-
-    public void setMaster(StoredObject master) {
-        load(linkType, master);
-    }
-
-    public StoredObject getMaster() {
-        return master;
-    }
-
-    public void setLinkType(int linkType) {
-        if(master != null) {
-            load(linkType, master);
-        } else {
-            this.linkType = linkType;
-        }
-    }
-
-    public int getLinkType() {
-        return linkType;
     }
 
     private String cond(String cond) {
@@ -145,8 +103,8 @@ public class ObjectForestProvider<T extends StoredObject> extends AbstractTreePr
     }
 
     private void loadInt(String condition, String orderBy, boolean any) {
-        this.orderBy = orderBy;
-        this.master = null;
+        setOrderBy(orderBy, false);
+        setMaster(null, false);
         forest.load(cond(condition), orderBy, any);
         refreshAll();
     }
@@ -161,9 +119,9 @@ public class ObjectForestProvider<T extends StoredObject> extends AbstractTreePr
     }
 
     private void loadInt(int linkType, StoredObject master, String condition, String orderBy, boolean any) {
-        this.orderBy = orderBy;
-        this.master = master;
-        this.linkType = linkType;
+        setOrderBy(orderBy, false);
+        setMaster(null, false);
+        setLinkType(linkType, false);
         forest.load(linkType, master, cond(condition), orderBy, any);
         refreshAll();
     }

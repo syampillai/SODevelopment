@@ -1,7 +1,6 @@
 package com.storedobject.ui;
 
 import com.storedobject.core.*;
-import com.storedobject.core.ObjectLoader;
 import com.storedobject.ui.inventory.*;
 import com.storedobject.ui.util.NoDisplayField;
 import com.storedobject.vaadin.CustomField;
@@ -25,7 +24,8 @@ import java.util.function.Predicate;
  * @param <T> Type of objects accepted. Only {@link Id} values of this type are valid.
  * @author Syam
  */
-public class ObjectField<T extends StoredObject> extends CustomField<Id> implements IdInput<T>, ViewDependent, NoDisplayField {
+public class ObjectField<T extends StoredObject> extends CustomField<Id>
+        implements IdInput<T>, ViewDependent, NoDisplayField {
 
     /**
      * Type of the object field.
@@ -354,11 +354,15 @@ public class ObjectField<T extends StoredObject> extends CustomField<Id> impleme
      * Set a predicate that will be used for filtering the object after loading is done.
      *
      * @param predicate Filter to apply after loaded.
-     * @deprecated Please use {@link #setFilter(Predicate)} instead.
+     * @deprecated Please use {@link #setViewFilter(Predicate)} instead.
      */
     @Deprecated
     public void filter(Predicate<T> predicate) {
-        setFilter(predicate);
+        setViewFilter(predicate);
+    }
+
+    public void setFilter(Predicate<T> predicate) {
+        setViewFilter(predicate);
     }
 
     /**
@@ -366,11 +370,9 @@ public class ObjectField<T extends StoredObject> extends CustomField<Id> impleme
      *
      * @param loadFilter Filter to apply while loading.
      */
+    @Override
     public void setLoadFilter(Predicate<T> loadFilter) {
-        if(field instanceof ObjectLoader) {
-            //noinspection unchecked
-            ((ObjectLoader<T>)field).setLoadFilter(loadFilter);
-        }
+        field.setLoadFilter(loadFilter);
     }
 
     private static <O extends StoredObject> List<O> list(Iterable<O> iterable) {

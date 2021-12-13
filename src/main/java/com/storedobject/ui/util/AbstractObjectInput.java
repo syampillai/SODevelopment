@@ -228,4 +228,8 @@ public interface AbstractObjectInput<T extends StoredObject>
      * Focus this field.
      */
     void focus();
+
+    @Override
+    default void applyFilterPredicate() {
+    }
 }

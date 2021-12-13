@@ -132,6 +132,9 @@ public class ReferenceLinkListProvider<T extends StoredObject> extends ObjectLis
         if(deleted.remove(id)) {
             return true;
         }
+        if(contains(item)) {
+            return false;
+        }
         getData().add(item);
         if(!append) {
             added.add(id);

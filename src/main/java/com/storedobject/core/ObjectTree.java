@@ -1,5 +1,6 @@
 package com.storedobject.core;
 
+import javax.annotation.Nonnull;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -17,9 +18,8 @@ public class ObjectTree<T extends StoredObject> implements Filtered<T>, ObjectLo
     private final WeakHashMap<Id, Boolean> childExistsMap = new WeakHashMap<>();
     private final Class<T> objectClass;
     private final int linkType;
-    private final boolean any;
     private Comparator<? super T> comparator;
-    private Predicate<? super T> filter;
+    private final ObjectLoadFilter<T> filter = new ObjectLoadFilter<>();
     private Builder<T> builder;
 
     public ObjectTree(boolean large, int linkType, Class<T> objectClass, boolean any) {
@@ -29,14 +29,36 @@ public class ObjectTree<T extends StoredObject> implements Filtered<T>, ObjectLo
     public ObjectTree(int linkType, Class<T> objectClass, boolean any, Function<Class<T>, ObjectList<T>> listSupplier) {
         this.objectClass = objectClass;
         this.linkType = linkType;
-        this.any = any;
+        this.filter.setAny(any);
         this.listSupplier = listSupplier;
+    }
+
+    @Override
+    public void setLoadFilter(Predicate<T> loadFilter) {
+        this.filter.setLoadingPredicate(loadFilter);
+        if(list != null) {
+            list.setLoadFilter(loadFilter);
+        }
+    }
+
+    @Override
+    public void applyFilterPredicate() {
+        if(list != null) {
+            list.filter(filter.getViewFilter());
+        }
+    }
+
+    @Nonnull
+    @Override
+    public ObjectLoadFilter<T> getLoadFilter() {
+        return filter;
     }
 
     private ObjectList<T> list() {
         if(list == null) {
             list = listSupplier.apply(objectClass);
-            list.filter(filter, comparator);
+            list.setLoadFilter(filter.getLoadingPredicate());
+            list.filter(filter.getViewFilter(), comparator);
         }
         return list;
     }
@@ -53,20 +75,20 @@ public class ObjectTree<T extends StoredObject> implements Filtered<T>, ObjectLo
 
     @Override
     public void filter(Predicate<? super T> filter) {
-        this.filter = filter;
+        this.filter.setViewFilter(filter);
         visitNodes(list -> list.filter(filter));
     }
 
     @Override
     public void filter(Predicate<? super T> filter, Comparator<? super T> comparator) {
         this.comparator = comparator;
-        this.filter = filter;
+        this.filter.setViewFilter(filter);
         visitNodes(list -> list.filter(filter, comparator));
     }
 
     @Override
     public Predicate<? super T> getFilter() {
-        return filter;
+        return filter.getViewFilter();
     }
 
     @Override
@@ -214,7 +236,7 @@ public class ObjectTree<T extends StoredObject> implements Filtered<T>, ObjectLo
 
     @Override
     public final boolean isAllowAny() {
-        return any;
+        return ObjectLoader.super.isAllowAny();
     }
 
     @Override
@@ -250,7 +272,9 @@ public class ObjectTree<T extends StoredObject> implements Filtered<T>, ObjectLo
         childMap.clear();
         childExistsMap.clear();
         visitNodes(ObjectList::close, true);
-        list.refresh();
+        if(list != null) {
+            list.refresh();
+        }
     }
 
     public void refresh(T item) {

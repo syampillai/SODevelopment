@@ -40,7 +40,7 @@ public class ReferenceLinkGrid<T extends StoredObject> extends EditableObjectGri
 
         @Override
         public boolean isAllowAny() {
-            return getObjectLoader().isAllowAny();
+            return getDelegatedLoader().isAllowAny();
         }
     };
 
@@ -275,13 +275,9 @@ public class ReferenceLinkGrid<T extends StoredObject> extends EditableObjectGri
         return (RList)getEditableList();
     }
 
-
     @Override
     public void setMaster(StoredObject master, boolean load) {
-        clear();
-        if(master != null) {
-            super.setMaster(master, load);
-        }
+        super.setMaster(master, load);
     }
 
     @Override
@@ -358,7 +354,7 @@ public class ReferenceLinkGrid<T extends StoredObject> extends EditableObjectGri
 
         @Override
         public StoredObject getMaster() {
-            return getObjectLoader().getMaster();
+            return ReferenceLinkGrid.this.getMaster();
         }
     }
 }

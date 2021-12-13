@@ -10,6 +10,7 @@ public class ObjectCacheList<T extends StoredObject> implements ObjectList<T>, A
     private ObjectCache<T> original, sorted, filtered;
     private Predicate<? super T> currentFilter;
     private Comparator<? super T> currentComparator;
+    private final ObjectLoadFilter<T> filter = new ObjectLoadFilter<>();
 
     public ObjectCacheList(Class<T> objectClass) {
         this(objectClass, false);
@@ -66,6 +67,17 @@ public class ObjectCacheList<T extends StoredObject> implements ObjectList<T>, A
     @Override
     public void setLoadFilter(Predicate<T> loadFilter) {
         original.setLoadFilter(loadFilter);
+    }
+
+    @Override
+    public void applyFilterPredicate() {
+        filter(filter.getViewFilter());
+    }
+
+    @Nonnull
+    @Override
+    public ObjectLoadFilter<T> getLoadFilter() {
+        return filter;
     }
 
     @Override

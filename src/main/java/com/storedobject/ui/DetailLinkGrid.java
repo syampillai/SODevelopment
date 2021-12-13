@@ -264,11 +264,8 @@ public class DetailLinkGrid<T extends StoredObject> extends EditableObjectGrid<T
     }
 
     @Override
-    public void setMaster(StoredObject master, boolean load) {
-        clear();
-        if(master != null) {
-            super.setMaster(master, load);
-        }
+    protected final boolean canChange(T item, int editorAction) {
+        return ((ObjectEditor<?>)getButtonPanel().getMasterView()).acceptValueChange(getField(), item, editorAction);
     }
 
     @Override
@@ -277,8 +274,8 @@ public class DetailLinkGrid<T extends StoredObject> extends EditableObjectGrid<T
     }
 
     @Override
-    protected final boolean canChange(T item, int editorAction) {
-        return ((ObjectEditor<?>)getButtonPanel().getMasterView()).acceptValueChange(getField(), item, editorAction);
+    public void setMaster(StoredObject master, boolean load) {
+        super.setMaster(master, load);
     }
 
     class DList extends EList implements LinkValue<T> {
@@ -306,7 +303,7 @@ public class DetailLinkGrid<T extends StoredObject> extends EditableObjectGrid<T
 
         @Override
         public StoredObject getMaster() {
-            return getObjectLoader().getMaster();
+            return DetailLinkGrid.this.getMaster();
         }
     }
 }

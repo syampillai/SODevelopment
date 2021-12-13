@@ -5,7 +5,8 @@ import com.storedobject.common.FilterProvider;
 import java.util.function.Predicate;
 
 /**
- * Class that maintains a filter condition that can be used in {@link StoredObject}'s query/list/get methods.
+ * Class that maintains filter conditions and associated details that can be used in {@link StoredObject}'s
+ * query/list/get methods and {@link ObjectLoader}s.
  *
  * @param <T> Type of object.
  * @author Syam
@@ -15,7 +16,12 @@ public class ObjectLoadFilter<T extends StoredObject> {
 	private String condition;
 	private FilterProvider filterProvider;
 	private ObjectLoadFilter<T> child;
-	private Predicate<T> loadedPredicate;
+	private Predicate<? super T> viewFilter;
+	private Predicate<T> loadingPredicate;
+	private String orderBy;
+	private boolean any;
+	private StoredObject master;
+	private int linkType = 0;
 
 	/**
 	 * Add a child filter to this filter. The filter condition of the child will be appended to this filter condition.
@@ -92,13 +98,13 @@ public class ObjectLoadFilter<T extends StoredObject> {
 			condition = null;
 			filterProvider = null;
 			child = null;
-			loadedPredicate = null;
+			viewFilter = null;
 			return;
 		}
 		condition = filter.condition;
 		filterProvider = filter.filterProvider;
 		child = filter.child;
-		loadedPredicate = filter.loadedPredicate;
+		viewFilter = filter.viewFilter;
 	}
 
 	/**
@@ -178,26 +184,44 @@ public class ObjectLoadFilter<T extends StoredObject> {
 	}
 
 	/**
-	 * Set the filter that needs to be applied after loading into the memory from the DB.
+	 * Set the filter that needs to be applied after loading into the memory from the DB - for "view filtering".
 	 *
-	 * @param loadedPredicate Filter predicate.
+	 * @param viewFilter Filter predicate for viewing.
 	 */
-	public void setLoadedPredicate(Predicate<T> loadedPredicate) {
-		this.loadedPredicate = loadedPredicate;
+	public void setViewFilter(Predicate<? super T> viewFilter) {
+		this.viewFilter = viewFilter;
 	}
 
 	/**
-	 * Get the filter that needs to be applied after loading into the memory from the DB.
+	 * Get the filter that needs to be applied after loading into the memory from the DB - for "view filtering".
 	 *
-	 * @return Filter predicate.
+	 * @return Filter predicate for viewing.
 	 */
-	public Predicate<T> getLoadedPredicate() {
-		return loadedPredicate;
+	public Predicate<? super T> getViewFilter() {
+		return viewFilter;
+	}
+
+	/**
+	 * Set the filter that needs to be applied while loading into the memory from the DB - for "view filtering".
+	 *
+	 * @param loadingPredicate Filter predicate to be applied while loading.
+	 */
+	public void setLoadingPredicate(Predicate<T> loadingPredicate) {
+		this.loadingPredicate = loadingPredicate;
+	}
+
+	/**
+	 * Get the filter that needs to be applied while loading into the memory from the DB - for "view filtering".
+	 *
+	 * @return Filter predicate to be applied while loading.
+	 */
+	public Predicate<T> getLoadingPredicate() {
+		return loadingPredicate;
 	}
 
 	/**
 	 * Create a "predicate" that can be used in the Java program to apply the equivalent filter condition of using
-	 * {@link #getFilter()} and {@link #getLoadedPredicate()}.
+	 * {@link #getFilter()} and {@link #getLoadingPredicate()}.
 	 *
 	 * @return Predicate.
 	 */
@@ -207,7 +231,7 @@ public class ObjectLoadFilter<T extends StoredObject> {
 
 	/**
 	 * Create a "predicate" that can be used in the Java program to apply the equivalent filter condition of using
-	 * {@link #getFilter(String)} and {@link #getLoadedPredicate()}.
+	 * {@link #getFilter(String)} and {@link #getLoadingPredicate()}.
 	 *
 	 * @param extraCondition Extra condition.
 	 * @return Predicate.
@@ -234,7 +258,7 @@ public class ObjectLoadFilter<T extends StoredObject> {
 	 * @return The object is returned if the filter condition is satisfied. Otherwise, <code>null</code>.
 	 */
 	public T filter(T object, String extraCondition) {
-		Predicate<T> lf = getLoadedPredicate();
+		Predicate<T> lf = getLoadingPredicate();
 		if(lf != null && !lf.test(object)) {
 			return null;
 		}
@@ -264,6 +288,80 @@ public class ObjectLoadFilter<T extends StoredObject> {
 			return "(" + one + ") AND (" + two + ")";
 		}
 		return one == null ? two : one;
+	}
+
+	/**
+	 * Set the "ORDER BY" clause.
+	 * <p>Note: This is used for convenience only, will not affect any filter conditions.</p>
+	 *
+	 * @param orderBy "ORDER BY" clause to set.
+	 */
+	public void setOrderBy(String orderBy) {
+		this.orderBy = orderBy;
+	}
+
+	/**
+	 * Get the "ORDER BY" clause set via {@link #setOrderBy(String)}.
+	 * <p>Note: This is used for convenience only, will not affect any filter conditions.</p>
+	 *
+	 * @return "ORDER BY" clause set earlier.
+	 */
+	public String getOrderBy() {
+		return orderBy;
+	}
+
+	/**
+	 * Set the "any". (Can be used to determine whether subclasses to retrieved or not)
+	 * <p>Note: This is used for convenience only, will not affect any filter conditions.</p>
+	 *
+	 * @param any True/false.
+	 */
+	public void setAny(boolean any) {
+		this.any = any;
+	}
+
+	/**
+	 * Get the value of "any". (Can be used to determine whether subclasses to retrieved or not)
+	 * @return The value of "any" set earlier.
+	 */
+	public boolean isAny() {
+		return any;
+	}
+
+	/**
+	 * Set the master instance for this filter. (Can be used when retrieving links).
+	 * <p>Note: This is used for convenience only, will not affect any filter conditions.</p>
+	 * @param master Master instance to set.
+	 */
+	public void setMaster(StoredObject master) {
+		this.master = master;
+	}
+
+	/**
+	 * Get the master instance for this filter. (Can be used when retrieving links).
+	 * <p>Note: This is used for convenience only, will not affect any filter conditions.</p>
+	 * @return Instance of the master object if set.
+	 */
+	public StoredObject getMaster() {
+		return master;
+	}
+
+	/**
+	 * Set the "link type" for this filter. (Can be used when retrieving links).
+	 * <p>Note: This is used for convenience only, will not affect any filter conditions.</p>
+	 * @param linkType Type of link to set.
+	 */
+	public void setLinkType(int linkType) {
+		this.linkType = linkType;
+	}
+
+	/**
+	 * Get the "link type" for this filter. (Can be used when retrieving links).
+	 * <p>Note: This is used for convenience only, will not affect any filter conditions.</p>
+	 * @return Link type.
+	 */
+	public int getLinkType() {
+		return linkType;
 	}
 
 	private record DualFilterProvider(FilterProvider one, FilterProvider two) implements FilterProvider {

@@ -13,9 +13,6 @@ import java.util.stream.Stream;
 public class ObjectListProvider<T extends StoredObject> extends AbstractListProvider<T>
         implements ObjectLoader<T>, AutoCloseable, ResourceOwner {
 
-    private int linkType = 0;
-    private StoredObject master;
-    private String orderBy;
     private final ObjectLoadFilter<T> loadFilter = new ObjectLoadFilter<>(),
             systemFilter = new ObjectLoadFilter<>(),
             fixedFilter = new ObjectLoadFilter<>();
@@ -56,56 +53,12 @@ public class ObjectListProvider<T extends StoredObject> extends AbstractListProv
 
     @Override
     void saveFilter(Predicate<T> filter) {
-        ObjectLoader.super.setFilter(filter, false);
+        ObjectLoader.super.setViewFilter(filter, false);
     }
 
     @Override
     Predicate<T> retrieveFilter() {
-        return loadFilter.getLoadedPredicate();
-    }
-
-    @Override
-    public String getFilterCondition() {
-        return loadFilter.getFilter();
-    }
-
-    public final void setOrderBy(String orderBy, boolean load) {
-        this.orderBy = orderBy;
-        if(load) {
-            reload();
-        }
-    }
-
-    @Override
-    public final String getOrderBy() {
-        return orderBy;
-    }
-
-    @Override
-    public final boolean isAllowAny() {
-        return getData().isAllowAny();
-    }
-
-    public final void setMaster(StoredObject master, boolean load) {
-        this.master = master;
-        if(load) {
-            load(linkType, master);
-        }
-    }
-
-    public final StoredObject getMaster() {
-        return master;
-    }
-
-    public void setLinkType(int linkType, boolean load) {
-        this.linkType = linkType;
-        if(master != null && load) {
-            load(linkType, master);
-        }
-    }
-
-    public final int getLinkType() {
-        return linkType;
+        return loadFilter.getLoadingPredicate();
     }
 
     private String cond(String cond) {
@@ -122,8 +75,8 @@ public class ObjectListProvider<T extends StoredObject> extends AbstractListProv
     }
 
     private void loadInt(String condition, String orderBy, boolean any) {
-        this.orderBy = orderBy;
-        this.master = null;
+        setOrderBy(orderBy, false);
+        setMaster(null, false);
         getData().load(cond(condition), orderBy, any);
         refreshAll();
     }
@@ -138,9 +91,9 @@ public class ObjectListProvider<T extends StoredObject> extends AbstractListProv
     }
 
     private void loadInt(int linkType, StoredObject master, String condition, String orderBy, boolean any) {
-        this.orderBy = orderBy;
-        this.master = master;
-        this.linkType = linkType;
+        setOrderBy(orderBy, false);
+        setMaster(null, false);
+        setLinkType(linkType, false);
         getData().load(linkType, master, cond(condition), orderBy, any);
         refreshAll();
     }
@@ -167,7 +120,7 @@ public class ObjectListProvider<T extends StoredObject> extends AbstractListProv
 
     @Override
     public void applyFilterPredicate() {
-        getData().filter(loadFilter.getLoadedPredicate());
+        getData().filter(loadFilter.getViewFilter());
         refreshAll();
     }
 

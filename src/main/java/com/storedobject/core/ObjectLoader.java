@@ -12,12 +12,17 @@ import java.util.stream.Stream;
 public interface ObjectLoader<T extends StoredObject> extends FilterMethods<T> {
 
     /**
-     * Get the current filter condition that is applicable when loading the instances.
-     * @return Current filter condition.
+     * @return Whether instanced of the subclasses to be retrieved or not.
      */
-    default String getFilterCondition() {
-        ObjectLoadFilter<T> filter = getLoadFilter();
-        return filter == null ? null : filter.getFilter();
+    default boolean isAllowAny() {
+        return getLoadFilter().isAny();
+    }
+
+    /**
+     * @return Whether instanced of the subclasses to be retrieved or not. (Same as {@link #isAllowAny()}).
+     */
+    default boolean getAllowAny() {
+        return isAllowAny();
     }
 
     /**
@@ -25,7 +30,15 @@ public interface ObjectLoader<T extends StoredObject> extends FilterMethods<T> {
      * @return Current "ORDER BY" clause.
      */
     default String getOrderBy() {
-        return null;
+        return getLoadFilter().getOrderBy();
+    }
+
+    /**
+     * Set the "ORDER BY" clause.
+     * @param orderBy "ORDER BY" clause to set.
+     */
+    default void setOrderBy(String orderBy) {
+        setOrderBy(orderBy, true);
     }
 
     /**
@@ -34,14 +47,26 @@ public interface ObjectLoader<T extends StoredObject> extends FilterMethods<T> {
      * @param load Whether to immediately reload with this "ORDER BY" clause or not.
      */
     default void setOrderBy(String orderBy, boolean load) {
+        getLoadFilter().setOrderBy(orderBy);
+        if(load) {
+            load();
+        }
     }
 
     /**
      * Get the current master instance if available.
-     * @return Current master instance uf available.
+     * @return Current master instance if available.
      */
     default StoredObject getMaster() {
-        return null;
+        return getLoadFilter().getMaster();
+    }
+
+    /**
+     * Set the master instance.
+     * @param master Master instance.
+     */
+    default void setMaster(StoredObject master) {
+        setMaster(master, true);
     }
 
     /**
@@ -50,6 +75,14 @@ public interface ObjectLoader<T extends StoredObject> extends FilterMethods<T> {
      * @param load Whether to immediately reload with this master or not.
      */
     default void setMaster(StoredObject master, boolean load) {
+        getLoadFilter().setMaster(master);
+        if(load) {
+            if(master == null) {
+                clear();
+            } else {
+                reload();
+            }
+        }
     }
 
     /**
@@ -57,7 +90,15 @@ public interface ObjectLoader<T extends StoredObject> extends FilterMethods<T> {
      * @return Link type.
      */
     default int getLinkType() {
-        return 0;
+        return getLoadFilter().getLinkType();
+    }
+
+    /**
+     * Set the link type.
+     * @param linkType Link type to set.
+     */
+    default void setLinkType(int linkType) {
+        setLinkType(linkType, true);
     }
 
     /**
@@ -66,6 +107,33 @@ public interface ObjectLoader<T extends StoredObject> extends FilterMethods<T> {
      * @param load Whether to immediately reload with this link type or not. (Applicable only if master is available).
      */
     default void setLinkType(int linkType, boolean load) {
+        getLoadFilter().setLinkType(linkType);
+        if(load) {
+            if(getMaster() == null) {
+                clear();
+            } else {
+                reload();
+            }
+        }
+    }
+
+    /**
+     * Reload all entries.
+     */
+    default void reload() {
+        load();
+    }
+
+    @Override
+    default void applyFilter() {
+        load();
+    }
+
+    /**
+     * Clear - remove all entries.
+     */
+    default void clear() {
+        load(ObjectIterator.create());
     }
 
     /**
@@ -134,35 +202,16 @@ public interface ObjectLoader<T extends StoredObject> extends FilterMethods<T> {
      * @param any Whether instanced of the subclasses to be retrieved or not.
      */
     default void load(String condition, String orderedBy, boolean any) {
+        ObjectLoadFilter<T> f = getLoadFilter();
+        f.setCondition(condition);
+        f.setOrderBy(orderedBy);
+        f.setAny(any);
         StoredObject master = getMaster();
         if(master == null) {
             load(StoredObject.list(getObjectClass(), condition, orderedBy, any));
         } else {
             load(getLinkType(), master, condition, orderedBy, any);
         }
-    }
-
-    /**
-     * Load the links of the given "master" instance. Current filtering conditions (return value of
-     * {@link #getFilterCondition()}) including "load filter" if set will be applied.
-     * Also, the value returned by {@link #getAllowAny()} will determine whether instanced of the subclasses to be
-     * retrieved or not.
-     * The order will be determined by the return value of {@link #getOrderBy()}.
-     * @param master Master instance.
-     */
-    default void load(StoredObject master) {
-        load(master, getFilterCondition());
-    }
-
-    /**
-     * Load the links of the given "master" instance. Current filtering conditions (return value of
-     * {@link #getFilterCondition()}) including "load filter" if set will be applied.
-     * The order will be determined by the return value of {@link #getOrderBy()}.
-     * @param master Master instance.
-     * @param any Whether instanced of the subclasses to be retrieved or not.
-     */
-    default void load(StoredObject master, boolean any) {
-        load(master, getFilterCondition(), any);
     }
 
     /**
@@ -281,6 +330,12 @@ public interface ObjectLoader<T extends StoredObject> extends FilterMethods<T> {
      * @param any Whether instanced of the subclasses to be retrieved or not.
      */
     default void load(int linkType, StoredObject master, String condition, String orderedBy, boolean any) {
+        setMaster(master, false);
+        setLinkType(linkType, false);
+        ObjectLoadFilter<T> f = getLoadFilter();
+        f.setCondition(condition);
+        f.setOrderBy(orderedBy);
+        f.setAny(any);
         load(master.listLinks(linkType, getObjectClass(), condition, orderedBy, any));
     }
 
@@ -345,7 +400,9 @@ public interface ObjectLoader<T extends StoredObject> extends FilterMethods<T> {
      * restricted or not.
      * @param objects Objects to be loaded.
      */
-    void load(ObjectIterator<T> objects);
+    default void load(Stream<T> objects) {
+        load(ObjectIterator.create(objects.iterator()));
+    }
 
     /**
      * Load the given instances. Current "load filter" if set will be applied. However, {@link #getOrderBy()} result
@@ -354,20 +411,7 @@ public interface ObjectLoader<T extends StoredObject> extends FilterMethods<T> {
      * restricted or not.
      * @param objects Objects to be loaded.
      */
-    default void load(Stream<T> objects) {
-        load(ObjectIterator.create(objects.iterator()));
-    }
-
-    /**
-     * Load one object instance. Current "load filter" if set will be applied. However, {@link #getOrderBy()} result
-     * will be ignored.
-     * Also, the value returned by {@link #getAllowAny()} will determine whether instanced of the subclasses to be
-     * restricted or not.
-     * @param object Object instance to load.
-     */
-    default void loadOne(T object) {
-        load(ObjectIterator.create(object));
-    }
+    void load(ObjectIterator<T> objects);
 
     /**
      * The class of the instances.
@@ -376,14 +420,9 @@ public interface ObjectLoader<T extends StoredObject> extends FilterMethods<T> {
     Class<T> getObjectClass();
 
     /**
-     * @return Whether instanced of the subclasses to be retrieved or not.
+     * Get the instances count.
+     *
+     * @return Count.
      */
-    boolean isAllowAny();
-
-    /**
-     * @return Whether instanced of the subclasses to be retrieved or not. (Same as {@link #isAllowAny()}).
-     */
-    default boolean getAllowAny() {
-        return isAllowAny();
-    }
+    int size();
 }

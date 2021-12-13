@@ -11,9 +11,6 @@ import com.storedobject.vaadin.ThemeStyle;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasComponents;
 
-import java.util.Objects;
-import java.util.function.Predicate;
-
 public final class LoadFilterButtons<T extends StoredObject> {
 
     private final ObjectGridData<T, ?> grid;
@@ -31,7 +28,6 @@ public final class LoadFilterButtons<T extends StoredObject> {
         }
         if(smallList) {
             loadPending = true;
-            System.err.println("Pending true for " + grid.getObjectClass());
         }
         StringList filters = null;
         if(filterColumns != null) {
@@ -72,13 +68,13 @@ public final class LoadFilterButtons<T extends StoredObject> {
     private void filter() {
         filterMode = true;
         filter.setVisible(false);
-        grid.setFilter(searchBuilder.getFilterPredicate());
+        grid.setViewFilter(searchBuilder.getFilterPredicate());
     }
 
     private void load() {
         filterMode = false;
         load.removeTheme(ThemeStyle.PRIMARY);
-        grid.setFilter((Predicate<T>) null);
+        grid.setViewFilter(null);
         if(searchBuilder == null) {
             grid.load();
         } else {

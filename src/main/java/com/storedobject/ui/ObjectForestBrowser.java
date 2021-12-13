@@ -54,7 +54,7 @@ public class ObjectForestBrowser<T extends StoredObject> extends ObjectForest<T>
         super(objectClass, columns, (actions & ALLOW_ANY) == ALLOW_ANY);
         anchorsExist = !ClassAttribute.get(getObjectClass()).getAnchors().isEmpty();
         addConstructedListener(o -> con());
-        getObjectLoader().setLoadCallBack(this::loadInt);
+        getDataProvider().setLoadCallBack(this::loadInt);
         setCaption(caption);
         this.allowedActions = allowedActions;
         if(actions < 0) {
@@ -288,7 +288,7 @@ public class ObjectForestBrowser<T extends StoredObject> extends ObjectForest<T>
                 oe.executeAnchorForm(() -> loadInt(loadFunction));
                 return;
             }
-            getObjectLoader().getSystemFilter().setCondition(oe.getAnchorFilter());
+            getDelegatedLoader().getSystemFilter().setCondition(oe.getAnchorFilter());
         }
         Application a = Application.get();
         if(a == null) {

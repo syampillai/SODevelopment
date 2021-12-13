@@ -14,6 +14,11 @@ import java.util.function.Consumer;
 public interface ObjectGridData<T extends StoredObject, ROOT> extends HasColumns<ROOT>, ObjectsSetter<T>,
         ObjectSearcher<T>, ObjectLoader<T> {
 
+    @Override
+    default Class<T> getObjectClass() {
+        return getDelegatedLoader().getObjectClass();
+    }
+
     @Nonnull
     @Override
     default ObjectLoadFilter<T> getLoadFilter() {
@@ -22,22 +27,17 @@ public interface ObjectGridData<T extends StoredObject, ROOT> extends HasColumns
 
     @Override
     default boolean isAllowAny() {
-        return getObjectLoader().isAllowAny();
+        return ObjectLoader.super.isAllowAny();
+    }
+
+    @Override
+    default int getObjectCount() {
+        return size();
     }
 
     default ObjectSearchBuilder<T> createSearchBuilder(StringList searchColumns,
                                                        Consumer<ObjectSearchBuilder<T>> changeConsumer) {
         return new ObjectFilter<>(getObjectClass(), searchColumns, changeConsumer);
-    }
-
-    @Override
-    default int getObjectCount() {
-        return getObjectLoader().getObjectCount();
-    }
-
-    @Override
-    default Class<T> getObjectClass() {
-        return getObjectLoader().getObjectClass();
     }
 
     default void deselectAll() {
@@ -68,7 +68,7 @@ public interface ObjectGridData<T extends StoredObject, ROOT> extends HasColumns
 
     default void scrollTo(T object) {
         if(object != null) {
-            ((Grid<?>)this).scrollToIndex(getObjectLoader().indexOf(object));
+            ((Grid<?>)this).scrollToIndex(getDelegatedLoader().indexOf(object));
         }
     }
 
@@ -103,7 +103,7 @@ public interface ObjectGridData<T extends StoredObject, ROOT> extends HasColumns
     }
 
     default boolean validateFilterCondition(T value) {
-        return getObjectLoader().getLoadFilter().filter(value) != null;
+        return getLoadFilter().filter(value) != null;
     }
 
     @Override

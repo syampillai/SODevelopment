@@ -17,15 +17,15 @@ public final class Person extends StoredObject implements HasContacts, Comparabl
 	}
 
 	public static String[] getTitleValues() {
-		return null;
+		return new String[] {};
 	}
 
 	public static String[] getTitleValues(int gender) {
-		return null;
+		return new String[] {};
 	}
 
 	public String getTitleValue() {
-		return null;
+		return "";
 	}
 
 	public int getTitle() {
@@ -47,21 +47,21 @@ public final class Person extends StoredObject implements HasContacts, Comparabl
 	}
 
 	public String getFirstName() {
-		return null;
+		return "";
 	}
 
 	public void setMiddleName(String name) {
 	}
 
 	public String getMiddleName() {
-		return null;
+		return "";
 	}
 
 	public void setLastName(String name) {
 	}
 
 	public String getLastName() {
-		return null;
+		return "";
 	}
 
 	public void setShortName(String name) {
@@ -112,7 +112,7 @@ public final class Person extends StoredObject implements HasContacts, Comparabl
 	}
 
 	public Date getDateOfBirth() {
-		return null;
+		return DateUtility.today();
 	}
 
 	public boolean isMinor() {
@@ -143,11 +143,11 @@ public final class Person extends StoredObject implements HasContacts, Comparabl
 	}
 
 	public String getMaritalStatusValue() {
-		return null;
+		return "";
 	}
 
     public static Person get(String name) {
-		return null;
+		return Math.random() > 0.5 ? null : new Person();
     }
 
     public static ObjectIterator<Person> list(String name) {
