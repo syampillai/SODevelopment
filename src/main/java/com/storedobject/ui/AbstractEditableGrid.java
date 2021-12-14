@@ -226,7 +226,7 @@ public abstract class AbstractEditableGrid<T> extends DataGrid<T> {
             case EditorAction.EDIT -> doUpdateAction(item);
             case EditorAction.DELETE -> doDeleteAction(item);
             case EditorAction.RELOAD -> doReloadAction(item);
-            case EditorAction.ALL -> refresh();
+            case EditorAction.ALL -> doReloadAllAction();
         }
         changed();
         changed(item, changeAction);

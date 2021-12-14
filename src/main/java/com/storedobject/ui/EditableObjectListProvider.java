@@ -23,16 +23,20 @@ public class EditableObjectListProvider<T extends StoredObject> extends ObjectLi
 
     public EditableObjectListProvider(Class<T> objectClass, DataList<T> data) {
         super(objectClass, data);
-        ((ObjectMemoryList<T>)getItems().getData()).setLoader(this::load);
+        ((ObjectMemoryList<T>)getItems().getData()).setLoader(this::loadItem);
     }
 
     public EditableObjectListProvider(ObjectList<T> cache) {
         super(cache);
     }
 
-    private T load(Id id) {
+    private T loadItem(Id id) {
         T object = added.get(id);
-        return object == null ? StoredObject.get(getObjectClass(), id, isAllowAny()) : object;
+        return object == null ? loadItemFromDB(id) : object;
+    }
+
+    private T loadItemFromDB(Id id) {
+        return StoredObject.get(getObjectClass(), id, isAllowAny());
     }
 
     public boolean isChanged() {
@@ -230,7 +234,23 @@ public class EditableObjectListProvider<T extends StoredObject> extends ObjectLi
      * This method should be called to reset the status of all rows after all changes are saved.
      */
     public void savedAll() {
+        List<T> items = new ArrayList<>();
+        getData().stream().filter(item -> !isDeleted(item)).map(item -> loadItemFromDB(item.getId()))
+                .forEach(items::add);
         clearInt();
+        getData().clear();
+        refreshAll();
+        getData().load(items);
+        refreshAll();
+    }
+
+    void reloadAll() {
+        List<T> items = new ArrayList<>();
+        getData().stream().filter(item -> !isAdded(item)).map(item -> loadItemFromDB(item.getId())).forEach(items::add);
+        clearInt();
+        getData().clear();
+        refreshAll();
+        getData().load(items);
         refreshAll();
     }
 

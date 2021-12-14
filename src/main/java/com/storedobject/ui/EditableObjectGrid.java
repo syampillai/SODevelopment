@@ -36,6 +36,7 @@ public class EditableObjectGrid<T extends StoredObject> extends AbstractEditable
     private final Map<String, String> labels = new HashMap<>();
     private final Map<String, Span> spans = new HashMap<>();
     private final InternalObjectChangedListener internalObjectChangedListener = new InternalObjectChangedListener();
+    private Registration validatorRegistration;
 
     public EditableObjectGrid(Class<T> objectClass) {
         this(objectClass, false);
@@ -51,8 +52,6 @@ public class EditableObjectGrid<T extends StoredObject> extends AbstractEditable
 
     public EditableObjectGrid(Class<T> objectClass, Iterable<String> columns, boolean any) {
         this(objectClass, new ObjectMemoryList<>(objectClass, any), columns);
-        addConstructedListener(g ->
-                getRowEditor().addConstructedListener(e -> getEditor().setBinder(editor.getForm().getBinder())));
     }
 
     protected EditableObjectGrid(Class<T> objectClass, Filtered<T> list, Iterable<String> columns) {
@@ -207,8 +206,15 @@ public class EditableObjectGrid<T extends StoredObject> extends AbstractEditable
                 }
             }
         }
+        setUpEditor(editor);
+    }
+
+    void setUpEditor(ObjectEditor<T> editor) {
         editor.grid = this;
-        editor.addValidator(this::validate);
+        if(validatorRegistration != null) {
+            validatorRegistration.remove();
+        }
+        validatorRegistration = editor.addValidator(this::validate);
         editor.setBuffered(true);
         internalObjectChangedListener.set(editor);
     }
@@ -394,6 +400,7 @@ public class EditableObjectGrid<T extends StoredObject> extends AbstractEditable
                         .forEach(l -> l.inserted(object));
             }
             select(object);
+            insertedNow(object);
         }
     }
 
@@ -405,6 +412,7 @@ public class EditableObjectGrid<T extends StoredObject> extends AbstractEditable
                         .forEach(l -> l.updated(object));
             }
             select(object);
+            updatedNow(object);
         }
     }
 
@@ -415,6 +423,7 @@ public class EditableObjectGrid<T extends StoredObject> extends AbstractEditable
                 objectChangedListeners.stream().filter(l -> !(l instanceof InternalObjectChangedListener))
                         .forEach(l -> l.deleted(object));
             }
+            deletedNow(object);
         }
     }
 
@@ -426,6 +435,7 @@ public class EditableObjectGrid<T extends StoredObject> extends AbstractEditable
                         .forEach(l -> l.undeleted(object));
             }
             select(object);
+            undeletedNow(object);
         }
     }
 
@@ -442,7 +452,55 @@ public class EditableObjectGrid<T extends StoredObject> extends AbstractEditable
                         }
                     });
             select(object);
+            reloadedNow(object);
         }
+    }
+
+    @Override
+    protected void doReloadAllAction() {
+        provider().reloadAll();
+        reloadedAllNow();
+    }
+
+    /**
+     * This will be invoked once an item is inserted.
+     * @param item Item.
+     */
+    protected void insertedNow(T item) {
+    }
+
+    /**
+     * This will be invoked once an item is updated.
+     * @param item Item.
+     */
+    protected void updatedNow(T item) {
+    }
+
+    /**
+     * This will be invoked once an item is deleted.
+     * @param item Item.
+     */
+    protected void deletedNow(T item) {
+    }
+
+    /**
+     * This will be invoked once an item is undeleted.
+     * @param item Item.
+     */
+    protected void undeletedNow(T item) {
+    }
+
+    /**
+     * This will be invoked once an item is reloaded.
+     * @param item Item.
+     */
+    protected void reloadedNow(T item) {
+    }
+
+    /**
+     * This will be invoked once all items are reloaded.
+     */
+    protected void reloadedAllNow() {
     }
 
     private class InternalObjectChangedListener implements ObjectChangedListener<T> {

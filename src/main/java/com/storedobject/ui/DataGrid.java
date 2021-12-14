@@ -155,6 +155,13 @@ public class DataGrid<T> extends com.storedobject.vaadin.ListGrid<T>
         return o;
     }
 
+    /**
+     * Get the currently selected instance. If nothing is selected, a warning message is displayed and
+     * <code>null</code> is returned. (If you simply want to a find the selected instance without displaying
+     * a warning message, you may use {@link #getSelected()}).
+     *
+     * @return Selected instance or <code>null</code>.
+     */
     public T selected() {
         return selected(null);
     }
@@ -471,6 +478,13 @@ public class DataGrid<T> extends com.storedobject.vaadin.ListGrid<T>
      */
     protected void doReloadAction(T object) {
         refresh(object);
+    }
+
+    /**
+     * Carry out the "reload all" action. All validation are already done before invoking this.
+     */
+    protected void doReloadAllAction() {
+        refresh();
     }
 
     /**

@@ -61,33 +61,6 @@ public class ObjectListEditor<T extends StoredObject> extends EditableObjectGrid
     private final AcceptAbandonButtons acceptAbandonButtons;
     private Function<EditableList<T>, Boolean> saver;
 
-    private final ObjectChangedListener<T> objectChanges = new ObjectChangedListener<>() {
-
-        @Override
-        public void inserted(T object) {
-            add(object);
-            reloadAll.setVisible(allowReloadAll);
-        }
-
-        @Override
-        public void updated(T object) {
-            itemUpdated(object);
-            reload.setVisible(allowReload);
-            reloadAll.setVisible(allowReloadAll);
-        }
-
-        @Override
-        public void deleted(T object) {
-            itemDeleted(object);
-            changed();
-        }
-
-        @Override
-        public void undeleted(T object) {
-            reload(object);
-        }
-    };
-
     /**
      * Constructor.
      *
@@ -97,6 +70,7 @@ public class ObjectListEditor<T extends StoredObject> extends EditableObjectGrid
         this(objectClass, null);
     }
 
+
     /**
      * Constructor.
      *
@@ -104,7 +78,17 @@ public class ObjectListEditor<T extends StoredObject> extends EditableObjectGrid
      * @param columns Columns to edit.
      */
     public ObjectListEditor(Class<T> objectClass, Iterable<String> columns) {
-        super(objectClass, columns == null ? StoredObjectUtility.browseColumns(objectClass) : columns, false);
+        this(objectClass, columns, false);
+    }
+
+    /**
+     * Constructor.
+     *
+     * @param objectClass Class of objects.
+     * @param columns Columns to edit.
+     */
+    public ObjectListEditor(Class<T> objectClass, Iterable<String> columns, boolean any) {
+        super(objectClass, columns == null ? StoredObjectUtility.browseColumns(objectClass) : columns, any);
         buttonPanel = new ButtonLayout();
         saveAll = new Button("Save Changes", "save", e -> save()).asSmall().asPrimary();
         add = new Button("Add", e -> addIf()).asSmall();
@@ -280,13 +264,7 @@ public class ObjectListEditor<T extends StoredObject> extends EditableObjectGrid
         return viewer;
     }
 
-    /**
-     * Get the currently selected instance. If nothing is selected, a warning message is displayed and
-     * <code>null</code> is returned. (If you simply want to a find the selected instance without displaying
-     * a warning message, you may use {@link #getSelected()}).
-     *
-     * @return Selected instance or <code>null</code>.
-     */
+    @Override
     public T selected() {
         return selected(getEditor());
     }
@@ -505,7 +483,12 @@ public class ObjectListEditor<T extends StoredObject> extends EditableObjectGrid
         ObjectEditor<T> editor = getObjectEditor();
         editor.setIncludeFieldChecker(fieldName -> !fieldName.endsWith(".l") && !fieldName.endsWith(".a")
                 && !fieldName.endsWith(".c"));
-        setExternalEditor(editor);
+    }
+
+    @Override
+    void setUpEditor(ObjectEditor<T> editor) {
+        super.setUpEditor(editor);
+        editor.setDoNotSave(true);
     }
 
     /**
@@ -514,9 +497,7 @@ public class ObjectListEditor<T extends StoredObject> extends EditableObjectGrid
      * @param editor Editor to set.
      */
     public void setExternalEditor(ObjectEditor<T> editor) {
-        editor.removeObjectChangedListener(objectChanges);
-        editor.addObjectChangedListener(objectChanges);
-        editor.setDoNotSave(true);
+        setUpEditor(editor);
     }
 
     /**
@@ -524,7 +505,7 @@ public class ObjectListEditor<T extends StoredObject> extends EditableObjectGrid
      */
     public void view() {
         cancelEdit();
-        T selected = getSelected();
+        T selected = selected();
         if(selected != null) {
             viewer().viewObject(selected);
         }
@@ -629,5 +610,26 @@ public class ObjectListEditor<T extends StoredObject> extends EditableObjectGrid
      */
     public void setSaver(Function<EditableList<T>, Boolean> saver) {
         this.saver = saver;
+    }
+
+    @Override
+    protected void insertedNow(T object) {
+        reloadAll.setVisible(allowReloadAll);
+    }
+
+    @Override
+    protected void updatedNow(T object) {
+        reload.setVisible(allowReload);
+        reloadAll.setVisible(allowReloadAll);
+    }
+
+    @Override
+    protected void deletedNow(T object) {
+        changed();
+    }
+
+    @Override
+    protected void reloadedAllNow() {
+        changed();
     }
 }
