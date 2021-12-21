@@ -1,15 +1,15 @@
 package com.storedobject.ui;
 
 import com.storedobject.common.SORuntimeException;
-import com.storedobject.core.EditableList;
-import com.storedobject.core.StoredObject;
-import com.storedobject.core.StoredObjectUtility;
-import com.storedobject.core.Transaction;
+import com.storedobject.core.*;
 import com.storedobject.ui.util.AcceptAbandonButtons;
 import com.storedobject.vaadin.Button;
 import com.storedobject.vaadin.ButtonLayout;
 import com.vaadin.flow.component.HasValue;
 import com.vaadin.flow.component.grid.editor.Editor;
+import com.vaadin.flow.data.provider.ListDataProvider;
+import com.vaadin.flow.data.provider.Query;
+import com.vaadin.flow.function.SerializablePredicate;
 
 import java.util.function.Function;
 
@@ -569,6 +569,7 @@ public class ObjectListEditor<T extends StoredObject> extends EditableObjectGrid
     private void savedAll() {
         //noinspection unchecked
         ((EditableProvider<T>)getDataProvider()).savedAll();
+        setItems(getDataProvider());
     }
 
     /**

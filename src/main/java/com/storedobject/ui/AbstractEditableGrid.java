@@ -3,6 +3,7 @@ package com.storedobject.ui;
 import com.storedobject.core.Filtered;
 import com.storedobject.core.EditableList;
 import com.storedobject.core.EditorAction;
+import com.storedobject.core.Id;
 import com.vaadin.flow.component.Focusable;
 import com.vaadin.flow.component.HasValue;
 import com.vaadin.flow.component.dependency.CssImport;
@@ -230,6 +231,37 @@ public abstract class AbstractEditableGrid<T> extends DataGrid<T> {
         }
         changed();
         changed(item, changeAction);
+    }
+
+    @Override
+    public boolean add(T item) {
+        if(item != null) {
+            itemInserted(item);
+            return true;
+        }
+        return super.add(item);
+    }
+
+    public void delete(T item) {
+        if(item != null) {
+            itemDeleted(item);
+        }
+    }
+
+    public void update(T item) {
+        if(item != null) {
+            itemUpdated(item);
+        }
+    }
+
+    public void reload(T object) {
+        cancelEdit();
+        fireChanged(object, EditorAction.RELOAD);
+    }
+
+    public void reloadAll() {
+        cancelEdit();
+        fireChanged(null, EditorAction.ALL);
     }
 
     void changed() {

@@ -230,11 +230,21 @@ public abstract class AbstractObjectField<T extends StoredObject> extends Custom
         if(searcher == null) {
             searcher = createSearcher();
             if(searcher == null) {
-                searcher = ObjectBrowser.create(getObjectClass(),
-                        EditorAction.SEARCH | EditorAction.RELOAD | (isAllowAny() ? EditorAction.ALLOW_ANY : 0));
-                searcher.editor = editor();
+                createDefaultSearcher();
             }
         }
+        return searcher;
+    }
+
+    /**
+     * Create the default searcher.
+     *
+     * @return Searcher (which is an {@link ObjectBrowser}).
+     */
+    protected final ObjectBrowser<T> createDefaultSearcher() {
+        searcher = ObjectBrowser.create(getObjectClass(),
+                EditorAction.SEARCH | EditorAction.RELOAD | (isAllowAny() ? EditorAction.ALLOW_ANY : 0));
+        searcher.editor = editor();
         return searcher;
     }
 
@@ -251,7 +261,7 @@ public abstract class AbstractObjectField<T extends StoredObject> extends Custom
     @Override
     public void load(ObjectIterator<T> objects) {
         clear();
-        getSearcher().load(objects); // TODO May require filtering
+        getSearcher().load(objects);
     }
 
     /**

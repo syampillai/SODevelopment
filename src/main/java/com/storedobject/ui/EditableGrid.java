@@ -1,12 +1,9 @@
 package com.storedobject.ui;
 
 import com.storedobject.core.MemoryCache;
-import com.storedobject.core.EditableList;
 import com.storedobject.ui.util.SOFieldCreator;
 import com.storedobject.vaadin.DataList;
-import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.DetachEvent;
 import com.vaadin.flow.component.HasValue;
 import com.vaadin.flow.component.grid.editor.Editor;
 import com.vaadin.flow.data.binder.Binder;
@@ -18,7 +15,10 @@ import com.vaadin.flow.shared.Registration;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
 import java.util.stream.Stream;
 
 /**
@@ -36,7 +36,7 @@ public class EditableGrid<T> extends AbstractEditableGrid<T> implements Editable
     private final Binder<T> binder;
     private boolean readOnly = false;
     private final Map<String, HasValue<?, ?>> fields = new HashMap<>();
-    private final Refresher refresher = new Refresher();
+    private final BiFunction<T, Boolean, T> loader;
 
     /**
      * Constructor.
@@ -44,7 +44,7 @@ public class EditableGrid<T> extends AbstractEditableGrid<T> implements Editable
      * @param objectClass Object class.
      */
     public EditableGrid(Class<T> objectClass) {
-        this(objectClass, null);
+        this(objectClass, null, null);
     }
 
     /**
@@ -54,9 +54,30 @@ public class EditableGrid<T> extends AbstractEditableGrid<T> implements Editable
      * @param columns Columns for the grid.
      */
     public EditableGrid(Class<T> objectClass, Iterable<String> columns) {
+        this(objectClass, columns, null);
+    }
+
+    /**
+     * Constructor.
+     *
+     * @param objectClass Object class.
+     * @param loader Loader that can load an item again (mostly for refreshing or undoing).
+     */
+    public EditableGrid(Class<T> objectClass, BiFunction<T, Boolean, T> loader) {
+        this(objectClass, null, null);
+    }
+
+    /**
+     * Constructor.
+     *
+     * @param objectClass Object class.
+     * @param columns Columns for the grid.
+     * @param loader Loader that can load an item again (mostly for refreshing or undoing).
+     */
+    public EditableGrid(Class<T> objectClass, Iterable<String> columns, BiFunction<T, Boolean, T> loader) {
         super(objectClass, new MemoryCache<>(), columns);
+        this.loader = loader;
         binder = new Binder<>(objectClass);
-        refresher.change();
         setHeight("100%");
         setWidth("100%");
         addConstructedListener(o -> con());
@@ -64,24 +85,22 @@ public class EditableGrid<T> extends AbstractEditableGrid<T> implements Editable
 
     @Override
     protected boolean isValid(ListDataProvider<T> dataProvider) {
-        return dataProvider instanceof ListProvider && super.isValid(dataProvider);
+        return dataProvider instanceof EditableListProvider<T>;
     }
 
     @Override
     protected ListProvider<T> createListDataProvider(DataList<T> data) {
-        return new ListProvider<>(getDataClass(), data);
+        BiFunction<T, Boolean, T> loader = (item, reload) ->
+                this.loader == null ? item : this.loader.apply(item, reload);
+        return new EditableListProvider<>(getDataClass(), data, loader);
     }
 
-    @Override
-    protected void onAttach(AttachEvent attachEvent) {
-        super.onAttach(attachEvent);
-        refresher.set();
+    public Registration addValueChangeTracker(BiConsumer<AbstractListProvider<T>, Boolean> tracker) {
+        return provider().addValueChangeTracker(tracker);
     }
 
-    @Override
-    protected void onDetach(DetachEvent detachEvent) {
-        super.onDetach(detachEvent);
-        refresher.remove();
+    EditableListProvider<T> provider() {
+        return (EditableListProvider<T>) getDataProvider();
     }
 
     /**
@@ -155,8 +174,6 @@ public class EditableGrid<T> extends AbstractEditableGrid<T> implements Editable
         constructEditor();
         Editor<T> editor = getEditor();
         editor.setBinder(binder);
-        // TODO
-        //editor.addSaveListener(e -> getEditableList().update(e.getItem()));
     }
 
     private void constructEditor() {
@@ -288,13 +305,6 @@ public class EditableGrid<T> extends AbstractEditableGrid<T> implements Editable
     }
 
     /**
-     * Clear all the entries.
-     */
-    public void clear() {
-        super.clear();  // TODO
-    }
-
-    /**
      * Edit a given item.
      *
      * @param item Item to edit.
@@ -363,7 +373,7 @@ public class EditableGrid<T> extends AbstractEditableGrid<T> implements Editable
             }
             editingItem = null;
             e.closeEditor();
-            select(item);
+            itemUpdated(item);
         }
     }
 
@@ -376,158 +386,52 @@ public class EditableGrid<T> extends AbstractEditableGrid<T> implements Editable
         return editingItem;
     }
 
-    private class Refresher implements DataList.RefreshListener<T> {
-
-        private Registration registration;
-
-        void change() {
-            if(registration != null) {
-                registration.remove();
-                // TODO
-                //registration = ((Data<T>)getEditableList()).getItems().addRefreshListener(this);
-                refresh();
-            }
-        }
-
-        void set() {
-            if(registration == null) {
-                // TODO
-                //registration = ((Data<T>)getEditableList()).getItems().addRefreshListener(this);
-                refresh();
-            }
-        }
-
-        void remove() {
-            if(registration != null) {
-                registration.remove();
-                registration = null;
-            }
-        }
-
-        @Override
-        public void refresh() {
-            EditableGrid.this.refresh();
-        }
-
-        @Override
-        public void refresh(T item) {
-            EditableGrid.this.refresh(item);
+    @Override
+    protected void doInsertAction(T object) {
+        if(provider().add(object, true)) {
+            select(object);
+            changed();
         }
     }
 
-    static class Data<O> extends ListProvider<O> implements EditableList<O> {
-
-        private final Set<O> added = new HashSet<>();
-        private final Set<O> edited = new HashSet<>();
-        private final Set<O> deleted = new HashSet<>();
-        private boolean fromClient = true;
-
-        public Data(Class<O> dataClass, DataList<O> data) {
-            super(dataClass, data);
+    @Override
+    protected void doUpdateAction(T object) {
+        if(provider().update(object, true)) {
+            provider().fireChanges(isFromClient());
+            select(object);
+            changed();
         }
+    }
 
-        public boolean isChanged() {
-            return !added.isEmpty() || !edited.isEmpty() || !deleted.isEmpty();
+    @Override
+    protected void doDeleteAction(T object) {
+        if(provider().delete(object, true)) {
+            provider().fireChanges(isFromClient());
+            select(object);
+            changed();
         }
+    }
 
-        public void setFromClient(boolean fromClient) {
-            this.fromClient = fromClient;
+    @Override
+    protected void doUndeleteAction(T object) {
+        if(provider().undelete(object, true)) {
+            provider().fireChanges(isFromClient());
+            select(object);
+            changed();
         }
+    }
 
-        public boolean isFromClient() {
-            return fromClient;
+    @Override
+    protected void doReloadAction(T object) {
+        int action = provider().reload(object, true);
+        if(action > 0) {
+            provider().fireChanges(isFromClient());
+            select(object);
+            changed();
         }
+    }
 
-        public void clear() {
-            savedAll();
-            getItems().clear();
-        }
-
-        public void savedAll() {
-            added.clear();
-            deleted.clear();
-            edited.clear();
-        }
-
-        @Override
-        public boolean contains(Object item) {
-            //noinspection SuspiciousMethodCalls
-            return getItems().contains(item);
-        }
-
-        @Override
-        public boolean isAdded(O item) {
-            return added.contains(item);
-        }
-
-        @Override
-        public boolean isDeleted(O item) {
-            return deleted.contains(item);
-        }
-
-        @Override
-        public boolean isEdited(O item) {
-            return edited.contains(item);
-        }
-
-        @Override
-        public Stream<O> streamAll() {
-            return getItems().stream();
-        }
-
-        @Override
-        public int size() {
-            return getItems().size();
-        }
-
-        @Override
-        public boolean append(O item) {
-            return getItems().add(item);
-        }
-
-        @Override
-        public boolean add(O item) {
-            added.add(item);
-            return getItems().add(item);
-        }
-
-        @Override
-        public boolean delete(O item) {
-            if(isDeleted(item)) {
-                return false;
-            }
-            if(isAdded(item)) {
-                added.remove(item);
-                return true;
-            }
-            deleted.add(item);
-            return true;
-        }
-
-        @Override
-        public boolean undelete(O item) {
-            if(!isDeleted(item)) {
-                return false;
-            }
-            deleted.remove(item);
-            return true;
-        }
-
-        @Override
-        public boolean update(O item) {
-            if(isAdded(item) || isEdited(item)) {
-                return false;
-            }
-            if(isDeleted(item)) {
-                deleted.remove(item);
-            }
-            edited.add(item);
-            return true;
-        }
-
-        public void removeDeleted() {
-            getItems().removeIf(deleted::contains);
-            deleted.clear();
-        }
+    @Override
+    protected void doReloadAllAction() {
     }
 }

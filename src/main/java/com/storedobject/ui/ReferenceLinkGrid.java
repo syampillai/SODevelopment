@@ -156,9 +156,11 @@ public class ReferenceLinkGrid<T extends StoredObject> extends EditableObjectGri
     public boolean add(T item) {
         if(item != null && Id.isNull(item.getId())) {
             itemInserted(item);
-            return true;
         }
-        return super.add(item);
+        if(item != null) {
+            super.add(item);
+        }
+        return true;
     }
 
     @Override
@@ -322,6 +324,12 @@ public class ReferenceLinkGrid<T extends StoredObject> extends EditableObjectGri
             }
             select(object);
         }
+    }
+
+    @Override
+    protected void doReloadAllAction() {
+        refresh();
+        reloadedAllNow();
     }
 
     @Override

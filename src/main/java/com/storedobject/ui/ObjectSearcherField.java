@@ -67,4 +67,11 @@ public class ObjectSearcherField<T extends StoredObject> extends ObjectGetField<
     protected ObjectEditor<T> editor() {
         return editor;
     }
+
+    @Override
+    protected ObjectBrowser<T> createSearcher() {
+        ObjectBrowser<T> b = createDefaultSearcher();
+        editor.refreshMe(b);
+        return b;
+    }
 }

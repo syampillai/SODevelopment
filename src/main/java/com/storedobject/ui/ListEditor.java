@@ -9,6 +9,7 @@ import com.vaadin.flow.component.HasValue;
 import com.vaadin.flow.component.grid.editor.Editor;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 
 /**
@@ -55,7 +56,7 @@ public class ListEditor<T> extends EditableGrid<T> {
      * @param objectClass Class of objects.
      */
     public ListEditor(Class<T> objectClass) {
-        this(objectClass, null);
+        this(objectClass, null, null);
     }
 
     /**
@@ -65,7 +66,28 @@ public class ListEditor<T> extends EditableGrid<T> {
      * @param columns Columns to edit.
      */
     public ListEditor(Class<T> objectClass, Iterable<String> columns) {
-        super(objectClass, columns);
+        this(objectClass, columns, null);
+    }
+
+    /**
+     * Constructor.
+     *
+     * @param objectClass Class of objects.
+     * @param loader Loader that can load an item again (mostly for refreshing or undoing).
+     */
+    public ListEditor(Class<T> objectClass, BiFunction<T, Boolean, T> loader) {
+        this(objectClass, null, loader);
+    }
+
+    /**
+     * Constructor.
+     *
+     * @param objectClass Class of objects.
+     * @param columns Columns to edit.
+     * @param loader Loader that can load an item again (mostly for refreshing or undoing).
+     */
+    public ListEditor(Class<T> objectClass, Iterable<String> columns, BiFunction<T, Boolean, T> loader) {
+        super(objectClass, columns, loader);
         saveAll = new Button("Save Changes", "save", e -> save()).asSmall().asPrimary();
         add = new Button("Add", e -> addIf()).asSmall();
         edit = new Button("Edit", e -> editIf()).asSmall();
@@ -279,11 +301,17 @@ public class ListEditor<T> extends EditableGrid<T> {
     @Override
     void changed() {
         super.changed();
+        boolean v = !isReadOnly();
         if(add != null) {
-            boolean v = !isReadOnly();
             add.setVisible(v && allowAdd);
+        }
+        if(edit != null) {
             edit.setVisible(v && allowEdit);
+        }
+        if(delete != null) {
             delete.setVisible(v && allowDelete);
+        }
+        if(saveAll != null) {
             saveAll.setVisible(allowSaveAll && getEditableList().isSavePending());
         }
     }
@@ -318,14 +346,11 @@ public class ListEditor<T> extends EditableGrid<T> {
             return;
         }
         if(saver == null) {
-            // TODO
-            //((Data<T>)getEditableList()).removeDeleted();
+            provider().removeDeleted();
         }
         if(saver == null || saver.apply(this.getEditableList())) {
-            // TODO
-            //((Data<T>)getEditableList()).savedAll();
+            provider().savedAll();
             changed();
-            refresh();
         }
     }
 

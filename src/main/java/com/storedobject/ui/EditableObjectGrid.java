@@ -63,7 +63,7 @@ public class EditableObjectGrid<T extends StoredObject> extends AbstractEditable
 
     @Override
     protected boolean isValid(ListDataProvider<T> dataProvider) {
-        return dataProvider instanceof EditableObjectListProvider && super.isValid(dataProvider);
+        return dataProvider instanceof EditableObjectListProvider;
     }
 
     @Override
@@ -101,33 +101,11 @@ public class EditableObjectGrid<T extends StoredObject> extends AbstractEditable
 
     @Override
     public boolean add(T item) {
-        if(item != null && Id.isNull(item.getId())) {
+        if(Id.isNull(item.getId())) {
             itemInserted(item);
             return true;
         }
         return super.add(item);
-    }
-
-    public void delete(T item) {
-        if(item != null) {
-            itemDeleted(item);
-        }
-    }
-
-    public void update(T item) {
-        if(item != null) {
-            itemUpdated(item);
-        }
-    }
-
-    public void reload(T object) {
-        cancelEdit();
-        fireChanged(object, EditorAction.RELOAD);
-    }
-
-    public void reloadAll() {
-        cancelEdit();
-        fireChanged(null, EditorAction.ALL);
     }
 
     /**

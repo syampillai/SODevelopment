@@ -141,7 +141,7 @@ public class ActionGrid<T> extends ListGrid<T> {
      *               the {@link View} will be closed.
      */
     public ActionGrid(Class<T> objectClass, List<T> items, Iterable<String> columns, Component message, Runnable action) {
-        super(objectClass, items, columns);
+        super(objectClass, items, DataGrid.columns(objectClass, columns));
         this.action = action;
         this.message = message;
         setWidth("60vw");

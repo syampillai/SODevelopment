@@ -1,42 +1,36 @@
 package com.storedobject.ui;
 
-import com.storedobject.core.ObjectList;
-import com.storedobject.core.*;
+import com.storedobject.core.EditableList;
+import com.storedobject.core.EditorAction;
 import com.storedobject.vaadin.DataList;
 import com.vaadin.flow.shared.Registration;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
 import java.util.stream.Stream;
 
-public class EditableObjectListProvider<T extends StoredObject> extends ObjectListProvider<T>
-        implements EditableProvider<T> {
+public class EditableListProvider<T> extends ListProvider<T> implements EditableProvider<T> {
 
-    private final Map<Id, T> added = new HashMap<>();
-    private final Map<Id, T> edited = new HashMap<>();
-    private final List<Id> deleted = new ArrayList<>();
+    private final List<T> added = new ArrayList<>();
+    private final List<T> edited = new ArrayList<>();
+    private final List<T> deleted = new ArrayList<>();
     private final OldValue oldValue = new OldValue();
     private List<BiConsumer<AbstractListProvider<T>, Boolean>> trackers;
+    private final BiFunction<T, Boolean, T> loader;
 
-    public EditableObjectListProvider(Class<T> objectClass, DataList<T> data) {
+    public EditableListProvider(Class<T> objectClass, DataList<T> data, BiFunction<T, Boolean, T> loader) {
         super(objectClass, data);
-        ((ObjectMemoryList<T>)getItems().getData()).setLoader(this::loadItem);
+        if(loader == null) {
+            loader = (i, ignored) -> i;
+        }
+        this.loader = loader;
     }
 
-    public EditableObjectListProvider(ObjectList<T> cache) {
-        super(cache);
-    }
-
-    private T loadItem(Id id) {
-        T object = added.get(id);
-        return object == null ? loadItemFromDB(id) : object;
-    }
-
-    private T loadItemFromDB(Id id) {
-        return StoredObject.get(getObjectClass(), id, isAllowAny());
+    private List<T> getList() {
+        //noinspection unchecked
+        return (List<T>) getData();
     }
 
     public boolean isChanged() {
@@ -72,9 +66,8 @@ public class EditableObjectListProvider<T extends StoredObject> extends ObjectLi
         }
     }
 
-    @Override
-    public int size() {
-        return super.size();
+    private int size() {
+        return getData().size();
     }
 
     @Override
@@ -89,31 +82,27 @@ public class EditableObjectListProvider<T extends StoredObject> extends ObjectLi
         edited.clear();
     }
 
-    @Override
     public void reload() {
-        List<T> items = getData();
-        added.values().forEach(items::remove);
+        List<T> items = getList();
+        added.forEach(items::remove);
         clearInt();
-        super.reload();
+        items.forEach(o -> loader.apply(o, true));
+        refreshAll();
     }
 
     @Override
     public int reload(T item, boolean refresh) {
-        if(item == null) {
-            return 0;
-        }
-        Id id = item.getId();
-        if(added.containsKey(id)) {
-            getData().remove(item);
-            added.remove(id);
+        if(isAdded(item)) {
+            getList().remove(item);
+            added.remove(item);
             if(refresh) {
                 refreshAll();
             }
             return EditorAction.DELETE;
         }
-        deleted.remove(id);
-        edited.remove(id);
-        item = getData().refresh(item);
+        deleted.remove(item);
+        edited.remove(item);
+        loader.apply(item, true);
         if(refresh) {
             refreshItem(item);
         }
@@ -135,22 +124,15 @@ public class EditableObjectListProvider<T extends StoredObject> extends ObjectLi
         if(item == null) {
             return false;
         }
-        if(item.created()) {
-            item.makeVirtual();
-            getData().add(item);
-            added.put(item.getId(), item);
+        if(deleted.remove(item)) {
             return true;
         }
-        Id id = item.getId();
-        if(deleted.remove(id)) {
-            return true;
+        if(edited.remove(item)) {
+            getList().remove(item);
         }
-        if(edited.remove(id) != null) {
-            getData().remove(item);
-        }
-        getData().add(item);
+        getList().add(item);
         if(!append) {
-            added.put(id, item);
+            added.add(item);
         }
         return true;
     }
@@ -168,24 +150,22 @@ public class EditableObjectListProvider<T extends StoredObject> extends ObjectLi
 
     @Override
     public boolean delete(T item, boolean refresh) {
-        if(item == null || item.created() || !contains(item)) {
+        if(item == null || !getList().contains(item)) {
             return false;
         }
-        Id id = getId(item);
-        if(added.containsKey(id)) {
-            getData().remove(item);
-            added.remove(id);
+        if(deleted.contains(item)) {
+            return false;
+        }
+        if(added.contains(item)) {
+            added.remove(item);
+            getList().remove(item);
             if(refresh) {
                 refreshAll();
             }
             return true;
         }
-        if(deleted.contains(id)) {
-            return false;
-        }
-        deleted.add(id);
-        edited.remove(id);
-        item = getData().refresh(item);
+        deleted.add(item);
+        edited.remove(item);
         if(refresh) {
             refreshItem(item);
         }
@@ -194,7 +174,20 @@ public class EditableObjectListProvider<T extends StoredObject> extends ObjectLi
 
     @Override
     public boolean undelete(T item, boolean refresh) {
-        return reload(item, refresh) > 0;
+        if(undeleteInt(item)) {
+            if(refresh) {
+                refreshItem(item);
+            }
+            return true;
+        }
+        return false;
+    }
+
+    private boolean undeleteInt(T item) {
+        if(item == null) {
+            return false;
+        }
+        return deleted.remove(item);
     }
 
     @Override
@@ -209,78 +202,66 @@ public class EditableObjectListProvider<T extends StoredObject> extends ObjectLi
     }
 
     private boolean updateInt(T item) {
-        if(item == null || item.created() || !contains(item)) {
+        if(item == null || !getList().contains(item)) {
             return false;
         }
-        Id id = item.getId();
-        if(added.containsKey(id)) {
+        if(added.contains(item)) {
             return true;
         }
-        if(edited.containsKey(id)) {
+        if(edited.contains(item)) {
             return true;
         }
-        deleted.remove(id);
-        edited.put(id, item);
+        deleted.remove(item);
+        edited.add(item);
         return true;
-    }
-
-    @Override
-    public void load(ObjectIterator<T> objects) {
-        clearInt();
-        super.load(objects);
     }
 
     /**
      * This method should be called to reset the status of all rows after all changes are saved.
      */
+    @Override
     public void savedAll() {
-        List<T> items = new ArrayList<>();
-        getData().stream().filter(item -> !isDeleted(item)).map(item -> loadItemFromDB(item.getId()))
-                .forEach(items::add);
         clearInt();
-        getData().load(items);
-        refreshAll();
-    }
-
-    void reloadAll() {
-        List<T> items = new ArrayList<>();
-        getData().stream().filter(item -> !isAdded(item)).map(item -> loadItemFromDB(item.getId())).forEach(items::add);
-        getData().load(items);
         refreshAll();
     }
 
     @Override
     public boolean isAdded(T item) {
-        return item != null && added.containsKey(item.getId());
+        return item != null && added.contains(item);
     }
 
     @Override
     public boolean isDeleted(T item) {
-        return item != null && deleted.contains(item.getId());
+        return item != null && deleted.contains(item);
     }
 
     @Override
     public boolean isEdited(T item) {
-        return item != null && edited.containsKey(item.getId());
+        return item != null && edited.contains(item);
     }
 
     @Override
     public Stream<T> streamAdded() {
-        return added.values().stream();
+        return added.stream();
     }
 
     @Override
     public Stream<T> streamEdited() {
-        return edited.values().stream();
+        return edited.stream();
     }
 
     @Override
     public Stream<T> streamDeleted() {
-        return getData().stream().filter(o -> deleted.contains(o.getId()));
+        return deleted.stream();
     }
 
     EditableList<T> getOldValue() {
         return oldValue;
+    }
+
+    void removeDeleted() {
+        deleted.forEach(item -> getList().remove(item));
+        deleted.clear();
     }
 
     private class OldValue implements EditableList<T> {
@@ -307,9 +288,8 @@ public class EditableObjectListProvider<T extends StoredObject> extends ObjectLi
 
         @Override
         public Stream<T> streamAll() {
-            //noinspection unchecked
-            return EditableObjectListProvider.this.streamAll().filter(item -> !EditableObjectListProvider.this.isAdded(item))
-                    .map(item -> (T)StoredObject.get(item.getClass(), item.getId()));
+            return EditableListProvider.this.streamAll().filter(item -> !EditableListProvider.this.isAdded(item))
+                    .map(item -> loader.apply(item, false));
         }
 
         @Override
@@ -334,7 +314,7 @@ public class EditableObjectListProvider<T extends StoredObject> extends ObjectLi
 
         @Override
         public int size() {
-            return EditableObjectListProvider.this.size() - added.size();
+            return EditableListProvider.this.size() - added.size();
         }
 
         @Override

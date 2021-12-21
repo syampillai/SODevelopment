@@ -7,6 +7,7 @@ import com.vaadin.flow.data.provider.ListDataProvider;
 import com.vaadin.flow.shared.Registration;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.function.Predicate;
 
@@ -72,6 +73,11 @@ public class ObjectListGrid<T extends StoredObject> extends DataGrid<T> implemen
     public void load(T object) {
         ObjectLoader.super.load(ObjectIterator.create(object));
         select(object);
+    }
+
+    @Override
+    public void load(Collection<T> items) {
+        ObjectLoader.super.load(items);
     }
 
     /**

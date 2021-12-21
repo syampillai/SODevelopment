@@ -1334,6 +1334,7 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
             if(searchFilter != null) {
                 f.set(searchFilter);
             }
+            refreshMe((ObjectBrowser<T>) searcher);
             searchFilter = f;
         }
     }
@@ -1528,10 +1529,6 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
         objectChangedListeners.forEach(ocl -> ocl.inserted(object));
         inserted(object);
         saved(object);
-        if(!doNotSave && searcher instanceof ObjectChangedListener) {
-            //noinspection unchecked
-            ((ObjectChangedListener<T>) searcher).inserted(object);
-        }
     }
 
     /**
@@ -1550,10 +1547,6 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
         updated(object);
         saved(object);
         objectChangedListeners.forEach(ocl -> ocl.updated(object));
-        if(!doNotSave && searcher instanceof ObjectChangedListener) {
-            //noinspection unchecked
-            ((ObjectChangedListener<T>) searcher).updated(object);
-        }
     }
 
     /**
@@ -1571,10 +1564,6 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
         }
         deleted(object);
         objectChangedListeners.forEach(ocl -> ocl.deleted(object));
-        if(searcher instanceof ObjectChangedListener) {
-            //noinspection unchecked
-            ((ObjectChangedListener<T>) searcher).deleted(object);
-        }
     }
 
     @Override
@@ -2551,5 +2540,34 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
      * @throws Exception if any validation error to be notified.
      */
     public void savingExtraInfo(StoredObject extraInfo) throws Exception {
+    }
+
+    /**
+     * Ask the editor to refresh the given grid whenever object on the editor is changed (inserted/updated/deleted).
+     * @param grid Grid to refresh.
+     */
+    public void refreshMe(ObjectListGrid<T> grid) {
+        addObjectChangedListener(new ObjectChangedListener<>() {
+            @Override
+            public void inserted(T object) {
+                if(!doNotSave) {
+                    grid.itemInserted(object);
+                }
+            }
+
+            @Override
+            public void updated(T object) {
+                if(!doNotSave) {
+                    grid.refresh(object);
+                }
+            }
+
+            @Override
+            public void deleted(T object) {
+                if(!doNotSave) {
+                    grid.itemDeleted(object);
+                }
+            }
+        });
     }
 }

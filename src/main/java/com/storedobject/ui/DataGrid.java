@@ -1,5 +1,6 @@
 package com.storedobject.ui;
 
+import com.storedobject.common.SORuntimeException;
 import com.storedobject.core.Filtered;
 import com.storedobject.core.MemoryCache;
 import com.storedobject.core.StoredObject;
@@ -68,7 +69,9 @@ public class DataGrid<T> extends com.storedobject.vaadin.ListGrid<T>
         if(dataProvider instanceof AbstractListProvider && isValid(dataProvider)) {
             dataView = super.setItems(dataProvider);
         } else {
-            clear();
+            if(dataProvider != null) {
+                throw new SORuntimeException("Invalid DP: " + dataProvider.getClass().getName());
+            }
         }
         return dataView;
     }
@@ -219,7 +222,7 @@ public class DataGrid<T> extends com.storedobject.vaadin.ListGrid<T>
      * @param object Item that is appended.
      */
     protected void doAppendAction(T object) {
-        add(object);
+        super.add(object);
     }
 
     /**
@@ -280,7 +283,7 @@ public class DataGrid<T> extends com.storedobject.vaadin.ListGrid<T>
      * @param object Item that is newly added.
      */
     protected void doInsertAction(T object) {
-        add(object);
+        super.add(object);
     }
 
     /**

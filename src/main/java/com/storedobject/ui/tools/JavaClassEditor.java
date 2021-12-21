@@ -378,7 +378,7 @@ public class JavaClassEditor extends ObjectEditor<JavaClass> {
         private TextField module;
 
         public DownloadAll() {
-            super("Download All Data Classes");
+            super("Download All Logic Classes");
         }
 
         @Override
