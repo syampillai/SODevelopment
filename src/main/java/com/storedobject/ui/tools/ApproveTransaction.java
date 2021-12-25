@@ -30,7 +30,7 @@ public class ApproveTransaction extends ObjectBrowser<PseudoTran> {
 
     private ApproveTransaction(boolean load) {
         super(PseudoTran.class, EditorAction.RELOAD, "Approve Transactions");
-        setFilter("Status<3");
+        setFixedFilter("Status<3", false);
         setOrderBy("Date,No", false);
         if(load) {
             load();
@@ -54,7 +54,8 @@ public class ApproveTransaction extends ObjectBrowser<PseudoTran> {
     @Override
     public void loaded() {
         super.loaded();
-        Application.warning("Entries: " + size());
+        clearAlerts();
+        message("Entries: " + size());
     }
 
     @Override

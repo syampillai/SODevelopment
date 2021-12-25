@@ -59,8 +59,9 @@ public class ObjectListProvider<T extends StoredObject> extends AbstractListProv
         return getData().getLoadFilter().getLoadingPredicate();
     }
 
-    private String cond(String cond) {
-        return systemFilter.getFilter(fixedFilter.getFilter(cond));
+    @Override
+    public String getEffectiveCondition(String condition) {
+        return systemFilter.getFilter(fixedFilter.getFilter(condition));
     }
 
     @Override
@@ -75,7 +76,7 @@ public class ObjectListProvider<T extends StoredObject> extends AbstractListProv
     private void loadInt(String condition, String orderBy, boolean any) {
         setOrderBy(orderBy, false);
         setMaster(null, false);
-        getData().load(cond(condition), orderBy, any);
+        getData().load(getEffectiveCondition(condition), orderBy, any);
         refreshAll();
     }
 
@@ -92,7 +93,7 @@ public class ObjectListProvider<T extends StoredObject> extends AbstractListProv
         setOrderBy(orderBy, false);
         setMaster(null, false);
         setLinkType(linkType, false);
-        getData().load(linkType, master, cond(condition), orderBy, any);
+        getData().load(linkType, master, getEffectiveCondition(condition), orderBy, any);
         refreshAll();
     }
 

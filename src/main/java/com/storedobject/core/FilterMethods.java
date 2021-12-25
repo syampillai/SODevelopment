@@ -146,6 +146,17 @@ public interface FilterMethods<T extends StoredObject> {
     }
 
     /**
+     * Get the "effective" filter condition that must be applied for loading. The result from
+     * {@link #getFilterCondition()} will be passed as a parameter to this method to get a modified "condition" if
+     * required.
+     * @param condition Condition obtained from {@link #getFilterCondition()}.
+     * @return Modified condition or the same if no modification required.
+     */
+    default String getEffectiveCondition(String condition) {
+        return condition;
+    }
+
+    /**
      * This method is called whenever a filter condition is changed. Methods with default implementation already
      * invoke this method. If any of those methods are overridden, make sure that it invokes this method so that logic
      * to handle filter changes can be coded here.

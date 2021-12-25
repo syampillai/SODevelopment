@@ -58,6 +58,11 @@ public interface ObjectLoader<T extends StoredObject> extends com.storedobject.c
         return delegate().getFixedFilter();
     }
 
+    @Override
+    default String getEffectiveCondition(String condition) {
+        return delegate().getEffectiveCondition(condition);
+    }
+
     /**
      * Set a fixed filter that will be automatically added to any filter that is set later.
      *

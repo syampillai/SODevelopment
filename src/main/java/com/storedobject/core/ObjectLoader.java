@@ -206,6 +206,7 @@ public interface ObjectLoader<T extends StoredObject> extends FilterMethods<T> {
         f.setCondition(condition);
         f.setOrderBy(orderedBy);
         f.setAny(any);
+        condition = getEffectiveCondition(condition);
         StoredObject master = getMaster();
         if(master == null) {
             load(StoredObject.list(getObjectClass(), condition, orderedBy, any));
@@ -336,6 +337,7 @@ public interface ObjectLoader<T extends StoredObject> extends FilterMethods<T> {
         f.setCondition(condition);
         f.setOrderBy(orderedBy);
         f.setAny(any);
+        condition = getEffectiveCondition(condition);
         load(master.listLinks(linkType, getObjectClass(), condition, orderedBy, any));
     }
 
