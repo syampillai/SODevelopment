@@ -120,7 +120,7 @@ public class ItemComboField<I extends InventoryItem> extends ObjectComboField<I>
     }
 
     private void newFilter() {
-        setFilter(filter);
+        setFixedFilter(filter, false);
         applyFilter();
     }
 

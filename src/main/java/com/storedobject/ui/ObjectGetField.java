@@ -382,7 +382,7 @@ public class ObjectGetField<T extends StoredObject> extends AbstractObjectField<
             init(getMethodName, listMethodName);
         }
 
-        GetSupplier() {
+        public GetSupplier() {
         }
 
         void init(String getMethodName, String listMethodName) {
@@ -490,7 +490,8 @@ public class ObjectGetField<T extends StoredObject> extends AbstractObjectField<
          * @param getMethodName Name of the "get" method.
          * @param listMethodName Name of the "list" method.
          */
-        public GetTypedSupplier(ObjectProvider<?> typeObjectProvider, Class<O> objectClass, String getMethodName, String listMethodName) {
+        public GetTypedSupplier(ObjectProvider<?> typeObjectProvider, Class<O> objectClass, String getMethodName,
+                                String listMethodName) {
             super();
             this.objectClass = objectClass;
             this.typeObjectProvider = typeObjectProvider;
@@ -509,18 +510,22 @@ public class ObjectGetField<T extends StoredObject> extends AbstractObjectField<
         @Override
         public O getTextObject(SystemEntity systemEntity, String value) throws Exception {
             if(isSE()) {
-                return (O) getMethod.invoke(null, systemEntity, value, typeObjectProvider.getObject());
+                return (O) getMethod.invoke(null, systemEntity, value, getTypeObject());
             }
-            return (O) getMethod.invoke(null, value, typeObjectProvider.getObject());
+            return (O) getMethod.invoke(null, value, getTypeObject());
         }
 
         @SuppressWarnings("unchecked")
         @Override
         public ObjectIterator<O> listTextObjects(SystemEntity systemEntity, String value) throws Exception {
             if(isSE()) {
-                return (ObjectIterator<O>)listMethod.invoke(null, systemEntity, value, typeObjectProvider.getObject());
+                return (ObjectIterator<O>)listMethod.invoke(null, systemEntity, value, getTypeObject());
             }
-            return (ObjectIterator<O>)listMethod.invoke(null, value, typeObjectProvider.getObject());
+            return (ObjectIterator<O>)listMethod.invoke(null, value, getTypeObject());
+        }
+
+        public StoredObject getTypeObject() {
+            return typeObjectProvider.getObject();
         }
     }
 }

@@ -86,8 +86,9 @@ public class ObjectForestProvider<T extends StoredObject> extends AbstractTreePr
         }
     }
 
-    private String cond(String cond) {
-        return systemFilter.getFilter(fixedFilter.getFilter(cond));
+    @Override
+    public String getEffectiveCondition(String condition) {
+        return systemFilter.getFilter(fixedFilter.getFilter(condition));
     }
 
     @Override
@@ -102,7 +103,7 @@ public class ObjectForestProvider<T extends StoredObject> extends AbstractTreePr
     private void loadInt(String condition, String orderBy, boolean any) {
         setOrderBy(orderBy, false);
         setMaster(null, false);
-        forest.load(cond(condition), orderBy, any);
+        forest.load(getEffectiveCondition(condition), orderBy, any);
         refreshAll();
     }
 
@@ -119,7 +120,7 @@ public class ObjectForestProvider<T extends StoredObject> extends AbstractTreePr
         setOrderBy(orderBy, false);
         setMaster(null, false);
         setLinkType(linkType, false);
-        forest.load(linkType, master, cond(condition), orderBy, any);
+        forest.load(linkType, master, getEffectiveCondition(condition), orderBy, any);
         refreshAll();
     }
 

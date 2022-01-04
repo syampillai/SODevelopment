@@ -452,8 +452,7 @@ public abstract class AbstractSendAndReceiveMaterial<T extends InventoryTransfer
                 super.formConstructed();
                 quantityField = (QuantityField) getField("Quantity");
                 //noinspection unchecked
-                ObjectField<InventoryItem> itemField = (ObjectField<InventoryItem>) getObjectEditor().
-                        getField("Item");
+                ObjectField<InventoryItem> itemField = (ObjectField<InventoryItem>) getField("Item");
                 itemInput = (ItemInput<?>)(itemField).getField();
                 if(fromOrTo.getType() != 18) {
                     itemField.addValueChangeListener(e -> changed(itemInput.getValue()));

@@ -685,6 +685,10 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
             searcherField = ObjectSearcherField.create(getObjectClass(), this);
             if(searcherField == null) {
                 search = new Button("Search", this);
+            } else {
+                if(searchFilter != null) {
+                    setSearchFilter();
+                }
             }
         }
         print = PrintButton.create(this);
@@ -2500,6 +2504,7 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
             searchFilter = new ObjectLoadFilter<>();
         }
         searchFilter.setCondition(filter);
+        setSearchFilter();
     }
 
     public void setSearchFilter(FilterProvider filter) {
@@ -2507,8 +2512,16 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
             searchFilter = new ObjectLoadFilter<>();
         }
         searchFilter.setFilterProvider(filter);
+        setSearchFilter();
+    }
+
+    private void setSearchFilter() {
         if(searcher instanceof ObjectBrowser<T> b) {
+            b.getFixedFilter().set(searchFilter);
             b.applyFilter();
+        }
+        if(searcherField != null) {
+            searcherField.getSearcher().getFixedFilter().set(searchFilter);
         }
     }
 

@@ -7,6 +7,7 @@ import com.storedobject.core.*;
 import com.storedobject.vaadin.DataList;
 
 import javax.annotation.Nonnull;
+import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 

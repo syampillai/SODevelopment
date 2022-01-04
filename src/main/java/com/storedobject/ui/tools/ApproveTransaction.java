@@ -3,7 +3,6 @@ package com.storedobject.ui.tools;
 import com.storedobject.common.StringList;
 import com.storedobject.core.*;
 import com.storedobject.ui.*;
-import com.storedobject.ui.Application;
 import com.storedobject.vaadin.*;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasValue;
@@ -53,7 +52,6 @@ public class ApproveTransaction extends ObjectBrowser<PseudoTran> {
 
     @Override
     public void loaded() {
-        super.loaded();
         clearAlerts();
         message("Entries: " + size());
     }

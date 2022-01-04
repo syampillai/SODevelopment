@@ -60,7 +60,7 @@ public class ItemGetField<I extends InventoryItem> extends ObjectGetField<I> imp
      */
     public ItemGetField(String label, Class<I> objectClass, boolean allowAny) {
         super(objectClass, allowAny);
-        setFilter(filterProvider = new InventoryFilterProvider());
+        filterProvider = new InventoryFilterProvider();
         setLabel(label);
     }
 
@@ -94,7 +94,7 @@ public class ItemGetField<I extends InventoryItem> extends ObjectGetField<I> imp
         ObjectBrowser<I> s = ObjectBrowser.create(getObjectClass(), ItemField.COLUMNS,
                 EditorAction.SEARCH | EditorAction.RELOAD | (isAllowAny() ? EditorAction.ALLOW_ANY : 0),
                 null);
-        s.setFilter(filterProvider);
+        s.setFixedFilter(filterProvider);
         return s;
     }
 

@@ -72,7 +72,7 @@ public class ItemField<I extends InventoryItem> extends ObjectGetField<I> implem
         super(objectClass, allowAny);
         super.setDisplayDetail(this::displayDetail);
         typeField = new PNField<>(typeClass(), allowAny);
-        setFilter(filterProvider = new InventoryFilterProvider());
+        filterProvider = new InventoryFilterProvider();
         setLabel(label);
     }
 
@@ -272,7 +272,7 @@ public class ItemField<I extends InventoryItem> extends ObjectGetField<I> implem
         ObjectBrowser<I> s = ObjectBrowser.create(getObjectClass(), COLUMNS,
                 EditorAction.SEARCH | EditorAction.RELOAD | (isAllowAny() ? EditorAction.ALLOW_ANY : 0),
                 null);
-        s.setFilter(filterProvider);
+        s.setFixedFilter(filterProvider);
         return s;
     }
 
@@ -323,20 +323,20 @@ public class ItemField<I extends InventoryItem> extends ObjectGetField<I> implem
         }
     }
 
-    private class InventoryGetProvider extends GetTypedSupplier<I> implements ObjectConverter<I, I> {
+    private class InventoryGetProvider extends GetSupplier<I> implements ObjectConverter<I, I> {
 
         public InventoryGetProvider() {
-            super(typeField, getObjectClass());
         }
 
         @Override
         public I getTextObject(SystemEntity systemEntity, String value) throws Exception {
-            return convert(super.getTextObject(systemEntity, value));
+            return convert(InventoryItem.get(getObjectClass(), value, typeField.getObject(), isAllowAny()));
         }
 
         @Override
         public ObjectIterator<I> listTextObjects(SystemEntity systemEntity, String value) throws Exception {
-            return super.listTextObjects(systemEntity, value).convert(this);
+            return InventoryItem.list(getObjectClass(), value, typeField.getObject(), isAllowAny())
+                    .convert(this);
         }
 
         @Override
@@ -365,6 +365,9 @@ public class ItemField<I extends InventoryItem> extends ObjectGetField<I> implem
         @Override
         public String getFilterCondition() {
             Id pnId = typeField.getValue();
+            if(Id.isNull(pnId)) {
+                return "false";
+            }
             List<InventoryItemType> apns = InventoryItemType.listAPNs(pnId);
             final StringBuilder f = new StringBuilder("T.PartNumber");
             if(apns.isEmpty()) {
@@ -378,11 +381,11 @@ public class ItemField<I extends InventoryItem> extends ObjectGetField<I> implem
                 f.append(" AND (").append(extraFilterProvider.getFilterCondition()).append(')');
             }
             if(locationField != null) {
-                f.append(" AND Location=").append(locationField.getObjectId());
+                f.append(" AND T.Location=").append(locationField.getObjectId());
             } else if(storeField != null) {
-                f.append(" AND Store=").append(storeField.getObjectId());
+                f.append(" AND T.Store=").append(storeField.getObjectId());
             }
-            f.append(" AND (Quantity).Quantity>0");
+            f.append(" AND (T.Quantity).Quantity>0");
             return f.toString();
         }
     }

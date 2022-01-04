@@ -67,8 +67,9 @@ public class ObjectTreeProvider<T extends StoredObject> extends AbstractTreeProv
         return tree.getLoadFilter().getLoadingPredicate();
     }
 
-    private String cond(String cond) {
-        return systemFilter.getFilter(fixedFilter.getFilter(cond));
+    @Override
+    public String getEffectiveCondition(String condition) {
+        return systemFilter.getFilter(fixedFilter.getFilter(condition));
     }
 
     @Override
@@ -83,7 +84,7 @@ public class ObjectTreeProvider<T extends StoredObject> extends AbstractTreeProv
     private void loadInt(String condition, String orderBy, boolean any) {
         setOrderBy(orderBy, false);
         setMaster(null, false);
-        tree.load(cond(condition), orderBy, any);
+        tree.load(getEffectiveCondition(condition), orderBy, any);
         refreshAll();
     }
 
@@ -100,7 +101,7 @@ public class ObjectTreeProvider<T extends StoredObject> extends AbstractTreeProv
         setOrderBy(orderBy, false);
         setMaster(master, false);
         setLinkType(linkType, false);
-        tree.load(linkType, master, cond(condition), orderBy, any);
+        tree.load(linkType, master, getEffectiveCondition(condition), orderBy, any);
         refreshAll();
     }
 

@@ -1,13 +1,17 @@
 package com.storedobject.ui;
 
-import com.storedobject.core.Person;
-import com.storedobject.core.StoredObject;
-import com.storedobject.vaadin.CloseableView;
+import com.storedobject.common.Executable;
+import com.storedobject.core.*;
 
-public class Test extends ListEditor<Person> implements CloseableView {
+public class Test implements Executable {
 
-    public Test() {
-        super(Person.class);
-        StoredObject.list(Person.class).forEach(this::append);
+    @Override
+    public void execute() {
+        FileData fd = StoredObject.get(FileData.class, "lower(Name)='testupload'");
+        if(fd == null) {
+            Application.warning("File 'TestUpload' not found!");
+        } else {
+            Application.get().view("File: Test Upload", fd);
+        }
     }
 }

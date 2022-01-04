@@ -101,11 +101,21 @@ public class EditableObjectGrid<T extends StoredObject> extends AbstractEditable
 
     @Override
     public boolean add(T item) {
-        if(Id.isNull(item.getId())) {
+        if(Id.isNull(item.getId()) || item.getId().isDummy()) {
             itemInserted(item);
             return true;
         }
-        return super.add(item);
+        itemAppended(item);
+        return true;
+    }
+
+    @Override
+    public void append(T item) {
+        if(Id.isNull(item.getId()) || item.getId().isDummy()) {
+            itemInserted(item);
+            return;
+        }
+        itemAppended(item);
     }
 
     /**

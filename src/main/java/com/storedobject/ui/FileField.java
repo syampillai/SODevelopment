@@ -45,6 +45,7 @@ public class FileField extends AbstractObjectField<StreamData> {
     private String filename;
     private Application application;
     private boolean required = false;
+    private int maxFileSize = 10000000;
 
     public FileField() {
         this(ALL_TYPES);
@@ -135,6 +136,10 @@ public class FileField extends AbstractObjectField<StreamData> {
         if(link != null) {
             link.setVisible(true);
         }
+    }
+
+    public void setMaxFileSize(int maxFileSize) {
+        this.maxFileSize = maxFileSize;
     }
 
     private boolean containsAny(ObjectField.Type... types) {
@@ -372,6 +377,7 @@ public class FileField extends AbstractObjectField<StreamData> {
                 buttonBox.add(uploadCancel);
                 Upload u = new Upload(FileField.this::receiveUpload);
                 u.setMaxFiles(1);
+                u.setMaxFileSize(maxFileSize);
                 if(mimeTypes != null && mimeTypes.size() > 0) {
                     u.setAcceptedFileTypes(String.join(",", mimeTypes));
                 }
