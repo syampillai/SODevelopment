@@ -380,4 +380,9 @@ public abstract class AbstractObjectField<T extends StoredObject> extends Custom
     public void setRequired(boolean required) {
         this.required = required;
     }
+
+    @Override
+    public boolean isInvalid() {
+        return false;
+    }
 }

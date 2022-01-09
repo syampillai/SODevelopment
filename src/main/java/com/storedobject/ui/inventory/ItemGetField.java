@@ -102,14 +102,14 @@ public class ItemGetField<I extends InventoryItem> extends ObjectGetField<I> imp
 
         @Override
         public String getFilterCondition() {
-            final StringBuilder f = new StringBuilder("(Quantity).Quantity>0");
+            final StringBuilder f = new StringBuilder("(T.Quantity).Quantity>0");
             if(extraFilterProvider != null) {
                 f.append(" AND (").append(extraFilterProvider.getFilterCondition()).append(')');
             }
             if(locationField != null) {
-                f.append(" AND Location=").append(locationField.getObjectId());
+                f.append(" AND T.Location=").append(locationField.getObjectId());
             } else if(storeField != null) {
-                f.append(" AND Store=").append(storeField.getObjectId());
+                f.append(" AND T.Store=").append(storeField.getObjectId());
             }
             return f.toString();
         }

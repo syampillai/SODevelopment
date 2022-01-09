@@ -75,8 +75,8 @@ public class FileViewer extends ObjectForestViewer<FileFolder> implements Closea
     }
 
     @Override
-    public ObjectSearchBuilder<FileFolder> createSearchBuilder(StringList searchColumns,
-                                                               Consumer<ObjectSearchBuilder<FileFolder>> changeConsumer) {
+    public ObjectSearchBuilder<FileFolder> createSearchBuilder(
+            StringList searchColumns, Consumer<ObjectSearchBuilder<FileFolder>> changeConsumer) {
         return super.createSearchBuilder(searchColumns, changeConsumer);
     }
 
@@ -94,9 +94,9 @@ public class FileViewer extends ObjectForestViewer<FileFolder> implements Closea
         if(item instanceof ObjectForest.LinkObject) {
             item = ((ObjectForest.LinkObject) item).getObject();
         }
-        return "<iron-icon icon='vaadin:" +
+        return "<vaadin-icon icon='vaadin:" +
                 (item instanceof FileData ? "file-o" : "folder-o") +
-                "' style='height:15px;'></iron-icon>" +
+                "' style='height:15px;'></vaadin-icon>" +
                 (item instanceof StoredObject ? HTMLText.encode(((StoredObject) item).toDisplay()) : item.toString());
     }
 

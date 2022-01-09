@@ -237,6 +237,10 @@ public class Assembly<T extends InventoryItem, C extends InventoryItem> extends 
             setFieldHidden(specificBinField);
             binField.addValueChangeListener(e -> {
                if(e.isFromClient()) {
+                   if(e.getValue() == null) {
+                       binField.focus();
+                       return;
+                   }
                    boolean v = e.getValue().equals(specificBin);
                    setFieldVisible(v, specificBinField);
                    if(v) {
