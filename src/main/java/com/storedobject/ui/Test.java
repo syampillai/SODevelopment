@@ -1,39 +1,27 @@
 package com.storedobject.ui;
 
-import com.storedobject.common.StringList;
 import com.storedobject.core.Person;
-import com.storedobject.vaadin.CloseableView;
-import com.vaadin.flow.data.renderer.LitRenderer;
+import com.storedobject.core.StoredObject;
+import com.storedobject.vaadin.DataForm;
+import com.storedobject.vaadin.TextField;
+import com.storedobject.vaadin.TokensField;
 
-public class Test extends ObjectGrid<Person> implements CloseableView {
+public class Test extends DataForm {
 
     public Test() {
-        super(Person.class, StringList.create("X", "FirstName", "LastName", "DateOfBirth", "Age"));
-        String template = "<vaadin-icon icon='vaadin:<1>' " +
-                "@click='${myClick}' " +
-                "style='color:<2>;cursor:pointer;width:12px;height:12px'>" +
-                "<3>" +
-                "</vaadin-icon>";
-        //noinspection unchecked
-        createColumn("X", template,
-                p -> p.getGender() == 1 ? "close" : "check",
-                p -> p.getGender() == 1 ? "blue" : "red",
-                Person::getGenderValue);
-        load();
+        super("Test");TextField tf;
+        addField(tf = new TextField("Hello"));
+        setRequired(tf);
+        //tf.setRequired(true);
+        TokensField<Person> pf = new TokensField<>("Person",
+                StoredObject.list(Person.class, "FirstName LIKE '%s%'").toList());
+        addField(pf);
+        pf.setRequired(true);
+        //setRequired(pf);
     }
 
     @Override
-    public void customizeRenderer(String columnName, LitRenderer<Person> renderer) {
-        if("X".equals(columnName)) {
-            renderer.withFunction("myClick", p -> System.err.println("Clicked: " + p));
-        }
-    }
-
-    @Override
-    public String getColumnCaption(String columnName) {
-        if("X".equals(columnName)) {
-            return ""; // We don't want column caption for this column
-        }
-        return super.getColumnCaption(columnName);
+    protected boolean process() {
+        return true;
     }
 }
