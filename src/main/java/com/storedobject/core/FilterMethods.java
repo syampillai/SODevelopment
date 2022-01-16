@@ -134,7 +134,21 @@ public interface FilterMethods<T extends StoredObject> {
      * @param loadFilter Load filter to be applied while loading.
      */
     default void setLoadFilter(Predicate<T> loadFilter) {
-        getLoadFilter().setLoadingPredicate(loadFilter);
+        setLoadFilter(loadFilter, true);
+    }
+
+    /**
+     * Set the load filter. This will be applied whenever loading takes place.
+     * @param loadFilter Load filter to be applied while loading.
+     * @param apply Whether to apply it immediately or not.
+     */
+    default void setLoadFilter(Predicate<T> loadFilter, boolean apply) {
+        if(loadFilter != getLoadFilter().getLoadingPredicate()) {
+            getLoadFilter().setLoadingPredicate(loadFilter);
+            if(apply) {
+                applyFilter();
+            }
+        }
     }
 
     /**

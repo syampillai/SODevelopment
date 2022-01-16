@@ -126,7 +126,7 @@ public final class ObjectLinkField<T extends StoredObject>
     }
 
     public String getFieldName() {
-        return grid.getName() + ".l";
+        return link.getName() + ".l";
     }
 
     public StoredObjectLink<T> getOldValue() {

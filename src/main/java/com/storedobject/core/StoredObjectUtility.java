@@ -11,6 +11,7 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Properties;
 import java.util.Random;
+import java.util.function.Predicate;
 
 public final class StoredObjectUtility {
 
@@ -278,8 +279,25 @@ public final class StoredObjectUtility {
             return 0;
         }
 
+        public void setOrderBy(String orderBy) {
+        }
+
         public String getOrderBy() {
-            return "";
+            return null;
+        }
+
+        public void setCondition(String condition) {
+        }
+
+        public String getCondition() {
+            return null;
+        }
+
+        public void setLoadPredicate(Predicate<L> loadPredicate) {
+        }
+
+        public Predicate<L> getLoadPredicate() {
+            return o -> true;
         }
 
         public void setAny() {

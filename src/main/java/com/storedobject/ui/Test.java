@@ -2,26 +2,33 @@ package com.storedobject.ui;
 
 import com.storedobject.core.Person;
 import com.storedobject.core.StoredObject;
-import com.storedobject.vaadin.DataForm;
-import com.storedobject.vaadin.TextField;
-import com.storedobject.vaadin.TokensField;
+import com.storedobject.vaadin.*;
+import com.vaadin.flow.component.Component;
 
-public class Test extends DataForm {
+import java.util.function.Predicate;
+
+public class Test extends ObjectGrid<Person> {
 
     public Test() {
-        super("Test");TextField tf;
-        addField(tf = new TextField("Hello"));
-        setRequired(tf);
-        //tf.setRequired(true);
-        TokensField<Person> pf = new TokensField<>("Person",
-                StoredObject.list(Person.class, "FirstName LIKE '%s%'").toList());
-        addField(pf);
-        pf.setRequired(true);
-        //setRequired(pf);
+        super(Person.class);
+        load();
     }
 
     @Override
-    protected boolean process() {
-        return true;
+    public Component createHeader() {
+        return new ButtonLayout(
+                new Button("Test1", e -> test1()),
+                new Button("Test2", e -> test2())
+                );
+    }
+
+    private void test1() {
+        setLoadFilter(p -> p.getFirstName().startsWith("S"));
+        //reload();
+    }
+
+    private void test2() {
+        setViewFilter(null);
+        //reload();
     }
 }

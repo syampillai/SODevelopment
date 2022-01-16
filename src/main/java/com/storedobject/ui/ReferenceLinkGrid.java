@@ -3,15 +3,10 @@ package com.storedobject.ui;
 import com.storedobject.core.*;
 import com.storedobject.ui.util.LinkGridButtons;
 import com.storedobject.vaadin.DataList;
-import com.storedobject.vaadin.View;
 import com.vaadin.flow.data.provider.ListDataProvider;
 
-import java.util.stream.Stream;
+public class ReferenceLinkGrid<T extends StoredObject> extends AbstractLinkGrid<T> {
 
-public class ReferenceLinkGrid<T extends StoredObject> extends EditableObjectGrid<T> implements LinkGrid<T> {
-
-    private final StoredObjectUtility.Link<T> link;
-    private final ObjectLinkField<T> linkField;
     private final LinkGridButtons<T> buttonPanel;
     private ObjectSearcher<T> searcher;
     private boolean fromClient;
@@ -49,9 +44,8 @@ public class ReferenceLinkGrid<T extends StoredObject> extends EditableObjectGri
     }
 
     public ReferenceLinkGrid(ObjectLinkField<T> linkField, Iterable<String> columns) {
-        super(linkField.getObjectClass(), new ObjectMemoryList<>(linkField.getObjectClass(), linkField.isAllowAny()), columns);
-        this.linkField = linkField;
-        this.link = linkField.getLink();
+        super(linkField, new ObjectMemoryList<>(linkField.getObjectClass(), linkField.isAllowAny()), columns);
+        setFilter((String) null, false);
         buttonPanel = new LinkGridButtons<>(this);
         //noinspection unchecked
         createColumn("*", o -> isEdited(o) ? "*" : (isAdded(o) ? "+" : (isDeleted(o) ? "-" : "")));
@@ -121,31 +115,6 @@ public class ReferenceLinkGrid<T extends StoredObject> extends EditableObjectGri
     @Override
     public boolean isAllowAny() {
         return super.isAllowAny();
-    }
-
-    @Override
-    public T getSelected() {
-        return super.getSelected();
-    }
-
-    @Override
-    public final boolean isDetail() {
-        return false;
-    }
-
-    @Override
-    public View createView() {
-        return null;
-    }
-
-    @Override
-    public View getView() {
-        return null;
-    }
-
-    @Override
-    public View getView(boolean create) {
-        return null;
     }
 
     public boolean contains(T object) {
@@ -218,24 +187,9 @@ public class ReferenceLinkGrid<T extends StoredObject> extends EditableObjectGri
     }
 
     @Override
-    public boolean isEnabled() {
-        return super.isEnabled();
-    }
-
-    @Override
     public void setReadOnly(boolean readOnly) {
         super.setReadOnly(readOnly);
         buttonPanel.changed();
-    }
-
-    @Override
-    public int getType() {
-        return link.getType();
-    }
-
-    @Override
-    public String getName() {
-        return link.getName();
     }
 
     @Override
@@ -244,47 +198,8 @@ public class ReferenceLinkGrid<T extends StoredObject> extends EditableObjectGri
     }
 
     @Override
-    public T getItem(int index) {
-        return super.getItem(index);
-    }
-
-    @Override
-    public ObjectLinkField<T> getField() {
-        return linkField;
-    }
-
-    @Override
-    public Stream<T> streamAll() {
-        return super.streamAll();
-    }
-
-    @Override
-    public Stream<T> stream() {
-        return super.stream();
-    }
-
-    public final ObjectEditor<T> createObjectEditor() {
-        return null;
-    }
-
-    @Override
-    public final ObjectEditor<T> constructObjectEditor() {
-        return null;
-    }
-
-    @Override
     public LinkValue<T> getLinkGrid() {
         return (RList)getEditableList();
-    }
-
-    @Override
-    public void setMaster(StoredObject master, boolean load) {
-        super.setMaster(master, load);
-    }
-
-    @Override
-    public StoredObject getMaster() {
-        return super.getMaster();
     }
 
     @Override
