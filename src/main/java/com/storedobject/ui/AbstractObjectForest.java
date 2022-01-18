@@ -3,6 +3,7 @@ package com.storedobject.ui;
 import com.storedobject.common.StringList;
 import com.storedobject.core.ObjectForest;
 import com.storedobject.core.*;
+import com.storedobject.ui.util.ChildVisitor;
 
 import java.util.HashSet;
 import java.util.List;
@@ -10,7 +11,7 @@ import java.util.Set;
 import java.util.function.Consumer;
 
 public abstract class AbstractObjectForest<T extends StoredObject> extends DataTreeGrid<Object>
-        implements ObjectGridData<T, Object> {
+        implements ObjectGridData<T, Object>, ChildVisitor<T, Object> {
 
     private static final StringList NAME = StringList.create("_Name");
     private final Class<T> objectClass;
@@ -126,6 +127,7 @@ public abstract class AbstractObjectForest<T extends StoredObject> extends DataT
         return roots.size() == 1 ? roots.get(0) : null;
     }
 
+    @Override
     public List<T> listRoots() {
         return getDataProvider().getRoots();
     }
@@ -201,6 +203,7 @@ public abstract class AbstractObjectForest<T extends StoredObject> extends DataT
      * @param consumer Consumer to consume the visit purpose.
      * @param includeGrandChildren Whether recursively include grand-children or not.
      */
+    @Override
     public void visitChildren(Object parent, Consumer<Object> consumer, boolean includeGrandChildren) {
         getDataProvider().visitChildren(parent, consumer, includeGrandChildren);
     }

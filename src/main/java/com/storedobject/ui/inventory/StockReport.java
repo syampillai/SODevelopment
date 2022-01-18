@@ -84,6 +84,10 @@ public class StockReport extends DataForm {
     public void configure(com.storedobject.report.StockReportExcel report) {
     }
 
+    public boolean canPrint(InventoryItem item) {
+        return true;
+    }
+
     public boolean printZeroQuantity(InventoryStore store, InventoryItemType itemType) {
         return false;
     }
@@ -94,6 +98,7 @@ public class StockReport extends DataForm {
             super(device, store);
             printZeros(zerosField.getValue());
             setCaption(getCaption());
+            setItemFilter(StockReport.this::canPrint);
             configure(this);
         }
 
@@ -123,6 +128,7 @@ public class StockReport extends DataForm {
             super(device, store);
             printZeros(zerosField.getValue());
             setCaption(getCaption());
+            setItemFilter(StockReport.this::canPrint);
             configure(this);
         }
 

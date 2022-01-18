@@ -5,7 +5,9 @@ import com.storedobject.common.StringList;
 import com.storedobject.core.*;
 import com.storedobject.pdf.*;
 import com.storedobject.ui.HTMLText;
-import com.storedobject.ui.Transactional;
+import com.storedobject.ui.TreeSearchField;
+import com.storedobject.ui.DataTreeGrid;
+import com.storedobject.ui.util.ChildVisitor;
 import com.storedobject.vaadin.*;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasValue;
@@ -18,11 +20,15 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 import java.util.stream.Stream;
 
-public abstract class AbstractAssembly<T extends InventoryItem, C extends InventoryItem> extends DataTreeGrid<InventoryFitmentPosition> implements Transactional {
+public abstract class AbstractAssembly<T extends InventoryItem, C extends InventoryItem>
+        extends DataTreeGrid<InventoryFitmentPosition>
+        implements ChildVisitor<InventoryFitmentPosition, InventoryFitmentPosition> {
 
-    private static final StringList COLUMNS = StringList.create("Name", "Position", "PartNumber", "SerialNumber", "Quantity", "Accessory", "Optional");
+    private static final StringList COLUMNS = StringList.create("Name", "Position", "PartNumber", "SerialNumber",
+            "Quantity", "Accessory", "Optional");
     private final SelectRootItem selectRootItem;
     private final FitItem fitItem;
     private final RemoveItem removeItem;
@@ -73,10 +79,12 @@ public abstract class AbstractAssembly<T extends InventoryItem, C extends Invent
         InventoryAssembly a = fitmentPosition.getAssembly();
         InventoryItemType itemType = item == null ? fitmentPosition.getAssembly().getItemType() : item.getPartNumber();
         if(item == null || item.getQuantity().isZero()) {
-            s.append(itemType.getName() + (itemType.isSerialized() ? "" : (" (Required: " + a.getQuantity() + ")")), "var(--lumo-error-color)");
+            s.append(itemType.getName() + (itemType.isSerialized() ? ""
+                    : (" (Required: " + a.getQuantity() + ")")), "var(--lumo-error-color)");
         } else {
             if(item.getQuantity().isLessThan(a.getQuantity())) {
-                s.append(itemType.getName() + " (Required: " +a.getQuantity() + ")", "var(--lumo-primary-color)");
+                s.append(itemType.getName() + " (Required: " +a.getQuantity() + ")",
+                        "var(--lumo-primary-color)");
             } else {
                 s.append(itemType.getName());
             }
@@ -128,7 +136,9 @@ public abstract class AbstractAssembly<T extends InventoryItem, C extends Invent
         if(selectAnother != null) {
             buttonLayout.add(selectAnother);
         }
-        buttonLayout.add(new Button("Print", e -> new FitList()), new Button("Exit", e -> close()));
+        buttonLayout.add(new Button("Print", e -> new FitList()),
+                new TreeSearchField<>(this),
+                new Button("Exit", e -> close()));
         return buttonLayout;
     }
 
@@ -494,6 +504,26 @@ public abstract class AbstractAssembly<T extends InventoryItem, C extends Invent
         @Override
         public int getPageOrientation() {
             return ORIENTATION_LANDSCAPE;
+        }
+    }
+
+    @Override
+    public List<InventoryFitmentPosition> listRoots() {
+        List<InventoryFitmentPosition> roots = new ArrayList<>();
+        if(root != null) {
+            roots.add(root);
+        }
+        return roots;
+    }
+
+    @Override
+    public void visitChildren(InventoryFitmentPosition parent, Consumer<InventoryFitmentPosition> consumer,
+                              boolean includeGrandChildren) {
+        consumer.accept(parent);
+        if(includeGrandChildren) {
+            subassemblies(parent).forEach(c -> visitChildren(c, consumer, true));
+        } else {
+            subassemblies(parent).forEach(consumer);
         }
     }
 }

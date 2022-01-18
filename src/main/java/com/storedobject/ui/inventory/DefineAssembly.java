@@ -9,6 +9,7 @@ import com.storedobject.pdf.PDFTable;
 import com.storedobject.ui.Application;
 import com.storedobject.ui.*;
 import com.storedobject.ui.DataTreeGrid;
+import com.storedobject.ui.util.ChildVisitor;
 import com.storedobject.vaadin.*;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasValue;
@@ -16,13 +17,12 @@ import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.data.provider.hierarchy.AbstractHierarchicalDataProvider;
 import com.vaadin.flow.data.provider.hierarchy.HierarchicalQuery;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
+import java.util.function.Consumer;
 import java.util.stream.Stream;
 
-public class DefineAssembly<T extends InventoryItemType, C extends InventoryItemType> extends DataTreeGrid<InventoryAssembly> {
+public class DefineAssembly<T extends InventoryItemType, C extends InventoryItemType>
+        extends DataTreeGrid<InventoryAssembly> implements ChildVisitor<InventoryAssembly, InventoryAssembly> {
 
     private static final StringList COLUMNS = StringList.create("ItemType", "Position", "Quantity", "Accessory", "Optional");
     private final ButtonLayout buttonLayout = new ButtonLayout();
@@ -111,16 +111,16 @@ public class DefineAssembly<T extends InventoryItemType, C extends InventoryItem
         }
         copy.setVisible(false);
         Button exit = new Button("Exit", e -> close());
-        addButtons(add, edit, delete, selectRoot, copy,
+        addButtons(add, edit, new TreeSearchField<>(this), delete, selectRoot, copy,
                 new Button("Print", e -> new PrintAssembly()),
                 exit);
         return buttonLayout;
     }
 
-    private void addButtons(Button... buttons) {
-        for(Button b: buttons) {
-            if (b != null) {
-                buttonLayout.add(b);
+    private void addButtons(Component... components) {
+        for(Component c: components) {
+            if (c != null) {
+                buttonLayout.add(c);
             }
         }
     }
@@ -478,6 +478,25 @@ public class DefineAssembly<T extends InventoryItemType, C extends InventoryItem
         @Override
         public int getPageOrientation() {
             return ORIENTATION_LANDSCAPE;
+        }
+    }
+
+    @Override
+    public List<InventoryAssembly> listRoots() {
+        List<InventoryAssembly> roots = new ArrayList<>();
+        if(root != null) {
+            roots.add(root);
+        }
+        return roots;
+    }
+
+    @Override
+    public void visitChildren(InventoryAssembly parent, Consumer<InventoryAssembly> consumer, boolean includeGrandChildren) {
+        consumer.accept(parent);
+        if(includeGrandChildren) {
+            subassemblies(parent).forEach(c -> visitChildren(c, consumer, true));
+        } else {
+            subassemblies(parent).forEach(consumer);
         }
     }
 }

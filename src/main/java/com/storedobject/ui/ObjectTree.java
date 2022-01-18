@@ -1,6 +1,7 @@
 package com.storedobject.ui;
 
 import com.storedobject.core.*;
+import com.storedobject.ui.util.ChildVisitor;
 import com.storedobject.ui.util.DataLoadedListener;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ItemLabelGenerator;
@@ -10,9 +11,9 @@ import com.vaadin.flow.shared.Registration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
-import java.util.function.Predicate;
 
-public class ObjectTree<T extends StoredObject> extends DataTreeGrid<T> implements ObjectGridData<T, T> {
+public class ObjectTree<T extends StoredObject> extends DataTreeGrid<T>
+        implements ObjectGridData<T, T>, ChildVisitor<T, T> {
 
     private final List<DataLoadedListener> dataLoadedListeners = new ArrayList<>();
     private ObjectEditor<T> editor;
@@ -169,6 +170,7 @@ public class ObjectTree<T extends StoredObject> extends DataTreeGrid<T> implemen
         return roots.size() == 1 ? roots.get(0) : null;
     }
 
+    @Override
     public List<T> listRoots() {
         return getDataProvider().getRoots();
     }
@@ -321,6 +323,7 @@ public class ObjectTree<T extends StoredObject> extends DataTreeGrid<T> implemen
      * @param consumer Consumer to consume the visit purpose.
      * @param includeGrandChildren Whether recursively include grand-children or not.
      */
+    @Override
     public void visitChildren(T parent, Consumer<T> consumer, boolean includeGrandChildren) {
         getDataProvider().visitChildren(parent, consumer, includeGrandChildren);
     }
