@@ -2,8 +2,8 @@ package com.storedobject.ui;
 
 import com.storedobject.common.SORuntimeException;
 import com.storedobject.ui.util.ChildVisitor;
-import com.storedobject.vaadin.*;
 import com.storedobject.vaadin.DataTreeGrid;
+import com.storedobject.vaadin.*;
 import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.icon.VaadinIcon;
 
@@ -78,25 +78,23 @@ public class TreeSearchField<P extends T, T> extends TextField {
             }
             return;
         }
+        if(!(tree instanceof DataTreeGrid<?>)) {
+            return;
+        }
+        @SuppressWarnings("unchecked") DataTreeGrid<T> grid = (DataTreeGrid<T>) tree;
         T selected = list.get(current);
-        /*
         List<P> roots = tree.listRoots();
         //noinspection SuspiciousMethodCalls
         if(!roots.contains(selected)) {
-            List<T> parents = new ArrayList<>();
-            List<T> children;
-            for(P root: roots) {
-                children = children(root);
-                if(children.contains(selected)) {
-                    parents.add(root);
-                    break;
-                }
-
+            List<T> parentTree = new ArrayList<>();
+            //noinspection unchecked
+            family(selected, parentTree, (List<T>) roots);
+            for(T p: parentTree) {
+                //noinspection unchecked
+                grid.expand(p);
             }
         }
-         */
-        //noinspection unchecked
-        ((DataTreeGrid<T>)tree).select(selected);
+        grid.select(selected);
         focus();
     }
 
@@ -111,6 +109,27 @@ public class TreeSearchField<P extends T, T> extends TextField {
     private List<T> children(T parent) {
         List<T> children = new ArrayList<>();
         tree.visitChildren(parent, children::add, false);
+        children.remove(0);
         return children;
+    }
+
+    private boolean family(T selected, List<T> parentTree, List<T> from) {
+        List<T> children;
+        int count;
+        for(T p: from) {
+            count = parentTree.size();
+            parentTree.add(p);
+            children = children(p);
+            if(children.contains(selected)) {
+                return true;
+            }
+            if(family(selected, parentTree, children)) {
+                return true;
+            }
+            while(parentTree.size() > count) {
+                parentTree.remove(parentTree.size() - 1);
+            }
+        }
+        return false;
     }
 }

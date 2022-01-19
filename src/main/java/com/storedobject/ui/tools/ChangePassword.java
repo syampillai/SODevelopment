@@ -21,6 +21,7 @@ public class ChangePassword extends DataForm implements Transactional {
     private boolean forgot;
     private boolean expired = false;
     private boolean aborting = false;
+    private boolean changed = false;
 
     public ChangePassword() {
         this(false, true);
@@ -62,7 +63,8 @@ public class ChangePassword extends DataForm implements Transactional {
     @Override
     protected void execute(View parent, boolean doNotLock) {
         if(!forgot) {
-            if(getTransactionManager().getUser().getLogin().equals("guest") && ApplicationServer.runMode().equals("demo")) {
+            if(getTransactionManager().getUser().getLogin().equals("guest")
+                    && ApplicationServer.runMode().equals("demo")) {
                 warning("Password change not allowed for 'guest' user in demo mode");
                 return;
             }
@@ -153,6 +155,7 @@ public class ChangePassword extends DataForm implements Transactional {
             if(!su.verifyPasswordUpdate()) {
                 throw new SOException("Password change failed, please report to Technical Support!");
             }
+            changed = true;
             message("Password changed successfully");
             getTransactionManager().reinit(pc);
         } catch(Exception e) {
@@ -165,5 +168,9 @@ public class ChangePassword extends DataForm implements Transactional {
             error(e);
         }
         return true;
+    }
+
+    public boolean isChanged() {
+        return changed;
     }
 }

@@ -1548,7 +1548,13 @@ public class Application extends com.storedobject.vaadin.Application implements 
                 return false;
             }
             close();
-            selectEntity(false, false);
+            if(isChanged()) {
+                selectEntity(false, false);
+            } else {
+                new InformationMessage("Not Changed!",
+                        "Unable to change your password and you need to log in with your previous password again.",
+                        Application.this::close).execute();
+            }
             return true;
         }
     }

@@ -95,6 +95,24 @@ public class Mail extends Message {
 		return null;
 	}
 
+	public void setSender(Id senderId) {
+	}
+
+	public void setSender(BigDecimal idValue) {
+	}
+
+	public void setSender(Sender sender) {
+		setSender(sender == null ? null : sender.getId());
+	}
+
+	public Id getSenderId() {
+		return new Id();
+	}
+
+	public Sender getSender() {
+		return get(Sender.class, new Id());
+	}
+
 	public void ready() {
 	}
 
