@@ -132,9 +132,8 @@ public class ObjectListGrid<T extends StoredObject> extends DataGrid<T> implemen
         }
     }
 
-    @SuppressWarnings("deprecation")
     @Override
-    public void setFilter(Predicate<T> filter) {
-        setViewFilter(filter);
+    public void setViewFilter(Predicate<T> filter) {
+        ObjectLoader.super.setViewFilter(filter);
     }
 }

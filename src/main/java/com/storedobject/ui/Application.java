@@ -911,13 +911,12 @@ public class Application extends com.storedobject.vaadin.Application implements 
         protected boolean process() {
             if(super.process()) {
                 close();
-                identityCheck.passwordChangeSucceeded();
-                String m = identityCheck.getSuccessMessage();
-                if(m == null) {
-                    m = "New Password is set successfully! Please log in again to start using the application!!";
+                String m = null;
+                if(isChanged()) {
+                    identityCheck.passwordChangeSucceeded();
+                    m = identityCheck.getSuccessMessage();
                 }
-                InformationMessage.execute(new ELabel(m, "blue"), Application.this::close);
-                closeMenu();
+                changed(m);
                 return true;
             }
             return false;
@@ -933,11 +932,18 @@ public class Application extends com.storedobject.vaadin.Application implements 
         public void abort() {
             close();
             identityCheck.passwordChangeFailed();
-            String m = identityCheck.getFailureMessage();
+            changed(identityCheck.getFailureMessage());
+        }
+
+        private void changed(String m) {
             if(m == null) {
-                m = "Password not set! Please contact Technical Support for any help!!";
+                if(isChanged()) {
+                    m = "New Password is set successfully! Please log in again to start using the application!!";
+                } else {
+                    m = "Password not set! Please contact Technical Support for any help!!";
+                }
             }
-            InformationMessage.execute(new ELabel(m, "red"), Application.this::close);
+            InformationMessage.execute(new ELabel(m, isChanged() ? "blue" : "red"), Application.this::close);
             closeMenu();
         }
     }

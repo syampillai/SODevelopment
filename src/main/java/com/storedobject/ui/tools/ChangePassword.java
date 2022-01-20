@@ -141,6 +141,7 @@ public class ChangePassword extends DataForm implements Transactional {
             close();
             try {
                 getTransactionManager().forgotPassword(pc);
+                changed = true;
             } catch(Exception e) {
                 error(e);
             }

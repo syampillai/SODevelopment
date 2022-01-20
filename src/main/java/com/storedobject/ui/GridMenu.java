@@ -49,7 +49,7 @@ public class GridMenu extends View implements SingletonLogic, CloseableView {
             super(MenuItem.class, StringList.EMPTY);
             //noinspection unchecked
             createColumn(caption, m -> m.description);
-            searchField = new SearchField(text -> setFilter(m -> m.description.toLowerCase().contains(text)));
+            searchField = new SearchField(text -> setViewFilter(m -> m.description.toLowerCase().contains(text)));
             searchField.toLowerCase();
             addItemClickListener(e -> e.getItem().logic.run());
         }

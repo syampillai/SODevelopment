@@ -550,9 +550,8 @@ public class EditableObjectGrid<T extends StoredObject> extends AbstractEditable
         return true;
     }
 
-    @SuppressWarnings("deprecation")
     @Override
-    public void setFilter(Predicate<T> filter) {
-        setViewFilter(filter);
+    public void setViewFilter(Predicate<T> filter) {
+        ObjectGridData.super.setViewFilter(filter);
     }
 }

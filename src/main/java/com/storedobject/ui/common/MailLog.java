@@ -3,6 +3,7 @@ package com.storedobject.ui.common;
 import com.storedobject.core.*;
 import com.storedobject.mail.Mail;
 import com.storedobject.mail.Sender;
+import com.storedobject.mail.SenderGroup;
 import com.storedobject.pdf.PDFFont;
 import com.storedobject.pdf.PDFReport;
 import com.storedobject.pdf.PDFTable;
@@ -62,9 +63,8 @@ public class MailLog extends DataForm implements Transactional {
         @Override
         public void generateContent() {
             TransactionManager tm = getTransactionManager();
-            PDFTable table = createTable(80, 10, 10, 10);
+            PDFTable table = createTable(80, 10, 10);
             addTitle(table, "Message");
-            addTitle(table, "Sent From");
             addTitle(table, "Sent at");
             addTitle(table, "Status");
             StringBuilder c = new StringBuilder("SentAt");
@@ -75,6 +75,7 @@ public class MailLog extends DataForm implements Transactional {
                 c.append(" AND NOT Sent");
             }
             Sender sender;
+            SenderGroup senderGroup = null;
             Person person;
             for(Mail mail: StoredObject.list(Mail.class, c.toString(), "SentAt DESC")) {
                 mail.getSenderGroup();
@@ -84,12 +85,16 @@ public class MailLog extends DataForm implements Transactional {
                 } else {
                     person = null;
                 }
+                sender = mail.getSender();
+                if(sender == null) {
+                    senderGroup = mail.getSenderGroup();
+                }
                 addToTable(table, "Created at " + DateUtility.format(tm.date(mail.getCreatedAt())) +
+                        "\nFrom: " +
+                        (sender == null ? (senderGroup == null ? "" : senderGroup.getName()) : sender.getFromAddress()) +
                         "\nTo: " + mail.getToAddress() +
                                 (person == null ? "" : (" <" + person.getName() + ">")) +
                         "\nSubject: " + mail.getSubject() + "\n" + mail.getMessage());
-                sender = mail.getSender();
-                addTitle(table, sender == null ? "" : sender.getFromAddress());
                 addToTable(table, mail.getSent() ? DateUtility.format(tm.date(mail.getSentAt())) : "Not sent");
                 addToTable(table, mail.getSent() ? "Sent" : mail.getErrorValue());
             }

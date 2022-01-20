@@ -144,6 +144,23 @@ public class ReferenceLinkGrid<T extends StoredObject> extends AbstractLinkGrid<
     }
 
     @Override
+    public void applyFilter() {
+        super.applyFilter();
+        if(searcher instanceof ObjectBrowser<T> s) {
+            s.setFilter(getEffectiveCondition(getFilterCondition()));
+            s.setLoadFilter(getLoadFilter().getLoadingPredicate());
+        }
+    }
+
+    @Override
+    public void setOrderBy(String orderBy, boolean load) {
+        super.setOrderBy(orderBy, load);
+        if(searcher instanceof ObjectBrowser<T> s) {
+            s.setOrderBy(orderBy, load);
+        }
+    }
+
+    @Override
     public void edit() {
     }
 
@@ -179,9 +196,12 @@ public class ReferenceLinkGrid<T extends StoredObject> extends AbstractLinkGrid<
 
     public ObjectSearcher<T> getSearcher() {
         if (searcher == null) {
-            searcher = ObjectBrowser.create(getObjectClass(), null,
+            ObjectBrowser<T> s = ObjectBrowser.create(getObjectClass(), null,
                     EditorAction.SEARCH | EditorAction.RELOAD | (isAllowAny() ? EditorAction.ALLOW_ANY : 0),
                     null);
+            s.setFilter(getEffectiveCondition(getFilterCondition()));
+            s.setLoadFilter(getLoadFilter().getLoadingPredicate());
+            searcher = s;
         }
         return searcher;
     }
