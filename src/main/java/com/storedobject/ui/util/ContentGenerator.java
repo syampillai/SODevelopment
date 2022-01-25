@@ -23,13 +23,15 @@ public class ContentGenerator extends AbstractContentGenerator {
     private DocumentViewer viewer;
 
     public ContentGenerator(Application application, ContentProducer producer, String caption,
-                            Consumer<AbstractContentGenerator> inform, Consumer<Long> timeTracker) {
-        this(application, producer, false, caption, inform, timeTracker);
+                            Consumer<AbstractContentGenerator> inform, Consumer<Long> timeTracker,
+                            Runnable preRun) {
+        this(application, producer, false, caption, inform, timeTracker, preRun);
     }
 
     public ContentGenerator(Application application, ContentProducer producer, boolean download, String caption,
-                             Consumer<AbstractContentGenerator>  inform, Consumer<Long> timeTracker) {
-        super(application, producer, inform, timeTracker);
+                             Consumer<AbstractContentGenerator>  inform, Consumer<Long> timeTracker,
+                            Runnable preRun) {
+        super(application, producer, inform, timeTracker, preRun);
         this.download = download;
         this.caption = caption;
         fileId = sequencerFileId.next();

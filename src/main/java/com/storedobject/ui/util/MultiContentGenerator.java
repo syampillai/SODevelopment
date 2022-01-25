@@ -12,8 +12,8 @@ public class MultiContentGenerator extends AbstractContentGenerator {
     private static final Sequencer fileIdSequencer = new Sequencer();
 
     public MultiContentGenerator(Application application, ContentProducer producer,
-                                 Consumer<AbstractContentGenerator> inform, Consumer<Long> timeTracker) {
-        super(application, producer, inform, timeTracker);
+                                 Consumer<AbstractContentGenerator> inform, Consumer<Long> timeTracker, Runnable preRun) {
+        super(application, producer, inform, timeTracker, preRun);
         fileId = -fileIdSequencer.next();
         producer.setTransactionManager(application.getTransactionManager());
         application.addMultiContent(fileId, this);

@@ -32,7 +32,7 @@ import java.util.function.Consumer;
 
 public class Application extends com.storedobject.vaadin.Application implements Device, RunningLogic, RequiresApproval {
 
-    private static final String VERSION = "22.0.2";
+    private static final String VERSION = "22.0.4";
     private static final String COMPACT_STYLES =
             """
                     --lumo-size-xl: 3rem;
@@ -97,6 +97,7 @@ public class Application extends com.storedobject.vaadin.Application implements 
     private boolean compactTheme = false;
     private Runnable loginForm;
     private IdentityCheck identityCheck;
+    private final Notification waitMessage;
 
     public Application() {
         this(new ApplicationFrame());
@@ -114,6 +115,10 @@ public class Application extends com.storedobject.vaadin.Application implements 
     }
 
     public Application(ApplicationLayout applicationLayout, boolean singleLogicMode, boolean abortOnLogicSwitch) {
+        waitMessage = new Notification("Please wait...");
+        waitMessage.addThemeVariants(NotificationVariant.LUMO_CONTRAST);
+        waitMessage.setDuration(Integer.MAX_VALUE);
+        waitMessage.setPosition(Notification.Position.MIDDLE);
         this.mainLayout = applicationLayout;
         String alertPos = ApplicationServer.getGlobalProperty("application.message.position", "");
         if(!alertPos.isBlank()) {
@@ -601,10 +606,11 @@ public class Application extends com.storedobject.vaadin.Application implements 
                 return;
             }
         }
-        new ContentGenerator(this, producer, caption, this::remove, timeTracker).kick();
+        new ContentGenerator(this, producer, caption, this::remove, timeTracker, waitMessage::open).kick();
     }
 
     private void remove(AbstractContentGenerator acg) {
+        waitMessage.close();
         if(acg instanceof ContentGenerator cg) {
             synchronized(contentProducers) {
                 contentProducers.removeIf(cp -> cp.producer == cg.getProducer());
@@ -612,7 +618,8 @@ public class Application extends com.storedobject.vaadin.Application implements 
                     stopPolling(contentProducers);
                 } else {
                     CP cp = contentProducers.get(0);
-                    new ContentGenerator(this, cp.producer, cp.caption, this::remove, cp.timeTracker).kick();
+                    new ContentGenerator(this, cp.producer, cp.caption, this::remove, cp.timeTracker,
+                            waitMessage::open).kick();
                 }
             }
         }
@@ -620,11 +627,13 @@ public class Application extends com.storedobject.vaadin.Application implements 
 
     @Override
     public void download(ContentProducer producer, Consumer<Long> informMe) {
-        new ContentGenerator(this, producer, true, null, this::remove, informMe).kick();
+        new ContentGenerator(this, producer, true, null, this::remove, informMe,
+                waitMessage::open).kick();
     }
 
     public String addResource(ContentProducer producer) {
-        MultiContentGenerator mcg = new MultiContentGenerator(this, producer, this::remove, null);
+        MultiContentGenerator mcg = new MultiContentGenerator(this, producer, this::remove, null,
+                waitMessage::open);
         return "so" + mcg.getId() + "." + producer.getFileExtension();
     }
 

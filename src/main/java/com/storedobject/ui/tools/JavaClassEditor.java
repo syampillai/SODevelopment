@@ -350,6 +350,7 @@ public class JavaClassEditor extends ObjectEditor<JavaClass> {
                 log(error);
                 redMessage(error);
             }
+            setCaption((action == 0 ? "Upload" : (action == 2 ? "Deploy" : "Analyz")) + "ed");
         }
     }
 

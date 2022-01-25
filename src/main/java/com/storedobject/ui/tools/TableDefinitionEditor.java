@@ -450,9 +450,11 @@ public class TableDefinitionEditor extends ObjectEditor<TableDefinition> {
                     if (totalCount % 10 == 0) {
                         if (count == 0 && errors == 0) {
                             view.clear();
+                            view.blueMessage("Deployed: 0/" + totalCount + "/" + allCount + ", Errors: 0, Remaining: "
+                                    + tds.size());
                         }
-                        view.setProgressCaption(caption + round + " (Status: Deployed: " + count + "/" + totalCount + "/" + allCount +
-                                ", Errors: " + errors + ", Remaining: " + tds.size() + ") ");
+                        view.setProgressCaption(caption + round + " (Status: Deployed: " + count + "/" + totalCount
+                                + "/" + allCount + ", Errors: " + errors + ", Remaining: " + tds.size() + ") ");
                     }
                 }
                 if (errors == 0) {

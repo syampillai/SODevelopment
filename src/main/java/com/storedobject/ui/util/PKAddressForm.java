@@ -7,9 +7,9 @@ import com.storedobject.vaadin.TextField;
 
 public class PKAddressForm extends AddressForm {
 
-    private ChoiceField provincesField = new ChoiceField("Province", PKAddress.getProvinces());
-    private ChoiceField districtsField = new ChoiceField("District", PKAddress.getDistricts(0));
-    private TextField placeField = new TextField("Place");
+    private final ChoiceField provincesField = new ChoiceField("Province", PKAddress.getProvinces());
+    private final ChoiceField districtsField = new ChoiceField("District", PKAddress.getDistricts(0));
+    private final TextField placeField = new TextField("Place");
 
     @Override
     protected void buildFields() {

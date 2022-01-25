@@ -22,11 +22,15 @@ public abstract class AbstractContentGenerator extends Thread {
     private long startedAt = 0;
 
     protected AbstractContentGenerator(Application application, ContentProducer producer,
-                                       Consumer<AbstractContentGenerator> inform, Consumer<Long> timeTracker) {
+                                       Consumer<AbstractContentGenerator> inform, Consumer<Long> timeTracker,
+                                       Runnable preRun) {
         this.application = application;
         this.producer = producer;
         this.inform = inform;
         this.timeTracker = timeTracker;
+        if(preRun != null) {
+            preRun.run();
+        }
     }
 
     @Override
@@ -89,8 +93,10 @@ public abstract class AbstractContentGenerator extends Thread {
             }
             return new IS(in);
         } catch (Exception e) {
-            application.log(e);
-            application.showNotification(e);
+            application.access(() -> {
+                application.log(e);
+                application.showNotification(e);
+            });
             generated();
         }
         return null;

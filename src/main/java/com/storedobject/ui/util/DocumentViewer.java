@@ -199,7 +199,7 @@ public class DocumentViewer extends PDFViewer {
     private class Content extends ContentGenerator {
 
         protected Content(ContentProducer producer) {
-            super(Application.get(), producer, "_", null, null);
+            super(Application.get(), producer, "_", null, null, null);
             setViewer(DocumentViewer.this);
         }
 

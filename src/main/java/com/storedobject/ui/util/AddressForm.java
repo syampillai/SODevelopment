@@ -8,7 +8,6 @@ import com.storedobject.vaadin.ChoiceField;
 import com.storedobject.vaadin.DataForm;
 import com.storedobject.vaadin.IntegerField;
 import com.storedobject.vaadin.TextField;
-import com.vaadin.flow.component.HasValue;
 import org.vaadin.textfieldformatter.CustomStringBlockFormatter;
 
 public abstract class AddressForm extends DataForm {
@@ -35,6 +34,7 @@ public abstract class AddressForm extends DataForm {
     @Override
     protected void buildFields() {
         addField(countryField);
+        setRequired(countryField);
         countryField.addValueChangeListener(e -> switchCountry());
         addField(typeField, apartmentField, buildingField, streetField, areaField, poBoxField, postalCodeField);
         typeField.addValueChangeListener(e -> {
@@ -110,10 +110,10 @@ public abstract class AddressForm extends DataForm {
         areaField.setLabel(address.getAreaCaption());
         poBoxField.setLabel(address.getPOBoxName());
         poBoxField.setValue(address.getPOBox());
+        setFieldVisible(address.isPOBoxAddress(), poBoxField);
         postalCodeField.setLabel(address.getPostalCodeCaption());
         postalCodeField.setValue(address.getPostalCode());
-        poBoxField.setVisible(address.isPOBoxAddress());
-        postalCodeField.setVisible(address.isPostalCodeAddress());
+        setFieldVisible(address.isPostalCodeAddress(), postalCodeField);
         setPCFormatter();
     }
 
@@ -132,29 +132,17 @@ public abstract class AddressForm extends DataForm {
         }
     }
 
-    @Override
-    public boolean isFieldVisible(HasValue<?, ?> field) {
-        if(field == poBoxField || field == postalCodeField) {
-            Address a = getAddress();
-            if(a != null) {
-                if(field == poBoxField) {
-                    return a.isPOBoxAddress();
-                }
-                if(field == postalCodeField) {
-                    return a.isPostalCodeAddress();
-                }
-            }
-        }
-        return super.isFieldVisible(field);
-    }
-
     Address getAddress() {
         Address a = addressField.getAddress();
         if(a == null) {
             Country c = countryField.getCountry();
-            if(c != null) {
-                a = Address.create(c);
+            if(c == null) {
+                String sn = getClass().getName();
+                sn = sn.substring(sn.lastIndexOf('.') + 1);
+                sn = sn.substring(0, 2);
+                c = Country.get(sn);
             }
+            a = Address.create(c);
         }
         return a;
     }
