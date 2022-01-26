@@ -16,7 +16,6 @@ import com.vaadin.flow.component.combobox.dataview.ComboBoxListDataView;
 import com.vaadin.flow.component.contextmenu.ContextMenu;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.data.provider.DataProvider;
 import com.vaadin.flow.data.provider.ListDataProvider;
 
@@ -93,21 +92,28 @@ public class ApplicationFrame extends com.storedobject.vaadin.ApplicationFrame i
     public void loggedin(com.storedobject.vaadin.Application application) {
         if(!ApplicationServer.getGlobalBooleanProperty("application.config.toolbox.hide")) {
             Application a = (Application) application;
+            boolean landscape = a.getDeviceWidth() > a.getDeviceHeight();
             TransactionManager tm = ((Application) application).getTransactionManager();
             SystemUser su = tm.getUser();
             application.setLocale(su.getLocale());
             Person p = su.getPerson();
             application.speak("Welcome " + p);
             StringBuilder sb = new StringBuilder();
-            sb.append(su.getId()).append(':').append(su.getLogin()).append(" (").append(p.getName()).append(')');
+            sb.append(su.getLogin()).append(" (").append(p.getName()).append(')');
             SystemEntity se = tm.getEntity();
             if(se != null) {
                 Entity e = se.getEntity();
                 sb.append(", ").append(e.getName()).append(", ").append(e.getLocation());
             }
             HasText user = getUserNameComponent();
-            user.setText(su.getName());
-            ((HtmlComponent) user).setTitle(sb.toString());
+            String s = sb.toString();
+            if(landscape) {
+                user.setText(s);
+                ((HtmlComponent) user).setTitle("ID:" + su.getId());
+            } else {
+                user.setText(su.getName());
+                ((HtmlComponent) user).setTitle(su.getId() + ":" + s);
+            }
             ButtonIcon logoutButton = new ButtonIcon("icons:exit-to-app", e -> a.logout());
             logoutButton.setStyle("color", "var(--lumo-error-color)");
             logoutButton.getElement().setAttribute("title", "Sign out");

@@ -86,6 +86,13 @@ public abstract class InventoryTransfer extends StoredObject {
         return getStatusValue(0);
     }
 
+    public void setRemark(String remark) {
+    }
+
+    public String getRemark() {
+        return "";
+    }
+
     public void send(Transaction transaction) throws Exception {
     }
 

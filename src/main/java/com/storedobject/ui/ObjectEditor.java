@@ -869,7 +869,7 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
             return;
         }
         if(c == cancel) {
-            doCancelInt(true);
+            doCancel();
             return;
         }
         if(c == save) {
@@ -1060,10 +1060,11 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
     public void doCancel() {
         if(isEditing()) {
             doCancelInt(true);
-        }
-        if(closeOnSave) {
-            closeOnSave = false;
-            abort();
+        } else {
+            if(closeOnSave) {
+                closeOnSave = false;
+                abort();
+            }
         }
     }
 

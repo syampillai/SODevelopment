@@ -46,9 +46,13 @@ public abstract class AddressForm extends DataForm {
                 buildingField.setLabel(B_NAME);
             }
             if(e.isFromClient()) {
-                apartmentField.focus();
+                firstFocus();
             }
         });
+    }
+
+    void firstFocus() {
+        apartmentField.focus();
     }
 
     private void switchCountry() {

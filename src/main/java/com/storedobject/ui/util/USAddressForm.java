@@ -11,6 +11,7 @@ public class USAddressForm extends AddressForm {
 
     public USAddressForm() {
         stateField = new ChoiceField("State", USAddress.getStates().toList());
+        setFirstFocus(streetField);
     }
 
     @Override
@@ -22,6 +23,11 @@ public class USAddressForm extends AddressForm {
         add(postalCodeField);
         setRequired(streetField);
         setRequired(areaField);
+    }
+
+    @Override
+    void firstFocus() {
+        streetField.focus();
     }
 
     @Override
