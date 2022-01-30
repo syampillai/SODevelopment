@@ -43,7 +43,7 @@ public abstract class AbstractAssembly<T extends InventoryItem, C extends Invent
 
     AbstractAssembly(InventoryLocation location, T item, Class<T> itemClass, Class<C> componentClass) {
         super(InventoryFitmentPosition.class, COLUMNS);
-        locationField = new LocationField("Location");
+        locationField = new LocationField("Location", 0);
         if(item == null) {
             selectRootItem = new SelectRootItem(location, itemClass);
         } else {

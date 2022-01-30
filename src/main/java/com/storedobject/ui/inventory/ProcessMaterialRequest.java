@@ -28,10 +28,46 @@ public class ProcessMaterialRequest extends AbstractRequestMaterial {
 
     public ProcessMaterialRequest(String store) {
         super(true, store, NO_ACTIONS);
+        init();
     }
 
     public ProcessMaterialRequest(InventoryLocation store) {
         super(true, store, NO_ACTIONS);
+        init();
+    }
+
+    private void init() {
+        GridContextMenu<MaterialRequest> contextMenu = new GridContextMenu<>(this);
+        GridMenuItem<MaterialRequest> process = contextMenu.addItem("Process Request", e -> e.getItem()
+                .ifPresent(i -> processRequest()));
+        GridMenuItem<MaterialRequest> viewItems = contextMenu.addItem("", e -> e.getItem()
+                .ifPresent(i -> viewItems()));
+        contextMenu.setDynamicContentHandler(mr -> {
+            deselectAll();
+            if(mr == null) {
+                return false;
+            }
+            select(mr);
+            int s = mr.getStatus();
+            process.setVisible(s > 4 || s <= 2);
+            switch(s) {
+                case 2, 3 -> {
+                    viewItems.setText("View Issued Items");
+                    viewItems.setVisible(true);
+                }
+                case 5, 6 -> {
+                    viewItems.setText("View Reserved Items");
+                    viewItems.setVisible(true);
+                }
+                default -> viewItems.setVisible(false);
+            }
+            return process.isVisible() || viewItems.isVisible();
+        });
+    }
+
+    @Override
+    public void createFooters() {
+        appendFooter().join().setComponent(new ELabel("Right-click on the entry for available options", "blue"));
     }
 
     @Override
@@ -55,7 +91,8 @@ public class ProcessMaterialRequest extends AbstractRequestMaterial {
         super.addExtraButtons();
         Checkbox h = new Checkbox("Include History");
         h.addValueChangeListener(e -> setFixedFilter(e.getValue() ? null : "(Status>0 AND Status<3) OR Reserved"));
-        buttonPanel.add(new Button("Process", e -> processRequest()), h);
+        buttonPanel.add(new Button("Process", e -> processRequest()),
+                new Button("View Issued/Reserved Items", VaadinIcon.STOCK, e -> viewItems()), h);
     }
 
     private void processRequest() {
@@ -987,6 +1024,62 @@ public class ProcessMaterialRequest extends AbstractRequestMaterial {
 
         public Quantity getQuantity(MaterialIssuedItem mii) {
             return mii.getItem().getQuantity();
+        }
+    }
+
+    private ViewItems viewItems;
+
+    private void viewItems() {
+        MaterialRequest mr = selected();
+        if(mr == null) {
+            return;
+        }
+        mr.reload();
+        switch(mr.getStatus()) {
+            case 2, 3, 5, 6 -> {
+            }
+            default -> {
+                message("Not yet issued");
+                return;
+            }
+        }
+        if(viewItems == null) {
+            viewItems = new ViewItems(mr);
+        } else {
+            viewItems.setRequest(mr);
+        }
+        viewItems.execute();
+    }
+
+    private static class ViewItems extends ObjectGrid<MaterialIssuedItem> {
+
+        private final ELabel caption = new ELabel();
+
+        ViewItems(MaterialRequest mr) {
+            super(MaterialIssuedItem.class);
+            setWidth("80vw");
+            setHeight("90vh");
+            getView(true).setWindowMode(true);
+            setRequest(mr);
+        }
+
+        @Override
+        public Component createHeader() {
+            return new ButtonLayout(new Button("Exit", e -> close()), new ELabel(" "), caption);
+        }
+
+        void setRequest(MaterialRequest mr) {
+            setCaption((mr.getReserved() ? "Reserv" : "Issu") + "ed Items");
+            load(StoredObject.list(MaterialIssued.class, "Request=" + mr.getId())
+                    .expand(mi -> mi.listLinks(MaterialIssuedItem.class)));
+        }
+
+        @Override
+        public void setCaption(String caption) {
+            super.setCaption(caption);
+            if(this.caption != null) {
+                this.caption.clearContent().append(caption, "blue").update();
+            }
         }
     }
 }

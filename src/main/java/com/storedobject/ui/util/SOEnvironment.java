@@ -138,6 +138,7 @@ public class SOEnvironment implements ApplicationEnvironment {
         String icon = switch(label) {
             case "confirm", "ok", "yes", "save", "set", "finish", "check", "approve", "authorize" -> "check";
             case "no", "cancel", "close", "remove", "clear" -> "close";
+            case "compute" -> "plus-minus";
             case "clone", "copy" -> "copy-o";
             case "next" -> "angle-double-right";
             case "previous", "back" -> "angle-double-left";

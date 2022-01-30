@@ -1,23 +1,30 @@
 package com.storedobject.ui;
 
-import com.storedobject.common.StringList;
 import com.storedobject.core.Person;
-import com.storedobject.vaadin.CloseableView;
-import com.storedobject.vaadin.DateField;
+import com.storedobject.vaadin.MenuBar;
+import com.storedobject.vaadin.MenuBarItem;
 import com.vaadin.flow.component.Component;
 
-public class Test extends ObjectGrid<Person> implements CloseableView {
+public class Test extends ObjectGrid<Person> {
 
     public Test() {
-        super(Person.class, StringList.create("FirstName", "LastName", "DateOfBirth"));
-        createComponentColumn("DateOfBirth", this::birthDateField);
+        super(Person.class);
         load();
-    }
+   }
 
-    private Component birthDateField(Person p) {
-        DateField df = new DateField();
-        df.setValue(p.getDateOfBirth());
-        df.addValueChangeListener(e -> p.setDateOfBirth(e.getValue()));
-        return df;
+    @Override
+    public Component createHeader() {
+        MenuBar m = new MenuBar();
+        m.addMenuItem("One", c -> message("One " + ((MenuBarItem)c).isChecked()));
+        MenuBarItem mi = m.addMenuItem("Two");
+        MenuBarItem p = mi;
+        mi = mi.addMenuItem("Another", c -> {
+            message("One " + ((MenuBarItem)c).isChecked());
+            if(!((MenuBarItem)c).isChecked()) {
+                p.remove((MenuBarItem)c);
+            }
+        });
+        mi.setCheckable(true);
+        return m;
     }
 }

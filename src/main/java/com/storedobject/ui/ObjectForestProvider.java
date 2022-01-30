@@ -139,6 +139,12 @@ public class ObjectForestProvider<T extends StoredObject> extends AbstractTreePr
     }
 
     @Override
+    public void applyFilterPredicate() {
+        getData().filter(getLoadFilter().getViewFilter());
+        refreshAll();
+    }
+
+    @Override
     public T get(int index) {
         return getRoots().get(index);
     }

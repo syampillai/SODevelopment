@@ -284,6 +284,16 @@ public class ObjectForestBrowser<T extends StoredObject> extends ObjectForest<T>
         super.clicked(c);
     }
 
+    @Override
+    public void load(int linkType, StoredObject master, String condition, String orderedBy, boolean any) {
+        getDataProvider().load(linkType, master, condition, orderedBy, any);
+    }
+
+    @Override
+    public void load(String condition, String orderedBy, boolean any) {
+        getDataProvider().load(condition, orderedBy, any);
+    }
+
     private void loadInt(Runnable loadFunction) {
         if(anchorsExist) {
             ObjectEditor<T> oe = getObjectEditor(getObjectClass());

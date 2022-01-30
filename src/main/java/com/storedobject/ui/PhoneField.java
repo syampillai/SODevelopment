@@ -156,8 +156,14 @@ public class PhoneField extends CustomField<String> {
         if(isEmpty(v)) {
             return false;
         }
-        if(!v.startsWith(prefix() + " ")) {
-            return true;
+        String p = prefix();
+        if(!v.startsWith(p + " ")) {
+            if(v.startsWith(p)) {
+                v = p + " " + v.substring(p.length());
+                field.setValue(v);
+            } else {
+                return true;
+            }
         }
         try {
             PhoneNumber.check(v);

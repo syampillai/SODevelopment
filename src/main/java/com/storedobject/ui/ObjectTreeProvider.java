@@ -120,6 +120,12 @@ public class ObjectTreeProvider<T extends StoredObject> extends AbstractTreeProv
     }
 
     @Override
+    public void applyFilterPredicate() {
+        getData().filter(getLoadFilter().getViewFilter());
+        refreshAll();
+    }
+
+    @Override
     public int getObjectCount() {
         return getRoots().size();
     }

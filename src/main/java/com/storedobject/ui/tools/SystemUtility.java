@@ -265,8 +265,8 @@ public class SystemUtility extends View implements CloseableView, Transactional 
                 columns = StringList.create(cols);
             }
             Browser b = new Browser(objectClass, columns);
-            b.load(where.getValue().trim(), orderBy.getValue().trim());
             b.execute();
+            b.load(where.getValue().trim(), orderBy.getValue().trim());
             return;
         }
         if(c == pdf) {

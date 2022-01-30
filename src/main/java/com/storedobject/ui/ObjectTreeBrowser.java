@@ -18,6 +18,7 @@ public class ObjectTreeBrowser<T extends StoredObject> extends ObjectTree<T> {
     protected final ButtonLayout buttonPanel = new ButtonLayout();
     protected Button add, edit, delete, reload, view, report, excel, audit, exit;
     private String allowedActions;
+    private final boolean anchorsExist;
 
     public ObjectTreeBrowser(Class<T> objectClass) {
         this(objectClass, ALL);
@@ -49,7 +50,9 @@ public class ObjectTreeBrowser<T extends StoredObject> extends ObjectTree<T> {
 
     ObjectTreeBrowser(Class<T> objectClass, Iterable<String> columns, int actions, String caption, String allowedActions) {
         super(objectClass, columns);
+        anchorsExist = !ClassAttribute.get(getObjectClass()).getAnchors().isEmpty();
         addConstructedListener(o -> con());
+        getDataProvider().setLoadCallBack(this::loadInt);
         setCaption(caption);
         this.allowedActions = allowedActions;
         if(actions < 0) {
@@ -225,6 +228,33 @@ public class ObjectTreeBrowser<T extends StoredObject> extends ObjectTree<T> {
     }
 
     protected void addExtraButtons() {
+    }
+
+    @Override
+    public void load(int linkType, StoredObject master, String condition, String orderedBy, boolean any) {
+        getDataProvider().load(linkType, master, condition, orderedBy, any);
+    }
+
+    @Override
+    public void load(String condition, String orderedBy, boolean any) {
+        getDataProvider().load(condition, orderedBy, any);
+    }
+
+    private void loadInt(Runnable loadFunction) {
+        if(anchorsExist) {
+            ObjectEditor<T> oe = getObjectEditor();
+            if(oe.anchorAction) {
+                oe.executeAnchorForm(() -> loadInt(loadFunction));
+                return;
+            }
+            getDelegatedLoader().getSystemFilter().setCondition(oe.getAnchorFilter());
+        }
+        Application a = Application.get();
+        if(a == null) {
+            loadFunction.run();
+        } else {
+            a.access(loadFunction::run);
+        }
     }
 
     @Override
