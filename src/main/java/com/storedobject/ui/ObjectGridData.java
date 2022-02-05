@@ -221,4 +221,16 @@ public interface ObjectGridData<T extends StoredObject, ROOT> extends HasColumns
     default ObjectSearchBuilder<T> getSearchBuilder() {
         return null;
     }
+
+    /**
+     * Invoked by the front-end "Load" button.
+     * @param filter Filter to be applied from the "Search Filter" values.
+     */
+    default void doLoad(String filter) {
+        if(filter == null) {
+            load();
+        } else {
+            load(filter);
+        }
+    }
 }

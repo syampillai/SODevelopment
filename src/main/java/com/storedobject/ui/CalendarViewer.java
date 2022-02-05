@@ -87,15 +87,9 @@ public class CalendarViewer extends View implements CloseableView, Transactional
             } else {
                 Person p = StoredObject.get(Person.class, personId);
                 switch(p.getGender()) {
-                    case 0:
-                        calendar.setName("His Calendar");
-                        break;
-                    case 1:
-                        calendar.setName("Her Calendar");
-                        break;
-                    default:
-                        calendar.setName("Its Calendar");
-                        break;
+                    case 0 -> calendar.setName("His Calendar");
+                    case 1 -> calendar.setName("Her Calendar");
+                    default -> calendar.setName("Its Calendar");
                 }
             }
             if(!transact(t -> calendar.save(t))) {
@@ -141,27 +135,32 @@ public class CalendarViewer extends View implements CloseableView, Transactional
             return;
         }
         if(changedValues.getChanged() == view) {
-            switch (view.getValue()) {
-                case 0:
+            switch(view.getValue()) {
+                case 0 -> {
                     calendarView.changeView(CalendarViewImpl.DAY_GRID_MONTH);
                     return;
-                case 1:
+                }
+                case 1 -> {
                     calendarView.changeView(CalendarViewImpl.TIME_GRID_WEEK);
                     return;
-                case 2:
+                }
+                case 2 -> {
                     calendarView.changeView(CalendarViewImpl.TIME_GRID_DAY);
                     return;
-                case 3:
+                }
+                case 3 -> {
                     calendarView.changeView(CalendarViewImpl.LIST_DAY);
                     return;
-                case 4:
+                }
+                case 4 -> {
                     calendarView.changeView(CalendarViewImpl.LIST_WEEK);
                     return;
-                case 5:
+                }
+                case 5 -> {
                     calendarView.changeView(CalendarViewImpl.LIST_MONTH);
                     return;
-                case 6:
-                    calendarView.changeView(CalendarViewImpl.LIST_YEAR);
+                }
+                case 6 -> calendarView.changeView(CalendarViewImpl.LIST_YEAR);
             }
             return;
         }
@@ -187,22 +186,13 @@ public class CalendarViewer extends View implements CloseableView, Transactional
 
     private void moved(int direction) {
         Date d = dateField.getValue();
-        switch (view.getValue()) {
-            case 0:
-            case 5:
-                d = DateUtility.addMonth(d, direction);
-                break;
-            case 1:
-            case 4:
-                d = DateUtility.addDay(d, 7 * direction);
-                break;
-            case 2:
-            case 3:
-                d = DateUtility.addDay(d, direction);
-                break;
-            case 6:
-                d = DateUtility.addYear(d, direction);
-        }
+        d = switch(view.getValue()) {
+            case 0, 5 -> DateUtility.addMonth(d, direction);
+            case 1, 4 -> DateUtility.addDay(d, 7 * direction);
+            case 2, 3 -> DateUtility.addDay(d, direction);
+            case 6 -> DateUtility.addYear(d, direction);
+            default -> dateField.getValue();
+        };
         dateField.setValue(d);
     }
 

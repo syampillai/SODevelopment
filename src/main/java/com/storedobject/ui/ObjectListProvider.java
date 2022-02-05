@@ -77,8 +77,12 @@ public class ObjectListProvider<T extends StoredObject> extends AbstractListProv
     private void loadInt(String condition, String orderBy, boolean any) {
         setOrderBy(orderBy, false);
         setMaster(null, false);
-        getData().load(getEffectiveCondition(condition), orderBy, any);
-        refreshAll();
+        try {
+            getData().load(getEffectiveCondition(condition), orderBy, any);
+            refreshAll();
+        } catch(Throwable e) {
+            ApplicationServer.log(a, e);
+        }
     }
 
     @Override
@@ -94,8 +98,12 @@ public class ObjectListProvider<T extends StoredObject> extends AbstractListProv
         setOrderBy(orderBy, false);
         setMaster(null, false);
         setLinkType(linkType, false);
-        getData().load(linkType, master, getEffectiveCondition(condition), orderBy, any);
-        refreshAll();
+        try {
+            getData().load(linkType, master, getEffectiveCondition(condition), orderBy, any);
+            refreshAll();
+        } catch(Throwable e) {
+            ApplicationServer.log(a, e);
+        }
     }
 
     @Override
@@ -108,8 +116,12 @@ public class ObjectListProvider<T extends StoredObject> extends AbstractListProv
     }
 
     private void loadInt(ObjectIterator<T> objects) {
-        getData().load(objects);
-        refreshAll();
+        try {
+            getData().load(objects);
+            refreshAll();
+        } catch(Throwable e) {
+            ApplicationServer.log(a, e);
+        }
     }
 
     @Override

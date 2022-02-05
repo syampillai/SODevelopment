@@ -75,11 +75,7 @@ public final class LoadFilterButtons<T extends StoredObject> {
         filterMode = false;
         load.removeTheme(ThemeStyle.PRIMARY);
         grid.setViewFilter(null);
-        if(searchBuilder == null) {
-            grid.load();
-        } else {
-            grid.load(searchBuilder.getFilterText());
-        }
+        grid.doLoad(searchBuilder == null ? null : searchBuilder.getFilterText());
     }
 
     private void loaded() {

@@ -24,10 +24,12 @@ public abstract class AbstractListProvider<T> extends ListDataProvider<T> implem
     private Predicate<T> viewFilterPredicate;
     private final Class<T> dataClass;
     private String tokens;
+    Application a;
 
     public AbstractListProvider(Class<T> dataClass, DataList<T> data) {
         super(data);
         this.dataClass = dataClass;
+        a = Application.get();
     }
 
     @Override

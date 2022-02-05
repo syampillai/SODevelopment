@@ -375,6 +375,11 @@ public class ObjectField<T extends StoredObject> extends CustomField<Id>
         field.setLoadFilter(loadFilter);
     }
 
+    @Override
+    public void setLoadFilter(Predicate<T> loadFilter, boolean apply) {
+        field.setLoadFilter(loadFilter, apply);
+    }
+
     private static <O extends StoredObject> List<O> list(Iterable<O> iterable) {
         ArrayList<O> list = new ArrayList<>();
         iterable.forEach(list::add);
