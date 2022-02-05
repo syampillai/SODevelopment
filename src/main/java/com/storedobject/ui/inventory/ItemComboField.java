@@ -141,4 +141,9 @@ public class ItemComboField<I extends InventoryItem> extends ObjectComboField<I>
             return f;
         }
     }
+
+    @Override
+    public void reload() {
+        load();
+    }
 }

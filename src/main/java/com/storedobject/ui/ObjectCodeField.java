@@ -213,4 +213,8 @@ public class ObjectCodeField<T extends StoredObject> extends CustomTextField<T> 
     @Override
     public void load(ObjectIterator<T> objects) {
     }
+
+    @Override
+    public void reload() {
+    }
 }

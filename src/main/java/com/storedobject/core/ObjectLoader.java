@@ -1,6 +1,7 @@
 package com.storedobject.core;
 
 import java.util.Collection;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 /**
@@ -203,7 +204,6 @@ public interface ObjectLoader<T extends StoredObject> extends FilterMethods<T> {
      */
     default void load(String condition, String orderedBy, boolean any) {
         ObjectLoadFilter<T> f = getLoadFilter();
-        f.setCondition(condition);
         f.setOrderBy(orderedBy);
         f.setAny(any);
         condition = getEffectiveCondition(condition);
@@ -334,7 +334,6 @@ public interface ObjectLoader<T extends StoredObject> extends FilterMethods<T> {
         setMaster(master, false);
         setLinkType(linkType, false);
         ObjectLoadFilter<T> f = getLoadFilter();
-        f.setCondition(condition);
         f.setOrderBy(orderedBy);
         f.setAny(any);
         condition = getEffectiveCondition(condition);
@@ -427,4 +426,30 @@ public interface ObjectLoader<T extends StoredObject> extends FilterMethods<T> {
      * @return Count.
      */
     int size();
+
+    /**
+     * Check whether the given object could be there in the objects loaded by this loader.
+     * @param object Object to  check.
+     * @return True/false.
+     */
+    default boolean canContain(T object) {
+        if(object == null) {
+            return false;
+        }
+        String condition = getEffectiveCondition(getFilterCondition());
+        if(condition != null && !condition.equalsIgnoreCase("true")) {
+            condition = "T.Id=" + object.getId() + " AND (" + condition + ")";
+            StoredObject m = getMaster();
+            if(m == null) {
+                object = StoredObject.get(getObjectClass(), condition, getAllowAny());
+            } else {
+                object = m.listLinks(getObjectClass(), condition, getAllowAny()).findFirst();
+            }
+        }
+        if(object == null) {
+            return false;
+        }
+        Predicate<T> predicate = getLoadFilter().getLoadingPredicate();
+        return predicate == null || predicate.test(object);
+    }
 }

@@ -356,4 +356,8 @@ class ExtraInfoObjectField<T extends StoredObject> extends CustomField<T>
             return errorText;
         }
     }
+
+    @Override
+    public void reload() {
+    }
 }

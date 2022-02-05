@@ -235,4 +235,13 @@ public class ObjectListField<T extends StoredObject> extends ListField<T>
     public boolean isAllowAny() {
         return objectProvider.isAllowAny();
     }
+
+    @Override
+    public void reload() {
+        T v = getValue();
+        load();
+        if(!canContain(v)) {
+            clear();
+        }
+    }
 }

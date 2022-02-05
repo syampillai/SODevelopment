@@ -84,4 +84,9 @@ public interface ObjectInput<T extends StoredObject> extends AbstractObjectInput
      * @param objects Objects to load.
      */
     void load(ObjectIterator<T> objects);
+
+    /**
+     * Reload the allowed values by applying newly set filters.
+     */
+    void reload();
 }

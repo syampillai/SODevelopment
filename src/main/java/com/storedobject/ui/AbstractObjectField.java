@@ -385,4 +385,15 @@ public abstract class AbstractObjectField<T extends StoredObject> extends Custom
     public boolean isInvalid() {
         return false;
     }
+
+    @Override
+    public void reload() {
+        if(searcher != null) {
+            T v = getValue();
+            searcher.reload();
+            if(!searcher.canContain(v)) {
+                clear();
+            }
+        }
+    }
 }

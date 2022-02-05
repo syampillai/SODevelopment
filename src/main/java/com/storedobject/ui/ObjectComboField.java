@@ -308,4 +308,18 @@ public class ObjectComboField<T extends StoredObject> extends ComboField<T>
     public boolean isAllowAny() {
         return objectProvider.isAllowAny();
     }
+
+    public static <C extends StoredObject> boolean lessRows(Class<C> objectClass, boolean allowAny) {
+        return (StoredObjectUtility.hints(objectClass) & 2) == 2
+                && StoredObjectUtility.howBig(objectClass, allowAny) < 30;
+    }
+
+    @Override
+    public void reload() {
+        T v = getValue();
+        load();
+        if(!canContain(v)) {
+            clear();
+        }
+    }
 }

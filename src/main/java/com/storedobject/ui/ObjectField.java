@@ -566,6 +566,9 @@ public class ObjectField<T extends StoredObject> extends CustomField<Id>
             return (ObjectInput<O>) new FileField(type);
         }
         if(type == Type.AUTO && InventoryItemType.class.isAssignableFrom(objectClass) && getProvider == null) {
+            if(ObjectComboField.lessRows(objectClass, any)) {
+                return new ObjectComboField<>(objectClass, any, addAllowed);
+            }
             Class<IT> itClass = (Class<IT>) objectClass;
             String pn;
             try {
@@ -721,5 +724,12 @@ public class ObjectField<T extends StoredObject> extends CustomField<Id>
             objects = ObjectIterator.create();
         }
         getField().load(objects);
+    }
+
+    /**
+     * Reload the allowed values by applying newly set filters.
+     */
+    public void reload() {
+       getField().reload();
     }
 }

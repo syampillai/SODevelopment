@@ -5,6 +5,7 @@ import com.storedobject.core.InventoryItem;
 import com.storedobject.core.InventoryLocation;
 import com.storedobject.core.InventoryStore;
 import com.storedobject.core.StoredObjectUtility;
+import com.storedobject.ui.ObjectComboField;
 import com.storedobject.ui.ObjectGetField;
 import com.storedobject.ui.ObjectInput;
 import com.storedobject.ui.ObjectProvider;
@@ -103,7 +104,7 @@ public interface ItemInput<T extends InventoryItem> extends ObjectInput<T> {
      * @return Instance of an {@link ItemInput}.
      */
     static <I extends InventoryItem> ItemInput<I> create(String label, Class<I> objectClass, boolean allowAny) {
-        if((StoredObjectUtility.hints(objectClass) & 2) == 2 && StoredObjectUtility.howBig(objectClass, allowAny) < 16) {
+        if(ObjectComboField.lessRows(objectClass, allowAny)) {
             return new ItemComboField<>(label, objectClass, allowAny);
         }
         if(ObjectGetField.canCreate(objectClass)) {
