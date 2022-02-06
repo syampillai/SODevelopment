@@ -29,7 +29,7 @@ public class ItemField<I extends InventoryItem> extends ObjectGetField<I> implem
     private ObjectProvider<? extends InventoryStore> storeField;
     private ObjectProvider<? extends InventoryLocation> locationField;
     private FilterProvider extraFilterProvider;
-    private boolean pnEnabled = false;
+    private boolean pnEnabled = true;
     private final InventoryFilterProvider filterProvider;
 
     /**
@@ -70,10 +70,14 @@ public class ItemField<I extends InventoryItem> extends ObjectGetField<I> implem
      */
     public ItemField(String label, Class<I> objectClass, boolean allowAny) {
         super(objectClass, allowAny);
-        super.setDisplayDetail(this::displayDetail);
+        super.setDisplayDetail(this::display);
         typeField = new PNField<>(typeClass(), allowAny);
         filterProvider = new InventoryFilterProvider();
         setLabel(label);
+        Component c = getDetailComponent();
+        if(c != null) {
+            c.setVisible(false);
+        }
     }
 
     /**
@@ -156,12 +160,24 @@ public class ItemField<I extends InventoryItem> extends ObjectGetField<I> implem
     public void setReadOnly(boolean readOnly) {
         super.setReadOnly(readOnly);
         typeField.setReadOnly(readOnly);
+        controlDisplay(readOnly);
     }
 
     @Override
     public void setEnabled(boolean enabled) {
         super.setEnabled(enabled);
         typeField.setEnabled(enabled && pnEnabled);
+        controlDisplay(!enabled);
+    }
+
+    private void controlDisplay(boolean visibility) {
+        Component c = getDetailComponent();
+        if(c != null) {
+            c.setVisible(visibility);
+            if(c instanceof HasText ht) {
+                setHelperText(visibility ? null : ht.getText());
+            }
+        }
     }
 
     @Override
@@ -177,26 +193,18 @@ public class ItemField<I extends InventoryItem> extends ObjectGetField<I> implem
         return InventoryItemType.class;
     }
 
-    private void displayDetail(I item) {
-        if(item != null) {
-            detailValue(item.toDisplay());
-            return;
+    private void display(StoredObject so) {
+        if(so == null) {
+            so = typeField.getObject();
         }
-        displayDetail(typeField.getObject());
-    }
-
-    private void displayDetail(InventoryItemType itemType) {
-        if(itemType != null) {
-            I item = getValue();
-            if(item != null && item.getPartNumberId().equals(itemType.getId())) {
-                displayDetail(item);
-                return;
+        if(so instanceof InventoryItemType) {
+            I ii = getValue();
+            if(ii != null && ii.getPartNumberId().equals(so.getId())) {
+                so = ii;
             }
         }
-        detailValue(itemType == null ? " " : itemType.toDisplay());
-    }
-
-    private void detailValue(String text) {
+        String text = so == null ? "" : so.toDisplay();
+        setHelperText(text);
         Component dc = getDetailComponent();
         if(dc instanceof HasText) {
             ((HasText) dc).setText(text);
@@ -302,7 +310,7 @@ public class ItemField<I extends InventoryItem> extends ObjectGetField<I> implem
 
         public PNField(Class<T> objectClass, boolean allowAny) {
             super(objectClass, allowAny);
-            this.setDisplayDetail(ItemField.this::displayDetail);
+            this.setDisplayDetail(ItemField.this::display);
             addValueChangeListener(e -> {
                 InventoryItemType itemType = getObject();
                 if(itemType == null) {

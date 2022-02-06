@@ -227,4 +227,8 @@ public class ObjectCache<T extends StoredObject> implements Iterable<T>, ObjectL
 	public Stream<T> stream(int startingIndex, int endingIndex) {
 		return Stream.empty();
 	}
+
+	public Stream<Id> idStream(int startingIndex, int endingIndex) {
+		return Stream.empty();
+	}
 }

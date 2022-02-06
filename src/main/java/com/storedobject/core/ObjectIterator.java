@@ -6,6 +6,7 @@ import javax.annotation.Nonnull;
 import java.io.Closeable;
 import java.util.*;
 import java.util.function.*;
+import java.util.stream.Stream;
 
 /**
  * Helper class that allows you to iterate through objects retrieved from the DB. Several methods of
@@ -668,6 +669,20 @@ public abstract class ObjectIterator<O extends StoredObject> implements Iterator
      * @return Iterator created.
      */
     public static <TO extends StoredObject, FROM> ObjectIterator<TO> create(Iterable<FROM> from,
+                                                                            Function<FROM, TO> converter) {
+        return create();
+    }
+
+    /**
+     * Create an iterator from some source.
+     *
+     * @param from Source.
+     * @param converter Converter to convert the source to an instance of TO.
+     * @param <TO> Type of object of the iterator to create.
+     * @param <FROM> Type of the source.
+     * @return Iterator created.
+     */
+    public static <TO extends StoredObject, FROM> ObjectIterator<TO> create(Stream<FROM> from,
                                                                             Function<FROM, TO> converter) {
         return create();
     }

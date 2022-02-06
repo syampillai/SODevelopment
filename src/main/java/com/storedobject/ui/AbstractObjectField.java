@@ -388,12 +388,10 @@ public abstract class AbstractObjectField<T extends StoredObject> extends Custom
 
     @Override
     public void reload() {
-        if(searcher != null) {
-            T v = getValue();
-            searcher.reload();
-            if(!searcher.canContain(v)) {
-                clear();
-            }
+        T v = getValue();
+        getSearcher().reload();
+        if(!searcher.canContain(v)) {
+            clear();
         }
     }
 }

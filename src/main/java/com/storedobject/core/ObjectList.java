@@ -1,6 +1,7 @@
 package com.storedobject.core;
 
 import java.util.List;
+import java.util.stream.Stream;
 
 public interface ObjectList<T extends StoredObject> extends List<T>, ObjectLoader<T>, Filtered<T> {
 
@@ -29,4 +30,12 @@ public interface ObjectList<T extends StoredObject> extends List<T>, ObjectLoade
     T refresh(T object);
 
     int getCacheLevel();
+
+    default Stream<Id> idStream(int startingIndex, int endingIndex) {
+        return stream(startingIndex, endingIndex).map(StoredObject::getId);
+    }
+
+    default Stream<Id> idStreamAll(int startingIndex, int endingIndex) {
+        return streamAll(startingIndex, endingIndex).map(StoredObject::getId);
+    }
 }

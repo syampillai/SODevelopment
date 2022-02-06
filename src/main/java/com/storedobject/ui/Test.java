@@ -1,35 +1,39 @@
 package com.storedobject.ui;
 
-import com.storedobject.core.Person;
-import com.storedobject.core.RawSQL;
+import com.storedobject.core.InventoryItem;
+import com.storedobject.ui.inventory.AssemblyItemField;
+import com.storedobject.vaadin.Button;
 import com.storedobject.vaadin.CloseableView;
-import com.storedobject.vaadin.FormLayout;
-import com.storedobject.vaadin.TextField;
-import com.vaadin.flow.component.Component;
+import com.storedobject.vaadin.DataForm;
 
-public class Test extends ObjectGrid<Person> implements CloseableView {
+public class Test extends DataForm implements CloseableView {
 
-    private final TextField nameField = new TextField("Search Name");
-    private final ObjectField<Person> personField = new ObjectField<>("Filter Person", Person.class);
+    private final AssemblyItemField<InventoryItem> aiField;
+    private final ObjectField<InventoryItem> aField;
 
     public Test() {
-        super(Person.class);
-        setCaption("Test");
-        setFilter(() -> "FirstName LIKE '" + personField.getObject().getFirstName().charAt(0) + "%'", false);
+        super("Test", false);
+        aiField = new AssemblyItemField<>("Item", InventoryItem.class, true);
+        aField = new ObjectField<>("Parent Assembly", InventoryItem.class, true);
+        aField.addValueChangeListener(e -> aiField.setAssembly(aField.getObject()));
+        addField(aField, aiField);
     }
 
     @Override
-    public Component createHeader() {
-        personField.setFilter(() -> "FirstName LIKE '" + nameField.getValue() + "%'");
-        nameField.addValueChangeListener(e -> personField.reload());
-        personField.addValueChangeListener(e -> {
-           Person p = personField.getObject();
-           if(p != null) {
-               load();
-           } else {
-               clear();
-           }
-        });
-        return new FormLayout(nameField, personField);
+    protected void buildFields() {
+        super.buildFields();
+        buttonPanel.add(new Button("Test R/O", e -> {
+            aField.setReadOnly(!aField.isReadOnly());
+            aiField.setReadOnly(!aiField.isReadOnly());
+        }));
+        buttonPanel.add(new Button("Test E/D", e -> {
+            aField.setEnabled(!aField.isEnabled());
+            aiField.setEnabled(!aiField.isEnabled());
+        }));
+    }
+
+    @Override
+    protected boolean process() {
+        return false;
     }
 }

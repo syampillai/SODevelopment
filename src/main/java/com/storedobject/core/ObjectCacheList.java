@@ -537,6 +537,16 @@ public class ObjectCacheList<T extends StoredObject> implements ObjectList<T>, A
     }
 
     @Override
+    public Stream<Id> idStream(int startingIndex, int endingIndex) {
+        return sorted.idStream(startingIndex, endingIndex);
+    }
+
+    @Override
+    public Stream<Id> idStreamAll(int startingIndex, int endingIndex) {
+        return original.idStream(startingIndex, endingIndex);
+    }
+
+    @Override
     public int getCacheLevel() {
         return original.getCacheLevel();
     }

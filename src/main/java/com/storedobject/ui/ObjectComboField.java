@@ -265,6 +265,7 @@ public class ObjectComboField<T extends StoredObject> extends ComboField<T>
 
     @Override
     public void load(ObjectIterator<T> objects) {
+        clear();
         objectProvider.load(objects);
     }
 
