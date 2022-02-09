@@ -113,7 +113,7 @@ public final class ApplicationServer {
         return false;
     }
 
-    public void close(String message) {
+    public void close(String argument) {
     }
 
     public void close() {

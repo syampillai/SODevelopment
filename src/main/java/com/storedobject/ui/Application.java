@@ -26,13 +26,14 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.StringReader;
 import java.lang.ref.WeakReference;
+import java.net.URISyntaxException;
 import java.sql.Date;
 import java.util.*;
 import java.util.function.Consumer;
 
 public class Application extends com.storedobject.vaadin.Application implements Device, RunningLogic, RequiresApproval {
 
-    private static final String VERSION = "22.0.4";
+    private static final String VERSION = "22.0.5";
     private static final String COMPACT_STYLES =
             """
                     --lumo-size-xl: 3rem;
@@ -98,6 +99,7 @@ public class Application extends com.storedobject.vaadin.Application implements 
     private Runnable loginForm;
     private IdentityCheck identityCheck;
     private final Notification waitMessage;
+    private volatile String url;
 
     public Application() {
         this(new ApplicationFrame());
@@ -159,6 +161,12 @@ public class Application extends com.storedobject.vaadin.Application implements 
                 ui.access(() -> error("An error has occurred, please contact Technical Support!"));
             }
         });
+        UI.getCurrent().getPage().fetchCurrentURL(url -> {
+            try {
+                this.url = url.toURI().toASCIIString();
+            } catch(URISyntaxException ignored) {
+            }
+        });
     }
 
     @Override
@@ -170,6 +178,13 @@ public class Application extends com.storedobject.vaadin.Application implements 
             return false;
         }
         return true;
+    }
+
+    public String getUrl() {
+        while(url == null) {
+            Thread.yield();
+        }
+        return url;
     }
 
     @Override
@@ -1032,6 +1047,7 @@ public class Application extends com.storedobject.vaadin.Application implements 
     public void information(StyledBuilder appDetails) {
         appDetails.append("Version: ").append(getDriverIdentifier()).
                 newLine().append("Device Size: ").append(getDeviceWidth()).append('x').append(getDeviceHeight()).
+                newLine().append("URL: ").append(getUrl()).
                 newLine().append("Biometric Available: ").append(isBiometricAvailable()).
                 newLine().append("Biometric Registered: ").append(isBiometricRegistered()).
                 newLine().append("License Status: ").append(ApplicationServer.getLicenseStatus()).

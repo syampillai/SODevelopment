@@ -16,11 +16,16 @@ public interface Device {
     String getDriverIdentifier();
     int getMajorVersion();
     int getMinorVersion();
-    void close();
     DeviceLayout getDeviceLayout();
     void setDeviceLayout(DeviceLayout layout);
     void setLocale(Locale locale);
     boolean loggedIn(Login login);
+
+    void close();
+
+    default void close(String argument) {
+        close();
+    }
 
     default boolean forgotPassword(Login login) {
         return false;
