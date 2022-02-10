@@ -35,6 +35,7 @@ public class Test extends DataForm {
         super.buildFields();
         List<Country> countries = Country.list();
         TokensField<Country> tokensField = new TokensField<>("Country", countries);
+        tokensField.setItemLabelGenerator(Country::getName);
         addField(dateField = new DateField("Date"), tokensField);
     }
 }

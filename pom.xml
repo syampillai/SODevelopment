@@ -6,11 +6,11 @@
 
     <groupId>com.storedobject</groupId>
     <artifactId>so-development</artifactId>
-    <version>7.3.4</version>
+    <version>7.3.5</version>
 
     <properties>
         <so-common-version>4.1.3</so-common-version>
-        <so-components-version>10.1.2</so-components-version>
+        <so-components-version>10.1.3</so-components-version>
         <so-charts-version>2.3.4</so-charts-version>
         <vaadin.version>22.0.5</vaadin.version>
         <maven.compiler.source>17</maven.compiler.source>
