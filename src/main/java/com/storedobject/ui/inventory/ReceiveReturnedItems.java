@@ -96,7 +96,7 @@ public class ReceiveReturnedItems extends DataForm implements Transactional {
     }
 
     private static InventoryLocation eoName(String storeAndEOName, int type) {
-        if(storeAndEOName == null || storeAndEOName.isEmpty() || !storeAndEOName.contains("|")) {
+        if(storeAndEOName == null || !storeAndEOName.contains("|")) {
             return null;
         }
         storeAndEOName = storeAndEOName.substring(storeAndEOName.indexOf('|') + 1).trim();
@@ -129,10 +129,9 @@ public class ReceiveReturnedItems extends DataForm implements Transactional {
     }
 
     private void proceed() {
-        List<InventoryItem> items = StoredObject.list(InventoryItem.class, "Location=" + eo.getId(), true).
-                filter(ii -> ii.getPreviousLocation() instanceof InventoryBin bin &&
-                        bin.getStoreId().equals(storeBin.getStoreId())).
-                toList();
+        List<InventoryItem> items = StoredObject.list(InventoryItem.class, "Location=" + eo.getId(), true)
+                .filter(ii -> ii.getPreviousLocation() instanceof InventoryBin bin
+                        && bin.getStoreId().equals(storeBin.getStoreId())).toList();
         if(items.isEmpty()) {
             processOld();
             message("For this store, no items pending to be received from:<BR/>" + eo.toDisplay());
@@ -154,9 +153,8 @@ public class ReceiveReturnedItems extends DataForm implements Transactional {
                     continue;
                 }
                 if(selectedItems.contains(item)) {
-                    warning("Item already in Return Reference " + returned.getReferenceNumber() +
-                            " (To " + returned.getToLocation().toDisplay() +
-                            "), Item = " + item.toDisplay());
+                    warning("Item already in Return Reference " + returned.getReferenceNumber()
+                            + " (To " + returned.getToLocation().toDisplay() + "), Item = " + item.toDisplay());
                     Select select = new Select(allItems, true);
                     select.execute();
                     for(InventoryItem ii: selectedItems) {
@@ -241,7 +239,9 @@ public class ReceiveReturnedItems extends DataForm implements Transactional {
             if(confirm) {
                 return;
             }
-            ELabel h = new ELabel("These items will be received, please double-check and confirm! Undo not possible after this step!!", "red");
+            ELabel h = new ELabel(
+                    "These items will be received, please double-check and confirm! Undo not possible after this step!!",
+                    "red");
             prependHeader().join().setComponent(h);
         }
 
