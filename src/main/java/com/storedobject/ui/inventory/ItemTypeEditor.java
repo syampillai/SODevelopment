@@ -68,7 +68,7 @@ public class ItemTypeEditor<T extends InventoryItemType> extends ObjectEditor<T>
 
     private void adjustUOM(HasValue<?, Quantity> field, Quantity u) {
         Quantity q = field.getValue();
-        if(!q.isCompatible(u) || q.isZero()) {
+        if(!q.isCompatible(u) || (q.isZero() && !(field instanceof UOMField))) {
             field.setValue(Quantity.create(q.getValue(), u.getUnit()));
         }
     }

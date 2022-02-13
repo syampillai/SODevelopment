@@ -182,7 +182,7 @@ public class ProcessMaterialRequest extends AbstractRequestMaterial {
             ((GridMultiSelectionModel<Object>)getSelectionModel()).addMultiSelectionListener(this::selectionChanged);
             setCaption("Process Material Request");
             GridContextMenu<Object> contextMenu = new GridContextMenu<>(this);
-            GridMenuItem<Object> addEntry = contextMenu.addItem("Add an Entry", e -> addEntry());
+            GridMenuItem<Object> addEntry = contextMenu.addItem("Add Entries", e -> addEntries());
             GridMenuItem<Object> addEntries = contextMenu.addItem("Fill Entries", e -> balanceFill());
             GridMenuItem<Object> removeEntries = contextMenu.addItem("Remove Entries", e -> removeEntries());
             GridMenuItem<Object> removeEntry = contextMenu.addItem("Remove Entry", e -> removeEntries());
@@ -312,10 +312,12 @@ public class ProcessMaterialRequest extends AbstractRequestMaterial {
             mii.setRequest(mri);
             Quantity q = shortfall(mri);
             if(ii.getQuantity().isLessThan(q)) {
-                mii.setQuantity(ii.getQuantity());
-            } else {
-                mii.setQuantity(q);
+                q = ii.getQuantity();
             }
+            if(q.isZero()) {
+                return;
+            }
+            mii.setQuantity(q);
             mii.makeVirtual();
             items(mri).add(mii);
             readyToIssueMap.remove(mri.getId());
@@ -326,7 +328,7 @@ public class ProcessMaterialRequest extends AbstractRequestMaterial {
             select(mii);
         }
 
-        private void addEntry() {
+        private void addEntries() {
             MaterialRequestItem mri = singleMRI();
             if(mri == null) {
                 return;
@@ -341,7 +343,7 @@ public class ProcessMaterialRequest extends AbstractRequestMaterial {
             if(bCount.get() > 0) {
                 message("Blocked items encountered: " + bCount.get());
             }
-            new SelectStock(stock, s -> addEntry(mri, s)).execute();
+            new MultiSelectStock(stock, s -> s.forEach(i -> addEntry(mri, i))).execute();
         }
 
         private void setQuantity(MaterialIssuedItem mii, Quantity q) {
@@ -562,7 +564,7 @@ public class ProcessMaterialRequest extends AbstractRequestMaterial {
 
         private void issue() {
             if(mi.listLinks(MaterialIssuedItem.class).noneMatch(mii -> mii.getQuantity().isPositive())) {
-                message("Nothing to issue!");
+                message("Nothing to " + (mr.getReserved() ? "reserve" : "issue") + "!");
                 return;
             }
             if(transact(t -> mi.issue(t))) {
@@ -708,15 +710,19 @@ public class ProcessMaterialRequest extends AbstractRequestMaterial {
         void setMaterialRequest(MaterialRequest mr) {
             this.mr = mr;
             this.mi = StoredObject.get(MaterialIssued.class, "Request=" + this.mr.getId() + " AND Status=0");
+            List<MaterialIssuedItem> miiList = new ArrayList<>();
+            if(mi != null) {
+                miiList = mi.listLinks(MaterialIssuedItem.class).toList();
+            }
             mriList.clear();
             miiMap.clear();
             readyToIssueMap.clear();
             quantityEdited.clear();
-            uninitialized = mi == null;
+            uninitialized = miiList.isEmpty();
             if(uninitialized) {
                 mr.listLinks(MaterialRequestItem.class).filter(mri -> mri.getBalance().isPositive()).collectAll(mriList);
             } else {
-                mi.listLinks(MaterialIssuedItem.class).forEach(mii -> items(mri(mii)).add(mii));
+                miiList.forEach(mii -> items(mri(mii)).add(mii));
             }
             removeButton.setVisible(!uninitialized);
             saveButton.setVisible(false);
@@ -1071,7 +1077,7 @@ public class ProcessMaterialRequest extends AbstractRequestMaterial {
         void setRequest(MaterialRequest mr) {
             setCaption((mr.getReserved() ? "Reserv" : "Issu") + "ed Items");
             load(StoredObject.list(MaterialIssued.class, "Request=" + mr.getId())
-                    .expand(mi -> mi.listLinks(MaterialIssuedItem.class)));
+                    .expand(mi -> mi.listLinks(MaterialIssuedItem.class, "(Quantity).Quantity>0")));
         }
 
         @Override

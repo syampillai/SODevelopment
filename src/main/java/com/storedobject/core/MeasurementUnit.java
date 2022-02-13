@@ -35,7 +35,7 @@ public class MeasurementUnit {
 	}
 	
 	public static MeasurementUnit get(String unit, Class<? extends Quantity> quantityClass) {
-		return get("");
+		return Math.random() > 0.5 ? null : get("");
 	}
 
 	public static void reload() {

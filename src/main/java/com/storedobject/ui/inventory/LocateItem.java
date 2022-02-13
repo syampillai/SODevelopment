@@ -8,6 +8,7 @@ import com.storedobject.ui.DataGrid;
 import com.storedobject.vaadin.*;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.grid.contextmenu.GridContextMenu;
 import com.vaadin.flow.component.grid.contextmenu.GridMenuItem;
 
@@ -24,7 +25,6 @@ import java.util.List;
 public class LocateItem extends DataGrid<InventoryItem> implements CloseableView {
 
     private static final String INSPECT = "INSPECT";
-    private final ELabel filterLabel = new ELabel("Search: ");
     private final ChoiceField filter = new ChoiceField(new String[] {
             "Stores only",
             "Other locations",
@@ -34,6 +34,7 @@ public class LocateItem extends DataGrid<InventoryItem> implements CloseableView
     private final Class<? extends InventoryItem> itemClass;
     private final ObjectField<? extends InventoryItemType> pnField;
     private final TextField snField;
+    private final Checkbox serviceableOnly = new Checkbox("Serviceable");
     @SuppressWarnings("rawtypes")
     private ObjectEditor editor;
     private InventoryStore store;
@@ -187,6 +188,8 @@ public class LocateItem extends DataGrid<InventoryItem> implements CloseableView
                 pnField.addValueChangeListener(e -> loadItems());
             }
         }
+        serviceableOnly.setValue(true);
+        serviceableOnly.addValueChangeListener(e -> loadItems());
         filter.addValueChangeListener(e -> loadItems());
         GridContextMenu<InventoryItem> cm = new GridContextMenu<>(this);
         cm.addItem("View Details", e -> e.getItem().ifPresent(this::view));
@@ -269,14 +272,14 @@ public class LocateItem extends DataGrid<InventoryItem> implements CloseableView
 
     @Override
     public Component createHeader() {
-        ButtonLayout b = new ButtonLayout(new Button("Exit", e -> close()));
-        b.add(filterLabel, filter);
+        ButtonLayout b = new ButtonLayout(new ELabel("Filter:"), serviceableOnly, filter);
         if(snField != null) {
             b.add(new ELabel("S/N: "), snField);
         }
         if(pnField != null) {
             b.add(new ELabel("P/N: "), pnField);
         }
+        b.add(new Button("Exit", e -> close()));
         return b;
     }
 
@@ -397,6 +400,9 @@ public class LocateItem extends DataGrid<InventoryItem> implements CloseableView
             });
             case 2 -> objects = objects.filter(ii -> ii.getLocation() instanceof InventoryFitmentPosition);
         }
+        if(serviceableOnly.getValue()) {
+            objects = objects.filter(InventoryItem::isServiceable);
+        }
         objects = objects.limit(500);
         objects.forEach(this::add);
         objects.close();
@@ -439,7 +445,6 @@ public class LocateItem extends DataGrid<InventoryItem> implements CloseableView
 
     public void setStore(InventoryStore store) {
         this.store = store;
-        filterLabel.setVisible(false);
         filter.setVisible(false);
     }
 

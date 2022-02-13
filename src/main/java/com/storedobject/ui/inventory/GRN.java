@@ -405,10 +405,6 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
         protected void anchorsSet() throws Exception {
             super.anchorsSet();
             store = (InventoryStore) ((ObjectField<?>)getAnchorField("Store")).getObject();
-            newGRNItemForm.bField.setStore(store);
-            if(grnItemGrid.binEditor != null) {
-                grnItemGrid.binEditor.binField.setStore(store);
-            }
         }
 
         @Override
@@ -430,7 +426,7 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
                 return false;
             }
             if(grn.getStatus() > 1) {
-                warning("Status: " + grn.getStatusValue() + ". Can't edit");
+                warn("Status: " + grn.getStatusValue() + ". Can't edit");
                 return false;
             }
             return true;
@@ -453,7 +449,7 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
                 return;
             }
             if(object.getStatus() == 1) {
-                warning("Entry is already processed. Deletion not possible at this stage.");
+                warn("Entry is already processed. Deletion not possible at this stage.");
                 return;
             }
             ActionForm af = new ActionForm(
@@ -480,10 +476,10 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
             InventoryGRNItem grnItem = grn.listLinks(InventoryGRNItem.class).filter(gi -> Id.isNull(gi.getItemId())).
                     findFirst();
             if(grnItem != null) {
-                warning("Kindly inspect - " + grnItem.toDisplay());
+                warn("Kindly inspect - " + grnItem.toDisplay());
                 return;
             }
-            clearAlerts();
+            clearAlert();
             List<InventoryGRNItem> list = new ArrayList<>();
             grn.listLinks(InventoryGRNItem.class).filter(gi -> Id.isNull(gi.getBinId())).collectAll(list);
             if(list.isEmpty()) {
@@ -511,7 +507,7 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
         }
 
         private void preCloseGRN(InventoryGRN grn) {
-            clearAlerts();
+            clearAlert();
             List<InventoryGRNItem> list = new ArrayList<>();
             grn.listLinks(InventoryGRNItem.class).filter(gi -> gi.getItem().isAssemblyIncomplete()).collectAll(list);
             if(list.isEmpty()) {
@@ -636,6 +632,14 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
             }
         }
 
+        private void clearAlert() {
+            clearAlerts();
+        }
+        
+        private void warn(Object any) {
+            warning(any);
+        }
+
         private class GRNItemGrid extends DetailLinkGrid<InventoryGRNItem> {
 
             @SuppressWarnings("rawtypes")
@@ -651,20 +655,24 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
                 setObjectEditor(new GRNItemEditor());
                 getButtonPanel().add(inspect, bin, assemble, hint);
                 GridContextMenu<InventoryGRNItem> contextMenu = new GridContextMenu<>(this);
-                contextMenu.addItem("Inspect", e -> e.getItem().ifPresent(x -> inspect()));
-                contextMenu.addItem("Bin", e -> e.getItem().ifPresent(x -> bin()));
-                GridMenuItem<InventoryGRNItem> assembleRC = contextMenu.addItem("Assemble", e -> e.getItem().
-                        ifPresent(x -> assemble()));
+                GridMenuItem<InventoryGRNItem>  inspectRC = contextMenu.addItem("Inspect",
+                        e -> e.getItem().ifPresent(x -> inspect()));
+                GridMenuItem<InventoryGRNItem>  binRC = contextMenu.addItem("Bin",
+                        e -> e.getItem().ifPresent(x -> bin()));
+                GridMenuItem<InventoryGRNItem> assembleRC = contextMenu.addItem("Assemble",
+                        e -> e.getItem().ifPresent(x -> assemble()));
                 contextMenu.setDynamicContentHandler(r -> {
                     deselectAll();
-                    if(r == null || !inspect.isVisible()) {
+                    if(r == null) {
                         return false;
                     }
                     select(r);
+                    inspectRC.setVisible(inspect.isVisible());
+                    binRC.setVisible(bin.isVisible());
+                    assembleRC.setVisible(assemble.isVisible());
                     grnItem = r;
                     invokeBin = false;
-                    assembleRC.setVisible(assemble.isVisible());
-                    return true;
+                    return inspectRC.isVisible() || binRC.isVisible() || assembleRC.isVisible();
                 });
             }
 
@@ -705,16 +713,16 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
                 grnItem = super.selected();
                 if(grnItem == null) {
                     if(size() == 0) {
-                        warning("No entries. Please click the 'Edit' button to add items first.");
+                        warn("No entries. Please click the 'Edit' button to add items first.");
                     } else {
-                        warning("Please select an entry first");
+                        warn("Please select an entry first");
                     }
                 }
                 return grnItem;
             }
 
             private void inspectSel() {
-                clearAlerts();
+                clearAlert();
                 if(selected() == null) {
                     return;
                 }
@@ -723,9 +731,10 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
             }
 
             private void inspect() {
+                clearAlert();
                 InventoryItemType itemType = grnItem.getPartNumber();
                 if(itemType.isSerialized() && grnItem.getSerialNumber().isEmpty()) {
-                    warning("S/N not set, please enter the S/N for this entry");
+                    warn("S/N not set, please enter the S/N for this entry");
                     snEditor().editObject();
                     return;
                 }
@@ -734,8 +743,8 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
                     if(itemType.isSerialized()) {
                         item = InventoryItem.get(grnItem.getSerialNumber(), itemType);
                         if(item != null && item.getSerialNumber().equals(grnItem.getSerialNumber())) {
-                            warning("An item with the same " + itemType.getPartNumberShortName() + " already exists: "
-                                    + item.toDisplay());
+                            warn("An item with the same " + itemType.getPartNumberShortName()
+                                    + " already exists: " + item.toDisplay());
                             snEditor().editObject();
                             return;
                         }
@@ -755,7 +764,6 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
                         default -> null;
                     });
                 }
-                clearAlerts();
                 if(itemEditor != null && itemEditor.getObjectClass() != item.getClass()) {
                     itemEditor = null;
                 }
@@ -792,25 +800,25 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
                 InventoryItem ii = grnItem.getItem();
                 if(ii.isBlocked()) {
                     if(ii.isServiceable()) {
-                        warning("This is a blocked item and its status is still set as serviceable. " +
+                        warn("This is a blocked item and its status is still set as serviceable. " +
                                 "GRN processing will fail unless the status is changed!");
                     } else {
-                        warning("This is a blocked item! Please take appropriate steps to return it.");
+                        warn("This is a blocked item! Please take appropriate steps to return it.");
                     }
                 }
                 if(invokeBin) {
                     bin();
                 } else {
                     if(Id.isNull(grnItem.getBinId()) && bin != null) {
-                        warning("This item can't be stored at the previously selected location '" + bin.toDisplay() +
-                                "', Kindly set the correct bin.");
+                        warn("This item can't be stored at the previously selected location '"
+                                + bin.toDisplay() + "', Kindly set the correct bin.");
                     }
                 }
                 return true;
             }
 
             private void binSel() {
-                clearAlerts();
+                clearAlert();
                 if(selected() == null) {
                     return;
                 }
@@ -820,12 +828,12 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
             private void bin() {
                 InventoryItem item = grnItem.getItem();
                 if(item == null) {
-                    warning("Please inspect the item before binning");
+                    warn("Please inspect the item before binning");
                     invokeBin = true;
                     inspect();
                     return;
                 }
-                clearAlerts();
+                clearAlert();
                 if(binEditor == null) {
                     binEditor = new BinEditor();
                 }
@@ -834,7 +842,7 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
             }
 
             private void assembleSel() {
-                clearAlerts();
+                clearAlert();
                 if(selected() == null) {
                     return;
                 }
@@ -842,10 +850,10 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
             }
 
             private void assemble() {
-                clearAlerts();
+                clearAlert();
                 InventoryItem item = grnItem.getItem();
                 if(item.getPartNumber().listAssemblies().findFirst() == null) {
-                    warning("Not an assembly: " + item.toDisplay());
+                    warn("Not an assembly: " + item.toDisplay());
                     return;
                 }
                 new AssemblyReceipt<>(grnItem).execute(GRNEditor.this);
@@ -889,7 +897,8 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
             BinEditor() {
                 super("Select Bin");
                 addField(itemField, binField);
-                binField.setStore(store);
+                binField.setStore(() -> store, false);
+                binField.setItem(() -> grnItem == null ? null : grnItem.getItem(), false);
                 setRequired(binField);
             }
 
@@ -910,19 +919,19 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
             @Override
             protected void cancel() {
                 super.cancel();
-                clearAlerts();
+                clearAlert();
             }
 
             @Override
             protected boolean process() {
-                clearAlerts();
+                clearAlert();
                 InventoryBin bin = binField.getValue();
                 if(bin.getId().equals(grnItem.getBinId())) {
                     return true;
                 }
                 InventoryItem item = grnItem.getItem();
                 if(!item.canBin(bin)) {
-                    warning("This item can't be stored at '" + bin.toDisplay() + "'");
+                    warn("This item can't be stored at '" + bin.toDisplay() + "'");
                     return false;
                 }
                 grnItem.setBin(bin);
@@ -938,6 +947,7 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
 
             public GRNItemEditor() {
                 super(InventoryGRNItem.class);
+                setCaption("GRN Item");
             }
 
             @Override
@@ -945,14 +955,11 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
                 super.formConstructed();
                 setFieldReadOnly("PartNumber");
                 setFieldHidden("Inspected");
-            }
-
-            @Override
-            protected void customizeField(String fieldName, HasValue<?, ?> field) {
-                if("Bin".equals(fieldName)) {
-                    ((BinField)((ObjectField<?>)field).getField()).setStore(store);
-                }
-                super.customizeField(fieldName, field);
+                BinField bf = (BinField)(((ObjectField<?>)getField("Bin")).getField());
+                bf.setStore(() -> store, false);
+                @SuppressWarnings("unchecked") ObjectField<? extends InventoryItem> iField =
+                        (ObjectField<? extends InventoryItem>) getField("Item");
+                bf.setItem(iField, false);
             }
 
             @Override
@@ -965,6 +972,12 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
                     return !gi.getPartNumber().isSerialized();
                 }
                 return super.isFieldEditable(fieldName);
+            }
+
+            @Override
+            public void clean() {
+                super.clean();
+                clearAlert();
             }
         }
 
@@ -988,14 +1001,18 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
             protected void buildFields() {
                 pnField = new ObjectField<>("Part Number", pnClass, true);
                 addField(pnField, snField, qField, cField, bField);
+                bField.setStore(() -> store, false);
+                bField.setItemType(pnField, false);
                 pnField.addValueChangeListener(e -> pnChanged());
                 setRequired(pnField);
                 setRequired(qField);
+
             }
 
             private void pnChanged() {
                 InventoryItemType pn = pnField.getObject();
                 if(pn != null) {
+                    bField.reload();
                     if(pn.isSerialized()) {
                         qField.setValue(Count.ONE);
                     } else {
@@ -1011,22 +1028,22 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
 
             @Override
             protected boolean process() {
-                clearAlerts();
+                clearAlert();
                 InventoryItemType pn = pnField.getObject();
                 Quantity q = qField.getValue();
                 String sn = StoredObject.toCode(snField.getValue());
                 if(pn.isSerialized() && q.equals(Count.ONE) && sn.isEmpty()) {
-                    warning("Please enter the S/N of the item");
+                    warn("Please enter the S/N of the item");
                     return false;
                 }
                 if(!q.isCompatible(pn.getUnitOfMeasurement())) {
-                    warning("Unit used in quantity (" + q + ") is not compatible with the unit of measurement of "
-                            + pn.toDisplay());
+                    warn("Unit used in quantity (" + q +
+                            ") is not compatible with the unit of measurement of " + pn.toDisplay());
                     return false;
                 }
                 InventoryBin bin = bField.getValue();
                 if(bin != null && !bin.canBin(pn)) {
-                    warning("Storage location selected is not suitable");
+                    warn("Storage location selected is not suitable");
                     return false;
                 }
                 Money cost = cField.getValue();

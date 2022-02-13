@@ -2,6 +2,7 @@ package com.storedobject.ui;
 
 import com.storedobject.core.DateUtility;
 import com.storedobject.core.TimestampPeriod;
+import com.storedobject.vaadin.DateField;
 
 import java.sql.Timestamp;
 import java.time.Duration;
@@ -125,5 +126,26 @@ public class TimestampPeriodField extends RangeField<TimestampPeriod, Timestamp>
     public void setStep(Duration step) {
         getFromField().setStep(step);
         getToField().setStep(step);
+    }
+
+    /**
+     * Epoch value to set. Epoch value determines how a 2 digit year value is interpreted. Epoch value is added to
+     * the 2 digit year value. The default value of epoch is the first year of the century. For example, for the 21st
+     * century, the default epoch value is 2000.
+     *
+     * @param epoch Epoch value to set.
+     */
+    public void setEpoch(int epoch) {
+        getFromField().setEpoch(epoch);
+        getToField().setEpoch(epoch);
+    }
+
+    /**
+     * Get the current epoch value. (Please see {@link #setEpoch(int)}).
+     *
+     * @return Current the current epoch value.
+     */
+    public int getEpoch() {
+        return getFromField().getEpoch();
     }
 }

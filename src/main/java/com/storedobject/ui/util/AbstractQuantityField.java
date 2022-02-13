@@ -25,7 +25,6 @@ public class AbstractQuantityField<T extends Quantity> extends CustomTextField<T
     private final Class<T> quantityClass;
     private final int decimals;
     private boolean required = false;
-    private TextField textField;
     private boolean changed = false;
 
     @SuppressWarnings("unchecked")
@@ -57,9 +56,8 @@ public class AbstractQuantityField<T extends Quantity> extends CustomTextField<T
             this.unit = new Span();
         }
         ((HasPrefixAndSuffix)textField).setSuffixComponent(this.unit);
-        this.textField = (TextField) textField;
-        this.textField.setRequired(required);
-        this.textField.addThemeVariants(TextFieldVariant.LUMO_ALIGN_RIGHT);
+        TextField textField1 = (TextField) textField;
+        textField1.addThemeVariants(TextFieldVariant.LUMO_ALIGN_RIGHT);
     }
 
     @Override
@@ -175,8 +173,8 @@ public class AbstractQuantityField<T extends Quantity> extends CustomTextField<T
 
     @Override
     public void setRequired(boolean required) {
+        setRequiredIndicatorVisible(required);
         this.required = required;
-        this.textField.setRequired(required);
         setPresentationValue(getValue());
     }
 

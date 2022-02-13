@@ -5,10 +5,10 @@ import com.storedobject.core.SystemUser;
 import com.storedobject.ui.util.ItemContextMenu;
 import com.storedobject.vaadin.CustomTextField;
 import com.storedobject.vaadin.RequiredField;
+import com.storedobject.vaadin.TextField;
 import com.storedobject.vaadin.util.HasTextValue;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.html.Span;
-import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.textfield.TextFieldVariant;
 
 import java.math.BigDecimal;
@@ -26,7 +26,6 @@ public class MoneyField extends CustomTextField<Money> implements RequiredField 
     private List<Currency> allowedCurrencies = null;
     private ItemContextMenu<Currency> popup;
     private boolean required = false;
-    private TextField textField;
     private boolean tagDebit = true;
     private boolean localCurrency = false;
     private SystemUser forUser;
@@ -165,9 +164,8 @@ public class MoneyField extends CustomTextField<Money> implements RequiredField 
         if(symbol == null) {
             symbol = new Span();
         }
-        this.textField = (TextField) textField;
-        this.textField.setSuffixComponent(symbol);
-        this.textField.setRequired(required);
+        TextField textField1 = (TextField) textField;
+        textField1.setSuffixComponent(symbol);
     }
 
     @Override
@@ -322,8 +320,8 @@ public class MoneyField extends CustomTextField<Money> implements RequiredField 
 
     @Override
     public void setRequired(boolean required) {
+        setRequiredIndicatorVisible(required);
         this.required = required;
-        this.textField.setRequired(required);
         setPresentationValue(getValue());
     }
 

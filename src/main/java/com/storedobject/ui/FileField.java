@@ -34,17 +34,19 @@ public class FileField extends AbstractObjectField<StreamData> {
     private ImageButton upload;
     private ImageButton link;
     private ImageButton download;
-    private ImageButton view;
     private ImageButton captureVideo;
     private ImageButton captureAudio;
     private ImageButton captureImage;
     private final ImageButton uploadCancel;
+    private ImageButton viewContent;
+    private final ImageButton playAudio;
+    private final ImageButton playVideo;
     private ArrayList<String> mimeTypes;
     private final ObjectField.Type[] types;
     private StreamSaver saver;
     private String filename;
     private Application application;
-    private boolean required = false;
+    private boolean required = false, mediaPreview = true;
     private int maxFileSize = 10000000;
 
     public FileField() {
@@ -120,7 +122,9 @@ public class FileField extends AbstractObjectField<StreamData> {
             }
         }
         detailComponent.setVisible(false);
-        view = new ImageButton("View", VaadinIcon.EYE, clicked).withBox(BUTTON_SIZE);
+        viewContent = new ImageButton("View", VaadinIcon.EYE, clicked).withBox(BUTTON_SIZE);
+        playAudio = new ImageButton("Play", VaadinIcon.VOLUME_UP, clicked).withBox(BUTTON_SIZE);
+        playVideo = new ImageButton("Play", VaadinIcon.MOVIE, clicked).withBox(BUTTON_SIZE);
         download = new ImageButton("Download", VaadinIcon.DOWNLOAD, clicked).withBox(BUTTON_SIZE);
         setLabel(label);
         setValue((StreamData) null);
@@ -260,9 +264,9 @@ public class FileField extends AbstractObjectField<StreamData> {
             audio.clear();
         }
         if(except != null) {
-            except.setVisible(true);
+            except.setVisible(mediaPreview);
         }
-        detailComponent.setVisible(except == null);
+        detailComponent.setVisible(!mediaPreview || except == null);
     }
 
     private void display(StreamData value) {
@@ -272,18 +276,23 @@ public class FileField extends AbstractObjectField<StreamData> {
         if(value == null) {
             mediaOff();
         } else {
-            String mime = value.getMimeType();
-            if(mime.startsWith("image/")) {
+            if(value.isImage()) {
                 mediaOff(image);
                 image.setSource(new DBResource(value));
-            } else if(mime.startsWith("video/")) {
+            } else if(value.isVideo()) {
                 mediaOff(video);
                 video.setSource(new DBResource(value));
-            } else if(mime.startsWith("audio/")) {
+            } else if(value.isAudio()) {
                 mediaOff(audio);
                 audio.setSource(new DBResource(value));
             } else {
                 mediaOff();
+            }
+            if(value.isMedia()) {
+                if(!mediaPreview) {
+                    super.setPresentationValue(value);
+                }
+            } else {
                 super.setPresentationValue(value);
             }
         }
@@ -332,9 +341,18 @@ public class FileField extends AbstractObjectField<StreamData> {
             added = true;
         }
         if(value != null) {
-            String mime = value.getMimeType();
-            if(!(mime.startsWith("image/") || mime.startsWith("video/") || mime.startsWith("audio/"))) {
-                buttonBox.add(view);
+            if(!value.isMedia()) {
+                buttonBox.add(viewContent);
+                added = true;
+                buttonBox.add(download);
+            } else if(!mediaPreview) {
+                if(value.isAudio()) {
+                    buttonBox.add(playAudio);
+                } else if(value.isVideo()) {
+                    buttonBox.add(playVideo);
+                } else { // Image
+                    buttonBox.add(viewContent);
+                }
                 added = true;
                 buttonBox.add(download);
             }
@@ -358,7 +376,7 @@ public class FileField extends AbstractObjectField<StreamData> {
 
         @Override
         public void clicked(Component component) {
-            if (component == view || component == download) {
+            if (component == viewContent || component == playAudio || component == playVideo || component == download) {
                 StreamData sd = getObject();
                 if (sd != null) {
                     if (component == download) {
@@ -509,10 +527,10 @@ public class FileField extends AbstractObjectField<StreamData> {
     }
 
     public void disallowView() {
-        if(view != null && view.getParent().isPresent()) {
-            buttonBox.remove(view);
+        if(viewContent != null && viewContent.getParent().isPresent()) {
+            buttonBox.remove(viewContent);
         }
-        view = null;
+        viewContent = null;
     }
 
     private void uploadSucceeded() {
@@ -565,6 +583,10 @@ public class FileField extends AbstractObjectField<StreamData> {
 
     public String getFileName() {
         return filename;
+    }
+
+    public void setMediaPreview(boolean preview) {
+        this.mediaPreview = preview;
     }
 
     private class StreamSaver extends Thread implements StreamDataProvider {

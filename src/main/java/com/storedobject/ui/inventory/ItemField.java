@@ -24,7 +24,8 @@ public class ItemField<I extends InventoryItem> extends ObjectGetField<I> implem
             "PartNumber.Name AS Item",
             "PartNumber.PartNumber AS Part/Model Number",
             "SerialNumberDisplay AS Serial/Batch",
-            "Quantity", "InTransit", "Serviceable", "LocationDisplay as Location", "Owner");
+            "StatusDescription AS Status",
+            "Quantity", "InTransit", "LocationDisplay as Location", "Owner");
     private final PNField<?> typeField;
     private ObjectProvider<? extends InventoryStore> storeField;
     private ObjectProvider<? extends InventoryLocation> locationField;

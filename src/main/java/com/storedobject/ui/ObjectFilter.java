@@ -144,9 +144,14 @@ public class ObjectFilter<T extends StoredObject> extends Form implements Object
                 continue;
             }
             if(StoredObject.class.isAssignableFrom(c)) {
+                if(StreamData.class.isAssignableFrom(c)) {
+                    columnMethods[i] = null;
+                    continue;
+                }
                 try {
                     StoredObjectUtility.createMethodList(objectClass, columns[i] + "Id");
                 } catch(Throwable e) {
+                    columnMethods[i] = null;
                     continue;
                 }
             }
@@ -172,12 +177,12 @@ public class ObjectFilter<T extends StoredObject> extends Form implements Object
                 labels[i] = columns[i] = null;
                 continue;
             }
+            c = columnMethods[i].getReturnType();
             span = new HorizontalLayout();
             add(span);
             span.add(checks[n] = new Checkbox(""));
             span.setVerticalComponentAlignment(FlexComponent.Alignment.CENTER, checks[n]);
             span.add(captions[n] = new Caption(labels[i]));
-            c = columnMethods[i].getReturnType();
             if(java.sql.Date.class == c) {
                 fields[n] = new DateField();
                 combos[n] = new ChoiceField(selectDate);

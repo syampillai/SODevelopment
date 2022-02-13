@@ -50,8 +50,8 @@ public class PersonRoleEditor<T extends PersonRole> extends ObjectEditor<T> {
 
     @Override
     protected HasValue<?, ?> createField(String fieldName, String label) {
-        if("Organization".equals(fieldName)) {
-            return new ObjectField<>(label, Entity.class, ObjectField.Type.FORM);
+        if("Person".equals(fieldName)) {
+            return new ObjectField<>(label, Person.class, ObjectField.Type.FORM);
         }
         return super.createField(fieldName, label);
     }
@@ -146,7 +146,7 @@ public class PersonRoleEditor<T extends PersonRole> extends ObjectEditor<T> {
             if(p != null) {
                 localRole = PersonRole.getByPersonId(se, PersonRoleEditor.this.getObjectClass(), p.getId());
                 if(localRole == null) {
-                    warning.append("An entry will be created for the selected entity.", "blue");
+                    warning.append("An entry will be created for the selected person.", "blue");
                 } else {
                     warning.append("An entry already exists! It will be edited.", "red");
                 }

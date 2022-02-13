@@ -8,7 +8,7 @@ import java.sql.Date;
 
 public class ComputedDateField extends ComputedField<ComputedDate, Date> {
 
-    private static ComputedDate EMPTY = new ComputedDate(null,false);
+    private static final ComputedDate EMPTY = new ComputedDate(null,false);
 
     public ComputedDateField() {
         this(null, null);

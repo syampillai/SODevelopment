@@ -66,32 +66,22 @@ public class ReceiveAndBin extends ListGrid<InventoryItem> implements Transactio
             if(i.getQuantity().isZero()) {
                 return true;
             }
-            switch(i.getLocation().getType()) {
-                case 0:
-                case 3:
-                case 4:
-                case 5:
-                case 9:
-                case 10:
-                case 11:
-                    return false;
-            }
-            return true;
+            return switch(i.getLocation().getType()) {
+                case 0, 3, 4, 5, 9, 10, 11 -> false;
+                default -> true;
+            };
         });
         return items;
     }
 
     @Override
     public int getRelativeColumnWidth(String columnName) {
-        switch(columnName) {
-            case "PartNumber":
-                return 4;
-            case "Location":
-                return 3;
-            case "InTransit":
-                return 1;
-        }
-        return 2;
+        return switch(columnName) {
+            case "PartNumber" -> 4;
+            case "Location" -> 3;
+            case "InTransit" -> 1;
+            default -> 2;
+        };
     }
 
     @Override
@@ -262,7 +252,7 @@ public class ReceiveAndBin extends ListGrid<InventoryItem> implements Transactio
         }
 
         private boolean invalidBin(InventoryBin bin) {
-            if(bin != null && item != null && !bin.canBin(item)) {
+            if(bin != null && (bin.isSpecial() || (item != null && !bin.canBin(item)))) {
                 warning("Can't store it there!");
                 binField.focus();
                 return true;

@@ -46,31 +46,49 @@ public abstract class PersonRole extends StoredObject implements OfEntity, HasCo
     }
 
     public static <T extends PersonRole> T get(SystemEntity systemEntity, Class<T> roleClass, Person person) {
+        if(Math.random() > 0.5) {
+            return null;
+        }
         //noinspection unchecked
         return (T) new PersonRole() {};
     }
     
     public static <T extends PersonRole> T get(SystemEntity systemEntity, Class<T> roleClass, Person person, boolean any) {
+        if(Math.random() > 0.5) {
+            return null;
+        }
         //noinspection unchecked
         return (T) new PersonRole() {};
     }
     
     public static <T extends PersonRole> T getByPersonId(SystemEntity systemEntity, Class<T> roleClass, Id personId) {
+        if(Math.random() > 0.5) {
+            return null;
+        }
         //noinspection unchecked
         return (T) new PersonRole() {};
     }
     
     public static <T extends PersonRole> T getByPersonId(SystemEntity systemEntity, Class<T> roleClass, Id personId, boolean any) {
+        if(Math.random() > 0.5) {
+            return null;
+        }
         //noinspection unchecked
         return (T) new PersonRole() {};
     }
 
     public static <T extends PersonRole> T getByName(SystemEntity systemEntity, Class<T> roleClass, String name) {
+        if(Math.random() > 0.5) {
+            return null;
+        }
         //noinspection unchecked
         return (T) new PersonRole() {};
     }
 
     public static <T extends PersonRole> T getByName(SystemEntity systemEntity, Class<T> roleClass, String name, boolean any) {
+        if(Math.random() > 0.5) {
+            return null;
+        }
         //noinspection unchecked
         return (T) new PersonRole() {};
     }

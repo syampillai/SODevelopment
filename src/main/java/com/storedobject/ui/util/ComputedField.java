@@ -1,13 +1,13 @@
 package com.storedobject.ui.util;
 
 import com.storedobject.common.ComputedValue;
+import com.storedobject.vaadin.ButtonLayout;
 import com.storedobject.vaadin.util.NumericField;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Focusable;
 import com.vaadin.flow.component.HasValue;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.customfield.CustomField;
-import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.textfield.HasPrefixAndSuffix;
 
 import java.util.Objects;
@@ -24,9 +24,8 @@ public class ComputedField<T extends ComputedValue<P>, P> extends CustomField<T>
             ((HasPrefixAndSuffix)field).setPrefixComponent(this.check);
             add((Component)field);
         } else {
-            HorizontalLayout h = new HorizontalLayout(check, (Component)field);
-            h.setMargin(false);
-            h.setSpacing(false);
+            ButtonLayout h = new ButtonLayout(check, (Component) field);
+            h.setGap(2);
             add(h);
         }
         setValue(initialValue);

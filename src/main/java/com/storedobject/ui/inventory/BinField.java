@@ -24,24 +24,25 @@ public class BinField extends ObjectGetField<InventoryBin> {
         this(null, store);
     }
 
-    public BinField(ObjectProvider<? extends InventoryStore> storeField) {
-        this(null, storeField);
+    public BinField(ObjectProvider<? extends InventoryStore> store) {
+        this(null, store);
     }
 
     public BinField(String caption, InventoryStore store) {
         this(caption, () -> store);
     }
 
-    public BinField(String caption, ObjectProvider<? extends InventoryStore> storeField) {
-        this(caption, storeField, new Getter());
+    public BinField(String caption, ObjectProvider<? extends InventoryStore> store) {
+        this(caption, store, new Getter());
     }
 
-    private BinField(String caption, ObjectProvider<? extends InventoryStore> storeField, Getter getter) {
+    private BinField(String caption, ObjectProvider<? extends InventoryStore> store, Getter getter) {
         super(caption, InventoryBin.class, true, getter);
         this.getter = getter;
-        setStoreField(storeField);
+        setStore(store, false);
         getSearcher().getSearchBuilder().removeSearchField("Store.Name");
-        setFilter(new InventoryFilterProvider());
+        setFilter(new InventoryFilterProvider(), false);
+        setLoadFilter(getter::filter, false);
     }
 
     @Override
@@ -50,7 +51,6 @@ public class BinField extends ObjectGetField<InventoryBin> {
         if(getter.storeProvider == null) {
             getter.findStore(this.getParent().orElse(null));
         }
-        setFilter("");
     }
 
     @Override
@@ -59,13 +59,69 @@ public class BinField extends ObjectGetField<InventoryBin> {
     }
 
     public void setStore(InventoryStore store) {
-        getter.storeProvider = store == null ? null : () -> store;
-        applyFilter();
+        setStore(store, true);
     }
 
-    public void setStoreField(ObjectProvider<? extends InventoryStore> storeField) {
+    public void setStore(InventoryStore store, boolean apply) {
+        getter.storeProvider = store == null ? null : () -> store;
+        if(apply) {
+            applyFilter();
+        }
+    }
+
+    public void setStore(ObjectProvider<? extends InventoryStore> storeField) {
+        setStore(storeField, true);
+    }
+
+    public void setStore(ObjectProvider<? extends InventoryStore> storeField, boolean apply) {
         getter.storeProvider = storeField;
-        applyFilter();
+        if(apply) {
+            applyFilter();
+        }
+    }
+
+    public void setItem(InventoryItem item) {
+        setItem(item, true);
+    }
+
+    public void setItem(InventoryItem item, boolean apply) {
+        getter.itemProvider = item == null ? null : () -> item;
+        if(apply) {
+            applyFilter();
+        }
+    }
+
+    public void setItem(ObjectProvider<? extends InventoryItem> itemField) {
+        setItem(itemField, true);
+    }
+
+    public void setItem(ObjectProvider<? extends InventoryItem> itemField, boolean apply) {
+        getter.itemProvider = itemField;
+        if(apply) {
+            applyFilter();
+        }
+    }
+
+    public void setItemType(InventoryItemType itemType) {
+        setItemType(itemType, true);
+    }
+
+    public void setItemType(InventoryItemType itemType, boolean apply) {
+        getter.itemTypeProvider = itemType == null ? null : () -> itemType;
+        if(apply) {
+            applyFilter();
+        }
+    }
+
+    public void setItemType(ObjectProvider<? extends InventoryItemType> itemTypeField) {
+        setItemType(itemTypeField, true);
+    }
+
+    public void setItemType(ObjectProvider<? extends InventoryItemType> itemTypeField, boolean apply) {
+        getter.itemTypeProvider = itemTypeField;
+        if(apply) {
+            applyFilter();
+        }
     }
 
     private class InventoryFilterProvider implements FilterProvider {
@@ -79,13 +135,16 @@ public class BinField extends ObjectGetField<InventoryBin> {
     private static class Getter implements GetProvider<InventoryBin> {
 
         ObjectProvider<? extends InventoryStore> storeProvider;
+        ObjectProvider<? extends InventoryItem> itemProvider;
+        ObjectProvider<? extends InventoryItemType> itemTypeProvider;
 
         void findStore(Component me) {
             if(me == null || storeProvider != null) {
                 return;
             }
             Component sf = me.getChildren().
-                    filter(f -> f instanceof ObjectField && InventoryStore.class.isAssignableFrom(((ObjectField<?>)f).getObjectClass())).
+                    filter(f -> f instanceof ObjectField
+                            && InventoryStore.class.isAssignableFrom(((ObjectField<?>)f).getObjectClass())).
                     findAny().orElse(null);
             if(sf != null) {
                 //noinspection unchecked
@@ -97,14 +156,44 @@ public class BinField extends ObjectGetField<InventoryBin> {
 
         @Override
         public InventoryBin getTextObject(SystemEntity systemEntity, String searchText) {
-            InventoryStore store = storeProvider == null ? null : storeProvider.getObject();
-            return store == null ? null : InventoryBin.get(searchText, store);
+            return listTextObjects(systemEntity, searchText).single(false);
         }
 
         @Override
         public ObjectIterator<InventoryBin> listTextObjects(SystemEntity systemEntity, String searchText) {
             InventoryStore store = storeProvider == null ? null : storeProvider.getObject();
-            return store == null ? ObjectIterator.create() : InventoryBin.list(searchText, store);
+            if(store == null) {
+                return ObjectIterator.create();
+            }
+            ObjectIterator<InventoryBin> bins = InventoryBin.list(searchText, store);
+            if(itemProvider != null || itemTypeProvider != null) {
+                return bins.filter(this::filter1);
+            }
+            return bins;
+        }
+
+        boolean filter(InventoryBin bin) {
+            if(bin == null || bin.isSpecial()) {
+                return false;
+            }
+            InventoryStore store = storeProvider == null ? null : storeProvider.getObject();
+            return store != null && filter1(bin);
+        }
+
+        private boolean filter1(InventoryBin bin) {
+            if(itemProvider != null) {
+                InventoryItem item = itemProvider.getObject();
+                if(item != null) {
+                    return item.canBin(bin);
+                }
+            }
+            if(itemTypeProvider != null) {
+                InventoryItemType itemType = itemTypeProvider.getObject();
+                if(itemType != null) {
+                    return itemType.canBin(bin);
+                }
+            }
+            return true;
         }
     }
 }

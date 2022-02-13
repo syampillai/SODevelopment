@@ -42,6 +42,10 @@ public class InventoryBin extends InventoryLocation {
         return ObjectIterator.create();
     }
 
+    public static ObjectIterator<InventoryBin> list(InventoryStore store) {
+        return ObjectIterator.create();
+    }
+
     @Override
     public final int getType() {
         return 0;
@@ -50,5 +54,21 @@ public class InventoryBin extends InventoryLocation {
     @Override
     public final Id getEntityId() {
         return Id.ZERO;
+    }
+
+    /**
+     * Is this a special type of bin so that normal binning is not allowed from GRNs.
+     * @return True/false.
+     */
+    public boolean isSpecial() {
+        return false;
+    }
+
+    /**
+     * Get the type description of this bin.
+     * @return Type description.
+     */
+    public String getTypeDescription() {
+        return "";
     }
 }

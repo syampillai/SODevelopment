@@ -354,15 +354,15 @@ public class ObjectField<T extends StoredObject> extends CustomField<Id>
      * Set a predicate that will be used for filtering the object after loading is done.
      *
      * @param predicate Filter to apply after loaded.
-     * @deprecated Please use {@link #setViewFilter(Predicate)} instead.
+     * @deprecated Please use {@link #setFilter(Predicate)} instead.
      */
     @Deprecated
     public void filter(Predicate<T> predicate) {
-        setViewFilter(predicate);
+        setFilter(predicate);
     }
 
     public void setFilter(Predicate<T> predicate) {
-        setViewFilter(predicate);
+        getLoadFilter().setLoadingPredicate(predicate);
     }
 
     /**

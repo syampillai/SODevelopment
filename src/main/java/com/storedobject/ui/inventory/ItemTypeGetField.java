@@ -36,17 +36,16 @@ public class ItemTypeGetField<T extends InventoryItemType> extends ObjectGetFiel
         return new GetSupplier<>();
     }
 
+    @SuppressWarnings("unchecked")
     private class GetSupplier<O extends T> implements GetProvider<O> {
 
         @Override
         public O getTextObject(SystemEntity systemEntity, String searchText) throws Exception {
-            //noinspection unchecked
-            return (O)InventoryItemType.getByPartNumber(getObjectClass(), searchText, isAllowAny());
+            return (O) InventoryItemType.getByPartNumber(getObjectClass(), searchText, isAllowAny());
         }
 
         @Override
         public ObjectIterator<O> listTextObjects(SystemEntity systemEntity, String searchText) throws Exception {
-            //noinspection unchecked
             return InventoryItemType.listByPartNumber(getObjectClass(), searchText, isAllowAny())
                     .map(t -> (O)t);
         }

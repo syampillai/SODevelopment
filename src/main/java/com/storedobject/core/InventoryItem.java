@@ -155,7 +155,8 @@ public class InventoryItem extends StoredObject {
     }
 
     public static <T extends InventoryItem> InventoryItem get(String serialNumber, InventoryItemType partNumber) {
-        return r == 0 ? null : new InventoryItem();
+        //noinspection unchecked
+        return r == 0 ? null : (T)new InventoryItem();
     }
 
     public static InventoryItem getByPartNumberId(String serialNumber, Id partNumber) {
@@ -388,5 +389,13 @@ public class InventoryItem extends StoredObject {
 
     public final int getAssemblyLevel() {
         return new Random().nextInt();
+    }
+
+    /**
+     * Get that description of the status of this item (serviceability, storage condition etc.)
+     * @return Status description.
+     */
+    public String getStatusDescription() {
+        return "";
     }
 }
