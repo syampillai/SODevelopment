@@ -139,6 +139,11 @@ public class AssemblyItemField<I extends InventoryItem> extends CustomField<I> i
     public void setExtraFilterProvider(FilterProvider extraFilterProvider) {
     }
 
+    @Override
+    public ObjectProvider<? extends InventoryItemType> getPartNumberProvider() {
+        return pnField;
+    }
+
     /**
      * Set the parent assembly.
      *

@@ -38,6 +38,16 @@ public class ObjectLoadFilter<T extends StoredObject> {
 		}
 	}
 
+	/**
+	 * Check whether this filter dynamic or not. A dynamic filter needs to be re-applied everytime one or more of its
+	 * dependent parameter changes.
+	 *
+	 * @return True/false.
+	 */
+	public boolean isDynamic() {
+		return loadingPredicate != null || filterProvider != null;
+	}
+
 	private String getFilterInt() {
 		String f = getFilterOfThis();
 		return child == null ? f : and(f, child.getFilterInt());

@@ -119,6 +119,9 @@ public class BinField extends ObjectGetField<InventoryBin> {
 
     public void setItemType(ObjectProvider<? extends InventoryItemType> itemTypeField, boolean apply) {
         getter.itemTypeProvider = itemTypeField;
+        if(itemTypeField == null) {
+            Thread.dumpStack();
+        }
         if(apply) {
             applyFilter();
         }
@@ -173,7 +176,7 @@ public class BinField extends ObjectGetField<InventoryBin> {
         }
 
         boolean filter(InventoryBin bin) {
-            if(bin == null || bin.isSpecial()) {
+            if(bin == null || bin instanceof InventoryReservedBin) {
                 return false;
             }
             InventoryStore store = storeProvider == null ? null : storeProvider.getObject();

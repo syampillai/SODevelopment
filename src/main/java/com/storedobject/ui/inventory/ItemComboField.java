@@ -2,6 +2,7 @@ package com.storedobject.ui.inventory;
 
 import com.storedobject.common.FilterProvider;
 import com.storedobject.core.InventoryItem;
+import com.storedobject.core.InventoryItemType;
 import com.storedobject.core.InventoryLocation;
 import com.storedobject.core.InventoryStore;
 import com.storedobject.ui.ObjectComboField;
@@ -117,6 +118,18 @@ public class ItemComboField<I extends InventoryItem> extends ObjectComboField<I>
     public void setExtraFilterProvider(FilterProvider extraFilterProvider) {
         this.extraFilterProvider = extraFilterProvider;
         newFilter();
+    }
+
+    @Override
+    public ObjectProvider<? extends InventoryItemType> getPartNumberProvider() {
+        return () -> {
+            I item = getValue();
+            if(item != null) {
+                return item.getPartNumber();
+            }
+            item = get(0);
+            return item == null ? null : item.getPartNumber();
+        };
     }
 
     private void newFilter() {

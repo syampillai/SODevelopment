@@ -1,16 +1,13 @@
 package com.storedobject.ui.inventory;
 
 import com.storedobject.common.FilterProvider;
-import com.storedobject.core.EditorAction;
-import com.storedobject.core.InventoryItem;
-import com.storedobject.core.InventoryLocation;
-import com.storedobject.core.InventoryStore;
+import com.storedobject.core.*;
 import com.storedobject.ui.ObjectBrowser;
 import com.storedobject.ui.ObjectGetField;
 import com.storedobject.ui.ObjectProvider;
 
 /**
- * Field to accept an instance of the {@link InventoryItem} with provision to input part number.
+ * Field to accept an instance of the {@link InventoryItem} from direct search words.
  *
  * @param <I> Type of inventory item to accept.
  * @author Syam
@@ -87,6 +84,11 @@ public class ItemGetField<I extends InventoryItem> extends ObjectGetField<I> imp
     @Override
     public void setExtraFilterProvider(FilterProvider extraFilterProvider) {
         this.extraFilterProvider = extraFilterProvider;
+    }
+
+    @Override
+    public ObjectProvider<? extends InventoryItemType> getPartNumberProvider() {
+        return null;
     }
 
     @Override

@@ -250,6 +250,11 @@ public class ItemField<I extends InventoryItem> extends ObjectGetField<I> implem
     }
 
     @Override
+    public ObjectProvider<? extends InventoryItemType> getPartNumberProvider() {
+        return typeField;
+    }
+
+    @Override
     protected void doSearch() {
         if(Id.isNull(typeField.getValue())) {
             typeField.focus();

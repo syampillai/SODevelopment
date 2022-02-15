@@ -960,6 +960,9 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
                 @SuppressWarnings("unchecked") ObjectField<? extends InventoryItem> iField =
                         (ObjectField<? extends InventoryItem>) getField("Item");
                 bf.setItem(iField, false);
+                @SuppressWarnings("unchecked") ObjectField<? extends InventoryItemType> itField =
+                        (ObjectField<? extends InventoryItemType>) getField("PartNumber");
+                bf.setItemType(itField, false);
             }
 
             @Override
@@ -1006,7 +1009,6 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
                 pnField.addValueChangeListener(e -> pnChanged());
                 setRequired(pnField);
                 setRequired(qField);
-
             }
 
             private void pnChanged() {

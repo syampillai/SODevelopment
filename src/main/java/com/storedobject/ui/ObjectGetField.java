@@ -282,11 +282,16 @@ public class ObjectGetField<T extends StoredObject> extends AbstractObjectField<
     }
 
     /**
-     * Load the searcher with all the available instances.
+     * Load the searcher with all the available instances. If <code>true</code> is returned from this method, it will
+     * be assumed that appropriate search action is already carried out.
      *
-     * @return True if loaded. Default implementation does nothing and returns <code>false</code>.
+     * @return True if loaded. Default implementation reapplies the filter if the load filter is dynamic and
+     * returns <code>false</code>.
      */
     protected boolean doSearchLoadAll() {
+        if(getSearcher().getLoadFilter().isDynamic()) {
+            applyFilter();
+        }
         return false;
     }
 

@@ -1,10 +1,7 @@
 package com.storedobject.ui.inventory;
 
 import com.storedobject.common.FilterProvider;
-import com.storedobject.core.InventoryItem;
-import com.storedobject.core.InventoryLocation;
-import com.storedobject.core.InventoryStore;
-import com.storedobject.core.StoredObjectUtility;
+import com.storedobject.core.*;
 import com.storedobject.ui.ObjectComboField;
 import com.storedobject.ui.ObjectGetField;
 import com.storedobject.ui.ObjectInput;
@@ -54,6 +51,12 @@ public interface ItemInput<T extends InventoryItem> extends ObjectInput<T> {
      * @param extraFilterProvider Extra filter to be set.
      */
     void setExtraFilterProvider(FilterProvider extraFilterProvider);
+
+    /**
+     * Get the P/N provider of this.
+     * @return P/N provider.
+     */
+    ObjectProvider<? extends InventoryItemType> getPartNumberProvider();
 
     /**
      * A helper method to create an instance of the {@link ItemInput} field based on the properties of the

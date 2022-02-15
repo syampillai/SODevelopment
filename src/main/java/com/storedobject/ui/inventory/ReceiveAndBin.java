@@ -252,7 +252,7 @@ public class ReceiveAndBin extends ListGrid<InventoryItem> implements Transactio
         }
 
         private boolean invalidBin(InventoryBin bin) {
-            if(bin != null && (bin.isSpecial() || (item != null && !bin.canBin(item)))) {
+            if(bin != null && (bin instanceof InventoryReservedBin || (item != null && !bin.canBin(item)))) {
                 warning("Can't store it there!");
                 binField.focus();
                 return true;

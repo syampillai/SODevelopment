@@ -57,14 +57,6 @@ public class InventoryBin extends InventoryLocation {
     }
 
     /**
-     * Is this a special type of bin so that normal binning is not allowed from GRNs.
-     * @return True/false.
-     */
-    public boolean isSpecial() {
-        return false;
-    }
-
-    /**
      * Get the type description of this bin.
      * @return Type description.
      */
