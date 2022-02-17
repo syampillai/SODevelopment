@@ -27,7 +27,7 @@ public class VerifyOTP extends View implements CloseableView {
     private String templateName;
     private boolean oldInstance = false;
     private final boolean singleOTP;
-    private int userTimeout = 180, senderTimeoutEmail = 10, senderTimeoutSMS = 10, resendTimeout = 120;
+    private int userTimeout = 180, senderTimeoutEmail = 10, senderTimeoutSMS = 10, resendTimeout = 30; //120;
     private OTP phone, email;
     private volatile boolean closed = false;
     private final HorizontalLayout caption = new HorizontalLayout();
@@ -36,7 +36,7 @@ public class VerifyOTP extends View implements CloseableView {
     /**
      * Constructor.
      *
-     * @param phone Mobile phone number. If null, SMS OPT will not be verified.
+     * @param phone Mobile phone number. If null, SMS OTP will not be verified.
      * @param email Email. If null, email OTP will not be verified.
      * @param verified Runnable to be invoked if verified successfully. (Can not be <code>null</code>).
      * @param cancelled Runnable to be invoked if verification is cancelled by the user. (Can not be <code>null</code>).
@@ -50,7 +50,7 @@ public class VerifyOTP extends View implements CloseableView {
     /**
      * Constructor.
      *
-     * @param phone Mobile phone number. If null, SMS OPT will not be verified.
+     * @param phone Mobile phone number. If null, SMS OTP will not be verified.
      * @param email Email. If null, email OTP will not be verified.
      * @param verified Runnable to be invoked if verified successfully. (Can not be <code>null</code>).
      * @param cancelled Runnable to be invoked if verification is cancelled by the user. (Can not be <code>null</code>).
@@ -494,6 +494,7 @@ public class VerifyOTP extends View implements CloseableView {
                 shake();
                 return false;
             }
+            timer.abort();
             otpField.setEnabled(false);
             done.clearContent().append("Verified", "green").update();
             synchronized(random) {
@@ -534,7 +535,7 @@ public class VerifyOTP extends View implements CloseableView {
                     if(stage == 2) { // Sent earlier, we can resend now
                         ++stage;
                         resend.setVisible(true);
-                        timer.setPrefix("OPT will expire in ");
+                        timer.setPrefix("OTP will expire in ");
                         int time = userTimeout - resendTimeout;
                         if(time <= 5) {
                             time = 5;
@@ -561,7 +562,7 @@ public class VerifyOTP extends View implements CloseableView {
             p[3] = ':';
             String s = new String(p);
             return switch(s) {
-                case "ASS", "FUK", "FUC", "PIG", "OTP" -> genPrefix();
+                case "ASS", "FUK", "FUC", "PIG", "OTP", "TIT" -> genPrefix();
                 default -> s;
             };
         }

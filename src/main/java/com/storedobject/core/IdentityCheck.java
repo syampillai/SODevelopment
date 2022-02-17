@@ -69,6 +69,15 @@ public interface IdentityCheck {
     }
 
     /**
+     * Get the OTP timeout in seconds.
+     *
+     * @return OTP Timeout. (Default is 180 seconds).
+     */
+    default int getOTPTimeout() {
+        return 180;
+    }
+
+    /**
      * This method is invoked when a "password change" is carried out successfully.
      */
     default void passwordChangeSucceeded() {

@@ -180,6 +180,10 @@ public class Application extends com.storedobject.vaadin.Application implements 
         return true;
     }
 
+    public String getCaption() {
+        return mainLayout.getCaption();
+    }
+
     public String getUrl() {
         while(url == null) {
             Thread.yield();
@@ -310,6 +314,10 @@ public class Application extends com.storedobject.vaadin.Application implements 
     @Override
     protected final ApplicationLayout createLayout() {
         return mainLayout;
+    }
+
+    public final String getName() {
+        return mainLayout + "";
     }
 
     @Override
@@ -910,6 +918,7 @@ public class Application extends com.storedobject.vaadin.Application implements 
     }
 
     public final void forgotPassword(IdentityCheck identityCheck) {
+        //noinspection NewObjectEquality
         if(identityCheck != this.identityCheck || identityCheck.getUser() != getTransactionManager().getUser()) {
             close();
             return;
@@ -920,6 +929,7 @@ public class Application extends com.storedobject.vaadin.Application implements 
         if(otpTemplate != null) {
             verifyOTP.setTemplateName(otpTemplate);
         }
+        verifyOTP.setUserTimeout(identityCheck.getOTPTimeout());
         verifyOTP.setCustomTag(identityCheck.getOTPTag());
         verifyOTP.execute();
         closeMenu();
