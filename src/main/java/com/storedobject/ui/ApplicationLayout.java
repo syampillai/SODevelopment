@@ -27,8 +27,4 @@ public interface ApplicationLayout extends com.storedobject.vaadin.ApplicationLa
     default boolean isMenuVisible() {
         return true;
     }
-
-    default String getCaption() {
-        return "SO Application";
-    }
 }

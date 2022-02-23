@@ -27,6 +27,7 @@ import java.io.StringReader;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.sql.Timestamp;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
@@ -619,23 +620,42 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
         this.newObject = newObject;
     }
 
-    @Override
-    protected T createObjectInstance() {
+    /**
+     * Create a new instance of the data class. This is a helper method that can be typically invoked from
+     * the {@link NewObject#newObject()}/{@link NewObject#newObject(TransactionManager)} to create a new instance. 
+     * 
+     * @return New instance of the data class.
+     */
+    public final T createNewInstance() {
         T instance;
-        if(newObject != null) {
-            try {
-                instance = newObject.newObject(getTransactionManager());
-            } catch(Exception e) {
-                return null;
-            }
-        } else {
-            try {
-                instance = getObjectClass().getDeclaredConstructor().newInstance();
-            } catch(InstantiationException | NoSuchMethodException | IllegalAccessException
-                    | InvocationTargetException e) {
-                return null;
+        try {
+            instance = getObjectClass().getDeclaredConstructor().newInstance();
+        } catch(InstantiationException | NoSuchMethodException | IllegalAccessException
+                | InvocationTargetException e) {
+            return null;
+        }
+        Method m;
+        ClassAttribute<T> ca = ClassAttribute.get(getObjectClass());
+        for(String attribute: ca.getAttributes()) {
+            m = ca.getMethod(attribute);
+            if(m.getReturnType() == Timestamp.class) {
+                Timestamp now = DateUtility.now();
+                try {
+                    if(Math.abs(now.getTime() - ((Timestamp) m.invoke(instance)).getTime()) <= 120000L) {
+                        m = ca.setMethod(attribute);
+                        if(m != null) {
+                            m.invoke(instance, getTransactionManager().date(now));
+                        }
+                    }
+                } catch(Throwable ignored) {
+                }
             }
         }
+        setUpNew(instance);
+        return instance;
+    }
+    
+    private void setUpNew(T instance) {
         if(instance != null) {
             setFixedValues(instance);
         }
@@ -648,6 +668,21 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
                 }
             } catch(Throwable ignored) {
             }
+        }
+    }
+
+    @Override
+    protected T createObjectInstance() {
+        T instance;
+        if(newObject != null) {
+            try {
+                instance = newObject.newObject(getTransactionManager());
+                setUpNew(instance);
+            } catch(Exception e) {
+                return null;
+            }
+        } else {
+            instance = createNewInstance();
         }
         return instance;
     }

@@ -27,7 +27,7 @@ public class VerifyOTP extends View implements CloseableView {
     private String templateName;
     private boolean oldInstance = false;
     private final boolean singleOTP;
-    private int userTimeout = 180, senderTimeoutEmail = 10, senderTimeoutSMS = 10, resendTimeout = 30; //120;
+    private int userTimeout = 180, senderTimeoutEmail = 10, senderTimeoutSMS = 10, resendTimeout = 120;
     private OTP phone, email;
     private volatile boolean closed = false;
     private final HorizontalLayout caption = new HorizontalLayout();
