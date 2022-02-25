@@ -29,6 +29,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.sql.Timestamp;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -969,10 +970,28 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
         }
     }
 
-    private boolean doSaveInt() {
+    T getObjectWithLinks() {
+        T object = getObject();
+        object.clearObjectLinks();
+        for(ObjectLinkField<?> linkField : linkFields) {
+            linkField.getValue().copy().attach();
+        }
+        if(streamAttachmentData != null) {
+            streamAttachmentData.copy().attach();
+        }
+        if(extraInfo != null) {
+            extraInfo.getValue().copy().attach();
+        }
+        if(contactData != null && contactData.ownedByMaster()) {
+            contactData.copy().attach();
+        }
+        return object;
+    }
+
+    private T commitForm(AtomicBoolean created) throws Exception {
         clearAlerts();
         if(!form.commit()) {
-            return false;
+            return null;
         }
         T object = getObject();
         object.clearObjectLinks();
@@ -988,21 +1007,37 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
         if(contactData != null && contactData.ownedByMaster()) {
             contactData.copy().attach();
         }
-        boolean created = object.created();
+        if(created != null) {
+            created.set(object.created());
+        }
+        validateLinks();
+        validateData();
+        if(validators != null && validators.stream().anyMatch(v -> !v.test(object))) {
+            return null;
+        }
+        object.validateData(getTransactionManager());
+        return object;
+    }
+
+    T commitForm() throws Exception {
+        return commitForm(null);
+    }
+
+    private boolean doSaveInt() {
+        AtomicBoolean created = new AtomicBoolean(false);
+        T object;
         try {
-            validateLinks();
-            validateData();
-            if(validators != null && validators.stream().anyMatch(v -> !v.test(object))) {
+            object = commitForm(created);
+            if(object == null) {
                 return false;
             }
-            object.validateData(getTransactionManager());
         } catch(Exception error) {
             warning(error);
             return false;
         }
         try {
             if(!doNotSave && !saveInt()) {
-                if(created) {
+                if(created.get()) {
                     setObject(null, false);
                 }
                 return false;
@@ -1032,7 +1067,7 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
             closeOnSave = false;
             close();
         }
-        if(created) {
+        if(created.get()) {
             insertedInternal(object);
         } else {
             updatedInternal(object);

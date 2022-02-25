@@ -198,16 +198,12 @@ public class ObjectFormField<T extends StoredObject> extends CustomField<T>
         if(newId) {
             if(masterView == null) {
                 errorText = "Unknown state";
-            } else if(formEditor.commit()) {
+            } else {
                 try {
-                    object.clearObjectLinks();
-                    for(ObjectLinkField<?> linkField: formEditor.linkFields()) {
-                        linkField.getValue().copy().attach();
+                    if(formEditor.commitForm() != null) {
+                        objectId = object.save(masterView.getTransaction(true));
+                        formEditor.setObject(object, true);
                     }
-                    formEditor.validateData();
-                    object.validateData(masterView.getTransactionManager());
-                    objectId = object.save(masterView.getTransaction(true));
-                    formEditor.setObject(object, true);
                 } catch (Throwable error) {
                     errorText = Application.get().getEnvironment().toDisplay(error);
                     masterView.error(error);

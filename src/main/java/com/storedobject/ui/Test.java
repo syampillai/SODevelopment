@@ -6,6 +6,7 @@ import com.storedobject.vaadin.DataForm;
 import com.storedobject.vaadin.DateField;
 import com.storedobject.vaadin.TextField;
 import com.storedobject.vaadin.TokensField;
+import com.vaadin.flow.component.datepicker.DatePicker;
 
 import java.util.List;
 
@@ -14,6 +15,7 @@ public class Test extends DataForm {
     private DateField dateField;
     private TimestampField tsField;
     private MoneyField mField;
+    private DatePicker vdate;
 
     public Test() {
         super("TestTokenField");
@@ -21,6 +23,7 @@ public class Test extends DataForm {
 
     @Override
     protected boolean process() {
+        message("V Date: " + vdate.getValue());
         message("Date: " + dateField.getValue());
         message("Time: " + tsField.getValue());
         message("Amount: " + mField.getValue());
@@ -30,6 +33,8 @@ public class Test extends DataForm {
     @Override
     protected void buildFields() {
         super.buildFields();
+        add(vdate = new DatePicker("VDate"));
+        setRequired(vdate);
         QuantityField qField = new QuantityField("Qty");
         qField.setRequired(true);
         ObjectField<Person> pField = new ObjectField<>("Person", Person.class);
@@ -44,5 +49,6 @@ public class Test extends DataForm {
         TextField tf = new TextField("Text");
         addField(tf);
         tf.setRequired(true);
+        setRequired(dateField);
     }
 }

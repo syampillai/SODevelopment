@@ -163,8 +163,7 @@ public class FoldingLayout extends Composite<Component> {
     public void add(HasSize... components) {
         if(components != null) {
             for(HasSize hs: components) {
-                if(hs instanceof Component) {
-                    Component c = (Component) hs;
+                if(hs instanceof Component c) {
                     if(!this.components.isEmpty()) {
                         content.add(new Filler());
                     }
@@ -299,7 +298,7 @@ public class FoldingLayout extends Composite<Component> {
         size();
     }
 
-    private int normalize(List<Integer> sizes, int count) {
+    private static int normalize(List<Integer> sizes, int count) {
         if(count > sizes.size()) {
             int a = (int) sizes.stream().mapToInt(s -> s).average().orElse(100);
             while(count > sizes.size()) {

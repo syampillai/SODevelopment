@@ -77,7 +77,6 @@ public class SOServlet extends VaadinServlet {
         // Check for CORS requests
         String origin = request.getHeader("Origin");
         if (origin != null) {
-
             if(isAllowedRequestOrigin(origin)) { // Allowed
                 if("options".equalsIgnoreCase(request.getMethod())) { // Handle a preflight "option" requests
                     response.addHeader("Access-Control-Allow-Origin", origin);
