@@ -414,6 +414,22 @@ public class Application extends com.storedobject.vaadin.Application implements 
         }
     }
 
+    /**
+     * Exit the application after showing a message.
+     *
+     * @param message Message to show.
+     * @param exitSite Exit to this site (If null is passed, it will exit to the configured site).
+     */
+    public void exit(String message, String exitSite) {
+        InformationMessage m = new InformationMessage(message);
+        if(exitSite == null) {
+            m.setAction(this::close);
+        } else {
+            m.setAction(() -> close(exitSite));
+        }
+        access(m::execute);
+    }
+
     public static Application get() {
         return (Application) com.storedobject.vaadin.Application.get();
     }
@@ -918,8 +934,21 @@ public class Application extends com.storedobject.vaadin.Application implements 
             close();
             return;
         }
+        String exitSite = identityCheck.getOTPExitSite();
+        String errorMessage = identityCheck.getOTPErrorMessage();
+        if(errorMessage == null) {
+            errorMessage = "Unable to send OTP due to technical errors, please try later or contact support";
+        }
+        Runnable cancel, error;
+        if(exitSite == null) {
+            cancel = this::close;
+        } else {
+            cancel = () -> close(exitSite);
+        }
+        String finalErrorMessage = errorMessage;
+        error = () -> exit(finalErrorMessage, exitSite);
         VerifyOTP verifyOTP = new VerifyOTP(identityCheck.isSingleOTP(), identityCheck.getMobile(),
-                identityCheck.getEmail(), () -> new SetNewPassword().execute(), this::close, this::close);
+                identityCheck.getEmail(), () -> new SetNewPassword().execute(), cancel, error);
         String otpTemplate = identityCheck.getOTPTemplate();
         if(otpTemplate != null) {
             verifyOTP.setTemplateName(otpTemplate);

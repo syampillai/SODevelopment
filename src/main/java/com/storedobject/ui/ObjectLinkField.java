@@ -2,6 +2,7 @@ package com.storedobject.ui;
 
 import com.storedobject.common.ArrayListSet;
 import com.storedobject.core.*;
+import com.storedobject.vaadin.HasVisibility;
 import com.storedobject.vaadin.View;
 import com.storedobject.vaadin.ViewDependent;
 import com.vaadin.flow.component.Component;
@@ -18,7 +19,7 @@ import java.util.stream.Stream;
 
 public final class ObjectLinkField<T extends StoredObject>
         implements HasValue<HasValue.ValueChangeEvent<StoredObjectLink<T>>, StoredObjectLink<T>>, ViewDependent,
-        ObjectsSetter<T> {
+        HasVisibility, ObjectsSetter<T> {
 
     private final StoredObjectUtility.Link<T> link;
     private String label;
@@ -30,6 +31,7 @@ public final class ObjectLinkField<T extends StoredObject>
     @SuppressWarnings("unchecked")
     private StoredObjectLink<T> value = (StoredObjectLink<T>) StoredObjectLink.EMPTY;
     private ArrayList<TrackerRegistration> registrations;
+    private boolean visible = true;
 
     public ObjectLinkField(String label, StoredObjectUtility.Link<T> link) {
         this.link = link;
@@ -65,6 +67,9 @@ public final class ObjectLinkField<T extends StoredObject>
             grid.setReadOnly(true);
         }
         ((Grid<?>)grid).setAllRowsVisible(true);
+        if(!visible) {
+            ((Grid<?>)grid).setVisible(false);
+        }
         invisible.forEach(fieldName -> ((com.storedobject.vaadin.DataGrid<T>) grid).setColumnVisible(fieldName, false));
         invisible.clear();
         invisible = null;
@@ -427,6 +432,25 @@ public final class ObjectLinkField<T extends StoredObject>
         return (DataGrid<T>) grid;
     }
 
+    @Override
+    public void setVisible(boolean visible) {
+        if(this.visible == visible) {
+            return;
+        }
+        this.visible = visible;
+        if(grid != null) {
+            getGrid().setVisible(visible);
+        }
+        if(tab != null) {
+            tab.setVisible(visible);
+        }
+    }
+
+    @Override
+    public boolean isVisible() {
+        return visible;
+    }
+
     public static class Tabs extends com.storedobject.vaadin.Tabs {
 
         public Tabs() {
@@ -438,6 +462,7 @@ public final class ObjectLinkField<T extends StoredObject>
             Tab tab = new Tab(field.getLabel());
             add(tab, (Component)field.grid);
             field.tab = tab;
+            tab.setVisible(field.visible);
         }
     }
 

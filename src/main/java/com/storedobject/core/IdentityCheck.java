@@ -69,6 +69,25 @@ public interface IdentityCheck {
     }
 
     /**
+     * Get the "exit site" to exit the application when failed to send OTP due to technical errors.
+     *
+     * @return Exit site. (Default is null).
+     */
+    default String getOTPExitSite() {
+        return null;
+    }
+
+    /**
+     * Get the "error message" to be shown when failed to send OTP due to technical errors. Application will exit
+     * after showing this message. (Specify {@link #getOTPExitSite()} if you want to exit to another site).
+     *
+     * @return Error message. (Default is null).
+     */
+    default String getOTPErrorMessage() {
+        return null;
+    }
+
+    /**
      * Get the OTP timeout in seconds.
      *
      * @return OTP Timeout. (Default is 180 seconds).
