@@ -14,6 +14,7 @@ import com.vaadin.flow.component.HasValue;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.data.provider.hierarchy.AbstractHierarchicalDataProvider;
 import com.vaadin.flow.data.provider.hierarchy.HierarchicalQuery;
+import com.vaadin.flow.shared.Registration;
 
 import java.sql.Date;
 import java.util.ArrayList;
@@ -38,6 +39,7 @@ public abstract class AbstractAssembly<T extends InventoryItem, C extends Invent
     private InventoryFitmentPosition root;
     private final Map<Id, ArrayList<InventoryFitmentPosition>> assemblies = new HashMap<>();
     final LocationField locationField;
+    private Registration registration;
     Date date = DateUtility.today();
     String reference = "";
 
@@ -368,6 +370,10 @@ public abstract class AbstractAssembly<T extends InventoryItem, C extends Invent
                     return loc instanceof InventoryBin ? ((InventoryBin) loc).getStore() : null;
                 });
             }
+            if(registration != null) {
+                registration.remove();
+            }
+            registration = locationField.addValueChangeListener(e -> itemField.reload());
             addField(locationField, (HasValue<?, ?>) itemField);
             setRequired(locationField);
             setRequired((HasValue<?, ?>)itemField);
