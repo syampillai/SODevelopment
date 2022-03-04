@@ -14,7 +14,9 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.shared.Registration;
 
 import javax.annotation.Nonnull;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 public class ObjectFormField<T extends StoredObject> extends CustomField<T>
         implements ObjectInput<T>, ViewDependent, NoDisplayField, ValueRequired {
@@ -78,14 +80,25 @@ public class ObjectFormField<T extends StoredObject> extends CustomField<T>
     }
 
     public ObjectFormField(String label, ObjectEditor<T> formEditor, HasContainer mergeTo) {
+        this(label, formEditor.getObjectClass(), null, (fieldName, objectClass) -> formEditor, mergeTo);
+    }
+
+    public ObjectFormField(String label, Class<T> objectClass, String fieldName,
+                           BiFunction<String, Class<T>, ObjectEditor<T>> editorCreator, ObjectField.Type formType) {
+        this(label, objectClass, fieldName, editorCreator, formType == ObjectField.Type.FORM ? DUMMY : null);
+    }
+
+    public ObjectFormField(String label, Class<T> objectClass, String fieldName,
+                           BiFunction<String, Class<T>, ObjectEditor<T>> editorCreator, HasContainer mergeTo) {
+        ObjectEditor<T> oe = editorCreator == null ? null : editorCreator.apply(fieldName, objectClass);
+        this.formEditor = oe == null ? ObjectEditor.create(objectClass) : oe;
         ObjectField.checkDetailClass(formEditor.getObjectClass(), label);
-        this.formEditor = formEditor;
         this.formEditor.setCaption("", true);
         this.mergeTo = mergeTo;
         if(mergeTo != null && mergeTo != DUMMY) {
             this.formEditor.setFieldContainerProvider(mergeTo);
         }
-        this.formEditor.setSaver(oe -> true);
+        this.formEditor.setSaver(e -> true);
         if(mergeTo == null) {
             displayCreated = true;
             add(this.formEditor.getComponent());
@@ -419,5 +432,9 @@ public class ObjectFormField<T extends StoredObject> extends CustomField<T>
 
     @Override
     public void reload() {
+    }
+
+    public final ObjectEditor<T> getFormEditor() {
+        return formEditor;
     }
 }

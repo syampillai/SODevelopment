@@ -72,11 +72,11 @@ public class EntityRoleEditor<T extends EntityRole> extends ObjectEditor<T> {
     }
 
     @Override
-    protected HasValue<?, ?> createField(String fieldName, String label) {
+    public ObjectField.Type getObjectFieldType(String fieldName) {
         if("Organization".equals(fieldName)) {
-            return new ObjectField<>(label, Entity.class, ObjectField.Type.FORM);
+            return ObjectField.Type.FORM;
         }
-        return super.createField(fieldName, label);
+        return super.getObjectFieldType(fieldName);
     }
 
     private void con() {

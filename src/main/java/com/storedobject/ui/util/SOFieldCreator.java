@@ -132,13 +132,14 @@ public class SOFieldCreator<T> implements ObjectFieldCreator<T> {
             return contactTypes;
         }
         contactTypes = new ArrayList<>();
-        if(ca == null || form == null) {
+        ObjectEditor<?> oe = oe();
+        if(ca == null || oe == null) {
             return contactTypes;
         }
         try {
-            StoredObject dummy = ca.getObjectClass().getDeclaredConstructor().newInstance();
-            if(dummy instanceof HasContacts) {
-                ((HasContacts) dummy).listContactTypes().forEach(contactTypes::add);
+            if(ca.getObjectClass().getDeclaredConstructor().newInstance() instanceof HasContacts hc) {
+                hc.listContactTypes().filter(ct -> oe.isFieldIncluded(ct.getName() + ".c"))
+                        .forEach(contactTypes::add);
             }
         } catch(InstantiationException | IllegalAccessException | NoSuchMethodException
                 | InvocationTargetException ignored) {
@@ -258,6 +259,9 @@ public class SOFieldCreator<T> implements ObjectFieldCreator<T> {
     }
 
     private ObjectEditor<?> oe() {
+        if(form == null) {
+            return null;
+        }
         View v = form.getView();
         return v instanceof ObjectEditor ? (ObjectEditor<?>) v : null;
     }
@@ -536,7 +540,7 @@ public class SOFieldCreator<T> implements ObjectFieldCreator<T> {
     }
 
     @SuppressWarnings("unchecked")
-    private HasValue<?, ?> createSOField(String fieldName, Class<?> type, String label) {
+    private <FT extends StoredObject> HasValue<?, ?> createSOField(String fieldName, Class<?> type, String label) {
         Method getMethod = null;
         if(type == null) {
             getMethod = getMethod(fieldName);
@@ -604,8 +608,11 @@ public class SOFieldCreator<T> implements ObjectFieldCreator<T> {
                 }
                 return new ObjectField<>(label, new FileField(types.toArray(new ObjectField.Type[0])));
             }
-            return new ObjectField<>(label, realObjectType, md.isAny(), objectFieldType(md),
-                    md.isAddAllowed());
+            ObjectEditor<FT> oe = (ObjectEditor<FT>) oe();
+            Class<FT> fieldClass = (Class<FT>) realObjectType;
+            //noinspection Convert2Diamond
+            return new ObjectField<FT>(label, fieldClass, fieldName, oe == null ? null : oe::createFormFieldEditor,
+                    md.isAny(), objectFieldType(fieldName, md), md.isAddAllowed());
         }
         if(JSON.class == type) {
             return new JSONField(label);
@@ -881,16 +888,16 @@ public class SOFieldCreator<T> implements ObjectFieldCreator<T> {
         return field;
     }
 
-    private static ObjectField.Type objectFieldType(UIFieldMetadata md) {
-        if(md.getMetadata() == null) {
-            return ObjectField.Type.AUTO;
-        }
-        for(ObjectField.Type type : ObjectField.Type.values()) {
-            if(md.isStyle("" + type)) {
-                return type;
+    private ObjectField.Type objectFieldType(String fieldName, UIFieldMetadata md) {
+        if(md.getMetadata() != null) {
+            for(ObjectField.Type type : ObjectField.Type.values()) {
+                if(md.isStyle("" + type)) {
+                    return type;
+                }
             }
         }
-        return ObjectField.Type.AUTO;
+        ObjectEditor<?> oe = oe();
+        return oe == null ? ObjectField.Type.AUTO : oe.getObjectFieldType(fieldName);
     }
 
     private static List<ObjectField.Type> objectFieldTypes(UIFieldMetadata md) {

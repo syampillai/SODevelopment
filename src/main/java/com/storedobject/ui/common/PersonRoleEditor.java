@@ -49,11 +49,11 @@ public class PersonRoleEditor<T extends PersonRole> extends ObjectEditor<T> {
     }
 
     @Override
-    protected HasValue<?, ?> createField(String fieldName, String label) {
+    public ObjectField.Type getObjectFieldType(String fieldName) {
         if("Person".equals(fieldName)) {
-            return new ObjectField<>(label, Person.class, ObjectField.Type.FORM);
+            return ObjectField.Type.FORM;
         }
-        return super.createField(fieldName, label);
+        return super.getObjectFieldType(fieldName);
     }
 
     private void con() {

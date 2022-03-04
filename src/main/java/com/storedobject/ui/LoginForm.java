@@ -70,7 +70,7 @@ public class LoginForm extends TemplateView implements HomeView {
         Application.get().log("Accessed");
     }
 
-    LoginForm(boolean dummy) {
+    LoginForm(@SuppressWarnings("unused") boolean dummy) {
         super("-", () -> "<div></div>");
         this.internal = new LF();
     }

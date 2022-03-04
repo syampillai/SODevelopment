@@ -142,7 +142,7 @@ public class ChangePassword extends DataForm implements Transactional {
             try {
                 getTransactionManager().forgotPassword(pc);
                 changed = true;
-            } catch(Exception e) {
+            } catch(Throwable e) {
                 error(e);
             }
             return true;
@@ -159,7 +159,7 @@ public class ChangePassword extends DataForm implements Transactional {
             changed = true;
             message("Password changed successfully");
             getTransactionManager().reinit(pc);
-        } catch(Exception e) {
+        } catch(Throwable e) {
             try {
                 if(t != null) {
                     t.rollback();

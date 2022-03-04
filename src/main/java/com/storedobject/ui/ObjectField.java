@@ -14,6 +14,7 @@ import com.vaadin.flow.component.ItemLabelGenerator;
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
@@ -188,8 +189,8 @@ public class ObjectField<T extends StoredObject> extends CustomField<Id>
      *
      * @param objectClass Class of the objects that are valid.
      * @param any Whether subclasses should be allowed or not.
-     * @param addAllowed Whether new object instances can be added via this field or not. (This is possible
-     *                   only in certain types).
+     * @param addAllowed Whether new object instances can be added via this field or not. (This feature is available
+     *                   only in certain field types).
      */
     public ObjectField(Class<T> objectClass, boolean any, boolean addAllowed) {
         this(null, objectClass, any, Type.AUTO, addAllowed);
@@ -201,8 +202,8 @@ public class ObjectField<T extends StoredObject> extends CustomField<Id>
      * @param label Label for the field.
      * @param objectClass Class of the objects that are valid.
      * @param any Whether subclasses should be allowed or not.
-     * @param addAllowed Whether new object instances can be added via this field or not. (This is possible
-     *                   only in certain types).
+     * @param addAllowed Whether new object instances can be added via this field or not. (This feature is available
+     *                   only in certain field types).
      */
     public ObjectField(String label, Class<T> objectClass, boolean any, boolean addAllowed) {
         this(label, objectClass, any, Type.AUTO, addAllowed);
@@ -214,8 +215,8 @@ public class ObjectField<T extends StoredObject> extends CustomField<Id>
      * @param objectClass Class of the objects that are valid.
      * @param any Whether subclasses should be allowed or not.
      * @param type Desired type of the field.
-     * @param addAllowed Whether new object instances can be added via this field or not. (This is possible
-     *                   only in certain types).
+     * @param addAllowed Whether new object instances can be added via this field or not. (This feature is available
+     *                   only in certain field types).
      */
     public ObjectField(Class<T> objectClass, boolean any, Type type, boolean addAllowed) {
         this(null, objectClass, any, type, addAllowed);
@@ -228,11 +229,30 @@ public class ObjectField<T extends StoredObject> extends CustomField<Id>
      * @param objectClass Class of the objects that are valid.
      * @param any Whether subclasses should be allowed or not.
      * @param type Desired type of the field.
-     * @param addAllowed Whether new object instances can be added via this field or not. (This is possible
-     *                   only in certain types).
+     * @param addAllowed Whether new object instances can be added via this field or not. (This feature is available
+     *                   only in certain field types).
      */
     public ObjectField(String label, Class<T> objectClass, boolean any, Type type, boolean addAllowed) {
         this(label, objectClass, any, type, null, addAllowed);
+    }
+
+    /**
+     * Constructor.
+     *
+     * @param label Label for the field.
+     * @param objectClass Class of the objects that are valid.
+     * @param fieldName Name of the field (Useful when crated from an {@link ObjectEditor}).
+     * @param editorCreator Editor creator for the {@link ObjectFormField}. (Useful when the type is {@link Type#FORM}
+     *                      or {@link Type#FORM_BLOCK}).
+     * @param any Whether subclasses should be allowed or not.
+     * @param type Desired type of the field.
+     * @param addAllowed Whether new object instances can be added via this field or not. (This feature is available
+     *                   only in certain field types).
+     */
+    public ObjectField(String label, Class<T> objectClass, String fieldName,
+                       BiFunction<String, Class<T>, ObjectEditor<T>> editorCreator, boolean any, Type type,
+                       boolean addAllowed) {
+        this(label, objectClass, fieldName, editorCreator, any, type, null, addAllowed);
     }
 
     /**
@@ -270,15 +290,24 @@ public class ObjectField<T extends StoredObject> extends CustomField<Id>
      * @param objectClass Class of the objects that are valid.
      * @param any Whether subclasses should be allowed or not.
      * @param getProvider "Get" provider for searching the object instances.
-     * @param addAllowed Whether new object instances can be added via this field or not. (This is possible
-     *                   only in certain types).
+     * @param addAllowed Whether new object instances can be added via this field or not. (This feature is available
+     *                   only in certain field types).
      */
-    protected ObjectField(String label, Class<T> objectClass, boolean any, ObjectGetField.GetProvider<T> getProvider, boolean addAllowed) {
-        this(label, objectClass, any, createField(objectClass, Type.GET, any, getProvider, addAllowed));
+    protected ObjectField(String label, Class<T> objectClass, boolean any, ObjectGetField.GetProvider<T> getProvider,
+                          boolean addAllowed) {
+        this(label, objectClass, null,null, any, Type.GET, getProvider, addAllowed);
     }
 
-    private ObjectField(String label, Class<T> objectClass, boolean any, Type type, ObjectGetField.GetProvider<T> getProvider, boolean addAllowed) {
-        this(label, objectClass, any, createField(objectClass, type, any, getProvider, addAllowed));
+    private ObjectField(String label, Class<T> objectClass, boolean any, Type type,
+                        ObjectGetField.GetProvider<T> getProvider, boolean addAllowed) {
+        this(label, objectClass, null,null, any, type, getProvider, addAllowed);
+    }
+
+    private ObjectField(String label, Class<T> objectClass, String fieldName,
+                        BiFunction<String, Class<T>, ObjectEditor<T>> editorCreator, boolean any, Type type,
+                        ObjectGetField.GetProvider<T> getProvider, boolean addAllowed) {
+        this(label, objectClass, any, createField(objectClass, fieldName, editorCreator, type, any, getProvider,
+                addAllowed));
     }
 
     /**
@@ -560,8 +589,8 @@ public class ObjectField<T extends StoredObject> extends CustomField<Id>
 
     @SuppressWarnings("unchecked")
     private static <O extends StoredObject, IT extends InventoryItemType> ObjectInput<O> createField(
-            Class<O> objectClass, Type type, boolean any, ObjectGetField.GetProvider<O> getProvider,
-            boolean addAllowed) {
+            Class<O> objectClass, String fieldName, BiFunction<String, Class<O>, ObjectEditor<O>> editorCreator,
+            Type type, boolean any, ObjectGetField.GetProvider<O> getProvider, boolean addAllowed) {
         if(StreamData.class.isAssignableFrom(objectClass)) {
             return (ObjectInput<O>) new FileField(type);
         }
@@ -591,7 +620,7 @@ public class ObjectField<T extends StoredObject> extends CustomField<Id>
         return switch(type) {
             case GET -> new ObjectGetField<>(null, objectClass, any, addAllowed, getProvider);
             case CHOICE -> new ObjectComboField<>(objectClass, any, addAllowed);
-            case FORM_BLOCK, FORM -> new ObjectFormField<>(objectClass, type);
+            case FORM_BLOCK, FORM -> new ObjectFormField<>(null, objectClass, fieldName, editorCreator, type);
             default -> new ObjectSearchField<>(objectClass, any, addAllowed);
         };
     }

@@ -96,12 +96,12 @@ public class PhoneField extends CustomField<String> {
      *
      * @return Country.
      */
-    public Country getCountry() {
+    public final Country getCountry() {
         return country;
     }
 
     private String prefix() {
-        return "+" + getCountry().getISDCode();
+        return "+" + country.getISDCode();
     }
 
     @Override
@@ -165,10 +165,17 @@ public class PhoneField extends CustomField<String> {
                 return true;
             }
         }
-        try {
-            PhoneNumber.check(v);
-            return false;
-        } catch (SOException ignored) {
+        String pn = v;
+        while(pn.length() > 6) {
+            try {
+                PhoneNumber.check(pn);
+                if(!pn.equals(v)) {
+                    setValue(pn);
+                }
+                return false;
+            } catch(SOException ignored) {
+            }
+            pn = pn.substring(0, pn.length() - 1);
         }
         return true;
     }

@@ -1,6 +1,8 @@
 package com.storedobject.ui.common;
 
-import com.storedobject.core.*;
+import com.storedobject.core.Person;
+import com.storedobject.core.StoredObject;
+import com.storedobject.core.SystemUser;
 import com.storedobject.ui.Application;
 import com.storedobject.ui.ELabelField;
 import com.storedobject.ui.ObjectEditor;
@@ -9,7 +11,6 @@ import com.storedobject.ui.util.LogicParser;
 import com.storedobject.vaadin.DataForm;
 import com.storedobject.vaadin.RadioChoiceField;
 import com.storedobject.vaadin.View;
-import com.vaadin.flow.component.HasValue;
 
 /**
  * Editor for {@link com.storedobject.core.SystemUser}.
@@ -36,11 +37,11 @@ public class SystemUserEditor extends ObjectEditor<SystemUser> {
     }
 
     @Override
-    protected HasValue<?, ?> createField(String fieldName, String label) {
+    public ObjectField.Type getObjectFieldType(String fieldName) {
         if("Person".equals(fieldName)) {
-            return new ObjectField<>(label, Person.class, ObjectField.Type.FORM);
+            return ObjectField.Type.FORM;
         }
-        return super.createField(fieldName, label);
+        return super.getObjectFieldType(fieldName);
     }
 
     @Override

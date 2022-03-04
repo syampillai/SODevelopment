@@ -26,8 +26,6 @@ import java.io.LineNumberReader;
 import java.io.StringReader;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.sql.Timestamp;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -635,40 +633,15 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
                 | InvocationTargetException e) {
             return null;
         }
-        Method m;
-        ClassAttribute<T> ca = ClassAttribute.get(getObjectClass());
-        for(String attribute: ca.getAttributes()) {
-            m = ca.getMethod(attribute);
-            if(m.getReturnType() == Timestamp.class) {
-                Timestamp now = DateUtility.now();
-                try {
-                    if(Math.abs(now.getTime() - ((Timestamp) m.invoke(instance)).getTime()) <= 120000L) {
-                        m = ca.setMethod(attribute);
-                        if(m != null) {
-                            m.invoke(instance, getTransactionManager().date(now));
-                        }
-                    }
-                } catch(Throwable ignored) {
-                }
-            }
-        }
+        NewObject.setLocalTime(getTransactionManager(), instance);
         setUpNew(instance);
         return instance;
     }
     
     private void setUpNew(T instance) {
         if(instance != null) {
+            NewObject.setSystemEntity(getTransactionManager(), instance);
             setFixedValues(instance);
-        }
-        if(instance instanceof OfEntity && Id.isNull(((OfEntity) instance).getSystemEntityId())) {
-            try {
-                Method m = getObjectClass().getMethod("setSystemEntity", Id.class);
-                SystemEntity se = getTransactionManager().getEntity();
-                if(se != null) {
-                    m.invoke(instance, se.getId());
-                }
-            } catch(Throwable ignored) {
-            }
         }
     }
 
@@ -2653,5 +2626,51 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
                 }
             }
         });
+    }
+
+    @Override
+    public HasValue<?, ?> getField(String fieldName) {
+        HasValue<?, ?> field = super.getField(fieldName);
+        if(field != null) {
+            return field;
+        }
+        int p = fieldName.indexOf('.');
+        if(p < 0) {
+            return null;
+        }
+        field = getField(fieldName.substring(0, p));
+        if(field instanceof ObjectField<?> oField) {
+            field = (HasValue<?, ?>) oField.getField();
+        }
+        if(field instanceof ObjectFormField<?> ofField) {
+            return ofField.getFormEditor().getField(fieldName.substring(p + 1));
+        }
+        return null;
+    }
+
+    /**
+     * Get the {@link com.storedobject.ui.ObjectField.Type} for a given field. This method is invoked while building
+     * the fields to determine the field type.
+     *
+     * @param fieldName Name of the field.
+     * @return {@link com.storedobject.ui.ObjectField.Type}. The default value is
+     * {@link com.storedobject.ui.ObjectField.Type#AUTO}.
+     */
+    public ObjectField.Type getObjectFieldType(String fieldName) {
+        return ObjectField.Type.AUTO;
+    }
+
+    /**
+     * Create the editor to be used for a given {@link ObjectFormField}.
+     *
+     * @param fieldName Name of the field.
+     * @param fieldClass Class of the field.
+     * @param <O> Type of the field.
+     * @return Editor created for the given field.
+     */
+    public <O extends StoredObject> ObjectEditor<O> createFormFieldEditor(String fieldName, Class<O> fieldClass) {
+        ObjectEditor<O> editor = create(fieldClass);
+        editor.addIncludeFieldChecker(name -> isFieldIncluded(fieldName + "." + name));
+        return editor;
     }
 }
