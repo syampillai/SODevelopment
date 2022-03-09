@@ -5,6 +5,7 @@ import com.storedobject.ui.inventory.POBrowser;
 import com.storedobject.ui.inventory.POItemBrowser;
 import com.storedobject.ui.util.LoadFilterButtons;
 import com.storedobject.ui.util.LogicParser;
+import com.storedobject.ui.util.NoDisplayField;
 import com.storedobject.vaadin.Button;
 import com.storedobject.vaadin.ButtonLayout;
 import com.storedobject.vaadin.ConfirmButton;
@@ -747,7 +748,7 @@ public class ObjectBrowser<T extends StoredObject> extends ObjectGrid<T>
                 if(isColumnEditable(fieldName)) {
                     field = editor.getField(fieldName);
                     if(field != null) {
-                        labels.put(fieldName, editor.getFieldLabel(fieldName));
+                        labels.put(fieldName, getFieldLabel(fieldName));
                         fields.put(fieldName, field);
                         Span span = spans.get(fieldName);
                         if(span == null) {
@@ -775,6 +776,23 @@ public class ObjectBrowser<T extends StoredObject> extends ObjectGrid<T>
             layout.setSplitterPosition(50);
             editor.buttonsOff();
         }
+    }
+
+    private String getFieldLabel(String fieldName) {
+        int p = fieldName.indexOf('.');
+        if(p < 0) {
+            editor.getFieldLabel(fieldName);
+        }
+        HasValue<?, ?> field = editor.getField(fieldName.substring(0, p));
+        ObjectEditor<?> oe;
+        if(field instanceof ObjectField<?> of && of.getField() instanceof ObjectFormField<?> off) {
+            oe = off.getFormEditor();
+        } else if(field instanceof ObjectFormField<?> off) {
+            oe = off.getFormEditor();
+        } else {
+            return editor.getFieldLabel(fieldName);
+        }
+        return oe.getFieldLabel(fieldName.substring(p + 1));
     }
 
     protected ObjectEditor<T> createObjectEditor() {

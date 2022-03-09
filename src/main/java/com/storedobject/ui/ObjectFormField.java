@@ -16,7 +16,6 @@ import com.vaadin.flow.shared.Registration;
 import javax.annotation.Nonnull;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
-import java.util.function.Function;
 
 public class ObjectFormField<T extends StoredObject> extends CustomField<T>
         implements ObjectInput<T>, ViewDependent, NoDisplayField, ValueRequired {
@@ -92,6 +91,7 @@ public class ObjectFormField<T extends StoredObject> extends CustomField<T>
                            BiFunction<String, Class<T>, ObjectEditor<T>> editorCreator, HasContainer mergeTo) {
         ObjectEditor<T> oe = editorCreator == null ? null : editorCreator.apply(fieldName, objectClass);
         this.formEditor = oe == null ? ObjectEditor.create(objectClass) : oe;
+        this.formEditor.setFieldName(fieldName);
         ObjectField.checkDetailClass(formEditor.getObjectClass(), label);
         this.formEditor.setCaption("", true);
         this.mergeTo = mergeTo;

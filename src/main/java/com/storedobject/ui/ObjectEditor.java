@@ -115,7 +115,7 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
     private NewObject<T> newObject;
     private Transaction tran;
     private TransactionCreator tranCreator;
-    private final List<FieldPosition> fieldPositions = new ArrayList<>();
+    private List<FieldPosition> fieldPositions = new ArrayList<>();
     private ObjectInput<T> formField;
     private Logic logic;
     Grid<T> grid;
@@ -126,6 +126,7 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
     private final Map<String, FormLayout> tabList = tabs;
     private String mainTabName;
     private FormLayout currentTab;
+    private String fieldName = "";
 
     /**
      * Constructor.
@@ -2056,8 +2057,16 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
     }
 
     @Override
+    public void setFieldContainerProvider(HasContainer fieldContainerProvider) {
+        super.setFieldContainerProvider(fieldContainerProvider);
+        if(fieldContainerProvider instanceof ObjectEditor<?> oe) {
+            fieldPositions = oe.fieldPositions;
+        }
+    }
+
+    @Override
     protected void attachField(String fieldName, HasValue<?, ?> field) {
-        if(field instanceof NoDisplayField && !((NoDisplayField) field).canDisplay()) {
+        if(field instanceof NoDisplayField nd && !nd.canDisplay()) {
             return;
         }
         if(field instanceof ObjectLinkField<?> f) {
@@ -2077,9 +2086,10 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
         }
         if(currentTab != null) {
             currentTab.add((Component) field);
-            fieldPositions.add(new FieldPosition(fieldName, currentTab, fieldPos(currentTab)));
+            fieldPositions.add(new FieldPosition(this.fieldName + fieldName, currentTab, fieldPos(currentTab)));
         } else {
-            fieldPositions.add(new FieldPosition(fieldName, getForm().getContainer(), fieldPos(getForm().getContainer())));
+            fieldPositions.add(new FieldPosition(this.fieldName + fieldName, getForm().getContainer(),
+                    fieldPos(getForm().getContainer())));
             super.attachField(fieldName, field);
         }
     }
@@ -2672,5 +2682,13 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
         ObjectEditor<O> editor = create(fieldClass);
         editor.addIncludeFieldChecker(name -> isFieldIncluded(fieldName + "." + name));
         return editor;
+    }
+
+    void setFieldName(String fieldName) {
+        this.fieldName = fieldName + ".";
+    }
+
+    public final String getFieldName() {
+        return fieldName;
     }
 }

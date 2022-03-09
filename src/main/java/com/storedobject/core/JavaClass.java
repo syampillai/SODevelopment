@@ -2,8 +2,6 @@ package com.storedobject.core;
 
 import java.io.InputStream;
 import java.math.BigDecimal;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -39,21 +37,21 @@ public final class JavaClass extends JavaInnerClass {
 	}
 
 	public String getNotes() {
-		return null;
+		return "";
 	}
 
 	public void setNotes(String notes) {
 	}
 
 	public Id getSourceDataId() {
-		return null;
+		return new Id();
 	}
 
 	public void setSourceData(BigDecimal idValue) {
 	}
 
 	public StreamData getSourceData() {
-		return null;
+		return new StreamData();
 	}
 
 	public InputStream getSourceStream() {
@@ -72,15 +70,15 @@ public final class JavaClass extends JavaInnerClass {
 	}
 
 	public String upload(Transaction transaction) throws Exception {
-		return null;
+		return "";
 	}
 
 	public String upload() throws Exception {
-		return null;
+		return "";
 	}
 
 	public String compile() {
-		return null;
+		return "";
 	}
 
 	public boolean classChanged(CharSequence sourceCodeToCheck) throws Exception {
@@ -98,11 +96,11 @@ public final class JavaClass extends JavaInnerClass {
 	}
 
 	public static Package getPackage(String name) {
-		return null;
+		return JavaClass.class.getClassLoader().getDefinedPackage(name);
 	}
 
 	public static Package getPackage(Class<?> clazz) {
-		return null;
+		return JavaClass.class.getClassLoader().getDefinedPackage("X");
 	}
 
 	public static List<String> listApplicationClasses() {

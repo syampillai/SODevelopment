@@ -18,6 +18,7 @@ public class ViewFilter<T> {
     private Function<T, String> objectConverter;
     private final Function<T, String> defaultObjectConverter;
     private LogicalOperator filterLogic = LogicalOperator.OR;
+    private boolean forceMatch = false;
 
     public <O extends StoredObject> ViewFilter(Class<T> forClass) {
         if(StoredObject.class.isAssignableFrom(forClass)) {
@@ -34,6 +35,7 @@ public class ViewFilter<T> {
         if(this.objectConverter == objectConverter) {
             return false;
         }
+        this.forceMatch = true;
         this.matches = EMPTY;
         this.matcher = null;
         this.objectConverter = objectConverter;
@@ -42,12 +44,14 @@ public class ViewFilter<T> {
 
     public void setFilterLogic(LogicalOperator filterLogic) {
         this.filterLogic = filterLogic;
+        this.forceMatch = true;
     }
 
     public boolean setMatcher(BiFunction<T, String[], Boolean> matcher) {
         if(this.matcher == matcher) {
             return false;
         }
+        this.forceMatch = true;
         this.matches = EMPTY;
         this.objectConverter = null;
         this.matcher = matcher;
@@ -112,6 +116,9 @@ public class ViewFilter<T> {
     }
 
     private boolean skipMatching() {
+        if(forceMatch) {
+            return false;
+        }
         for(String m: matches) {
             if(!m.isEmpty()) {
                 return false;
@@ -164,6 +171,10 @@ public class ViewFilter<T> {
     @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     private boolean setMatchTokens(String tokens) { // Returns !changed
         String[] m = matchTokens(tokens);
+        if(forceMatch) {
+            forceMatch = false;
+            return false;
+        }
         if(same(m)) {
             return true;
         }

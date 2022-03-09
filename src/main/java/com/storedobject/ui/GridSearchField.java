@@ -4,6 +4,8 @@ import com.storedobject.common.LogicalOperator;
 import com.storedobject.core.StoredObject;
 import com.storedobject.ui.util.ViewFilterSupport;
 import com.storedobject.vaadin.SearchField;
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.data.provider.DataProvider;
 
 import java.util.function.BiFunction;
@@ -19,8 +21,26 @@ public class GridSearchField<T extends StoredObject> extends SearchField impleme
      * @param grid Grid to search.
      */
     public GridSearchField(ViewFilterSupport<T> grid) {
+        this(grid, false);
+    }
+
+    /**
+     * Constructor.
+     *
+     * @param grid Grid to search.
+     */
+    public GridSearchField(ViewFilterSupport<T> grid, boolean showMatchAllWords) {
         super(grid::filterView);
         this.grid = grid;
+        Checkbox matchAllWords = new Checkbox("Match All Words");
+        matchAllWords.addValueChangeListener(c -> switchWordLogic(c.getValue()));
+        addToSuffix(matchAllWords);
+        matchAllWords.setVisible(showMatchAllWords);
+    }
+
+    private void switchWordLogic(boolean matchAll) {
+        configure(matchAll ? LogicalOperator.AND : LogicalOperator.OR);
+        doSearch();
     }
 
     public void filter(String filters) {
@@ -55,5 +75,10 @@ public class GridSearchField<T extends StoredObject> extends SearchField impleme
     @Override
     public Class<? extends T> getObjectClass() {
         return grid.getObjectClass();
+    }
+
+    @Override
+    public void doSearch() {
+        grid.filterView(getActionText());
     }
 }
