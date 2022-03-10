@@ -50,13 +50,7 @@ public class ObjectForestProvider<T extends StoredObject> extends AbstractTreePr
 
     @Override
     public Object getId(Object item) {
-        if(item instanceof StoredObject so) {
-            return so.getId();
-        }
-        if(item instanceof ObjectForest.LinkObject lo) {
-            return lo.getObject().getId();
-        }
-        return item;
+        return item instanceof HasId hi ? hi.getId() : item;
     }
 
     public boolean contains(T item) {

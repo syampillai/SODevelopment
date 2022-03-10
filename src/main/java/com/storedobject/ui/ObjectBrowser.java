@@ -781,7 +781,7 @@ public class ObjectBrowser<T extends StoredObject> extends ObjectGrid<T>
     private String getFieldLabel(String fieldName) {
         int p = fieldName.indexOf('.');
         if(p < 0) {
-            editor.getFieldLabel(fieldName);
+            return editor.getFieldLabel(fieldName);
         }
         HasValue<?, ?> field = editor.getField(fieldName.substring(0, p));
         ObjectEditor<?> oe;

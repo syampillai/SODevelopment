@@ -4,7 +4,7 @@ import nomnoml from './nomnoml'
 export class FlowDiagram extends LitElement {
 
     render() {
-        return html`<canvas id="${this.idFD}"</canvas>`;
+        return html`<canvas id="${this.idFD}"></canvas>`;
     }
 
     static get properties() {

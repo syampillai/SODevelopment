@@ -395,8 +395,9 @@ public class ObjectForest<T extends StoredObject> implements Filtered<T>, Object
         return node;
     }
 
-    public static class LinkNode {
+    public static class LinkNode implements HasId {
 
+        private final Id id = new Id();
         private final StoredObjectUtility.Link<?> link;
         private final StoredObject parent;
         private List<LinkObject> links;
@@ -450,10 +451,33 @@ public class ObjectForest<T extends StoredObject> implements Filtered<T>, Object
         public String toString() {
             return link.getName();
         }
+
+        @Override
+        public boolean equals(Object o) {
+            if(this == o) {
+                return true;
+            }
+            if(o == null || getClass() != o.getClass()) {
+                return false;
+            }
+            LinkNode linkNode = (LinkNode) o;
+            return Objects.equals(id, linkNode.id);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(id);
+        }
+
+        @Override
+        public Id getId() {
+            return id;
+        }
     }
 
-    public static class LinkObject {
+    public static class LinkObject implements HasId {
 
+        private final Id id = new Id();
         private final LinkNode linkNode;
         private StoredObject object;
 
@@ -472,6 +496,33 @@ public class ObjectForest<T extends StoredObject> implements Filtered<T>, Object
 
         public void refresh() {
             object = StoredObject.get(object.getClass(), object.getId());
+        }
+
+        @Override
+        public String toString() {
+            return linkNode.toString() + ": " + object.toDisplay();
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if(this == o) {
+                return true;
+            }
+            if(o == null || getClass() != o.getClass()) {
+                return false;
+            }
+            LinkObject linkObject = (LinkObject) o;
+            return Objects.equals(id, linkObject.id);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(id);
+        }
+
+        @Override
+        public Id getId() {
+            return id;
         }
     }
 }

@@ -57,7 +57,7 @@ public class FileManager extends ObjectForestBrowser<FileFolder> implements Tran
             caption = StringUtility.makeLabel(path);
         }
         setCaption(caption);
-        addConstructedListener(e -> expandRecursively(Stream.of(root), 1));
+        addConstructedListener(e -> expandRecursively(Stream.of(root), 2));
         GridContextMenu<Object> contextMenu = new GridContextMenu<>(this);
         GridMenuItem<Object> circF = contextMenu.addItem("Circulate This File", e -> {
             if(o(e.getItem().orElse(null)) instanceof FileData f) {
@@ -268,6 +268,7 @@ public class FileManager extends ObjectForestBrowser<FileFolder> implements Tran
     }
 
     private List<SystemUserGroup> sugs;
+
     private List<SystemUserGroup> sugs() {
         if(sugs == null) {
             sugs = StoredObject.list(SystemUserGroup.class).toList();
@@ -276,6 +277,7 @@ public class FileManager extends ObjectForestBrowser<FileFolder> implements Tran
     }
 
     private List<SystemUser> sus;
+
     private List<SystemUser> sus() {
         if(sus == null) {
             sus = StoredObject.list(SystemUser.class).toList();

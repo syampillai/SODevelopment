@@ -16,7 +16,7 @@ import java.util.function.Predicate;
 import java.util.logging.Logger;
 
 @SuppressWarnings({"ResultOfMethodCallIgnored", "unchecked"})
-public abstract class StoredObject implements Displayable {
+public abstract class StoredObject implements Displayable, HasId {
 
     public static final Logger logger = Logger.getLogger("stored");
     private Id id, tranId;
@@ -28,6 +28,7 @@ public abstract class StoredObject implements Displayable {
     public StoredObject() {
     }
 
+    @Override
     public final Id getId() {
         return id;
     }
