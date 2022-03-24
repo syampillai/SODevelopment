@@ -765,6 +765,18 @@ public class Application extends com.storedobject.vaadin.Application implements 
     }
 
     private Runnable createLoginInt() {
+        String autoToken = ApplicationServer.getGlobalProperty("application.autologin.token",
+                null, false);
+        if(autoToken != null && autoToken.equals(getQueryParameter("login"))) {
+            removeQueryParameter("login");
+            String autoLogin = ApplicationServer.getGlobalProperty("application.autologin.user",
+                    null, false);
+            if(autoLogin != null && !autoLogin.isEmpty()) {
+                String autoPassword = ApplicationServer.getGlobalProperty("application.autologin.password",
+                        null, false);
+                return () -> login.login(autoLogin, autoPassword.toCharArray(), false);
+            }
+        }
         String loginLogic = ApplicationServer.getGlobalProperty("application.logic.login",
                 "", true);
         if(loginLogic.isEmpty()) {

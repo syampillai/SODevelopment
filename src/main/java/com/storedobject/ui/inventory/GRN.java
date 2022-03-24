@@ -771,7 +771,10 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
                     itemEditor = editorProvider.createEditor(item.getClass());
                     itemEditor.setCaption("Inspect Item");
                     itemEditor.setFieldHidden("Location");
-                    itemEditor.setFieldReadOnly("Quantity", "Cost", "Location", "PartNumber", "SerialNumber");
+                    itemEditor.setFieldReadOnly("Quantity", "Cost", "Location", "PartNumber");
+                    if(itemType.isSerialized()) {
+                        itemEditor.setFieldReadOnly("SerialNumber");
+                    }
                     //noinspection unchecked
                     itemEditor.setSaver(e -> saveItem());
                 }

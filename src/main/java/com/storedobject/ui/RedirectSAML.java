@@ -54,7 +54,7 @@ public class RedirectSAML extends LitComponent {
     }
 
     /**
-     * Go to the site by submitting the SAML response to the site set via @{link #setSite(String)}. The application
+     * Go to the new site by submitting the SAML response to the site set via @{link #setSite(String)}. The application
      * may get redirected based on the response from the site.
      */
     public void go() {

@@ -17,7 +17,7 @@ public class DatePeriodField extends RangeField<DatePeriod, Date> {
     }
 
     public DatePeriodField(String label, DatePeriod initialValue) {
-        super((x) -> new DateField(), (x) -> new DateField());
+        super((x) -> df(), (x) -> df());
         if(initialValue == null) {
             initialValue = create(DateUtility.startOfMonth(), DateUtility.today());
         }
@@ -26,6 +26,12 @@ public class DatePeriodField extends RangeField<DatePeriod, Date> {
         }
         setPresentationValue(getValue());
         setLabel(label);
+    }
+
+    private static DateField df() {
+        DateField df = new DateField();
+        df.getField().setWidth("110px");
+        return df;
     }
 
     @Override

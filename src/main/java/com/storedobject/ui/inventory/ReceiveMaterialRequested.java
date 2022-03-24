@@ -114,10 +114,8 @@ public class ReceiveMaterialRequested extends AbstractRequestMaterial {
             return;
         }
         ELabel m = new ELabel();
-        String ask = "Do you want to cancel the reservation?";
         if(mr.getStatus() == 1) {
             m.append("Items are not yet reserved.", "red");
-            m.newLine().append(ask).update();
         } else {
             m.append("Not yet issued but items are " + (mr.getStatus() == 2 ? "partially" : "fully")
                     + " reserved.", "red");
