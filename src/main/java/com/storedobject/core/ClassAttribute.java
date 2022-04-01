@@ -17,7 +17,7 @@ public final class ClassAttribute<T extends StoredObject> {
     }
 
     public UIFieldMetadata getFieldMetadata(String fieldName) {
-        return null;
+        return new UIFieldMetadata();
     }
 
     public UIFieldMetadata getFieldMetadata(String fieldName, boolean external) {

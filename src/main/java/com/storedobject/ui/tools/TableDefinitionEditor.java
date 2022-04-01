@@ -1432,7 +1432,9 @@ public class TableDefinitionEditor extends ObjectEditor<TableDefinition> {
                     if(td.getSmallList()) {
                         e = 'B';
                     }
-                    logic = new Logic(e + ":" + cName, StringUtility.makeLabel(cName.substring(cName.lastIndexOf('.') + 1), false));
+                    logic = new Logic(e + ":" + cName,
+                            StringUtility.makeLabel(cName.substring(cName.lastIndexOf('.') + 1),
+                                    false));
                     logic.setSingleInstance(true);
                 }
                 ObjectEditor<Logic> oe = new ObjectEditor<>(Logic.class, EditorAction.ALL);

@@ -78,7 +78,7 @@ public final class JavaClass extends JavaInnerClass {
 	}
 
 	public String compile() {
-		return "";
+		return Math.random() > 0.5 ? "" : null;
 	}
 
 	public boolean classChanged(CharSequence sourceCodeToCheck) throws Exception {

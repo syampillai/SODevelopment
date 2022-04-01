@@ -99,13 +99,11 @@ public class SOFieldCreator<T> implements ObjectFieldCreator<T> {
         UIFieldMetadata md;
         String name = getFieldName(m);
         md = ca.getFieldMetadata(name);
-        if(md != null && !md.isFieldOrderBuiltIn()) {
+        if(!md.isFieldOrderBuiltIn()) {
             md.setFieldOrder(md.getFieldOrder() + order);
             ++order;
         }
-        if(md != null) {
-            mds.put(name, md);
-        }
+        mds.put(name, md);
         return order;
     }
 
@@ -288,10 +286,16 @@ public class SOFieldCreator<T> implements ObjectFieldCreator<T> {
                     }
                 }
                 if(master == null) {
-                    master = ((StoredObject) o).getMaster(objectClass);
-                    objectId = ((StoredObject) o).getId();
+                    List<StoredObject> masters = new ArrayList<>();
+                    ((StoredObject) o).listMasters(objectClass).forEach(masters::add);
+                    if(masters.size() == 1) {
+                        master = masters.get(0);
+                        objectId = ((StoredObject) o).getId();
+                    } else if(masters.size() > 1) {
+                        return "<Multiple>";
+                    }
                 }
-                return master == null ? "" : master.toDisplay();
+                return master == null ? "<None>" : master.toDisplay();
             };
         }
         if(ca != null && fieldName.endsWith(".a")) {

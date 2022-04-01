@@ -48,6 +48,15 @@ public class PersonRoleEditor<T extends PersonRole> extends ObjectEditor<T> {
         addConstructedListener(f -> con());
     }
 
+    /**
+     * Can new persons can be created or existing persons can be edited?
+     *
+     * @return True/false.
+     */
+    public boolean canEditPerson() {
+        return true;
+    }
+
     @Override
     public ObjectField.Type getObjectFieldType(String fieldName) {
         if("Person".equals(fieldName)) {
@@ -60,6 +69,9 @@ public class PersonRoleEditor<T extends PersonRole> extends ObjectEditor<T> {
         //noinspection unchecked
         seField = (IdInput<SystemEntity>) getField("SystemEntity");
         setFieldVisible(TransactionManager.isMultiTenant(), (HasValue<?, ?>) seField);
+        if(!canEditPerson()) {
+            setFieldReadOnly("Person");
+        }
     }
 
     @Override
@@ -95,7 +107,7 @@ public class PersonRoleEditor<T extends PersonRole> extends ObjectEditor<T> {
      * If this method is invoked, a new person will be created for every role added (means, the feature that asks
      * to choose the person when adding a role will be switched off).
      */
-    public void createNewEntityOnAdd() {
+    public void createNewPersonOnAdd() {
         alwaysNewPerson = true;
     }
 
@@ -110,7 +122,14 @@ public class PersonRoleEditor<T extends PersonRole> extends ObjectEditor<T> {
 
         public Adder() {
             super("Create a New " + StringUtility.makeLabel(PersonRoleEditor.this.getObjectClass()));
-            newOrExisting.addValueChangeListener(e -> setFieldVisible(e.getValue() == 1, mField));
+            addConstructedListener(f -> {
+                if(canEditPerson()) {
+                    newOrExisting.addValueChangeListener(e -> setFieldVisible(e.getValue() == 1, mField));
+                } else {
+                    newOrExisting.setValue(1);
+                    setFieldHidden(newOrExisting);
+                }
+            });
             mField.addValueChangeListener(e -> personSet());
             addField(systemEntityField, newOrExisting, mField, warning);
             if(!TransactionManager.isMultiTenant()) {
@@ -125,8 +144,13 @@ public class PersonRoleEditor<T extends PersonRole> extends ObjectEditor<T> {
         protected void execute(View parent, boolean doNotLock) {
             mField.setValue((Person) null);
             warning.clearContent().update();
-            newOrExisting.setValue(0);
-            setFieldHidden(mField);
+            if(canEditPerson()) {
+                newOrExisting.setValue(0);
+                setFieldHidden(mField);
+            } else {
+                newOrExisting.setValue(1);
+                setFieldVisible(mField);
+            }
             super.execute(parent, doNotLock);
         }
 
@@ -157,6 +181,7 @@ public class PersonRoleEditor<T extends PersonRole> extends ObjectEditor<T> {
         @Override
         protected void cancel() {
             super.cancel();
+            clearAlerts();
             doCancel();
         }
 

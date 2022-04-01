@@ -774,7 +774,11 @@ public class Application extends com.storedobject.vaadin.Application implements 
             if(autoLogin != null && !autoLogin.isEmpty()) {
                 String autoPassword = ApplicationServer.getGlobalProperty("application.autologin.password",
                         null, false);
-                return () -> login.login(autoLogin, autoPassword.toCharArray(), false);
+                return () -> {
+                    if(!login.login(autoLogin, autoPassword.toCharArray(), false)) {
+                        executeLogin();
+                    }
+                };
             }
         }
         String loginLogic = ApplicationServer.getGlobalProperty("application.logic.login",

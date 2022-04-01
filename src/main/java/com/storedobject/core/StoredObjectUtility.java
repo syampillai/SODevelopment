@@ -11,6 +11,7 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Properties;
 import java.util.Random;
+import java.util.function.Function;
 import java.util.function.Predicate;
 
 public final class StoredObjectUtility {
@@ -123,6 +124,14 @@ public final class StoredObjectUtility {
         return null;
     }
 
+    public static String toDisplay(Object anything) {
+        return "";
+    }
+
+    public static String toDisplay(Device device, Object anything) {
+        return "";
+    }
+
     public static Method createMethod(Class<?> objectClass, String attributeName) {
         return null;
     }
@@ -199,6 +208,10 @@ public final class StoredObjectUtility {
         }
 
         public void stringifyTail() {
+        }
+
+        public Function<Object, String> display(Device device) {
+            return o -> "";
         }
     }
 

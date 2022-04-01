@@ -230,6 +230,15 @@ public class Workbook implements org.apache.poi.ss.usermodel.Workbook {
     }
 
     @Override
+    public CellReferenceType getCellReferenceType() {
+        return null;
+    }
+
+    @Override
+    public void setCellReferenceType(CellReferenceType cellReferenceType) {
+    }
+
+    @Override
     public int getActiveSheetIndex() {
         return 0;
     }

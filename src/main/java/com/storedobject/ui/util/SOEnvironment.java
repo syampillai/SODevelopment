@@ -1,14 +1,9 @@
 package com.storedobject.ui.util;
 
-import com.storedobject.common.EndUserMessage;
-import com.storedobject.core.ApplicationServer;
-import com.storedobject.core.Money;
-import com.storedobject.core.StringUtility;
-import com.storedobject.core.Utility;
+import com.storedobject.core.*;
 import com.storedobject.ui.Application;
 import com.storedobject.vaadin.*;
 
-import java.sql.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -40,22 +35,7 @@ public class SOEnvironment implements ApplicationEnvironment {
 
     @Override
     public String toDisplay(Object message) {
-        if(message instanceof Throwable) {
-            if(!(message instanceof EndUserMessage)) {
-                ApplicationServer.log(Application.get(), message);
-            }
-            return message instanceof EndUserMessage ? ((EndUserMessage)message).getEndUserMessage() : "An error has occurred, please contact Technical Support!";
-        }
-        if(message instanceof Money m) {
-            Application a = Application.get();
-            if(a != null) {
-                return m.toString(a.getTransactionManager().getUser());
-            }
-        }
-        if(message instanceof Date d && Utility.isEmpty(d)) {
-            message = null;
-        }
-        return StringUtility.toString(message);
+        return StoredObjectUtility.toDisplay(Application.get(), message);
     }
 
     @Override
