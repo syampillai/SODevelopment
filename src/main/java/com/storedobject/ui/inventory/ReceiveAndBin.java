@@ -52,7 +52,7 @@ public class ReceiveAndBin extends ListGrid<InventoryItem> implements Transactio
         referenceField.setValue(reference);
         process.setVisible(update != null || refresher != null);
         if(process.isVisible()) {
-            process.setText("Receive & Bin");
+            process.setText("Receive");
         }
     }
 

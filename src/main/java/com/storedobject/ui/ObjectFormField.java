@@ -434,6 +434,12 @@ public class ObjectFormField<T extends StoredObject> extends CustomField<T>
     public void reload() {
     }
 
+    @Override
+    @SafeVarargs
+    public final void setObjectClass(Class<? extends T>... classes) {
+        throw new UnsupportedOperationException();
+    }
+
     public final ObjectEditor<T> getFormEditor() {
         return formEditor;
     }

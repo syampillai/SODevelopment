@@ -226,7 +226,8 @@ public abstract class AbstractObjectField<T extends StoredObject> extends Custom
      *
      * @return Typically, an instance of the {@link ObjectBrowser} that has search capability.
      */
-    protected final ObjectBrowser<T> getSearcher() {
+    @Override
+    public final ObjectBrowser<T> getSearcher() {
         if(searcher == null) {
             searcher = createSearcher();
             if(searcher == null) {

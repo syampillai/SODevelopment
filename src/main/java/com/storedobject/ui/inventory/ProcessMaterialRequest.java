@@ -138,6 +138,7 @@ public class ProcessMaterialRequest extends AbstractRequestMaterial {
         private final List<MaterialRequestItem> mriList = new ArrayList<>();
         private final Map<Id, List<MaterialIssuedItem>> miiMap = new HashMap<>(); // For each MRI
         private final Map<Id, Quantity> readyToIssueMap = new HashMap<>(); // For each MRI
+        private final Map<Id, Integer> missingAssemblies = new HashMap<>(); // For each MII. 0: OK, 1: Black, -1: Grey
         private final List<MaterialIssuedItem> quantityEdited = new ArrayList<>();
         private final Set<Object> selectedSet = new HashSet<>();
         private int selectionValue;
@@ -196,6 +197,7 @@ public class ProcessMaterialRequest extends AbstractRequestMaterial {
                     locateItem.execute();
                 }
             });
+            GridMenuItem<Object> viewAssembly = contextMenu.addItem("View Assembly", e -> viewAssembly());
             contextMenu.setDynamicContentHandler(o -> {
                 deselectAll();
                 select(o);
@@ -207,6 +209,7 @@ public class ProcessMaterialRequest extends AbstractRequestMaterial {
                         return false;
                     }
                     removeEntry.setVisible(false);
+                    viewAssembly.setVisible(false);
                     qEdit.setVisible(false);
                     qZero.setVisible(false);
                     List<MaterialIssuedItem> miis = items(mri);
@@ -224,6 +227,7 @@ public class ProcessMaterialRequest extends AbstractRequestMaterial {
                 addEntries.setVisible(false);
                 removeEntries.setVisible(false);
                 removeEntry.setVisible(true);
+                viewAssembly.setVisible(missing(mii) != Integer.MIN_VALUE);
                 qEdit.setVisible(!mii.getItem().isSerialized());
                 qZero.setVisible(mii.getQuantity().isPositive());
                 return true;
@@ -288,6 +292,14 @@ public class ProcessMaterialRequest extends AbstractRequestMaterial {
         private MaterialIssuedItem singleMII() {
             return selectedSet.stream().filter(o -> o instanceof MaterialIssuedItem).
                     map(o -> (MaterialIssuedItem)o).findAny().orElse(null);
+        }
+
+        private void viewAssembly() {
+            MaterialIssuedItem mii = singleMII();
+            if(mii == null) {
+                return;
+            }
+            new ViewAssembly<>(mii.getItem()).execute();
         }
 
         private void zeroQuantity() {
@@ -356,6 +368,7 @@ public class ProcessMaterialRequest extends AbstractRequestMaterial {
         }
 
         private void allFill() {
+            missingAssemblies.clear();
             readyToIssueMap.clear();
             miiMap.clear();
             quantityEdited.clear();
@@ -504,6 +517,7 @@ public class ProcessMaterialRequest extends AbstractRequestMaterial {
 
         private void removeAllEntries() {
             deselectAll();
+            missingAssemblies.clear();
             readyToIssueMap.clear();
             miiMap.clear();
             quantityEdited.clear();
@@ -686,13 +700,52 @@ public class ProcessMaterialRequest extends AbstractRequestMaterial {
 
         public String getShortfall(Object o) {
             HTMLText h = new HTMLText();
-            if(!uninitialized && o instanceof MaterialRequestItem mri) {
-                Quantity qi = shortfall(mri);
-                if(!qi.isZero()) {
-                    h.append(qi, "red");
+            if(!uninitialized) {
+                int m = Integer.MIN_VALUE;
+                if(o instanceof MaterialRequestItem mri) {
+                    Quantity qi = shortfall(mri);
+                    if(!qi.isZero()) {
+                        h.append(qi, "red");
+                    } else {
+                        AtomicInteger ma = new AtomicInteger(Integer.MIN_VALUE);
+                        items(mri).forEach(mii -> ma.set(Math.max(ma.get(), missing(mii))));
+                        m = ma.get();
+                    }
+                } else if(o instanceof MaterialIssuedItem mii) {
+                    m = missing(mii);
+                }
+                if(m > Integer.MIN_VALUE && m != 0) {
+                    h.append("Incomplete", m > 0 ? "red" : "pink");
                 }
             }
             return h.getHTML();
+        }
+
+        private int missing(MaterialIssuedItem mii) {
+            return missing(mii.getItem());
+        }
+
+        private int missing(InventoryItem item) {
+            if(item == null || !item.isSerialized() || !item.getPartNumber().isAssembly()) {
+                return Integer.MIN_VALUE;
+            }
+            Integer m = missingAssemblies.get(item.getId());
+            if(m == null) {
+                AtomicInteger am = new AtomicInteger(0);
+                item.listMissingAssemblies().map(InventoryFitmentPosition::getAssembly)
+                        .filter(a -> !a.getAccessory() && am.get() <= 0).forEach(a -> {
+                    if(a.getOptional()) {
+                        if(am.get() == 0) {
+                            am.set(-1);
+                        }
+                    } else {
+                        am.set(1);
+                    }
+                });
+                m = am.get();
+                missingAssemblies.put(item.getId(), m);
+            }
+            return m;
         }
 
         private Quantity readyToIssue(MaterialRequestItem mri) {
@@ -714,6 +767,7 @@ public class ProcessMaterialRequest extends AbstractRequestMaterial {
             if(mi != null) {
                 miiList = mi.listLinks(MaterialIssuedItem.class).toList();
             }
+            missingAssemblies.clear();
             mriList.clear();
             miiMap.clear();
             readyToIssueMap.clear();

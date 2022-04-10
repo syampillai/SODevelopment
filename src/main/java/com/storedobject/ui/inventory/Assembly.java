@@ -52,11 +52,13 @@ public class Assembly<T extends InventoryItem, C extends InventoryItem> extends 
 
     Assembly(InventoryLocation location, T item, Class<T> itemClass, Class<C> componentClass) {
         super(location, item, itemClass, componentClass);
-        Application a = Application.get();
-        if(a != null) {
-            String caption = a.getLogicTitle(null);
-            if(caption != null) {
-                setCaption(caption);
+        if(item == null) {
+            Application a = Application.get();
+            if(a != null) {
+                String caption = a.getLogicTitle(null);
+                if(caption != null) {
+                    setCaption(caption);
+                }
             }
         }
     }

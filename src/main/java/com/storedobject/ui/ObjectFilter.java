@@ -72,6 +72,7 @@ public class ObjectFilter<T extends StoredObject> extends Form implements Object
         }
         this.columns = removeContacts(columns);
         buildFields();
+        getContent().getElement().getStyle().set("max-width", "90vw");
     }
 
     @Override
@@ -784,7 +785,7 @@ public class ObjectFilter<T extends StoredObject> extends Form implements Object
 
         private Caption(String text) {
             setValue(text);
-            getStyle().set("min-width", "150px");
+            getStyle().set("min-width", "150px").set("max-width", "150px");
             setReadOnly(true);
         }
     }

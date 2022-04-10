@@ -10,6 +10,8 @@ import com.storedobject.vaadin.RadioChoiceField;
 import com.storedobject.vaadin.View;
 import com.vaadin.flow.component.HasValue;
 
+import java.lang.reflect.InvocationTargetException;
+
 /**
  * An editor for {@link PersonRole} in which the fields of the {@link Person} get merged seamlessly with the fields
  * of the {@link PersonRole}.
@@ -34,7 +36,7 @@ public class PersonRoleEditor<T extends PersonRole> extends ObjectEditor<T> {
 
     public PersonRoleEditor(Class<T> objectClass, int actions, String caption) {
         super(objectClass, actions, caption);
-        if(createObj().getContactGroupingCode() == 0) {
+        if(getContactGroupingCode() == 0) {
             addIncludeFieldChecker(name -> !name.endsWith(".c"));
         }
         addConstructedListener(f -> con());
@@ -42,10 +44,18 @@ public class PersonRoleEditor<T extends PersonRole> extends ObjectEditor<T> {
 
     public PersonRoleEditor(String className) throws Exception {
         super(className);
-        if(createObj().getContactGroupingCode() == 0) {
+        if(getContactGroupingCode() == 0) {
             addIncludeFieldChecker(name -> !name.endsWith(".c"));
         }
         addConstructedListener(f -> con());
+    }
+
+    private int getContactGroupingCode() {
+        try {
+            return getObjectClass().getDeclaredConstructor().newInstance().getContactGroupingCode();
+        } catch(Throwable e) {
+            return 0;
+        }
     }
 
     /**

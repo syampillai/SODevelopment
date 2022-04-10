@@ -761,4 +761,14 @@ public class ObjectField<T extends StoredObject> extends CustomField<Id>
     public void reload() {
        getField().reload();
     }
+
+    /**
+     * Set one or more (typically more than one) class subtypes that this field supports.
+     *
+     * @param classes Classes to allow.
+     */
+    @SafeVarargs
+    public final void setObjectClass(Class<? extends T>... classes) {
+        getField().setObjectClass(classes);
+    }
 }

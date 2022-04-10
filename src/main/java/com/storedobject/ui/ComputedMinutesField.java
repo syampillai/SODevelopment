@@ -65,4 +65,8 @@ public class ComputedMinutesField extends ComputedField<ComputedMinute, Integer>
     private MinutesField getF() {
         return (MinutesField)getField();
     }
+
+    public void setValue(Integer valueInMinutes) {
+        setValue(new ComputedMinute(valueInMinutes));
+    }
 }

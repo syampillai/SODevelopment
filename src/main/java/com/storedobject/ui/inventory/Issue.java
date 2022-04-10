@@ -4,7 +4,8 @@ import com.storedobject.core.InventoryLocation;
 import com.storedobject.vaadin.DataForm;
 import com.storedobject.vaadin.DateField;
 
-public class Issue extends DataForm {
+public class
+Issue extends DataForm {
 
     private static final String CAPTION = "Stock Issue";
     private final DateField dateField = new DateField("Date");

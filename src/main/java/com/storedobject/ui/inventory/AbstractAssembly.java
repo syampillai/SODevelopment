@@ -68,6 +68,7 @@ public abstract class AbstractAssembly<T extends InventoryItem, C extends Invent
         setHeightFull();
         if(item != null) {
             setItem(item);
+            setCaption(item.toDisplay());
         }
     }
 
@@ -183,6 +184,7 @@ public abstract class AbstractAssembly<T extends InventoryItem, C extends Invent
             root.makeVirtual();
         }
         refresh();
+        expand(root);
     }
 
     boolean canSet(InventoryItem item) {

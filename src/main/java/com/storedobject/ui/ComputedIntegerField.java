@@ -54,4 +54,8 @@ public class ComputedIntegerField extends ComputedField<ComputedInteger, Integer
         super(new IntegerField(), label, value, new ComputedInteger());
         ((IntegerField)getField()).setLength(width);
     }
+
+    public void setValue(Integer value) {
+        setValue(new ComputedInteger(value));
+    }
 }

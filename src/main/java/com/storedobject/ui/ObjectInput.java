@@ -1,5 +1,6 @@
 package com.storedobject.ui;
 
+import com.storedobject.core.ClassAttribute;
 import com.storedobject.core.Id;
 import com.storedobject.core.ObjectIterator;
 import com.storedobject.core.StoredObject;
@@ -89,4 +90,38 @@ public interface ObjectInput<T extends StoredObject> extends AbstractObjectInput
      * Reload the allowed values by applying newly set filters.
      */
     void reload();
+
+    /**
+     * Set one or more (typically more than one) class subtypes that this field should allow.
+     *
+     * @param classes Classes to allow.
+     */
+    @SuppressWarnings("unchecked")
+    default void setObjectClass(Class<? extends T>... classes) {
+        if(isAllowAny()) {
+            ObjectBrowser<T> searcher = getSearcher();
+            if(searcher != null) {
+                StringBuilder s = new StringBuilder();
+                for(Class<? extends T> c : classes) {
+                    if(s.length() > 0) {
+                        s.append(',');
+                    }
+                    s.append(ClassAttribute.get(c).getFamily());
+                }
+                String families = "T.T_Family IN(" + s + ")";
+                searcher.getDataProvider().getSystemFilter().setFilterProvider(() -> families);
+                return;
+            }
+        }
+        throw new UnsupportedOperationException();
+    }
+
+    /**
+     * Get the searcher for this field. (A searcher is available only in certain implementations).
+     *
+     * @return Typically, an instance of the {@link ObjectBrowser} that has search capability.
+     */
+    default ObjectBrowser<T> getSearcher() {
+        return null;
+    }
 }

@@ -30,4 +30,8 @@ public class ComputedDateField extends ComputedField<ComputedDate, Date> {
     public ComputedDate getEmptyValue() {
         return EMPTY.clone();
     }
+
+    public void setValue(Date date) {
+        setValue(new ComputedDate(date));
+    }
 }

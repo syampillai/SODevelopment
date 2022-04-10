@@ -62,4 +62,8 @@ public class ComputedDoubleField extends ComputedField<ComputedDouble, Double> {
     public ComputedDoubleField(String label, ComputedDouble value, int width, int decimals) {
         super(new DoubleField(0.0, width, decimals), label, value, new ComputedDouble());
     }
+
+    public void setValue(Double value) {
+        setValue(new ComputedDouble(value));
+    }
 }

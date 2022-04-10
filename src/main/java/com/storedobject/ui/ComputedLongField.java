@@ -54,4 +54,8 @@ public class ComputedLongField extends ComputedField<ComputedLong, Long> {
         super(new LongField(), label, value, new ComputedLong());
         ((LongField)getField()).setLength(width);
     }
+
+    public void setValue(Long value) {
+        setValue(new ComputedLong(value));
+    }
 }

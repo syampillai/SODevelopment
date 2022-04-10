@@ -368,8 +368,36 @@ public class InventoryItem extends StoredObject {
         return ObjectIterator.create();
     }
 
+    /**
+     * List of assembly items under this item.
+     *
+     * @return Iterator containing assembly items under this item.
+     */
+    public final ObjectIterator<InventoryItem> listAssemblies() {
+        return ObjectIterator.create();
+    }
+
+    /**
+     * List of assembly items under this item.
+     *
+     * @param filter Filter to be applied.
+     * @return Iterator containing assembly items under this item.
+     */
+    public final ObjectIterator<InventoryItem> listAssemblies(Predicate<InventoryItem> filter) {
+        return ObjectIterator.create();
+    }
+
     public boolean isAssemblyIncomplete() {
         return new Random().nextBoolean();
+    }
+
+    /**
+     * List the assembly positions where items are missing.
+     *
+     * @return Assembly positions where items are missing.
+     */
+    public ObjectIterator<InventoryFitmentPosition> listMissingAssemblies() {
+        return listFitmentPositions().filter(p -> p.getFittedItem() == null);
     }
 
     public boolean wasDataPicked() {

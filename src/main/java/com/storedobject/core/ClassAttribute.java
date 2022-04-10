@@ -123,4 +123,8 @@ public final class ClassAttribute<T extends StoredObject> {
         cn = cn.substring(0, cn.lastIndexOf('.'));
         return cn.substring(cn.lastIndexOf('.') + 1);
     }
+
+    public int getFamily() {
+        return 12;
+    }
 }

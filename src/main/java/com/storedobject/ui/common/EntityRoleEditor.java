@@ -54,7 +54,7 @@ public class EntityRoleEditor<T extends EntityRole> extends ObjectEditor<T> {
      */
     public EntityRoleEditor(Class<T> objectClass, int actions, String caption) {
         super(objectClass, actions, caption);
-        if(createObj().getContactGroupingCode() == 0) {
+        if(getContactGroupingCode() == 0) {
             addIncludeFieldChecker(name -> !name.endsWith(".c"));
         }
         addConstructedListener(f -> con());
@@ -67,10 +67,18 @@ public class EntityRoleEditor<T extends EntityRole> extends ObjectEditor<T> {
      */
     public EntityRoleEditor(String className) throws Exception {
         super(className);
-        if(createObj().getContactGroupingCode() == 0) {
+        if(getContactGroupingCode() == 0) {
             addIncludeFieldChecker(name -> !name.endsWith(".c"));
         }
         addConstructedListener(f -> con());
+    }
+
+    private int getContactGroupingCode() {
+        try {
+            return getObjectClass().getDeclaredConstructor().newInstance().getContactGroupingCode();
+        } catch(Throwable e) {
+            return 0;
+        }
     }
 
     @Override

@@ -3,6 +3,9 @@ package com.storedobject.ui.inventory;
 import com.storedobject.common.SORuntimeException;
 import com.storedobject.core.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Utility class. For internal use only.
  *
@@ -31,14 +34,25 @@ class ParameterParser {
         String[] ps = parameters.split("\\|");
         for(String p: ps) {
             p = p.trim();
+            if(StringUtility.getCharCount(p, '.') == 1) {
+                p = ApplicationServer.getPackageName() + "." + p;
+            }
             if(!isClass(p)) {
                 continue;
             }
             try {
-                //noinspection unchecked
-                Class<? extends InventoryItemType> c = (Class<? extends InventoryItemType>) JavaClassLoader.getLogic(p);
+                Class<?> c;
+                if("*".equals(p)) {
+                    c = InventoryItemType.class;
+                } else {
+                    c = JavaClassLoader.getLogic(p);
+                }
+                if(!InventoryItemType.class.isAssignableFrom(c)) {
+                    continue;
+                }
                 if(skip <= 0) {
-                    return c;
+                    //noinspection unchecked
+                    return (Class<? extends InventoryItemType>) c;
                 }
                 --skip;
             } catch(Throwable e) {
@@ -46,6 +60,25 @@ class ParameterParser {
             }
         }
         return defaultClass;
+    }
+
+    static <T extends InventoryItemType> Class<? extends T>[] itemTypeClasses(Class<T> baseClass, int skip,
+                                                                              String parameters) {
+        List<Class<? extends T>> classes = new ArrayList<>();
+        Class<? extends InventoryItemType> c;
+        while(true) {
+            c = itemTypeClass(skip, parameters, null);
+            if(c == null) {
+                break;
+            }
+            if(baseClass.isAssignableFrom(c)) {
+                //noinspection unchecked
+                classes.add((Class<? extends T>) c);
+            }
+            ++skip;
+        }
+        @SuppressWarnings("unchecked") Class<? extends T>[] classArray = new Class[0];
+        return classes.toArray(classArray);
     }
 
     static Class<? extends InventoryItem> itemClass(String parameters) {
@@ -59,10 +92,16 @@ class ParameterParser {
         String[] ps = parameters.split("\\|");
         for(String p: ps) {
             p = p.trim();
+            if(StringUtility.getCharCount(p, '.') == 1) {
+                p = ApplicationServer.getPackageName() + "." + p;
+            }
             if(!isClass(p)) {
                 continue;
             }
             try {
+                if("*".equals(p)) {
+                    return InventoryItem.class;
+                }
                 //noinspection unchecked
                 return (Class<? extends InventoryItem>) JavaClassLoader.getLogic(p);
             } catch(Throwable e) {
@@ -153,6 +192,6 @@ class ParameterParser {
     }
 
     static boolean isClass(String parameter) {
-        return StringUtility.getCharCount(parameter, '.') > 1 && !parameter.contains(" ");
+        return "*".equals(parameter) || (StringUtility.getCharCount(parameter, '.') > 1 && !parameter.contains(" "));
     }
 }

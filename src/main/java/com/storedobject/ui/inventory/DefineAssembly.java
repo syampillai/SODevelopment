@@ -37,13 +37,16 @@ public class DefineAssembly<T extends InventoryItemType, C extends InventoryItem
     private final Map <Id, ArrayList<InventoryAssembly>> assemblies = new HashMap<>();
     private Editor editor;
     private final TreeData treeData;
+    private final Class<? extends C>[] childrenType;
 
     public DefineAssembly(Class<T> itemTypeClass) {
         this(itemTypeClass, null);
     }
 
-    public DefineAssembly(Class<T> itemTypeClass, Class<C> componentTypeClass) {
+    @SafeVarargs
+    public DefineAssembly(Class<T> itemTypeClass, Class<C> componentTypeClass, Class<? extends C>... childrenType) {
         super(InventoryAssembly.class, COLUMNS);
+        this.childrenType = childrenType == null || childrenType.length == 0 ? null : childrenType;
         //noinspection unchecked
         this.componentTypeClass = componentTypeClass == null ? (Class<C>)itemTypeClass : componentTypeClass;
         searcher = ObjectSearchBrowser.create(itemTypeClass, "N", null);
@@ -69,7 +72,11 @@ public class DefineAssembly<T extends InventoryItemType, C extends InventoryItem
     @SuppressWarnings("unchecked")
     public DefineAssembly(String itemTypeClass) {
         this((Class<T>) ParameterParser.itemTypeClass(itemTypeClass),
-                (Class<C>) ParameterParser.itemTypeClass(1, itemTypeClass));
+                (Class<C>) ParameterParser.itemTypeClass(1, itemTypeClass), itemTypeClass);
+    }
+
+    private DefineAssembly(Class<T> itemTypeClass, Class<C> componentTypeClass, String parameters) {
+        this(itemTypeClass, componentTypeClass, ParameterParser.itemTypeClasses(componentTypeClass, 2, parameters));
     }
 
     private void con() {
@@ -265,7 +272,7 @@ public class DefineAssembly<T extends InventoryItemType, C extends InventoryItem
     private class Editor extends ObjectEditor<InventoryAssembly> {
 
         private HasValue<?, Quantity> quantityField;
-        private ObjectField<?> itemTypeField;
+        private ObjectField<C> itemTypeField;
 
         private Editor() {
             super(InventoryAssembly.class, EditorAction.NEW | EditorAction.EDIT, "Assembly");
@@ -280,7 +287,7 @@ public class DefineAssembly<T extends InventoryItemType, C extends InventoryItem
         @Override
         public void valueChanged(ChangedValues changedValues) {
             if(changedValues.getChanged() == itemTypeField) {
-                InventoryItemType iit = (InventoryItemType)itemTypeField.getObject();
+                InventoryItemType iit = itemTypeField.getObject();
                 if(iit != null) {
                     if(iit.isSerialized()) {
                         quantityField.setValue(Count.ONE);
@@ -299,6 +306,9 @@ public class DefineAssembly<T extends InventoryItemType, C extends InventoryItem
         protected HasValue<?, ?> createField(String fieldName, String label) {
             if("ItemType".equals(fieldName)) {
                 itemTypeField = new ObjectField<>(label, componentTypeClass, true);
+                if(childrenType != null) {
+                    itemTypeField.setObjectClass(childrenType);
+                }
                 return itemTypeField;
             }
             return super.createField(fieldName, label);
