@@ -12,53 +12,87 @@ public abstract class AbstractRequestMaterial extends ObjectBrowser<MaterialRequ
     private final ObjectField<InventoryLocation> fromField, toField;
     private InventoryLocation fromOrTo;
     private MaterialRequestPriority normalPriority;
-    private final boolean issuing;
+    private final boolean issuing, otherLocationFixed;
     Class<? extends InventoryItemType> itemTypeClass;
 
     AbstractRequestMaterial(boolean issuing, int noActions) {
-        this(issuing, (String) null, noActions);
+        this(issuing, noActions, null);
+    }
+
+    AbstractRequestMaterial(boolean issuing, int noActions, InventoryLocation otherLocation) {
+        this(issuing, (String) null, noActions, otherLocation);
     }
 
     AbstractRequestMaterial(boolean issuing, String fromOrTo, int noActions) {
-        this(issuing, -1, fromOrTo, noActions);
+        this(issuing, fromOrTo, noActions, null);
+    }
+
+    AbstractRequestMaterial(boolean issuing, String fromOrTo, int noActions, InventoryLocation otherLocation) {
+        this(issuing, -1, fromOrTo, noActions, otherLocation);
     }
 
     AbstractRequestMaterial(boolean issuing, InventoryLocation fromOrTo, int noActions) {
-        this(issuing, -1, fromOrTo, noActions);
+        this(issuing, fromOrTo, noActions, null);
+    }
+
+    AbstractRequestMaterial(boolean issuing, InventoryLocation fromOrTo, int noActions,
+                            InventoryLocation otherLocation) {
+        this(issuing, -1, fromOrTo, noActions, otherLocation);
     }
 
     AbstractRequestMaterial(boolean issuing, int columnStyle, int noActions) {
-        this(issuing, columnStyle, (String) null, noActions);
+        this(issuing, columnStyle, noActions, null);
+    }
+
+    AbstractRequestMaterial(boolean issuing, int columnStyle, int noActions, InventoryLocation otherLocation) {
+        this(issuing, columnStyle, (String) null, noActions, otherLocation);
     }
 
     AbstractRequestMaterial(boolean issuing, int columnStyle, String fromOrTo, int noActions) {
+        this(issuing, columnStyle, fromOrTo, noActions, null);
+    }
+
+    AbstractRequestMaterial(boolean issuing, int columnStyle, String fromOrTo, int noActions,
+                                                        InventoryLocation otherLocation) {
         this(issuing, columnStyle, issuing ? LocationField.create(null, fromOrTo,0) :
-                LocationField.create(null, fromOrTo, 0, 4, 5, 10, 11, 16),
-                noActions);
+                        LocationField.create(null, fromOrTo, 0, 4, 5, 10, 11, 16),
+                noActions, otherLocation);
         this.itemTypeClass = ParameterParser.itemTypeClass(fromOrTo);
     }
 
     AbstractRequestMaterial(boolean issuing, int columnStyle, InventoryLocation fromOrTo, int noActions) {
-        this(issuing, columnStyle, LocationField.create(fromOrTo), noActions);
+        this(issuing, columnStyle, fromOrTo, noActions, null);
     }
 
-    private AbstractRequestMaterial(boolean issuing, int columnStyle, LocationField fromOrTo, int noActions) {
+    AbstractRequestMaterial(boolean issuing, int columnStyle, InventoryLocation fromOrTo, int noActions,
+                            InventoryLocation otherLocation) {
+        this(issuing, columnStyle, LocationField.create(fromOrTo), noActions, otherLocation);
+        if(fromOrTo.equals(otherLocation)) {
+            throw new SORuntimeException("Both locations can't be the same - " + otherLocation.toDisplay());
+        }
+    }
+
+    private AbstractRequestMaterial(boolean issuing, int columnStyle, LocationField fromOrTo, int noActions,
+                                    InventoryLocation otherLocation) {
         super(MaterialRequest.class, columns(columnStyle, issuing), EditorAction.ALL & (~noActions),
                 issuing ? StringList.create("Date") : StringList.create("Date", "ReferenceNumber"));
         addConstructedListener(v -> created());
         this.issuing = issuing;
         if(issuing) {
-            fromField = new ObjectField<>("From", LocationField.create(4, 5, 10, 11, 16));
+            fromField = new ObjectField<>("From", otherLocation == null ? LocationField.create(4, 5, 10, 11, 16)
+                    : LocationField.create(otherLocation));
             toField = new ObjectField<>("Send to", fromOrTo);
         } else {
             fromField = new ObjectField<>("From", fromOrTo);
-            toField = new ObjectField<>("Send to", LocationField.create(0));
+            toField = new ObjectField<>("Send to", otherLocation == null ? LocationField.create(0)
+                    : LocationField.create(otherLocation));
         }
         this.fromOrTo = fromOrTo.getValue();
         if(issuing && !(this.fromOrTo instanceof InventoryStoreBin)) {
             throw new SORuntimeException("Not a store - " + this.fromOrTo.toDisplay());
         }
-        setOrderBy("Date DESC,No DESC");
+        otherLocationFixed = otherLocation != null;
+        setOrderBy("Date DESC,No DESC", false);
     }
 
     void created() {
@@ -179,9 +213,15 @@ public abstract class AbstractRequestMaterial extends ObjectBrowser<MaterialRequ
             if(issuing) {
                 toField.setValue(fromOrTo);
                 setFieldReadOnly(toField);
+                if(otherLocationFixed) {
+                    setFieldReadOnly(fromField);
+                }
             } else {
                 fromField.setValue(fromOrTo);
                 setFieldReadOnly(fromField);
+                if(otherLocationFixed) {
+                    setFieldReadOnly(toField);
+                }
             }
             if(issuing) {
                 setFieldHidden(toField);

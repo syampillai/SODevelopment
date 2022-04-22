@@ -121,23 +121,23 @@ public class InventoryItemType extends StoredObject implements HasChildren {
     }
 
     public boolean isSerialized() {
-        return false;
+        return Math.random() > 0.5;
     }
 
     public boolean isExpendable() {
-        return false;
+        return Math.random() > 0.5;
     }
 
     public boolean isConsumable() {
-        return false;
+        return Math.random() > 0.5;
     }
 
     public boolean isTool() {
-        return false;
+        return Math.random() > 0.5;
     }
 
     public Id getCategoryId() {
-        return null;
+        return Math.random() > 0.5 ? null : new Id();
     }
 
     public final boolean isAssembly() {
@@ -153,7 +153,7 @@ public class InventoryItemType extends StoredObject implements HasChildren {
     }
 
     public boolean isShelfLifeApplicable() {
-        return false;
+        return Math.random() > 0.5;
     }
 
     @SuppressWarnings("unchecked")
@@ -166,7 +166,7 @@ public class InventoryItemType extends StoredObject implements HasChildren {
     }
 
     public static InventoryItemType get(String partNumber) {
-        return new InventoryItemType();
+        return Math.random() > 0.5 ? null : new InventoryItemType();
     }
 
     public static ObjectIterator<? extends InventoryItemType> list(String partNumber) {

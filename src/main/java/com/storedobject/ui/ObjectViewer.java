@@ -43,6 +43,10 @@ public class ObjectViewer extends Executor implements ObjectSetter<StoredObject>
         if(object == null) {
             return;
         }
+        if(object instanceof FileFolder ff) {
+            new FileViewer(ff, caption).execute();
+            return;
+        }
         if(viewer != null) {
             if(viewer.getObjectClass() != object.getClass()) {
                 viewer = null;
@@ -97,5 +101,10 @@ public class ObjectViewer extends Executor implements ObjectSetter<StoredObject>
     @Override
     public String getAlertIcon() {
         return "vaadin:eye";
+    }
+
+    @Override
+    public String getAlertCaption() {
+        return "View";
     }
 }

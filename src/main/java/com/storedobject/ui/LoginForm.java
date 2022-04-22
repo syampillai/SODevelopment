@@ -67,6 +67,9 @@ public class LoginForm extends TemplateView implements HomeView {
     public LoginForm() {
         setCaption("Sign in");
         internal = this;
+        Application a = Application.get();
+        a.mainLayout.saveHeaderHeight();
+        a.getUI().getElement().getStyle().set("--so-header-height", "0vh");
         Application.get().log("Accessed");
     }
 
@@ -88,6 +91,7 @@ public class LoginForm extends TemplateView implements HomeView {
     @Override
     public void close() {
         if(internal == this) {
+            Application.get().mainLayout.restoreHeaderHeight();
             super.close();
         } else {
             internal.close();
@@ -214,6 +218,9 @@ public class LoginForm extends TemplateView implements HomeView {
             }
         }
         super.execute();
+        if(loginField != null) {
+            loginField.focus();
+        }
     }
 
     @Override
@@ -324,7 +331,7 @@ public class LoginForm extends TemplateView implements HomeView {
         private void sizeAndAdd(Component c) {
             imageHolder.setWidthFull();
             imageHolder.setMaxHeight("30vh");
-            c.getElement().getStyle().set("width", "100%").set("max-height", "30vh").set("object-fir", "fill");
+            c.getElement().getStyle().set("width", "100%").set("max-height", "30vh").set("object-fit", "fill");
             imageHolder.add(c);
         }
 

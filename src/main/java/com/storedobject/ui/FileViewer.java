@@ -41,28 +41,38 @@ public class FileViewer extends ObjectForestViewer<FileFolder> implements Closea
     }
 
     public FileViewer(String path, String caption) {
+        this(folder(path, caption), caption);
+    }
+
+    public FileViewer(FileFolder root, String caption) {
         super(FileFolder.class, StringList.EMPTY);
         getDataProvider().getForest().setListLinks(FileViewer::list);
         filter.setVisible(false);
         addConstructedListener(o -> con());
-        if(path == null) {
-            path = caption;
-        }
-        FileFolder root;
-        if(path == null || path.isEmpty() || (root = FileFolder.get(path)) == null) {
-            throw new SORuntimeException("Folder not found - " + path);
+        if(root == null) {
+            throw new SORuntimeException("No root folder specified!");
         }
         setRoot(root);
         if(caption == null) {
-            int p;
-            if((p = path.lastIndexOf('/')) >= 0) {
-                path = path.substring(p + 1);
-            }
-            caption = StringUtility.makeLabel(path);
+            caption = StringUtility.makeLabel(root.getName());
         }
         setCaption(caption);
         createHTMLHierarchyColumn("_Name", this::nodeDisplay);
         personId = getTransactionManager().getUser().getPersonId();
+    }
+
+    private static FileFolder folder(String path, String caption) {
+        FileFolder folder;
+        if(path == null) {
+            path = caption;
+        }
+        if(path != null && !path.startsWith("/")) {
+            path = "/" + path;
+        }
+        if(path == null || (folder = FileFolder.get(path)) == null) {
+            throw new SORuntimeException("Folder not found - " + path);
+        }
+        return folder;
     }
 
     private void con() {
@@ -71,7 +81,7 @@ public class FileViewer extends ObjectForestViewer<FileFolder> implements Closea
         addComponentColumn(this::createReadMenu).setFlexGrow(0).setWidth("200px");
         addComponentColumn(this::createReadStamp).setFlexGrow(0).setWidth("200px");
         addColumn(v -> " ").setFlexGrow(0);
-        expandRecursively(Stream.of(getRoot()), 1);
+        expandRecursively(Stream.of(getRoot()), 2);
     }
 
     @Override
@@ -143,14 +153,16 @@ public class FileViewer extends ObjectForestViewer<FileFolder> implements Closea
     }
 
     private void opened(Object item) {
-        if(item instanceof ObjectForest.LinkObject lo) {
+        select(item);
+        getSelected();
+        if(item instanceof ObjectForest.LinkObject lo && lo == currentLinkObject) {
             if(lo.getObject() instanceof FileData fileData) {
                 FileCirculation fc = circ(fileData);
                 if(fc != null && fc.getStatus() == 0) {
                     fc.setStatus(1);
                     transact(fc::save);
                     circs.remove(fileData.getId());
-                    refresh(lo.getLinkNode());
+                    refreshCurrentNode(lo.getObject());
                 }
                 getApplication().view(fileData.getName(), fileData.getFile());
             }
@@ -188,7 +200,9 @@ public class FileViewer extends ObjectForestViewer<FileFolder> implements Closea
     }
 
     private void markAsRead(Object item) {
-        if(item instanceof ObjectForest.LinkObject lo) {
+        select(item);
+        getSelected();
+        if(item instanceof ObjectForest.LinkObject lo && lo == currentLinkObject) {
             if(lo.getObject() instanceof FileData fileData) {
                 final StreamData sd = fileData.getFile();
                 ELabel m = new ELabel("I confirm that I ");
@@ -209,7 +223,7 @@ public class FileViewer extends ObjectForestViewer<FileFolder> implements Closea
                     if(fc != null) {
                         fc.setStatus(2);
                         if(transact(fc::save)) {
-                            refresh(item);
+                            refreshCurrentNode(lo.getObject());
                         }
                     }
                 }, null, "Confirm", "Cancel").execute();

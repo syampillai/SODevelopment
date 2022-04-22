@@ -85,7 +85,16 @@ class ParameterParser {
         return itemClass(parameters, InventoryItem.class);
     }
 
+    static Class<? extends InventoryItem> itemClass(int skip, String parameters) {
+        return itemClass(skip, parameters, InventoryItem.class);
+    }
+
     static Class<? extends InventoryItem> itemClass(String parameters, Class<? extends InventoryItem> defaultClass) {
+        return itemClass(0, parameters, defaultClass);
+    }
+
+    static Class<? extends InventoryItem> itemClass(int skip, String parameters,
+                                                            Class<? extends InventoryItem> defaultClass) {
         if(parameters == null) {
             return defaultClass;
         }
@@ -99,11 +108,20 @@ class ParameterParser {
                 continue;
             }
             try {
+                Class<?> c;
                 if("*".equals(p)) {
-                    return InventoryItem.class;
+                    c = InventoryItem.class;
+                } else {
+                    c = JavaClassLoader.getLogic(p);
                 }
-                //noinspection unchecked
-                return (Class<? extends InventoryItem>) JavaClassLoader.getLogic(p);
+                if(!InventoryItem.class.isAssignableFrom(c)) {
+                    continue;
+                }
+                if(skip <= 0) {
+                    //noinspection unchecked
+                    return (Class<? extends InventoryItem>) c;
+                }
+                --skip;
             } catch(Throwable e) {
                 throw new SORuntimeException("Unable to determine item class from '" + parameters + "'");
             }

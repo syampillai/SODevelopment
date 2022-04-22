@@ -47,7 +47,8 @@ public class FileData extends StoredObject implements Detail, HasParents, Conten
         return false;
     }
 
-    public void restore(Transaction transaction) throws Exception {
+    public FileData restore(Transaction transaction) throws Exception {
+        return this;
     }
     
     public FileData getPreviousVersion() {

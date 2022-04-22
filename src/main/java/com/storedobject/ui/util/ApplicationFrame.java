@@ -132,6 +132,11 @@ public class ApplicationFrame extends com.storedobject.vaadin.ApplicationFrame i
     }
 
     @Override
+    public void restoreHeaderHeight() {
+        Application.get().getUI().getElement().getStyle().set("--so-header-height", "9vh");
+    }
+
+    @Override
     public void initialized() {
         if(searchMenu != null) {
             searchMenu.setVisible(true);

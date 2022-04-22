@@ -25,7 +25,9 @@ public class ReceiveReturnedItems extends DataForm implements Transactional {
     private InventoryLocation eo; // External organization or custody
     private final LocationField storeField;
     private final LocationField eoField;
-    private Date date;
+    private final int type;
+    private Date date, invoiceDate;
+    private String invoiceRef;
 
     public ReceiveReturnedItems(int type) {
         this(type, (InventoryStoreBin) null, null);
@@ -49,6 +51,7 @@ public class ReceiveReturnedItems extends DataForm implements Transactional {
 
     public ReceiveReturnedItems(int type, InventoryStoreBin storeBin, InventoryLocation eo) {
         super(caption(type));
+        this.type = type;
         this.storeBin = storeBin;
         this.eo = eo;
         if(storeBin == null) {
@@ -175,6 +178,10 @@ public class ReceiveReturnedItems extends DataForm implements Transactional {
         returned.setDate(date);
         returned.setFromLocation(eo);
         returned.setToLocation(storeBin);
+        if(type == 3) { // RO
+            returned.setInvoiceDate(invoiceDate);
+            returned.setReferenceNumber(invoiceRef);
+        }
         if(!transact(t -> {
             returned.save(t);
             MaterialReturnedItem returnedItem;
@@ -205,23 +212,37 @@ public class ReceiveReturnedItems extends DataForm implements Transactional {
 
         private final boolean confirm;
         private final DateField dateField = new DateField();
+        private final TextField invoiceRefField = new TextField();
+        private final DateField invoiceDateField = new DateField();
 
         public Select(List<InventoryItem> items, boolean confirm) {
             super(InventoryItem.class, items,
                     StringList.create("PartNumber", "SerialNumber", "Quantity", "Location"),
                     selectedSet -> ReceiveReturnedItems.this.process(items, selectedSet, confirm));
+            invoiceRefField.uppercase();
+            invoiceRefField.addValueChangeListener(e -> {
+               if(e.isFromClient()) {
+                   invoiceRefField.setValue(StoredObject.toCode(invoiceRefField.getValue()));
+               }
+            });
             this.confirm = confirm;
             if(confirm) {
                 setCaption("Select Returned Items");
             } else {
                 setCaption("Confirm Items");
+                if(type == 3) {
+                    invoiceRefField.setValue(invoiceRef);
+                    invoiceDateField.setValue(invoiceDate);
+                }
             }
         }
 
         @Override
         public void addExtraButtons() {
             super.addExtraButtons();
-            buttonLayout.add(new ELabel("Date: "), dateField);
+            if(type != 3) {
+                buttonLayout.add(new ELabel("Date: "), dateField);
+            }
             if(!confirm) {
                 return;
             }
@@ -236,6 +257,11 @@ public class ReceiveReturnedItems extends DataForm implements Transactional {
 
         @Override
         public void createHeaders() {
+            if(type == 3) { // RO
+                prependHeader().join().setComponent(new ButtonLayout(new ELabel("Date: "), dateField,
+                        new ELabel(" Invoice No.: "), invoiceRefField, new ELabel(" Invoice Date: "),
+                        invoiceDateField));
+            }
             if(confirm) {
                 return;
             }
@@ -253,6 +279,8 @@ public class ReceiveReturnedItems extends DataForm implements Transactional {
                 warning("Please check the receipt date: " + DateUtility.formatWithTime(date));
                 return false;
             }
+            invoiceDate = invoiceDateField.getValue();
+            invoiceRef = StoredObject.toCode(invoiceRefField.getValue());
             if(getSelectedItems().isEmpty()) {
                 warning("No items selected!");
                 return false;

@@ -5,7 +5,6 @@ import com.storedobject.ui.inventory.POBrowser;
 import com.storedobject.ui.inventory.POItemBrowser;
 import com.storedobject.ui.util.LoadFilterButtons;
 import com.storedobject.ui.util.LogicParser;
-import com.storedobject.ui.util.NoDisplayField;
 import com.storedobject.vaadin.Button;
 import com.storedobject.vaadin.ButtonLayout;
 import com.storedobject.vaadin.ConfirmButton;
@@ -560,6 +559,12 @@ public class ObjectBrowser<T extends StoredObject> extends ObjectGrid<T>
     }
 
     /**
+     * This method is invoked when anchor fields are created for the first time.
+     */
+    public void anchorFieldsCreated() {
+    }
+
+    /**
      * Reset the anchor values so that it will be asked again for the next add/search actions.
      */
     public void resetAnchor() {
@@ -848,7 +853,7 @@ public class ObjectBrowser<T extends StoredObject> extends ObjectGrid<T>
     }
 
     public boolean canRowEdit(T item) {
-        return true;
+        return canEdit(item);
     }
 
     private void editRowInt(T item) {
@@ -921,6 +926,7 @@ public class ObjectBrowser<T extends StoredObject> extends ObjectGrid<T>
      * @param extraInfo The "Extra Information" instance to be saved.
      * @throws Exception if any validation error to be notified.
      */
+    @SuppressWarnings("RedundantThrows")
     public void savingExtraInfo(T object, StoredObject extraInfo) throws Exception {
     }
 

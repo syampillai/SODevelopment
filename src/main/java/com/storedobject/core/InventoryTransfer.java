@@ -33,6 +33,13 @@ public abstract class InventoryTransfer extends StoredObject {
         return "";
     }
 
+    public void setInvoiceDate(Date invoiceDate) {
+    }
+
+    public Date getInvoiceDate() {
+        return new Date(0);
+    }
+
     public void setFromLocation(Id fromLocationId) {
     }
 
@@ -97,5 +104,8 @@ public abstract class InventoryTransfer extends StoredObject {
     }
 
     public void receive(Transaction transaction) throws Exception {
+    }
+    public String getReference() {
+        return "RO";
     }
 }

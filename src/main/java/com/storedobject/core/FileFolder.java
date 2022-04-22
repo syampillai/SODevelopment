@@ -67,30 +67,33 @@ public final class FileFolder extends StoredObject implements Detail, HasChildre
     }
     
     public ObjectIterator<FileFolder> listFolders() {
-    	return null;
+    	return ObjectIterator.create();
     }
     
     public ObjectIterator<FileFolder> listFolders(String condition) {
-    	return null;
+    	return ObjectIterator.create();
     }
     
     public ObjectIterator<FileFolder> listFolders(String condition, String orderBy) {
-    	return null;
+    	return ObjectIterator.create();
     }
 
     public ObjectIterator<FileData> listFiles() {
-    	return null;
+    	return ObjectIterator.create();
     }
     
     public ObjectIterator<FileData> listFiles(String condition) {
-    	return null;
+    	return ObjectIterator.create();
     }
     
     public ObjectIterator<FileData> listFiles(String condition, String orderBy) {
-    	return null;
+    	return ObjectIterator.create();
     }
     
     public boolean isRoot() {
-    	return false;
+    	return Math.random() > 0.5;
+    }
+    public static FileFolder getRoot() {
+        return Math.random() > 0.5 ? null : new FileFolder();
     }
 }

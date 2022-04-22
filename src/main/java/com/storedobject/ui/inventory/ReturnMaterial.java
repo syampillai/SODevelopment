@@ -12,6 +12,10 @@ public final class ReturnMaterial extends AbstractReturnMaterial {
     }
 
     public ReturnMaterial(InventoryLocation from) {
-        super(from);
+        this(from, null);
+    }
+
+    public ReturnMaterial(InventoryLocation from, InventoryLocation otherLocation) {
+        super(from, otherLocation);
     }
 }

@@ -32,6 +32,7 @@ public class MailLog extends DataForm implements Transactional {
     @Override
     protected boolean process() {
         close();
+        //noinspection resource
         new Report(getApplication(), periodField.getValue(), statusField.getValue()).execute();
         return true;
     }
@@ -55,7 +56,7 @@ public class MailLog extends DataForm implements Transactional {
         @Override
         public Object getTitleText() {
             Text t = new Text();
-            t.append(16, PDFFont.BOLD).append("SMS Log (Delivery Status: ").append(statusField.getChoice()).append(")");
+            t.append(16, PDFFont.BOLD).append("Email Log (Delivery Status: ").append(statusField.getChoice()).append(")");
             t.newLine().append(10, PDFFont.BOLD).newLine(true).append("Period: ").append(period);
             return t;
         }

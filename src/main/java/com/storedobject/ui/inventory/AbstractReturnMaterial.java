@@ -13,7 +13,11 @@ public abstract class AbstractReturnMaterial extends
     }
 
     public AbstractReturnMaterial(InventoryLocation from) {
-        super(MaterialReturned.class, MaterialReturnedItem.class, from, false);
+        this(from, null);
+    }
+
+    public AbstractReturnMaterial(InventoryLocation from, InventoryLocation otherLocation) {
+        super(MaterialReturned.class, MaterialReturnedItem.class, from, false, otherLocation);
     }
 
     @Override

@@ -139,6 +139,7 @@ public abstract class AbstractAssembly<T extends InventoryItem, C extends Invent
         if(selectAnother != null) {
             buttonLayout.add(selectAnother);
         }
+        //noinspection resource
         buttonLayout.add(new Button("Print", e -> new FitList()),
                 new TreeSearchField<>(this),
                 new Button("Exit", e -> close()));
@@ -389,6 +390,7 @@ public abstract class AbstractAssembly<T extends InventoryItem, C extends Invent
                 return false;
             }
             setItem(itemField.getObject());
+            System.err.println("SET now to " + itemField.getObject());
             return true;
         }
 

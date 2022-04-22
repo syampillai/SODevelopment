@@ -85,6 +85,14 @@ public final class ApplicationServer {
     public void showNotification(String text) {
     }
 
+    public Object execute(Object anything) {
+        return execute(anything, true);
+    }
+
+    public Object execute(Object anything, boolean execute) {
+        return Math.random() > 0.5 ? null : new Object();
+    }
+
     public Object execute(Logic logic) {
         return null;
     }

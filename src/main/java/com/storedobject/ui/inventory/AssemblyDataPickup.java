@@ -49,7 +49,8 @@ public class AssemblyDataPickup<T extends InventoryItem, C extends InventoryItem
     }
 
     public AssemblyDataPickup(String itemClass) {
-        this(createClass(itemClass, false), createClass(itemClass, true));
+        //noinspection unchecked
+        this((Class<T>) ParameterParser.itemClass(itemClass), (Class<C>) ParameterParser.itemClass(1, itemClass));
     }
 
     @Override

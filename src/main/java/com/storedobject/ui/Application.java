@@ -83,7 +83,7 @@ public class Application extends com.storedobject.vaadin.Application implements 
     private ApplicationServer server;
     private BrowserDeviceLayout layout = null;
     private Logic runningLogic;
-    private final ApplicationLayout mainLayout;
+    final ApplicationLayout mainLayout;
     private boolean singleLogicMode = false, abortOnLogicSwitch = false;
     private final Hashtable<Long, AbstractContentGenerator> dynamicContent = new Hashtable<>();
     private final Hashtable<Long, WeakReference<AbstractContentGenerator>> multiContent = new Hashtable<>();
@@ -771,11 +771,11 @@ public class Application extends com.storedobject.vaadin.Application implements 
             removeQueryParameter("login");
             String autoLogin = ApplicationServer.getGlobalProperty("application.autologin.user",
                     null, false);
-            if(autoLogin != null && !autoLogin.isEmpty()) {
+            if(autoLogin != null && !autoLogin.isBlank()) {
                 String autoPassword = ApplicationServer.getGlobalProperty("application.autologin.password",
                         null, false);
                 return () -> {
-                    if(!login.login(autoLogin, autoPassword.toCharArray(), false)) {
+                    if(!login.login(autoLogin.trim(), autoPassword.toCharArray(), false)) {
                         executeLogin();
                     }
                 };
@@ -1333,31 +1333,43 @@ public class Application extends com.storedobject.vaadin.Application implements 
             return true;
         }
 
-        void handleAlert(StoredObject reference) {
+        void handleAlert(Id reference) {
             alert.delete();
             close();
             if(alertHandler == null) {
                 return;
             }
             if(alertHandler instanceof AlertHandler ah) {
-                ah.handleAlert(reference);
-            } else if(alertHandler instanceof Runnable r) {
+                if(reference != null) {
+                    ah.handleAlert(reference);
+                }
+                return;
+            }
+            if(reference != null && alertHandler instanceof ObjectSetter<?> os) {
+                os.setObject(reference);
+            }
+            if(alertHandler instanceof Runnable r) {
                 r.run();
             }
         }
 
         void setAlertHandler(Object alertHandler) {
-            if(alertHandler instanceof Class<?>) {
-                alertHandler = ((Application)getApplication()).getServer().execute((Class<?>)alertHandler, false);
+            getComponent();
+            if(alertHandler instanceof StoredObject || alertHandler instanceof Id) {
+                alertHandler = new ObjectViewer(Application.get());
+            }
+            if(alertHandler != null && !(alertHandler instanceof AlertHandler)) {
+                alertHandler = ((Application)getApplication()).getServer().execute(alertHandler, false);
             }
             this.alertHandler = alertHandler;
             if(alertHandler == null) {
                 ok.setVisible(false);
+
             } else {
-                if(alertHandler instanceof AlertHandler aa) {
-                    String s = aa.getAlertCaption();
+                if(alertHandler instanceof AlertHandler ah) {
+                    String s = ah.getAlertCaption();
                     ok.setText(s == null ? "Process" : s);
-                    s = aa.getAlertIcon();
+                    s = ah.getAlertIcon();
                     if(s == null) {
                         ok.setIcon(VaadinIcon.COG_O);
                     } else {
@@ -1375,27 +1387,24 @@ public class Application extends com.storedobject.vaadin.Application implements 
     private static class AlertProcessor extends AbstractAlertProcessor {
 
         private final Id reference;
-        private StoredObject referenceObject;
 
         AlertProcessor(String caption, Alert alert, Object alertHandler, Id reference) {
             super(caption, alert);
-            if(alertHandler instanceof StoredObject) {
-                referenceObject = (StoredObject) alertHandler;
-                alertHandler = null;
+            if(alertHandler instanceof StoredObject so) {
+                reference = so.getId();
             }
             this.reference = reference;
-            if(alertHandler == null && !Id.isNull(reference)) {
-                referenceObject = StoredObject.get(reference);
-            }
-            if(referenceObject != null && alertHandler == null) {
-                alertHandler = ObjectEditor.create(referenceObject.getClass(), EditorAction.VIEW);
-            }
-            setAlertHandler(alertHandler);
+            setAlertHandler(alertHandler == null ? reference : alertHandler);
+        }
+
+        @Override
+        protected void formConstructed() {
+            super.formConstructed();
         }
 
         @Override
         protected boolean process() {
-            handleAlert(referenceObject == null ? StoredObject.get(reference) : referenceObject);
+            handleAlert(reference);
             return true;
         }
     }
@@ -1405,10 +1414,20 @@ public class Application extends com.storedobject.vaadin.Application implements 
         private final LoginMessage message;
         private final ChoiceField priority = new ChoiceField("Priority", LoginMessage.getPriorityValues());
         private Button changePriority;
+        private Id reference;
 
         private LoginMessageProcessor(LoginMessage message, Alert alert) {
             super(null, alert);
             this.message = message;
+            Logic logic = message.getProcessorLogic();
+            if(logic != null) {
+                setAlertHandler(logic);
+            }
+            StoredObject ref = message.listGeneratedBy().findFirst();
+            if(logic == null && ref != null) {
+                setAlertHandler(ref);
+                reference = ref.getId();
+            }
             execute();
         }
 
@@ -1463,7 +1482,8 @@ public class Application extends com.storedobject.vaadin.Application implements 
 
         @Override
         protected boolean process() {
-            return false;
+            handleAlert(reference);
+            return true;
         }
     }
 

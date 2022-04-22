@@ -27,7 +27,8 @@ public class MeasurementUnit {
 	}
 
 	public static MeasurementUnit get(String unit) {
-		return new MeasurementUnit(0, "", true, BigDecimal.ONE, "");
+		return Math.random() > 0.5 ? null
+				:new MeasurementUnit(0, "", true, BigDecimal.ONE, "");
 	}
 
 	public static MeasurementUnit get(String unit, MeasurementUnit similar) {

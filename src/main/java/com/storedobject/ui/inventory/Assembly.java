@@ -1,6 +1,5 @@
 package com.storedobject.ui.inventory;
 
-import com.storedobject.common.SORuntimeException;
 import com.storedobject.core.*;
 import com.storedobject.ui.Application;
 import com.storedobject.ui.ELabelField;
@@ -64,26 +63,8 @@ public class Assembly<T extends InventoryItem, C extends InventoryItem> extends 
     }
 
     public Assembly(String itemClass) {
-        this(createClass(itemClass, false), createClass(itemClass, true));
-    }
-
-    static <O extends InventoryItem> Class<O> createClass(String itemClass, boolean component) {
-        int p = itemClass.indexOf('|');
-        if(component) {
-            if(p < 0) {
-                return null;
-            }
-            return createClass(itemClass.substring(p + 1), false);
-        }
-        if(p > 0) {
-            itemClass = itemClass.substring(0, p);
-        }
-        try {
-            //noinspection unchecked
-            return (Class<O>) JavaClassLoader.getLogic(itemClass);
-        } catch (Throwable e) {
-            throw new SORuntimeException("Invalid Item Class: " + itemClass);
-        }
+        //noinspection unchecked
+        this((Class<T>) ParameterParser.itemClass(itemClass), (Class<C>) ParameterParser.itemClass(1, itemClass));
     }
 
     @Override
@@ -123,12 +104,10 @@ public class Assembly<T extends InventoryItem, C extends InventoryItem> extends 
             setRequired(qFitField);
             trackValueChange(partNumbersField);
             trackValueChange(itemField);
-            InventoryLocation location = locationField.getValue();
-            if(location instanceof InventoryBin) {
-                itemField.setStore(((InventoryBin) location).getStore());
-            } else {
-                itemField.setLocation(locationField);
-            }
+            itemField.setStore(() -> {
+                InventoryLocation loc = locationField.getValue();
+                return loc instanceof InventoryBin ? ((InventoryBin) loc).getStore() : null;
+            });
         }
 
         @Override

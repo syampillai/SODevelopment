@@ -18,11 +18,20 @@ public class RequestMaterial extends AbstractRequestMaterial {
     }
 
     public RequestMaterial(InventoryLocation from) {
-        this(null, from);
+        this(null, from, null);
+    }
+
+    public RequestMaterial(InventoryLocation from, InventoryLocation to) {
+        this(null, from, to);
     }
 
     public RequestMaterial(Class<? extends InventoryItemType> itemTypeClass, InventoryLocation from) {
-        super(false, from, 0);
+        this(itemTypeClass, from, null);
+    }
+
+    public RequestMaterial(Class<? extends InventoryItemType> itemTypeClass, InventoryLocation from,
+                           InventoryLocation to) {
+        super(false, from, 0, to);
         if(itemTypeClass != null) {
             this.itemTypeClass = itemTypeClass;
         }

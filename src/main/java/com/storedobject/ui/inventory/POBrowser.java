@@ -11,6 +11,7 @@ import com.vaadin.flow.component.grid.contextmenu.GridContextMenu;
 import com.vaadin.flow.component.grid.contextmenu.GridMenuItem;
 import com.vaadin.flow.component.icon.VaadinIcon;
 
+import java.sql.Date;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -431,6 +432,7 @@ public class POBrowser<T extends InventoryPO> extends ObjectBrowser<T> implement
         private final T po;
         private final Map<Id, QField> qFields = new HashMap<>();
         private final Checkbox confirmExcess = new Checkbox("Confirm Excess");
+        private SupplierInvoice supplierInvoice;
 
         public ReceiveItems(T po, List<InventoryPOItem> items) {
             super(InventoryPOItem.class, items, StringList.create("PartNumber", "SerialNumber", "Expected"));
@@ -552,10 +554,16 @@ public class POBrowser<T extends InventoryPO> extends ObjectBrowser<T> implement
                 confirmExcess.setVisible(false);
             }
             if(createNew) {
-                process(qs, null);
+                supplierInvoice().processGRN(qs, null);
                 return;
             }
-            SelectGrid<InventoryGRN> selectGrid = new SelectGrid<>(InventoryGRN.class, addToGRNs, g -> process(qs, g)) {
+            SelectGrid<InventoryGRN> selectGrid = new SelectGrid<>(InventoryGRN.class, addToGRNs, g -> {
+                if(g.getReferenceNumber().startsWith("GRN")) {
+                    supplierInvoice().processGRN(qs, g);
+                } else {
+                    process(qs, g, null, null);
+                }
+            }) {
                 @Override
                 public void createHeaders() {
                     ELabel m = new ELabel("Please select the GRN to add the items to", "blue");
@@ -565,16 +573,64 @@ public class POBrowser<T extends InventoryPO> extends ObjectBrowser<T> implement
             selectGrid.execute();
         }
 
-        private void process(Map<Id, Quantity> qs, InventoryGRN grn) {
+        private SupplierInvoice supplierInvoice() {
+            if(supplierInvoice == null) {
+                supplierInvoice = new SupplierInvoice();
+            }
+            return supplierInvoice;
+        }
+
+        private void process(Map<Id, Quantity> qs, InventoryGRN grn, String invoiceNumber, Date invoiceDate) {
             close();
             AtomicReference<InventoryGRN> grnCreated = new AtomicReference<>();
-            if(transact(t -> grnCreated.set(po.createGRN(t, qs, grn)))) {
+            if(transact(t -> grnCreated.set(po.createGRN(t, qs, grn, invoiceNumber, invoiceDate)))) {
                 POBrowser.this.close();
                 InventoryGRN g = grnCreated.get();
                 g.reload();
                 processGRN(g);
             } else {
                 po.reload();
+            }
+        }
+
+        private class SupplierInvoice extends DataForm {
+
+            private final TextField refField = new TextField("Invoice Number");
+            private final DateField dateField = new DateField("Invoice Date");
+            private InventoryGRN grn;
+            private Map<Id, Quantity> quantityMap;
+
+            public SupplierInvoice() {
+                super("Supplier Invoice Details");
+                refField.uppercase();
+                refField.addValueChangeListener(e -> {
+                    if(e.isFromClient()) {
+                        refField.setValue(StoredObject.toCode(refField.getValue()));
+                    }
+                });
+                addField(refField, dateField);
+                refField.setHelperText("Leave it blank if not available");
+            }
+
+            void processGRN(Map<Id, Quantity> quantityMap, InventoryGRN grn) {
+                this.quantityMap = quantityMap;
+                this.grn = grn;
+                if(grn != null) {
+                    refField.setValue(grn.getReferenceNumber());
+                    dateField.setValue(grn.getInvoiceDate());
+                }
+                execute();
+            }
+
+            @Override
+            protected boolean process() {
+                close();
+                String ref = StoredObject.toCode(refField.getText());
+                if(ref.isBlank()) {
+                    ref = null;
+                }
+                ReceiveItems.this.process(quantityMap, grn, ref, ref == null ? null : dateField.getValue());
+                return true;
             }
         }
 

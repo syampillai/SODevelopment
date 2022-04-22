@@ -1168,6 +1168,12 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
     }
 
     /**
+     * This method is invoked when anchor fields are created for the first time.
+     */
+    public void anchorFieldsCreated() {
+    }
+
+    /**
      * Reset the anchor values so that it will be asked again for the next add/search actions.
      */
     public void resetAnchor() {
@@ -1341,6 +1347,7 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
      * This is equivalent to pressing the "Report" button.
      */
     public void doReport() {
+        //noinspection resource
         new ObjectList<>(getApplication(), getObjectClass()).execute();
     }
 
@@ -2259,6 +2266,11 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
         return "vaadin:eye";
     }
 
+    @Override
+    public String getAlertCaption() {
+        return "View";
+    }
+
     private static class LinkFieldChanges<L extends StoredObject> extends ChangedValues {
 
         private final ObjectLinkField<L> field;
@@ -2372,6 +2384,10 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
                     setRequired(field);
                 }
             });
+            anchorFieldsCreated();
+            if(grid instanceof ObjectBrowser) {
+                ((ObjectBrowser<T>) grid).anchorFieldsCreated();
+            }
         }
 
         private int getFieldCount() {

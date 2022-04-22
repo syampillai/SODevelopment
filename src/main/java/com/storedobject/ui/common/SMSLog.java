@@ -10,6 +10,7 @@ import com.storedobject.ui.Transactional;
 import com.storedobject.vaadin.BooleanField;
 import com.storedobject.vaadin.DataForm;
 
+@SuppressWarnings("resource")
 public class SMSLog extends DataForm implements Transactional {
 
     private BooleanField delivered;

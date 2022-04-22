@@ -1182,7 +1182,6 @@ public abstract class PDF implements java.io.Closeable, com.storedobject.core.Co
         return false;
     }
 
-
     /**
      * Draw the table within the given rectangular area. Table will be shrunk by deleting the rows drawn and the rest of
      * the rows may be drawn again at some other position, may be in another page.
@@ -1288,7 +1287,6 @@ public abstract class PDF implements java.io.Closeable, com.storedobject.core.Co
         return null;
     }
 
-
     /**
      * Create image from an input stream (stream will be closed)
      * @param stream Input stream
@@ -1306,27 +1304,6 @@ public abstract class PDF implements java.io.Closeable, com.storedobject.core.Co
     public static PDFImage createImage(java.awt.Image image) {
         return null;
     }
-
-    /**
-     * Create a QRCode from the value
-     * @param value QR Code value
-     * @return 100x100 image
-     */
-    public static PDFImage createQRCode(String value) {
-        return null;
-    }
-
-    /**
-     * Create a QRCode from the value
-     * @param value QR Code value
-     * @param width Width of the image
-     * @param height Height of the image
-     * @return Image
-     */
-    public static PDFImage createQRCode(String value, int width, int height) {
-        return null;
-    }
-
 
     /**
      * Add HTML content to the rest of the page

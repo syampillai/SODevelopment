@@ -11,10 +11,8 @@ import com.storedobject.vaadin.TokensField;
 import com.vaadin.flow.component.grid.contextmenu.GridContextMenu;
 import com.vaadin.flow.component.grid.contextmenu.GridMenuItem;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
 
 public class FileManager extends ObjectForestBrowser<FileFolder> implements Transactional {
@@ -40,9 +38,18 @@ public class FileManager extends ObjectForestBrowser<FileFolder> implements Tran
 
     public FileManager(String path, String caption) {
         super(FileFolder.class, StringList.EMPTY);
+        if(FileFolder.getRoot() == null) {
+            transact(t -> {
+                FileFolder ff = new FileFolder();
+                ff.setName("/");
+                ff.save(t);
+            });
+        }
         getDataProvider().getForest().setListLinks(FileViewer::list);
         if(path == null) {
             path = caption;
+        } else if(!path.startsWith("/")) {
+            path = "/" + path;
         }
         FileFolder root;
         if(path == null || path.isEmpty() || (root = FileFolder.get(path)) == null) {
@@ -186,19 +193,28 @@ public class FileManager extends ObjectForestBrowser<FileFolder> implements Tran
     }
 
     private void circulate(FileFolder folder, boolean recursive) {
-        new ActionForm("All files under the folder '"  + folder.getName() + "'" +
-                (recursive ? " and its sub-folders" : "") + " will be circulated now!\nAre you sure?",
-                () -> transact(t -> folder.circulate(t, recursive))).execute();
+        ELabel m = new ELabel();
+        m.append("All files under the folder '", "blue").append(folder.getName(), "red")
+                .append("'" + (recursive ? " and its sub-folders" : "")
+                        + " will be circulated now!", "blue")
+                .newLine().append("Are you sure?", "red").update();
+        new ActionForm(m, () -> transact(t -> folder.circulate(t, recursive))).execute();
     }
 
     private void circulate(FileData file) {
-        new ActionForm("The file '" + file.getName() + "' will be circulated now!\nAre you sure?",
-                () -> transact(file::circulate)).execute();
+        ELabel m = new ELabel();
+        m.append("The file '", "blue").append(file.getName(), "red")
+                .append("' will be circulated now!", "blue").newLine()
+                .append("Are you sure?", "red").update();
+        new ActionForm(m, () -> transact(file::circulate)).execute();
     }
 
     private void createNewVersion(FileData file) {
-        new ActionForm("A new version will replace the current version of the file '" + file.getName() +
-                "'.\nAre you sure?", () -> createNewVersion2(file)).execute();
+        ELabel m = new ELabel();
+        m.append("A new version will replace the current version of the file '", "blue")
+                .append(file.getName(), "red").append("'", "blue").newLine()
+                .append("Are you sure?", "red").update();
+        new ActionForm(m, () -> createNewVersion2(file)).execute();
     }
 
     private <F extends FileData> void createNewVersion2(F file) {
@@ -211,7 +227,7 @@ public class FileManager extends ObjectForestBrowser<FileFolder> implements Tran
         oe.addObjectChangedListener(new ObjectChangedListener<>() {
             @Override
             public void saved(F object) {
-                refresh(currentLinkNode);
+                refreshCurrentNode(object);
             }
         });
         try {
@@ -231,14 +247,18 @@ public class FileManager extends ObjectForestBrowser<FileFolder> implements Tran
     }
 
     private void restorePrevVersion(FileData file) {
-        new ActionForm("The previous version of the file '" + file.getName() +
-                "' will be restored and current version will be lost!\nAre you sure?",
-                () -> restorePrevVersion2(file)).execute();
+        ELabel m = new ELabel();
+        m.append("The previous version of the file '", "blue")
+                .append(file.getName(), "red")
+                .append("' will be restored and current version will be lost!", "blue")
+                .newLine().append("Are you sure?", "red").update();
+        new ActionForm(m, () -> restorePrevVersion2(file)).execute();
     }
 
     private void restorePrevVersion2(FileData file) {
-        transact(file::restore);
-        refresh(currentLinkNode);
+        AtomicReference<FileData> p = new AtomicReference<>(null);
+        transact(t -> p.set(file.restore(t)));
+        refreshCurrentNode(p.get());
     }
 
     private void allowedFileTypes(FileFolder folder) {

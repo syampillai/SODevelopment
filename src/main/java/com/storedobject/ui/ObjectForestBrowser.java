@@ -413,6 +413,7 @@ public class ObjectForestBrowser<T extends StoredObject> extends ObjectForest<T>
     }
 
     private boolean checkDelete() {
+        selected();
         Object o = getSelected();
         if(o == null) {
             warning(ObjectBrowser.NOTHING_SELECTED);

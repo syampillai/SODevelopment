@@ -33,6 +33,13 @@ public final class InventoryGRN extends StoredObject implements HasChildren {
         return "";
     }
 
+    public void setInvoiceDate(Date invoiceDate) {
+    }
+
+    public Date getInvoiceDate() {
+        return new Date(0);
+    }
+
     public void setStore(Id storeId) {
     }
 
@@ -106,6 +113,10 @@ public final class InventoryGRN extends StoredObject implements HasChildren {
     }
 
     public void process(Transaction transaction) throws Exception {
+    }
+
+    public String getReference() {
+        return "GRN";
     }
 
     public void close(Transaction transaction) throws Exception {

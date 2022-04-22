@@ -771,4 +771,32 @@ public class ObjectField<T extends StoredObject> extends CustomField<Id>
     public final void setObjectClass(Class<? extends T>... classes) {
         getField().setObjectClass(classes);
     }
+
+    /**
+     * Create a read-only instance of the {@link ObjectField} that has a pre-selected value.
+     *
+     * @param label Field label.
+     * @param object Pre-selected value. (Must be non-null).
+     * @return A read-only field with value already set.
+     * @param <O> Type of the object accepted.
+     */
+    public static <O extends StoredObject> ObjectField<O> createSingle(String label, O object) {
+        List<O> list = new ArrayList<>();
+        list.add(object);
+        return new SingleField<>(label, list);
+    }
+
+    private static class SingleField<O extends StoredObject> extends ObjectField<O> {
+
+        private SingleField(String label, List<O> list) {
+            super(label, list);
+            setValue(list.get(0));
+            super.setReadOnly(true);
+        }
+
+        @Override
+        public void setReadOnly(boolean readOnly) {
+            super.setReadOnly(true);
+        }
+    }
 }

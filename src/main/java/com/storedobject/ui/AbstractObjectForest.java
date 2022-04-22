@@ -23,6 +23,7 @@ public abstract class AbstractObjectForest<T extends StoredObject> extends DataT
                 : StringList.create(columns)));
         this.objectClass = objectClass;
         ObjectForest<T> forest = new ObjectForest<>(large, 0, objectClass, any);
+        forest.setLinkVisibility(link -> !hideLink(link.getMasterClass(), link.getName()));
         if(forViewing) {
             forest.hideLinkLabels();
         }
@@ -217,6 +218,7 @@ public abstract class AbstractObjectForest<T extends StoredObject> extends DataT
      * @param <M> Type of the master class.
      * @return True/false. (Default is false).
      */
+    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     public <M extends StoredObject> boolean hideLink(Class<M> masterClass, String linkName) {
         return false;
     }

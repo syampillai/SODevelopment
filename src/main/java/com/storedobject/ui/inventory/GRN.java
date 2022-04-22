@@ -182,7 +182,7 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
 
     public void processGRN(InventoryGRN grn) {
         select(grn);
-        edit.click();
+        doEdit(grn, true);
     }
 
     @Override
@@ -242,6 +242,10 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
 
     @Override
     public void doEdit(InventoryGRN object) {
+        doEdit(object, false);
+    }
+
+    private void doEdit(InventoryGRN object, boolean close) {
         if(object == null) {
             return;
         }
@@ -249,7 +253,12 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
         if(!editor.canEdit()) {
             return;
         }
-        editor.execute(getView());
+        if(close) {
+            close();
+            editor.execute();
+        } else {
+            editor.execute(getView());
+        }
     }
 
     @Override
@@ -328,6 +337,17 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
         if(grnProducer != null) {
             grnProducer.statusOfGRNChanged(grn);
         }
+    }
+
+    /**
+     * This method is invoked when the button is pressed to mark the GRN as inspected/received. This method may show
+     * appropriate messages and may return <code>false</code> if some other associated data is incomplete.
+     *
+     * @param grn Current GRN.
+     * @return True/false.
+     */
+    protected boolean canFinalize(InventoryGRN grn) {
+        return true;
     }
 
     private class GRNEditor extends ObjectEditor<InventoryGRN> {
@@ -465,10 +485,12 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
                 message("Already closed, no further action possible");
                 return;
             }
-            if(grn.getStatus() == 1) {
-                preCloseGRN(grn);
-            } else {
-                preProcessGRN(grn);
+            if(canFinalize(grn)) {
+                if(grn.getStatus() == 1) {
+                    preCloseGRN(grn);
+                } else {
+                    preProcessGRN(grn);
+                }
             }
         }
 
@@ -691,6 +713,7 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
                 return bin == null ? "[Not set]" : bin.toDisplay();
             }
 
+            @SuppressWarnings("unused")
             public boolean getInspected(InventoryGRNItem grnItem) {
                 return !Id.isNull(grnItem.getItemId());
             }

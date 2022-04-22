@@ -89,10 +89,7 @@ public class ObjectForest<T extends StoredObject> extends BaseObjectForest<T> {
                 load();
                 select(object);
             } else if(currentLinkNode != null) {
-                refresh(currentLinkNode, true);
-                expand(currentLinkNode);
-                currentLinkNode.links(true).stream().filter(lo -> object.getId().equals(lo.getObject().getId()))
-                        .findAny().ifPresent(ObjectForest.this::select);
+                refreshCurrentNode(object);
             }
             fireInserted(object);
         }
@@ -111,8 +108,7 @@ public class ObjectForest<T extends StoredObject> extends BaseObjectForest<T> {
             if(currentLinkNode == null && currentLinkObject == null) { // Deleted from root
                 load();
             } else if(currentLinkObject != null) {
-                refresh(currentLinkNode, true);
-                expand(currentLinkNode);
+                refreshCurrentNode(null);
             }
             fireDeleted(object);
         }
@@ -122,6 +118,24 @@ public class ObjectForest<T extends StoredObject> extends BaseObjectForest<T> {
             if(list != null) {
                 //noinspection unchecked
                 list.forEach(ocl -> ((ObjectChangedListener<O>) ocl).deleted(object));
+            }
+        }
+    }
+
+    /**
+     * Refresh all items under the current node and select the object that is passed.
+     * <p>Note: If no object was selected earlier nothing happens.</p>
+     *
+     * @param select Object to be selected after refreshing. If this object is null or, it is not under the
+     *               current node, it will be ignored.
+     */
+    public void refreshCurrentNode(StoredObject select) {
+        if(currentLinkNode != null) {
+            refresh(currentLinkNode, true);
+            expand(currentLinkNode);
+            if(select != null) {
+                currentLinkNode.links(true).stream().filter(lo -> select.getId().equals(lo.getObject().getId()))
+                        .findAny().ifPresent(this::select);
             }
         }
     }

@@ -23,14 +23,15 @@ public class SchedulerLogViewer extends DataForm {
     @Override
     protected void buildFields() {
         jobField = new ObjectField<>("Scheduler", Schedule.class);
+        setRequired(jobField);
         addField(jobField);
         periodField = new DatePeriodField("Period", new DatePeriod(DateUtility.yesterday(), DateUtility.today()));
         addField(periodField);
     }
 
-    @SuppressWarnings("resource")
     @Override
     protected boolean process() {
+        close();
         Schedule s = jobField.getObject();
         DatePeriod p = periodField.getValue();
         StringList cols = StringList.create("Status", "Message", "Date", "StartedAt", "CompletedAt");
