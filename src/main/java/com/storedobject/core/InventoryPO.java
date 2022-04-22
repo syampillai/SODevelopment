@@ -128,18 +128,4 @@ public class InventoryPO extends StoredObject implements HasChildren {
     public final ObjectIterator<InventoryPOItem> listItems() {
         return listLinks(getTransaction(), InventoryPOItem.class, true);
     }
-
-    /**
-     * Process this PO as "data pickup". All associated processing will be carried out and the items will be
-     * received in the store, and it will look like procured through this PO. A single GRN will be created for it.
-     * <p>Note: Before calling this method please ake sure that all details are correctly set because no manual
-     * editing is possible after processing this.</p>
-     *
-     * @param tm Transaction manager.
-     * @param invoiceNumber Invoice number of the supplier.
-     * @param invoiceDate Invoice date of the supplier.
-     * @throws Exception if any error occurs.
-     */
-    public void processPickup(TransactionManager tm, String invoiceNumber, Date invoiceDate) throws Exception {
-    }
 }

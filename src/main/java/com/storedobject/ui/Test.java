@@ -1,21 +1,19 @@
 package com.storedobject.ui;
 
-import com.storedobject.common.Executable;
-import com.storedobject.common.JSON;
-import com.storedobject.core.FileFolder;
-import com.storedobject.core.Person;
-import com.storedobject.core.StoredObject;
-import com.storedobject.core.SystemUser;
+import com.storedobject.core.InventoryLocation;
+import com.storedobject.ui.inventory.LocationField;
+import com.storedobject.ui.inventory.ReturnMaterial;
+import com.storedobject.vaadin.DataForm;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+public class Test extends DataForm implements Transactional {
 
-public class Test implements Executable {
+    public Test() {
+        super("Test");
+    }
 
+    /*
     @Override
     public void execute() {
-        /*
         List<SystemUser> list = StoredObject.list(SystemUser.class).skip(3).limit(1).toList();
         Map<String, Object> map = new HashMap<>();
         try {
@@ -30,7 +28,16 @@ public class Test implements Executable {
         } catch(Throwable e) {
             throw new RuntimeException(e);
         }
-         */
-        new ObjectViewer(Application.get()).view(FileFolder.getRoot());
+    }
+
+     */
+
+    @Override
+    protected boolean process() {
+        close();
+        InventoryLocation ms = LocationField.getLocation("Main Store", 0);
+        InventoryLocation other = LocationField.getLocation("Bonded Store", 0);
+        new ReturnMaterial(ms, other).execute();
+        return true;
     }
 }

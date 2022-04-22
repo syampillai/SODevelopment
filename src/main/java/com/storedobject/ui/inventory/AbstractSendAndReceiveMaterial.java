@@ -46,7 +46,8 @@ public abstract class AbstractSendAndReceiveMaterial<T extends InventoryTransfer
 
     private AbstractSendAndReceiveMaterial(Class<T> transferClass, Class<L> itemClass, String fromOrTo,
                                            boolean receiveMode, InventoryLocation otherLocation) {
-        this(transferClass, itemClass, fromOrToField(fromOrTo, receiveMode, transferClass), receiveMode, otherLocation);
+        this(transferClass, itemClass, fromOrToField(fromOrTo, receiveMode, transferClass),
+                receiveMode, otherLocation);
         this.itemClass = ParameterParser.itemClass(fromOrTo);
     }
 
@@ -335,6 +336,12 @@ public abstract class AbstractSendAndReceiveMaterial<T extends InventoryTransfer
                     setFieldReadOnly(toField);
                 }
             }
+            if(requiresInvoiceDate()) {
+                setFieldLabel("ReferenceNumber", "Supplier Invoice Number");
+                setFieldLabel("InvoiceDate", "Supplier Invoice Date");
+            } else {
+                setFieldHidden("InvoiceDate");
+            }
             setFieldHidden("Status");
         }
 
@@ -527,5 +534,9 @@ public abstract class AbstractSendAndReceiveMaterial<T extends InventoryTransfer
 
     protected Class<? extends InventoryItem> itemClass() {
         return itemClass;
+    }
+
+    protected boolean requiresInvoiceDate() {
+        return false;
     }
 }

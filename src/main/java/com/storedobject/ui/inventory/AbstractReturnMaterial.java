@@ -8,16 +8,16 @@ import com.vaadin.flow.component.checkbox.Checkbox;
 public abstract class AbstractReturnMaterial extends
         AbstractSendAndReceiveMaterial<MaterialReturned, MaterialReturnedItem> {
 
-    public AbstractReturnMaterial(String from) {
-        super(MaterialReturned.class, MaterialReturnedItem.class, from, false);
+    public AbstractReturnMaterial(String fromLocation) {
+        super(MaterialReturned.class, MaterialReturnedItem.class, fromLocation, false);
     }
 
-    public AbstractReturnMaterial(InventoryLocation from) {
-        this(from, null);
+    public AbstractReturnMaterial(InventoryLocation fromLocation) {
+        this(fromLocation, null);
     }
 
-    public AbstractReturnMaterial(InventoryLocation from, InventoryLocation otherLocation) {
-        super(MaterialReturned.class, MaterialReturnedItem.class, from, false, otherLocation);
+    public AbstractReturnMaterial(InventoryLocation fromLocation, InventoryLocation otherLocation) {
+        super(MaterialReturned.class, MaterialReturnedItem.class, fromLocation, false, otherLocation);
     }
 
     @Override
