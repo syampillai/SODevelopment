@@ -121,4 +121,7 @@ public final class InventoryGRN extends StoredObject implements HasChildren {
 
     public void close(Transaction transaction) throws Exception {
     }
+
+    public void updateInvoiceDetails(TransactionManager tm, String invoiceNumber, Date invoiceDate) throws  Exception {
+    }
 }

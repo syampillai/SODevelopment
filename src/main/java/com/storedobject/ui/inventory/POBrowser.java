@@ -424,6 +424,10 @@ public class POBrowser<T extends InventoryPO> extends ObjectBrowser<T> implement
             message("No open GRN available for processing");
             return;
         }
+        if(grns.size() == 1) {
+            processGRN(grns.get(0));
+            return;
+        }
         new GRNs(grns, this::processGRN).execute();
     }
 
@@ -593,24 +597,10 @@ public class POBrowser<T extends InventoryPO> extends ObjectBrowser<T> implement
             }
         }
 
-        private class SupplierInvoice extends DataForm {
+        private class SupplierInvoice extends SupplierInvoiceDetail {
 
-            private final TextField refField = new TextField("Invoice Number");
-            private final DateField dateField = new DateField("Invoice Date");
             private InventoryGRN grn;
             private Map<Id, Quantity> quantityMap;
-
-            public SupplierInvoice() {
-                super("Supplier Invoice Details");
-                refField.uppercase();
-                refField.addValueChangeListener(e -> {
-                    if(e.isFromClient()) {
-                        refField.setValue(StoredObject.toCode(refField.getValue()));
-                    }
-                });
-                addField(refField, dateField);
-                refField.setHelperText("Leave it blank if not available");
-            }
 
             void processGRN(Map<Id, Quantity> quantityMap, InventoryGRN grn) {
                 this.quantityMap = quantityMap;

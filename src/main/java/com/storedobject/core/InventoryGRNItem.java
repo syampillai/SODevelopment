@@ -10,10 +10,6 @@ public final class InventoryGRNItem extends StoredObject implements Detail {
     private String serialNumber;
     private Quantity quantity = Quantity.create(Quantity.class);
     private Money unitCost = new Money();
-    private Id binId = Id.ZERO;
-    private InventoryBin bin;
-    private Id itemId = Id.ZERO;
-    private InventoryItem item;
     private boolean inspected = false;
 
     public InventoryGRNItem() {
@@ -91,11 +87,11 @@ public final class InventoryGRNItem extends StoredObject implements Detail {
     }
 
     public Id getBinId() {
-        return binId;
+        return new Id();
     }
 
     public InventoryBin getBin() {
-        return bin;
+        return Math.random() > 0.5 ? new InventoryBin() : null;
     }
 
     public void setItem(Id itemId) {
@@ -110,11 +106,11 @@ public final class InventoryGRNItem extends StoredObject implements Detail {
     }
 
     public Id getItemId() {
-        return itemId;
+        return new Id();
     }
 
     public InventoryItem getItem() {
-        return item;
+        return Math.random() > 0.5 ? new InventoryItem() : null;
     }
 
     public void setInspected(boolean inspected) {
@@ -131,5 +127,20 @@ public final class InventoryGRNItem extends StoredObject implements Detail {
     @Override
     public boolean isDetailOf(Class<? extends StoredObject> masterClass) {
         return InventoryGRN.class == masterClass;
+    }
+
+    /**
+     * Update various attribute values.
+     *
+     * @param tm Transaction manager.
+     * @param newQuantity New quantity (Could be null if change not required).
+     * @param newUnitCost New unit cost (Could be null if change not required).
+     * @param newSerialNumber New serial number (Could be null if change not required).
+     * @throws Exception If error occurs while updating the value.
+     * @return True if the values are updated.
+     */
+    public boolean updateValues(TransactionManager tm, Quantity newQuantity, Money newUnitCost, String newSerialNumber)
+            throws Exception {
+        return Math.random() > 0.5;
     }
 }

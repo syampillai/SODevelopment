@@ -87,6 +87,7 @@ public class Application extends com.storedobject.vaadin.Application implements 
     private boolean singleLogicMode = false, abortOnLogicSwitch = false;
     private final Hashtable<Long, AbstractContentGenerator> dynamicContent = new Hashtable<>();
     private final Hashtable<Long, WeakReference<AbstractContentGenerator>> multiContent = new Hashtable<>();
+    private final Set<Logic> closeMe = new HashSet<>();
     private ObjectViewer objectViewer;
     boolean biometricAvailable = false, biometricRegistered = false;
     Id biometricDeviceId = null;
@@ -316,15 +317,25 @@ public class Application extends com.storedobject.vaadin.Application implements 
     public void execute(Logic logic) {
         if(singleLogicMode || abortOnLogicSwitch) {
             if(abortOnLogicSwitch) {
-                execute(() -> server.execute(logic), true);
+                execute(() -> executeMe(logic), true);
             } else {
-                if(getActiveViews().allMatch(v -> v instanceof InformationView || v.getComponent() instanceof PDFViewer)) {
-                    server.execute(logic);
+                if(getActiveViews()
+                        .allMatch(v -> v instanceof InformationView || v.getComponent() instanceof PDFViewer)) {
+                    executeMe(logic);
                 }
                 closeMenu();
             }
         } else {
-            server.execute(logic);
+            executeMe(logic);
+        }
+    }
+
+    private void executeMe(Logic logic) {
+        server.execute(logic);
+        if(logic.getExecutable() != null) {
+            synchronized(closeMe) {
+                closeMe.add(logic);
+            }
         }
     }
 
@@ -542,7 +553,7 @@ public class Application extends com.storedobject.vaadin.Application implements 
     }
 
     public final String getDisplayVersion() {
-        return ApplicationServer.getGlobalProperty("application.version", "22.0.7", true);
+        return ApplicationServer.getGlobalProperty("application.version", "22.0.13", true);
     }
 
     @Override
@@ -857,6 +868,16 @@ public class Application extends com.storedobject.vaadin.Application implements 
     protected void viewDetached(View view) {
         if(mainLayout != null) {
             mainLayout.viewDetached(view);
+        }
+        Object viewOwner = view.getCreatedBy();
+        if(viewOwner instanceof Executable ex) {
+            synchronized(closeMe) {
+                Logic logic = closeMe.stream().filter(l -> l.getExecutable() == ex).findAny().orElse(null);
+                if(logic != null) {
+                    closeMe.remove(logic);
+                    logic.setExecutable(null);
+                }
+            }
         }
     }
 
@@ -1597,7 +1618,8 @@ public class Application extends com.storedobject.vaadin.Application implements 
                 if(groupMenu == null) {
                     createGroupMenu();
                 }
-                ApplicationMenuItem mi = a.createMenuItem(logic.getTitle(), logic.getIconImageName(), () -> a.execute(logic));
+                ApplicationMenuItem mi = a.createMenuItem(logic.getTitle(), logic.getIconImageName(),
+                        () -> a.execute(logic));
                 menu.add(mi);
                 groupMenu.add(mi);
             }
