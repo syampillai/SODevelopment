@@ -80,7 +80,7 @@ public abstract class AbstractAssembly<T extends InventoryItem, C extends Invent
         }
         InventoryItem item = fitmentPosition.getFittedItem();
         InventoryAssembly a = fitmentPosition.getAssembly();
-        InventoryItemType itemType = item == null ? fitmentPosition.getAssembly().getItemType() : item.getPartNumber();
+        InventoryItemType itemType = item == null ? a.getItemType() : item.getPartNumber();
         if(item == null || item.getQuantity().isZero()) {
             s.append(itemType.getName() + (itemType.isSerialized() ? ""
                     : (" (Required: " + a.getQuantity() + ")")), "var(--lumo-error-color)");
@@ -211,7 +211,8 @@ public abstract class AbstractAssembly<T extends InventoryItem, C extends Invent
             if(fitmentPosition == root) {
                 subassemblies = rootItem.getPartNumber().listImmediateAssemblies().toList();
             } else if(fitmentPosition.getAssembly().getItemType().isSerialized()) {
-                subassemblies = fitmentPosition.getAssembly().listImmediateAssemblies().toList();
+                //noinspection resource
+                subassemblies = fitmentPosition.listImmediateAssemblies().toList();
             } else {
                 subassemblies = new ArrayList<>();
             }

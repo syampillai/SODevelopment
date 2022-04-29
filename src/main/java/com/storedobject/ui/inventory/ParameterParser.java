@@ -136,7 +136,7 @@ class ParameterParser {
         String[] ps = parameters.split("\\|");
         for(String p: ps) {
             p = p.trim();
-            if(isClass(p) || StringUtility.isDigit(p)) {
+            if(isClass(p) || StringUtility.isDigit(p) || p.isBlank()) {
                 continue;
             }
             InventoryStore store = LocationField.getStore(p);
@@ -210,6 +210,15 @@ class ParameterParser {
     }
 
     static boolean isClass(String parameter) {
-        return "*".equals(parameter) || (StringUtility.getCharCount(parameter, '.') > 1 && !parameter.contains(" "));
+        return parameter != null && ("*".equals(parameter) ||
+                (StringUtility.getCharCount(parameter, '.') > 1 && !parameter.contains(" ")));
+    }
+
+    static String parameter(String parameters, int index) {
+        if(parameters == null) {
+            return null;
+        }
+        String[] ps = parameters.split("\\|");
+        return index >= 0 && index < ps.length ? ps[index] : null;
     }
 }

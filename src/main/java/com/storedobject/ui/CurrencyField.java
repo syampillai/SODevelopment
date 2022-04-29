@@ -39,7 +39,7 @@ public class CurrencyField extends TextField {
                String c = e.getValue();
                Currency curr = curr(c);
                if(curr == null) {
-                   setHelperText(c + " is not a currency");
+                   setHelperText(c.trim().toUpperCase() + " is not a currency");
                    focus();
                } else if(!isAllowed(curr)) {
                    StringBuilder m = new StringBuilder(c);
@@ -94,6 +94,7 @@ public class CurrencyField extends TextField {
      * @param currency Currency to check.
      * @return True or false.
      */
+    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     public boolean isAllowed(Currency currency) {
         return currency != null && (allowedCurrencies == null || allowedCurrencies.contains(currency));
     }

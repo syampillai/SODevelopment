@@ -90,7 +90,8 @@ public final class InventoryTransaction {
     public void purchase(InventoryItem item, String reference, InventoryLocation to, Entity fromEntity) {
     }
 
-    public void purchase(InventoryItem item, Quantity quantity, String reference, InventoryLocation to, Entity fromEntity) {
+    public void purchase(InventoryItem item, Quantity quantity, String reference, InventoryLocation to,
+                         Entity fromEntity) {
     }
 
     public void purchaseReturn(InventoryItem item, Quantity quantity, String reference, Entity toEntity) {

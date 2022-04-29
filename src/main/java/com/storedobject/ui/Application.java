@@ -349,6 +349,14 @@ public class Application extends com.storedobject.vaadin.Application implements 
     }
 
     @Override
+    public void detached() {
+        if(ApplicationServer.getGlobalBooleanProperty("application.log.close", false)) {
+            log(SORuntimeException.getTrace(new Exception("Application Detached")));
+        }
+        super.detached();
+    }
+
+    @Override
     public void close() {
         if(server == null) {
             return;
@@ -553,7 +561,7 @@ public class Application extends com.storedobject.vaadin.Application implements 
     }
 
     public final String getDisplayVersion() {
-        return ApplicationServer.getGlobalProperty("application.version", "22.0.13", true);
+        return ApplicationServer.getGlobalProperty("application.version", "22.0.14", true);
     }
 
     @Override

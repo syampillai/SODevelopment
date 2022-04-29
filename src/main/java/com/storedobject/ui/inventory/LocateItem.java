@@ -193,6 +193,8 @@ public class LocateItem extends DataGrid<InventoryItem> implements CloseableView
         filter.addValueChangeListener(e -> loadItems());
         GridContextMenu<InventoryItem> cm = new GridContextMenu<>(this);
         cm.addItem("View Details", e -> e.getItem().ifPresent(this::view));
+        GridMenuItem<InventoryItem> viewAssembly =
+                cm.addItem("View Assembly", e -> e.getItem().ifPresent(ii -> new ViewAssembly<>(ii).execute()));
         GridMenuItem<InventoryItem> inspect =
                 cm.addItem("Inspect & Bin", e -> e.getItem().ifPresent(this::inspect));
         GridMenuItem<InventoryItem> breakAssembly =
@@ -205,6 +207,7 @@ public class LocateItem extends DataGrid<InventoryItem> implements CloseableView
                 return false;
             }
             select(ii);
+            viewAssembly.setVisible(ii.getPartNumber().isAssembly());
             inspect.setVisible(canInspect || allowBreaking);
             breakAssembly.setVisible((canInspect || allowBreaking) &&
                     ii.getLocation() instanceof InventoryFitmentPosition);

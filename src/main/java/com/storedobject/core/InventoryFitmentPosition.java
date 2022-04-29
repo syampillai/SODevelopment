@@ -90,4 +90,15 @@ public final class InventoryFitmentPosition extends InventoryLocation {
     public int getLevel() {
         return new Random().nextInt();
     }
+
+    /**
+     * List of assemblies defined under this fitment position. The assemblies under the assembly involved in
+     * this fitment position are listed. However, if this position is fitted with an APN, the immediate
+     * assemblies under that APN's assembly are listed.
+     *
+     * @return List of assemblies.
+     */
+    public ObjectIterator<InventoryAssembly> listImmediateAssemblies() {
+        return ObjectIterator.create();
+    }
 }

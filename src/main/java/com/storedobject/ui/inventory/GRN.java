@@ -25,8 +25,11 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
     private final GRNEditor editor;
     private final ELabel storeDisplay = new ELabel("Store: Not selected");
     private final Button switchStore = new Button("Switch Store", VaadinIcon.STORAGE, e -> switchStore());
+    private boolean allowSwitchStore = true;
     private final int type;
     private ProducesGRN grnProducer;
+    private boolean fromPOs = false;
+    private Class<?> poClass;
 
     /**
      * Constructor.
@@ -83,11 +86,19 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
     /**
      * Constructor.
      *
-     * @param classNames Class names to be used. "Class Name of P/N|Store Name".
+     * @param classNames Class names to be used.
+     *                   "Class Name of P/N|Store Name|PO browser logic or PO class name".
      */
     public GRN(String classNames) {
         this(0, ParameterParser.itemTypeClass(classNames), EditorAction.ALL, null,
                 ParameterParser.store(classNames));
+        String p = ParameterParser.parameter(classNames, 2);
+        if(ParameterParser.isClass(p)) {
+            try {
+                poClass = JavaClassLoader.getLogic(p);
+            } catch(ClassNotFoundException ignored) {
+            }
+        }
     }
 
     /**
@@ -147,10 +158,11 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
         this.type = type;
         editor = new GRNEditor(type, pnClass, actions, caption);
         if(store != null) {
-            addConstructedListener(f -> setStore(store));
+            addConstructedListener(f -> setStore(store, true));
         } else {
             setFixedFilter("Status<2 AND Type=" + type, false);
         }
+        addConstructedListener(f -> con());
         setCaption("GRN (" + InventoryGRN.getTypeValues()[type] + ")");
         GridContextMenu<InventoryGRN> cm = new GridContextMenu<>(this);
         cm.addItem("Receive/Process", e -> e.getItem().ifPresent(i -> edit.click()));
@@ -169,14 +181,27 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
         return grnProducer;
     }
 
+    public void setFromPOs() {
+        this.fromPOs = true;
+    }
+
+    public void setAllowSwitchStore(boolean allowSwitchStore) {
+        this.allowSwitchStore = allowSwitchStore;
+        switchStore.setVisible(allowSwitchStore);
+    }
+
     public void setStore(InventoryStore store) {
+        setStore(store, false);
+    }
+
+    public void setStore(InventoryStore store, boolean allowSwitchStore) {
         ObjectField<?> storeField = (ObjectField<?>) editor.getAnchorField("Store");
         storeField.setReadOnly(store != null);
         if(store != null) {
             storeField.setObject(store);
             editor.executeAnchorForm();
         }
-        switchStore.setVisible(store == null);
+        switchStore.setVisible(store == null || allowSwitchStore);
         setFixedFilter("Status<2 AND Type=" + type);
     }
 
@@ -185,10 +210,24 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
         doEdit(grn, true);
     }
 
-    @Override
-    public void constructed() {
-        super.constructed();
-        edit.setText("Receive / Process");
+    private void con() {
+        if(edit != null) {
+            edit.setText("Receive / Process");
+        }
+        setPOClass(poClass);
+    }
+
+    public void setPOClass(Class<?> poClass) {
+        this.poClass = poClass;
+        if(type == 0) {
+            if(add != null) {
+                add.setVisible(poClass != null);
+                if(poClass != null) {
+                    add.setText("POs");
+                    add.setIcon(VaadinIcon.FILE_TABLE);
+                }
+            }
+        }
     }
 
     @Override
@@ -238,6 +277,50 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
     @Override
     public String getOrderBy() {
         return "Store,Date DESC,No DESC";
+    }
+
+    @Override
+    public void doAdd() {
+        if(type == 0) {
+            POBrowser<?> poBrowser = createPOBrowser();
+            if(poBrowser == null) {
+                return;
+            }
+            close();
+            if(!fromPOs) {
+                poBrowser.setCaption("Create GRNs");
+                poBrowser.setForGRNs();
+                poBrowser.filter = "Status<4 AND Status>0";
+                poBrowser.setFixedFilter(poBrowser.filter, false);
+            }
+            if(editor.store != null) {
+                poBrowser.setStore(editor.store, allowSwitchStore);
+            } else {
+                poBrowser.setAllowSwitchStore(allowSwitchStore);
+            }
+            poBrowser.execute();
+            poBrowser.load();
+            return;
+        }
+        super.doAdd();
+    }
+
+    public POBrowser<?> createPOBrowser() {
+        if(poClass == null) {
+            return null;
+        }
+        if(InventoryPO.class == poClass) {
+            return new POBrowser<>();
+        }
+        if(InventoryPO.class.isAssignableFrom(poClass)) {
+            return (POBrowser<?>) getApplication().getServer()
+                    .execute(new Logic("B:" + poClass.getName(), null), false);
+        }
+        try {
+            return (POBrowser<?>) poClass.getDeclaredConstructor().newInstance();
+        } catch(Throwable e) {
+            return null;
+        }
     }
 
     @Override
@@ -296,6 +379,9 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
     @Override
     protected void anchorsSet() {
         displayStore();
+        if(allowSwitchStore) {
+            editor.getAnchorField("Store").setReadOnly(false);
+        }
     }
 
     @Override
@@ -363,14 +449,14 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
                 e -> updateInvoiceDetails());
         private final Button process = new Button("Mark as Inspected", VaadinIcon.CHECK, e -> process());
         private final Button close = new Button("Mark as Received", VaadinIcon.THUMBS_UP_O, e -> process());
-        private final Button edit = new Button("Edit", e -> grnItemGrid.editGRNItemSel()).asSmall();
+        private final Button editItem = new Button("Edit", e -> grnItemGrid.editGRNItemSel()).asSmall();
         private final Button inspect = new Button("Inspect", VaadinIcon.STOCK, e -> grnItemGrid.inspectSel())
                 .asSmall();
         private final Button bin = new Button("Bin", VaadinIcon.STORAGE, e -> grnItemGrid.binSel()).asSmall();
         private final Button assemble = new Button("Assemble", VaadinIcon.COMPILE, e -> grnItemGrid.assembleSel())
                 .asSmall();
-        private final ELabel hint = new ELabel("You may also right-click on the entry to edit/inspect/bin/assemble.",
-                "blue");
+        private final ELabel hint =
+                new ELabel("You may also right-click on the entry to edit/inspect/bin/assemble.", "blue");
         private final Class<? extends InventoryItemType> pnClass;
 
         GRNEditor(int type, Class<? extends InventoryItemType> pnClass, int actions, String caption) {
@@ -398,7 +484,7 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
         protected void formConstructed() {
             super.formConstructed();
             add.setVisible(false);
-            setFieldReadOnly("ReferenceNumber", "Items.l");
+            setFieldReadOnly("Type", "ReferenceNumber", "Items.l");
             if(edit != null) {
                 edit.setVisible(getExtraInfoField() != null);
             }
@@ -615,7 +701,7 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
             }
             int status = grn.getStatus();
             grnItemGrid.setAllowAdd(status == 0);
-            edit.setVisible(status == 0);
+            editItem.setVisible(status == 0);
             inspect.setVisible(status == 0);
             bin.setVisible(status == 0);
             assemble.setVisible(status == 1);
@@ -623,7 +709,7 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
         }
 
         private void disableExtraButtons() {
-            edit.setVisible(false);
+            editItem.setVisible(false);
             inspect.setVisible(false);
             bin.setVisible(false);
             assemble.setVisible(false);
@@ -730,7 +816,7 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
                 super(grnItemsField, StringList.create("Item", "PartNumber", "SerialNumber", "Inspected", "Quantity",
                         "UnitCost", "Bin"));
                 setObjectEditor(new GRNItemEditor());
-                getButtonPanel().add(edit, inspect, bin, assemble, hint);
+                getButtonPanel().add(editItem, inspect, bin, assemble, hint);
                 GridContextMenu<InventoryGRNItem> contextMenu = new GridContextMenu<>(this);
                 GridMenuItem<InventoryGRNItem>  inspectRC = contextMenu.addItem("Inspect",
                         e -> e.getItem().ifPresent(x -> inspect()));
@@ -751,7 +837,7 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
                     assembleRC.setVisible(assemble.isVisible());
                     grnItem = r;
                     invokeBin = false;
-                    editGRNItem.setVisible(edit.isVisible() && grnItem.getItem() == null);
+                    editGRNItem.setVisible(editItem.isVisible() && grnItem.getItem() == null);
                     return inspectRC.isVisible() || binRC.isVisible() || assembleRC.isVisible()
                             || editGRNItem.isVisible();
                 });
