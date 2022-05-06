@@ -58,6 +58,7 @@ public class CalendarViewer extends View implements CloseableView, Transactional
         menuList.add(CONFIGURE);
         menuList.add(CREATE_NEW);
         menuList.add(DELETE);
+        //noinspection resource
         personId.listMasters(Calendar.class).forEach(menuList::add);
         menu.setItems(menuList);
     }
@@ -278,7 +279,7 @@ public class CalendarViewer extends View implements CloseableView, Transactional
             return;
         }
         loaded = calendar;
-        calendarView.removeAllEntries();
+        //calendarView.removeAllEntries();
         // Add entries
     }
 }

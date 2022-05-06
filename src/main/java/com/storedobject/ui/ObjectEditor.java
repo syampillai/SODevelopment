@@ -563,13 +563,23 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
     }
 
     /**
-     * Set the "set not allowed" flag for a field so that, it will not allow setting that value if the values already
-     * exists. (Typically, this is invoked by the platform itself).
+     * Set the "set not allowed" flag for a field so that, it will not allow changing the field-value if the value
+     * already exists. (Typically, this is invoked by the platform itself).
      *
      * @param fieldName Field name.
      */
     public void setSetNotAllowed(String fieldName) {
         setNotAllowed.add(fieldName);
+    }
+
+    /**
+     * Remove the "set not allowed" flag set via {@link #setSetNotAllowed(String)}. (This is used only under some
+     * special circumstances by the platform itself).
+     *
+     * @param fieldName Field name.
+     */
+    public void removeSetNotAllowed(String fieldName) {
+        setNotAllowed.remove(fieldName);
     }
 
     private static boolean isFF(HasValue<?, ?> field) {

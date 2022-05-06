@@ -11,6 +11,16 @@ import java.util.Collection;
 import java.util.List;
 import java.util.function.Predicate;
 
+/**
+ * Grid that can be used show a list of {@link StoredObject} instances. This implements {@link List} and can handle
+ * big-sized lists with an internal caching strategy. However, most methods of the {@link List} such as the "add"
+ * methods and "set" methods have poor performance. If you really want to use those methods to add rows to the grid
+ * rather than using the various "load" methods of {@link ObjectLoader}, it's better to use the in-memory version
+ * of this - {@link ObjectMemoryGrid}.
+ *
+ * @param <T> Type of object instance.
+ * @author Syam
+ */
 public class ObjectListGrid<T extends StoredObject> extends DataGrid<T> implements ObjectLoader<T> {
 
     List<ObjectChangedListener<T>> objectChangedListeners;

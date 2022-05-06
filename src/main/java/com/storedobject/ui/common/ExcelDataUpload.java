@@ -490,9 +490,26 @@ public class ExcelDataUpload extends UploadProcessorView implements Transactiona
         convertData(index, createConverter(type), allowNulls, mainRowsOnly);
     }
 
+    /**
+     * Pack string data (Strip off all whitespaces).
+     * @param index Index of the data to be converted.
+     */
     public void packData(int index) {
         try {
             convertData(index, new PackedStringConverter(), true, false);
+        } catch(SOException e) {
+            throw new SORuntimeException(e.getMessage());
+        }
+    }
+
+    /**
+     * Convert data to code by invoking {@link StoredObject#toCode(String)}.
+     *
+     * @param index Index of the data to be converted.
+     */
+    public void codeData(int index) {
+        try {
+            convertData(index, new CodeConverter(), true, false);
         } catch(SOException e) {
             throw new SORuntimeException(e.getMessage());
         }
@@ -850,12 +867,26 @@ public class ExcelDataUpload extends UploadProcessorView implements Transactiona
 
         @Override
         public String convert(Object v) {
-            return StringUtility.toString(v).trim();
+            return sanitize(StringUtility.toString(v));
         }
 
         @Override
         public String nullValue() {
             return "";
+        }
+
+        private static String sanitize(String s) {
+            char c;
+            for(int i = 0; i < s.length(); i++) {
+                c = s.charAt(i);
+                if(Character.isWhitespace(c) && c != ' ') {
+                    s = s.replace(c, ' ');
+                }
+            }
+            while(s.contains("  ")) {
+                s = s.replace("  ", " ");
+            }
+            return s.strip();
         }
     }
 
@@ -864,6 +895,14 @@ public class ExcelDataUpload extends UploadProcessorView implements Transactiona
         @Override
         public String convert(Object v) {
             return StringUtility.pack((super.convert(v)));
+        }
+    }
+
+    private static class CodeConverter extends StringConverter {
+
+        @Override
+        public String convert(Object v) {
+            return StoredObject.toCode((super.convert(v)));
         }
     }
 

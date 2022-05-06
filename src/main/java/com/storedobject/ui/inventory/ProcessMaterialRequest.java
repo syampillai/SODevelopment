@@ -49,7 +49,7 @@ public class ProcessMaterialRequest extends AbstractRequestMaterial {
             }
             select(mr);
             int s = mr.getStatus();
-            process.setVisible(s > 4 || s <= 2);
+            process.setVisible(s > 0 && (s > 4 || s <= 2));
             switch(s) {
                 case 2, 3 -> {
                     viewItems.setText("View Issued Items");
@@ -107,7 +107,7 @@ public class ProcessMaterialRequest extends AbstractRequestMaterial {
             new ActionForm("Confirm Issuance", m, () -> issueReserved(mr)).execute();
             return;
         }
-        if(mr.getStatus() > 2) {
+        if(mr.getStatus() == 0 || mr.getStatus() > 2) {
             warning("Can not process, status is '" + mr.getStatusValue() + "'");
             refresh(mr);
             return;
@@ -423,6 +423,7 @@ public class ProcessMaterialRequest extends AbstractRequestMaterial {
                     }
                 }
                 q = mri.getBalance();
+                //noinspection resource
                 stock = stockList(mri, bCount);
                 for(InventoryItem ii: stock) {
                     if(!q.isPositive()) {
@@ -516,20 +517,14 @@ public class ProcessMaterialRequest extends AbstractRequestMaterial {
         }
 
         private void removeAllEntries() {
-            deselectAll();
-            missingAssemblies.clear();
-            readyToIssueMap.clear();
-            miiMap.clear();
-            quantityEdited.clear();
-            removeButton.setVisible(false);
-            saveButton.setVisible(true);
-            refresh();
+            setMaterialRequest(mr, true);
         }
 
         private void save() {
             mr.reload();
-            if(mr.getStatus() > 2) {
-                statusError("Someone has changed the status of this request to: " + mr.getStatusValue());
+            if(mr.getStatus() == 0 || mr.getStatus() > 2 || !mr.getToLocationId().equals(getFromOrTo().getId())) {
+                statusError("Someone has changed the status of this request to: "
+                        + mr.getStatusValue() + " (Store: " + mr.getToLocation().toDisplay() + ")");
                 return;
             }
             if(mi == null) {
@@ -673,6 +668,7 @@ public class ProcessMaterialRequest extends AbstractRequestMaterial {
             return "";
         }
 
+        @SuppressWarnings("unused")
         public Quantity getRequested(Object o) {
             if(o instanceof MaterialRequestItem) {
                 return ((MaterialRequestItem) o).getBalance();
@@ -761,10 +757,14 @@ public class ProcessMaterialRequest extends AbstractRequestMaterial {
         }
 
         void setMaterialRequest(MaterialRequest mr) {
+            setMaterialRequest(mr, false);
+        }
+
+        private void setMaterialRequest(MaterialRequest mr, boolean clear) {
             this.mr = mr;
             this.mi = StoredObject.get(MaterialIssued.class, "Request=" + this.mr.getId() + " AND Status=0");
             List<MaterialIssuedItem> miiList = new ArrayList<>();
-            if(mi != null) {
+            if(mi != null && !clear) {
                 miiList = mi.listLinks(MaterialIssuedItem.class).toList();
             }
             missingAssemblies.clear();
@@ -777,6 +777,13 @@ public class ProcessMaterialRequest extends AbstractRequestMaterial {
                 mr.listLinks(MaterialRequestItem.class).filter(mri -> mri.getBalance().isPositive()).collectAll(mriList);
             } else {
                 miiList.forEach(mii -> items(mri(mii)).add(mii));
+            }
+            for(MaterialRequestItem mri: mriList) {
+                if(shortfall(mri).isNegative()) {
+                    warning("Previously selected list is cleared because some of the items have changed locations!");
+                    setMaterialRequest(mr, true);
+                    return;
+                }
             }
             removeButton.setVisible(!uninitialized);
             saveButton.setVisible(false);
@@ -907,14 +914,16 @@ public class ProcessMaterialRequest extends AbstractRequestMaterial {
 
             @Override
             protected boolean process() {
+                close();
                 if(resetQuantityEdit.isVisible() && resetQuantityEdit.getValue()) {
                     quantityEdited.clear();
                 }
                 selectionValue = selection.getValue();
                 if(selection.isVisible() && selectionValue == 2) {
                     selectedSet.clear();
+                    removeAllEntries();
+                    return true;
                 }
-                close();
                 fillingMode.getValue().run();
                 return true;
             }
@@ -1140,6 +1149,36 @@ public class ProcessMaterialRequest extends AbstractRequestMaterial {
             if(this.caption != null) {
                 this.caption.clearContent().append(caption, "blue").update();
             }
+        }
+    }
+    @Override
+    protected Button getSwitchLocationButton() {
+        return new Button("Change", (String) null, e -> new SwitchStore().execute());
+    }
+
+    private class SwitchStore extends DataForm {
+
+        private final LocationField currentLoc = LocationField.create("Current Store", getFromOrTo());
+        private final LocationField newLoc = LocationField.create("Change to", 0);
+
+        public SwitchStore() {
+            super("Change Store");
+            addField(currentLoc, newLoc);
+            setFieldReadOnly(currentLoc);
+            setRequired(newLoc);
+        }
+
+        @Override
+        protected boolean process() {
+            InventoryLocation loc = newLoc.getValue();
+            if(loc.getId().equals(currentLoc.getObjectId())) {
+                message("Not changed!");
+                return true;
+            }
+            message("Store changed to '" + loc.toDisplay() + "'");
+            ProcessMaterialRequest.this.close();
+            new ProcessMaterialRequest(loc).execute();
+            return true;
         }
     }
 }

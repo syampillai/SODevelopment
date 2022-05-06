@@ -49,4 +49,15 @@ public interface ProducesGRN {
     @SuppressWarnings("RedundantThrows")
     default void savingGRNExtraInfo(InventoryGRN grn, StoredObject extraInfo) throws Exception {
     }
+
+    /**
+     * This method is invoked when the button is pressed to mark the GRN as inspected/received. This method may show
+     * appropriate messages and may return <code>false</code> if some other associated data is incomplete.
+     *
+     * @param grn Current GRN.
+     * @return True/false.
+     */
+    default boolean canFinalize(InventoryGRN grn) {
+        return true;
+    }
 }

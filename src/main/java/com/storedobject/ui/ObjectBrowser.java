@@ -693,6 +693,9 @@ public class ObjectBrowser<T extends StoredObject> extends ObjectGrid<T>
     }
 
     public void setObjectEditor(ObjectEditor<T> editor) {
+        if(this.editor == editor) {
+            return;
+        }
         if(this.editor != null && this.editor.executing()) {
             this.editor.abort();
             if(layout != null) {

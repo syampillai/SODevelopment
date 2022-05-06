@@ -81,6 +81,12 @@ public class ItemField<I extends InventoryItem> extends ObjectGetField<I> implem
         }
     }
 
+    @Override
+    public void setRequired(boolean required) {
+        super.setRequired(required);
+        typeField.setRequired(required);
+    }
+
     /**
      * Fix the part number (an instance of {@link InventoryItemType}). If a non-null value is set,
      * "part number" portion will be locked with that value. A <code>null</code> value may be set later
@@ -349,6 +355,7 @@ public class ItemField<I extends InventoryItem> extends ObjectGetField<I> implem
 
         @Override
         public ObjectIterator<I> listTextObjects(SystemEntity systemEntity, String value) throws Exception {
+            //noinspection resource
             return InventoryItem.list(getObjectClass(), value, typeField.getObject(), isAllowAny())
                     .convert(this);
         }

@@ -4,6 +4,9 @@ import com.storedobject.common.SORuntimeException;
 import com.storedobject.common.StringList;
 import com.storedobject.core.*;
 import com.storedobject.ui.*;
+import com.storedobject.vaadin.Button;
+import com.storedobject.vaadin.ButtonLayout;
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasValue;
 
 public abstract class AbstractRequestMaterial extends ObjectBrowser<MaterialRequest> {
@@ -12,7 +15,8 @@ public abstract class AbstractRequestMaterial extends ObjectBrowser<MaterialRequ
     private final ObjectField<InventoryLocation> fromField, toField;
     private InventoryLocation fromOrTo;
     private MaterialRequestPriority normalPriority;
-    private final boolean issuing, otherLocationFixed;
+    private final boolean issuing;
+    private final InventoryLocation otherLocation;
     Class<? extends InventoryItemType> itemTypeClass;
 
     AbstractRequestMaterial(boolean issuing, int noActions) {
@@ -67,7 +71,7 @@ public abstract class AbstractRequestMaterial extends ObjectBrowser<MaterialRequ
     AbstractRequestMaterial(boolean issuing, int columnStyle, InventoryLocation fromOrTo, int noActions,
                             InventoryLocation otherLocation) {
         this(issuing, columnStyle, LocationField.create(fromOrTo), noActions, otherLocation);
-        if(fromOrTo.equals(otherLocation)) {
+        if(this.fromOrTo.equals(otherLocation)) {
             throw new SORuntimeException("Both locations can't be the same - " + otherLocation.toDisplay());
         }
     }
@@ -88,10 +92,13 @@ public abstract class AbstractRequestMaterial extends ObjectBrowser<MaterialRequ
                     : LocationField.create(otherLocation));
         }
         this.fromOrTo = fromOrTo.getValue();
+        if(this.fromOrTo == null) {
+            throw new SORuntimeException("Unable to determine store/location");
+        }
         if(issuing && !(this.fromOrTo instanceof InventoryStoreBin)) {
             throw new SORuntimeException("Not a store - " + this.fromOrTo.toDisplay());
         }
-        otherLocationFixed = otherLocation != null;
+        this.otherLocation = otherLocation;
         setOrderBy("Date DESC,No DESC", false);
     }
 
@@ -103,7 +110,7 @@ public abstract class AbstractRequestMaterial extends ObjectBrowser<MaterialRequ
             style = issuing ? 0 : 1;
         }
         return switch(style) {
-            case 0 -> StringList.create("Date", "ReferenceNumber", "FromLocation AS Requested Location",
+            case 0 -> StringList.create("Date", "ReferenceNumber", "Remarks", "FromLocation AS Requested Location",
                     "Person AS By", "Status", "Priority", "RequiredBefore");
             case 1 -> StringList.create("Date", "ReferenceNumber", "ToLocation", "Status",
                     "Priority", "RequiredBefore");
@@ -136,31 +143,43 @@ public abstract class AbstractRequestMaterial extends ObjectBrowser<MaterialRequ
 
     @Override
     public void createHeaders() {
-        prependHeader().join().setComponent(new ELabel(fromOrTo instanceof InventoryCustodyLocation ?
+        ELabel label = new ELabel(fromOrTo instanceof InventoryCustodyLocation ?
                 "Custodian: " : "Current Location: ")
-                .append(fromOrTo.toDisplay(), "blue").update());
+                .append(fromOrTo.toDisplay(), "blue").update();
+        Button locSwitch = getSwitchLocationButton();
+        Component component;
+        if(locSwitch == null) {
+            component = label;
+        } else {
+            component = new ButtonLayout(label, locSwitch.asSmall());
+        }
+        prependHeader().join().setComponent(component);
+    }
+
+    protected Button getSwitchLocationButton() {
+        return null;
     }
 
     @Override
-    public boolean canEdit(MaterialRequest object) {
-        if(object.getStatus() > 0) {
-            warning("Changes not possible with status = " + object.getStatusValue());
+    public boolean canEdit(MaterialRequest mr) {
+        if(mr.getStatus() > 0) {
+            warning("Changes not possible with status = " + mr.getStatusValue());
             return false;
         }
-        return super.canEdit(object);
+        return super.canEdit(mr);
     }
 
     @Override
-    public boolean canDelete(MaterialRequest object) {
-        switch(object.getStatus()) {
+    public boolean canDelete(MaterialRequest mr) {
+        switch(mr.getStatus()) {
             case 0:
             case 4:
                 break;
             default:
-                warning("Can't delete when status is '" + object.getStatusValue() + "'");
+                warning("Can't delete when status is '" + mr.getStatusValue() + "'");
                 return false;
         }
-        return super.canDelete(object);
+        return super.canDelete(mr);
     }
 
     @Override
@@ -202,6 +221,9 @@ public abstract class AbstractRequestMaterial extends ObjectBrowser<MaterialRequ
                     MaterialRequest mr = new MaterialRequest();
                     mr.setFromLocation(fromOrTo);
                     mr.setPriority(normalPriority);
+                    if(otherLocation != null) {
+                        mr.setToLocation(otherLocation);
+                    }
                     return mr;
                 });
             }
@@ -213,13 +235,13 @@ public abstract class AbstractRequestMaterial extends ObjectBrowser<MaterialRequ
             if(issuing) {
                 toField.setValue(fromOrTo);
                 setFieldReadOnly(toField);
-                if(otherLocationFixed) {
+                if(otherLocation != null) {
                     setFieldReadOnly(fromField);
                 }
             } else {
                 fromField.setValue(fromOrTo);
                 setFieldReadOnly(fromField);
-                if(otherLocationFixed) {
+                if(otherLocation != null) {
                     setFieldReadOnly(toField);
                 }
             }

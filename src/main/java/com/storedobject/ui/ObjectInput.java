@@ -5,6 +5,7 @@ import com.storedobject.core.Id;
 import com.storedobject.core.ObjectIterator;
 import com.storedobject.core.StoredObject;
 import com.storedobject.ui.util.AbstractObjectInput;
+import com.storedobject.vaadin.ValueRequired;
 
 /**
  * Fields that can input a given type of {@link StoredObject} value.
@@ -12,7 +13,7 @@ import com.storedobject.ui.util.AbstractObjectInput;
  * @param <T> Type of objects that can be inputted.
  * @author Syam
  */
-public interface ObjectInput<T extends StoredObject> extends AbstractObjectInput<T> {
+public interface ObjectInput<T extends StoredObject> extends AbstractObjectInput<T>, ValueRequired {
 
     /**
      * Set the value.

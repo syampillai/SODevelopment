@@ -406,7 +406,10 @@ public class LocateItem extends DataGrid<InventoryItem> implements CloseableView
         if(serviceableOnly.getValue()) {
             objects = objects.filter(InventoryItem::isServiceable);
         }
-        objects = objects.limit(500);
+        objects = objects.filter(ii -> switch(ii.getLocation().getType()) {
+            case 1, 2, 7, 9, 12, 15, 16, 17 -> false;
+            default -> true;
+        }).limit(500);
         objects.forEach(this::add);
         objects.close();
         help.setVisible(!isEmpty());

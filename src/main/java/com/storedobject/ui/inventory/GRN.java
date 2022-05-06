@@ -24,12 +24,13 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
     private ObjectEditor<InventoryGRN> viewer;
     private final GRNEditor editor;
     private final ELabel storeDisplay = new ELabel("Store: Not selected");
-    private final Button switchStore = new Button("Switch Store", VaadinIcon.STORAGE, e -> switchStore());
+    private final Button switchStore = new Button("Select", (String) null, e -> switchStore()).asSmall();
     private boolean allowSwitchStore = true;
     private final int type;
     private ProducesGRN grnProducer;
     private boolean fromPOs = false;
     private Class<?> poClass;
+    private final boolean landedCostModule;
 
     /**
      * Constructor.
@@ -155,6 +156,7 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
     private GRN(int type, Class<? extends InventoryItemType> pnClass, int actions, String caption,
                 InventoryStore store) {
         super(InventoryGRN.class, actions, caption);
+        landedCostModule = StoredObject.exists(LandedCostType.class, "true");
         this.type = type;
         editor = new GRNEditor(type, pnClass, actions, caption);
         if(store != null) {
@@ -165,12 +167,29 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
         addConstructedListener(f -> con());
         setCaption("GRN (" + InventoryGRN.getTypeValues()[type] + ")");
         GridContextMenu<InventoryGRN> cm = new GridContextMenu<>(this);
-        cm.addItem("Receive/Process", e -> e.getItem().ifPresent(i -> edit.click()));
+        GridMenuItem<InventoryGRN> process =
+                cm.addItem("Receive/Process", e -> e.getItem().ifPresent(i -> edit.click()));
+        GridMenuItem<InventoryGRN> landedCost =
+                cm.addItem("Landed Cost", e -> e.getItem().ifPresent(this::computeLandedCost));
         cm.setDynamicContentHandler(grn -> {
             deselectAll();
+            if(grn == null) {
+                return false;
+            }
             select(grn);
-            return grn != null && grn.getStatus() <= 1;
+            process.setVisible(grn.getStatus() <= 1);
+            landedCost.setVisible(landedCostModule && grn.getStatus() > 0);
+            return process.isVisible() || landedCost.isVisible();
         });
+    }
+
+    private void computeLandedCost(InventoryGRN grn) {
+        clearAlerts();
+        try {
+            new ComputeLandedCost(grn).execute(getView());
+        } catch(SOException e) {
+            warning(e);
+        }
     }
 
     public void setGRNProducer(ProducesGRN grnProducer) {
@@ -206,6 +225,9 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
     }
 
     public void processGRN(InventoryGRN grn) {
+        if(type != grn.getType()) {
+            return;
+        }
         select(grn);
         doEdit(grn, true);
     }
@@ -219,13 +241,11 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
 
     public void setPOClass(Class<?> poClass) {
         this.poClass = poClass;
-        if(type == 0) {
-            if(add != null) {
-                add.setVisible(poClass != null);
-                if(poClass != null) {
-                    add.setText("POs");
-                    add.setIcon(VaadinIcon.FILE_TABLE);
-                }
+        if(add != null) {
+            add.setVisible(poClass != null);
+            if(poClass != null) {
+                add.setText("POs");
+                add.setIcon(VaadinIcon.FILE_TABLE);
             }
         }
     }
@@ -244,7 +264,13 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
 
     @Override
     public void createHeaders() {
-        prependHeader().join().setComponent(storeDisplay);
+        ButtonLayout b = new ButtonLayout();
+        b.add(storeDisplay, switchStore, new ELabel().
+                append(" | ", "green").
+                append("Note: ").
+                append("Double-click or right-click on the entry to receive/process items", "blue").
+                update());
+        prependHeader().join().setComponent(b);
     }
 
     @Override
@@ -262,7 +288,6 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
 
     @Override
     protected void addExtraButtons() {
-        buttonPanel.add(switchStore);
         Checkbox h = new Checkbox("Include History");
         h.addValueChangeListener(e -> setFixedFilter("Type=" + type + (e.getValue() ? "" : " AND Status<2")));
         buttonPanel.add(h);
@@ -281,28 +306,24 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
 
     @Override
     public void doAdd() {
-        if(type == 0) {
-            POBrowser<?> poBrowser = createPOBrowser();
-            if(poBrowser == null) {
-                return;
-            }
-            close();
-            if(!fromPOs) {
-                poBrowser.setCaption("Create GRNs");
-                poBrowser.setForGRNs();
-                poBrowser.filter = "Status<4 AND Status>0";
-                poBrowser.setFixedFilter(poBrowser.filter, false);
-            }
-            if(editor.store != null) {
-                poBrowser.setStore(editor.store, allowSwitchStore);
-            } else {
-                poBrowser.setAllowSwitchStore(allowSwitchStore);
-            }
-            poBrowser.execute();
-            poBrowser.load();
+        POBrowser<?> poBrowser = createPOBrowser();
+        if(poBrowser == null) {
             return;
         }
-        super.doAdd();
+        close();
+        if(!fromPOs) {
+            poBrowser.setCaption("Create GRNs");
+            poBrowser.setForGRNs();
+            poBrowser.filter = "Status<4 AND Status>0";
+            poBrowser.setFixedFilter(poBrowser.filter, false);
+        }
+        if(editor.store != null) {
+            poBrowser.setStore(editor.store, allowSwitchStore);
+        } else {
+            poBrowser.setAllowSwitchStore(allowSwitchStore);
+        }
+        poBrowser.execute();
+        poBrowser.load();
     }
 
     public POBrowser<?> createPOBrowser() {
@@ -368,12 +389,7 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
     }
 
     private void displayStore() {
-        this.storeDisplay.clearContent().append("Store: ").
-                append(editor.store, "blue").
-                append(" | ", "green").
-                append("Note: ").
-                append("Double-click or right-click on the entry to receive/process items", "blue").
-                update();
+        this.storeDisplay.clearContent().append("Store: ").append(editor.store, "blue").update();
     }
 
     @Override
@@ -579,7 +595,7 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
                 message("Already closed, no further action possible");
                 return;
             }
-            if(canFinalize(grn)) {
+            if(canFinalize(grn) && (grnProducer == null || grnProducer.canFinalize(grn))) {
                 if(grn.getStatus() == 1) {
                     preCloseGRN(grn);
                 } else {

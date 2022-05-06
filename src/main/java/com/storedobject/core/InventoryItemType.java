@@ -161,6 +161,11 @@ public class InventoryItemType extends StoredObject implements HasChildren {
         return (T) new InventoryItem();
     }
 
+    public final <T extends InventoryItem> T createItem(String serialNumber) {
+        //noinspection unchecked
+        return Math.random() > 0.5 ? (T) new InventoryItem() : null;
+    }
+
     public final Class<? extends InventoryItem> getItemType() {
         return InventoryItem.class;
     }

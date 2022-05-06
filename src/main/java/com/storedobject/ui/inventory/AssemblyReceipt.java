@@ -79,29 +79,17 @@ public class AssemblyReceipt<T extends InventoryItem, C extends InventoryItem> e
             } else {
                 inventoryTransaction.abandon();
             }
-            String sn = snField.getValue().trim();
-            if(itemType.isSerialized()) {
-                if(sn.isEmpty()) {
-                    warning("Please enter Serial Number of the item");
-                    return false;
-                }
-                if((item = InventoryItem.listStock(itemType, sn).findFirst()) != null) {
-                    if(item.getLocation().getType() != 15) { // Not recycle?
-                        warning("Item already exists at location: " + item.getLocation().toDisplay());
-                        return false;
-                    }
-                }
+            String sn = StoredObject.toCode(snField.getValue());
+            if(sn.isEmpty() && itemType.isSerialized()) {
+                warning("Please enter Serial Number of the item");
+                return false;
             }
+            InventoryItemType inventoryItemType = partNumbersField.getValue();
+            item = inventoryItemType.createItem(sn);
             if(item == null) {
-                item = partNumbersField.getValue().createItem();
-                item.setSerialNumber(sn);
-                item.setQuantity(qRequired);
-            } else {
-                if(!partNumbersField.getValue().getId().equals(item.getPartNumberId())) {
-                    error("State error while recovering thrash for '" + item + "'");
-                    return false;
-                }
+                warning("Duplicate item for S/N = " + sn + " exists. Item " + inventoryItemType.toDisplay());
             }
+            item.setQuantity(qRequired);
             inventoryTransaction.purchase(item, reference, fitmentPosition, grn.getSupplier());
             if(editor != null && editor.getObjectClass() != item.getClass()) {
                 editor = null;

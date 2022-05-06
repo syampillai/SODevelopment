@@ -25,7 +25,7 @@ import static com.storedobject.core.EditorAction.ALL;
 public class POBrowser<T extends InventoryPO> extends ObjectBrowser<T> implements ObjectEditorProvider, ProducesGRN {
 
     private final ELabel storeDisplay = new ELabel("Store: Not selected");
-    protected final Button switchStore = new Button("Switch Store", VaadinIcon.STORAGE, e -> switchStore());
+    protected final Button switchStore = new Button("Select", (String) null, e -> switchStore()).asSmall();
     protected final Button goToGRNs = new Button("GRNs", VaadinIcon.STOCK, e -> processGRN(null));
     private POEditor<T> editor;
     private final List<ProcessButton> processButtons = new ArrayList<>();
@@ -201,7 +201,6 @@ public class POBrowser<T extends InventoryPO> extends ObjectBrowser<T> implement
 
     @Override
     protected void addExtraButtons() {
-        buttonPanel.add(switchStore);
         Checkbox h = new Checkbox("Include History");
         h.addValueChangeListener(e -> setFixedFilter(e.getValue() ? null : filter));
         buttonPanel.add(h, goToGRNs);
@@ -210,7 +209,13 @@ public class POBrowser<T extends InventoryPO> extends ObjectBrowser<T> implement
 
     @Override
     public void createHeaders() {
-        prependHeader().join().setComponent(storeDisplay);
+        ButtonLayout b = new ButtonLayout();
+        b.add(storeDisplay, switchStore, new ELabel().
+                append(" | ", "green").
+                append("Note: ").
+                append("Right-click on the entry for available process options", "blue").
+                update());
+        prependHeader().join().setComponent(b);
     }
 
     public void setAllowSwitchStore(boolean allowSwitchStore) {
@@ -261,9 +266,6 @@ public class POBrowser<T extends InventoryPO> extends ObjectBrowser<T> implement
     protected void anchorsSet() {
         this.storeDisplay.clearContent().append("Store: ").
                 append(editor.store, "blue").
-                append(" | ", "green").
-                append("Note: ").
-                append("Right-click on the entry for available process options", "blue").
                 update();
         goToGRNs.setVisible(true);
         switchStore.setVisible(allowSwitchStore);
@@ -682,7 +684,18 @@ public class POBrowser<T extends InventoryPO> extends ObjectBrowser<T> implement
 
     private void processGRN(InventoryGRN g) {
         clearAlerts();
-        GRN grnView = getGRNBrowser(editor.store);
+        int type;
+        if(g == null) {
+            T po = editor.createNewInstance();
+            if(po == null) {
+                return;
+            }
+            type = po.getGRNType();
+        } else {
+            type = g.getType();
+        }
+        GRN grnView = new GRN(type, editor.store);
+        getObjectEditor().createNewInstance();
         grnView.setPOClass(getClass());
         if(!forGRN) {
             grnView.setFromPOs();
@@ -697,10 +710,6 @@ public class POBrowser<T extends InventoryPO> extends ObjectBrowser<T> implement
         if(g != null) {
             grnView.processGRN(g);
         }
-    }
-
-    public GRN getGRNBrowser(InventoryStore store) {
-        return new GRN(store);
     }
 
     private static class GRNs extends SelectGrid<InventoryGRN> {

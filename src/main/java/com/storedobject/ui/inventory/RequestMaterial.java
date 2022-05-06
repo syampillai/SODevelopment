@@ -3,15 +3,19 @@ package com.storedobject.ui.inventory;
 import com.storedobject.common.StringList;
 import com.storedobject.core.*;
 import com.storedobject.ui.MessageGrid;
-import com.storedobject.vaadin.Button;
-import com.storedobject.vaadin.ConfirmButton;
-import com.storedobject.vaadin.PopupButton;
+import com.storedobject.ui.ObjectChangedListener;
+import com.storedobject.ui.ObjectEditor;
+import com.storedobject.ui.ObjectField;
+import com.storedobject.vaadin.*;
+import com.vaadin.flow.component.HasValue;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.icon.VaadinIcon;
 
 import java.util.List;
 
 public class RequestMaterial extends AbstractRequestMaterial {
+
+    private Editor restrictedEditor;
 
     public RequestMaterial(String from) {
         this(ParameterParser.itemTypeClass(from), ParameterParser.location(from, 0, 4, 5, 10, 11, 16));
@@ -129,5 +133,74 @@ public class RequestMaterial extends AbstractRequestMaterial {
                 StringList.create("Date", "ReferenceNumber AS Reference", "Location AS Issued from", "Status"),
                 "Materials were issued via these. Deletion is possible only after closing and deleting these!").
                 execute(this.getView());
+    }
+
+    @Override
+    public void doEdit(MaterialRequest mr) {
+        clearAlerts();
+        if(mr.getStatus() == 1) { // Initiated
+            if(restrictedEditor == null) {
+                restrictedEditor = new Editor();
+                restrictedEditor.addObjectChangedListener(new ObjectChangedListener<>() {
+                    @Override
+                    public void updated(MaterialRequest object) {
+                        refresh(object);
+                    }
+                });
+            }
+            restrictedEditor.editObject(mr, getView(), false);
+            return;
+        }
+        super.doEdit(mr);
+    }
+
+    private static class Editor extends ObjectEditor<MaterialRequest> {
+
+        public Editor() {
+            super(MaterialRequest.class, EditorAction.EDIT);
+            addConstructedListener(f -> {
+                removeSetNotAllowed("ToLocation");
+                setFieldReadOnly("Items.l");
+            });
+        }
+
+        @Override
+        protected HasValue<?, ?> createField(String fieldName, String label) {
+            if("ToLocation".equals(fieldName)) {
+                return new ObjectField<>(label, LocationField.create(0));
+            }
+            return super.createField(fieldName, label);
+        }
+    }
+
+    @Override
+    protected Button getSwitchLocationButton() {
+        return new Button("Change", (String) null, e -> new SwitchLocation().execute());
+    }
+
+    private class SwitchLocation extends DataForm {
+
+        private final LocationField currentLoc = LocationField.create("Current Location", getFromOrTo());
+        private final LocationField newLoc = LocationField.create("Change to", 0, 4, 5, 10, 11, 16);
+
+        public SwitchLocation() {
+            super("Change Location");
+            addField(currentLoc, newLoc);
+            setFieldReadOnly(currentLoc);
+            setRequired(newLoc);
+        }
+
+        @Override
+        protected boolean process() {
+            InventoryLocation loc = newLoc.getValue();
+            if(loc.getId().equals(currentLoc.getObjectId())) {
+                message("Not changed!");
+                return true;
+            }
+            message("Location changed to '" + loc.toDisplay() + "'");
+            RequestMaterial.this.close();
+            new RequestMaterial(loc).execute();
+            return true;
+        }
     }
 }

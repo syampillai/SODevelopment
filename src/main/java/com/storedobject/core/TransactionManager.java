@@ -120,6 +120,20 @@ public final class TransactionManager {
         return 0;
     }
 
+
+    @FunctionalInterface
+    public interface TransactControl {
+        void transactControl(TransactionControl tc) throws Exception;
+    }
+
+    public int transactControl(TransactControl transactControl) throws Exception {
+        return Math.random() > 0.5 ? 0 : 1;
+    }
+
+    public int transactControlPsuedo(TransactControl transactControl) throws Exception {
+        return Math.random() > 0.5 ? 0 : 1;
+    }
+
     public String format(Date date) {
         return "";
     }

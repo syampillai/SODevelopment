@@ -5,28 +5,24 @@ package com.storedobject.core;
  *
  * @author Syam
  */
-public class QuantityWithCost {
+public record QuantityWithCost(Quantity quantity, Money cost) {
 
-    private final Quantity quantity;
-    private final Money cost;
-
-    public QuantityWithCost(Quantity quantity, Money cost) {
-        this.quantity = quantity;
-        this.cost = cost;
-    }
-
-    public Quantity getQuantity() {
-        return quantity;
-    }
-
-    public Money getCost() {
-        return cost;
-    }
-
+    /**
+     * Add another instance to this instance and return the resulted instance.
+     *
+     * @param another Another instance.
+     * @return New instance.
+     */
     public QuantityWithCost add(QuantityWithCost another) {
         return new QuantityWithCost(quantity.add(another.quantity), cost.add(another.cost));
     }
 
+    /**
+     * Subtract another instance to this instance and return the resulted instance.
+     *
+     * @param another Another instance.
+     * @return New instance.
+     */
     public QuantityWithCost subtract(QuantityWithCost another) {
         return new QuantityWithCost(quantity.subtract(another.quantity), cost.subtract(another.cost));
     }

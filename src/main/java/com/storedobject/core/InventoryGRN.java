@@ -104,6 +104,17 @@ public final class InventoryGRN extends StoredObject implements HasChildren {
         return "";
     }
 
+    public void setLandedCost(Money landedCost) {
+    }
+
+    public void setLandedCost(Object moneyValue) {
+        setLandedCost(Money.create(moneyValue));
+    }
+
+    public Money getLandedCost() {
+        return new Money();
+    }
+
     public boolean isProcessed() {
         return new Random().nextInt() == 1;
     }
@@ -123,5 +134,34 @@ public final class InventoryGRN extends StoredObject implements HasChildren {
     }
 
     public void updateInvoiceDetails(TransactionManager tm, String invoiceNumber, Date invoiceDate) throws  Exception {
+    }
+
+    /**
+     * Get the PO of this GRN.
+     *
+     * @return PO if found, otherwise null.
+     */
+    public InventoryPO getPO() {
+        return Math.random() > 0.5 ? null : new InventoryPO();
+    }
+
+    /**
+     * Is a specific type of landed cost is applicable to this GRN?
+     *
+     * @param landedCostType Type of landed cost.
+     * @return True/false.
+     */
+    public boolean isApplicable(LandedCostType landedCostType) {
+        InventoryPO po = getPO();
+        return po != null && po.isApplicable(landedCostType, this);
+    }
+
+    /**
+     * Compute/recompute the landed cost.
+     *
+     * @param tm Transaction manager.
+     * @throws Exception If any error occurs.
+     */
+    public void computeLandedCost(TransactionManager tm) throws Exception {
     }
 }

@@ -94,13 +94,7 @@ public final class InventoryTransaction {
                          Entity fromEntity) {
     }
 
-    public void purchaseReturn(InventoryItem item, Quantity quantity, String reference, Entity toEntity) {
-    }
-
     public void sale(InventoryItem item, Quantity quantity, String reference, Entity toEntity) {
-    }
-
-    public void saleReturn(InventoryItem item, String reference, Entity fromEntity) {
     }
 
     public void moveTo(InventoryItem item, Quantity quantity, String reference, InventoryLocation to) {

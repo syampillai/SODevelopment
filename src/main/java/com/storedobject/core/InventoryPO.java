@@ -128,4 +128,12 @@ public class InventoryPO extends StoredObject implements HasChildren {
     public final ObjectIterator<InventoryPOItem> listItems() {
         return listLinks(getTransaction(), InventoryPOItem.class, true);
     }
+
+    public int getGRNType() {
+        return 0;
+    }
+
+    public boolean isApplicable(LandedCostType landedCostType, InventoryGRN grn) {
+        return true;
+    }
 }

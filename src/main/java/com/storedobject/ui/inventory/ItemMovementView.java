@@ -6,12 +6,13 @@ import com.storedobject.core.*;
 import com.storedobject.report.ItemMovementReport;
 import com.storedobject.vaadin.Button;
 import com.storedobject.vaadin.ButtonLayout;
+import com.storedobject.vaadin.CloseableView;
 import com.storedobject.vaadin.ListGrid;
 import com.vaadin.flow.component.Component;
 
 import java.sql.Date;
 
-public class ItemMovementView extends ListGrid<InventoryLedger> {
+public class ItemMovementView extends ListGrid<InventoryLedger> implements CloseableView {
 
     private static final String NO_CAPTION = "Item Movement";
     private final ItemField<? extends InventoryItem> itemField;
@@ -82,10 +83,8 @@ public class ItemMovementView extends ListGrid<InventoryLedger> {
 
     @Override
     public Component createHeader() {
-        return new ButtonLayout(
-                new Button("Exit", e -> close()),
-                new Button("Print", "pdf", e -> report()),
-                itemField);
+        return new ButtonLayout(itemField, new Button("Print", "pdf", e -> report()),
+                new Button("Exit", e -> close()));
     }
 
     @Override
@@ -118,6 +117,7 @@ public class ItemMovementView extends ListGrid<InventoryLedger> {
             message("Nothing to report!");
             return;
         }
+        //noinspection resource
         new ItemMovementReport(getApplication(), item).execute();
     }
 }

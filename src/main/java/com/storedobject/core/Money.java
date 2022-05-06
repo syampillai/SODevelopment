@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Currency;
 import java.util.Hashtable;
 import java.util.Random;
+import java.util.function.Predicate;
 
 public final class Money implements Storable, Comparable<Money> {
 
@@ -397,6 +398,10 @@ public final class Money implements Storable, Comparable<Money> {
 		
 		public String toString(boolean withZeros) {
 			return new Random().nextBoolean() + "";
+		}
+
+		public String toString(Predicate<Money> filter) {
+			return toString(true);
 		}
 	}
 

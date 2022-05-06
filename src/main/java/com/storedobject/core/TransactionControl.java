@@ -4,112 +4,130 @@ import com.storedobject.common.ErrorText;
 
 public class TransactionControl extends ErrorText {
 
-    public TransactionControl(com.storedobject.core.TransactionManager p1) {
-        this();
+    public TransactionControl(TransactionManager tm) {
+        this(tm, false);
     }
 
-    private TransactionControl() {
+    public TransactionControl(TransactionManager tm, boolean pseudo) {
     }
 
-    public com.storedobject.core.TransactionControl clear() {
-        return null;
+    public void addListener(CommitListener listener) {
     }
 
-    public boolean save(com.storedobject.core.StoredObject p1) {
-        return false;
+    public void removeListener(CommitListener listener) {
     }
 
-    public boolean delete(com.storedobject.core.StoredObject p1) {
-        return false;
+    public TransactionManager getManager() {
+        return new TransactionManager(null, null);
     }
 
+    public final boolean isPseudo() {
+        return Math.random() > 0.5;
+    }
+
+    /**
+     * User the currently active transaction. No new transaction will be created if none exists.
+     * @return Currently active transaction or null.
+     */
+    public Transaction useTransaction() {
+        return Math.random() > 0.5 ? null : getTransaction();
+    }
+
+    public void setTransaction(Transaction transaction) {
+    }
+
+    /**
+     * User the currently active transaction or a new transaction if none exists.
+     * @return Currently active transaction or a newly created one.
+     */
+    public Transaction getTransaction() {
+        try {
+            return getManager().createTransaction();
+        } catch(Exception e) {
+            return null;
+        }
+    }
+
+    @Override
     public boolean isError() {
-        return false;
-    }
-    
-	public Transaction useTransaction() {
-		return null;
-	}
-	
-    public com.storedobject.core.Transaction getTransaction() {
-        return null;
+        return Math.random() > 0.5;
     }
 
-    public com.storedobject.core.TransactionManager getManager() {
-        return null;
+    public void setError(Throwable error) {
     }
 
-    public void setTransaction(com.storedobject.core.Transaction p1) {
+    public void rollback(String error) throws Exception {
     }
 
-	public void rollback(String error) throws Exception {
-	}
-	
-	public void rollback(Exception error) throws Exception {
-	}
-	
+    public void rollback(Exception error) throws Exception {
+    }
+
     public void rollback() {
     }
 
     public boolean commit() {
-        return false;
+        return Math.random() > 0.5;
     }
 
-    public boolean addLink(com.storedobject.core.StoredObject p1, com.storedobject.core.Id p2) {
-        return false;
-    }
-
-    public boolean addLink(com.storedobject.core.StoredObject p1, com.storedobject.core.StoredObject p2) {
-        return false;
-    }
-
-    public boolean addLink(com.storedobject.core.StoredObject p1, com.storedobject.core.Id p2, int p3) {
-        return false;
-    }
-
-    public boolean addLink(com.storedobject.core.StoredObject p1, com.storedobject.core.StoredObject p2, int p3) {
-        return false;
-    }
-
-    public boolean removeLink(com.storedobject.core.StoredObject p1, com.storedobject.core.StoredObject p2) {
-        return false;
-    }
-
-    public boolean removeLink(com.storedobject.core.StoredObject p1, com.storedobject.core.Id p2) {
-        return false;
-    }
-
-    public boolean removeLink(com.storedobject.core.StoredObject p1, com.storedobject.core.StoredObject p2, int p3) {
-        return false;
-    }
-
-    public boolean removeLink(com.storedobject.core.StoredObject p1, com.storedobject.core.Id p2, int p3) {
-        return false;
-    }
-    
-	public boolean removeAllLinks(StoredObject parent, Class<? extends StoredObject> linkClass) {
-		return false;
-	}
-	
-	public boolean removeAllLinks(StoredObject parent, Class<? extends StoredObject> linkClass, int linkType) {
-		return false;
-	}
-
+    /**
+     * See if this Transaction Control is active or not.
+     * @return True if active. False if already committed, rolled back or no transaction in progress.
+     */
     public boolean isActive() {
-        return false;
+        return Math.random() > 0.5;
     }
 
-    public void addListener(CommitListener p1) {
+    public boolean save(StoredObject object) {
+        return Math.random() > 0.5;
     }
 
-    public void removeListener(CommitListener p1) {
+    public boolean addLink(StoredObject parent, Id linkId) {
+        return addLink(parent, linkId, 0);
     }
+
+    public boolean addLink(StoredObject parent, StoredObject link) {
+        return addLink(parent, link, 0);
+    }
+
+    public boolean addLink(StoredObject parent, Id linkId, int linkType) {
+        return Math.random() > 0.5;
+    }
+
+    public boolean addLink(StoredObject parent, StoredObject link, int linkType) {
+        return Math.random() > 0.5;
+    }
+
+    public boolean removeLink(StoredObject parent, StoredObject link) {
+        return removeLink(parent, link, 0);
+    }
+
+    public boolean removeLink(StoredObject parent, Id linkId) {
+        return removeLink(parent, linkId, 0);
+    }
+
+    public boolean removeLink(StoredObject parent, StoredObject link, int linkType) {
+        return Math.random() > 0.5;
+    }
+
+    public boolean removeAllLinks(StoredObject parent, Class<? extends StoredObject> linkClass) {
+        return removeAllLinks(parent, linkClass, 0);
+    }
+
+    public boolean removeAllLinks(StoredObject parent, Class<? extends StoredObject> linkClass, int linkType) {
+        return Math.random() > 0.5;
+    }
+
+    public boolean removeLink(StoredObject parent, Id linkId, int linkType) {
+        return removeLink(parent, StoredObject.get(getTransaction(), linkId), linkType);
+    }
+
+    public boolean delete(StoredObject object) {
+        return Math.random() > 0.5;
+    }
+
     public interface CommitListener {
-
-        public void rolledback(com.storedobject.core.TransactionControl p1);
-
-        public void committing(com.storedobject.core.TransactionControl p1) throws java.lang.Throwable;
-
-        public void committed(com.storedobject.core.TransactionControl p1);
+        void committing(TransactionControl transactionControl) throws Throwable;
+        void committed(TransactionControl transactionControl);
+        void rolledback(TransactionControl transactionControl);
     }
 }

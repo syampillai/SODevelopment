@@ -4,6 +4,7 @@ import com.storedobject.core.*;
 import com.storedobject.ui.inventory.*;
 import com.storedobject.ui.util.NoDisplayField;
 import com.storedobject.vaadin.CustomField;
+import com.storedobject.vaadin.ValueRequired;
 import com.storedobject.vaadin.View;
 import com.storedobject.vaadin.ViewDependent;
 import com.vaadin.flow.component.Component;
@@ -26,7 +27,7 @@ import java.util.function.Predicate;
  * @author Syam
  */
 public class ObjectField<T extends StoredObject> extends CustomField<Id>
-        implements IdInput<T>, ViewDependent, NoDisplayField {
+        implements IdInput<T>, ViewDependent, NoDisplayField, ValueRequired {
 
     /**
      * Type of the object field.
@@ -784,6 +785,16 @@ public class ObjectField<T extends StoredObject> extends CustomField<Id>
         List<O> list = new ArrayList<>();
         list.add(object);
         return new SingleField<>(label, list);
+    }
+
+    @Override
+    public void setRequired(boolean required) {
+        field.setRequired(required);
+    }
+
+    @Override
+    public boolean isRequired() {
+        return field.isRequired();
     }
 
     private static class SingleField<O extends StoredObject> extends ObjectField<O> {

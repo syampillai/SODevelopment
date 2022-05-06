@@ -244,4 +244,9 @@ public class ObjectListField<T extends StoredObject> extends ListField<T>
             clear();
         }
     }
+
+    @Override
+    public void setRequired(boolean required) {
+        super.setRequired(required);
+    }
 }
