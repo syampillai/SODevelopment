@@ -2,7 +2,7 @@ package com.storedobject.core;
 
 import java.math.BigDecimal;
 
-public final class MaterialIssuedItem extends StoredObject implements Detail {
+public final class MaterialIssuedItem extends StoredObject implements Detail, HasInventoryItem {
 
     public MaterialIssuedItem() {
     }
@@ -23,6 +23,7 @@ public final class MaterialIssuedItem extends StoredObject implements Detail {
         return new Id();
     }
 
+    @Override
     public InventoryItem getItem() {
         return new InventoryItem();
     }
@@ -33,6 +34,7 @@ public final class MaterialIssuedItem extends StoredObject implements Detail {
     public void setQuantity(Object value) {
     }
 
+    @Override
     public Quantity getQuantity() {
         return Count.ONE;
     }

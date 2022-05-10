@@ -129,6 +129,9 @@ public final class InventoryGRNItem extends StoredObject implements Detail {
         return InventoryGRN.class == masterClass;
     }
 
+    public void splitQuantity(Transaction transaction, Quantity quantityToSplit) throws Exception {
+    }
+
     /**
      * Update various attribute values.
      *
@@ -142,5 +145,9 @@ public final class InventoryGRNItem extends StoredObject implements Detail {
     public boolean updateValues(TransactionManager tm, Quantity newQuantity, Money newUnitCost, String newSerialNumber)
             throws Exception {
         return Math.random() > 0.5;
+    }
+
+    public InventoryPOItem getPOItem() {
+        return Math.random() > 0.5 ? new InventoryPOItem() : null;
     }
 }

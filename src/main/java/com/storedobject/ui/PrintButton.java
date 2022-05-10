@@ -8,6 +8,7 @@ import com.storedobject.report.ObjectReport;
 import com.storedobject.vaadin.Button;
 import com.storedobject.vaadin.PopupButton;
 import com.vaadin.flow.component.Composite;
+import com.vaadin.flow.component.icon.VaadinIcon;
 
 import java.util.HashMap;
 import java.util.List;
@@ -48,7 +49,7 @@ public final class PrintButton extends Composite<Button> {
         if(logics.size() == 1) {
             button = new PButton(logics.get(0));
         } else {
-            button = new PopupButton("Print");
+            button = new PopupButton("More", VaadinIcon.LINES);
             logics.forEach(d -> ((PopupButton) button).add(new PButton(d)));
         }
     }

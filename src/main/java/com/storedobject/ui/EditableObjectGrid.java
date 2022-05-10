@@ -192,6 +192,8 @@ public class EditableObjectGrid<T extends StoredObject> extends AbstractEditable
                     spans.put(fieldName, span);
                     c.setEditorComponent(span);
                 }
+            } else {
+                editor.setFieldReadOnly(fieldName);
             }
         }
         setUpEditor(editor);

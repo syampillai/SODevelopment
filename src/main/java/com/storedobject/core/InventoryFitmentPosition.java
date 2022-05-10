@@ -87,6 +87,10 @@ public final class InventoryFitmentPosition extends InventoryLocation {
         return new Random().nextBoolean() ? new InventoryFitmentPosition() : null;
     }
 
+    public static InventoryFitmentPosition get(Transaction transaction, InventoryItem item, InventoryAssembly assembly) {
+        return new InventoryFitmentPosition();
+    }
+
     public int getLevel() {
         return new Random().nextInt();
     }

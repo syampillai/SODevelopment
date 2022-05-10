@@ -232,6 +232,14 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
         doEdit(grn, true);
     }
 
+    public void viewGRN(InventoryGRN grn) {
+        if(type != grn.getType()) {
+            return;
+        }
+        close();
+        doView(grn);
+    }
+
     private void con() {
         if(edit != null) {
             edit.setText("Receive / Process");
@@ -466,6 +474,8 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
         private final Button process = new Button("Mark as Inspected", VaadinIcon.CHECK, e -> process());
         private final Button close = new Button("Mark as Received", VaadinIcon.THUMBS_UP_O, e -> process());
         private final Button editItem = new Button("Edit", e -> grnItemGrid.editGRNItemSel()).asSmall();
+        private final Button splitQty = new Button("Split Quantity", VaadinIcon.SPLIT,
+                e -> grnItemGrid.splitQuantitySel()).asSmall();
         private final Button inspect = new Button("Inspect", VaadinIcon.STOCK, e -> grnItemGrid.inspectSel())
                 .asSmall();
         private final Button bin = new Button("Bin", VaadinIcon.STORAGE, e -> grnItemGrid.binSel()).asSmall();
@@ -718,6 +728,7 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
             int status = grn.getStatus();
             grnItemGrid.setAllowAdd(status == 0);
             editItem.setVisible(status == 0);
+            splitQty.setVisible(status == 0);
             inspect.setVisible(status == 0);
             bin.setVisible(status == 0);
             assemble.setVisible(status == 1);
@@ -726,6 +737,7 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
 
         private void disableExtraButtons() {
             editItem.setVisible(false);
+            splitQty.setVisible(false);
             inspect.setVisible(false);
             bin.setVisible(false);
             assemble.setVisible(false);
@@ -795,6 +807,7 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
             private InventoryGRN grn;
 
             void doFor(InventoryGRN grn) {
+                clearAlert();
                 this.grn = grn;
                 refField.setValue(grn.getReferenceNumber());
                 dateField.setValue(grn.getInvoiceDate());
@@ -827,35 +840,39 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
             private InventoryGRNItem grnItem;
             private boolean invokeBin = false;
             private EditGRNItem editGRNItem;
+            private SplitQuantity splitQuantity;
 
             public GRNItemGrid() {
                 super(grnItemsField, StringList.create("Item", "PartNumber", "SerialNumber", "Inspected", "Quantity",
                         "UnitCost", "Bin"));
                 setObjectEditor(new GRNItemEditor());
-                getButtonPanel().add(editItem, inspect, bin, assemble, hint);
+                getButtonPanel().add(editItem, splitQty, inspect, bin, assemble, hint);
                 GridContextMenu<InventoryGRNItem> contextMenu = new GridContextMenu<>(this);
-                GridMenuItem<InventoryGRNItem>  inspectRC = contextMenu.addItem("Inspect",
+                GridMenuItem<InventoryGRNItem> split = contextMenu.addItem("Split Quantity",
+                        e -> e.getItem().ifPresent(x -> splitQuantity()));
+                GridMenuItem<InventoryGRNItem> inspectRC = contextMenu.addItem("Inspect",
                         e -> e.getItem().ifPresent(x -> inspect()));
-                GridMenuItem<InventoryGRNItem>  binRC = contextMenu.addItem("Bin",
+                GridMenuItem<InventoryGRNItem> binRC = contextMenu.addItem("Bin",
                         e -> e.getItem().ifPresent(x -> bin()));
                 GridMenuItem<InventoryGRNItem> assembleRC = contextMenu.addItem("Assemble",
                         e -> e.getItem().ifPresent(x -> assemble()));
-                GridMenuItem<InventoryGRNItem>  editGRNItem = contextMenu.addItem("Edit",
-                        e -> e.getItem().ifPresent(x -> editGRNItem().execute()));
+                GridMenuItem<InventoryGRNItem> editGRNItem = contextMenu.addItem("Edit",
+                        e -> e.getItem().ifPresent(x -> editGRNItem()));
                 contextMenu.setDynamicContentHandler(r -> {
                     deselectAll();
                     if(r == null) {
                         return false;
                     }
                     select(r);
+                    grnItem = r;
+                    split.setVisible(splitQty.isVisible() && canSplitQty());
                     inspectRC.setVisible(inspect.isVisible());
                     binRC.setVisible(bin.isVisible());
                     assembleRC.setVisible(assemble.isVisible());
-                    grnItem = r;
                     invokeBin = false;
                     editGRNItem.setVisible(editItem.isVisible() && grnItem.getItem() == null);
                     return inspectRC.isVisible() || binRC.isVisible() || assembleRC.isVisible()
-                            || editGRNItem.isVisible();
+                            || editGRNItem.isVisible() || split.isVisible();
                 });
             }
 
@@ -910,14 +927,14 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
                 if(selected() == null) {
                     return;
                 }
-                editGRNItem().execute();
+                editGRNItem();
             }
 
-            private EditGRNItem editGRNItem() {
+            private void editGRNItem() {
                 if(editGRNItem == null) {
                     editGRNItem = new EditGRNItem();
                 }
-                return editGRNItem;
+                editGRNItem.execute();
             }
 
             private class EditGRNItem extends DataForm {
@@ -945,6 +962,13 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
                         warn("Can't edit, item was already created!");
                         return;
                     }
+                    InventoryPOItem poItem;
+                    if((poItem = grnItem.getPOItem()) == null) {
+                        warn("Can't determine the corresponding PO!");
+                        return;
+                    }
+                    quantityField.setMaximumAllowed(poItem.getQuantity().subtract(poItem.getReceived())
+                            .add(grnItem.getQuantity()));
                     itemField.clearContent().append(grnItem.getPartNumber()).update();
                     snField.setValue(grnItem.getSerialNumber());
                     quantityField.setValue(grnItem.getQuantity());
@@ -1143,6 +1167,69 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
                     }
                 }
             }
+
+            private void splitQuantitySel() {
+                clearAlert();
+                if(selected() == null) {
+                    return;
+                }
+                if(!canSplitQty()) {
+                    if(grnItem.getPartNumber().isSerialized()) {
+                        warn("Can't split quantity for that item");
+                    } else {
+                        warn("Can't split quantity for that because the item was already created");
+                    }
+                    return;
+                }
+                splitQuantity();
+            }
+
+            private void splitQuantity() {
+                if(splitQuantity == null) {
+                    splitQuantity = new SplitQuantity();
+                }
+                splitQuantity.execute();
+            }
+
+            private boolean canSplitQty() {
+                return grnItem != null && !grnItem.getPartNumber().isSerialized() && Id.isNull(grnItem.getItemId());
+            }
+
+            private class SplitQuantity extends DataForm {
+
+                private final QuantityField qFieldCurrent = new QuantityField("Current Quantity");
+                private final QuantityField qField = new QuantityField("Quantity to Split");
+
+                public SplitQuantity() {
+                    super("Split Quantity");
+                    addField(qFieldCurrent, qField);
+                    setFieldReadOnly(qFieldCurrent);
+                    setRequired(qField);
+                }
+
+                @Override
+                protected void execute(View parent, boolean doNotLock) {
+                    qFieldCurrent.setValue(grnItem.getQuantity());
+                    qField.setMaximumAllowed(grnItem.getQuantity());
+                    super.execute(parent, doNotLock);
+                }
+
+                @Override
+                protected boolean process() {
+                    clearAlert();
+                    Quantity q = qField.getValue(), gq = grnItem.getQuantity();
+                    if(q.isZero() || q.isGreaterThan(gq) || !q.isCompatible(gq)
+                            || (q.equals(gq) && q.getUnit().equals(gq.getUnit()))) {
+                        warn("Please check the quantity");
+                        return false;
+                    }
+                    if(GRN.this.transact(t -> grnItem.splitQuantity(t, q))) {
+                        GRNEditor.this.reload();
+                        return true;
+                    }
+                    return false;
+                }
+            }
         }
 
         private class BinEditor extends DataForm {
@@ -1314,15 +1401,15 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
                 } else {
                     n = 1;
                 }
-                InventoryGRNItem grnItem;
+                InventoryGRNItem newGrnItem;
                 for(int i = 0; i < n; i++) {
-                    grnItem = new InventoryGRNItem();
-                    grnItem.setPartNumber(pn);
-                    grnItem.setSerialNumber(i == 0 ? sn : "");
-                    grnItem.setQuantity(q);
-                    grnItem.setUnitCost(cost);
-                    grnItem.setBin(bin);
-                    grnItemsField.add(grnItem);
+                    newGrnItem = new InventoryGRNItem();
+                    newGrnItem.setPartNumber(pn);
+                    newGrnItem.setSerialNumber(i == 0 ? sn : "");
+                    newGrnItem.setQuantity(q);
+                    newGrnItem.setUnitCost(cost);
+                    newGrnItem.setBin(bin);
+                    grnItemsField.add(newGrnItem);
                 }
                 return true;
             }
@@ -1342,7 +1429,8 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
         private static class ConfirmGrid extends ActionGrid<InventoryGRNItem> {
 
             public ConfirmGrid(List<InventoryGRNItem> items, String message, Runnable action) {
-                super(InventoryGRNItem.class, items, StringList.create("Item.PartNumber", "Item.SerialNumber"),
+                super(InventoryGRNItem.class, items,
+                        StringList.create("Item.PartNumber", "Item.SerialNumber AS Serial/Batch Number"),
                         message, action);
                 execute();
             }

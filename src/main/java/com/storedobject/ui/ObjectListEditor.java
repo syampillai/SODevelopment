@@ -1,15 +1,15 @@
 package com.storedobject.ui;
 
 import com.storedobject.common.SORuntimeException;
-import com.storedobject.core.*;
+import com.storedobject.core.EditableList;
+import com.storedobject.core.StoredObject;
+import com.storedobject.core.StoredObjectUtility;
+import com.storedobject.core.Transaction;
 import com.storedobject.ui.util.AcceptAbandonButtons;
 import com.storedobject.vaadin.Button;
 import com.storedobject.vaadin.ButtonLayout;
 import com.vaadin.flow.component.HasValue;
 import com.vaadin.flow.component.grid.editor.Editor;
-import com.vaadin.flow.data.provider.ListDataProvider;
-import com.vaadin.flow.data.provider.Query;
-import com.vaadin.flow.function.SerializablePredicate;
 
 import java.util.function.Function;
 
@@ -519,6 +519,7 @@ public class ObjectListEditor<T extends StoredObject> extends EditableObjectGrid
      *
      * @throws Exception If any the data is not valid.
      */
+    @SuppressWarnings("RedundantThrows")
     public void validateData() throws Exception {
     }
 
@@ -552,8 +553,10 @@ public class ObjectListEditor<T extends StoredObject> extends EditableObjectGrid
                                 }
                             }
                             o.save(transaction);
+                            saved(transaction, o);
                         } else if(isDeleted(o)) {
                             o.delete(transaction);
+                            deleted(transaction, o);
                         }
                     } catch(Exception e) {
                         throw new SORuntimeException(e);
@@ -564,6 +567,24 @@ public class ObjectListEditor<T extends StoredObject> extends EditableObjectGrid
         } catch(SORuntimeException re) {
             throw (Exception)re.getCause();
         }
+    }
+
+    /**
+     * This is invoked when an instance is saved. You can carry out further save-related actions if any.
+     *
+     * @param object Instance that is saved.
+     * @throws Exception If an exception is thrown, transaction will be aborted.
+     */
+    protected void saved(Transaction transaction, T object) throws Exception {
+    }
+
+    /**
+     * This is invoked when an instance is deleted while saving. You can carry out further save-related actions if any.
+     *
+     * @param object Instance that is deleted.
+     * @throws Exception If an exception is thrown, transaction will be aborted.
+     */
+    protected void deleted(Transaction transaction, T object) throws Exception {
     }
 
     private void savedAll() {

@@ -88,11 +88,18 @@ public class POBrowser<T extends InventoryPO> extends ObjectBrowser<T> implement
             }
         });
         contextMenu = new GridContextMenu<>(this);
-        GridMenuItem<T> placeOrder = contextMenu.addItem("Place the Order", e -> e.getItem().ifPresent(i -> placeOrder()));
-        GridMenuItem<T> receiveItems = contextMenu.addItem("Receive Items", e -> e.getItem().ifPresent(i -> receiveItems()));
-        GridMenuItem<T> foreClose = contextMenu.addItem("Foreclose", e -> e.getItem().ifPresent(i -> foreclosePO()));
-        GridMenuItem<T> close = contextMenu.addItem("Close", e -> e.getItem().ifPresent(i -> closePO()));
-        GridMenuItem<T> preGRNs = contextMenu.addItem("Associated GRNs", e -> e.getItem().ifPresent(i -> preGRNs()));
+        GridMenuItem<T> placeOrder = contextMenu.addItem("Place the Order",
+                e -> e.getItem().ifPresent(i -> placeOrder()));
+        GridMenuItem<T> receiveItems = contextMenu.addItem("Receive Items",
+                e -> e.getItem().ifPresent(i -> receiveItems()));
+        GridMenuItem<T> foreClose = contextMenu.addItem("Foreclose",
+                e -> e.getItem().ifPresent(i -> foreclosePO()));
+        GridMenuItem<T> close = contextMenu.addItem("Close",
+                e -> e.getItem().ifPresent(i -> closePO()));
+        GridMenuItem<T> preGRNs = contextMenu.addItem("Process Associated GRNs",
+                e -> e.getItem().ifPresent(i -> preProcessGRNs()));
+        GridMenuItem<T> viewGRNs = contextMenu.addItem("View Associated GRNs",
+                e -> e.getItem().ifPresent(i -> preViewGRNs()));
         contextMenu.setDynamicContentHandler(po -> {
             deselectAll();
             if(po == null) {
@@ -447,7 +454,7 @@ public class POBrowser<T extends InventoryPO> extends ObjectBrowser<T> implement
         return true;
     }
 
-    private void preGRNs() {
+    private void preProcessGRNs() {
         T po = selected();
         if(po == null || !canProcessGRN(po)) {
             return;
@@ -464,6 +471,23 @@ public class POBrowser<T extends InventoryPO> extends ObjectBrowser<T> implement
         new GRNs(grns, this::processGRN).execute();
     }
 
+    private void preViewGRNs() {
+        T po = selected();
+        if(po == null) {
+            return;
+        }
+        List<InventoryGRN> grns = po.listLinks(InventoryGRN.class).toList();
+        if(grns.isEmpty()) {
+            message("No GRNs found for this PO");
+            return;
+        }
+        if(grns.size() == 1) {
+            processGRN(grns.get(0), true);
+            return;
+        }
+        new GRNs(grns, grn -> processGRN(grn, true)).execute();
+    }
+
     private class ReceiveItems extends ListGrid<InventoryPOItem> {
 
         private final T po;
@@ -472,7 +496,8 @@ public class POBrowser<T extends InventoryPO> extends ObjectBrowser<T> implement
         private SupplierInvoice supplierInvoice;
 
         public ReceiveItems(T po, List<InventoryPOItem> items) {
-            super(InventoryPOItem.class, items, StringList.create("PartNumber", "SerialNumber", "Expected"));
+            super(InventoryPOItem.class, items,
+                    StringList.create("PartNumber", "SerialNumber AS Serial/Batch Number", "Expected"));
             setCaption("Receive Items - GRN");
             this.po = po;
             createHTMLColumn("PartNumber", this::pn);
@@ -549,7 +574,7 @@ public class POBrowser<T extends InventoryPO> extends ObjectBrowser<T> implement
             List<InventoryGRN> addToGRNs = null;
             if(!createNew) {
                 addToGRNs = StoredObject.list(InventoryGRN.class,
-                        "Store=" + po.getStoreId() + " AND Supplier=" + po.getSupplierId() + " AND Status<2").
+                        "Store=" + po.getStoreId() + " AND Supplier=" + po.getSupplierId() + " AND Status=0").
                         toList();
                 if(addToGRNs.isEmpty()) {
                     warning("No open GRNs found for this supplier in this store!");
@@ -683,6 +708,10 @@ public class POBrowser<T extends InventoryPO> extends ObjectBrowser<T> implement
     }
 
     private void processGRN(InventoryGRN g) {
+        processGRN(g, false);
+    }
+
+    private void processGRN(InventoryGRN g, boolean viewOnly) {
         clearAlerts();
         int type;
         if(g == null) {
@@ -708,7 +737,11 @@ public class POBrowser<T extends InventoryPO> extends ObjectBrowser<T> implement
         }
         grnView.execute();
         if(g != null) {
-            grnView.processGRN(g);
+            if(viewOnly) {
+                grnView.viewGRN(g);
+            } else {
+                grnView.processGRN(g);
+            }
         }
     }
 

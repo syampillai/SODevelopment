@@ -26,6 +26,7 @@ public class AbstractQuantityField<T extends Quantity> extends CustomTextField<T
     private final int decimals;
     private boolean required = false;
     private boolean changed = false;
+    private T maxAllowed;
 
     @SuppressWarnings("unchecked")
     public AbstractQuantityField(String label, int width, int decimals, Class<T> quantityClass, MeasurementUnit unit) {
@@ -107,6 +108,11 @@ public class AbstractQuantityField<T extends Quantity> extends CustomTextField<T
 
     @Override
     public void setValue(T value) {
+        value = convert(value);
+        T v = getValue();
+        if(value.isZero() && v.isZero() && !value.getUnit().equals(v.getUnit())) {
+            setPresentationValue(value);
+        }
         super.setValue(convert(value));
     }
 
@@ -151,9 +157,24 @@ public class AbstractQuantityField<T extends Quantity> extends CustomTextField<T
             Double.parseDouble(string);
             q = (T)Quantity.create(new BigDecimal(string), this.getUnit());
         } catch (Throwable notANumber) {
-            q = Quantity.create(string, this.quantityClass);
+            try {
+                q = Quantity.create(string, this.quantityClass);
+            } catch(Throwable unitError) {
+                q = (T) Quantity.create(this.getUnit());
+            }
         }
         q = convert(q);
+        if(maxAllowed != null) {
+            try {
+                if(q.isGreaterThan(maxAllowed)) {
+                    throw new Exception();
+                }
+            } catch(Throwable unitError) {
+                q = maxAllowed;
+                setHelperText("Maximum allowed is " + maxAllowed);
+                focus();
+            }
+        }
         setPresentationValue(q);
         return q;
     }
@@ -185,7 +206,7 @@ public class AbstractQuantityField<T extends Quantity> extends CustomTextField<T
             return false;
         }
         if(value1.equals(value2)) {
-            return !value1.isZero() || value1.getUnit() == value2.getUnit();
+            return value1.isZero() || value1.getUnit().equals(value2.getUnit());
         }
         return false;
     }
@@ -276,5 +297,9 @@ public class AbstractQuantityField<T extends Quantity> extends CustomTextField<T
                 setProperty("title",
                         allowedUnits != null && allowedUnits.size() > 1 && !readOnly ?
                                 "Click to change" : "Unit");
+    }
+
+    public void setMaximumAllowed(T maximumAllowedQuantity) {
+        this.maxAllowed = maximumAllowedQuantity;
     }
 }

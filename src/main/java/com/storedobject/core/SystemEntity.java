@@ -73,10 +73,18 @@ public final class SystemEntity extends StoredObject implements RequiresApproval
 		return DateUtility.today();
 	}
 
+	public Date getStartOfFinancialYear(Date today) {
+		return DateUtility.today();
+	}
+
 	public Date getEndOfFinancialYear() {
 		return DateUtility.today();
 	}
-	
+
+	public Date getEndOfFinancialYear(Date today) {
+		return DateUtility.today();
+	}
+
     public void setLogoName(String logoName) {
     }
 

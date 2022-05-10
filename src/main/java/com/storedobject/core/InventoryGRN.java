@@ -2,6 +2,7 @@ package com.storedobject.core;
 
 import java.math.BigDecimal;
 import java.sql.Date;
+import java.util.List;
 import java.util.Random;
 
 public final class InventoryGRN extends StoredObject implements HasChildren {
@@ -137,12 +138,21 @@ public final class InventoryGRN extends StoredObject implements HasChildren {
     }
 
     /**
-     * Get the PO of this GRN.
+     * Get the PO of this GRN. There could be multiple POs and in that case it will always return null.
      *
      * @return PO if found, otherwise null.
      */
     public InventoryPO getPO() {
         return Math.random() > 0.5 ? null : new InventoryPO();
+    }
+
+    /**
+     * Get all the POs of this GRN.
+     *
+     * @return List of POs.
+     */
+    public List<InventoryPO> listPOs() {
+        return listMasters(InventoryPO.class, true).toList();
     }
 
     /**

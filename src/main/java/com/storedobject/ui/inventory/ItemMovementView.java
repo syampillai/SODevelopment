@@ -83,8 +83,9 @@ public class ItemMovementView extends ListGrid<InventoryLedger> implements Close
 
     @Override
     public Component createHeader() {
-        return new ButtonLayout(itemField, new Button("Print", "pdf", e -> report()),
-                new Button("Exit", e -> close()));
+        itemField.setWidthFull();
+        return new ButtonLayout(itemField, new Button("Print", "pdf", e -> report()).asSmall(),
+                new Button("Exit", e -> close()).asSmall());
     }
 
     @Override

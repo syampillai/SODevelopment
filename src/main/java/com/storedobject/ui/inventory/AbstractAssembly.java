@@ -92,6 +92,9 @@ public abstract class AbstractAssembly<T extends InventoryItem, C extends Invent
                 s.append(itemType.getName());
             }
         }
+        if(!a.getItemTypeId().equals(itemType.getId())) {
+            s.append(" (APN of " + a.getItemType().getPartNumber() + ")", "green");
+        }
         return s;
     }
 
@@ -203,7 +206,6 @@ public abstract class AbstractAssembly<T extends InventoryItem, C extends Invent
         if(item == null) {
             return EMPTY;
         }
-        Id itemId = item.getId();
         ArrayList<InventoryFitmentPosition> sa = assemblies.get(fitmentPosition.getId());
         if(sa == null) {
             sa = new ArrayList<>();
@@ -211,7 +213,6 @@ public abstract class AbstractAssembly<T extends InventoryItem, C extends Invent
             if(fitmentPosition == root) {
                 subassemblies = rootItem.getPartNumber().listImmediateAssemblies().toList();
             } else if(fitmentPosition.getAssembly().getItemType().isSerialized()) {
-                //noinspection resource
                 subassemblies = fitmentPosition.listImmediateAssemblies().toList();
             } else {
                 subassemblies = new ArrayList<>();
@@ -221,15 +222,10 @@ public abstract class AbstractAssembly<T extends InventoryItem, C extends Invent
                 InventoryFitmentPosition position;
                 Transaction t = null;
                 for(InventoryAssembly a: subassemblies) {
-                    position = InventoryFitmentPosition.get(item, a);
-                    if(position == null) {
-                        position = new InventoryFitmentPosition();
-                        position.setItem(itemId);
-                        position.setAssembly(a);
-                        if(t == null) {
-                            t = createTran();
-                        }
-                        save(position, t);
+                    position = InventoryFitmentPosition.get(t, item, a);
+                    if(t == null && position.isVirtual()) {
+                        t = createTran();
+                        position = InventoryFitmentPosition.get(t, item, a);
                     }
                     sa.add(position);
                 }
@@ -246,14 +242,6 @@ public abstract class AbstractAssembly<T extends InventoryItem, C extends Invent
             return getTransactionManager().createTransaction();
         } catch(Exception e) {
             throw new SORuntimeException("Unable to create transaction", e);
-        }
-    }
-
-    private void save(StoredObject so, Transaction t) {
-        try {
-            so.save(t);
-        } catch(Exception e) {
-            throw new SORuntimeException("Error saving " + so, e);
         }
     }
 
@@ -391,7 +379,6 @@ public abstract class AbstractAssembly<T extends InventoryItem, C extends Invent
                 return false;
             }
             setItem(itemField.getObject());
-            System.err.println("SET now to " + itemField.getObject());
             return true;
         }
 

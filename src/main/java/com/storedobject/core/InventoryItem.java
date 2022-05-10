@@ -352,11 +352,11 @@ public class InventoryItem extends StoredObject {
         return "";
     }
 
-    public final ObjectIterator<InventoryFitmentPosition> listAllFitmentPositions() {
+    public final ObjectIterator<InventoryFitmentPosition> listFitmentPositions() {
         return ObjectIterator.create();
     }
 
-    public final ObjectIterator<InventoryFitmentPosition> listFitmentPositions() {
+    public final ObjectIterator<InventoryFitmentPosition> listImmediateFitmentPositions() {
         return ObjectIterator.create();
     }
 
@@ -397,7 +397,7 @@ public class InventoryItem extends StoredObject {
      * @return Assembly positions where items are missing.
      */
     public ObjectIterator<InventoryFitmentPosition> listMissingAssemblies() {
-        return listFitmentPositions().filter(p -> p.getFittedItem() == null);
+        return ObjectIterator.create();
     }
 
     public boolean wasDataPicked() {

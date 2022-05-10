@@ -192,14 +192,21 @@ public class LocateItem extends DataGrid<InventoryItem> implements CloseableView
         serviceableOnly.addValueChangeListener(e -> loadItems());
         filter.addValueChangeListener(e -> loadItems());
         GridContextMenu<InventoryItem> cm = new GridContextMenu<>(this);
-        cm.addItem("View Details", e -> e.getItem().ifPresent(this::view));
-        GridMenuItem<InventoryItem> viewAssembly =
-                cm.addItem("View Assembly", e -> e.getItem().ifPresent(ii -> new ViewAssembly<>(ii).execute()));
+        cm.addItem("Item Details", e -> e.getItem().ifPresent(this::view));
+        GridMenuItem<InventoryItem> itemAssembly =
+                cm.addItem("Item Assembly", e -> e.getItem().ifPresent(ii -> new ViewAssembly<>(ii).execute()));
+        GridMenuItem<InventoryItem> parentAssembly =
+                cm.addItem("Parent Assembly", e -> e.getItem().ifPresent(
+                        ii -> new ViewAssembly<>(((InventoryFitmentPosition)ii.getLocation()).getItem()).execute()));
+        GridMenuItem<InventoryItem> viewFitment =
+                cm.addItem("Fitment Details", e -> e.getItem().ifPresent(this::viewFitment));
+        GridMenuItem<InventoryItem> viewFitmentLocations =
+                cm.addItem("Fitment Locations", e -> e.getItem().ifPresent(FitmentLocations::new));
         GridMenuItem<InventoryItem> inspect =
                 cm.addItem("Inspect & Bin", e -> e.getItem().ifPresent(this::inspect));
         GridMenuItem<InventoryItem> breakAssembly =
                 cm.addItem("Break from Assembly", e -> e.getItem().ifPresent(this::breakAssembly));
-        GridMenuItem<InventoryItem> movementReport = cm.addItem("Movement Detail",
+        GridMenuItem<InventoryItem> movementReport = cm.addItem("Movement Details",
                 e -> e.getItem().ifPresent(i -> new ItemMovementView(i).execute()));
         cm.setDynamicContentHandler(ii -> {
             deselectAll();
@@ -207,10 +214,14 @@ public class LocateItem extends DataGrid<InventoryItem> implements CloseableView
                 return false;
             }
             select(ii);
-            viewAssembly.setVisible(ii.getPartNumber().isAssembly());
+            InventoryLocation loc = ii.getLocation();
+            itemAssembly.setVisible(ii.getPartNumber().isAssembly());
+            parentAssembly.setVisible(loc instanceof InventoryFitmentPosition);
             inspect.setVisible(canInspect || allowBreaking);
+            viewFitment.setVisible(loc instanceof InventoryFitmentPosition);
+            viewFitmentLocations.setVisible(loc instanceof InventoryFitmentPosition);
             breakAssembly.setVisible((canInspect || allowBreaking) &&
-                    ii.getLocation() instanceof InventoryFitmentPosition);
+                    loc instanceof InventoryFitmentPosition);
             movementReport.setVisible(ii.isSerialized());
             return true;
         });
@@ -500,6 +511,47 @@ public class LocateItem extends DataGrid<InventoryItem> implements CloseableView
             }
             LocateItem.this.select(item);
             return true;
+        }
+    }
+
+    private void viewFitment(InventoryItem item) {
+        if(!(item.getLocation() instanceof InventoryFitmentPosition loc)) {
+            return;
+        }
+        InventoryAssembly ia = loc.getAssembly();
+        TextView tv = new TextView("Fitment Details");
+        tv.append("Assembly Configuration: ").append(ia.toDisplay(), "blue").newLine()
+                .append("Fitted Item: ").append(item.toDisplay(), "blue");
+        if(!ia.getItemTypeId().equals(item.getPartNumberId())) {
+            tv.append(" (APN)", "green");
+        }
+        tv.newLine().append("Fitted on: ").append(loc.getItem().toDisplay(), "blue");
+        tv.execute();
+    }
+
+    private static class FitmentLocations extends ObjectGrid<InventoryFitmentPosition> implements CloseableView {
+
+        private final InventoryItem item;
+
+        public FitmentLocations(InventoryItem item) {
+            super(InventoryFitmentPosition.class, StringList.create("Assembly.Position", "Assembly.ItemType",
+                    "Assembly.ParentItemType", "Assembly.Quantity", "Assembly.Accessory", "Assembly.Optional",
+                    "FittedItem"));
+            this.item = item;
+            setCaption("Fitment Locations");
+            load(item.listImmediateFitmentPositions());
+            execute();
+        }
+
+        @Override
+        public Component createHeader() {
+            return new ButtonLayout(new ELabel("Fitment Locations under ").append(item.toDisplay()).update(),
+                    new Button("Exit", e -> close()).asSmall());
+        }
+
+        @SuppressWarnings("unused")
+        public InventoryItem getFittedItem(InventoryFitmentPosition loc) {
+            return loc.getFittedItem();
         }
     }
 }

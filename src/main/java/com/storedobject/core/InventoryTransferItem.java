@@ -2,7 +2,7 @@ package com.storedobject.core;
 
 import java.math.BigDecimal;
 
-public abstract class InventoryTransferItem extends StoredObject implements Detail {
+public abstract class InventoryTransferItem extends StoredObject implements Detail, HasInventoryItem {
 
     public InventoryTransferItem() {
     }
@@ -23,6 +23,7 @@ public abstract class InventoryTransferItem extends StoredObject implements Deta
         return new Id();
     }
 
+    @Override
     public InventoryItem getItem() {
         return new InventoryItem();
     }
@@ -33,6 +34,7 @@ public abstract class InventoryTransferItem extends StoredObject implements Deta
     public void setQuantity(Object value) {
     }
 
+    @Override
     public Quantity getQuantity() {
         return Count.ONE;
     }

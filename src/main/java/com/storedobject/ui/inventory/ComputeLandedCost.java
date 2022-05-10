@@ -1,6 +1,7 @@
 package com.storedobject.ui.inventory;
 
 import com.storedobject.core.*;
+import com.storedobject.ui.Application;
 import com.storedobject.ui.ELabelField;
 import com.storedobject.ui.MoneyField;
 import com.storedobject.ui.Transactional;
@@ -50,6 +51,10 @@ public class ComputeLandedCost extends DataForm implements Transactional {
         if(this.costs.isEmpty()) {
             throw new SOException("No landed cost configuration found for the associated PO!");
         }
+    }
+
+    public ComputeLandedCost(Application application, InventoryGRN grn) throws SOException {
+        this(grn);
     }
 
     @Override
