@@ -2,8 +2,7 @@ package com.storedobject.ui;
 
 import com.storedobject.common.Processor;
 import com.storedobject.core.ApplicationServer;
-import com.storedobject.vaadin.CloseableView;
-import com.storedobject.vaadin.View;
+import com.storedobject.vaadin.*;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasComponents;
 import com.vaadin.flow.component.html.Div;
@@ -17,6 +16,7 @@ public class TextView extends View implements CloseableView, Transactional, Styl
     private final Div content = new Div();
     private Component topComponent;
     private Application application;
+    private boolean componentSet;
 
     public TextView(String caption) {
         setCaption(caption);
@@ -34,7 +34,6 @@ public class TextView extends View implements CloseableView, Transactional, Styl
         if(bottomComponent != null) {
             content.add(bottomComponent);
         }
-        setComponent(content);
     }
 
     protected Component getTopComponent() {
@@ -76,6 +75,10 @@ public class TextView extends View implements CloseableView, Transactional, Styl
 
     @Override
     protected void execute(com.storedobject.vaadin.View parent, boolean doNotLock) {
+        if(!componentSet) {
+            componentSet = true;
+            setComponent(content);
+        }
         getApplication().startPolling(this);
         getApplication().getUI().access(() -> {
             label.update();
@@ -236,5 +239,28 @@ public class TextView extends View implements CloseableView, Transactional, Styl
     @Override
     public boolean isNewLine() {
         return label.isNewLine();
+    }
+
+    @Override
+    public void decorateComponent() {
+        super.decorateComponent();
+    }
+
+    public void popup() {
+        Application a = getApplication();
+        if(a == null) {
+            pop();
+        } else {
+            a.access(this::pop);
+        }
+    }
+
+    private void pop() {
+        if(!componentSet) {
+            componentSet = true;
+            initUI();
+            setComponent(new Window(new WindowDecorator(this), new Box(content)));
+        }
+        execute();
     }
 }

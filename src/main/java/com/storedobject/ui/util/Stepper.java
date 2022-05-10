@@ -303,8 +303,11 @@ public class Stepper extends LitComponent implements HasSize, HasStyle {
 
     private static class StepHeader extends Div {
 
-        private StepHeader(int step, String title) {
-            Span stepNumber = new Span(String.valueOf(step));
+        private StepHeader(int step, String title, String stepCaption) {
+            if(stepCaption == null) {
+                stepCaption = String.valueOf(step);
+            }
+            Span stepNumber = new Span(stepCaption);
             stepNumber.addClassName("step-number");
             Div numberWrapper = new Div(stepNumber);
             numberWrapper.addClassName("number-wrapper");
@@ -342,7 +345,11 @@ public class Stepper extends LitComponent implements HasSize, HasStyle {
         private final Component content;
 
         public Step(int step, String title, Component content) {
-            this.header = new StepHeader(step, title);
+            this(step, title, content, null);
+        }
+
+        public Step(int step, String title, Component content, String stepCaption) {
+            this.header = new StepHeader(step, title, stepCaption);
             this.content = content;
         }
 

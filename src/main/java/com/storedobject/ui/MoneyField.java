@@ -176,6 +176,10 @@ public class MoneyField extends CustomTextField<Money> implements RequiredField 
         if(allowedCurrencies != null && !allowedCurrencies.contains(value.getCurrency())) {
             value = new Money(value.getValue(), allowedCurrencies.get(0));
         }
+        Money m;
+        if(value.isZero() && (m = getValue()).isZero() && !value.getCurrency().equals(m.getCurrency())) {
+            setPresentationValue(value);
+        }
         super.setValue(value);
     }
 

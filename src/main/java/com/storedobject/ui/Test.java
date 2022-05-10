@@ -12,8 +12,9 @@ public class Test extends DataForm {
     public Test() {
         super("Test");
         MoneyField mf = new MoneyField("Amount");
-        mf.setAllowedCurrencies("USD", "PKR");
+        mf.setAllowedCurrencies("MYR");
         addField(mf);
+        mf.addValueChangeListener(e -> message("Amount = " + e.getValue()));
         qField = new DistanceField("Distance");
         qField.addValueChangeListener(e -> message("Changed to: " + e.getValue()));
         addField(qField, new TextField("Test"));

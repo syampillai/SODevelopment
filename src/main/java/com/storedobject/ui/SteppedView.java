@@ -50,7 +50,7 @@ public abstract class SteppedView extends View implements Transactional {
     @Override
     protected void initUI() {
         for(int s = 1; s <= steps; s++) {
-            stepper.addStep(createStep(s));
+            stepper.addStep(createStep(s, getStepCaption(s)));
         }
         stepper.setCancelledAction(ignore -> cancel());
         stepper.setCompletedAction(ignore -> complete());
@@ -59,8 +59,12 @@ public abstract class SteppedView extends View implements Transactional {
         stepper.initUI();
     }
 
-    private Stepper.Step createStep(int step) {
-        return new Stepper.Step(step, getStepLabel(step), getStepComp(step)) {
+    public String getStepCaption(int step) {
+        return null;
+    }
+
+    private Stepper.Step createStep(int step, String stepCaption) {
+        return new Stepper.Step(step, getStepLabel(step), getStepComp(step), stepCaption) {
             @Override
             protected void onEnter() {
                 SteppedView.this.enter(step);
@@ -107,7 +111,7 @@ public abstract class SteppedView extends View implements Transactional {
      * conditions and validations at the intermediary steps.
      *
      * @param step Step to jump to
-     * @return The step up to which traversal is successful.
+     * @return The step to which traversal is successful.
      */
     public int goToStep(int step) {
         return stepper.goToStep(step);

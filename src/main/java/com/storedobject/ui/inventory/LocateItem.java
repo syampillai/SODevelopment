@@ -526,7 +526,7 @@ public class LocateItem extends DataGrid<InventoryItem> implements CloseableView
             tv.append(" (APN)", "green");
         }
         tv.newLine().append("Fitted on: ").append(loc.getItem().toDisplay(), "blue");
-        tv.execute();
+        tv.popup();
     }
 
     private static class FitmentLocations extends ObjectGrid<InventoryFitmentPosition> implements CloseableView {
@@ -534,9 +534,7 @@ public class LocateItem extends DataGrid<InventoryItem> implements CloseableView
         private final InventoryItem item;
 
         public FitmentLocations(InventoryItem item) {
-            super(InventoryFitmentPosition.class, StringList.create("Assembly.Position", "Assembly.ItemType",
-                    "Assembly.ParentItemType", "Assembly.Quantity", "Assembly.Accessory", "Assembly.Optional",
-                    "FittedItem"));
+            super(InventoryFitmentPosition.class);
             this.item = item;
             setCaption("Fitment Locations");
             load(item.listImmediateFitmentPositions());
@@ -544,14 +542,14 @@ public class LocateItem extends DataGrid<InventoryItem> implements CloseableView
         }
 
         @Override
+        public boolean includeColumn(String columnName) {
+            return !"Item".equals(columnName);
+        }
+
+        @Override
         public Component createHeader() {
             return new ButtonLayout(new ELabel("Fitment Locations under ").append(item.toDisplay()).update(),
                     new Button("Exit", e -> close()).asSmall());
-        }
-
-        @SuppressWarnings("unused")
-        public InventoryItem getFittedItem(InventoryFitmentPosition loc) {
-            return loc.getFittedItem();
         }
     }
 }
