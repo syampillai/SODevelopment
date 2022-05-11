@@ -77,6 +77,7 @@ public class TextView extends View implements CloseableView, Transactional, Styl
     protected void execute(com.storedobject.vaadin.View parent, boolean doNotLock) {
         if(!componentSet) {
             componentSet = true;
+            initUI();
             setComponent(content);
         }
         getApplication().startPolling(this);

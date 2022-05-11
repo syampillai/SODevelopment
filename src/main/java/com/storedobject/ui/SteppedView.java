@@ -230,6 +230,38 @@ public abstract class SteppedView extends View implements Transactional {
     }
 
     /**
+     * Set the label on the "Cancel" button.
+     * @param label Label to set.
+     */
+    public void setCancelLabel(String label) {
+        stepper.setCancelLabel(label);
+    }
+
+    /**
+     * Set the label on the "Back" button.
+     * @param label Label to set.
+     */
+    public void setBackLabel(String label) {
+        stepper.setBackLabel(label);
+    }
+
+    /**
+     * Set the label on the "Finish" button.
+     * @param label Label to set.
+     */
+    public void setFinishLabel(String label) {
+        stepper.setFinishLabel(label);
+    }
+
+    /**
+     * Set the label on the "Next" button.
+     * @param label Label to set.
+     */
+    public void setNextLabel(String label) {
+        stepper.setNextLabel(label);
+    }
+
+    /**
      * Get a label for the step. If you provide a label, that will be displayed along with the step number.
      *
      * @param step Step

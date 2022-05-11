@@ -105,4 +105,8 @@ public final class InventoryFitmentPosition extends InventoryLocation {
     public ObjectIterator<InventoryAssembly> listImmediateAssemblies() {
         return ObjectIterator.create();
     }
+
+    public boolean dataCorrection(TransactionControl tc) {
+        return Math.random() > 0.5;
+    }
 }

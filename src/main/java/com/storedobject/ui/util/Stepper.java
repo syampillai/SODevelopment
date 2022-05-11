@@ -257,8 +257,20 @@ public class Stepper extends LitComponent implements HasSize, HasStyle {
         }
     }
 
-    public void setCancelText(String cancel) {
-        this.cancel.setText(cancel);
+    public void setCancelLabel(String label) {
+        this.cancel.setText(label);
+    }
+
+    public void setBackLabel(String label) {
+        this.back.setText(label);
+    }
+
+    public void setFinishLabel(String label) {
+        this.finish.setText(label);
+    }
+
+    public void setNextLabel(String label) {
+        this.next.setText(label);
     }
 
     public void setCompletedAction(Consumer<Stepper> completedAction) {

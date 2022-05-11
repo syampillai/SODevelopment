@@ -1,30 +1,41 @@
 package com.storedobject.ui;
 
-import com.storedobject.core.Count;
-import com.storedobject.core.Distance;
-import com.storedobject.vaadin.DataForm;
-import com.storedobject.vaadin.TextField;
+import com.storedobject.core.InventoryFitmentPosition;
+import com.storedobject.core.ObjectIterator;
+import com.storedobject.core.StoredObject;
+import com.storedobject.core.TransactionControl;
 
-public class Test extends DataForm {
-
-    private final DistanceField qField;
+public class Test extends TextView implements Transactional {
 
     public Test() {
-        super("Test");
-        MoneyField mf = new MoneyField("Amount");
-        mf.setAllowedCurrencies("MYR");
-        addField(mf);
-        mf.addValueChangeListener(e -> message("Amount = " + e.getValue()));
-        qField = new DistanceField("Distance");
-        qField.addValueChangeListener(e -> message("Changed to: " + e.getValue()));
-        addField(qField, new TextField("Test"));
-        setRequired(qField);
-        qField.setValue(new Distance(0, "cm"));
+        super("Data Correction: Fitment");
+        setProcessor(this::doUpdate);
     }
 
-    @Override
-    protected boolean process() {
-        message(qField.getValue());
-        return false;
+    private void doUpdate() {
+        blackMessage("Processing...");
+        TransactionControl tc = new TransactionControl(getTransactionManager());
+        int count = 0;
+        try(ObjectIterator<InventoryFitmentPosition> ps = StoredObject.list(InventoryFitmentPosition.class)) {
+            for(InventoryFitmentPosition p: ps) {
+                if(p.dataCorrection(tc)) {
+                    if(tc.isActive()) {
+                        if(!tc.commit()) {
+                            tc.throwError();
+                        }
+                        if((++count % 10) == 0) {
+                            blueMessage("Updated: " + count);
+                        }
+                    }
+                } else {
+                    tc.throwError();
+                }
+            }
+        } catch(Throwable e) {
+            log(e);
+            redMessage(e);
+        }
+        blueMessage("Updated: " + count);
+        blueMessage("Completed!");
     }
 }
