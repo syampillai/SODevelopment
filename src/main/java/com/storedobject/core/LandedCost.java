@@ -75,4 +75,16 @@ public final class LandedCost extends StoredObject implements Detail {
     public Id getUniqueId() {
         return typeId;
     }
+
+    public static ObjectIterator<LandedCost> listCost(StoredObject forObject) {
+        return forObject.listLinks(LandedCost.class, null, "Type.DisplayOrder");
+    }
+
+    public static Money getCost(StoredObject forObject) {
+        Money cost = new Money();
+        for(LandedCost lc: listCost(forObject)) {
+            cost = lc.getType().getDeduct() ? cost.subtract(lc.getAmount()) : cost.add(lc.getAmount());
+        }
+        return cost;
+    }
 }

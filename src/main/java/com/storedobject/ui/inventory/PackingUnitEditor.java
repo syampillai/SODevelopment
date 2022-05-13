@@ -1,5 +1,6 @@
 package com.storedobject.ui.inventory;
 
+import com.storedobject.core.EditorAction;
 import com.storedobject.core.MeasurementUnit;
 import com.storedobject.core.PackingUnit;
 import com.storedobject.ui.ObjectEditor;
@@ -7,24 +8,12 @@ import com.storedobject.vaadin.Button;
 import com.storedobject.vaadin.ConfirmButton;
 import com.vaadin.flow.component.Component;
 
-public class PackingUnitEditor extends ObjectEditor<PackingUnit> {
+public final class PackingUnitEditor extends ObjectEditor<PackingUnit> {
 
     private Button deploy;
 
     public PackingUnitEditor() {
-        super(PackingUnit.class);
-    }
-
-    public PackingUnitEditor(int actions) {
-        super(PackingUnit.class, actions);
-    }
-
-    public PackingUnitEditor(int actions, String caption) {
-        super(PackingUnit.class, actions, caption);
-    }
-
-    public PackingUnitEditor(String className) throws Exception {
-        super(className);
+        super(PackingUnit.class, EditorAction.ALL & (~EditorAction.DELETE) & (~EditorAction.EDIT));
     }
 
     @Override

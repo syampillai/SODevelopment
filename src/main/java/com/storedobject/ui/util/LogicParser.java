@@ -2,16 +2,19 @@ package com.storedobject.ui.util;
 
 import com.storedobject.common.SORuntimeException;
 import com.storedobject.core.*;
-import com.storedobject.ui.Application;
+import com.storedobject.ui.ObjectBrowser;
 import com.storedobject.ui.ObjectEditor;
+import com.storedobject.ui.common.EntityRoleEditor;
+import com.storedobject.ui.common.PersonRoleEditor;
+import com.storedobject.ui.inventory.*;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
+@SuppressWarnings("unchecked")
 public class LogicParser {
 
     private static final String SO_DOT = "com.storedobject.";
-    private static final String DEVICE_TAG = "ui";
 
     public static String createLogicName(Class<?> objectClass, String tag) {
         return createLogicName(objectClass.getName(), tag, objectClass);
@@ -32,30 +35,24 @@ public class LogicParser {
             return p;
         }
         if(objectName.startsWith(SO_DOT)) {
-            p = SO_DOT + DEVICE_TAG + ".common" + c;
+            p = SO_DOT + "ui.common" + c;
             if(JavaClassLoader.exists(p)) {
                 return p;
             }
-            p = SO_DOT + DEVICE_TAG + ".tools" + c;
+            p = SO_DOT + "ui.tools" + c;
             if(JavaClassLoader.exists(p)) {
                 return p;
             }
         }
-        if("Editor".equals(tag)) {
+        if("Editor".equals(tag) || "Browser".equals(tag)) {
             if(objectClass == null) {
                 objectClass = findClass(objectName);
             }
-            if(objectClass != null && InventoryItemType.class.isAssignableFrom(objectClass)) {
-                return SO_DOT + DEVICE_TAG + ".inventory.ItemType" + tag;
-            }
-            if(objectClass != null && PersonRole.class.isAssignableFrom(objectClass)) {
-                return SO_DOT + DEVICE_TAG + ".common.PersonRole" + tag;
-            }
-            if(objectClass != null && EntityRole.class.isAssignableFrom(objectClass)) {
-                return SO_DOT + DEVICE_TAG + ".common.EntityRole" + tag;
+            if(objectClass != null) {
+                return "Editor".equals(tag) ? editorName(objectClass) : browserName(objectClass);
             }
         }
-        return SO_DOT + DEVICE_TAG + ".Object" + tag;
+        return SO_DOT + "ui.Object" + tag;
     }
 
     public static void parse(Logic logic) throws SOException {
@@ -183,5 +180,99 @@ public class LogicParser {
         if(!editor.getClass().getName().equals(createLogicName(editor.getObjectClass(), "Editor"))) {
             throw new SORuntimeException("Illegal access!");
         }
+    }
+
+    private static String browserName(Class<?> objectClass) {
+        if(PackingUnit.class == objectClass) {
+            return PackingUnitBrowser.class.getName();
+        }
+        if(InventoryPO.class.isAssignableFrom(objectClass)) {
+            return POBrowser.class.getName();
+        }
+        if(InventoryPOItem.class.isAssignableFrom(objectClass)) {
+            return POItemBrowser.class.getName();
+        }
+        return ObjectBrowser.class.getName();
+    }
+
+    private static <O extends StoredObject> ObjectBrowser<O> browser(Class<O> objectClass,
+                                                                     int actions, String title) {
+        if(PackingUnit.class == objectClass) {
+            return (ObjectBrowser<O>) new PackingUnitBrowser();
+        }
+        if(InventoryPO.class.isAssignableFrom(objectClass)) {
+            //noinspection rawtypes
+            return new POBrowser(objectClass, actions, title);
+        }
+        if(InventoryPOItem.class.isAssignableFrom(objectClass)) {
+            //noinspection rawtypes
+            return new POItemBrowser(objectClass, actions, title);
+        }
+        return null;
+    }
+
+    public static <O extends StoredObject> ObjectBrowser<O> createInternalBrowser(Class<O> objectClass,
+                                                                                  Iterable<String> browseColumns,
+                                                                                  int actions, String title) {
+        ObjectBrowser<O> browser = browser(objectClass, actions, title);
+        return browser == null ? new ObjectBrowser<>(objectClass, browseColumns, actions, title) : browser;
+    }
+
+    private static String editorName(Class<?> objectClass) {
+        if(PackingUnit.class == objectClass) {
+            return PackingUnitEditor.class.getName();
+        }
+        if(InventoryPO.class.isAssignableFrom(objectClass)) {
+            return POEditor.class.getName();
+        }
+        if(InventoryPOItem.class.isAssignableFrom(objectClass)) {
+            return POItemEditor.class.getName();
+        }
+        if(EntityRole.class.isAssignableFrom(objectClass)) {
+            return EntityRoleEditor.class.getName();
+        }
+        if(PersonRole.class.isAssignableFrom(objectClass)) {
+            return PersonRoleEditor.class.getName();
+        }
+        if(InventoryItemType.class.isAssignableFrom(objectClass)) {
+            return ItemTypeEditor.class.getName();
+        }
+        if(PersonRole.class.isAssignableFrom(objectClass)) {
+            return PersonRoleEditor.class.getName();
+        }
+        if(EntityRole.class.isAssignableFrom(objectClass)) {
+            return EntityRoleEditor.class.getName();
+        }
+        return ObjectEditor.class.getName();
+    }
+
+    private static <O extends StoredObject> ObjectEditor<O> editor(Class<O> objectClass,
+                                                                   int actions, String title) {
+        if(PackingUnit.class == objectClass) {
+            return (ObjectEditor<O>) new PackingUnitEditor();
+        }
+        if(InventoryPO.class.isAssignableFrom(objectClass)) {
+            //noinspection rawtypes
+            return new POEditor(objectClass, actions, title);
+        }
+        if(InventoryPOItem.class.isAssignableFrom(objectClass)) {
+            //noinspection rawtypes
+            return new POItemEditor(objectClass, actions, title);
+        }
+        if(EntityRole.class.isAssignableFrom(objectClass)) {
+            //noinspection rawtypes
+            return new EntityRoleEditor(objectClass, actions, title);
+        }
+        if(PersonRole.class.isAssignableFrom(objectClass)) {
+            //noinspection rawtypes
+            return new PersonRoleEditor(objectClass, actions, title);
+        }
+        return null;
+    }
+
+    public static <O extends StoredObject> ObjectEditor<O> createInternalEditor(Class<O> objectClass,
+                                                                                int actions, String title) {
+        ObjectEditor<O> editor = editor(objectClass, actions, title);
+        return editor == null ? new ObjectEditor<>(objectClass, actions, title) : editor;
     }
 }

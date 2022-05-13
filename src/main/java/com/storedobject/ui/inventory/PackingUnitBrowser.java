@@ -1,8 +1,10 @@
 package com.storedobject.ui.inventory;
 
+import com.storedobject.core.EditorAction;
 import com.storedobject.core.MeasurementUnit;
 import com.storedobject.core.PackingUnit;
 import com.storedobject.ui.ObjectBrowser;
+import com.storedobject.ui.ObjectEditor;
 import com.storedobject.vaadin.Button;
 import com.storedobject.vaadin.ConfirmButton;
 import com.vaadin.flow.component.Component;
@@ -12,43 +14,11 @@ public class PackingUnitBrowser extends ObjectBrowser<PackingUnit> {
     private Button deploy;
 
     public PackingUnitBrowser() {
-        super(PackingUnit.class);
-    }
-
-    public PackingUnitBrowser(Iterable<String> browseColumns) {
-        super(PackingUnit.class, browseColumns);
-    }
-
-    public PackingUnitBrowser(Iterable<String> browseColumns, Iterable<String> filterColumns) {
-        super(PackingUnit.class, browseColumns, filterColumns);
-    }
-
-    public PackingUnitBrowser(int actions) {
-        super(PackingUnit.class, actions);
-    }
-
-    public PackingUnitBrowser(int actions, String caption) {
-        super(PackingUnit.class, actions, caption);
-    }
-
-    public PackingUnitBrowser(Iterable<String> browseColumns, int actions) {
-        super(PackingUnit.class, browseColumns, actions);
-    }
-
-    public PackingUnitBrowser(Iterable<String> browseColumns, int actions, Iterable<String> filterColumns) {
-        super(PackingUnit.class, browseColumns, actions, filterColumns);
-    }
-
-    public PackingUnitBrowser(Iterable<String> browseColumns, int actions, String caption) {
-        super(PackingUnit.class, browseColumns, actions, caption);
-    }
-
-    public PackingUnitBrowser(Iterable<String> browseColumns, int actions, Iterable<String> filterColumns, String caption) {
-        super(PackingUnit.class, browseColumns, actions, filterColumns, caption);
+        super(PackingUnit.class, EditorAction.ALL & (~EditorAction.DELETE) & (~EditorAction.EDIT));
     }
 
     public PackingUnitBrowser(String className) throws Exception {
-        super(className);
+        this();
     }
 
     @Override
@@ -69,5 +39,10 @@ public class PackingUnitBrowser extends ObjectBrowser<PackingUnit> {
             return;
         }
         super.clicked(c);
+    }
+
+    @Override
+    protected ObjectEditor<PackingUnit> createObjectEditor() {
+        return new PackingUnitEditor();
     }
 }

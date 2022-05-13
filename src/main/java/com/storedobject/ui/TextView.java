@@ -34,6 +34,10 @@ public class TextView extends View implements CloseableView, Transactional, Styl
         if(bottomComponent != null) {
             content.add(bottomComponent);
         }
+        if(!componentSet) {
+            componentSet = true;
+            setComponent(content);
+        }
     }
 
     protected Component getTopComponent() {
@@ -75,11 +79,6 @@ public class TextView extends View implements CloseableView, Transactional, Styl
 
     @Override
     protected void execute(com.storedobject.vaadin.View parent, boolean doNotLock) {
-        if(!componentSet) {
-            componentSet = true;
-            initUI();
-            setComponent(content);
-        }
         getApplication().startPolling(this);
         getApplication().getUI().access(() -> {
             label.update();

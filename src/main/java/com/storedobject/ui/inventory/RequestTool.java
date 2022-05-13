@@ -54,7 +54,8 @@ public class RequestTool extends RequestMaterial {
         }
         try {
             //noinspection unchecked
-            itemTypeClass = (Class<? extends InventoryItemType>) JavaClassLoader.getLogic(GlobalProperty.get("TOOLS-TYPE-CLASS"));
+            itemTypeClass = (Class<? extends InventoryItemType>) JavaClassLoader
+                    .getLogic(GlobalProperty.get("TOOLS-TYPE-CLASS"));
             return itemTypeClass;
         } catch(Throwable ignored) {
         }

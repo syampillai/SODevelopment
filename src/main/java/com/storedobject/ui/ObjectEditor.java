@@ -6,8 +6,6 @@ import com.storedobject.common.StringList;
 import com.storedobject.core.*;
 import com.storedobject.core.annotation.Table;
 import com.storedobject.report.ObjectList;
-import com.storedobject.ui.common.EntityRoleEditor;
-import com.storedobject.ui.common.PersonRoleEditor;
 import com.storedobject.ui.inventory.POEditor;
 import com.storedobject.ui.inventory.POItemEditor;
 import com.storedobject.ui.util.*;
@@ -272,23 +270,7 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
         } catch(Throwable t) {
             Application.get().log(t);
         }
-        if(InventoryPO.class.isAssignableFrom(objectClass)) {
-            //noinspection rawtypes
-            return new POEditor(objectClass, actions, title);
-        }
-        if(InventoryPOItem.class.isAssignableFrom(objectClass)) {
-            //noinspection rawtypes
-            return new POItemEditor(objectClass, actions, title);
-        }
-        if(EntityRole.class.isAssignableFrom(objectClass)) {
-            //noinspection rawtypes
-            return new EntityRoleEditor(objectClass, actions, title);
-        }
-        if(PersonRole.class.isAssignableFrom(objectClass)) {
-            //noinspection rawtypes
-            return new PersonRoleEditor(objectClass, actions, title);
-        }
-        return new ObjectEditor<>(objectClass, actions, title);
+        return LogicParser.createInternalEditor(objectClass, actions, title);
     }
 
     static String sanitize(String className) {
@@ -351,8 +333,6 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
             if(caption == null || caption.isEmpty()) {
                 return;
             }
-            error("Error: Please inform Syam about this error, trying to overwrite caption '" + caption + "' with empty value!");
-            Thread.dumpStack();
             return;
         }
         super.setCaption(caption);

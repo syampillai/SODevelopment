@@ -35,7 +35,11 @@ public class ChangePassword extends DataForm implements Transactional {
     }
 
     protected ChangePassword(SystemUser su) {
-        super("Set New Password");
+        this(su, null);
+    }
+
+    protected ChangePassword(SystemUser su, String caption) {
+        super(caption == null || caption.isBlank() ? "Set New Password" : caption);
         this.su = su;
         this.forgot = true;
         addConstructedListener(o -> fConstructed());
@@ -81,7 +85,7 @@ public class ChangePassword extends DataForm implements Transactional {
             add(new ELabel(voice, "red"));
         }
         TextField user;
-        addField(user = new TextField("Login ID"));
+        addField(user = new TextField("User Name"));
         user.setReadOnly(true);
         user.setTabIndex(-1);
         user.setValue(su.getId() + ":" + su.getLogin());

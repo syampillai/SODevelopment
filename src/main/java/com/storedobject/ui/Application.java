@@ -369,6 +369,14 @@ public class Application extends com.storedobject.vaadin.Application implements 
     }
 
     public void close(final String exitSite) {
+        try {
+            VaadinService.getCurrentRequest().getWrappedSession().invalidate();
+        } catch(Throwable ignored) {
+        }
+        try {
+            VaadinSession.getCurrent().getSession().invalidate();
+        } catch(Throwable ignored) {
+        }
         if(server == null) {
             return;
         }
@@ -973,7 +981,8 @@ public class Application extends com.storedobject.vaadin.Application implements 
         String finalErrorMessage = errorMessage;
         error = () -> exit(finalErrorMessage, exitSite);
         VerifyOTP verifyOTP = new VerifyOTP(identityCheck.isSingleOTP(), identityCheck.getMobile(),
-                identityCheck.getEmail(), () -> new SetNewPassword().execute(), cancel, error);
+                identityCheck.getEmail(),
+                () -> new SetNewPassword(identityCheck.getPasswordChangeCaption()).execute(), cancel, error);
         String otpTemplate = identityCheck.getOTPTemplate();
         if(otpTemplate != null) {
             verifyOTP.setTemplateName(otpTemplate);
@@ -986,8 +995,8 @@ public class Application extends com.storedobject.vaadin.Application implements 
 
     private class SetNewPassword extends com.storedobject.ui.tools.ChangePassword {
 
-        private SetNewPassword() {
-            super(Application.this.getTransactionManager().getUser());
+        private SetNewPassword(String caption) {
+            super(Application.this.getTransactionManager().getUser(), caption);
         }
 
         @Override
@@ -1021,7 +1030,7 @@ public class Application extends com.storedobject.vaadin.Application implements 
         private void changed(String m) {
             if(m == null) {
                 if(isChanged()) {
-                    m = "New Password is set successfully! Please log in again to start using the application!!";
+                    m = "New password is set successfully. Please log in again to start using the application.";
                 } else {
                     m = "Password not set! Please contact Technical Support for any help!!";
                 }

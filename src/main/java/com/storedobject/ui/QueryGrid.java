@@ -2,15 +2,15 @@ package com.storedobject.ui;
 
 import com.storedobject.common.IO;
 import com.storedobject.common.StringList;
-import com.storedobject.core.*;
+import com.storedobject.core.EditorAction;
+import com.storedobject.core.Query;
+import com.storedobject.core.StringUtility;
+import com.storedobject.core.Utility;
 import com.storedobject.office.ExcelReport;
 import com.storedobject.pdf.PDFElement;
 import com.storedobject.pdf.PDFReport;
 import com.storedobject.pdf.PDFTable;
-import com.storedobject.vaadin.Button;
-import com.storedobject.vaadin.ButtonLayout;
-import com.storedobject.vaadin.ListGrid;
-import com.storedobject.vaadin.View;
+import com.storedobject.vaadin.*;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.grid.ColumnTextAlign;
@@ -35,6 +35,8 @@ public class QueryGrid extends ListGrid<QueryGrid.QueryResult> {
     private final Map<Integer, ColumnTextAlign> alignments = new HashMap<>();
     protected final ButtonLayout buttonPanel;
     protected Button pdf, excel, exit;
+    private SearchField search;
+    private String filterText = "";
     private int pdfPageOrientation = PDF.ORIENTATION_LANDSCAPE;
     private ResultSet resultSet;
 
@@ -51,8 +53,8 @@ public class QueryGrid extends ListGrid<QueryGrid.QueryResult> {
      * Constructor.
      *
      * @param query Query to be used to populate the grid.
-     * @param actions Action (As specified in {@link EditorAction}). Only {@link EditorAction#PDF} and
-     *                {@link EditorAction#EXCEL} are valid.
+     * @param actions Action (As specified in {@link EditorAction}). Only {@link EditorAction#PDF},
+     *               {@link EditorAction#SEARCH} and {@link EditorAction#EXCEL} are valid.
      */
     public QueryGrid(Query query, int actions) {
         this(query.getResultSet(), actions);
@@ -73,8 +75,8 @@ public class QueryGrid extends ListGrid<QueryGrid.QueryResult> {
      * Constructor.
      *
      * @param resultSet SQL result set  to be used to populate the grid.
-     * @param actions Action (As specified in {@link EditorAction}). Only {@link EditorAction#PDF} and
-     *                {@link EditorAction#EXCEL} are valid.
+     * @param actions Action (As specified in {@link EditorAction}). Only {@link EditorAction#PDF},
+     *               {@link EditorAction#SEARCH} and {@link EditorAction#EXCEL} are valid.
      */
     public QueryGrid(ResultSet resultSet, int actions) {
         this(null, resultSet, actions);
@@ -120,6 +122,7 @@ public class QueryGrid extends ListGrid<QueryGrid.QueryResult> {
      * @param actions Action (As specified in {@link EditorAction}). Only {@link EditorAction#PDF} and
      *                {@link EditorAction#EXCEL} are valid.
      */
+    @SuppressWarnings("resource")
     public QueryGrid(String caption, ResultSet resultSet, int actions) {
         super(QueryResult.class, StringList.EMPTY);
         setCaption(caption == null ? "Result" : caption);
@@ -131,13 +134,18 @@ public class QueryGrid extends ListGrid<QueryGrid.QueryResult> {
         if(actions == EditorAction.ALL || (actions & EditorAction.EXCEL) == EditorAction.EXCEL) {
             excel = new Button("Excel", e -> new Excel().execute());
         }
+        if(actions == EditorAction.ALL || (actions & EditorAction.SEARCH) == EditorAction.SEARCH) {
+            search = new SearchField(this::filter);
+            search.toUpperCase();
+            search.trim();
+        }
         if(!isCloseable()) {
             exit = new Button("Exit", e -> close());
             exit.setVisible(false);
         }
-        if(pdf != null || excel != null || exit != null) {
+        if(pdf != null || excel != null || search != null || exit != null) {
             buttonPanel = new ButtonLayout();
-            buttonPanel.add(pdf, excel, exit);
+            buttonPanel.add(pdf, excel, search, exit);
         } else {
             buttonPanel = null;
         }
@@ -154,7 +162,7 @@ public class QueryGrid extends ListGrid<QueryGrid.QueryResult> {
     }
 
     /**
-     * Load the date from the result set if it is not already loaded.
+     * Load the data from the result set if it is not already loaded.
      */
     public void load() {
         if(resultSet == null) {
@@ -185,6 +193,10 @@ public class QueryGrid extends ListGrid<QueryGrid.QueryResult> {
             resultSet = null;
             reload(rs);
         } catch (Exception ignored) {
+        }
+        if(search != null) {
+            setViewFilter(this::match);
+            search.setVisible(size() > 4);
         }
         resultSet = null;
     }
@@ -392,6 +404,20 @@ public class QueryGrid extends ListGrid<QueryGrid.QueryResult> {
             alignments.put(columnIndex, a);
         }
         return a;
+    }
+
+    private void filter(String s) {
+        this.filterText = s;
+        refresh();
+    }
+
+    private boolean match(QueryResult qr) {
+        if(filterText.isEmpty()) {
+            return true;
+        }
+        ApplicationEnvironment ae = ApplicationEnvironment.get();
+        return qr.entrySet().stream()
+                .anyMatch(e -> ae.toString(convertValue(e.getValue(), e.getKey())).toUpperCase().contains(filterText));
     }
 
     /**

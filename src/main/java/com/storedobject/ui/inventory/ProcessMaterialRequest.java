@@ -423,7 +423,6 @@ public class ProcessMaterialRequest extends AbstractRequestMaterial {
                     }
                 }
                 q = mri.getBalance();
-                //noinspection resource
                 stock = stockList(mri, bCount);
                 for(InventoryItem ii: stock) {
                     if(!q.isPositive()) {
@@ -1176,6 +1175,7 @@ public class ProcessMaterialRequest extends AbstractRequestMaterial {
                 return true;
             }
             message("Store changed to '" + loc.toDisplay() + "'");
+            close();
             ProcessMaterialRequest.this.close();
             new ProcessMaterialRequest(loc).execute();
             return true;

@@ -1,41 +1,33 @@
 package com.storedobject.ui;
 
-import com.storedobject.core.InventoryFitmentPosition;
-import com.storedobject.core.ObjectIterator;
-import com.storedobject.core.StoredObject;
-import com.storedobject.core.TransactionControl;
+import com.storedobject.core.Distance;
+import com.storedobject.core.Money;
+import com.storedobject.core.Quantity;
+import com.storedobject.vaadin.Button;
+import com.storedobject.vaadin.DataForm;
 
-public class Test extends TextView implements Transactional {
+public class Test extends DataForm {
+
+    private final MoneyField mf;
+    private final QuantityField qf;
 
     public Test() {
-        super("Data Correction: Fitment");
-        setProcessor(this::doUpdate);
+        super("Test");
+        mf = new MoneyField("Amount");
+        mf.setAllowedCurrencies("PKR");
+        addField(mf);
+        setRequired(mf);
+        add(new Button("Test Money", e -> mf.setValue(new Money(0, "GBP"))));
+        qf = new QuantityField("Quantity");
+        addField(qf);
+        add(new Button("Test Quantity", e -> qf.setValue(new Distance(0, "km"))));
+        setRequired(qf);
     }
 
-    private void doUpdate() {
-        blackMessage("Processing...");
-        TransactionControl tc = new TransactionControl(getTransactionManager());
-        int count = 0;
-        try(ObjectIterator<InventoryFitmentPosition> ps = StoredObject.list(InventoryFitmentPosition.class)) {
-            for(InventoryFitmentPosition p: ps) {
-                if(p.dataCorrection(tc)) {
-                    if(tc.isActive()) {
-                        if(!tc.commit()) {
-                            tc.throwError();
-                        }
-                        if((++count % 10) == 0) {
-                            blueMessage("Updated: " + count);
-                        }
-                    }
-                } else {
-                    tc.throwError();
-                }
-            }
-        } catch(Throwable e) {
-            log(e);
-            redMessage(e);
-        }
-        blueMessage("Updated: " + count);
-        blueMessage("Completed!");
+    @Override
+    protected boolean process() {
+        message(mf.getValue());
+        message(qf.getValue());
+        return false;
     }
 }

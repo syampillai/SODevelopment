@@ -66,7 +66,7 @@ public final class PrintButton extends Composite<Button> {
      * @return Print button.
      */
     public static PrintButton create(ObjectEditor<?> objectEditor) {
-        return create(objectEditor.getObjectClass(), objectEditor::getObject);
+        return create(objectEditor.getObjectClass(), objectEditor::getObject, objectEditor.getClass().getName());
     }
 
     /**
@@ -76,7 +76,7 @@ public final class PrintButton extends Composite<Button> {
      * @return Print button.
      */
     public static PrintButton create(ObjectGrid<?> objectGrid) {
-        return create(objectGrid.getObjectClass(), objectGrid::selected);
+        return create(objectGrid.getObjectClass(), objectGrid::selected, objectGrid.getClass().getName());
     }
 
     /**
@@ -87,7 +87,12 @@ public final class PrintButton extends Composite<Button> {
      * @return Print button.
      */
     public static PrintButton create(Class<? extends StoredObject> objectClass, Supplier<StoredObject> objectSupplier) {
-        List<PrintLogicDefinition> list = PrintLogicDefinition.listFor(objectClass).toList();
+        return create(objectClass, objectSupplier, null);
+    }
+
+    private static PrintButton create(Class<? extends StoredObject> objectClass, Supplier<StoredObject> objectSupplier,
+                                      String dataLogicName) {
+        List<PrintLogicDefinition> list = PrintLogicDefinition.listFor(objectClass, dataLogicName).toList();
         if(list.isEmpty()) {
             return null;
         }

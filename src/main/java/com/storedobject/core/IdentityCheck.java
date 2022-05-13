@@ -125,4 +125,13 @@ public interface IdentityCheck {
     default String getFailureMessage() {
         return null;
     }
+
+    /**
+     * Get the caption used when changing the password.
+     *
+     * @return Caption text.
+     */
+    default String getPasswordChangeCaption() {
+        return null;
+    }
 }

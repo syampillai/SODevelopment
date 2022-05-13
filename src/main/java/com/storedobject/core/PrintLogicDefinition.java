@@ -78,7 +78,8 @@ public class PrintLogicDefinition extends StoredObject {
         return new Random().nextBoolean() ? null : new PrintLogicDefinition();
     }
 
-    public static ObjectIterator<PrintLogicDefinition> listFor(Class<? extends StoredObject> dataCass) {
+    public static ObjectIterator<PrintLogicDefinition> listFor(Class<? extends StoredObject> dataCass,
+                                                               String applicableDataLogicName) {
         return ObjectIterator.create();
     }
 

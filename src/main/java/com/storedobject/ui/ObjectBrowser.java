@@ -288,15 +288,7 @@ public class ObjectBrowser<T extends StoredObject> extends ObjectGrid<T>
         } catch (Throwable t) {
             Application.get().log(t);
         }
-        if(InventoryPO.class.isAssignableFrom(objectClass)) {
-            //noinspection rawtypes
-            return new POBrowser(objectClass, actions, title);
-        }
-        if(InventoryPOItem.class.isAssignableFrom(objectClass)) {
-            //noinspection rawtypes
-            return new POItemBrowser(objectClass, actions, title);
-        }
-        return new ObjectBrowser<>(objectClass, browseColumns, actions, title);
+        return LogicParser.createInternalBrowser(objectClass, browseColumns, actions, title);
     }
 
     @Override
@@ -321,7 +313,6 @@ public class ObjectBrowser<T extends StoredObject> extends ObjectGrid<T>
             if(caption == null || caption.isEmpty()) {
                 return;
             }
-            error("Error: Please inform Syam about this error");
             return;
         }
         super.setCaption(caption);

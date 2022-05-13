@@ -116,13 +116,15 @@ public class SerialPattern extends StoredObject {
                 pattern = stuff(pattern, "fyfy-fyfy", "" + y2);
                 pattern = stuff(pattern, "fyfy-fy", "" + y2);
                 pattern = stuff(pattern, "fyfy", "" + y2);
+                pattern = stuff(pattern, "fy-fy", ("" + y2).substring(2));
                 pattern = stuff(pattern, "fy", ("" + y2).substring(2));
             } else {
                 pattern = stuff(pattern, "fyfy-fyfy", y1 + "-" + y2);
                 pattern = stuff(pattern, "fyfy-fy", y1 + "-" + ("" + y2).substring(2));
                 pattern = stuff(pattern, "fyfy", y1 + "-" + y2);
-                pattern = stuff(pattern, "fy",
-                        ("" + y1).substring(2) + "-" + ("" + y2).substring(2));
+                String s = ("" + y1).substring(2) + "-" + ("" + y2).substring(2);
+                pattern = stuff(pattern, "fy-fy", s);
+                pattern = stuff(pattern, "fy", s);
             }
         }
         pattern = stuff(pattern, "yyyy", "" + DateUtility.getYear(date));

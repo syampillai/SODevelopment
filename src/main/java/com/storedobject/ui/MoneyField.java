@@ -173,12 +173,9 @@ public class MoneyField extends CustomTextField<Money> implements RequiredField 
         if(value == null) {
             value = new Money();
         }
-        if(allowedCurrencies != null && !allowedCurrencies.contains(value.getCurrency())) {
+        if(allowedCurrencies != null && !allowedCurrencies.isEmpty()
+                && !allowedCurrencies.contains(value.getCurrency())) {
             value = new Money(value.getValue(), allowedCurrencies.get(0));
-        }
-        Money m;
-        if(value.isZero() && (m = getValue()).isZero() && !value.getCurrency().equals(m.getCurrency())) {
-            setPresentationValue(value);
         }
         super.setValue(value);
     }
@@ -347,7 +344,25 @@ public class MoneyField extends CustomTextField<Money> implements RequiredField 
         symbol.getStyle().set("cursor", "pointer");
         symbol.getElement().
                 setProperty("title",
-                        allowedCurrencies != null && allowedCurrencies.size() > 1 && !readOnly ?
+                        allowedCurrencies != null && !allowedCurrencies.isEmpty() && !readOnly ?
                                 "Click to change" : "Currency");
+    }
+
+    @Override
+    public boolean isEmpty() {
+        return getValue().isZero();
+    }
+
+    @Override
+    public Money getEmptyValue() {
+        if(allowedCurrencies != null && !allowedCurrencies.isEmpty()) {
+            return new Money(0, allowedCurrencies.get(0));
+        }
+        return super.getEmptyValue();
+    }
+
+    @Override
+    protected boolean valueEquals(Money value1, Money value2) {
+        return value1.getValue().equals(value2.getValue()) && value1.getCurrency().equals(value2.getCurrency());
     }
 }
