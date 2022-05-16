@@ -34,19 +34,6 @@ public class POItemEditor<T extends InventoryPOItem> extends ObjectEditor<T> {
         super(objectClass, actions, caption, allowedActions);
     }
 
-    public POItemEditor() {
-        this(0, null);
-    }
-
-    public POItemEditor(int actions) {
-        this(actions, null);
-    }
-
-    public POItemEditor(int actions, String caption) {
-        //noinspection unchecked
-        this((Class<T>) InventoryPOItem.class, actions, caption, null);
-    }
-
     @Override
     protected void customizeField(String fieldName, HasValue<?, ?> field) {
         if("PartNumber".equals(fieldName)) {

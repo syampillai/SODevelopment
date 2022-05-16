@@ -51,19 +51,6 @@ public class POEditor<T extends InventoryPO> extends ObjectEditor<T> {
         });
     }
 
-    public POEditor() {
-        this(0, null);
-    }
-
-    public POEditor(int actions) {
-        this(actions, null);
-    }
-
-    public POEditor(int actions, String caption) {
-        //noinspection unchecked
-        this((Class<T>) InventoryPO.class, actions, caption, null);
-    }
-
     @Override
     public boolean canEdit() {
         return canEdit(getObject()) && super.canEdit();

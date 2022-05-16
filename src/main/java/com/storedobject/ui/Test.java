@@ -1,33 +1,29 @@
 package com.storedobject.ui;
 
-import com.storedobject.core.Distance;
-import com.storedobject.core.Money;
-import com.storedobject.core.Quantity;
+import com.storedobject.core.Person;
+import com.storedobject.core.StoredObject;
 import com.storedobject.vaadin.Button;
 import com.storedobject.vaadin.DataForm;
+import com.storedobject.vaadin.TokensField;
 
 public class Test extends DataForm {
 
-    private final MoneyField mf;
-    private final QuantityField qf;
+    private final TokensField<Person> tf;
 
     public Test() {
         super("Test");
-        mf = new MoneyField("Amount");
-        mf.setAllowedCurrencies("PKR");
-        addField(mf);
-        setRequired(mf);
-        add(new Button("Test Money", e -> mf.setValue(new Money(0, "GBP"))));
-        qf = new QuantityField("Quantity");
-        addField(qf);
-        add(new Button("Test Quantity", e -> qf.setValue(new Distance(0, "km"))));
-        setRequired(qf);
+        tf = new TokensField<>("Persons", StoredObject.list(Person.class).toList());
+        addField(tf);
+        tf.setPlaceholder("Select persons");
+        setRequired(tf);
+        tf.setItemLabelGenerator(Person::getFirstName);
+        add(new Button("Test", e -> tf.setReadOnly(!tf.isReadOnly())));
     }
 
     @Override
     protected boolean process() {
-        message(mf.getValue());
-        message(qf.getValue());
+        message(tf.getValue());
+        message(tf.isEmpty());
         return false;
     }
 }

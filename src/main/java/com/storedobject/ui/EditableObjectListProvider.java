@@ -135,8 +135,10 @@ public class EditableObjectListProvider<T extends StoredObject> extends ObjectLi
         if(item == null) {
             return false;
         }
-        if(item.created()) {
-            item.makeVirtual();
+        if(item.created() || item.isVirtual()) {
+            if(!item.isVirtual()) {
+                item.makeVirtual();
+            }
             getData().add(item);
             added.put(item.getId(), item);
             return true;
@@ -227,7 +229,8 @@ public class EditableObjectListProvider<T extends StoredObject> extends ObjectLi
     @Override
     public void load(ObjectIterator<T> objects) {
         clearInt();
-        super.load(objects);
+        objects.forEach(o -> append(o, false));
+        refreshAll();
     }
 
     /**

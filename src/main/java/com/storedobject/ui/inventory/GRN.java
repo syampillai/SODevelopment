@@ -338,9 +338,6 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
         if(poClass == null) {
             return null;
         }
-        if(InventoryPO.class == poClass) {
-            return new POBrowser<>();
-        }
         if(InventoryPO.class.isAssignableFrom(poClass)) {
             return (POBrowser<?>) getApplication().getServer()
                     .execute(new Logic("B:" + poClass.getName(), null), false);

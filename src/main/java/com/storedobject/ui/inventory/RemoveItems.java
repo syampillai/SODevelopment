@@ -42,7 +42,7 @@ class RemoveItems extends DataForm implements Transactional {
             ef.append(" to ").append(entity, "blue");
         }
         ef.update();
-        addField(statusField, ef, itemField, qField);
+        addField(new ELabelField("From", locationFrom.toDisplay()), statusField, ef, itemField, qField);
         setRequired(itemField);
         trackValueChange(itemField);
         setRequired(qField);
@@ -51,12 +51,10 @@ class RemoveItems extends DataForm implements Transactional {
     }
 
     static boolean requiresEntity(int action) {
-        switch(action) {
-            case 2:
-            case 3:
-                return false;
-        }
-        return true;
+        return switch(action) {
+            case 2, 3 -> false;
+            default -> true;
+        };
     }
 
     @Override
@@ -96,21 +94,14 @@ class RemoveItems extends DataForm implements Transactional {
         inventoryTransaction.abandon();
         String reference = refField.getValue();
         switch(action) {
-            case 0:
-                inventoryTransaction.sale(item, q, reference, entity);
-                break;
-            case 1:
-                inventoryTransaction.loanTo(item, reference, entity);
-                break;
-            case 2:
-                inventoryTransaction.scrap(item, q, reference);
-                break;
-            case 3:
-                inventoryTransaction.bookShortage(item, q, reference);
-                break;
-            default:
+            case 0 -> inventoryTransaction.sale(item, q, reference, entity);
+            case 1 -> inventoryTransaction.loanTo(item, reference, entity);
+            case 2 -> inventoryTransaction.scrap(item, q, reference);
+            case 3 -> inventoryTransaction.bookShortage(item, q, reference);
+            default -> {
                 warning("Not yet implemented!");
                 return false;
+            }
         }
         try {
             inventoryTransaction.save();

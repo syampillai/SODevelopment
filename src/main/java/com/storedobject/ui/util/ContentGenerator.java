@@ -85,6 +85,9 @@ public class ContentGenerator extends AbstractContentGenerator {
         }
         if(canView()) {
             viewer.view(resource(getContentType()), getContentStream(), caption);
+            if(producer.isMedia()) {
+                application.access(application::closeWaitMessage);
+            }
             return true;
         }
         File file = createFile();
@@ -96,6 +99,7 @@ public class ContentGenerator extends AbstractContentGenerator {
             FileResource fr = new FileResource(file, producer.getMimeType());
             viewer.view(fr, ((com.storedobject.ui.util.FileResource)fr).getInputStream(), caption);
         } catch (Throwable e) {
+            application.access(application::closeWaitMessage);
             Application.error(e);
             //noinspection ResultOfMethodCallIgnored
             file.delete();
@@ -132,6 +136,12 @@ public class ContentGenerator extends AbstractContentGenerator {
         });
     }
 
+    /**
+     * Create the download stream (Used when the content is downloaded).
+     *
+     * @return Stream to download.
+     * @throws Exception If any error occurs.
+     */
     @Override
     public DownloadStream getContent() throws Exception {
         kick();

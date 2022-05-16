@@ -9,10 +9,8 @@ import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.data.provider.ListDataProvider;
 import com.vaadin.flow.shared.Registration;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import javax.annotation.Nonnull;
+import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
@@ -97,6 +95,21 @@ public class EditableObjectGrid<T extends StoredObject> extends AbstractEditable
      */
     public void setAutoSaveOnMove(boolean autoSave) {
         this.autoSave = autoSave;
+    }
+
+    @Override
+    public boolean addAll(@Nonnull Collection<? extends T> collection) {
+        boolean added = false;
+        for(T object: collection) {
+            add(object);
+            added = true;
+        }
+        return added;
+    }
+
+    @Override
+    public boolean addAll(int index, @Nonnull Collection<? extends T> collection) {
+        return addAll(collection);
     }
 
     @Override

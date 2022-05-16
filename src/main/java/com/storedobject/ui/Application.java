@@ -569,7 +569,7 @@ public class Application extends com.storedobject.vaadin.Application implements 
     }
 
     public final String getDisplayVersion() {
-        return ApplicationServer.getGlobalProperty("application.version", "22.0.14", true);
+        return ApplicationServer.getGlobalProperty("application.version", getDriverIdentifier(), true);
     }
 
     @Override
@@ -649,6 +649,10 @@ public class Application extends com.storedobject.vaadin.Application implements 
             }
         }
         new ContentGenerator(this, producer, caption, this::remove, timeTracker, waitMessage::open).kick();
+    }
+
+    public void closeWaitMessage() {
+        waitMessage.close();
     }
 
     private void remove(AbstractContentGenerator acg) {

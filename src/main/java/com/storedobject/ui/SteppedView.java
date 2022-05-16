@@ -67,16 +67,19 @@ public abstract class SteppedView extends View implements Transactional {
         return new Stepper.Step(step, getStepLabel(step), getStepComp(step), stepCaption) {
             @Override
             protected void onEnter() {
+                clearAlerts();
                 SteppedView.this.enter(step);
             }
 
             @Override
             protected void onAbort() {
+                clearAlerts();
                 SteppedView.this.back(step);
             }
 
             @Override
             protected boolean onComplete() {
+                clearAlerts();
                 try {
                     return SteppedView.this.commit(step) && SteppedView.this.complete(step);
                 } catch (Throwable error) {
@@ -88,7 +91,11 @@ public abstract class SteppedView extends View implements Transactional {
     }
 
     private Component getStepComp(int step) {
+        int count = forms.size();
         Component c = getStepComponent(step);
+        if(c != null && count < forms.size()) {
+            return c;
+        }
         CSSGrid div = new CSSGrid();
         div.setSizeFull();
         if(c != null) {
@@ -103,7 +110,7 @@ public abstract class SteppedView extends View implements Transactional {
             return null;
         }
         Component c = forms.get(step - 1);
-        return c instanceof Form ? (Form)c : null;
+        return c instanceof AbstractForm ? (AbstractForm<?>)c : null;
     }
 
     /**

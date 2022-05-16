@@ -308,6 +308,10 @@ public class ObjectBrowser<T extends StoredObject> extends ObjectGrid<T>
 
     @Override
     public void setCaption(String caption) {
+        setCaption(caption, false);
+    }
+
+    void setCaption(String caption, boolean fromEditor) {
         if(caption == null || caption.isEmpty()) {
             caption = getCaption();
             if(caption == null || caption.isEmpty()) {
@@ -316,7 +320,7 @@ public class ObjectBrowser<T extends StoredObject> extends ObjectGrid<T>
             return;
         }
         super.setCaption(caption);
-        if(editor != null) {
+        if(!fromEditor && editor != null) {
             editor.setCaption(caption);
         }
     }

@@ -883,6 +883,8 @@ public class SOFieldCreator<T> implements ObjectFieldCreator<T> {
             field.uppercase();
         } else if(md.isStyle("lower") || md.isStyle("lowercase")) {
             field.lowercase();
+        } else if(md.isStyle("camel") || md.isStyle("camelcase")) {
+            field.capitalize();
         }
         if(p1 <= 0) {
             field.setMinWidth("15em");

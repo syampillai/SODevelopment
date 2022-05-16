@@ -148,47 +148,6 @@ public class POBrowser<T extends InventoryPO> extends ObjectBrowser<T> implement
         });
     }
 
-    public POBrowser() {
-        this((String)null);
-    }
-
-    public POBrowser(String caption) {
-        this(ALL, caption);
-    }
-
-    public POBrowser(Iterable<String> browseColumns) {
-        this(browseColumns, ALL);
-    }
-
-    public POBrowser(Iterable<String> browseColumns, Iterable<String> filterColumns) {
-        this(browseColumns, ALL, filterColumns);
-    }
-
-    public POBrowser(int actions) {
-        this(actions, null);
-    }
-
-    public POBrowser(int actions, String caption) {
-        this((Iterable<String>)null, actions, caption);
-    }
-
-    public POBrowser(Iterable<String> browseColumns, int actions) {
-        this(browseColumns, actions, null, null);
-    }
-
-    public POBrowser(Iterable<String> browseColumns, int actions, Iterable<String> filterColumns) {
-        this(browseColumns, actions, filterColumns, null);
-    }
-
-    public POBrowser(Iterable<String> browseColumns, int actions, String caption) {
-        this(browseColumns, actions, null, caption);
-    }
-
-    public POBrowser(Iterable<String> browseColumns, int actions, Iterable<String> filterColumns, String caption) {
-        //noinspection unchecked
-        this((Class<T>) InventoryPO.class, browseColumns, actions, filterColumns, caption, null);
-    }
-
     public void setForGRNs() {
         this.forGRN = true;
         if(add != null) {

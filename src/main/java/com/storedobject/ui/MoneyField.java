@@ -363,6 +363,6 @@ public class MoneyField extends CustomTextField<Money> implements RequiredField 
 
     @Override
     protected boolean valueEquals(Money value1, Money value2) {
-        return value1.getValue().equals(value2.getValue()) && value1.getCurrency().equals(value2.getCurrency());
+        return value1.getValue().compareTo(value2.getValue()) == 0 && value1.getCurrency().equals(value2.getCurrency());
     }
 }

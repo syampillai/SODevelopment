@@ -340,7 +340,7 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
             anchorForm.setCaption(caption);
         }
         if(searcher instanceof ObjectBrowser) {
-            ((ObjectBrowser<T>) searcher).setCaption("Search: " + caption);
+            ((ObjectBrowser<T>) searcher).setCaption("Search: " + caption, true);
         }
     }
 
