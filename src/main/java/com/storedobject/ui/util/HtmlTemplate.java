@@ -240,7 +240,7 @@ public abstract class HtmlTemplate extends Component {
                     } catch (NumberFormatException e) {
                         throw new RuntimeException("Cannot parse value for numeric property: " + propertyName);
                     }
-                } else if (value == null || value.equals("")) {
+                } else if (value.equals("")) {
                     flowElement.setAttribute(key, true);
                 } else {
                     flowElement.setAttribute(key, value);

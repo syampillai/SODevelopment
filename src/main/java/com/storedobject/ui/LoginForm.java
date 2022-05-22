@@ -5,8 +5,10 @@ import com.storedobject.ui.tools.BiometricButton;
 import com.storedobject.ui.tools.LoginNameField;
 import com.storedobject.ui.util.SOServlet;
 import com.storedobject.vaadin.*;
+import com.storedobject.vaadin.ApplicationLayout;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.checkbox.Checkbox;
+import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.template.Id;
@@ -16,16 +18,26 @@ import com.vaadin.flow.shared.Registration;
  * This is a template-based login screen and its template can be defined in the {@link TextContent} named
  * "com.storedobject.ui.LoginForm". If this template exists, this will be used for rendering the login view
  * instead of the default one. Following id-values are used to map the necessary fields in the template:
- * <p>id = "layout" (Should be a div tag. Represents the outermost layout in which the whole login form is wrapped.
- * This is optional)</p>
- * <p>id = "login" (Should be a vaadin-combo-box tag. Represents user-name field)</p>
- * <p>id = "remember" (Should be a vaadin-checkbox tag. Used to remember the user-name. This is optional)</p>
- * <p>id = "password" (Should be a vaadin-password-field tag)</p>
- * <p>id = "cram" (Should be a vaadin-custom-field tag. This is optional)</p>
- * <p>id = "biometric" (Should be a so-auth tag. Used for showing biometric option. This is optional)</p>
- * <p>id = "ok" ('OK' or 'Sign in' button. This should be a vaadin-button tag)</p>
- * <p>id = "cancel" ('Cancel' button. This should be a vaadin-button tag)</p>
- * <p>id = "forgot" ('Forgot Password' button. This should be a vaadin-button tag)</p>
+ * <p>id = "layout" (Should be an HTML div tag. Represents the outermost layout in which the whole login
+ * form is wrapped. This is optional.)</p>
+ * <p>id = "login" (Should be a vaadin-combo-box tag. Represents user-name field. Not working due to a bug,
+ * use "user" instead.)</p>
+ * <p>id = "user" (Should be a vaadin-text-field tag. Represents user-name field.)</p>
+ * <p>id = "remember" (Should be a vaadin-checkbox tag. Used to remember the user-name. This is optional.)</p>
+ * <p>id = "password" (Should be a vaadin-password-field tag.)</p>
+ * <p>id = "cram" (Should be a vaadin-custom-field tag. This is optional.)</p>
+ * <p>id = "biometric" (Should be a so-auth tag. Used for showing biometric option. This is optional.)</p>
+ * <p>id = "ok" ('OK' or 'Sign in' button. This should be a vaadin-button tag.)</p>
+ * <p>id = "cancel" ('Cancel' button. This should be a vaadin-button tag.)</p>
+ * <p>id = "forgot" ('Forgot Password' button. This should be a vaadin-button tag. This is optional.)</p>
+ * <p>id = "forgotLink" ('Forgot Password' link. This should be an HTML a tag. This is optional.)</p>
+ * <p>id = "terms"  (Should be a vaadin-checkbox tag. User needs to click this always. This is optional.)</p>
+ * <p>id = "viewX" (The value of X can be anything. Should be an HTML a tag with href attribute set to empty string.
+ * Typically used for providing static content views. This is optional.)</p>
+ * <p>Additional attributes can be define for certain id values:</p>
+ * <p>id = "terms" A "message" attribute can be specified for the message to show if it is not checked.</p>
+ * <p>id = "viewX" A "file" attribute must be specified with the name of the file to view. A "caption" attribute may
+ * be specified if you want to show the caption as something other than the file name.</p>
  *
  * @author Syam
  */
@@ -33,11 +45,14 @@ public class LoginForm extends TemplateView implements HomeView {
 
     private final Animation[] animation = { Animation.SHAKE, Animation.FLASH };
     private int animationIndex = 0;
+
     @Id
     private Component layout;
 
-    @Id("login")
     private LoginNameField loginField;
+
+    @Id("user")
+    private TextField userField;
 
     @Id("password")
     private PasswordField passwordField;
@@ -60,6 +75,12 @@ public class LoginForm extends TemplateView implements HomeView {
     @Id
     private Button forgot;
 
+    @Id
+    private AnchorButton forgotLink;
+
+    @Id
+    private Checkbox terms;
+
     private SystemUser user;
     private boolean init;
     private final ExecutableView internal;
@@ -70,12 +91,18 @@ public class LoginForm extends TemplateView implements HomeView {
         Application a = Application.get();
         a.mainLayout.saveHeaderHeight();
         a.getUI().getElement().getStyle().set("--so-header-height", "0vh");
-        Application.get().log("Accessed");
+        a.log("Accessed");
     }
 
     LoginForm(@SuppressWarnings("unused") boolean dummy) {
         super("-", () -> "<div></div>");
         this.internal = new LF();
+    }
+
+    @Override
+    public void viewConstructed(View view) {
+        super.viewConstructed(view);
+        loginField = null;
     }
 
     @Override
@@ -91,7 +118,9 @@ public class LoginForm extends TemplateView implements HomeView {
     @Override
     public void close() {
         if(internal == this) {
-            Application.get().mainLayout.restoreHeaderHeight();
+            ApplicationLayout al = Application.get().mainLayout;
+            al.restoreHeaderHeight();
+            al.resizeContent();
             super.close();
         } else {
             internal.close();
@@ -99,7 +128,7 @@ public class LoginForm extends TemplateView implements HomeView {
     }
 
     private void setUser() {
-        String u = loginField == null ? null : loginField.getValue();
+        String u = userField != null ? userField.getValue() : (loginField == null ? null : loginField.getValue());
         if(u == null) {
             return;
         }
@@ -132,12 +161,29 @@ public class LoginForm extends TemplateView implements HomeView {
     }
 
     private void process(boolean forgot) {
+        if(terms != null && !terms.getValue()) {
+            String m = terms.getElement().getAttribute("message");
+            if(m == null || m.isBlank()) {
+                m = "Please accept the terms & conditions";
+            }
+            speak(m, true);
+            return;
+        }
         internal.clearAlerts();
         Login login = getA().getLogin();
         setBioStatus();
-        String u = user == null ?
-                (loginField == null ? "" : loginField.getValue().trim().toLowerCase()) :
-                user.getLogin();
+        String u;
+        if(user == null) {
+            if(userField != null) {
+                u = userField.getValue().trim().toLowerCase();
+            } else if(loginField != null) {
+                u = loginField.getValue().trim().toLowerCase();
+            } else {
+                u = "";
+            }
+        } else {
+            u = user.getLogin();
+        }
         if(u.isBlank()) {
             speak("Please enter a valid user name", false);
             return;
@@ -213,26 +259,34 @@ public class LoginForm extends TemplateView implements HomeView {
             if(remember != null) {
                 remember.setTabIndex(-1);
             }
-            if(loginField != null) {
+            if(userField != null) {
+                userField.addValueChangeListener(e -> setUser());
+            } else if(loginField != null) {
                 loginField.addValueChangeListener(e -> setUser());
             }
         }
         super.execute();
-        if(loginField != null) {
+        if(userField != null) {
+            userField.focus();
+        } else if(loginField != null) {
             loginField.focus();
         }
     }
 
     @Override
     protected Component createComponentForId(String id) {
+        if(id.startsWith("view")) {
+            return new Anchor();
+        }
         if(loginField == null) {
             loginField = new LoginNameField();
         }
         if(remember == null) {
-            remember = new Checkbox("Remember my login");
+            remember = new Checkbox();
+            remember.setTabIndex(-1);
         }
         if(passwordField == null) {
-            passwordField = new PasswordField("Password");
+            passwordField = new PasswordField();
         }
         if("remember".equals(id)) {
             loginField.setRemember(remember);
@@ -242,14 +296,17 @@ public class LoginForm extends TemplateView implements HomeView {
         }
         return switch(id) {
             case "layout" -> new Div();
+            case "user" -> new TextField();
             case "login" -> loginField;
             case "remember" -> remember;
             case "password" -> passwordField;
             case "cram" -> new CRAMField();
             case "biometric" -> new BiometricButton(this::biometricLogin, getA().getLogin());
-            case "ok" -> new Button("Sign-in", "ok", e -> process(false));
-            case "cancel" -> new Button("Cancel", e -> getA().close());
-            case "forgot" -> new Button("Forgot Password", VaadinIcon.QUESTION_CIRCLE_O, e -> process(true));
+            case "ok" -> new Button(null, (String) null, e -> process(false));
+            case "cancel" -> new Button(null, (String) null, e -> getA().close());
+            case "forgot" -> new Button(null, (String) null, e -> process(true));
+            case "forgotLink" -> new AnchorButton("", e -> process(true));
+            case "terms" -> new Checkbox();
             default -> super.createComponentForId(id);
         };
     }
@@ -271,6 +328,13 @@ public class LoginForm extends TemplateView implements HomeView {
         }
 
         @Override
+        protected void formConstructed() {
+            super.formConstructed();
+            userField = null;
+            terms = null;
+        }
+
+        @Override
         public String getMenuIconName() {
             return "sign-in";
         }
@@ -281,19 +345,31 @@ public class LoginForm extends TemplateView implements HomeView {
             Checkbox remember = (Checkbox) createComponentForId("remember");
             remember.setTabIndex(-1);
             addField(loginField = (LoginNameField) createComponentForId("login"));
+            loginField.setId("login");
+            loginField.setLabel("Login");
             loginField.setRemember(remember);
+            remember.setLabel("Remember my login");
             setRequired(loginField, "Login can not be empty");
             addField(passwordField = (PasswordField) createComponentForId("password"));
+            passwordField.setLabel("Password");
             addField(cramField = (CRAMField) createComponentForId("cram"));
             add(remember);
             loginField.addValueChangeListener(e -> setUser());
+            if(terms != null) {
+                terms.setLabel("Terms & Conditions");
+            }
         }
 
         @Override
         protected void buildButtons() {
             super.buildButtons();
             buttonPanel.add(biometricButton = (BiometricButton) createComponentForId("biometric"));
-            //buttonPanel.add(forgot = (Button) createComponentForId("forgot"));
+            ok.setText("Sign-out");
+            ok.setIcon("ok");
+            cancel.setText("Cancel");
+            cancel.setIcon("cancel");
+            forgot.setText("Forgot Password");
+            forgot.setIcon(VaadinIcon.QUESTION_CIRCLE_O);
         }
 
         @Override
@@ -359,6 +435,33 @@ public class LoginForm extends TemplateView implements HomeView {
         protected boolean process() {
             LoginForm.this.process(false);
             return false;
+        }
+    }
+
+    private class Anchor extends AnchorButton {
+
+        Anchor() {
+            super("");
+            addClickHandler(e -> view());
+            setTabIndex(-1);
+        }
+
+        private void view() {
+            String fileName = getElement().getAttribute("file");
+            if(fileName == null || fileName.isBlank()) {
+                warning("Nothing to view!");
+                return;
+            }
+            MediaFile file = SOServlet.getMedia(fileName);
+            if(file == null) {
+                warning("File not found: " + fileName);
+            } else {
+                String caption = getElement().getAttribute("caption");
+                if(caption == null || caption.isBlank()) {
+                    caption = file.getName();
+                }
+                Application.get().view(caption, file, true);
+            }
         }
     }
 }

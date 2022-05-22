@@ -24,6 +24,7 @@ public class DocumentViewer extends PDFViewer {
     private String caption;
     private Component viewerComponent;
     private final Runnable listener;
+    private boolean windowMode = false;
 
     public DocumentViewer(Runnable listener) {
         this.listener = listener;
@@ -31,7 +32,7 @@ public class DocumentViewer extends PDFViewer {
         viewerComponent = this;
     }
 
-    public static void view(String caption, MediaFile mediaFile) {
+    public static void view(String caption, MediaFile mediaFile, boolean windowMode) {
         if(mediaFile == null) {
             return;
         }
@@ -39,6 +40,7 @@ public class DocumentViewer extends PDFViewer {
             caption = mediaFile.getFileName();
         }
         DocumentViewer dv = new DocumentViewer(null);
+        dv.setWindowMode(windowMode);
         dv.contentType = mediaFile;
         dv.view("media/" + mediaFile.getFileName(), mediaFile.getFile(), caption);
     }
@@ -49,6 +51,10 @@ public class DocumentViewer extends PDFViewer {
         if(listener != null) {
             listener.run();
         }
+    }
+
+    public void setWindowMode(boolean windowMode) {
+        this.windowMode = windowMode;
     }
 
     public void setDocument(Id streamDataId) {
@@ -250,7 +256,7 @@ public class DocumentViewer extends PDFViewer {
     }
 
     private boolean isWindow() {
-        return !application.supportsCloseableView() && !contentType.isPDF();
+        return windowMode || (!application.supportsCloseableView() && !contentType.isPDF());
     }
 
     private Component createContentLayout(Component component) {

@@ -192,6 +192,7 @@ public class RequestMaterial extends AbstractRequestMaterial {
 
         @Override
         protected boolean process() {
+            close();
             InventoryLocation loc = newLoc.getValue();
             if(loc.getId().equals(currentLoc.getObjectId())) {
                 message("Not changed!");

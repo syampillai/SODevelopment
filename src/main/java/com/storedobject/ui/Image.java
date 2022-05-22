@@ -57,11 +57,11 @@ public class Image extends com.storedobject.vaadin.Image {
     /**
      * Create an image from the media file.
      *
-     * @param name Name of the media file
+     * @param names Name of the media file. The first one found is returned.
      * @return Image if exists.
      */
-    public static Image createFromMedia(String name) {
-        MediaFile mf = SOServlet.getImage(name);
+    public static Image createFromMedia(String... names) {
+        MediaFile mf = SOServlet.getImage(names);
         return mf == null ? null : new Image(mf);
     }
 }

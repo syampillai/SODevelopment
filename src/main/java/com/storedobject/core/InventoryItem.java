@@ -147,6 +147,24 @@ public class InventoryItem extends StoredObject {
         return new Entity();
     }
 
+    public void setGRN(Id grnId) {
+    }
+
+    public void setGRN(BigDecimal idValue) {
+        setGRN(new Id(idValue));
+    }
+
+    public void setGRN(InventoryGRN grn) {
+    }
+
+    public Id getGRNId() {
+        return new Id();
+    }
+
+    public InventoryGRN getGRN() {
+        return Math.random() > 0.5 ? new InventoryGRN() : null;
+    }
+
     public void moved(InventoryLocation from, InventoryLocation to) throws Exception {
     }
 

@@ -64,11 +64,11 @@ public class Video extends com.storedobject.vaadin.Video {
     /**
      * Create a video from the media file.
      *
-     * @param name Name of the media file
+     * @param names Names of the media file. The first one found is returned.
      * @return Video if exists.
      */
-    public static Video createFromMedia(String name) {
-        MediaFile mf = SOServlet.getVideo(name);
+    public static Video createFromMedia(String... names) {
+        MediaFile mf = SOServlet.getVideo(names);
         return mf == null ? null : new Video(mf);
     }
 }

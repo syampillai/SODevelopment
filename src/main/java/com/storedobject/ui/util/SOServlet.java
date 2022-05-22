@@ -236,6 +236,17 @@ public class SOServlet extends VaadinServlet {
         return true;
     }
 
+    public static TextContent getTextContent(String... ids) {
+        TextContent tc;
+        for(String id: ids) {
+            tc = getTextContent(id);
+            if(tc != null) {
+                return tc;
+            }
+        }
+        return null;
+    }
+
     public static TextContent getTextContent(String id) {
         id = id.trim().toLowerCase();
         TextContent tc = null;
@@ -294,6 +305,17 @@ public class SOServlet extends VaadinServlet {
         }
     }
 
+    public static MediaFile getMedia(String... names) {
+        MediaFile media;
+        for(String name: names) {
+            media = getMedia(name);
+            if(media != null) {
+                return media;
+            }
+        }
+        return null;
+    }
+
     public static MediaFile getMedia(String name) {
         name = name.trim().toLowerCase();
         MediaFile mf = null;
@@ -332,14 +354,47 @@ public class SOServlet extends VaadinServlet {
         }
     }
 
+    public static MediaFile getImage(String... names) {
+        MediaFile image;
+        for(String name: names) {
+            image = getImage(name);
+            if(image != null) {
+                return image;
+            }
+        }
+        return null;
+    }
+
     public static MediaFile getImage(String name) {
         MediaFile mf = getMedia(name);
         return (mf != null && mf.isImage()) ? mf : null;
     }
 
+    public static MediaFile getAudio(String... names) {
+        MediaFile audio;
+        for(String name: names) {
+            audio = getAudio(name);
+            if(audio != null) {
+                return audio;
+            }
+        }
+        return null;
+    }
+
     public static MediaFile getAudio(String name) {
         MediaFile mf = getMedia(name);
         return (mf != null && mf.isAudio()) ? mf : null;
+    }
+
+    public static MediaFile getVideo(String... names) {
+        MediaFile video;
+        for(String name: names) {
+            video = getVideo(name);
+            if(video != null) {
+                return video;
+            }
+        }
+        return null;
     }
 
     public static MediaFile getVideo(String name) {

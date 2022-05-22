@@ -98,8 +98,7 @@ public class POBrowser<T extends InventoryPO> extends ObjectBrowser<T> implement
                 e -> e.getItem().ifPresent(i -> closePO()));
         GridMenuItem<T> preGRNs = contextMenu.addItem("Process Associated GRNs",
                 e -> e.getItem().ifPresent(i -> preProcessGRNs()));
-        GridMenuItem<T> viewGRNs = contextMenu.addItem("View Associated GRNs",
-                e -> e.getItem().ifPresent(i -> preViewGRNs()));
+        contextMenu.addItem("View Associated GRNs", e -> e.getItem().ifPresent(i -> preViewGRNs()));
         contextMenu.setDynamicContentHandler(po -> {
             deselectAll();
             if(po == null) {
@@ -683,7 +682,6 @@ public class POBrowser<T extends InventoryPO> extends ObjectBrowser<T> implement
             type = g.getType();
         }
         GRN grnView = new GRN(type, editor.store);
-        getObjectEditor().createNewInstance();
         grnView.setPOClass(getClass());
         if(!forGRN) {
             grnView.setFromPOs();

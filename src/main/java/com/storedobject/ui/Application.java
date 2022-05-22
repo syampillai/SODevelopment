@@ -13,7 +13,6 @@ import com.storedobject.vaadin.*;
 import com.vaadin.flow.component.HasSize;
 import com.vaadin.flow.component.*;
 import com.vaadin.flow.component.combobox.ComboBox;
-import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.notification.NotificationVariant;
@@ -598,11 +597,19 @@ public class Application extends com.storedobject.vaadin.Application implements 
     }
 
     public void view(MediaFile mediaFile) {
-        view(mediaFile.getName(), mediaFile);
+        view(mediaFile, false);
     }
 
     public void view(String caption, MediaFile mediaFile) {
-        com.storedobject.ui.util.DocumentViewer.view(caption, mediaFile);
+        view(caption, mediaFile, false);
+    }
+
+    public void view(MediaFile mediaFile, boolean windowMode) {
+        view(mediaFile.getName(), mediaFile, windowMode);
+    }
+
+    public void view(String caption, MediaFile mediaFile, boolean windowMode) {
+        com.storedobject.ui.util.DocumentViewer.view(caption, mediaFile, windowMode);
     }
 
     public void view(String caption, Id objectId) {
@@ -761,24 +768,14 @@ public class Application extends com.storedobject.vaadin.Application implements 
             if(home != null) {
                 new HomeHTMLView(home).execute();
             } else {
-                MediaFile background = SOServlet.getImage("homeview");
-                if(background == null) {
-                    background = SOServlet.getImage("background");
-                }
+                MediaFile background = SOServlet.getImage("homeview", "background");
                 if(background != null) {
                     new ImageView(background).execute();
                 }
             }
-            home = SOServlet.getTextContent("homenotice.html");
-            if(home != null) {
-                new HomeNotice(home).execute();
-                return;
-            } else {
-                MediaFile notice = SOServlet.getImage("homenotice");
-                if(notice != null) {
-                    new HomeNotice(notice).execute();
-                    return;
-                }
+            MediaFile notice = SOServlet.getImage("homenotice");
+            if(notice != null) {
+                view(notice, true);
             }
         } catch (Throwable ignored) {
         }
@@ -1800,62 +1797,6 @@ public class Application extends com.storedobject.vaadin.Application implements 
                 Application.this.log("Content Generator - " + getTransactionManager().getUser().getLogin(), e);
             }
             return true;
-        }
-    }
-
-    static class Notice extends DataForm implements HomeView {
-
-        Component frame;
-
-        Notice() {
-            super("Notice");
-            setButtonsAtTop(true);
-        }
-
-        @Override
-        public Component getContent() {
-            return frame;
-        }
-
-        @Override
-        protected void buildFields() {
-            add(frame);
-        }
-
-        @Override
-        protected void buildButtons() {
-            super.buildButtons();
-            ok.setVisible(false);
-            cancel.asPrimary();
-            cancel.setText("Close");
-        }
-
-        @Override
-        protected HasComponents createLayout() {
-            return new Div();
-        }
-
-        @Override
-        protected boolean process() {
-            return false;
-        }
-
-        @Override
-        protected void cancel() {
-            super.cancel();
-            close();
-            ((Application)getApplication()).executeLogin();
-        }
-    }
-
-    private static class HomeNotice extends Notice {
-
-        public HomeNotice(TextContent textContent) {
-            frame = new IFrame(textContent);
-        }
-
-        public HomeNotice(MediaFile mediaFile) {
-            frame = new Image(mediaFile);
         }
     }
 

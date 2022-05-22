@@ -445,24 +445,20 @@ public class ObjectListEditor<T extends StoredObject> extends EditableObjectGrid
         add.setVisible(v && allowAdd);
         edit.setVisible(v && allowEdit);
         delete.setVisible(v && allowDelete);
-        if(allowReload || allowReloadAll) {
-            v = getEditableList().isSavePending();
-            reload.setVisible(v && allowReload);
-            reloadAll.setVisible(v && allowReloadAll);
-            saveAll.setVisible(v && allowSaveAll);
-        }
+        v = getEditableList().isSavePending();
+        reload.setVisible(v && allowReload);
+        reloadAll.setVisible(v && allowReloadAll);
+        saveAll.setVisible(v && allowSaveAll);
         setButtonVisibility();
         view.setVisible(view.isVisible() && allowView);
         v = !isReadOnly();
         add.setVisible(add.isVisible() && v && allowAdd);
         edit.setVisible(edit.isVisible() && v && allowEdit);
         delete.setVisible(delete.isVisible() && v && allowDelete);
-        if(allowReload || allowReloadAll) {
-            v = getEditableList().isSavePending();
-            reload.setVisible(reload.isVisible() && v && allowReload);
-            reloadAll.setVisible(reloadAll.isVisible() && v && allowReloadAll);
-            saveAll.setVisible(saveAll.isVisible() && v && allowSaveAll);
-        }
+        v = getEditableList().isSavePending();
+        reload.setVisible(reload.isVisible() && v && allowReload);
+        reloadAll.setVisible(reloadAll.isVisible() && v && allowReloadAll);
+        saveAll.setVisible(saveAll.isVisible() && v && allowSaveAll);
     }
 
     private void setRowEditing(boolean rowEditing) {
@@ -539,6 +535,7 @@ public class ObjectListEditor<T extends StoredObject> extends EditableObjectGrid
             return;
         }
         saveEdited();
+        aboutToSave(transaction);
         if(saver == null) {
             transaction.addCommitListener(t -> savedAll());
         }
@@ -547,16 +544,20 @@ public class ObjectListEditor<T extends StoredObject> extends EditableObjectGrid
                     try {
                         boolean added;
                         if((added = isAdded(o)) || isEdited(o)) {
-                            if(added) {
-                                if(o.isVirtual()) {
-                                    o.makeNew();
+                            if(!skipSave(transaction, o)) {
+                                if(added) {
+                                    if(o.isVirtual()) {
+                                        o.makeNew();
+                                    }
                                 }
+                                o.save(transaction);
+                                saved(transaction, o);
                             }
-                            o.save(transaction);
-                            saved(transaction, o);
                         } else if(isDeleted(o)) {
-                            o.delete(transaction);
-                            deleted(transaction, o);
+                            if(!skipDelete(transaction, o)) {
+                                o.delete(transaction);
+                                deleted(transaction, o);
+                            }
                         }
                     } catch(Exception e) {
                         throw new SORuntimeException(e);
@@ -567,6 +568,45 @@ public class ObjectListEditor<T extends StoredObject> extends EditableObjectGrid
         } catch(SORuntimeException re) {
             throw (Exception)re.getCause();
         }
+    }
+
+    /**
+     * This method is invoked from {@link #save(Transaction)} when changes are about to be saved to the database.
+     * You can override this method to save any related objects that are required before saving the edited items.
+     *
+     * @param transaction Transaction.
+     * @throws Exception if any error occurs and the save should be aborted.
+     */
+    @SuppressWarnings("RedundantThrows")
+    protected void aboutToSave(Transaction transaction) throws Exception {
+    }
+
+    /**
+     * This method is invoked from {@link #save(Transaction)} when the item is about to save to the database. If
+     * this method returns <code>false</code>, the item is not saved.
+     *
+     * @param transaction Transaction.
+     * @param object Item being saved. (It may be still virtual).
+     * @return True/false.
+     * @throws Exception if any error occurs and the save should be aborted.
+     */
+    @SuppressWarnings("RedundantThrows")
+    protected boolean skipSave(Transaction transaction, T object) throws Exception {
+        return false;
+    }
+
+    /**
+     * This method is invoked from {@link #save(Transaction)} when the item is about to delete in the database. If
+     * this method returns <code>false</code>, the item is not deleted.
+     *
+     * @param transaction Transaction.
+     * @param object Item being saved.
+     * @return True/false.
+     * @throws Exception if any error occurs and the save should be aborted.
+     */
+    @SuppressWarnings("RedundantThrows")
+    protected boolean skipDelete(Transaction transaction, T object) throws Exception {
+        return false;
     }
 
     /**
@@ -591,6 +631,13 @@ public class ObjectListEditor<T extends StoredObject> extends EditableObjectGrid
         //noinspection unchecked
         ((EditableProvider<T>)getDataProvider()).savedAll();
         setItems(getDataProvider());
+        saveCompleted();
+    }
+
+    /**
+     * This method is invoked after the changes are completely saved to the database.
+     */
+    protected void saveCompleted() {
     }
 
     /**

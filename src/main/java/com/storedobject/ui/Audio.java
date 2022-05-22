@@ -60,11 +60,11 @@ public class Audio extends com.storedobject.vaadin.Audio {
     /**
      * Create an audio from the media file.
      *
-     * @param name Name of the media file
+     * @param names Name of the media file. The first one found is returned.
      * @return Audio if exists.
      */
-    public static Audio createFromMedia(String name) {
-        MediaFile mf = SOServlet.getAudio(name);
+    public static Audio createFromMedia(String... names) {
+        MediaFile mf = SOServlet.getAudio(names);
         return mf == null ? null : new Audio(mf);
     }
 }

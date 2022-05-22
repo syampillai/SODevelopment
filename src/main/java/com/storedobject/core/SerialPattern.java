@@ -113,16 +113,26 @@ public class SerialPattern extends StoredObject {
             int y1 = DateUtility.getYear(se.getStartOfFinancialYear(date)),
                     y2 = DateUtility.getYear(se.getEndOfFinancialYear(date));
             if(y1 == y2) {
+                String s = ("" + y2).substring(2);
+                pattern = stuff(pattern, "fy4", s);
+                pattern = stuff(pattern, "fy6", "" + y2);
+                pattern = stuff(pattern, "fy8", "" + y2);
                 pattern = stuff(pattern, "fyfy-fyfy", "" + y2);
                 pattern = stuff(pattern, "fyfy-fy", "" + y2);
                 pattern = stuff(pattern, "fyfy", "" + y2);
-                pattern = stuff(pattern, "fy-fy", ("" + y2).substring(2));
-                pattern = stuff(pattern, "fy", ("" + y2).substring(2));
+                pattern = stuff(pattern, "fy-fy", s);
+                pattern = stuff(pattern, "fy", s);
             } else {
+                String s = ("" + y1).substring(2) + ("" + y2).substring(2);
+                pattern = stuff(pattern, "fy4", s);
+                s = ("" + y1) + ("" + y2).substring(2);
+                pattern = stuff(pattern, "fy6", s);
+                s = ("" + y1) + ("" + y2);
+                pattern = stuff(pattern, "fy8", s);
                 pattern = stuff(pattern, "fyfy-fyfy", y1 + "-" + y2);
                 pattern = stuff(pattern, "fyfy-fy", y1 + "-" + ("" + y2).substring(2));
                 pattern = stuff(pattern, "fyfy", y1 + "-" + y2);
-                String s = ("" + y1).substring(2) + "-" + ("" + y2).substring(2);
+                s = ("" + y1).substring(2) + "-" + ("" + y2).substring(2);
                 pattern = stuff(pattern, "fy-fy", s);
                 pattern = stuff(pattern, "fy", s);
             }

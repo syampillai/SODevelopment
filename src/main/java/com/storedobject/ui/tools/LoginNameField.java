@@ -3,13 +3,13 @@ package com.storedobject.ui.tools;
 import com.storedobject.common.StringList;
 import com.storedobject.core.SQLConnector;
 import com.storedobject.core.StringUtility;
-import com.storedobject.helper.ID;
 import com.vaadin.flow.component.AttachEvent;
-import com.vaadin.flow.component.ClientCallable;
 import com.vaadin.flow.component.HasValue;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.shared.Registration;
+import elemental.json.JsonType;
+import elemental.json.JsonValue;
 
 import java.util.ArrayList;
 import java.util.stream.Collectors;
@@ -22,8 +22,7 @@ public class LoginNameField extends ComboBox<String> {
     private Registration registrationRemember;
 
     public LoginNameField() {
-        super("Login");
-        ID.set(this);
+        super();
         setAllowCustomValue(true);
         addCustomValueSetListener(e -> setValue(e.getDetail()));
         addValueChangeListener(e -> userChanged());
@@ -92,17 +91,16 @@ public class LoginNameField extends ComboBox<String> {
     protected void onAttach(AttachEvent attachEvent) {
         super.onAttach(attachEvent);
         if(userList == null) {
-            getElement().executeJs("this.$server.users(window.localStorage.getItem('users." +
-                    SQLConnector.getDatabaseName() + "'));");
+            UI.getCurrent().getPage().executeJs("return window.localStorage.getItem('users."
+                    + SQLConnector.getDatabaseName() + "')").then(this::users);
         }
     }
 
-    @ClientCallable
-    private void users(String users) {
-        if(users == null) {
-            userList = StringList.EMPTY;
+    private void users(JsonValue users) {
+        if(users != null && users.getType() == JsonType.STRING) {
+            userList = StringList.create(users.asString());
         } else {
-            userList = StringList.create(users);
+            userList = StringList.EMPTY;
         }
         set();
     }
@@ -121,7 +119,8 @@ public class LoginNameField extends ComboBox<String> {
                     return;
                 }
                 String thisU = u;
-                u = u + "," + userList.stream().filter(user -> !user.equals(thisU)).collect(Collectors.joining(","));
+                u = u + "," + userList.stream().filter(user -> !user.equals(thisU))
+                        .collect(Collectors.joining(","));
             }
         } else {
             if(!userList.contains(u)) {

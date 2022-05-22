@@ -246,7 +246,13 @@ public class ObjectFilter<T extends StoredObject> extends Form implements Object
                     }
                 }
                 if(fields[n] == null) {
-                    fields[n] = new LongField();
+                    if(int.class == c) {
+                        fields[n] = new IntegerField();
+                    } else if(long.class == c) {
+                        fields[n] = new LongField();
+                    } else {
+                        fields[n] = new BigDecimalField();
+                    }
                     combos[n] = new ChoiceField(selectNumber);
                 }
             }
@@ -556,6 +562,30 @@ public class ObjectFilter<T extends StoredObject> extends Form implements Object
         return equals(functionIndex, value);
     }
 
+    private Predicate<T> equals(int functionIndex, long value) {
+        return t -> ((Long)functions[functionIndex].apply(t)) == value;
+    }
+
+    private Predicate<T> notEquals(int functionIndex, long value) {
+        return t -> ((Long)functions[functionIndex].apply(t)) != value;
+    }
+
+    private Predicate<T> lessThan(int functionIndex, long value) {
+        return t -> ((Long)functions[functionIndex].apply(t)) < value;
+    }
+
+    private Predicate<T> lessThanOrEquals(int functionIndex, long value) {
+        return t -> ((Long)functions[functionIndex].apply(t)) <= value;
+    }
+
+    private Predicate<T> greaterThan(int functionIndex, long value) {
+        return t -> ((Long)functions[functionIndex].apply(t)) > value;
+    }
+
+    private Predicate<T> greaterThanOrEquals(int functionIndex, long value) {
+        return t -> ((Long)functions[functionIndex].apply(t)) >= value;
+    }
+
     private Predicate<T> equals(int functionIndex, Id value) {
         return t -> (functions[functionIndex].apply(t)).equals(value);
     }
@@ -627,6 +657,7 @@ public class ObjectFilter<T extends StoredObject> extends Form implements Object
         BigDecimal bdValue;
         Id idValue;
         int intValue, i, p;
+        long longValue;
         for(i = 0; i < checks.length; i++) {
             if(!checks[i].getValue()) {
                 continue;
@@ -683,11 +714,22 @@ public class ObjectFilter<T extends StoredObject> extends Form implements Object
                     case 5 -> add(filter, lessThanOrEquals(i, intValue));
                     default -> filter;
                 };
+            } else if(fields[i] instanceof LongField) {
+                longValue = ((LongField)fields[i]).getValue();
+                filter = switch(p) {
+                    case 0 -> add(filter, equals(i, longValue));
+                    case 1 -> add(filter, notEquals(i, longValue));
+                    case 2 -> add(filter, greaterThan(i, longValue));
+                    case 3 -> add(filter, greaterThanOrEquals(i, longValue));
+                    case 4 -> add(filter, lessThan(i, longValue));
+                    case 5 -> add(filter, lessThanOrEquals(i, longValue));
+                    default -> filter;
+                };
             } else {
-                if(fields[i] instanceof LongField) {
-                    bdValue = new BigDecimal(((LongField)fields[i]).getValue());
+                if(fields[i] instanceof BigDecimalField) {
+                    bdValue = ((BigDecimalField)fields[i]).getValue();
                 } else if(fields[i] instanceof DoubleField) {
-                    bdValue = new BigDecimal(((DoubleField)fields[i]).getValue().toString());
+                    bdValue = BigDecimal.valueOf(((DoubleField)fields[i]).getValue());
                 } else {
                     throw new SORuntimeException("Unexpected: " + fields[i].getClass());
                 }

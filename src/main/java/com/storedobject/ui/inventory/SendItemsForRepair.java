@@ -3,7 +3,6 @@ package com.storedobject.ui.inventory;
 import com.storedobject.core.InventoryLocation;
 import com.storedobject.core.InventoryRO;
 import com.storedobject.core.InventoryROItem;
-import com.storedobject.ui.PrintButton;
 import com.vaadin.flow.component.checkbox.Checkbox;
 
 public final class SendItemsForRepair extends AbstractSendAndReceiveMaterial<InventoryRO, InventoryROItem> {

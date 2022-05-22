@@ -33,6 +33,10 @@ public class DocumentViewer extends Composite<VerticalLayout> implements HasSize
         docViewer.setDocument(contentProducer);
     }
 
+    public void setWindowMode(boolean windowMode) {
+        docViewer.setWindowMode(windowMode);
+    }
+
     public void setDocument(Id streamDataId) {
         docViewer.setDocument(streamDataId);
     }

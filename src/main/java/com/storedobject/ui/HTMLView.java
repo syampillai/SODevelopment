@@ -46,7 +46,7 @@ public class HTMLView extends Viewer {
     }
 
     /**
-     * Constructor. Currently running logic title will be used as the "text content name".
+     * Constructor. The running logic title will be used as the "text content name".
      *
      * @param application Application instance.
      * @param windowMode Whether to show it in a window or not.

@@ -74,7 +74,7 @@ public final class PurchaseReturn extends DataForm {
             returnMaterial();
             return true;
         }
-        message("Please select both the locations");
+        message("Please select both the store and the supplier");
         return false;
     }
 

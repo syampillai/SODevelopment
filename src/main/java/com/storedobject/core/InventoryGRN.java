@@ -138,7 +138,17 @@ public final class InventoryGRN extends StoredObject implements HasChildren {
     }
 
     /**
+     * Get the MT of this GRN. The GRN may have created for a Purchase Order and in that case, this method returns null.
+     *
+     * @return An instance of {@link MaterialReturned} if found, otherwise null.
+     */
+    public MaterialReturned getMR() {
+        return listMasters(MaterialReturned.class).single(false);
+    }
+
+    /**
      * Get the PO of this GRN. There could be multiple POs and in that case it will always return null.
+     * Also, the GRN may have created for a {@link MaterialReturned} and in that case also, this method returns null.
      *
      * @return PO if found, otherwise null.
      */

@@ -127,6 +127,14 @@ public abstract class AbstractSendAndReceiveMaterial<T extends InventoryTransfer
     void created() {
     }
 
+    public final InventoryLocation getLocationFrom() {
+        return fromField.getObject();
+    }
+
+    public final InventoryLocation getLocationTo() {
+        return toField.getObject();
+    }
+
     @Override
     public void setFixedFilter(String fixedFilter) {
         String f = getFixedSide() + "Location=" + this.fromOrTo.getId();
@@ -341,6 +349,7 @@ public abstract class AbstractSendAndReceiveMaterial<T extends InventoryTransfer
                 setFieldLabel("InvoiceDate", "Supplier Invoice Date");
             } else {
                 setFieldHidden("InvoiceDate");
+                setFieldReadOnly("ReferenceNumber");
             }
             setFieldHidden("Status");
         }

@@ -33,10 +33,8 @@ public final class InventoryTransaction {
 
     /**
      * Set the data pickup mode. If set to true, items transacted will not be "in transit" stage.
-     *
-     * @param dataPickupMode True/false.
      */
-    public void setDataPickupMode(boolean dataPickupMode) {
+    public void setDataPickupMode() {
     }
 
     public void dataPickup(InventoryItem item, InventoryLocation to) {
@@ -141,5 +139,8 @@ public final class InventoryTransaction {
     }
 
     public void checkTransit(boolean checkTransit) {
+    }
+
+    public void setGRN(InventoryGRN grn) {
     }
 }

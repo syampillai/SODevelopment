@@ -3,6 +3,8 @@ package com.storedobject.ui.inventory;
 import com.storedobject.common.SORuntimeException;
 import com.storedobject.core.InventoryLocation;
 import com.storedobject.core.InventoryStoreBin;
+import com.storedobject.core.JavaClassLoader;
+import com.storedobject.core.SOException;
 import com.storedobject.ui.HTMLText;
 import com.storedobject.vaadin.ChoiceField;
 import com.storedobject.vaadin.DataForm;
@@ -146,15 +148,15 @@ public class ReceiveMaterial extends DataForm {
         close();
         if(to instanceof InventoryStoreBin) {
             switch(typeFieldForStores.getValue()) {
-                case 0 -> new GRN(((InventoryStoreBin) to).getStore()).execute();
+                case 0 -> grn(0, to);
                 case 1 -> new ReceiveMaterialReturned(to).execute();
                 case 2 -> new ReceiveMaterialTransferred(to).execute();
                 case 3 -> new ReceiveMaterialRequested(to).execute();
                 case 4 -> new ReceiveReturnedItems(3, (InventoryStoreBin) to).execute();
                 case 5 -> new ReceiveReturnedItems(8, (InventoryStoreBin) to).execute();
-                case 6 -> new GRN(1, ((InventoryStoreBin) to).getStore()).execute();
+                case 6 -> grn(1, to);
                 case 7 -> new ReceiveReturnedItems(18, (InventoryStoreBin) to).execute();
-                case 8 -> new GRN(2, ((InventoryStoreBin) to).getStore()).execute();
+                case 8 -> grn(2, to);
             }
         } else {
             switch(typeFieldForLocations.getValue()) {
@@ -163,5 +165,14 @@ public class ReceiveMaterial extends DataForm {
             }
         }
         return true;
+    }
+
+    private void grn(int type, InventoryLocation to) {
+        GRN grn = new GRN(type, ((InventoryStoreBin) to).getStore());
+        try {
+            grn.setPOClass(JavaClassLoader.createClassFromProperty("PO-BROWSER-LOGIC-" + type));
+        } catch(SOException ignored) {
+        }
+        grn.execute();
     }
 }

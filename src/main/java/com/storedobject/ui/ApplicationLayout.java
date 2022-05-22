@@ -27,10 +27,4 @@ public interface ApplicationLayout extends com.storedobject.vaadin.ApplicationLa
     default boolean isMenuVisible() {
         return true;
     }
-
-    default void saveHeaderHeight() {
-    }
-
-    default void restoreHeaderHeight() {
-    }
 }
