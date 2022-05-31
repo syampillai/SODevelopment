@@ -1,5 +1,6 @@
 package com.storedobject.core;
 
+import java.lang.reflect.Method;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -124,5 +125,25 @@ public class Utility {
         } catch(Throwable ignored) {
         }
         return null;
+    }
+
+    /**
+     * Get a method of a class. If a method is not found, it will look for methods that take superclasses of the
+     * parameter.
+     *
+     * @param ofClass Of class.
+     * @param methodName Method name.
+     * @param parameter Method parameter type (Only single parameter is supported).
+     * @return Method if found, otherwise, null.
+     */
+    public static Method getMethod(Class<?> ofClass, String methodName, Class<?> parameter) {
+        try {
+            return ofClass.getMethod(methodName, parameter);
+        } catch(NoSuchMethodException ignored) {
+        }
+        if(parameter == Object.class) {
+            return null;
+        }
+        return getMethod(ofClass, methodName, parameter.getSuperclass());
     }
 }

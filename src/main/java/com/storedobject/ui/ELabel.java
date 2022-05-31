@@ -39,7 +39,12 @@ public class ELabel extends StyledText implements StyledBuilder, HasText {
         }
         if(object instanceof Icon) {
             HTMLText h = new HTMLText();
-            h.appendHTML("<iron-icon icon=\"" + ((Icon)object).getElement().getAttribute("icon") + "\"></iron-icon>");
+            h.appendHTML("<vaadin-icon icon=\"" + ((Icon)object).getElement().getAttribute("icon") + "\"></vaadin-icon>");
+            return h;
+        }
+        if(object instanceof com.storedobject.vaadin.Icon icon) {
+            HTMLText h = new HTMLText();
+            h.appendHTML("<iron-icon icon=\"" + icon.getInternalElement().getAttribute("icon") + "\"></iron-icon>");
             return h;
         }
         if(object instanceof ELabel) {

@@ -145,6 +145,10 @@ public class POBrowser<T extends InventoryPO> extends ObjectBrowser<T> implement
             }
             return true;
         });
+        InventoryStore store = SelectStore.getStore();
+        if(store != null) {
+            setStore(store, true);
+        }
     }
 
     public void setForGRNs() {
@@ -235,6 +239,7 @@ public class POBrowser<T extends InventoryPO> extends ObjectBrowser<T> implement
         goToGRNs.setVisible(true);
         switchStore.setVisible(allowSwitchStore);
         if(allowSwitchStore) {
+            switchStore.setText("Change");
             editor().getAnchorField("Store").setReadOnly(false);
         }
     }
@@ -578,7 +583,7 @@ public class POBrowser<T extends InventoryPO> extends ObjectBrowser<T> implement
                 return;
             }
             SelectGrid<InventoryGRN> selectGrid = new SelectGrid<>(InventoryGRN.class, addToGRNs, g -> {
-                if(g.getReferenceNumber().startsWith("GRN")) {
+                if(g.getInvoiceNumber().isBlank()) {
                     supplierInvoice().processGRN(qs, g);
                 } else {
                     process(qs, g, null, null);
@@ -622,7 +627,7 @@ public class POBrowser<T extends InventoryPO> extends ObjectBrowser<T> implement
                 this.quantityMap = quantityMap;
                 this.grn = grn;
                 if(grn != null) {
-                    refField.setValue(grn.getReferenceNumber());
+                    refField.setValue(grn.getInvoiceNumber());
                     dateField.setValue(grn.getInvoiceDate());
                 }
                 execute();

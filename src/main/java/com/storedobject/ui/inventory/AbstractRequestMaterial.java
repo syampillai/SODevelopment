@@ -93,13 +93,21 @@ public abstract class AbstractRequestMaterial extends ObjectBrowser<MaterialRequ
         }
         this.fromOrTo = fromOrTo.getValue();
         if(this.fromOrTo == null) {
-            throw new SORuntimeException("Unable to determine store/location");
+            throw new LogicRedirected(this::selectLocation);
         }
         if(issuing && !(this.fromOrTo instanceof InventoryStoreBin)) {
-            throw new SORuntimeException("Not a store - " + this.fromOrTo.toDisplay());
+            throw new LogicRedirected(() -> new SelectStore().execute());
         }
         this.otherLocation = otherLocation;
         setOrderBy("Date DESC,No DESC", false);
+    }
+
+    protected void selectLocation() {
+    }
+
+    @Override
+    public String getMenuIconName() {
+        return "vaadin:stock";
     }
 
     void created() {

@@ -33,7 +33,7 @@ public class StockMovementReport extends DataForm {
         addField(periodField);
         summaryField = new BooleanField("Print Summary Only");
         addField(summaryField);
-        zerosField = new BooleanField("Print Zero Quantity Items");
+        zerosField = new BooleanField("Print Zero-Quantity Items");
         addField(zerosField);
     }
 

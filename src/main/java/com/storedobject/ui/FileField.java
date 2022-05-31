@@ -34,6 +34,7 @@ public class FileField extends AbstractObjectField<StreamData> {
     private ImageButton upload;
     private ImageButton link;
     private ImageButton download;
+    private final ImageButton downloadHidden;
     private ImageButton captureVideo;
     private ImageButton captureAudio;
     private ImageButton captureImage;
@@ -126,6 +127,7 @@ public class FileField extends AbstractObjectField<StreamData> {
         playAudio = new ImageButton("Play", VaadinIcon.VOLUME_UP, clicked).withBox(BUTTON_SIZE);
         playVideo = new ImageButton("Play", VaadinIcon.MOVIE, clicked).withBox(BUTTON_SIZE);
         download = new ImageButton("Download", VaadinIcon.DOWNLOAD, clicked).withBox(BUTTON_SIZE);
+        downloadHidden = download;
         setLabel(label);
         setValue((StreamData) null);
     }
@@ -355,6 +357,10 @@ public class FileField extends AbstractObjectField<StreamData> {
                 }
                 added = true;
                 buttonBox.add(download);
+            } else {
+                if(active && download != null) {
+                    buttonBox.add(download);
+                }
             }
         }
         buttonBox.setVisible(added);
@@ -524,6 +530,15 @@ public class FileField extends AbstractObjectField<StreamData> {
             buttonBox.remove(download);
         }
         download = null;
+    }
+
+    public void allowDownload() {
+        if(download == null) {
+            download = downloadHidden;
+            if(application != null) {
+                redraw();
+            }
+        }
     }
 
     public void disallowView() {

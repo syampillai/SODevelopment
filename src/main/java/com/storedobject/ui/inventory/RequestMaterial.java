@@ -17,6 +17,10 @@ public class RequestMaterial extends AbstractRequestMaterial {
 
     private Editor restrictedEditor;
 
+    public RequestMaterial() {
+        this(SelectLocation.get(0, 4, 5, 10, 11, 16));
+    }
+
     public RequestMaterial(String from) {
         this(ParameterParser.itemTypeClass(from), ParameterParser.location(from, 0, 4, 5, 10, 11, 16));
     }
@@ -203,5 +207,10 @@ public class RequestMaterial extends AbstractRequestMaterial {
             new RequestMaterial(loc).execute();
             return true;
         }
+    }
+
+    @Override
+    protected void selectLocation() {
+        new SelectLocation(0, 4, 5, 10, 11, 16).execute();
     }
 }

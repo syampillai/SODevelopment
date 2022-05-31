@@ -14,6 +14,7 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.function.BiPredicate;
 
+@SuppressWarnings("resource")
 public class ObjectHistoryGrid<T extends StoredObject> extends DataGrid<T> implements CloseableView {
 
     private T object;
@@ -117,6 +118,7 @@ public class ObjectHistoryGrid<T extends StoredObject> extends DataGrid<T> imple
         deselectAll();
         clear();
         @SuppressWarnings("unchecked") ObjectIterator<T> objects = (ObjectIterator<T>)object.listHistory();
+        objects = ObjectIterator.create(object).add(objects);
         if(viewFilter != null) {
             objects = objects.filter(viewFilter);
         }
@@ -206,17 +208,16 @@ public class ObjectHistoryGrid<T extends StoredObject> extends DataGrid<T> imple
 
     private void viewChanges() {
         clearAlerts();
-        T previous = selected();
-        if(previous == null) {
+        T current  = selected();
+        if(current == null) {
             return;
         }
-        int n = indexOf(previous) - 1;
-        T current;
-        if(n < 0) {
-            current = object;
-        } else {
-            current = get(n);
+        int n = indexOf(current) + 1;
+        if(n >= size()) {
+            message("That is the first entry");
+            return;
         }
+        T previous = get(n);
         new ObjectComparisonGrid<>(current, previous).execute();
     }
 }

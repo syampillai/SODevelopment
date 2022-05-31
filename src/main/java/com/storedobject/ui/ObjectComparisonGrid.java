@@ -19,6 +19,7 @@ import java.util.function.Function;
 public class ObjectComparisonGrid<T extends StoredObject> extends ListGrid<ObjectComparisonGrid.Value>
         implements CloseableView {
 
+    private final ELabel doneBy;
     public ObjectComparisonGrid(T current, T previous) {
         super(Value.class, StringList.EMPTY);
         setCaption("Changes");
@@ -28,6 +29,9 @@ public class ObjectComparisonGrid<T extends StoredObject> extends ListGrid<Objec
         createColumn("CurrentValue", Value::currentValue);
         load(current, previous);
         setViewFilter(Value::isChanged);
+        doneBy = new ELabel("(", "green");
+        doneBy.append("Changes done by ").append(current.person(), "blue").append(")", "green")
+                .update();
     }
 
     @Override
@@ -40,7 +44,7 @@ public class ObjectComparisonGrid<T extends StoredObject> extends ListGrid<Objec
                 setViewFilter(Value::isChanged);
             }
         });
-        return new ButtonLayout(cb, new Button("Exit", e -> close()));
+        return new ButtonLayout(cb, doneBy, new Button("Exit", e -> close()));
     }
 
     private void load(T current, T previous) {

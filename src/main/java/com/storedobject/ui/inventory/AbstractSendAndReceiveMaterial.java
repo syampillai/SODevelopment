@@ -5,6 +5,7 @@ import com.storedobject.common.StringList;
 import com.storedobject.core.*;
 import com.storedobject.ui.*;
 import com.storedobject.vaadin.Button;
+import com.storedobject.vaadin.ButtonLayout;
 import com.storedobject.vaadin.MultiSelectGrid;
 import com.vaadin.flow.component.HasValue;
 import com.vaadin.flow.component.grid.contextmenu.GridContextMenu;
@@ -19,7 +20,7 @@ public abstract class AbstractSendAndReceiveMaterial<T extends InventoryTransfer
 
     private static final String LABEL_TOOL = "Tool/Item under Custody";
     private static final String LABEL_TOOLS = "Tools/Items under Custody";
-    private static final int[] ALL_TYPES = new int[] { 0, 3, 4, 5, 8, 10, 11 };
+    static final int[] ALL_TYPES = new int[] { 0, 3, 4, 5, 8, 10, 11 };
     private final Button send = new Button("Send", VaadinIcon.TRUCK, e -> send());
     private final Button receive = new Button("Receive", VaadinIcon.STORAGE, e -> receive());
     private final ObjectField<InventoryLocation> fromField, toField;
@@ -85,9 +86,12 @@ public abstract class AbstractSendAndReceiveMaterial<T extends InventoryTransfer
             setCaption((receiveMode ? "Receive" : (transferClass == MaterialReturned.class ? "Return" : "Transfer")) +
                     " Materials/Tools");
         }
+        this.fromOrTo = fromOrToField.getValue();
+        if(this.fromOrTo == null) {
+            throw new LogicRedirected(this::selectLocation);
+        }
         send.setVisible(!receiveMode);
         receive.setVisible(receiveMode);
-        this.fromOrTo = fromOrToField.getValue();
         this.otherLocation = otherLocation;
         if(this.otherLocation != null && this.otherLocation.equals(this.fromOrTo)) {
             throw new SORuntimeException("Both locations can't be the same - " + this.fromOrTo.toDisplay());
@@ -125,6 +129,9 @@ public abstract class AbstractSendAndReceiveMaterial<T extends InventoryTransfer
     }
 
     void created() {
+    }
+
+    protected void selectLocation() {
     }
 
     public final InventoryLocation getLocationFrom() {
@@ -172,14 +179,34 @@ public abstract class AbstractSendAndReceiveMaterial<T extends InventoryTransfer
     public void createHeaders() {
         ELabel e = new ELabel((receiveMode ? "Receive at" : "From") + ": ").
                 append(fromOrTo.toDisplay(), "blue");
+
+        Button locSwitch = getSwitchLocationButton();
+        ButtonLayout buttonLayout = null;
+        if(locSwitch != null) {
+            e.update();
+            buttonLayout = new ButtonLayout(e, locSwitch.asSmall());
+        }
+        if(locSwitch != null) {
+            e = new ELabel();
+        } else {
+            e.append(" ");
+        }
         if(otherLocation != null) {
-            e.append(" " + (receiveMode ? "From" : "To") + ": ").append(otherLocation.toDisplay(), "blue");
+            e.append((receiveMode ? "From" : "To") + ": ").append(otherLocation.toDisplay(), "blue");
         }
         e.append(" | ", "green").
                 append("Note: ").
                 append("Double-click or right-click on the entry to " +
                         (receiveMode ? "receive" : "send"), "blue");
-        prependHeader().join().setComponent(e.update());
+        e.update();
+        if(buttonLayout != null) {
+            buttonLayout.add(e);
+        }
+        prependHeader().join().setComponent(buttonLayout == null ? e : buttonLayout);
+    }
+
+    protected Button getSwitchLocationButton() {
+        return null;
     }
 
     @Override

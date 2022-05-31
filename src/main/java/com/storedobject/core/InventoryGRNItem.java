@@ -50,6 +50,10 @@ public final class InventoryGRNItem extends StoredObject implements Detail {
         return serialNumber;
     }
 
+    public String getSerialNumberDisplay() {
+        return serialNumber;
+    }
+
     public void setQuantity(Quantity quantity) {
         this.quantity = quantity;
     }

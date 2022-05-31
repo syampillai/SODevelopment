@@ -86,6 +86,18 @@ public final class SystemUser extends StoredObject implements RequiresApproval {
     public void setStatus(int status) {
     }
 
+    public static String[] getStatusValues() {
+        return new String[1];
+    }
+
+    public static String getStatusValue(int value) {
+        return getStatusValues()[value];
+    }
+
+    public String getStatusValue() {
+        return getStatusValue(0);
+    }
+
     public void validateNewPassword(char[] currentPassword, char[] password) throws SOException {
     }
 

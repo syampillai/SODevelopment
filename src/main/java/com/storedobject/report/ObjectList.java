@@ -84,4 +84,8 @@ public class ObjectList<T extends StoredObject> extends PDFReport {
     public Predicate<T> getLoadFilter() {
         return null;
     }
+
+    public long getRowCount(T object) {
+        return Math.random() > 0.5 ? 1 : 2;
+    }
 }

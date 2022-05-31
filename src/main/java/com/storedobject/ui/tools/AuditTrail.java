@@ -26,7 +26,6 @@ public class AuditTrail extends DataForm {
         addField(atcField);
     }
 
-    @SuppressWarnings({"resource" })
     @Override
     protected boolean process() {
         atc = atcField.getObject();

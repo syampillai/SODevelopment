@@ -26,7 +26,7 @@ public class StockReport extends DataForm {
         storeField = new ObjectField<>("Store", InventoryStore.class, true);
         storeField.setPlaceholder("All");
         addField(storeField);
-        zerosField = new BooleanField("Print Zero Quantity Items");
+        zerosField = new BooleanField("Print Zero-Quantity Items");
         addField(zerosField);
         outputField = new ChoiceField("Format", new String[] { "PDF", "Excel" });
         addField(outputField);

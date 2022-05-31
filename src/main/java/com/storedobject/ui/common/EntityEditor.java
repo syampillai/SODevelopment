@@ -20,12 +20,14 @@ public class EntityEditor extends ObjectEditor<Entity> {
             "Occasionally keeps their stock with us",
             "We rent items out to them",
             "We lease items from them",
+            "Provides services to us"
     };
     private final Map<Id, Integer> relCache;
     private Button editRel;
-    private PopupButton supplierMenu, customerMenu;
+    private PopupButton supplierMenu, customerMenu, serviceProviderMenu;
     private RForm RFormEditor;
-    private ObjectEditor<EntityRole> supplierEditor, customerEditor;
+    private ObjectEditor<EntityRole> supplierEditor, customerEditor, serviceProviderEditor;
+    private Class<EntityRole> serviceProviderClass;
 
     public EntityEditor() {
         this(EditorAction.ALL);
@@ -44,32 +46,41 @@ public class EntityEditor extends ObjectEditor<Entity> {
         if(StoredObject.exists(InventoryStore.class, null, true)) {
             relCache = new HashMap<>();
             addField(new TextArea("Relationships"), this::getRS);
+            Class<?> rClass;
             editRel = new Button("Define Relationships", VaadinIcon.CLUSTER, e -> editRel());
-            String cName = GlobalProperty.get("SUPPLIER-CLASS");
-            if(!cName.isEmpty()) {
-                try {
-                    Class<?> scc = JavaClassLoader.getLogic(cName);
-                    if(EntityRole.class.isAssignableFrom(scc)) {
-                        //noinspection unchecked
-                        supplierEditor = ObjectEditor.create((Class<EntityRole>)scc);
-                        supplierMenu = new PopupButton("Vendor/Supplier", VaadinIcon.INVOICE);
-                        setUpEditor(supplierEditor, supplierMenu);
-                    }
-                } catch(ClassNotFoundException ignored) {
+            try {
+                rClass = JavaClassLoader.createClassFromProperty("SUPPLIER-CLASS");
+                if(rClass != null && EntityRole.class.isAssignableFrom(rClass)) {
+                    //noinspection unchecked
+                    supplierEditor = ObjectEditor.create((Class<EntityRole>)rClass);
+                    supplierMenu = new PopupButton("Vendor/Supplier", VaadinIcon.INVOICE);
+                    setUpEditor(supplierEditor, supplierMenu);
                 }
+            } catch(SOException ignored) {
             }
-            cName = GlobalProperty.get("CUSTOMER-CLASS");
-            if(!cName.isEmpty()) {
-                try {
-                    Class<?> ccc = JavaClassLoader.getLogic(cName);
-                    if(EntityRole.class.isAssignableFrom(ccc)) {
-                        //noinspection unchecked
-                        customerEditor = ObjectEditor.create((Class<EntityRole>)ccc);
-                        customerMenu = new PopupButton("Customer", VaadinIcon.USER);
-                        setUpEditor(customerEditor, customerMenu);
-                    }
-                } catch(ClassNotFoundException ignored) {
+            try {
+                rClass = JavaClassLoader.createClassFromProperty("CUSTOMER-CLASS");
+                if(rClass != null && EntityRole.class.isAssignableFrom(rClass)) {
+                    //noinspection unchecked
+                    customerEditor = ObjectEditor.create((Class<EntityRole>)rClass);
+                    customerMenu = new PopupButton("Customer", VaadinIcon.USER);
+                    setUpEditor(customerEditor, customerMenu);
                 }
+            } catch(SOException ignored) {
+            }
+            try {
+                rClass = JavaClassLoader.createClassFromProperty("SERVICE-PROVIDER-CLASS");
+                if(rClass != null && EntityRole.class.isAssignableFrom(rClass)) {
+                    //noinspection unchecked
+                    serviceProviderClass = (Class<EntityRole>) rClass;
+                    if(!(supplierEditor != null && supplierEditor.getObjectClass() == rClass)) {
+                        //noinspection unchecked
+                        serviceProviderEditor = ObjectEditor.create((Class<EntityRole>) rClass);
+                        serviceProviderMenu = new PopupButton("Service Provider", VaadinIcon.USER);
+                        setUpEditor(serviceProviderEditor, serviceProviderMenu);
+                    }
+                }
+            } catch(SOException ignored) {
             }
         } else {
             relCache = null;
@@ -97,6 +108,9 @@ public class EntityEditor extends ObjectEditor<Entity> {
             }
             if(customerEditor != null && (getR(e) & 2) == 2) {
                 buttonPanel.add(customerMenu);
+            }
+            if(serviceProviderEditor != null && (getR(e) & 0b1000000) == 0b1000000) {
+                buttonPanel.add(serviceProviderMenu);
             }
         }
     }
@@ -158,6 +172,9 @@ public class EntityEditor extends ObjectEditor<Entity> {
                         r |= 32;
             }
         }
+        if(serviceProviderClass != null && entityRole(serviceProviderClass) != null) {
+            r |= 64;
+        }
         relCache.put(entity.getId(), r);
         return r;
     }
@@ -170,7 +187,11 @@ public class EntityEditor extends ObjectEditor<Entity> {
     }
 
     private EntityRole entityRole(ObjectEditor<EntityRole> re) {
-        return EntityRole.get(getTransactionManager().getEntity(), re.getObjectClass(), getObject());
+        return entityRole(re.getObjectClass());
+    }
+
+    private EntityRole entityRole(Class<EntityRole> roleClass) {
+        return EntityRole.get(getTransactionManager().getEntity(), roleClass, getObject());
     }
 
     private void editEntityRole(ObjectEditor<EntityRole> re) {

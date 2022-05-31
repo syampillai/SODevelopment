@@ -112,13 +112,14 @@ public class DocumentViewer extends PDFViewer {
                 view = new ContentView(viewerComponent = new Image(resource));
             } else if(contentType.getMimeType().equals("text/html")) {
                 if(streamData != null) {
-                    view = new HTMLView(IO.getReader(streamData.getContent()));
+                    view = new HTMLView(IO.getReader(streamData.getContent()), isWindow());
                     viewerComponent = ((HTMLView) view).getViewerComponent();
                 }
             } else {
                 viewerComponent = null;
                 return;
             }
+            view.setCaption(caption);
         } else {
             if(contentType.isPDF()) {
                 super.setSource(resource);
@@ -134,6 +135,7 @@ public class DocumentViewer extends PDFViewer {
                 viewerComponent = null;
                 return;
             }
+            view.setCaption(caption);
         }
         if(listener == null) {
             view.execute();
@@ -159,7 +161,7 @@ public class DocumentViewer extends PDFViewer {
             } else if(contentType.isImage()) {
                 view = new ContentView(viewerComponent = new Image(resource));
             } else if(contentType.getMimeType().equals("text/html")) {
-                view = new HTMLView(IO.getReader(input));
+                view = new HTMLView(IO.getReader(input), isWindow());
                 viewerComponent = ((HTMLView)view).getViewerComponent();
             } else {
                 viewerComponent = null;

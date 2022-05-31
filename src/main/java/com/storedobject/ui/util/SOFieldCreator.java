@@ -21,6 +21,7 @@ import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
+@SuppressWarnings("resource")
 public class SOFieldCreator<T> implements ObjectFieldCreator<T> {
 
     private ObjectForm<T> form;
@@ -165,6 +166,10 @@ public class SOFieldCreator<T> implements ObjectFieldCreator<T> {
     public Stream<String> getFieldNames() {
         if(ca != null && form != null) {
             links = StoredObjectUtility.linkDetails(ca.getObjectClass());
+            ObjectEditor<?> oe = oe();
+            if(oe != null) {
+                oe.extraLinks().forEach(link -> links.add(link));
+            }
             StringList protectedColumns = StoredObjectUtility.protectedColumns(ca.getObjectClass());
             links.removeIf(link -> protectedColumns.contains(link.getName() + ".l"));
             Stream<String> names = links.stream().map(link -> link.getName() + ".l");
@@ -610,7 +615,9 @@ public class SOFieldCreator<T> implements ObjectFieldCreator<T> {
                     }
                 } catch(Throwable ignore) {
                 }
-                return new ObjectField<>(label, new FileField(types.toArray(new ObjectField.Type[0])));
+                FileField fileField = new FileField(types.toArray(new ObjectField.Type[0]));
+                fileField.disallowDownload();
+                return new ObjectField<>(label, fileField);
             }
             ObjectEditor<FT> oe = (ObjectEditor<FT>) oe();
             Class<FT> fieldClass = (Class<FT>) realObjectType;

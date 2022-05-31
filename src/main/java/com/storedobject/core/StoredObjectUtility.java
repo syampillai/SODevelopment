@@ -264,11 +264,17 @@ public final class StoredObjectUtility {
             return null;
         }
 
-        public void setClassName(String className) {
+        public void setObjectClass(Class<L> objectClass) {
+        }
+
+        public void setObjectClass(String className) {
         }
 
         public String getName() {
             return null;
+        }
+
+        public void setName(String name) {
         }
 
         public void setBrowserColumns(String columns) {

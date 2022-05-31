@@ -5,10 +5,12 @@ import com.storedobject.common.SORuntimeException;
 import com.storedobject.core.TextContent;
 import com.storedobject.ui.util.SOServlet;
 import com.storedobject.vaadin.ApplicationEnvironment;
+import com.storedobject.vaadin.HomeView;
 import com.storedobject.vaadin.View;
 import com.storedobject.vaadin.Viewer;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasSize;
+import com.vaadin.flow.component.dialog.Dialog;
 
 import java.io.BufferedReader;
 import java.io.Reader;
@@ -81,7 +83,7 @@ public class HTMLView extends Viewer {
      * @param windowMode Whether to show it in a window or not.
      */
     public HTMLView(TextContent textContent, boolean windowMode) {
-        super(textContent == null ? "HTML" : textContent.getName());
+        super(textContent == null ? "View" : textContent.getName());
         if(textContent == null) {
             setContent(MISSING, null, windowMode);
         } else {
@@ -96,7 +98,7 @@ public class HTMLView extends Viewer {
      * @param windowMode Whether to show it in a window or not.
      */
     public HTMLView(Reader htmlContent, boolean windowMode) {
-        super("HTML");
+        super("View");
         setContent(html(htmlContent), null, windowMode);
     }
 
@@ -124,6 +126,11 @@ public class HTMLView extends Viewer {
         }
         ((HasSize)component).setSizeFull();
         setComponent(windowMode ? createWindow(component) : component);
+    }
+
+    @Override
+    public boolean isHomeView() {
+        return this instanceof HomeView || getComponent() instanceof Dialog;
     }
 
     public static boolean isHTML(String content) {

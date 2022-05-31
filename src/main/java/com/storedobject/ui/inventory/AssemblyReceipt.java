@@ -20,7 +20,7 @@ public class AssemblyReceipt<T extends InventoryItem, C extends InventoryItem> e
         //noinspection unchecked
         super(null, item, (Class<T>) item.getClass(), null);
         grn = grnItem.getMaster(InventoryGRN.class);
-        reference = "Assembly - GRN " + grn.getReferenceNumber();
+        reference = "Assembly - GRN " + grn.getReference();
         setCaption(reference);
     }
 
@@ -133,7 +133,7 @@ public class AssemblyReceipt<T extends InventoryItem, C extends InventoryItem> e
 
         @Override
         public void setAssemblyPosition(InventoryFitmentPosition fitmentPosition, Quantity qAlreadyFitted) {
-            grnField.clearContent().append(grn.getReferenceNumber()).append(" dated ").append(grn.getDate()).update();
+            grnField.clearContent().append(grn.getReference()).append(" dated ").append(grn.getDate()).update();
             assemblyDetails.clearContent().append(fitmentPosition.toDisplay()).update();
             this.fitmentPosition = fitmentPosition;
             itemField.clear();
@@ -196,7 +196,7 @@ public class AssemblyReceipt<T extends InventoryItem, C extends InventoryItem> e
 
         @Override
         public void setAssemblyPosition(InventoryFitmentPosition fitmentPosition) {
-            grnField.append(grn.getReferenceNumber()).append(" dated ").append(grn.getDate()).update();
+            grnField.append(grn.getReference()).append(" dated ").append(grn.getDate()).update();
             assemblyDetails.clearContent().append(fitmentPosition.toDisplay()).update();
             this.item = fitmentPosition.getFittedItem();
             itemField.setValue(item);

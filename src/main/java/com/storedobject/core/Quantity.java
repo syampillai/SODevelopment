@@ -110,10 +110,18 @@ public class Quantity implements Storable, Comparable<Quantity> {
 	}
 
 	public boolean canConvert(Quantity another) throws Invalid_State {
+		return canConvert(another, null);
+	}
+
+	public boolean canConvert(Quantity another, String message) throws Invalid_State {
 		return true;
 	}
 
 	public boolean canConvert(MeasurementUnit toUnit) throws Invalid_State {
+		return canConvert(toUnit, null);
+	}
+
+	public boolean canConvert(MeasurementUnit toUnit, String message) throws Invalid_State {
 		return true;
 	}
 

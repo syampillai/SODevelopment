@@ -322,6 +322,10 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
         }
     }
 
+    public Stream<StoredObjectUtility.Link<?>> extraLinks() {
+        return Stream.empty();
+    }
+
     @Override
     public void setCaption(String caption) {
         setCaption(caption, false);

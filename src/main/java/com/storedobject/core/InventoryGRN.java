@@ -27,10 +27,9 @@ public final class InventoryGRN extends StoredObject implements HasChildren {
         return new Date(0);
     }
 
-    public void setReferenceNumber(String referenceNumber) {
+    public void setInvoiceNumber(String referenceNumber) {
     }
-
-    public String getReferenceNumber() {
+    public String getInvoiceNumber() {
         return "";
     }
 
@@ -132,9 +131,6 @@ public final class InventoryGRN extends StoredObject implements HasChildren {
     }
 
     public void close(Transaction transaction) throws Exception {
-    }
-
-    public void updateInvoiceDetails(TransactionManager tm, String invoiceNumber, Date invoiceDate) throws  Exception {
     }
 
     /**

@@ -1105,10 +1105,16 @@ public class Application extends com.storedobject.vaadin.Application implements 
         if(autos.isEmpty()) {
             count = frameMenu.getMenuPane().getElement().getChildCount() - count;
             if(count == 0) {
-                ELabel info = new ELabel("Please contact support with the following details:");
+                ELabel info = new ELabel("Please contact support with the following details:", "red");
                 info.newLine();
                 information(info);
-                new Viewer(new CenteredLayout(info), "Support", false).execute();
+                Viewer viewer = new Viewer(new CenteredLayout(info), "Support", false) {
+                    @Override
+                    public boolean isHomeView() {
+                        return true;
+                    }
+                };
+                viewer.execute();
             }
         }
     }

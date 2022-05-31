@@ -144,6 +144,7 @@ public class ReceiveReturnedItems extends DataForm implements Transactional {
     }
 
     private void process(List<InventoryItem> allItems, Set<InventoryItem> selectedItems, boolean confirm) {
+        MaterialReturned returnedToProcess = null;
         InventoryItem item;
         List<MaterialReturnedItem> returnedItems;
         List<MaterialReturned> returns = StoredObject.list(MaterialReturned.class,
@@ -156,6 +157,10 @@ public class ReceiveReturnedItems extends DataForm implements Transactional {
                     continue;
                 }
                 if(selectedItems.contains(item)) {
+                    if(returned.getStatus() == 0) {
+                        returnedToProcess = returned;
+                        break;
+                    }
                     warning("Item already in Return Reference " + returned.getReferenceNumber()
                             + " (To " + returned.getToLocation().toDisplay() + "), Item = " + item.toDisplay());
                     Select select = new Select(allItems, true);
@@ -174,34 +179,37 @@ public class ReceiveReturnedItems extends DataForm implements Transactional {
             selectedItems.forEach(select::select);
             return;
         }
-        MaterialReturned returned = new MaterialReturned();
-        returned.setDate(date);
-        returned.setFromLocation(eo);
-        returned.setToLocation(storeBin);
-        if(type == 3) { // RO
-            returned.setInvoiceDate(invoiceDate);
-            returned.setReferenceNumber(invoiceRef);
-        }
-        if(!transact(t -> {
-            returned.save(t);
-            MaterialReturnedItem returnedItem;
-            for(InventoryItem ii: selectedItems) {
-                returnedItem = new MaterialReturnedItem();
-                returnedItem.setItem(ii);
-                returnedItem.setQuantity(ii.getQuantity());
-                returnedItem.save(t);
-                returned.addLink(t, returnedItem);
+        if(returnedToProcess == null) {
+            returnedToProcess = new MaterialReturned();
+            returnedToProcess.setDate(date);
+            returnedToProcess.setFromLocation(eo);
+            returnedToProcess.setToLocation(storeBin);
+            if(type == 3) { // RO
+                returnedToProcess.setInvoiceDate(invoiceDate);
+                returnedToProcess.setReferenceNumber(invoiceRef);
             }
-        })) {
-            return;
+            MaterialReturned finalReturnedToProcess = returnedToProcess;
+            if(!transact(t -> {
+                finalReturnedToProcess.save(t);
+                MaterialReturnedItem returnedItem;
+                for(InventoryItem ii : selectedItems) {
+                    returnedItem = new MaterialReturnedItem();
+                    returnedItem.setItem(ii);
+                    returnedItem.setQuantity(ii.getQuantity());
+                    returnedItem.save(t);
+                    finalReturnedToProcess.addLink(t, returnedItem);
+                }
+            })) {
+                return;
+            }
+            returnedToProcess.reload();
         }
-        returned.reload();
-        if(!transact(returned::send)) {
+        if(!transact(returnedToProcess::send)) {
             return;
         }
         ReceiveMaterialReturned v = new ReceiveMaterialReturned(storeBin, eo);
         v.execute();
-        v.receive(returned);
+        v.receive(returnedToProcess);
     }
 
     private void processOld() {
@@ -246,8 +254,8 @@ public class ReceiveReturnedItems extends DataForm implements Transactional {
             if(!confirm) {
                 return;
             }
-            proceed.setText("Selected Entries");
-            Button b = new Button("Previous Entries", VaadinIcon.COG_O, e -> {
+            proceed.setText("Process Selected Entries");
+            Button b = new Button("Show Previous Entries", VaadinIcon.COG_O, e -> {
                 clearAlerts();
                 close();
                 processOld();

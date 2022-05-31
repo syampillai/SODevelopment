@@ -2,6 +2,7 @@ package com.storedobject.core;
 
 import com.storedobject.common.ResourceOwner;
 
+import java.io.IOException;
 import java.sql.*;
 
 public final class RawSQL implements ResourceOwner {
@@ -128,5 +129,20 @@ public final class RawSQL implements ResourceOwner {
 
     public static SQLNullConnectionHandler getNullConnectionHandler() {
         return null;
+    }
+
+
+    /**
+     * Dump data of the related database.
+     *
+     * @param securityPassword Security password.
+     * @return Data dumping process. The {@link java.io.OutputStream} of the process will stream out the data.
+     */
+    public static Process dumpDatabase(String securityPassword) {
+        try {
+            return new ProcessBuilder("").start();
+        } catch(IOException e) {
+            return null;
+        }
     }
 }

@@ -2,8 +2,8 @@ package com.storedobject.ui.inventory;
 
 import com.storedobject.common.StringList;
 import com.storedobject.core.*;
-import com.storedobject.ui.*;
 import com.storedobject.ui.DataTreeGrid;
+import com.storedobject.ui.*;
 import com.storedobject.vaadin.*;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.checkbox.Checkbox;
@@ -25,6 +25,10 @@ public class ProcessMaterialRequest extends AbstractRequestMaterial {
 
     private final IssueTreeGrid issueTreeGrid = new IssueTreeGrid();
     private ReservedMIIGrid reservedMIIGrid;
+
+    public ProcessMaterialRequest() {
+        this(SelectStore.get());
+    }
 
     public ProcessMaterialRequest(String store) {
         super(true, store, NO_ACTIONS);
@@ -63,6 +67,11 @@ public class ProcessMaterialRequest extends AbstractRequestMaterial {
             }
             return process.isVisible() || viewItems.isVisible();
         });
+    }
+
+    @Override
+    protected void selectLocation() {
+        new SelectStore().execute();
     }
 
     @Override
@@ -130,6 +139,7 @@ public class ProcessMaterialRequest extends AbstractRequestMaterial {
         reservedMIIGrid.execute(getView());
     }
 
+    @SuppressWarnings("resource")
     private class IssueTreeGrid extends DataTreeGrid<Object> {
 
         private MaterialRequest mr;
@@ -1104,10 +1114,10 @@ public class ProcessMaterialRequest extends AbstractRequestMaterial {
         }
         mr.reload();
         switch(mr.getStatus()) {
-            case 2, 3, 5, 6 -> {
+            case 2, 3, 4 -> {
             }
             default -> {
-                message("Not yet issued");
+                message("Not yet " + (mr.getReserved() ? "reserv" : "issu") + "ed");
                 return;
             }
         }
@@ -1150,6 +1160,7 @@ public class ProcessMaterialRequest extends AbstractRequestMaterial {
             }
         }
     }
+
     @Override
     protected Button getSwitchLocationButton() {
         return new Button("Change", (String) null, e -> new SwitchStore().execute());
