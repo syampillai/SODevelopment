@@ -11,7 +11,9 @@ public abstract class Database {
 
 	private static Database db;
 
-	public static void login(String driver, String ip, int port, String database, String databaseMaster, String user, String password) throws Exception {
+	public static void login(String driver, String ip, int port, String database, String databaseMaster,
+							 String user, String password) throws Exception {
+		db = get();
 	}
 
 	public static Database get() {
@@ -140,6 +142,20 @@ public abstract class Database {
 
 	public ArrayList<String[]> columnDetails(String tableName) {
 		return new ArrayList<>();
+	}
+
+	protected abstract String dropDatabaseDDL(String databaseName);
+
+	public boolean dropDatabase(String databaseName, String securityPassword) {
+		return false;
+	}
+
+	protected String createDatabaseDDL(String databaseName) {
+		return databaseName;
+	}
+
+	public boolean createDatabase(String databaseName, String securityPassword) {
+		return false;
 	}
 
 	protected abstract String[] createSchemaDDL(String schemaName);

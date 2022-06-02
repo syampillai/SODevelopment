@@ -94,7 +94,11 @@ public class ObjectList extends DataForm {
             p = fn.lastIndexOf('.');
             fn = fn.substring(p + 1);
             if(fc.getObjectClass() == m.getTail().getDeclaringClass()) {
-                field = fc.createField(fn, m.getReturnType(), caption);
+                if(Date.class.isAssignableFrom(m.getReturnType()) && compare(compare) == 'P') {
+                    field = new DatePeriodField(caption);
+                } else {
+                    field = fc.createField(fn, m.getReturnType(), caption);
+                }
             } else {
                 SOFieldCreator<?> ofc = fc(m.getTail().getDeclaringClass());
                 if(ofc == null) {

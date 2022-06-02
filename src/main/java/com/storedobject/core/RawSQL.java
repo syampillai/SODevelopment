@@ -136,9 +136,26 @@ public final class RawSQL implements ResourceOwner {
      * Dump data of the related database.
      *
      * @param securityPassword Security password.
+     * @param sql True if download as plain SQL statements.
      * @return Data dumping process. The {@link java.io.OutputStream} of the process will stream out the data.
      */
-    public static Process dumpDatabase(String securityPassword) {
+    public static Process dumpDatabase(String securityPassword, boolean sql) {
+        try {
+            return new ProcessBuilder("").start();
+        } catch(IOException e) {
+            return null;
+        }
+    }
+
+    /**
+     * Restore data to a given database.
+     *
+     * @param securityPassword Security password.
+     * @param databaseName Name of the database to restore.
+     * @return Data loading process. The {@link java.io.InputStream} of the process can accept SQL commands for
+     * restoring the data.
+     */
+    public static Process restoreDatabase(String securityPassword, String databaseName) {
         try {
             return new ProcessBuilder("").start();
         } catch(IOException e) {

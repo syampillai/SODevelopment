@@ -139,7 +139,6 @@ public class ProcessMaterialRequest extends AbstractRequestMaterial {
         reservedMIIGrid.execute(getView());
     }
 
-    @SuppressWarnings("resource")
     private class IssueTreeGrid extends DataTreeGrid<Object> {
 
         private MaterialRequest mr;
@@ -672,7 +671,7 @@ public class ProcessMaterialRequest extends AbstractRequestMaterial {
         @SuppressWarnings("unused")
         public String getSerialNumber(Object o) {
             if(o instanceof MaterialIssuedItem) {
-                return ((MaterialIssuedItem) o).getItem().getSerialNumber();
+                return ((MaterialIssuedItem) o).getItem().getSerialNumberDisplay();
             }
             return "";
         }

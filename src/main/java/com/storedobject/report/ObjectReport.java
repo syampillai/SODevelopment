@@ -1,29 +1,22 @@
 package com.storedobject.report;
 
-import com.storedobject.common.Executable;
-import com.storedobject.core.*;
-
-import java.util.Random;
+import com.storedobject.core.Device;
+import com.storedobject.core.PrintLogicDefinition;
+import com.storedobject.core.StoredObject;
 
 public class ObjectReport {
-
-    private final Executable executable;
 
     public ObjectReport(Device device, PrintLogicDefinition printLogicDefinition, StoredObject object) {
         this(device, printLogicDefinition, object, true);
     }
 
     public ObjectReport(Device device, PrintLogicDefinition printLogicDefinition, StoredObject object, boolean execute) {
-        executable = new Random().nextBoolean() ? null : new TextContentProducer();
     }
 
-    public Executable getExecutable() {
-        return executable;
+    public Runnable getRunnable() {
+        return () -> {};
     }
 
     public void execute() {
-        if(executable != null) {
-            executable.execute();
-        }
     }
 }

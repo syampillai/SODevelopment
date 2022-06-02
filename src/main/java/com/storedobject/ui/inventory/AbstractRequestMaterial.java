@@ -118,11 +118,11 @@ public abstract class AbstractRequestMaterial extends ObjectBrowser<MaterialRequ
             style = issuing ? 0 : 1;
         }
         return switch(style) {
-            case 0 -> StringList.create("Date", "ReferenceNumber", "Remarks", "FromLocation AS Requested Location",
+            case 0 -> StringList.create("Date", "Reference", "Remarks", "FromLocation AS Requested Location",
                     "Person AS By", "Status", "Priority", "RequiredBefore");
-            case 1 -> StringList.create("Date", "ReferenceNumber", "ToLocation", "Status",
+            case 1 -> StringList.create("Date", "Reference", "ToLocation", "Status",
                     "Priority", "RequiredBefore");
-            case 2 -> StringList.create("Date", "ReferenceNumber", "ToLocation AS From", "Status",
+            case 2 -> StringList.create("Date", "Reference", "ToLocation AS From", "Status",
                     "Priority", "RequiredBefore", "Received");
             default -> columns(0, false);
         };

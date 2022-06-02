@@ -1799,7 +1799,7 @@ public class Application extends com.storedobject.vaadin.Application implements 
             try {
                 generator.getContent().writeResponse(vaadinRequest, vaadinResponse);
             } catch(Exception e) {
-                error(e);
+                access(() -> error(e));
                 Application.this.log("Content Generator - " + getTransactionManager().getUser().getLogin(), e);
             }
             return true;

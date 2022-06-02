@@ -3,19 +3,18 @@ package com.storedobject.ui;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 public class ZipUploadProcessorView extends UploadProcessorView {
 
-    private Consumer<ZipEntry> zipEntryConsumer;
+    private BiConsumer<ZipEntry, InputStream> zipEntryConsumer;
 
     public ZipUploadProcessorView(String caption) {
         this(caption, null, null);
     }
 
-    public ZipUploadProcessorView(String caption, Consumer<ZipEntry> processor) {
+    public ZipUploadProcessorView(String caption, BiConsumer<ZipEntry, InputStream> processor) {
         this(caption, null, processor);
     }
 
@@ -23,7 +22,7 @@ public class ZipUploadProcessorView extends UploadProcessorView {
         this(caption, message, null);
     }
 
-    public ZipUploadProcessorView(String caption, String message, Consumer<ZipEntry> processor) {
+    public ZipUploadProcessorView(String caption, String message, BiConsumer<ZipEntry, InputStream> processor) {
         super(caption, message, null);
         super.setProcessor(new ZipProcessor());
         zipEntryConsumer = processor;
@@ -51,22 +50,23 @@ public class ZipUploadProcessorView extends UploadProcessorView {
         throw new UnsupportedOperationException();
     }
 
-    public void setProcessor(Consumer<ZipEntry> zipEntryConsumer) {
+    public void setZipEntryConsumer(BiConsumer<ZipEntry, InputStream> zipEntryConsumer) {
         this.zipEntryConsumer = zipEntryConsumer;
     }
 
     /**
      * Override this method for processing the "Zip Entries". Each "Zip Entry" will be passed here unless a "Processor"
-     * ({@link Consumer}) is set and in that case, Processor's accept() method
-     * ({@link Consumer#accept(Object)}) will be called with each zip entry.
+     * ({@link BiConsumer}) is set and in that case, Processor's accept() method
+     * ({@link BiConsumer#accept(Object, Object)}) will be called with each zip entry.
      *
      * @param zipEntry Zip entry to consume.
+     * @param content Input stream of the content.
      * @throws IOException Exception for I/O error.
      */
     @SuppressWarnings("RedundantThrows")
-    protected void process(ZipEntry zipEntry) throws IOException {
+    protected void process(ZipEntry zipEntry, InputStream content) throws IOException {
         if(zipEntryConsumer != null) {
-            zipEntryConsumer.accept(zipEntry);
+            zipEntryConsumer.accept(zipEntry, content);
         } else {
             redMessage("Ignoring zip entry: " + zipEntry.getName());
         }
@@ -100,7 +100,7 @@ public class ZipUploadProcessorView extends UploadProcessorView {
                     if(zipEntry == null) {
                         break;
                     }
-                    process(zipEntry);
+                    process(zipEntry, zin);
                 } catch (IOException e) {
                     error(e);
                 }

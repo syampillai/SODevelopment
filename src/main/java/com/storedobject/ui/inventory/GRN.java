@@ -516,14 +516,6 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
         }
 
         @Override
-        protected String getLabel(String fieldName) {
-            if("ReferenceNumber".equals(fieldName)) {
-                return "Invoice No.";
-            }
-            return super.getLabel(fieldName);
-        }
-
-        @Override
         protected HasValue<?, ?> createField(String fieldName, String label) {
             if(supplierField != null && "Supplier".equals(fieldName)) {
                 supplierField.setLabel(InventoryGRN.getTypeValues()[type]);
@@ -1458,7 +1450,7 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
 
             public ConfirmGrid(List<InventoryGRNItem> items, String message, Runnable action) {
                 super(InventoryGRNItem.class, items,
-                        StringList.create("Item", "PartNumber", "SerialNumber AS Serial/Batch Number", "Quantity"),
+                        StringList.create("Item", "PartNumber", "SerialNumber AS Serial/Batch", "Quantity"),
                         message, action);
                 execute();
             }

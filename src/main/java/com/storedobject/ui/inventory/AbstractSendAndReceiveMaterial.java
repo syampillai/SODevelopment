@@ -9,6 +9,7 @@ import com.storedobject.vaadin.ButtonLayout;
 import com.storedobject.vaadin.MultiSelectGrid;
 import com.vaadin.flow.component.HasValue;
 import com.vaadin.flow.component.grid.contextmenu.GridContextMenu;
+import com.vaadin.flow.component.grid.contextmenu.GridMenuItem;
 import com.vaadin.flow.component.icon.VaadinIcon;
 
 import java.util.ArrayList;
@@ -23,12 +24,15 @@ public abstract class AbstractSendAndReceiveMaterial<T extends InventoryTransfer
     static final int[] ALL_TYPES = new int[] { 0, 3, 4, 5, 8, 10, 11 };
     private final Button send = new Button("Send", VaadinIcon.TRUCK, e -> send());
     private final Button receive = new Button("Receive", VaadinIcon.STORAGE, e -> receive());
+    private final Button grnButton;
     private final ObjectField<InventoryLocation> fromField, toField;
     private InventoryLocation fromOrTo;
     private InventoryLocation otherLocation;
     private final boolean receiveMode;
     private final Class<L> transferItemClass;
     Class<? extends InventoryItem> itemClass;
+    private GRNEditor grnEditor;
+    private InventoryGRN grn;
 
     public AbstractSendAndReceiveMaterial(Class<T> transferClass, Class<L> itemClass, boolean receiveMode) {
         this(transferClass, itemClass, (String) null, receiveMode);
@@ -125,13 +129,57 @@ public abstract class AbstractSendAndReceiveMaterial<T extends InventoryTransfer
         setOrderBy("Date DESC,No DESC");
         GridContextMenu<T> cm = new GridContextMenu<>(this);
         cm.addItem(receiveMode ? "Receive" : "Send", e -> e.getItem().ifPresent(this::rowDoubleClicked));
-        cm.setDynamicContentHandler(o -> o != null && (receiveMode ? o.getStatus() == 1 : o.getStatus() == 2));
+        GridMenuItem<T> grnMenu = cm.addItem("Associated GRN", e ->  grn());
+        cm.setDynamicContentHandler(o -> {
+            if(o == null) {
+                return false;
+            }
+            grn = receiveMode ? o.listLinks(InventoryGRN.class).findFirst() : null;
+            grnMenu.setVisible(grn != null);
+            return grn != null || (receiveMode ? o.getStatus() == 1 : o.getStatus() == 2);
+        });
+        if(receiveMode) {
+            grnButton = new Button("GRN", VaadinIcon.FILE_TABLE, e -> greSel());
+        } else {
+            grnButton = null;
+        }
     }
 
     void created() {
     }
 
     protected void selectLocation() {
+    }
+
+    private GRNEditor grnEditor() {
+        if(grnEditor == null) {
+            grnEditor = new GRNEditor();
+        }
+        return grnEditor;
+    }
+
+    private void grn() {
+        if(grn == null) {
+            return;
+        }
+        grnEditor().setObject(grn);
+        grnEditor.execute();
+    }
+
+    private void greSel() {
+        if(!receiveMode) {
+            return;
+        }
+        T mt = selected();
+        if(mt == null) {
+            return;
+        }
+        grn = mt.listLinks(InventoryGRN.class).findFirst();
+        if(grn == null) {
+            message("No GRN found for the selected entry");
+        } else {
+            grn();
+        }
     }
 
     public final InventoryLocation getLocationFrom() {
@@ -194,10 +242,15 @@ public abstract class AbstractSendAndReceiveMaterial<T extends InventoryTransfer
         if(otherLocation != null) {
             e.append((receiveMode ? "From" : "To") + ": ").append(otherLocation.toDisplay(), "blue");
         }
-        e.append(" | ", "green").
-                append("Note: ").
-                append("Double-click or right-click on the entry to " +
-                        (receiveMode ? "receive" : "send"), "blue");
+        if(receiveMode) {
+            e.newLine();
+        } else {
+            e.append(" | ", "green");
+        }
+        e.append("Note: ").
+                append("Double-click " + (receiveMode ? "" : "or right-click") + "on the entry to " +
+                        (receiveMode ? "receive" : "send")
+                        + (receiveMode ? ". Right-click on the entry for more options." : ""), "blue");
         e.update();
         if(buttonLayout != null) {
             buttonLayout.add(e);
@@ -216,7 +269,7 @@ public abstract class AbstractSendAndReceiveMaterial<T extends InventoryTransfer
             add.setVisible(false);
             edit.setVisible(false);
         }
-        buttonPanel.add(send, receive);
+        buttonPanel.add(send, receive, grnButton);
     }
 
     @Override
@@ -296,15 +349,15 @@ public abstract class AbstractSendAndReceiveMaterial<T extends InventoryTransfer
         InventoryLocation to = mt.getToLocation();
         Id storeId = to instanceof InventoryStoreBin ? ((InventoryStoreBin) to).getStoreId() : null;
         items.removeIf(i -> {
-           InventoryLocation loc = i.getLocation();
-           if(loc.getId().equals(to.getId())) {
-               return false;
-           }
-           if(storeId != null && loc instanceof InventoryBin && ((InventoryBin) loc).getStoreId().equals(storeId)) {
-               return false;
-           }
-           moved.add(i);
-           return true;
+            InventoryLocation loc = i.getLocation();
+            if(loc.getId().equals(to.getId())) {
+                return false;
+            }
+            if(storeId != null && loc instanceof InventoryBin && ((InventoryBin) loc).getStoreId().equals(storeId)) {
+                return false;
+            }
+            moved.add(i);
+            return true;
         });
         if(moved.isEmpty()) {
             receive(mt, items);
@@ -327,8 +380,13 @@ public abstract class AbstractSendAndReceiveMaterial<T extends InventoryTransfer
     }
 
     private void receive(T mt, List<InventoryItem> items) {
+        grn = mt.listLinks(InventoryGRN.class).single(false);
+        GRNEditor gEd = grn == null ? null : grnEditor();
+        if(grn != null) {
+            grnEditor.setObject(grn);
+        }
         new ReceiveAndBin(mt.getDate(), "Receipt " + mt.getReferenceNumber(), items, mt::receive,
-                () -> refresh(mt)).execute(getView());
+                () -> refresh(mt), gEd).execute(getView());
     }
 
     private class MTEditor extends ObjectEditor<T> {
@@ -459,7 +517,7 @@ public abstract class AbstractSendAndReceiveMaterial<T extends InventoryTransfer
             }
             @SuppressWarnings("unchecked") List<InventoryItem> tools =
                     (List<InventoryItem>) StoredObject.list(iClass(), "Location=" + fromOrTo.getId()).
-                    toList();
+                            toList();
             new MultiSelectGrid<>(InventoryItem.class, tools,
                     StringList.create("PartNumber.PartNumber", "SerialNumber", "PartNumber.Name"),
                     this::toolEntries).execute(this.getView());

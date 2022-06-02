@@ -8,6 +8,7 @@ import com.storedobject.ui.MediaCSS;
 import com.vaadin.flow.server.VaadinServlet;
 
 import javax.servlet.ServletException;
+import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.annotation.WebInitParam;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -19,6 +20,7 @@ import java.util.concurrent.TimeUnit;
 @WebServlet(urlPatterns = "/*", name = "SOServlet", asyncSupported = true, loadOnStartup = 0, initParams = {
     @WebInitParam(name = "closeIdleSessions", value = "true")
 })
+@MultipartConfig(maxFileSize = Integer.MAX_VALUE, maxRequestSize = Integer.MAX_VALUE)
 public class SOServlet extends VaadinServlet {
 
     private static String url;

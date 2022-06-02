@@ -30,7 +30,7 @@ import java.util.function.Supplier;
  * {@link com.storedobject.office.ODTObjectReport#ODTObjectReport(Device, StoredObject)}</p>
  * <p><b>Usage as a generic button:</b> {@link PrintButton} may be used to invoke non-printing logic too by defining
  * any generic logic in the {@link PrintLogicDefinition}. The logic must implement
- * {@link com.storedobject.common.Executable} and must have a constructor that takes a
+ * {@link Runnable} and must have a constructor that takes a
  * {@link com.storedobject.core.Device} and a {@link StoredObject} instance as its parameters.</p>
  * <p>In {@link ObjectEditor}, by default, the {@link PrintButton} will be hidden if the object instance is null.
  * However, you can control this behaviour and control the visibility of it or its individual buttons by overriding
@@ -109,7 +109,7 @@ public final class PrintButton extends Composite<Button> {
         if(a != null) {
             StoredObject so = objectSupplier.get();
             if(so != null) {
-                if(new ObjectReport(a, printLogicDefinition, so).getExecutable() == null) {
+                if(new ObjectReport(a, printLogicDefinition, so).getRunnable() == null) {
                     Application.error("An error has occurred, please contact the Technical Support");
                 }
             }

@@ -40,6 +40,7 @@ public class LocateItem extends DataGrid<InventoryItem> implements CloseableView
     private InventoryStore store;
     private boolean allowBreaking;
     private final ELabel help = new ELabel("Right-click on the row to see more options", "blue");
+    private GRNEditor grnEditor;
 
     /**
      * Constructor.
@@ -208,6 +209,7 @@ public class LocateItem extends DataGrid<InventoryItem> implements CloseableView
                 cm.addItem("Break from Assembly", e -> e.getItem().ifPresent(this::breakAssembly));
         GridMenuItem<InventoryItem> movementReport = cm.addItem("Movement Details",
                 e -> e.getItem().ifPresent(i -> new ItemMovementView(i).execute()));
+        cm.addItem("GRN Details", e -> e.getItem().ifPresent(this::viewGRN));
         cm.setDynamicContentHandler(ii -> {
             deselectAll();
             if(ii == null) {
@@ -527,6 +529,19 @@ public class LocateItem extends DataGrid<InventoryItem> implements CloseableView
         }
         tv.newLine().append("Fitted on: ").append(loc.getItem().toDisplay(), "blue");
         tv.popup();
+    }
+
+    private void viewGRN(InventoryItem item) {
+        clearAlerts();
+        InventoryGRN grn = item.getGRN();
+        if(grn == null) {
+            message("No associated GRN found for " + item.toDisplay());
+            return;
+        }
+        if(grnEditor == null) {
+            grnEditor = new GRNEditor();
+        }
+        grnEditor.viewObject(grn);
     }
 
     private static class FitmentLocations extends ObjectGrid<InventoryFitmentPosition> implements CloseableView {

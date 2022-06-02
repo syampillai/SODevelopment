@@ -2,10 +2,7 @@ package com.storedobject.ui.inventory;
 
 import com.storedobject.common.StringList;
 import com.storedobject.core.*;
-import com.storedobject.ui.ELabel;
-import com.storedobject.ui.ELabelField;
-import com.storedobject.ui.ObjectEditor;
-import com.storedobject.ui.Transactional;
+import com.storedobject.ui.*;
 import com.storedobject.vaadin.*;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.icon.VaadinIcon;
@@ -39,12 +36,26 @@ public class ReceiveAndBin extends ListGrid<InventoryItem> implements Transactio
         this(date, reference, itemList, update, null);
     }
 
-    public ReceiveAndBin(Date date, String reference, List<InventoryItem> itemList, TransactionManager.Transact update, Runnable refresher) {
+    public ReceiveAndBin(Date date, String reference, List<InventoryItem> itemList, TransactionManager.Transact update,
+                         Runnable refresher) {
+        this(date, reference, itemList, update, refresher, null);
+    }
+
+    public ReceiveAndBin(Date date, String reference, List<InventoryItem> itemList, TransactionManager.Transact update,
+                         Runnable refresher, GRNEditor grnEditor) {
         super(InventoryItem.class, filtered(itemList),
-                StringList.create("PartNumber.Name AS Item", "PartNumber.PartNumber AS Part Number", "SerialNumber as Serial", "Quantity", "InTransit", "Location"));
+                StringList.create("PartNumber.Name AS Item", "PartNumber.PartNumber AS Part Number",
+                        "SerialNumberDisplay as Serial/Batch", "Quantity", "InTransit", "Location"));
         this.update = update;
         this.refresher = refresher;
-        buttonLayout.add(new ELabel("Date"), dateField, new ELabel("Reference"), referenceField, process, exit);
+        buttonLayout.add(new ELabel("Date"), dateField, new ELabel("Reference"), referenceField, process);
+        if(grnEditor != null && grnEditor.getObject() != null) {
+            buttonLayout.add(new Button("GRN", VaadinIcon.FILE_TABLE, e -> {
+                grnEditor.abort();
+                grnEditor.execute(getView());
+            }));
+        }
+        buttonLayout.add(exit);
         addConstructedListener((g) -> con());
         setCaption("Receive Items");
         this.date = date;
@@ -124,7 +135,11 @@ public class ReceiveAndBin extends ListGrid<InventoryItem> implements Transactio
         return s.toString();
     }
 
-    protected void process() {
+    private void process() {
+        process(true);
+    }
+
+    private void process(boolean check) {
         clearAlerts();
         Date d = dateField.getValue();
         if(d.before(date)) {
@@ -137,6 +152,27 @@ public class ReceiveAndBin extends ListGrid<InventoryItem> implements Transactio
             return;
         }
         clearAlerts();
+        List<InventoryItem> list = stream().filter(InventoryItem::getInTransit).toList();
+        if(check) {
+            if(!list.isEmpty()) {
+                new ActionGrid<>(InventoryItem.class, list, "The following items are not inspected!",
+                        () -> process(false)) {
+                    @Override
+                    public boolean includeColumn(String columnName) {
+                        return !"InTransit".equals(columnName);
+                    }
+                }.execute();
+                return;
+            }
+        } else {
+            for(InventoryItem ii: list) {
+                previousLocation = ii.getLocation();
+                ii.setInTransit(false);
+                if(!transact(ii::save) || !saveItem2(ii)) {
+                    return;
+                }
+            }
+        }
         if(transact(t -> {
             InventoryTransaction it = new InventoryTransaction(getTransactionManager(), d, reference);
             boolean any = false;
@@ -186,6 +222,10 @@ public class ReceiveAndBin extends ListGrid<InventoryItem> implements Transactio
         if(!transact(t -> itemEditor.save(t))) {
             return false;
         }
+        return saveItem2(item);
+    }
+
+    private boolean saveItem2(InventoryItem item) {
         if(item.isSerialized()) {
             refresh(item);
         } else {

@@ -33,6 +33,10 @@ public final class MaterialRequest extends StoredObject {
         return "";
     }
 
+    public String getReference() {
+        return "";
+    }
+
     public void setFromLocation(Id fromLocationId) {
     }
 
