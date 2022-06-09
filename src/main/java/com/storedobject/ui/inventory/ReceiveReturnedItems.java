@@ -161,7 +161,7 @@ public class ReceiveReturnedItems extends DataForm implements Transactional {
                         returnedToProcess = returned;
                         break;
                     }
-                    warning("Item already in Return Reference " + returned.getReferenceNumber()
+                    warning("Item already in Return Reference " + returned.getReference()
                             + " (To " + returned.getToLocation().toDisplay() + "), Item = " + item.toDisplay());
                     Select select = new Select(allItems, true);
                     select.execute();
@@ -186,7 +186,7 @@ public class ReceiveReturnedItems extends DataForm implements Transactional {
             returnedToProcess.setToLocation(storeBin);
             if(type == 3) { // RO
                 returnedToProcess.setInvoiceDate(invoiceDate);
-                returnedToProcess.setReferenceNumber(invoiceRef);
+                returnedToProcess.setInvoiceNumber(invoiceRef);
             }
             MaterialReturned finalReturnedToProcess = returnedToProcess;
             if(!transact(t -> {

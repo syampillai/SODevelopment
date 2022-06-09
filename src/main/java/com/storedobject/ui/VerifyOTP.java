@@ -4,7 +4,6 @@ import com.storedobject.common.SORuntimeException;
 import com.storedobject.core.MessageTemplate;
 import com.storedobject.vaadin.*;
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.HasComponents;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
@@ -31,6 +30,7 @@ public class VerifyOTP extends View implements CloseableView {
     private OTP phone, email;
     private volatile boolean closed = false;
     private final HorizontalLayout caption = new HorizontalLayout();
+    private final VerticalLayout layout = new VerticalLayout();
     private String customTag;
 
     /**
@@ -84,32 +84,31 @@ public class VerifyOTP extends View implements CloseableView {
         this.verified = verified;
         this.cancelled = cancelled;
         this.errorWhileSending = errorWhileSending;
-        VerticalLayout v = new VerticalLayout();
-        FormLayout form = new FormLayout();
-        form.setColumns(1);
-        setComponent(v);
+        setComponent(layout);
         ELabel caption1 = new ELabel(getCaption(), "font-size:large;font-weight:900");
         ELabel caption2 = new ELabel("(One-Time Password)", "font-size:medium;font-weight:900");
         HorizontalLayout buttons = new HorizontalLayout();
-        v.add(caption1, caption2, caption, form, buttons);
-        v.setHorizontalComponentAlignment(FlexComponent.Alignment.CENTER, caption1, caption2, caption, form, buttons);
+        layout.add(caption1, caption2, caption);
+        layout.setHorizontalComponentAlignment(FlexComponent.Alignment.CENTER, caption1, caption2, caption);
         if(phone == null) {
-            this.email = new OTP(form, new MailSender(email), email);
+            this.email = new OTP(new MailSender(email), email);
         }
         if(email == null) {
-            this.phone = new OTP(form, new SMSSender(phone), phone);
+            this.phone = new OTP(new SMSSender(phone), phone);
         }
         if(phone != null && email != null) {
             if(singleOTP) {
-                this.phone = new OTP(form, new BothSender(phone, email), phone, email);
+                this.phone = new OTP(new BothSender(phone, email), phone, email);
             } else {
-                this.phone = new OTP(form, new SMSSender(phone), phone);
-                this.email = new OTP(form, new MailSender(email), email);
+                this.phone = new OTP(new SMSSender(phone), phone);
+                this.email = new OTP(new MailSender(email), email);
             }
         }
         Button cancel = new Button("Cancel", e -> abort());
         cancel.getElement().getStyle().set("background", "var(--lumo-error-color-10pct)");
-        buttons.add(cancel, new Button("Submit", "ok", e -> {}));
+        buttons.add(new Button("Submit", "ok", e -> {}), cancel);
+        layout.add(buttons);
+        layout.setHorizontalComponentAlignment(FlexComponent.Alignment.CENTER, caption1, caption2, caption, buttons);
         setWindowMode(true);
     }
 
@@ -425,7 +424,7 @@ public class VerifyOTP extends View implements CloseableView {
         private final Sender sender;
         private int stage = 0; // 0:Initial, 1:Sending, 2:Sent, 3:Resending, 4:Resent
 
-        private OTP(HasComponents form, Sender sender, String... sentTo) {
+        private OTP(Sender sender, String... sentTo) {
             this.sender = sender;
             timer.addListener(e -> timedOut());
             timer.setSuffix(" seconds");
@@ -447,14 +446,22 @@ public class VerifyOTP extends View implements CloseableView {
             resend.setDisableOnClick(true);
             resend.setVisible(false);
             otpField.setLength(6);
+            otpField.setEmptyDisplay("");
             otpField.setWidth("6em");
             otpField.setEnabled(false);
             if(singleOTP) {
                 caption.add(timer);
             } else {
-                form.add(timer);
+                layout.add(timer);
             }
-            form.add(new CompoundField(s.toString(), prefixLabel, otpField, resend, done));
+            ELabel label = new ELabel(s.toString());
+            CompoundField cf;
+            layout.add(label, cf = new CompoundField(prefixLabel, otpField, resend, done));
+            if(singleOTP) {
+                layout.setHorizontalComponentAlignment(FlexComponent.Alignment.CENTER, label, cf);
+            } else {
+                layout.setHorizontalComponentAlignment(FlexComponent.Alignment.CENTER, timer, label, cf);
+            }
             otpField.addValueChangeListener(e -> verify());
         }
 

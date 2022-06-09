@@ -26,10 +26,10 @@ public abstract class InventoryTransfer extends StoredObject {
         return new Date(0);
     }
 
-    public void setReferenceNumber(String referenceNumber) {
+    public void setInvoiceNumber(String invoiceNumber) {
     }
 
-    public String getReferenceNumber() {
+    public String getInvoiceNumber() {
         return "";
     }
 
@@ -105,7 +105,7 @@ public abstract class InventoryTransfer extends StoredObject {
 
     public void receive(Transaction transaction) throws Exception {
     }
-    public String getReference() {
+    public final String getReference() {
         return "RO";
     }
 }

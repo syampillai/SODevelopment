@@ -192,7 +192,7 @@ public class ReceiveMaterialRequested extends AbstractRequestMaterial {
         @SuppressWarnings("unused")
         public String getDetails(Object o) {
             if(o instanceof MaterialIssued mi) {
-                return "Issue Reference: " + mi.getReferenceNumber() + " dated " + DateUtility.formatDate(mi.getDate());
+                return "Issue Reference: " + mi.getReference() + " dated " + DateUtility.formatDate(mi.getDate());
             }
             if(o instanceof MaterialIssuedItem mii) {
                 return mii.getItem().toDisplay();
@@ -282,8 +282,8 @@ public class ReceiveMaterialRequested extends AbstractRequestMaterial {
             deselectAll();
             clearAlerts();
             new ReceiveAndBin(mi.getDate(),
-                    "Request " + mr.getReferenceNumber() + "/" + DateUtility.formatDate(mr.getDate()) +
-                    ", Issue " + mi.getReferenceNumber() + "/" + DateUtility.formatDate(mi.getDate()),
+                    "Request " + mr.getReference() + "/" + DateUtility.formatDate(mr.getDate()) +
+                    ", Issue " + mi.getReference() + "/" + DateUtility.formatDate(mi.getDate()),
                     items, transact, () -> refreshAgain(mi)).
                     execute(getView());
         }
@@ -310,7 +310,7 @@ public class ReceiveMaterialRequested extends AbstractRequestMaterial {
             StoredObject.list(MaterialIssued.class, "Request=" + mr.getId(), "Status,No DESC").collectAll(miList);
             mrDetails.clearContent().append("From: ").append(mr.getToLocation().toDisplay(), "blue").
                     append("  Receiving at: ").append(mr.getFromLocation().toDisplay(), "blue").
-                    append("  Request Reference: ").append(mr.getReferenceNumber(), "blue").
+                    append("  Request Reference: ").append(mr.getReference(), "blue").
                     append("  Date: ").append(mr.getDate(), "blue").
                     append("  Status: ").append(mr.getStatusValue(), "blue").update();
             setDataProvider(new TreeData());

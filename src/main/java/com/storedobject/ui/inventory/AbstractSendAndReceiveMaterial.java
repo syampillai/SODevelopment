@@ -75,9 +75,9 @@ public abstract class AbstractSendAndReceiveMaterial<T extends InventoryTransfer
                                            boolean receiveMode, InventoryLocation otherLocation) {
         super(transferClass,
                 receiveMode ?
-                        StringList.create("Date", "ReferenceNumber AS Reference",
+                        StringList.create("Date", "Reference",
                                 "FromLocation AS From", "Received") :
-                        StringList.create("Date", "ReferenceNumber AS Reference",
+                        StringList.create("Date", "Reference",
                                 "ToLocation AS " + (transferClass == MaterialReturned.class ? "Return" :
                                         (transferClass == InventoryRO.class ? "Send" : "Transfer")) + " to",
                                 "Status"));
@@ -385,7 +385,7 @@ public abstract class AbstractSendAndReceiveMaterial<T extends InventoryTransfer
         if(grn != null) {
             grnEditor.setObject(grn);
         }
-        new ReceiveAndBin(mt.getDate(), "Receipt " + mt.getReferenceNumber(), items, mt::receive,
+        new ReceiveAndBin(mt.getDate(), "Receipt " + mt.getReference(), items, mt::receive,
                 () -> refresh(mt), gEd).execute(getView());
     }
 

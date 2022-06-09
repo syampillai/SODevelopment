@@ -157,11 +157,11 @@ public class InventoryItem extends StoredObject {
     public void setGRN(InventoryGRN grn) {
     }
 
-    public Id getGRNId() {
+    public final Id getGRNId() {
         return new Id();
     }
 
-    public InventoryGRN getGRN() {
+    public final InventoryGRN getGRN() {
         return Math.random() > 0.5 ? new InventoryGRN() : null;
     }
 
@@ -443,5 +443,25 @@ public class InventoryItem extends StoredObject {
      */
     public String getStatusDescription() {
         return "";
+    }
+
+    /**
+     * Get the PO through which this item was procured. If this item was repaired by a repair organization later,
+     * this information will not be available anymore, and you should see {@link #getRO()}.
+     *
+     * @return PO if available.
+     */
+    public final InventoryPO getPO() {
+        return Math.random() > 0.5 ? null : new InventoryPO();
+    }
+
+    /**
+     * Get the RO through which this item was repaired. If this item was repaired more than once,
+     * the latest RO is returned.
+     *
+     * @return RO if available.
+     */
+    public final InventoryRO getRO() {
+        return Math.random() > 0.5 ? null : new InventoryRO();
     }
 }

@@ -130,6 +130,7 @@ public class Application extends com.storedobject.vaadin.Application implements 
             } catch(Throwable ignored) {
             }
         }
+        Button.setNoIcons(ApplicationServer.getGlobalBooleanProperty("application.button.icon", false));
         setSingleLogicMode(singleLogicMode);
         setAbortOnLogicSwitch(abortOnLogicSwitch);
         login = new Login(this, getMessageViewer());
@@ -1036,7 +1037,10 @@ public class Application extends com.storedobject.vaadin.Application implements 
                     m = "Password not set! Please contact Technical Support for any help!!";
                 }
             }
-            InformationMessage.execute(new ELabel(m, isChanged() ? "blue" : "red"), Application.this::close);
+            InformationMessage message = new InformationMessage(new ELabel(m, isChanged() ? "blue" : "red"),
+                    Application.this::close, "Close");
+            message.setCloseable(false);
+            message.execute();
             closeMenu();
         }
     }

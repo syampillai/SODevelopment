@@ -1,6 +1,6 @@
 package com.storedobject.ui.tools;
 
-import com.storedobject.core.Database;
+import com.storedobject.core.SQLConnector;
 import com.storedobject.core.ServerInformation;
 import com.storedobject.ui.ObjectBrowser;
 import com.storedobject.ui.ObjectEditor;
@@ -11,7 +11,7 @@ public class CrossServerManager extends ObjectBrowser<ServerInformation> {
 
     public CrossServerManager() {
         super(ServerInformation.class);
-        setFixedFilter("lower(Name)<>'" + Database.get().name().toLowerCase() + "'", true);
+        setFixedFilter("lower(Name)<>'" + SQLConnector.getDatabaseName().toLowerCase() + "'", true);
         setCaption("External Servers");
     }
 

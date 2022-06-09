@@ -2,6 +2,7 @@ package com.storedobject.ui;
 
 import com.storedobject.core.StringUtility;
 import com.storedobject.core.TextContent;
+import com.storedobject.vaadin.Button;
 import com.storedobject.vaadin.ExecutableView;
 import com.storedobject.vaadin.View;
 import com.storedobject.vaadin.WrappedView;
@@ -17,7 +18,7 @@ import java.util.function.Supplier;
 public class TemplateView extends TemplateLayout implements ExecutableView {
 
     private String caption;
-    private View view;
+    View view;
 
     /**
      * Constructor. This will look for the HTML content in a {@link TextContent} that has the same name as this class.
@@ -80,6 +81,7 @@ public class TemplateView extends TemplateLayout implements ExecutableView {
                     TemplateView.this.decorateComponent();
                 }
             };
+            build();
             viewConstructed(view);
         }
         return view;
@@ -117,18 +119,5 @@ public class TemplateView extends TemplateLayout implements ExecutableView {
      */
     public Component getComponent() {
         return getView(true).getComponent();
-    }
-
-    /**
-     * Center this {@link View} on the screen.
-     */
-    public void center() {
-        getElement().getStyle().
-                set("display", "flex").
-                set("flex-wrap", "wrap").
-                set("align-items", "center").
-                set("align-content", "space-around").
-                set("justify-content", "space-evenly").
-                set("box-sizing", "border-box");
     }
 }

@@ -6,19 +6,20 @@ import com.storedobject.ui.Application;
 import com.storedobject.ui.ELabel;
 import com.storedobject.ui.Transactional;
 import com.storedobject.vaadin.DataForm;
+import com.storedobject.vaadin.TextField;
 import com.storedobject.vaadin.View;
 import com.vaadin.flow.component.HasSize;
 import com.vaadin.flow.component.HasValue;
 import com.vaadin.flow.component.textfield.PasswordField;
 import com.vaadin.flow.component.textfield.TextArea;
-import com.vaadin.flow.component.textfield.TextField;
 
 public class ChangePassword extends DataForm implements Transactional {
 
+    private final TextField newUsername = new TextField("New Username (change if desired)");
     private PasswordField password, newPassword, repeatNewPassword;
     private final SystemUser su;
     private int attempts = 0;
-    private boolean forgot;
+    private final boolean forgot;
     private boolean expired = false;
     private boolean changed = false;
 
@@ -28,6 +29,7 @@ public class ChangePassword extends DataForm implements Transactional {
 
     public ChangePassword(boolean expired, boolean windowMode) {
         super("Change Password", windowMode);
+        this.forgot = false;
         this.expired = expired;
         su = StoredObject.get(SystemUser.class, getTransactionManager().getUser().getId());
         addConstructedListener(o -> fConstructed());
@@ -38,7 +40,7 @@ public class ChangePassword extends DataForm implements Transactional {
     }
 
     protected ChangePassword(SystemUser su, String caption) {
-        super(caption == null || caption.isBlank() ? "Set New Password" : caption);
+        super(caption == null || caption.isBlank() ? "Set Password" : caption);
         this.su = su;
         this.forgot = true;
         addConstructedListener(o -> fConstructed());
@@ -46,7 +48,12 @@ public class ChangePassword extends DataForm implements Transactional {
 
     private void fConstructed() {
         setColumns(1);
-        ((HasSize)getContent()).setMinWidth((Application.get().getDeviceWidth() / 3) + "px");
+        setCloseable(false);
+    }
+
+    @Override
+    protected void sizeSet() {
+        getContent().getElement().getStyle().set("max-width", "500px");
     }
 
     private PasswordField createPasswordField(String caption) {
@@ -76,7 +83,16 @@ public class ChangePassword extends DataForm implements Transactional {
     }
 
     @Override
+    protected void buildButtons() {
+        super.buildButtons();
+        ok.setText("Confirm");
+    }
+
+    @Override
     protected void buildFields() {
+        newUsername.setMaxLength(30);
+        newUsername.lowercase();
+        newUsername.setValue(su.getLogin());
         String voice;
         if(expired) {
             voice = "You password has expired, please change it now!";
@@ -84,16 +100,17 @@ public class ChangePassword extends DataForm implements Transactional {
             add(new ELabel(voice, "red"));
         }
         TextField user;
-        addField(user = new TextField("User Name"));
+        addField(user = new TextField("Username"));
         user.setReadOnly(true);
         user.setTabIndex(-1);
         user.setValue(su.getId() + ":" + su.getLogin());
+        addField(newUsername);
         password = createPasswordField("Current Password");
         if(!forgot) {
             addField(password);
         }
-        addField(newPassword = createPasswordField("New Password"));
-        addField(repeatNewPassword = createPasswordField("Repeat New Password"));
+        addField(newPassword = createPasswordField((forgot ? "" : "New ") + "Password"));
+        addField(repeatNewPassword = createPasswordField("Repeat " + (forgot ? "" : "New ") + "Password"));
         TextArea condition = new TextArea();
         voice = PasswordPolicy.getForClass(SystemUser.class).describe();
         condition.setValue(voice);
@@ -115,6 +132,20 @@ public class ChangePassword extends DataForm implements Transactional {
     }
 
     private boolean proc() {
+        String newUser = newUsername.getValue().trim().toLowerCase();
+        if(newUser.equals(su.getLogin())) {
+            newUser = null;
+        }
+        if(newUser != null) {
+            if(!SystemUser.isValidLogin(newUser)) {
+                warning("Not a valid username, please try another one");
+                return false;
+            }
+            if(!SystemUser.isLoginAvailable(newUser)) {
+                warning("Username you selected is not available, please try another one");
+                return false;
+            }
+        }
         String p = value(newPassword);
         char[] pc = p.toCharArray();
         if(!su.isAdmin()) {
@@ -133,7 +164,7 @@ public class ChangePassword extends DataForm implements Transactional {
         if(forgot) {
             close();
             try {
-                getTransactionManager().forgotPassword(pc);
+                getTransactionManager().forgotPassword(pc, newUser);
                 changed = true;
             } catch(Throwable e) {
                 error(e);
@@ -144,7 +175,7 @@ public class ChangePassword extends DataForm implements Transactional {
         try {
             t = getTransactionManager().createTransaction();
             su.setTransaction(t);
-            su.changePassword(valueChars(password), pc);
+            su.changePassword(valueChars(password), pc, newUser);
             t.commit();
             if(!su.verifyPasswordUpdate()) {
                 throw new SOException("Password change failed, please report to Technical Support!");

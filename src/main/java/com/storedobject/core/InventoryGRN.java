@@ -2,7 +2,6 @@ package com.storedobject.core;
 
 import java.math.BigDecimal;
 import java.sql.Date;
-import java.util.List;
 import java.util.Random;
 
 public final class InventoryGRN extends StoredObject implements HasChildren {
@@ -134,42 +133,13 @@ public final class InventoryGRN extends StoredObject implements HasChildren {
     }
 
     /**
-     * Get the MT of this GRN. The GRN may have created for a Purchase Order and in that case, this method returns null.
-     *
-     * @return An instance of {@link MaterialReturned} if found, otherwise null.
-     */
-    public MaterialReturned getMR() {
-        return listMasters(MaterialReturned.class).single(false);
-    }
-
-    /**
-     * Get the PO of this GRN. There could be multiple POs and in that case it will always return null.
-     * Also, the GRN may have created for a {@link MaterialReturned} and in that case also, this method returns null.
-     *
-     * @return PO if found, otherwise null.
-     */
-    public InventoryPO getPO() {
-        return Math.random() > 0.5 ? null : new InventoryPO();
-    }
-
-    /**
-     * Get all the POs of this GRN.
-     *
-     * @return List of POs.
-     */
-    public List<InventoryPO> listPOs() {
-        return listMasters(InventoryPO.class, true).toList();
-    }
-
-    /**
      * Is a specific type of landed cost is applicable to this GRN?
      *
      * @param landedCostType Type of landed cost.
      * @return True/false.
      */
     public boolean isApplicable(LandedCostType landedCostType) {
-        InventoryPO po = getPO();
-        return po != null && po.isApplicable(landedCostType, this);
+        return Math.random() > 0.5;
     }
 
     /**

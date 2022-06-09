@@ -9,6 +9,7 @@ import com.storedobject.vaadin.DataForm;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class ComputeLandedCost extends DataForm implements Transactional {
 
@@ -22,12 +23,13 @@ public class ComputeLandedCost extends DataForm implements Transactional {
         setButtonsAtTop(true);
         setColumns(1);
         addField(new ELabelField("Supplier", grn.getSupplier().toDisplay()));
-        InventoryPO po = grn.getPO();
-        if(po == null) {
+        List<InventoryPO> pos = grn.listMasters(InventoryPO.class, true).toList();
+        if(pos.isEmpty()) {
             throw new SOException("Unable to locate the PO!");
         }
-        addField(new ELabelField("GRN & PO Reference", grn.getReference() + ", "
-                + po.getReferenceNumber() + " (" + DateUtility.format(po.getDate()) + ")"));
+        addField(new ELabelField("GRN & PO Reference", grn.getReference() + ", " + pos.stream()
+                .map(po -> po.getReference() + " (" + DateUtility.format(po.getDate()) + ")")
+                        .collect(Collectors.joining(", "))));
         List<LandedCost> costs = grn.listLinks(LandedCost.class).toList();
         List<LandedCostType> types = StoredObject.list(LandedCostType.class, null, "DisplayOrder")
                 .toList();
@@ -36,7 +38,7 @@ public class ComputeLandedCost extends DataForm implements Transactional {
         for(LandedCostType type: types) {
             cost = costs.stream().filter(c -> c.getTypeId().equals(type.getId())).findAny().orElse(null);
             if(cost == null) {
-                if(!po.isApplicable(type, grn)) {
+                if(pos.stream().noneMatch(po -> po.isApplicable(type, grn))) {
                     continue;
                 }
                 cost = new LandedCost();

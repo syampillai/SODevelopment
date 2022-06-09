@@ -26,10 +26,11 @@ public final class MaterialIssued extends StoredObject {
         return new Date(0);
     }
 
-    public void setReferenceNumber(String referenceNumber) {
+    public String getReference() {
+        return "";
     }
 
-    public String getReferenceNumber() {
+    public String getRequestReference() {
         return "";
     }
 

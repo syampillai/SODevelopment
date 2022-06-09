@@ -93,14 +93,15 @@ public class LoginForm extends TemplateView implements HomeView {
     private SystemUser user;
     private boolean init;
     private final ExecutableView internal;
+    private Application application;
 
     public LoginForm() {
         setCaption("Sign in");
         internal = this;
-        Application a = Application.get();
-        a.mainLayout.saveHeaderHeight();
-        a.getUI().getElement().getStyle().set("--so-header-height", "0vh");
-        a.log("Accessed");
+        application = Application.get();
+        application.mainLayout.saveHeaderHeight();
+        application.getUI().getElement().getStyle().set("--so-header-height", "0vh");
+        application.log("Accessed");
     }
 
     LoginForm(@SuppressWarnings("unused") boolean dummy) {
@@ -124,13 +125,13 @@ public class LoginForm extends TemplateView implements HomeView {
         } else {
             internal.abort();
         }
-        getApplication().close();
+        application.close();
     }
 
     @Override
     public void close() {
         if(internal == this) {
-            ApplicationLayout al = Application.get().mainLayout;
+            ApplicationLayout al = application.mainLayout;
             al.restoreHeaderHeight();
             al.resizeContent();
             super.close();
@@ -267,6 +268,7 @@ public class LoginForm extends TemplateView implements HomeView {
     @Override
     public void execute() {
         if(!init) {
+            build();
             init = true;
             if(remember != null) {
                 remember.setTabIndex(-1);
@@ -341,9 +343,9 @@ public class LoginForm extends TemplateView implements HomeView {
 
         public LF() {
             super("Sign in", "Sign in", "Cancel");
-            Application a = Application.get();
-            a.log("Accessed");
-            registration = a.addBrowserResizedListener((w, h) -> resized());
+            application = Application.get();
+            application.log("Accessed");
+            registration = application.addBrowserResizedListener((w, h) -> resized());
         }
 
         @Override
@@ -365,10 +367,10 @@ public class LoginForm extends TemplateView implements HomeView {
             remember.setTabIndex(-1);
             addField(loginField = (LoginNameField) createComponentForId("login"));
             loginField.setId("login");
-            loginField.setLabel("Login");
+            loginField.setLabel("Username");
             loginField.setRemember(remember);
-            remember.setLabel("Remember my login");
-            setRequired(loginField, "Login can not be empty");
+            remember.setLabel("Remember my username");
+            setRequired(loginField, "username can not be empty");
             addField(passwordField = (PasswordField) createComponentForId("password"));
             passwordField.setLabel("Password");
             addField(cramField = (CRAMField) createComponentForId("cram"));
@@ -387,6 +389,7 @@ public class LoginForm extends TemplateView implements HomeView {
             ok.setIcon("ok");
             cancel.setText("Cancel");
             cancel.setIcon("cancel");
+            forgot = (Button) createComponentForId("forgot");
             forgot.setText("Forgot Password");
             forgot.setIcon(VaadinIcon.QUESTION_CIRCLE_O);
         }
@@ -401,15 +404,14 @@ public class LoginForm extends TemplateView implements HomeView {
                 return;
             }
             Component c = null;
-            Application a = Application.get();
-            a.getServer().doDeviceLayout();
-            String background = a.getDeviceLayout().getLoginImageName();
+            application.getServer().doDeviceLayout();
+            String background = application.getDeviceLayout().getLoginImageName();
             if(!background.isEmpty()) {
                 TextContent tc = SOServlet.getTextContent(background);
                 if(tc != null) {
                     c = new IFrame(tc);
                 } else {
-                    MediaFile mf = SOServlet.getImage(a.getDeviceLayout().getLoginImageName());
+                    MediaFile mf = SOServlet.getImage(application.getDeviceLayout().getLoginImageName());
                     if(mf != null) {
                         c = new Image(mf);
                     }
@@ -479,7 +481,7 @@ public class LoginForm extends TemplateView implements HomeView {
                 if(caption == null || caption.isBlank()) {
                     caption = file.getName();
                 }
-                Application.get().view(caption, file, true);
+                application.view(caption, file, true);
             }
         }
     }

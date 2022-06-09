@@ -738,7 +738,7 @@ public class POBrowser<T extends InventoryPO> extends ObjectBrowser<T> implement
         private final QuantityField qField = new QuantityField("Quantity");
 
         private SetAPN(T po, InventoryPOItem item) {
-            super("Set APN - PO " + po.getReferenceNumber());
+            super("Set APN - PO " + po.getReference());
             this.item = item;
             apnField = new ComboField<>("Select APN", item.getPartNumber().listAPNs());
             ELabelField op = new ELabelField("Original P/N");

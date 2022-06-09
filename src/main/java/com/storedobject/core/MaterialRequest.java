@@ -26,14 +26,11 @@ public final class MaterialRequest extends StoredObject {
         return new Date(0);
     }
 
-    public void setReferenceNumber(String referenceNumber) {
-    }
-
-    public String getReferenceNumber() {
+    public String getReference() {
         return "";
     }
 
-    public String getReference() {
+    public String getIssueReference() {
         return "";
     }
 

@@ -101,7 +101,7 @@ public final class SystemUser extends StoredObject implements RequiresApproval {
     public void validateNewPassword(char[] currentPassword, char[] password) throws SOException {
     }
 
-    public void changePassword(char[] currentPassword, char[] newPassword) throws SOException {
+    public void changePassword(char[] currentPassword, char[] newPassword, String newUsername) throws SOException {
     }
 
     public char[] generateSecretToken() {

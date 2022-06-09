@@ -134,7 +134,7 @@ public class RequestMaterial extends AbstractRequestMaterial {
             return;
         }
         new MessageGrid<>(MaterialIssued.class, mis,
-                StringList.create("Date", "ReferenceNumber AS Reference", "Location AS Issued from", "Status"),
+                StringList.create("Date", "Reference", "Location AS Issued from", "Status"),
                 "Materials were issued via these. Deletion is possible only after closing and deleting these!").
                 execute(this.getView());
     }

@@ -796,7 +796,7 @@ public class ProcessMaterialRequest extends AbstractRequestMaterial {
             removeButton.setVisible(!uninitialized);
             saveButton.setVisible(false);
             mrDetails.clearContent().append("To: ").append(mr.getFromLocation().toDisplay(), "blue").
-                    append("  Reference: ").append(mr.getReferenceNumber(), "blue").
+                    append("  Reference: ").append(mr.getReference(), "blue").
                     append("  Date: ").append(mr.getDate(), "blue").
                     append("  Priority: ").append(mr.getPriority(), "blue").update();
             setDataProvider(new TreeData());

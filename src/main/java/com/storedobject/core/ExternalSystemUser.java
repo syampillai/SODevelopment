@@ -48,13 +48,10 @@ public final class ExternalSystemUser extends StoredObject implements Detail {
     }
 
 
-    public void verify(TransactionManager tm, Id externalId) throws Exception {
-        if(!getVerified()) {
+    public void verify(TransactionManager tm, String authorizedUser, char[] password, String externalURL)
+            throws Exception {
+        if(getVerified()) {
             throw new SOException("Already verified");
         }
-    }
-
-    public void verify(TransactionManager tm, String externalURL) throws Exception {
-        verify(tm, (Id)null);
     }
 }

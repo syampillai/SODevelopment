@@ -31,10 +31,7 @@ public class InventoryPO extends StoredObject implements HasChildren {
         return new Date(0);
     }
 
-    public void setReferenceNumber(String referenceNumber) {
-    }
-
-    public String getReferenceNumber() {
+    public String getReference() {
         return "";
     }
 
@@ -135,5 +132,9 @@ public class InventoryPO extends StoredObject implements HasChildren {
 
     public boolean isApplicable(LandedCostType landedCostType, InventoryGRN grn) {
         return true;
+    }
+
+    protected int getType() {
+        return 0;
     }
 }

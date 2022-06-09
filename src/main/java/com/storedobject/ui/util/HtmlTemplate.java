@@ -4,6 +4,7 @@ import com.storedobject.common.IO;
 import com.storedobject.common.SORuntimeException;
 import com.storedobject.core.TextContent;
 import com.storedobject.ui.MediaCSS;
+import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.template.Id;
@@ -44,13 +45,16 @@ import java.util.function.Supplier;
 public abstract class HtmlTemplate extends Component {
 
     private static final ConcurrentHashMap<String, Document> parserCache = new ConcurrentHashMap<>();
+    private TemplateDetails templateDetails;
+    private Object view;
+    private ComponentCreator componentCreator;
 
     /**
      * Creates a new HTML template based on the content of the {@link TextContent} that has the same name of
      * this class.
      */
     protected HtmlTemplate() {
-        populate(tc(getClass().getName()));
+        this((TemplateDetails) null);
     }
 
     /**
@@ -59,7 +63,7 @@ public abstract class HtmlTemplate extends Component {
      * @param tc Text content.
      */
     protected HtmlTemplate(TextContent tc) {
-        populate(tc);
+        this(td(tc));
     }
 
     /**
@@ -77,7 +81,7 @@ public abstract class HtmlTemplate extends Component {
      * @param contentSupplier Content supplier.
      */
     protected HtmlTemplate(Supplier<String> contentSupplier) {
-        populate(contentSupplier);
+        this(td(contentSupplier));
     }
 
     /**
@@ -108,50 +112,82 @@ public abstract class HtmlTemplate extends Component {
      *            used or if there is a cache miss, not <code>null</code>
      */
     protected HtmlTemplate(String cacheKey, StreamSupplier streamSupplier, StyleSupplier styleSupplier) {
-        if(cacheKey == null) {
-            cacheKey = getClass().getName();
+        this(new TemplateDetails(cacheKey, streamSupplier, styleSupplier));
+    }
+
+    private HtmlTemplate(TemplateDetails templateDetails) {
+        this.templateDetails = templateDetails == null ? td(tc(getClass().getName())) : templateDetails;
+    }
+
+    @Override
+    protected void onAttach(AttachEvent attachEvent) {
+        build();
+        super.onAttach(attachEvent);
+    }
+
+    public void build() {
+        if(templateDetails != null) {
+            populate(templateDetails.cacheKey, templateDetails.streamSupplier, templateDetails.styleSupplier);
+            templateDetails = null;
         }
-        populate(cacheKey, streamSupplier, styleSupplier);
     }
 
-    private void populate(TextContent tc) {
+    private static TemplateDetails td(TextContent tc) {
         HTMLSupplier hs = new HTMLSupplier(tc::getContent);
-        populate(tc.getName() + "V" + tc.getVersion(), hs, hs);
+        return new TemplateDetails(tc.getName() + "V" + tc.getVersion(), hs, hs);
     }
 
-    private void populate(Supplier<String> contentSupplier) {
+    private static TemplateDetails td(Supplier<String> contentSupplier) {
         HTMLSupplier hs = new HTMLSupplier(contentSupplier);
-        populate(contentSupplier.getClass().getName(), hs, hs);
+        return new TemplateDetails(contentSupplier.getClass().getName(), hs, hs);
+    }
+
+    public void setView(Object view) {
+        this.view = view;
+    }
+
+    public void setComponentCreator(ComponentCreator componentCreator) {
+        this.componentCreator = componentCreator;
     }
 
     private void populate(String cacheKey, StreamSupplier streamSupplier, StyleSupplier styleSupplier) {
+        if(cacheKey == null) {
+            cacheKey = getClass().getName();
+        }
         Document document = getTemplate(cacheKey, streamSupplier);
         Map<String, Element> idElementMap = new HashMap<>();
         Map<String, Component> idComponentMap = new HashMap<>();
         convertAndAppend(document.body(), getElement().attachShadow(), idElementMap::put, idComponentMap::put, styleSupplier);
-        for (Field field : getClass().getDeclaredFields()) {
-            AnnotationReader.getAnnotationFor(field, Id.class).map(Id::value).ifPresent(id -> {
-                if (id.isEmpty()) {
-                    id = field.getName();
-                }
-                Component component = idComponentMap.get(id);
-                if(component == null) {
-                    Element idElement = idElementMap.get(id);
-                    if(idElement == null) {
-                        try {
-                            component = createComponentForId(id);
-                            component.setId(id);
-                        } catch(NO_COMPONENT no_component) {
-                            throw new IllegalArgumentException("There is no element with id " + id + " to match " + field);
-                        }
-                    } else {
-                        component = Component.from(idElement, field.getType().asSubclass(Component.class));
+        if(view == null) {
+            view = this;
+        }
+        Class<?> myClass = view.getClass();
+        while(myClass != HtmlTemplate.class && myClass != Object.class) {
+            for(Field field: myClass.getDeclaredFields()) {
+                AnnotationReader.getAnnotationFor(field, Id.class).map(Id::value).ifPresent(id -> {
+                    if(id.isEmpty()) {
+                        id = field.getName();
                     }
-                }
-                if(component != null) {
-                    ReflectTools.setJavaFieldValue(this, field, component);
-                }
-            });
+                    Component component = idComponentMap.get(id);
+                    if(component == null) {
+                        Element idElement = idElementMap.get(id);
+                        if(idElement == null) {
+                            try {
+                                component = createComponentForId(id);
+                                component.setId(id);
+                            } catch(NO_COMPONENT no_component) {
+                                throw new IllegalArgumentException("There is no element with id " + id + " to match " + field);
+                            }
+                        } else {
+                            component = Component.from(idElement, field.getType().asSubclass(Component.class));
+                        }
+                    }
+                    if(component != null) {
+                        ReflectTools.setJavaFieldValue(view, field, component);
+                    }
+                });
+            }
+            myClass = myClass.getSuperclass();
         }
     }
 
@@ -264,6 +300,12 @@ public abstract class HtmlTemplate extends Component {
     }
 
     protected Component createComponentForId(String id) {
+        if(componentCreator != null) {
+            Component c = componentCreator.createComponentForId(id);
+            if(c != null) {
+                return c;
+            }
+        }
         throw new NO_COMPONENT();
     }
 
@@ -286,8 +328,14 @@ public abstract class HtmlTemplate extends Component {
         InputStream createStream() throws IOException;
     }
 
+    @FunctionalInterface
     public interface StyleSupplier {
         String getStyle();
+    }
+
+    @FunctionalInterface
+    public interface ComponentCreator {
+        Component createComponentForId(String id);
     }
 
     private static TextContent tc(String textContentName) {
@@ -369,5 +417,8 @@ public abstract class HtmlTemplate extends Component {
             bytes = new ByteArrayInputStream(MediaCSS.parse(s).getBytes(StandardCharsets.UTF_8));
             return read();
         }
+    }
+
+    private record TemplateDetails(String cacheKey, StreamSupplier streamSupplier, StyleSupplier styleSupplier) {
     }
 }

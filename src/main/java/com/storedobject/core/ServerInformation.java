@@ -53,11 +53,19 @@ public final class ServerInformation extends StoredObject {
         return message;
     }
 
+    public static String encrypt(String message, ServerInformation server) {
+        return message;
+    }
+
     public static String decrypt(String message) {
         return message;
     }
 
     public static String decrypt(String message, String serverName) {
+        return message;
+    }
+
+    public static String decrypt(String message, ServerInformation server) {
         return message;
     }
 }

@@ -77,10 +77,10 @@ public interface Authenticator {
      *
      * @param passwordOwner The password owner. This could be <code>null</code> if no "Password Owner" exists
      *                                for the login name attempted.
-     * @param login Login name tried.
+     * @param user Login/user name tried.
      * @param ip IP address from which the login was attempted.
      * @param deviceIdentifier Device identifier.
      */
-    default void loginFailed(SystemUser passwordOwner, String login, String ip, String deviceIdentifier) {
+    default void loginFailed(SystemUser passwordOwner, String user, String ip, String deviceIdentifier) {
     }
 }
