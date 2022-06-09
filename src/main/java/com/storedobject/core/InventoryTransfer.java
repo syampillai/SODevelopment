@@ -4,12 +4,30 @@ import java.math.BigDecimal;
 import java.sql.Date;
 import java.util.Random;
 
-public abstract class InventoryTransfer extends StoredObject {
+public abstract class InventoryTransfer extends StoredObject implements OfEntity {
 
     public InventoryTransfer() {
     }
 
     public static void columns(Columns columns) {
+    }
+
+    public void setSystemEntity(Id systemEntityId) {
+    }
+
+    public void setSystemEntity(BigDecimal idValue) {
+        setSystemEntity(new Id(idValue));
+    }
+
+    public void setSystemEntity(SystemEntity systemEntity) {
+    }
+
+    public Id getSystemEntityId() {
+        return new Id();
+    }
+
+    public SystemEntity getSystemEntity() {
+        return SystemEntity.getCached(null);
     }
 
     public void setNo(int no) {

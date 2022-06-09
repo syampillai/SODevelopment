@@ -29,8 +29,8 @@ public class SystemTableDeployer extends View implements Transactional {
     private final PopupButton upload, all;
     private final Button uploadProcess;
     private final Button uploadProcessAndReindex;
-    private final Button allProcess;
-    private final Button allProcessAndReindex;
+    private final Button allProcess, allProcessSystem;
+    private final Button allProcessAndReindex, allProcessAndReindexSystem;
     private final Button exit;
     private final ClassNameField className;
     private final TextField tableName;
@@ -67,17 +67,13 @@ public class SystemTableDeployer extends View implements Transactional {
         upload = new PopupButton("Upload Class List", VaadinIcon.UPLOAD);
         upload.add(uploadProcess, uploadProcessAndReindex);
         buttons.add(upload);
-        if(system) {
-            all = null;
-            allProcess = null;
-            allProcessAndReindex = null;
-        } else {
-            allProcess = new Button("Create / Alter", "", this);
-            allProcessAndReindex = new Button("Reindex", "", this);
-            all = new PopupButton("Process All Classes");
-            all.add(allProcess, allProcessAndReindex);
-            buttons.add(all);
-        }
+        allProcess = new Button("Create/Alter Application Classes", "", this);
+        allProcessAndReindex = new Button("Reindex Application Classes", "", this);
+        allProcessSystem = new Button("Create/Alter System Classes", "", this);
+        allProcessAndReindexSystem = new Button("Reindex System Classes", "", this);
+        all = new PopupButton("Process All Classes");
+        all.add(allProcess, allProcessAndReindex, allProcessSystem, allProcessAndReindexSystem);
+        buttons.add(all);
         buttons.add(exit = new Button("Exit", this));
         layout.add(buttons);
         FormLayout form = new FormLayout();
@@ -208,14 +204,14 @@ public class SystemTableDeployer extends View implements Transactional {
         return null;
     }
 
-    @SuppressWarnings("resource")
     @Override
     public void clicked(Component c) {
         if(c == exit) {
             close();
             return;
         }
-        if(c == uploadProcess || c == uploadProcessAndReindex || c == allProcess || c == allProcessAndReindex) {
+        if(c == uploadProcess || c == uploadProcessAndReindex || c == allProcess || c == allProcessAndReindex
+                || c == allProcessSystem || c == allProcessAndReindexSystem) {
             processMulti(c);
             return;
         }
@@ -441,19 +437,22 @@ public class SystemTableDeployer extends View implements Transactional {
         if(p == null) {
             return;
         }
-        if(c == allProcess || c == allProcessAndReindex) {
-            TextView tv = new TextView("All Classes - " +
-                    (c == allProcessAndReindex ? "Reindex" : "Create/Update"));
+        if(c == allProcess || c == allProcessAndReindex || c == allProcessSystem || c == allProcessAndReindexSystem) {
+            TextView tv = new TextView("All "
+                    + (c == allProcess || c == allProcessAndReindex ? "Application" : "System") + " Classes - " +
+                    (c == allProcessAndReindex || c == allProcessAndReindexSystem ? "Reindex" : "Create/Update"));
             tv.setProcessor(() ->
-                    process(JavaClass.listApplicationClasses(), p,
-                            c == allProcessAndReindex, new Message(tv)));
+                    process(c == allProcess || c == allProcessAndReindex ? JavaClass.listApplicationClasses()
+                                    : JavaClass.listSystemClasses(p), p,
+                            c == allProcessAndReindex || c == allProcessAndReindexSystem, new Message(tv),
+                            c == allProcessSystem || c == allProcessAndReindexSystem));
             tv.execute(this);
         } else {
-            new MultipleClasses(p, c == uploadProcessAndReindex).execute(this);
+            new MultipleClasses(p, c == uploadProcessAndReindex, system).execute(this);
         }
     }
 
-    private void process(List<String> list, String password, boolean reindex, Message m) {
+    private void process(List<String> list, String password, boolean reindex, Message m, boolean system) {
         m.m((reindex ? "Re-index" : "Creating/updating/index") + "ing...");
         boolean error;
         for(String klass: list) {
@@ -520,12 +519,14 @@ public class SystemTableDeployer extends View implements Transactional {
 
         private final String password;
         private final boolean reindex;
+        private final boolean system;
 
-        public MultipleClasses(String password, boolean reindex) {
+        public MultipleClasses(String password, boolean reindex, boolean system) {
             super((reindex ? "Re-index" : "Process") + " Multiple Classes",
                     "File containing list of classes");
             this.password = password;
             this.reindex = reindex;
+            this.system = system;
         }
 
         @Override
@@ -543,32 +544,58 @@ public class SystemTableDeployer extends View implements Transactional {
             br.lines().forEach(list::add);
             IO.close(br);
             SystemTableDeployer.this.
-            process(list, password, reindex, new Message(this));
+            process(list, password, reindex, new Message(this), system);
         }
     }
 
     private static class Message {
 
         private final StyledBuilder sb;
+        private Object previousP, previousM;
+        private boolean red = false;
 
         Message(StyledBuilder sb) {
             this.sb = sb;
         }
 
         private void p(Object any) {
-            sb.blackMessage("Processing " + any);
+            if(!red) {
+                sb.clearContent();
+                sb.blackMessage("Processing " + any);
+                return;
+            }
+            previousP = any;
         }
 
         private void m(Object any) {
-            sb.blueMessage(any);
+            if(!red) {
+                sb.clearContent();
+                sb.blueMessage(any);
+                return;
+            }
+            previousM = any;
         }
 
         private void e(Object any) {
+            red = true;
+            previous();
             sb.redMessage(any);
         }
 
         private StyledBuilder s() {
             return sb;
+        }
+
+        private void previous() {
+            if(previousM != null) {
+                sb.blueMessage(previousM);
+                previousM = previousP = null;
+                return;
+            }
+            if(previousP != null) {
+                sb.blackMessage("Processing " + previousP);
+                previousP = null;
+            }
         }
     }
 }

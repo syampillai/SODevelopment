@@ -17,6 +17,7 @@ public class TextView extends View implements CloseableView, Transactional, Styl
     private Component topComponent;
     private Application application;
     private boolean componentSet;
+    private int lineCount = 0;
 
     public TextView(String caption) {
         setCaption(caption);
@@ -262,5 +263,19 @@ public class TextView extends View implements CloseableView, Transactional, Styl
             setComponent(new Window(new WindowDecorator(this), new Box(content)));
         }
         execute();
+    }
+
+    @Override
+    public StyledBuilder clearContent() {
+        lineCount = 0;
+        return StyledBuilder.super.clearContent();
+    }
+
+    @Override
+    public StyledBuilder newLine(boolean force) {
+        if(++lineCount > 500) {
+            clearContent();
+        }
+        return StyledBuilder.super.newLine(force);
     }
 }

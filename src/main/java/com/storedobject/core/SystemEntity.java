@@ -165,4 +165,8 @@ public final class SystemEntity extends StoredObject implements RequiresApproval
 	public int getTimeDifference() {
 		return 0;
 	}
+
+	public static SystemEntity getCached(Id id) {
+		return Math.random() > 0.5 ? new SystemEntity() : null;
+	}
 }

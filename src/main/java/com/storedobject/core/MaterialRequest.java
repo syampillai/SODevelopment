@@ -4,12 +4,30 @@ import java.math.BigDecimal;
 import java.sql.Date;
 import java.sql.Timestamp;
 
-public final class MaterialRequest extends StoredObject {
+public final class MaterialRequest extends StoredObject implements OfEntity {
 
     public MaterialRequest() {
     }
 
     public static void columns(Columns columns) {
+    }
+
+    public void setSystemEntity(Id systemEntityId) {
+    }
+
+    public void setSystemEntity(BigDecimal idValue) {
+        setSystemEntity(new Id(idValue));
+    }
+
+    public void setSystemEntity(SystemEntity systemEntity) {
+    }
+
+    public Id getSystemEntityId() {
+        return new Id();
+    }
+
+    public SystemEntity getSystemEntity() {
+        return SystemEntity.getCached(null);
     }
 
     public void setNo(int no) {

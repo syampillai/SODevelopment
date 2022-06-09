@@ -1,7 +1,6 @@
 package com.storedobject.core;
 
-import com.storedobject.common.SORuntimeException;
-import com.storedobject.core.annotation.*;
+import com.storedobject.core.annotation.Column;
 
 import java.sql.Date;
 
@@ -95,6 +94,18 @@ public class SerialPattern extends StoredObject {
     /**
      * Get the number string appropriately stuffed as per the pattern.
      *
+     * @param systemEntity System entity.
+     * @param serial Number to stuff in.
+     * @param date Date to stuff in.
+     * @return Stuffed number that can be generally used as a unique reference.
+     */
+    public String getNumber(SystemEntity systemEntity, long serial, Date date) {
+        return getNumber(systemEntity, serial, date, pattern);
+    }
+
+    /**
+     * Get the number string appropriately stuffed as per the pattern.
+     *
      * @param tm Transaction manager.
      * @param serial Number to stuff in.
      * @param date Date to stuff in.
@@ -102,28 +113,36 @@ public class SerialPattern extends StoredObject {
      * @return Stuffed number that can be generally used as a unique reference.
      */
     public static String getNumber(TransactionManager tm, long serial, Date date, String pattern) {
+        return getNumber(tm == null ? null : tm.getEntity(), serial, date, pattern);
+    }
+
+    /**
+     * Get the number string appropriately stuffed as per the pattern.
+     *
+     * @param systemEntity System entity.
+     * @param serial Number to stuff in.
+     * @param date Date to stuff in.
+     * @param pattern Pattern.
+     * @return Stuffed number that can be generally used as a unique reference.
+     */
+    public static String getNumber(SystemEntity systemEntity, long serial, Date date, String pattern) {
         if(pattern == null || pattern.isBlank()) {
             return "" + serial;
         }
         if(pattern.contains("fy")) {
-            SystemEntity se = tm.getEntity();
-            if(se == null) {
-                throw new SORuntimeException("Entity not set!");
-            }
-            int y1 = DateUtility.getYear(se.getStartOfFinancialYear(date)),
-                    y2 = DateUtility.getYear(se.getEndOfFinancialYear(date));
+            int y1 = DateUtility.getYear(systemEntity.getStartOfFinancialYear(date)),
+                    y2 = DateUtility.getYear(systemEntity.getEndOfFinancialYear(date));
+            String s;
             if(y1 == y2) {
-                String s = ("" + y2).substring(2);
+                s = ("" + y2).substring(2);
                 pattern = stuff(pattern, "fy4", s);
                 pattern = stuff(pattern, "fy6", "" + y2);
                 pattern = stuff(pattern, "fy8", "" + y2);
                 pattern = stuff(pattern, "fyfy-fyfy", "" + y2);
                 pattern = stuff(pattern, "fyfy-fy", "" + y2);
                 pattern = stuff(pattern, "fyfy", "" + y2);
-                pattern = stuff(pattern, "fy-fy", s);
-                pattern = stuff(pattern, "fy", s);
             } else {
-                String s = ("" + y1).substring(2) + ("" + y2).substring(2);
+                s = ("" + y1).substring(2) + ("" + y2).substring(2);
                 pattern = stuff(pattern, "fy4", s);
                 s = ("" + y1) + ("" + y2).substring(2);
                 pattern = stuff(pattern, "fy6", s);
@@ -133,9 +152,9 @@ public class SerialPattern extends StoredObject {
                 pattern = stuff(pattern, "fyfy-fy", y1 + "-" + ("" + y2).substring(2));
                 pattern = stuff(pattern, "fyfy", y1 + "-" + y2);
                 s = ("" + y1).substring(2) + "-" + ("" + y2).substring(2);
-                pattern = stuff(pattern, "fy-fy", s);
-                pattern = stuff(pattern, "fy", s);
             }
+            pattern = stuff(pattern, "fy-fy", s);
+            pattern = stuff(pattern, "fy", s);
         }
         pattern = stuff(pattern, "yyyy", "" + DateUtility.getYear(date));
         pattern = stuff(pattern, "yy", ("" + DateUtility.getYear(date)).substring(2));
@@ -170,6 +189,23 @@ public class SerialPattern extends StoredObject {
             return "" + serial;
         }
         return getNumber(tm, serial, date, sp.pattern);
+    }
+
+    /**
+     * Get the number string appropriately stuffed as per the pattern.
+     *
+     * @param patternName Name of the pattern.
+     * @param systemEntity System entity.
+     * @param serial Number to stuff in.
+     * @param date Date to stuff in.
+     * @return Stuffed number that can be generally used as a unique reference.
+     */
+    public static String getNumber(String patternName, SystemEntity systemEntity, long serial, Date date) {
+        SerialPattern sp = get(patternName);
+        if(sp == null) {
+            return "" + serial;
+        }
+        return getNumber(systemEntity, serial, date, sp.pattern);
     }
 
     /**

@@ -30,11 +30,22 @@ public final class SerialConfigurator extends StoredObject {
         return new String[] { Math.random() > 0.5 ? "" : "x" };
     }
 
+    public boolean getRestartAnnually() {
+        return Math.random() > 0.5;
+    }
+
+    public void setRestartAnnually(boolean restartAnnually) {
+    }
+
     public Class<? extends StoredObject> getDataClass() {
         return Math.random() > 0.5 ? null : Person.class;
     }
 
     public static SerialConfigurator getFor(Class<? extends StoredObject> dataCass) {
         return new SerialConfigurator();
+    }
+
+    public String getYearPrefix(Transaction transaction) {
+        return transaction.toString();
     }
 }
