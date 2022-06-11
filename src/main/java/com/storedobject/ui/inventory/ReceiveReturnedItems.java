@@ -283,8 +283,8 @@ public class ReceiveReturnedItems extends DataForm implements Transactional {
         protected boolean validate() {
             clearAlerts();
             date = dateField.getValue();
-            if(date.before(DateUtility.addDay(DateUtility.today(), -2)) || date.after(DateUtility.endOfToday())) {
-                warning("Please check the receipt date: " + DateUtility.formatWithTime(date));
+            if(date.after(DateUtility.endOfToday())) {
+                warning("Please check the receipt date: " + DateUtility.format(date));
                 return false;
             }
             invoiceDate = invoiceDateField.getValue();

@@ -8,20 +8,23 @@ import com.storedobject.vaadin.DataForm;
 import com.storedobject.vaadin.TextField;
 import com.vaadin.flow.component.icon.VaadinIcon;
 
+import java.util.List;
 import java.util.stream.Stream;
 
 public class ManageExternalUsers extends ObjectEditor<SystemUser> {
 
-    private static final String EU = "External Login.l";
+    private static final String EU = "External Username.l";
     private static final String AEU = "Authorized Remote Server User";
     private Button authUserButton;
     private String authUser;
     private char[] authPassword;
+    private final Button verify;
 
     public ManageExternalUsers() {
         super(SystemUser.class, EditorAction.EDIT | EditorAction.SEARCH | EditorAction.VIEW,
                 "Manage External Users");
         setSearchFilter(Application.getUserVisibility("cross"));
+        verify = new Button("Verify", VaadinIcon.THUMBS_UP_O, e -> verify());
     }
 
     @Override
@@ -30,6 +33,24 @@ public class ManageExternalUsers extends ObjectEditor<SystemUser> {
         ess.setObjectClass(ExternalSystemUser.class);
         ess.setName(EU.substring(0, EU.lastIndexOf('.')));
         return Stream.of(ess);
+    }
+
+    @Override
+    public void setTab(String tabName) {
+    }
+
+    @Override
+    protected int getFieldOrder(String fieldName) {
+        if(EU.equals(fieldName)) {
+            return Integer.MAX_VALUE - 2;
+        }
+        if("Groups.l".equals(fieldName)) {
+            return Integer.MAX_VALUE - 1;
+        }
+        if("Entities.l".equals(fieldName)) {
+            return Integer.MAX_VALUE;
+        }
+        return super.getFieldOrder(fieldName);
     }
 
     @Override
@@ -52,8 +73,12 @@ public class ManageExternalUsers extends ObjectEditor<SystemUser> {
 
     @Override
     protected void addExtraButtons() {
-        if(getObject() != null) {
+        SystemUser su = getObject();
+        if(su != null) {
             buttonPanel.add(authUserButton);
+        }
+        if(su != null && su.existsLinks(ExternalSystemUser.class, "NOT Verified")) {
+            buttonPanel.add(verify);
         }
     }
 
@@ -66,14 +91,10 @@ public class ManageExternalUsers extends ObjectEditor<SystemUser> {
         return super.createLinkFieldGrid(fieldName, field);
     }
 
-    private class ExternalUserGrid extends DetailLinkGrid<ExternalSystemUser> {
+    private static class ExternalUserGrid extends DetailLinkGrid<ExternalSystemUser> {
 
         public ExternalUserGrid(ObjectLinkField<ExternalSystemUser> linkField) {
             super(linkField);
-            Button verify = new Button("Verify", VaadinIcon.THUMBS_UP_O, e -> verify()).asSmall();
-            getButtonPanel().add(verify);
-            verify.setVisible(false);
-            addItemSelectedListener((c, eu) -> verify.setVisible(eu != null));
             addConstructedListener(f -> (((ObjectField<?>)getObjectEditor().getField("Server")))
                     .setFilter("lower(Name)<>'" + SQLConnector.getDatabaseName().toLowerCase() + "'",
                             true));
@@ -87,25 +108,32 @@ public class ManageExternalUsers extends ObjectEditor<SystemUser> {
             }
             return true;
         }
+    }
 
-        private void verify() {
-            clearAlerts();
-            ExternalSystemUser eu = selected();
-            if(eu == null) {
-                return;
-            }
-            if(authUser == null || authUser.isBlank()) {
-                new AuthUser(this::verify).execute();
-                return;
-            }
+    private void verify() {
+        clearAlerts();
+        SystemUser su = getObject();
+        if(su == null) {
+            return;
+        }
+        if(authUser == null || authUser.isBlank()) {
+            new AuthUser(this::verify).execute();
+            return;
+        }
+        List<ExternalSystemUser> esus = su.listLinks(ExternalSystemUser.class, "NOT Verified").toList();
+        if(esus.isEmpty()) {
+            return;
+        }
+        for(ExternalSystemUser esu: esus) {
             try {
-                eu.verify(getTransactionManager(), authUser, authPassword, SOServlet.getURL());
-                refresh(eu);
-                message("Verified successfully");
+                esu.verify(getTransactionManager(), authUser, authPassword, SOServlet.getURL());
+                message("Verification successful on the server - " + esu.getServer().getDescription());
             } catch(Exception e) {
+                warning("Verification failed on the server - " + esu.getServer().getDescription());
                 warning(e);
             }
         }
+        ManageExternalUsers.this.reload();
     }
 
     private class AuthUser extends DataForm {

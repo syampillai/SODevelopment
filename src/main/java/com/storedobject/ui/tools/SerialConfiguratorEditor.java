@@ -7,7 +7,7 @@ import com.vaadin.flow.component.HasValue;
 
 public class SerialConfiguratorEditor extends ObjectEditor<SerialConfigurator> {
 
-    private ChoiceField typeChoice;
+    private ChoiceField typeChoice, patternTypeChoice;
 
     public SerialConfiguratorEditor() {
         super(SerialConfigurator.class);
@@ -23,6 +23,10 @@ public class SerialConfiguratorEditor extends ObjectEditor<SerialConfigurator> {
             typeChoice = new ChoiceField(label, new String[] {});
             return typeChoice;
         }
+        if("PatternType".equals(fieldName)) {
+            patternTypeChoice = new ChoiceField(label, new String[] {});
+            return patternTypeChoice;
+        }
         return super.createField(fieldName, label);
     }
 
@@ -30,8 +34,10 @@ public class SerialConfiguratorEditor extends ObjectEditor<SerialConfigurator> {
     public void setObject(SerialConfigurator object, boolean load) {
         if(object == null) {
             typeChoice.setChoices(new String[] {});
+            patternTypeChoice.setChoices(new String[] {});
         } else {
             typeChoice.setChoices(object.getTypeValues());
+            patternTypeChoice.setChoices(object.getPatternTypeValues());
         }
         super.setObject(object, load);
     }

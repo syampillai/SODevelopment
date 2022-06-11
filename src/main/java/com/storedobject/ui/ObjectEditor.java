@@ -181,7 +181,7 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
         super(objectClass, caption);
         Table table = objectClass.getAnnotation(Table.class);
         if(table != null) {
-            setTab(table.tab(), true);
+            setTab(table.tab());
             if(table.formStyle() != 0) {
                 setColumns(table.formStyle());
             }
@@ -1999,7 +1999,7 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
      * @param tabName The tab name for which {@link FormLayout} needs to be created or selected. Null or empty tab names
      *                will be ignored.
      */
-    public void setTabX(String tabName) {
+    public void setTab(String tabName) {
         setTab(tabName, true);
     }
 

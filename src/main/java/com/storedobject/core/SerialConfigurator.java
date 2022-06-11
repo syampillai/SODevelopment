@@ -37,6 +37,21 @@ public final class SerialConfigurator extends StoredObject {
     public void setRestartAnnually(boolean restartAnnually) {
     }
 
+    public void setPatternType(int type) {
+    }
+
+    public int getPatternType() {
+        return 0;
+    }
+
+    public String getPatternTypeValue() {
+        return Math.random() > 0.5 ? "" : "x";
+    }
+
+    public String[] getPatternTypeValues() {
+        return new String[] { Math.random() > 0.5 ? "" : "x" };
+    }
+
     public Class<? extends StoredObject> getDataClass() {
         return Math.random() > 0.5 ? null : Person.class;
     }

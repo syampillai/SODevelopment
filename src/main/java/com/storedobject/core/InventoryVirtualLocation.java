@@ -60,6 +60,10 @@ public final class InventoryVirtualLocation extends InventoryLocation {
         return getFor(supplierId, 1);
     }
 
+    public static InventoryVirtualLocation getForRepairOrganization(Id supplierId) {
+        return getFor(supplierId, 3);
+    }
+
     public static InventoryVirtualLocation getForConsumer(Id consumerId) {
         return getFor(consumerId, 2);
     }

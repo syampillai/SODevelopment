@@ -512,7 +512,7 @@ public class SystemTableDeployer extends View implements Transactional {
                 }
             }
         }
-        m.s().blackMessage("[Done]");
+        m.done();
     }
 
     private class MultipleClasses extends UploadProcessorView {
@@ -550,52 +550,79 @@ public class SystemTableDeployer extends View implements Transactional {
 
     private static class Message {
 
+        private final List<M> list = new ArrayList<>();
         private final StyledBuilder sb;
-        private Object previousP, previousM;
-        private boolean red = false;
 
         Message(StyledBuilder sb) {
             this.sb = sb;
         }
 
         private void p(Object any) {
-            if(!red) {
-                sb.clearContent();
-                sb.blackMessage("Processing " + any);
-                return;
-            }
-            previousP = any;
+            list.add(new M("Processing " + any, 0));
+            render();
         }
 
         private void m(Object any) {
-            if(!red) {
-                sb.clearContent();
-                sb.blueMessage(any);
-                return;
-            }
-            previousM = any;
+            list.add(new M(any, 1));
+            render();
         }
 
         private void e(Object any) {
-            red = true;
-            previous();
-            sb.redMessage(any);
+            list.add(new M(any, 2));
+            render();
         }
 
-        private StyledBuilder s() {
-            return sb;
+        private void done() {
+            list.add(new M("[Done]", 0));
+            renderAll();
         }
 
-        private void previous() {
-            if(previousM != null) {
-                sb.blueMessage(previousM);
-                previousM = previousP = null;
+        private void render() {
+            if(list.size() < 200) {
+                render(list.get(list.size() - 1));
+                sb.update();
                 return;
             }
-            if(previousP != null) {
-                sb.blackMessage("Processing " + previousP);
-                previousP = null;
+            remove(0);
+            remove(1);
+            remove(2);
+            renderAll();
+        }
+
+        private void renderAll() {
+            sb.clear();
+            list.forEach(this::render);
+            sb.update();
+        }
+
+        private void render(M m) {
+            switch(m.color) {
+                case 1 -> sb.append(m.m, "blue");
+                case 2 -> sb.append(m.m, "red");
+                default -> sb.append(m.m, "black");
+            }
+            if(m.color == 2) {
+                sb.newLine();
+            }
+            sb.newLine();
+        }
+
+        private void remove(int color) {
+            int i = 0;
+            M m;
+            while(list.size() > 100) {
+                if(i >= list.size()) {
+                    break;
+                }
+                m = list.get(i);
+                if(m.color == color) {
+                    list.remove(i);
+                    continue;
+                }
+                ++i;
             }
         }
+
+        private record M(Object m, int color) {}
     }
 }

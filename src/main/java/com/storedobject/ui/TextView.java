@@ -268,13 +268,13 @@ public class TextView extends View implements CloseableView, Transactional, Styl
     @Override
     public StyledBuilder clearContent() {
         lineCount = 0;
-        return StyledBuilder.super.clearContent();
+        return StyledBuilder.super.clearContent().update();
     }
 
     @Override
     public StyledBuilder newLine(boolean force) {
         if(++lineCount > 500) {
-            clearContent();
+            clearContent().update();
         }
         return StyledBuilder.super.newLine(force);
     }

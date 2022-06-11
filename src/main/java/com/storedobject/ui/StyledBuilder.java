@@ -84,7 +84,7 @@ public interface StyledBuilder extends com.storedobject.common.StyledBuilder, HT
     @Override
     default StyledBuilder clearContent() {
         getInternalStyledBuilder().clearContent();
-        return this;
+        return update();
     }
 
     default StyledBuilder space(int count) {

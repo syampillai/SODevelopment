@@ -464,4 +464,58 @@ public class InventoryItem extends StoredObject {
     public final InventoryRO getRO() {
         return Math.random() > 0.5 ? null : new InventoryRO();
     }
+
+    /**
+     * Create the GRN for this item. This method is used only for creating GRNs for the items that are data-picked.
+     *
+     * @param transaction Transaction.
+     * @param store Store.
+     * @param invoiceDate Invoice date.
+     * @param invoiceReference Invoice reference (supplier's invoice number).
+     * @param supplier Supplier.
+     * @return GRN
+     * @throws Exception if transaction errors occur.
+     */
+    public InventoryGRN createGRN(Transaction transaction, InventoryStore store, Date invoiceDate,
+                                  String invoiceReference, Entity supplier) throws Exception {
+        InventoryGRN grn = getGRN();
+        if(grn != null) {
+            throw new SOException("GRN already exists - " + grn.toDisplay());
+        }
+        return new InventoryGRN();
+    }
+
+    /**
+     * Create the PO for this item. This method is used only for creating POs for the items that are data-picked.
+     *
+     * @param transaction Transaction.
+     * @param orderDate Order date.
+     * @param orderNumber Order number.
+     * @return PO.
+     * @throws Exception if transaction errors occur.
+     */
+    public InventoryPO createPO(Transaction transaction, Date orderDate, int orderNumber) throws Exception {
+        InventoryGRN grn = getGRN();
+        if(grn == null) {
+            throw new SOException("No GRN found");
+        }
+        return new InventoryPO();
+    }
+
+    /**
+     * Create the RO for this item. This method is used only for creating ROs for the items that are data-picked.
+     *
+     * @param transaction Transaction.
+     * @param orderDate Order date.
+     * @param orderNumber Order number.
+     * @return RO.
+     * @throws Exception if transaction errors occur.
+     */
+    public InventoryRO createRO(Transaction transaction, Date orderDate, int orderNumber) throws Exception {
+        InventoryGRN grn = getGRN();
+        if(grn == null) {
+            throw new SOException("No GRN found");
+        }
+        return new InventoryRO();
+    }
 }
