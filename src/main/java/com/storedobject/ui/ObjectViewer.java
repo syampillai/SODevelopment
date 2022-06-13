@@ -2,6 +2,8 @@ package com.storedobject.ui;
 
 import com.storedobject.core.*;
 
+import java.util.function.Consumer;
+
 public class ObjectViewer extends Executor implements ObjectSetter<StoredObject>, AlertHandler {
 
     private StoredObject object;
@@ -29,11 +31,8 @@ public class ObjectViewer extends Executor implements ObjectSetter<StoredObject>
         this.object = null;
     }
 
-    public void view() {
-        view((String)null);
-    }
-
-    public void view(String caption) {
+    @SuppressWarnings("unchecked")
+    public void view(String caption, String actionName, Consumer<StoredObject> action) {
         if(object == null) {
             if(Id.isNull(id)) {
                 return;
@@ -59,26 +58,53 @@ public class ObjectViewer extends Executor implements ObjectSetter<StoredObject>
                 viewer.setCaption("_".equals(caption) ? StringUtility.makeLabel(object.getClass()) : caption);
             }
         }
-        //noinspection unchecked
-        viewer.viewObject(object);
+        viewer.viewObject(object, actionName, action);
+    }
+
+    public void view() {
+        view((String) null, null, null);
+    }
+
+    public void view(String actionName, Consumer<StoredObject> action) {
+        view((String) null, actionName, action);
+    }
+
+    public void view(String caption) {
+        view(caption, null, null);
     }
 
     public void view(StoredObject object) {
         view(null, object);
     }
 
+    public void view(StoredObject object, String actionName, Consumer<StoredObject> action) {
+        view(null, object, actionName, action);
+    }
+
     public void view(String caption, StoredObject object) {
+        view(caption, object, null, null);
+    }
+
+    public void view(String caption, StoredObject object, String actionName, Consumer<StoredObject> action) {
         setObject(object);
-        view(caption);
+        view(caption, actionName, action);
     }
 
     public void view(String caption, Id objectId) {
+        view(caption, objectId, null, null);
+    }
+
+    public void view(String caption, Id objectId, String actionName, Consumer<StoredObject> action) {
         setObject(objectId);
-        view(caption);
+        view(caption, actionName, action);
     }
 
     public void view(Id objectId) {
         view(null, objectId);
+    }
+
+    public void view(Id objectId, String actionName, Consumer<StoredObject> action) {
+        view(null, objectId, actionName, action);
     }
 
     public boolean executing() {

@@ -42,7 +42,6 @@ public class SystemUtility extends View implements CloseableView, Transactional 
     private final Button updateData;
     private final Button edit;
     private final Button editRaw;
-    private final Button loadRaw;
     private final Button executeRaw;
     private final Button viewTranRaw;
     private final Button downloadConnInfo;
@@ -89,7 +88,7 @@ public class SystemUtility extends View implements CloseableView, Transactional 
         form.add(label("View Object"));
         rawId = new LongField(0L, 10);
         buttons = new ButtonLayout();
-        buttons.add(new ELabel("Raw Object Id: "), rawId, loadRaw = new Button("View", this));
+        buttons.add(new ELabel("Raw Object Id: "), rawId, new Button("View", e -> loadRaw()));
         form.add(buttons);
         form.add(label("View Transaction"));
         rawTranId = new LongField(0L, 10);
@@ -183,21 +182,6 @@ public class SystemUtility extends View implements CloseableView, Transactional 
             where.setValue("");
             orderBy.setValue("");
             from.focus();
-            return;
-        }
-        if(c == loadRaw) {
-            Id id = new Id(new BigInteger("" + rawId.getValue()));
-            StoredObject so = StoredObject.get(id);
-            if(so == null) {
-                warning("No object found for Id = " + id);
-                return;
-            }
-            if(so instanceof StreamData) {
-                getApplication().view("Id " + so.getId() + ", Transaction " + so.getTransactionId(), (StreamData)so);
-                return;
-            }
-            getApplication().view(StringUtility.makeLabel(so.getClass()) + " (Id " + so.getId()
-                    + ", Transaction " + so.getTransactionId() + ")", so);
             return;
         }
         if(c == viewTranRaw) {
@@ -329,6 +313,32 @@ public class SystemUtility extends View implements CloseableView, Transactional 
                 }
             };
             getApplication().view(excel);
+        }
+    }
+
+    private void loadRaw() {
+        Id id = new Id(new BigInteger("" + rawId.getValue()));
+        StoredObject so = StoredObject.get(id);
+        if(so == null) {
+            so = StoredObject.getDeleted(id);
+            if(so == null) {
+                warning("No object found for Id = " + id);
+                return;
+            }
+            warning("This is a deleted entry!");
+        }
+        if(so instanceof StreamData) {
+            getApplication().view("Id " + so.getId() + ", Transaction " + so.getTransactionId(), (StreamData)so);
+            return;
+        }
+        getApplication().view(StringUtility.makeLabel(so.getClass()) + " (Id " + so.getId()
+                        + ", Transaction " + so.getTransactionId() + ")" + (so.undeleted() ? " - DELETED" : ""), so,
+                "Undelete", so.undeleted() ? this::undelete : null);
+    }
+    
+    private void undelete(StoredObject so) {
+        if(transact(so::undelete)) {
+            message("Undeleted successfully");
         }
     }
 

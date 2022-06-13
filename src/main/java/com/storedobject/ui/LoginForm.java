@@ -28,6 +28,7 @@ import java.util.Locale;
  * <p>id = "user" (Should be a vaadin-text-field tag. Represents user-name field.)</p>
  * <p>id = "remember" (Should be a vaadin-checkbox tag. Used to remember the user-name. This is optional.)</p>
  * <p>id = "password" (Should be a vaadin-password-field tag.)</p>
+ * <p>id = "authCode" (Authenticator code. Should be a vaadin-custom-field tag. This is optional.)</p>
  * <p>id = "cram" (Should be a vaadin-custom-field tag. This is optional.)</p>
  * <p>id = "biometric" (Should be a so-auth tag. Used for showing biometric option. This is optional.)</p>
  * <p>id = "ok" ('OK' or 'Sign in' button. This should be a vaadin-button tag.)</p>
@@ -59,6 +60,9 @@ public class LoginForm extends TemplateView implements HomeView {
 
     @Id("password")
     private PasswordField passwordField;
+
+    @Id("authCode")
+    private IntegerField authField;
 
     @Id("cram")
     private CRAMField cramField;
@@ -205,7 +209,7 @@ public class LoginForm extends TemplateView implements HomeView {
             boolean wrongCram = cramField != null && !cramField.verified();
             if(wrongCram || user == null || (forgot ? !login.forgotPassword(u) :
                     !login.login(u, passwordField == null ? new char[] {} :
-                            passwordField.getValue().toCharArray(), true))) {
+                            passwordField.getValue().toCharArray(), authCode(),true))) {
                 if(login.canRetry()) {
                     speak("Please check the " + (wrongCram ? "captcha" : "password"), false);
                     if(wrongCram) {
@@ -320,6 +324,7 @@ public class LoginForm extends TemplateView implements HomeView {
             case "login" -> loginField;
             case "remember" -> remember;
             case "password" -> passwordField;
+            case "authCode" -> new IntegerField();
             case "cram" -> new CRAMField();
             case "biometric" -> new BiometricButton(this::biometricLogin, getA().getLogin());
             case "ok" -> new Button(null, (String) null, e -> process(false));
@@ -330,6 +335,14 @@ public class LoginForm extends TemplateView implements HomeView {
             case "year", "timeGMT" -> new Span();
             default -> super.createComponentForId(id);
         };
+    }
+
+    private int authCode() {
+        if(authField == null) {
+            return -1;
+        }
+        int ac = authField.getValue();
+        return ac <= 0 ? -1 : ac;
     }
 
     static Runnable create() {

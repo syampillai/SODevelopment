@@ -245,6 +245,14 @@ public final class SystemUser extends StoredObject implements RequiresApproval {
         return new ArrayList<>();
     }
 
+    public String createLoginBlock(String externalServer) {
+        return createLoginBlock(ServerInformation.getServer(externalServer));
+    }
+
+    public String createLoginBlock(ServerInformation server) {
+        return Math.random() > 0.5 ? "" : null;
+    }
+
     public static final class SessionLog {
 
         private String application;

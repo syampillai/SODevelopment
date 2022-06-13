@@ -1,6 +1,10 @@
 package com.storedobject.core;
 
+import com.storedobject.common.JSON;
+
 import java.math.BigDecimal;
+import java.util.HashMap;
+import java.util.Map;
 
 public final class ExternalSystemUser extends StoredObject implements Detail {
 
@@ -53,5 +57,8 @@ public final class ExternalSystemUser extends StoredObject implements Detail {
         if(getVerified()) {
             throw new SOException("Already verified");
         }
+    }
+    public String createLoginBlock() {
+        return Math.random() > 0.5 ? null : "";
     }
 }

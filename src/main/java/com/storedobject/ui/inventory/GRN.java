@@ -876,8 +876,7 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
             private SplitQuantity splitQuantity;
 
             public GRNItemGrid() {
-                super(grnItemsField, StringList.create("Item", "PartNumber", "SerialNumber", "Inspected", "Quantity",
-                        "UnitCost", "Bin"));
+                super(grnItemsField);
                 setObjectEditor(new GRNItemEditor());
                 getButtonPanel().add(editItem, splitQty, inspect, bin, assemble, hint);
                 GridContextMenu<InventoryGRNItem> contextMenu = new GridContextMenu<>(this);

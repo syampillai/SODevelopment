@@ -470,6 +470,7 @@ public class InventoryItem extends StoredObject {
      *
      * @param transaction Transaction.
      * @param store Store.
+     * @param grnDate GRN date (Receipt date)
      * @param grnNumber GRN number (if zero is passed, a new number is generated).
      * @param invoiceDate Invoice date.
      * @param invoiceReference Invoice reference (supplier's invoice number).
@@ -477,8 +478,8 @@ public class InventoryItem extends StoredObject {
      * @return GRN
      * @throws Exception if transaction errors occur.
      */
-    public InventoryGRN createGRN(Transaction transaction, InventoryStore store, int grnNumber, Date invoiceDate,
-                                  String invoiceReference, Entity supplier) throws Exception {
+    public InventoryGRN createGRN(Transaction transaction, InventoryStore store, Date grnDate, int grnNumber,
+                                  Date invoiceDate, String invoiceReference, Entity supplier) throws Exception {
         InventoryGRN grn = getGRN();
         if(grn != null) {
             throw new SOException("GRN already exists - " + grn.toDisplay());

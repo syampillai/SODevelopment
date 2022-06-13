@@ -644,6 +644,28 @@ public abstract class StoredObject implements Displayable, HasId {
         return r == 0 ? null : (T)new Person();
     }
 
+    /**
+     * Get the deleted instance. (If the instance was not deleted, null is returned).
+     *
+     * @param id Id of the instance needs to be retrieved.
+     * @return The instance retrieved.
+     */
+    public static StoredObject getDeleted(Id id) {
+        return get(id);
+    }
+
+    /**
+     * Get the deleted instance. (If the instance was not deleted, null is returned).
+     *
+     * @param <T> Type of object class.
+     * @param objectClass Type of instance to be retrieved.
+     * @param id Id of the instance needs to be retrieved.
+     * @return The instance retrieved.
+     */
+    public static <T extends StoredObject> T getDeleted(Class<T> objectClass, Id id) {
+        return get(objectClass, id);
+    }
+
     public final <T extends StoredObject> T getRelated(Class<T> objectClass, Id id) {
         return (T)nextVersion();
     }

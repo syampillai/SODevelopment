@@ -369,34 +369,10 @@ public class Application extends com.storedobject.vaadin.Application implements 
     }
 
     public void close(final String exitSite) {
-        try {
-            VaadinService.getCurrentRequest().getWrappedSession().invalidate();
-        } catch(Throwable ignored) {
-        }
-        try {
-            VaadinSession.getCurrent().getSession().invalidate();
-        } catch(Throwable ignored) {
-        }
         if(server == null) {
             return;
         }
-        closeTimer();
-        ArrayList<View> views = new ArrayList<>();
-        getActiveViews().forEach(views::add);
-        int count = views.size() << 1;
-        while(count-- > 0) {
-            views.removeIf(v -> !v.executing());
-            if(views.isEmpty()) {
-                break;
-            }
-            View v = views.remove(0);
-            if(v.executing()) {
-                try {
-                    v.abort();
-                } catch(Throwable ignored) {
-                }
-            }
-        }
+        closeAllViews(true);
         ApplicationServer as = server;
         server = null;
         if(as == null) {
@@ -419,10 +395,11 @@ public class Application extends com.storedobject.vaadin.Application implements 
         if(isSpeakerOn()) {
             script.append("window.speechSynthesis.speak(new SpeechSynthesisUtterance('Goodbye'));");
         }
-        ui.getPage().executeJs(script.toString());
+        script.append("this.stopApplication();");
         if(exitSite != null && !exitSite.isEmpty()) {
-            ui.getPage().setLocation(exitSite);
+            script.append("window.open('").append(exitSite).append("', '_self');");
         }
+        ui.getPage().executeJs(script.toString());
     }
 
     /**
@@ -439,6 +416,34 @@ public class Application extends com.storedobject.vaadin.Application implements 
             m.setAction(() -> close(exitSite));
         }
         access(m::execute);
+    }
+
+    /**
+     * Close all current views by invoking {@link View#abort()} on each of them.
+     *
+     * @param forShutdown True should be passed if this is for a shutdown so that all internal timers will be
+     *                    removed.
+     */
+    public void closeAllViews(boolean forShutdown) {
+        if(forShutdown) {
+            closeTimer();
+        }
+        ArrayList<View> views = new ArrayList<>();
+        getActiveViews().forEach(views::add);
+        int count = views.size() << 1;
+        while(count-- > 0) {
+            views.removeIf(v -> !v.executing());
+            if(views.isEmpty()) {
+                break;
+            }
+            View v = views.remove(0);
+            if(v.executing()) {
+                try {
+                    v.abort();
+                } catch(Throwable ignored) {
+                }
+            }
+        }
     }
 
     public static Application get() {
@@ -626,6 +631,22 @@ public class Application extends com.storedobject.vaadin.Application implements 
     }
 
     public void view(String caption, StoredObject object) {
+        view(caption, object, null, null);
+    }
+
+    public void view(String caption, Id objectId, String actionName, Consumer<StoredObject> action) {
+        view(caption, StoredObject.get(objectId));
+    }
+
+    public void view(Id objectId, String actionName, Consumer<StoredObject> action) {
+        view(null, objectId);
+    }
+
+    public void view(StoredObject object, String actionName, Consumer<StoredObject> action) {
+        view(null, object);
+    }
+
+    public void view(String caption, StoredObject object, String actionName, Consumer<StoredObject> action) {
         ObjectViewer v = null;
         if(objectViewer == null) {
             objectViewer = new ObjectViewer(this);
@@ -638,7 +659,7 @@ public class Application extends com.storedobject.vaadin.Application implements 
         if(v == null) {
             v = new ObjectViewer(this);
         }
-        v.view(caption, object);
+        v.view(caption, object, actionName, action);
     }
 
     private record CP(String caption, ContentProducer producer, Consumer<Long> timeTracker) {
@@ -794,7 +815,17 @@ public class Application extends com.storedobject.vaadin.Application implements 
     }
 
     private Runnable createLoginInt() {
-        String autoToken = ApplicationServer.getGlobalProperty("application.autologin.token",
+        String autoToken = getQueryParameter("loginBlock");
+        if(autoToken != null && !autoToken.isBlank()) {
+            removeQueryParameter("loginBlock");
+            String loginBlock = autoToken;
+            return () -> {
+                if(!login.login(loginBlock)) {
+                    executeLogin();
+                }
+            };
+        }
+        autoToken = ApplicationServer.getGlobalProperty("application.autologin.token",
                 null, false);
         if(autoToken != null && autoToken.equals(getQueryParameter("login"))) {
             removeQueryParameter("login");
