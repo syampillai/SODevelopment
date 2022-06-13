@@ -56,7 +56,9 @@ public class FormSubmit extends LitComponent {
 
     /**
      * Submit the form-date to the site set via @{link #setSite(String)}. The application
-     * may get redirected based on the response from the site.
+     * may get redirected based on the response from the site. If you are switching away to another application or site,
+     * it's better to invoke {@link Application#closeAllViews(boolean)} with "true" as the parameter before invoking
+     * this method.
      */
     public void submit() {
         if(!site) {

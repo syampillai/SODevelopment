@@ -22,6 +22,7 @@ public class ChangePassword extends DataForm implements Transactional {
     private final boolean forgot;
     private boolean expired = false;
     private boolean changed = false;
+    private boolean allowNameChange = true;
 
     public ChangePassword() {
         this(false, true);
@@ -31,6 +32,7 @@ public class ChangePassword extends DataForm implements Transactional {
         super("Change Password", windowMode);
         this.forgot = false;
         this.expired = expired;
+        setAllowNameChange(!expired);
         su = StoredObject.get(SystemUser.class, getTransactionManager().getUser().getId());
         addConstructedListener(o -> fConstructed());
     }
@@ -43,6 +45,7 @@ public class ChangePassword extends DataForm implements Transactional {
         super(caption == null || caption.isBlank() ? "Set Password" : caption);
         this.su = su;
         this.forgot = true;
+        setAllowNameChange(false);
         addConstructedListener(o -> fConstructed());
     }
 
@@ -54,6 +57,19 @@ public class ChangePassword extends DataForm implements Transactional {
     @Override
     protected void sizeSet() {
         getContent().getElement().getStyle().set("max-width", "500px");
+    }
+
+    @Override
+    public boolean isFieldEditable(HasValue<?, ?> field) {
+        if(field == newUsername) {
+            return allowNameChange;
+        }
+        return super.isFieldEditable(field);
+    }
+
+    public void setAllowNameChange(boolean allow) {
+        this.allowNameChange = allow;
+        newUsername.setVisible(allow);
     }
 
     private PasswordField createPasswordField(String caption) {

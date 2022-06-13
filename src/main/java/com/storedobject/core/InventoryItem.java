@@ -121,6 +121,27 @@ public class InventoryItem extends StoredObject {
         return getUnitCost().getCost(quantity);
     }
 
+    /**
+     * Update the cost of this item. The update is possible only if the item is not yet moved.
+     *
+     * @param transaction Transaction.
+     * @param newCost New cost.
+     * @param effectiveFrom Effective from.
+     * @throws Exception if error occurs while updating.
+     */
+    public void updateCost(Transaction transaction, Money newCost, Date effectiveFrom) throws Exception {
+    }
+
+    /**
+     * Check whether cost of this item cab be updated or not.
+     *
+     * @param effectiveFrom Effective from date.
+     * @return True/false.
+     */
+    public boolean canUpdateCost(Date effectiveFrom) {
+        return Math.random() > 0.5;
+    }
+
     public void setInTransit(boolean inTransit) {
     }
 

@@ -12,6 +12,8 @@ import com.vaadin.flow.component.listbox.ListBox;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 public class SwitchApplication implements Executable {
@@ -43,7 +45,7 @@ public class SwitchApplication implements Executable {
         select.setItemLabelGenerator(u -> u.getServer().getDescription());
         FormSubmit form = new FormSubmit();
         v.add(form);
-        select.addValueChangeListener(e -> switchTo(e.getValue(), form));
+        select.addValueChangeListener(e -> switchTo(e.getValue()));
         v.add(select);
         Button cancel = new Button("Cancel", e -> view.close());
         v.add(cancel);
@@ -53,7 +55,7 @@ public class SwitchApplication implements Executable {
         return view;
     }
 
-    private static void switchTo(ExternalSystemUser user, FormSubmit form) {
+    private static void switchTo(ExternalSystemUser user) {
         if(user == null) {
             return;
         }
@@ -62,13 +64,13 @@ public class SwitchApplication implements Executable {
             return;
         }
         Application.get().closeAllViews(true);
+        /*
         form.setSite(SOServlet.getURL() + "/" + user.getServer().getName());
         form.addData("loginBlock", loginBlock);
         form.submit();
-        /*
+        */
         Application.get().close(SOServlet.getURL() + "/" + user.getServer().getName() + "/?loginBlock="
                 + URLEncoder.encode(loginBlock, StandardCharsets.UTF_8));
-        */
     }
 
     @Override

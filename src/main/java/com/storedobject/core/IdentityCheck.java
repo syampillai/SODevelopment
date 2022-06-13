@@ -134,4 +134,13 @@ public interface IdentityCheck {
     default String getPasswordChangeCaption() {
         return null;
     }
+
+    /**
+     * Whether to allow username change while setting the password or not.
+     *
+     * @return True/false.
+     */
+    default boolean allowNameChange() {
+        return false;
+    }
 }

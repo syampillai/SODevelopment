@@ -102,15 +102,26 @@ public class LoginForm extends TemplateView implements HomeView {
     public LoginForm() {
         setCaption("Sign in");
         internal = this;
-        application = Application.get();
-        application.mainLayout.saveHeaderHeight();
-        application.getUI().getElement().getStyle().set("--so-header-height", "0vh");
-        application.log("Accessed");
+        init();
+    }
+
+    public LoginForm(String textHTMLContentName) {
+        super(null, textHTMLContentName);
+        setCaption("Sign in");
+        internal = this;
+        init();
     }
 
     LoginForm(@SuppressWarnings("unused") boolean dummy) {
         super("-", () -> "<div></div>");
         this.internal = new LF();
+    }
+
+    private void init() {
+        application = Application.get();
+        application.mainLayout.saveHeaderHeight();
+        application.getUI().getElement().getStyle().set("--so-header-height", "0vh");
+        application.log("Accessed");
     }
 
     @Override

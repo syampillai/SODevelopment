@@ -130,7 +130,7 @@ public class Application extends com.storedobject.vaadin.Application implements 
             } catch(Throwable ignored) {
             }
         }
-        Button.setNoIcons(ApplicationServer.getGlobalBooleanProperty("application.button.icon", false));
+        Button.setNoIcons(!ApplicationServer.getGlobalBooleanProperty("application.button.icon", false));
         setSingleLogicMode(singleLogicMode);
         setAbortOnLogicSwitch(abortOnLogicSwitch);
         login = new Login(this, getMessageViewer());
@@ -1030,6 +1030,7 @@ public class Application extends com.storedobject.vaadin.Application implements 
 
         private SetNewPassword(String caption) {
             super(Application.this.getTransactionManager().getUser(), caption);
+            setAllowNameChange(identityCheck.allowNameChange());
         }
 
         @Override
