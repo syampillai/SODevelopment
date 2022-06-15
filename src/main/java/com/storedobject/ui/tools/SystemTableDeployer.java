@@ -597,9 +597,9 @@ public class SystemTableDeployer extends View implements Transactional {
 
         private void render(M m) {
             switch(m.color) {
-                case 1 -> sb.append(m.m, "blue");
-                case 2 -> sb.append(m.m, "red");
-                default -> sb.append(m.m, "black");
+                case 1 -> sb.append(m.m, Application.COLOR_SUCCESS);
+                case 2 -> sb.append(m.m, Application.COLOR_ERROR);
+                default -> sb.append(m.m, Application.COLOR_NORMAL);
             }
             if(m.color == 2) {
                 sb.newLine();

@@ -106,7 +106,7 @@ public class GeolocationField extends CustomTextField<Geolocation> {
         protected void execute(View parent, boolean doNotLock) {
             message.clear();
             if(!GeolocationField.this.isReadOnly() && GeolocationField.this.isEnabled()) {
-                message.append(clickMessage, "blue");
+                message.append(clickMessage, Application.COLOR_SUCCESS);
             }
             message.update();
             super.execute(parent, doNotLock);

@@ -4,6 +4,7 @@ import com.storedobject.common.IO;
 import com.storedobject.core.Database;
 import com.storedobject.core.RawSQL;
 import com.storedobject.core.SOException;
+import com.storedobject.ui.Application;
 import com.storedobject.ui.ELabel;
 import com.storedobject.ui.PasswordField;
 import com.storedobject.ui.UploadProcessorView;
@@ -58,7 +59,7 @@ public class DataUpload extends DataForm {
         public Upload(Process restore, String databaseName) {
             super("Upload Database: " + databaseName);
             this.restore = restore;
-            add(new ELabel("Choose the database file to upload...", "blue"));
+            add(new ELabel("Choose the database file to upload...", Application.COLOR_SUCCESS));
             getUploadComponent().setMaxFileSize(Integer.MAX_VALUE);
         }
 

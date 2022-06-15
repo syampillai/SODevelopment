@@ -153,7 +153,7 @@ public abstract class AbstractRequestMaterial extends ObjectBrowser<MaterialRequ
     public void createHeaders() {
         ELabel label = new ELabel(fromOrTo instanceof InventoryCustodyLocation ?
                 "Custodian: " : "Current Location: ")
-                .append(fromOrTo.toDisplay(), "blue").update();
+                .append(fromOrTo.toDisplay(), Application.COLOR_SUCCESS).update();
         Button locSwitch = getSwitchLocationButton();
         Component component;
         if(locSwitch == null) {

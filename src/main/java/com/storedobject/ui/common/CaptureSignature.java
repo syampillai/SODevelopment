@@ -37,7 +37,7 @@ public final class CaptureSignature extends DataForm implements Transactional {
         add(new CompoundField(new ELabel("Ink Color: "), ink));
         ink.addValueChangeListener(e -> {
             boolean black = ink.getValue() == 0;
-            sign.color(black ? "black" : "blue", black ? "blue" : "black");
+            sign.color(black ? Application.COLOR_NORMAL : Application.COLOR_SUCCESS, black ? Application.COLOR_SUCCESS : Application.COLOR_NORMAL);
         });
     }
 

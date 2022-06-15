@@ -3,6 +3,7 @@ package com.storedobject.ui.inventory;
 import com.storedobject.common.StringList;
 import com.storedobject.core.*;
 import com.storedobject.ui.*;
+import com.storedobject.ui.Application;
 import com.storedobject.vaadin.*;
 import com.storedobject.vaadin.ListGrid;
 import com.vaadin.flow.component.Component;
@@ -180,9 +181,9 @@ public class POBrowser<T extends InventoryPO> extends ObjectBrowser<T> implement
     public void createHeaders() {
         ButtonLayout b = new ButtonLayout();
         b.add(storeDisplay, switchStore, new ELabel().
-                append(" | ", "green").
+                append(" | ", Application.COLOR_INFO).
                 append("Note: ").
-                append("Right-click on the entry for available process options", "blue").
+                append("Right-click on the entry for available process options", Application.COLOR_SUCCESS).
                 update());
         prependHeader().join().setComponent(b);
     }
@@ -234,7 +235,7 @@ public class POBrowser<T extends InventoryPO> extends ObjectBrowser<T> implement
     @Override
     protected void anchorsSet() {
         this.storeDisplay.clearContent().append("Store: ").
-                append(editor.store, "blue").
+                append(editor.store, Application.COLOR_SUCCESS).
                 update();
         goToGRNs.setVisible(true);
         switchStore.setVisible(allowSwitchStore);
@@ -490,9 +491,9 @@ public class POBrowser<T extends InventoryPO> extends ObjectBrowser<T> implement
         private HTMLText pn(InventoryPOItem item) {
             HTMLText h = new HTMLText();
             if(item.getType() == 1) {
-                h.append("[APN] ", "red");
+                h.append("[APN] ", Application.COLOR_ERROR);
             }
-            h.append(item.getPartNumber().toDisplay(), "blue");
+            h.append(item.getPartNumber().toDisplay(), Application.COLOR_SUCCESS);
             h.update();
             return h;
         }
@@ -528,7 +529,7 @@ public class POBrowser<T extends InventoryPO> extends ObjectBrowser<T> implement
                     new ConfirmButton("Add to an Existing GRN", VaadinIcon.FILE_ADD, e -> process(false)),
                     new ConfirmButton("Cancel", e -> close()),
                     confirmExcess,
-                    new ELabel("Right-click on the entry to set an APN", "blue")
+                    new ELabel("Right-click on the entry to set an APN", Application.COLOR_SUCCESS)
             );
         }
 
@@ -591,7 +592,7 @@ public class POBrowser<T extends InventoryPO> extends ObjectBrowser<T> implement
             }) {
                 @Override
                 public void createHeaders() {
-                    ELabel m = new ELabel("Please select the GRN to add the items to", "blue");
+                    ELabel m = new ELabel("Please select the GRN to add the items to", Application.COLOR_SUCCESS);
                     prependHeader().join().setComponent(m);
                 }
             };
@@ -742,9 +743,9 @@ public class POBrowser<T extends InventoryPO> extends ObjectBrowser<T> implement
             this.item = item;
             apnField = new ComboField<>("Select APN", item.getPartNumber().listAPNs());
             ELabelField op = new ELabelField("Original P/N");
-            op.append(item.getPartNumber().toDisplay(), "blue").update();
+            op.append(item.getPartNumber().toDisplay(), Application.COLOR_SUCCESS).update();
             ELabelField ef = new ELabelField("Quantity to Receive");
-            ef.append(item.getBalance(), "blue").update();
+            ef.append(item.getBalance(), Application.COLOR_SUCCESS).update();
             addField(op, ef, apnField, qField);
             setRequired(apnField);
             setRequired(qField);

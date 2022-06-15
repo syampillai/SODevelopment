@@ -3,6 +3,7 @@ package com.storedobject.ui.common;
 import com.storedobject.core.*;
 import com.storedobject.ui.ELabelField;
 import com.storedobject.ui.ObjectEditor;
+import com.storedobject.ui.Application;
 import com.storedobject.vaadin.*;
 import com.vaadin.flow.component.HasComponents;
 import com.vaadin.flow.component.icon.VaadinIcon;
@@ -261,13 +262,13 @@ public class EntityEditor extends ObjectEditor<Entity> {
         public RForm() {
             super("Define Relationships with the Entity");
             ELabelField w = new ELabelField("Warning");
-            w.append("Changes once saved can not be reverted!", "red").update();
+            w.append("Changes once saved can not be reverted!", Application.COLOR_ERROR).update();
             addField(entityName, relField, w);
         }
 
         void entity() {
             Entity entity = getObject();
-            entityName.clearContent().append(entity, "blue").update();
+            entityName.clearContent().append(entity, Application.COLOR_SUCCESS).update();
             relationship = getR(entity);
             relField.setValueMask(relationship);
             relField.setValueMask(relationship);
@@ -296,13 +297,13 @@ public class EntityEditor extends ObjectEditor<Entity> {
             this.next = next;
             Entity entity = getObject();
             ELabelField en = new ELabelField("Entity");
-            en.clearContent().append(entity, "blue").update();
+            en.clearContent().append(entity, Application.COLOR_SUCCESS).update();
             ELabelField p = new ELabelField("Current Relationships");
-            p.append(getRS(previous), "blue").update();
+            p.append(getRS(previous), Application.COLOR_SUCCESS).update();
             ELabelField c = new ELabelField("About to Add the Following Relationships");
-            c.append(getRS(next), "red").update();
+            c.append(getRS(next), Application.COLOR_ERROR).update();
             ELabelField w = new ELabelField("Warning");
-            w.append("Changes once saved can not be reverted!", "red").update();
+            w.append("Changes once saved can not be reverted!", Application.COLOR_ERROR).update();
             addField(en, p, c, w);
         }
 

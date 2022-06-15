@@ -4,6 +4,7 @@ import com.storedobject.common.SORuntimeException;
 import com.storedobject.common.StringList;
 import com.storedobject.core.*;
 import com.storedobject.ui.*;
+import com.storedobject.ui.Application;
 import com.storedobject.ui.DataGrid;
 import com.storedobject.vaadin.*;
 import com.vaadin.flow.component.AttachEvent;
@@ -39,7 +40,7 @@ public class LocateItem extends DataGrid<InventoryItem> implements CloseableView
     private ObjectEditor editor;
     private InventoryStore store;
     private boolean allowBreaking;
-    private final ELabel help = new ELabel("Right-click on the row to see more options", "blue");
+    private final ELabel help = new ELabel("Right-click on the row to see more options", Application.COLOR_SUCCESS);
     private GRNEditor grnEditor;
 
     /**
@@ -436,8 +437,8 @@ public class LocateItem extends DataGrid<InventoryItem> implements CloseableView
     }
 
     private void breakAssembly(InventoryItem ii) {
-        ELabel m = new ELabel(ii.toDisplay(), "blue");
-        m.newLine().append("Do you really want to take out this item?", "red").newLine();
+        ELabel m = new ELabel(ii.toDisplay(), Application.COLOR_SUCCESS);
+        m.newLine().append("Do you really want to take out this item?", Application.COLOR_ERROR).newLine();
         m.append("Fitment location:").newLine();
         m.append(getLocationDisplay(ii));
         deselectAll();
@@ -482,9 +483,9 @@ public class LocateItem extends DataGrid<InventoryItem> implements CloseableView
             super("Detach from Assembly");
             this.item = item;
             location = item.getRealLocation();
-            addField(new ELabelField("Item", item.toDisplay(), "blue"),
-                    new ELabelField("Current location", getLocationDisplay(item), "blue"),
-                    new ELabelField("After removal, it will be available at", location.toDisplay(), "blue"),
+            addField(new ELabelField("Item", item.toDisplay(), Application.COLOR_SUCCESS),
+                    new ELabelField("Current location", getLocationDisplay(item), Application.COLOR_SUCCESS),
+                    new ELabelField("After removal, it will be available at", location.toDisplay(), Application.COLOR_SUCCESS),
                     dateField, referenceField);
             setRequired(referenceField);
         }
@@ -522,12 +523,12 @@ public class LocateItem extends DataGrid<InventoryItem> implements CloseableView
         }
         InventoryAssembly ia = loc.getAssembly();
         TextView tv = new TextView("Fitment Details");
-        tv.append("Assembly Configuration: ").append(ia.toDisplay(), "blue").newLine()
-                .append("Fitted Item: ").append(item.toDisplay(), "blue");
+        tv.append("Assembly Configuration: ").append(ia.toDisplay(), Application.COLOR_SUCCESS).newLine()
+                .append("Fitted Item: ").append(item.toDisplay(), Application.COLOR_SUCCESS);
         if(!ia.getItemTypeId().equals(item.getPartNumberId())) {
-            tv.append(" (APN)", "green");
+            tv.append(" (APN)", Application.COLOR_INFO);
         }
-        tv.newLine().append("Fitted on: ").append(loc.getItem().toDisplay(), "blue");
+        tv.newLine().append("Fitted on: ").append(loc.getItem().toDisplay(), Application.COLOR_SUCCESS);
         tv.popup();
     }
 

@@ -104,13 +104,13 @@ public interface StyledBuilder extends com.storedobject.common.StyledBuilder, HT
     }
 
     default StyledBuilder blueMessage(Object any) {
-        append(any, "blue").newLine();
+        append(any, Application.COLOR_SUCCESS).newLine();
         update();
         return this;
     }
 
     default StyledBuilder redMessage(Object any) {
-        append(any, "red").newLine().newLine();
+        append(any, Application.COLOR_ERROR).newLine().newLine();
         update();
         return this;
     }

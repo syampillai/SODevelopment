@@ -4,6 +4,7 @@ import com.storedobject.common.SORuntimeException;
 import com.storedobject.common.StringList;
 import com.storedobject.core.*;
 import com.storedobject.ui.*;
+import com.storedobject.ui.Application;
 import com.storedobject.vaadin.*;
 import com.vaadin.flow.component.HasValue;
 import com.vaadin.flow.component.checkbox.Checkbox;
@@ -278,9 +279,9 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
     public void createHeaders() {
         ButtonLayout b = new ButtonLayout();
         b.add(storeDisplay, switchStore, new ELabel().
-                append(" | ", "green").
+                append(" | ", Application.COLOR_INFO).
                 append("Note: ").
-                append("Double-click or right-click on the entry to receive/process items", "blue").
+                append("Double-click or right-click on the entry to receive/process items", Application.COLOR_SUCCESS).
                 update());
         prependHeader().join().setComponent(b);
     }
@@ -399,7 +400,7 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
 
     private void displayStore() {
         switchStore.setText("Change");
-        this.storeDisplay.clearContent().append("Store: ").append(editor.store, "blue").update();
+        this.storeDisplay.clearContent().append("Store: ").append(editor.store, Application.COLOR_SUCCESS).update();
     }
 
     @Override
@@ -483,7 +484,7 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
         private final Button assemble = new Button("Assemble", VaadinIcon.COMPILE, e -> grnItemGrid.assembleSel())
                 .asSmall();
         private final ELabel hint =
-                new ELabel("You may also right-click on the entry to edit/inspect/bin/assemble.", "blue");
+                new ELabel("You may also right-click on the entry to edit/inspect/bin/assemble.", Application.COLOR_SUCCESS);
         private final Class<? extends InventoryItemType> pnClass;
 
         GRNEditor(int type, Class<? extends InventoryItemType> pnClass, int actions, String caption) {

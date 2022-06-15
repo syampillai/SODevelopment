@@ -2,6 +2,7 @@ package com.storedobject.ui.inventory;
 
 import com.storedobject.common.StringList;
 import com.storedobject.core.*;
+import com.storedobject.ui.Application;
 import com.storedobject.ui.ELabel;
 import com.storedobject.ui.ObjectListEditor;
 import com.storedobject.ui.QuantityField;
@@ -171,7 +172,7 @@ public abstract class AbstractReturnMaterial extends
 
         @Override
         public Component createHeader() {
-            return new ELabel("Please input quantity for the items to return", "blue");
+            return new ELabel("Please input quantity for the items to return", Application.COLOR_SUCCESS);
         }
 
         @Override

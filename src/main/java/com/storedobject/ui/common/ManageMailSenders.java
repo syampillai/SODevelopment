@@ -211,11 +211,11 @@ public class ManageMailSenders extends ObjectEditor<MailSender> {
             protected void buildFields() {
                 ELabel m = new ELabel();
                 add(m);
-                m.append("You are about to connect to GMail site to authenticate the following mail senders:", "blue");
+                m.append("You are about to connect to GMail site to authenticate the following mail senders:", Application.COLOR_SUCCESS);
                 for(GMailSender gms: gsenders) {
-                    m.newLine().append(gms.getName(), "red");
+                    m.newLine().append(gms.getName(), Application.COLOR_ERROR);
                 }
-                m.newLine().append("Once you are done with it, please check the authentication status of this sender again.", "blue").update();
+                m.newLine().append("Once you are done with it, please check the authentication status of this sender again.", Application.COLOR_SUCCESS).update();
             }
 
             @Override

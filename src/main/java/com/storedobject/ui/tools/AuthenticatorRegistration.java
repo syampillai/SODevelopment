@@ -4,6 +4,7 @@ import com.storedobject.common.TOTP;
 import com.storedobject.core.ApplicationServer;
 import com.storedobject.core.SQLConnector;
 import com.storedobject.core.SystemUser;
+import com.storedobject.ui.Application;
 import com.storedobject.ui.BarcodeImage;
 import com.storedobject.ui.ELabel;
 import com.storedobject.ui.Transactional;
@@ -41,7 +42,7 @@ public class AuthenticatorRegistration extends DataForm implements Transactional
             result.append(user.getPerson().getName()).append(": ").
                     append("Created successfully").update();
         } else {
-            result.append("Invalid Code!", "red").update();
+            result.append("Invalid Code!", Application.COLOR_ERROR).update();
         }
         return false;
     }

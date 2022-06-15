@@ -185,7 +185,6 @@ public class TableDefinitionEditor extends ObjectEditor<TableDefinition> {
         getApplication().view(cp);
     }
 
-    @SuppressWarnings("resource")
     @Override
     public void clicked(Component c) {
         if(c == report) {
@@ -338,7 +337,8 @@ public class TableDefinitionEditor extends ObjectEditor<TableDefinition> {
                 getApplication().access(() -> setObject(td));
             }
             v.newLine(true).append("Total classes: ").append(count).append(", ");
-            v.append("Classes with errors: " + errorCount, errorCount == 0 ? "blue" : "red");
+            v.append("Classes with errors: " + errorCount, errorCount == 0 ? Application.COLOR_SUCCESS
+                    : Application.COLOR_ERROR);
             v.update();
         }
         if(!skipCompletionLabel) {
@@ -472,14 +472,13 @@ public class TableDefinitionEditor extends ObjectEditor<TableDefinition> {
             }
             log("Total classes deployed: " + count + "/" + allCount + ", Errors: " + errors);
             view.newLine().append("Total classes deployed: " + count + "/" + allCount + ", Errors: " + errors,
-                    errors > 0 ? "red" : (count > 0 ? "black" : "blue"));
+                    errors > 0 ? Application.COLOR_ERROR : (count > 0 ? Application.COLOR_NORMAL : Application.COLOR_SUCCESS));
             view.update();
             view.setCaption("Classes Deployed");
         });
         view.execute();
     }
 
-    @SuppressWarnings("resource")
     @Override
     public boolean canDelete() {
         TableDefinition td = getObject();
@@ -606,7 +605,8 @@ public class TableDefinitionEditor extends ObjectEditor<TableDefinition> {
                 append("Current definition, if any, will be replaced");
             } else {
                 append("Class: ").append(td.getClassName()).newLine();
-                append("Current class definition will be deleted and/or replaced with the new definition", "red");
+                append("Current class definition will be deleted and/or replaced with the new definition",
+                        Application.COLOR_ERROR);
             }
         }
 
@@ -820,6 +820,7 @@ public class TableDefinitionEditor extends ObjectEditor<TableDefinition> {
         @Override
         protected void execute(com.storedobject.vaadin.View parent, boolean doNotLock) {
             if(td == null) {
+                //noinspection resource
                 new Report(null).view();
                 return;
             }
@@ -1194,7 +1195,8 @@ public class TableDefinitionEditor extends ObjectEditor<TableDefinition> {
             FormLayout form = new FormLayout();
             form.setColumns(1);
             ELabel sysWarning;
-            form.add(sysWarning = new ELabel("Please make sure that System Data Classes are updated", "red"));
+            form.add(sysWarning = new ELabel("Please make sure that System Data Classes are updated",
+                    Application.COLOR_ERROR));
             sysWarning.setVisible(false);
             form.add(className);
             form.add(tableName);
@@ -1340,11 +1342,13 @@ public class TableDefinitionEditor extends ObjectEditor<TableDefinition> {
             }
             if(alterTable == null) {
                 if(td.isMasterObject()) {
-                    status("Data view structure looks fine now... Nothing else to do...", "blue");
+                    status("Data view structure looks fine now... Nothing else to do...",
+                            Application.COLOR_SUCCESS);
                     action = 0;
                     proceed.setVisible(false);
                 } else {
-                    status("Data table structure looks fine now... You may reindex the table if needed...", "blue");
+                    status("Data table structure looks fine now... You may reindex the table if needed...",
+                            Application.COLOR_SUCCESS);
                     proceed.setText("Reindex Table");
                     action(5);
                 }
@@ -1387,7 +1391,7 @@ public class TableDefinitionEditor extends ObjectEditor<TableDefinition> {
         }
 
         private void status(String message) {
-            status(message, "red");
+            status(message, Application.COLOR_ERROR);
         }
 
         private void status(String message, String color) {
@@ -1406,7 +1410,6 @@ public class TableDefinitionEditor extends ObjectEditor<TableDefinition> {
         }
 
         @Override
-        @SuppressWarnings({ "unchecked", "resource" })
         public void clicked(Component c) {
             if(c == exit) {
                 close();
@@ -1474,7 +1477,7 @@ public class TableDefinitionEditor extends ObjectEditor<TableDefinition> {
                         break;
                     case 3:
                         try {
-                            Class<? extends StoredObject> objectClass =
+                            @SuppressWarnings("unchecked") Class<? extends StoredObject> objectClass =
                                     (Class<? extends StoredObject>)JavaClassLoader.getLogic(td.getClassName());
                             if(!Database.get().createTable(objectClass, adminPassword)) {
                                 message("Error creating data table... Please seek help...");
@@ -1498,7 +1501,7 @@ public class TableDefinitionEditor extends ObjectEditor<TableDefinition> {
                         break;
                     case 5:
                         try {
-                            Class<? extends StoredObject> objectClass =
+                            @SuppressWarnings("unchecked") Class<? extends StoredObject> objectClass =
                                     (Class<? extends StoredObject>)JavaClassLoader.getLogic(td.getClassName());
                             commands = StoredObjectUtility.reindex(objectClass);
                         } catch(ClassNotFoundException e) {
@@ -1514,7 +1517,7 @@ public class TableDefinitionEditor extends ObjectEditor<TableDefinition> {
                             }
                         }
                         action = 0;
-                        status("Reindexing done... Nothing else to do!", "blue");
+                        status("Reindexing done... Nothing else to do!", Application.COLOR_SUCCESS);
                         return;
                 }
                 checkStatus();

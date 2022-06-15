@@ -194,7 +194,8 @@ public class FileViewer extends ObjectForestViewer<FileFolder> implements Closea
         FileCirculation fc = circ(item);
         if(fc != null) {
             return fc.getStatus() == 1 ? new Button("Confirm & Sign", VaadinIcon.SIGN_IN, e -> markAsRead(item)) :
-                    new ELabel(fc.getStatusValue(), fc.getStatus() == 0 ? "red" : "blue");
+                    new ELabel(fc.getStatusValue(), fc.getStatus() == 0
+                            ? Application.COLOR_ERROR : Application.COLOR_SUCCESS);
         }
         return new Span();
     }
@@ -215,8 +216,8 @@ public class FileViewer extends ObjectForestViewer<FileFolder> implements Closea
                 } else {
                     m.append("read the content of");
                 }
-                m.append(" '", "blue").append(fileData.getName(), "blue").
-                        append("'", "blue").append(" and understood it.");
+                m.append(" '", Application.COLOR_SUCCESS).append(fileData.getName(), Application.COLOR_SUCCESS).
+                        append("'", Application.COLOR_SUCCESS).append(" and understood it.");
                 m.update();
                 new ActionForm(m, () -> {
                     FileCirculation fc = circ(fileData);

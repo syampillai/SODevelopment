@@ -1,10 +1,7 @@
 package com.storedobject.ui.common;
 
 import com.storedobject.core.*;
-import com.storedobject.ui.ELabelField;
-import com.storedobject.ui.IdInput;
-import com.storedobject.ui.ObjectEditor;
-import com.storedobject.ui.ObjectField;
+import com.storedobject.ui.*;
 import com.storedobject.vaadin.DataForm;
 import com.storedobject.vaadin.RadioChoiceField;
 import com.storedobject.vaadin.View;
@@ -229,9 +226,9 @@ public class EntityRoleEditor<T extends EntityRole> extends ObjectEditor<T> {
             if(e != null) {
                 localRole = EntityRole.getByEntityId(se, EntityRoleEditor.this.getObjectClass(), e.getId());
                 if(localRole == null) {
-                    warning.append("An entry will be created for the selected entity.", "blue");
+                    warning.append("An entry will be created for the selected entity.", Application.COLOR_SUCCESS);
                 } else {
-                    warning.append("An entry already exists! It will be edited.", "red");
+                    warning.append("An entry already exists! It will be edited.", Application.COLOR_ERROR);
                 }
             }
             warning.update();

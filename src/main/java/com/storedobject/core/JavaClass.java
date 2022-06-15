@@ -74,7 +74,7 @@ public final class JavaClass extends JavaInnerClass {
 	}
 
 	public String upload() throws Exception {
-		return "";
+		return Math.random() > 0.5 ? "" : null;
 	}
 
 	public String compile() {

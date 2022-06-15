@@ -3,6 +3,7 @@ package com.storedobject.ui.tools;
 import com.storedobject.common.IO;
 import com.storedobject.core.*;
 import com.storedobject.tools.JavaTool;
+import com.storedobject.ui.Application;
 import com.storedobject.ui.ObjectEditor;
 import com.storedobject.ui.TextView;
 import com.storedobject.ui.UploadProcessorView;
@@ -145,7 +146,6 @@ public class JavaClassEditor extends ObjectEditor<JavaClass> {
     public void setSource(String source) {
     }
 
-    @SuppressWarnings("resource")
     @Override
     public void clicked(Component c) {
         if(c == format) {
@@ -230,7 +230,8 @@ public class JavaClassEditor extends ObjectEditor<JavaClass> {
                         getApplication().access(() -> setObject(jc));
                     }
                     v.newLine(true).append("Total classes: ").append(count).append(", ");
-                    v.append("Classes with errors: " + errorCount, errorCount == 0 ? "blue" : "red");
+                    v.append("Classes with errors: " + errorCount, errorCount == 0 ? Application.COLOR_SUCCESS
+                            : Application.COLOR_ERROR);
                     v.update();
                     v.setCaption("Compilation Done");
                 }

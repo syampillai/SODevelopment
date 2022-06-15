@@ -2,6 +2,7 @@ package com.storedobject.ui.inventory;
 
 import com.storedobject.common.StringList;
 import com.storedobject.core.*;
+import com.storedobject.ui.Application;
 import com.storedobject.ui.ELabelField;
 import com.storedobject.ui.QuantityField;
 import com.storedobject.ui.Transactional;
@@ -39,7 +40,7 @@ class RemoveItems extends DataForm implements Transactional {
         ELabelField ef = new ELabelField("Remove Item by");
         ef.append(RemoveItems.removalAction.get(removalAction));
         if(requiresEntity(action)) {
-            ef.append(" to ").append(entity, "blue");
+            ef.append(" to ").append(entity, Application.COLOR_SUCCESS);
         }
         ef.update();
         addField(new ELabelField("From", locationFrom.toDisplay()), statusField, ef, itemField, qField);
@@ -117,7 +118,7 @@ class RemoveItems extends DataForm implements Transactional {
     @Override
     public void warning(Object message) {
         if(message instanceof String) {
-            statusField.clearContent().append(message, "red").update();
+            statusField.clearContent().append(message, Application.COLOR_ERROR).update();
         } else {
             super.warning(message);
         }
@@ -126,7 +127,7 @@ class RemoveItems extends DataForm implements Transactional {
     @Override
     public void message(Object message) {
         if(message instanceof String) {
-            statusField.clearContent().append(message, "blue").update();
+            statusField.clearContent().append(message, Application.COLOR_SUCCESS).update();
         } else {
             super.message(message);
         }

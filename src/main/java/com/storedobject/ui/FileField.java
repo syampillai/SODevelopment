@@ -888,7 +888,7 @@ public class FileField extends AbstractObjectField<StreamData> {
             view = createViewButton().withBox(BUTTON_SIZE);
             startRecording = new ImageButton("Record", createRecordIcon(),this).withBox(BUTTON_SIZE);
             stopRecording = new ImageButton("Stop recording", VaadinIcon.STOP,this);
-            stopRecording.setStyle("color", "red");
+            stopRecording.setStyle("color", Application.COLOR_ERROR);
             stopRecording.withBox(BUTTON_SIZE);
             buttonPanel.add(view, startRecording, stopRecording);
         }
@@ -1006,7 +1006,8 @@ public class FileField extends AbstractObjectField<StreamData> {
         protected void buildFields() {
             StreamData sd = getObject();
             if(sd != null && !sd.isLink()) {
-                addField(new CompoundField("Warning:", new ELabel("Current content will be overwritten!", "red")));
+                addField(new CompoundField("Warning:", new ELabel("Current content will be overwritten!",
+                        Application.COLOR_ERROR)));
             }
             address = new TextField("Link");
             address.setMaxLength(400);

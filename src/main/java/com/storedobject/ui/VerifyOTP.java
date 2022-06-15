@@ -503,7 +503,7 @@ public class VerifyOTP extends View implements CloseableView {
             }
             timer.abort();
             otpField.setEnabled(false);
-            done.clearContent().append("Verified", "green").update();
+            done.clearContent().append("Verified", Application.COLOR_INFO).update();
             synchronized(random) {
                 if(closed) {
                     return true;

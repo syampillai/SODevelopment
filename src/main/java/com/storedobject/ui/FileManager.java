@@ -141,7 +141,7 @@ public class FileManager extends ObjectForestBrowser<FileFolder> implements Tran
     public void createFooters() {
         appendFooter().join().setComponent(
                 new ELabel("Right-click on Files/Folders for options related to circulation or version control",
-                        "blue")
+                        Application.COLOR_SUCCESS)
         );
     }
 
@@ -194,26 +194,28 @@ public class FileManager extends ObjectForestBrowser<FileFolder> implements Tran
 
     private void circulate(FileFolder folder, boolean recursive) {
         ELabel m = new ELabel();
-        m.append("All files under the folder '", "blue").append(folder.getName(), "red")
+        m.append("All files under the folder '", Application.COLOR_SUCCESS)
+                .append(folder.getName(), Application.COLOR_ERROR)
                 .append("'" + (recursive ? " and its sub-folders" : "")
-                        + " will be circulated now!", "blue")
-                .newLine().append("Are you sure?", "red").update();
+                        + " will be circulated now!", Application.COLOR_SUCCESS)
+                .newLine().append("Are you sure?", Application.COLOR_ERROR).update();
         new ActionForm(m, () -> transact(t -> folder.circulate(t, recursive))).execute();
     }
 
     private void circulate(FileData file) {
         ELabel m = new ELabel();
-        m.append("The file '", "blue").append(file.getName(), "red")
-                .append("' will be circulated now!", "blue").newLine()
-                .append("Are you sure?", "red").update();
+        m.append("The file '", Application.COLOR_SUCCESS).append(file.getName(), Application.COLOR_ERROR)
+                .append("' will be circulated now!", Application.COLOR_SUCCESS).newLine()
+                .append("Are you sure?", Application.COLOR_ERROR).update();
         new ActionForm(m, () -> transact(file::circulate)).execute();
     }
 
     private void createNewVersion(FileData file) {
         ELabel m = new ELabel();
-        m.append("A new version will replace the current version of the file '", "blue")
-                .append(file.getName(), "red").append("'", "blue").newLine()
-                .append("Are you sure?", "red").update();
+        m.append("A new version will replace the current version of the file '", Application.COLOR_SUCCESS)
+                .append(file.getName(), Application.COLOR_ERROR)
+                .append("'", Application.COLOR_SUCCESS).newLine()
+                .append("Are you sure?", Application.COLOR_ERROR).update();
         new ActionForm(m, () -> createNewVersion2(file)).execute();
     }
 
@@ -248,10 +250,10 @@ public class FileManager extends ObjectForestBrowser<FileFolder> implements Tran
 
     private void restorePrevVersion(FileData file) {
         ELabel m = new ELabel();
-        m.append("The previous version of the file '", "blue")
-                .append(file.getName(), "red")
-                .append("' will be restored and current version will be lost!", "blue")
-                .newLine().append("Are you sure?", "red").update();
+        m.append("The previous version of the file '", Application.COLOR_SUCCESS)
+                .append(file.getName(), Application.COLOR_ERROR)
+                .append("' will be restored and current version will be lost!", Application.COLOR_SUCCESS)
+                .newLine().append("Are you sure?", Application.COLOR_ERROR).update();
         new ActionForm(m, () -> restorePrevVersion2(file)).execute();
     }
 
@@ -339,7 +341,7 @@ public class FileManager extends ObjectForestBrowser<FileFolder> implements Tran
             this.ff = ff;
             this.f = f;
             ffCaption.clearContent().append("Members of folder ")
-                    .append("'" + ff.getName() + "'", "blue").update();
+                    .append("'" + ff.getName() + "'", Application.COLOR_SUCCESS).update();
             ffGroup.setValue(new HashSet<>(ff.listLinks(SystemUserGroup.class).toList()));
             ffUser.setValue(new HashSet<>(ff.listLinks(SystemUser.class).toList()));
             setFieldReadOnly(f != null, ffGroup, ffUser);
@@ -352,7 +354,7 @@ public class FileManager extends ObjectForestBrowser<FileFolder> implements Tran
                 fGroup.setVisible(true);
                 fUser.setVisible(true);
                 fCaption.clearContent().append("Members of document ")
-                        .append("'" + f.getName() + "'", "blue").update();
+                        .append("'" + f.getName() + "'", Application.COLOR_SUCCESS).update();
                 fGroup.setValue(new HashSet<>(f.listLinks(SystemUserGroup.class).toList()));
                 fUser.setValue(new HashSet<>(f.listLinks(SystemUser.class).toList()));
             }

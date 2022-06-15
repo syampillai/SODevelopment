@@ -2,6 +2,7 @@ package com.storedobject.ui.inventory;
 
 import com.storedobject.common.StringList;
 import com.storedobject.core.*;
+import com.storedobject.ui.Application;
 import com.storedobject.ui.ELabel;
 import com.storedobject.vaadin.ActionForm;
 import com.storedobject.vaadin.Button;
@@ -73,9 +74,9 @@ public class ReceiveMaterialRequested extends AbstractRequestMaterial {
         }
         footer.clearContent();
         if(isEmpty()) {
-            footer.append("No entries loaded", "red");
+            footer.append("No entries loaded", Application.COLOR_ERROR);
         } else {
-            footer.append("Right-click on the entry for entry-specific options", "blue");
+            footer.append("Right-click on the entry for entry-specific options", Application.COLOR_SUCCESS);
         }
         footer.update();
     }
@@ -115,10 +116,10 @@ public class ReceiveMaterialRequested extends AbstractRequestMaterial {
         }
         ELabel m = new ELabel();
         if(mr.getStatus() == 1) {
-            m.append("Items are not yet reserved.", "red");
+            m.append("Items are not yet reserved.", Application.COLOR_ERROR);
         } else {
             m.append("Not yet issued but items are " + (mr.getStatus() == 2 ? "partially" : "fully")
-                    + " reserved.", "red");
+                    + " reserved.", Application.COLOR_ERROR);
         }
         m.newLine().append("Do you really want to cancel the reservation?").update();
         new ActionForm("Cancel Reservation", m, () -> {
@@ -138,7 +139,7 @@ public class ReceiveMaterialRequested extends AbstractRequestMaterial {
             message("Whatever sent earlier was already received");
         }
         if(mr.getReserved() && mr.getStatus() == 1) {
-            ELabel m = new ELabel("Items are not yet reserved.", "red");
+            ELabel m = new ELabel("Items are not yet reserved.", Application.COLOR_ERROR);
             m.newLine().append("Do you want to request for issuance instead of reservation?").update();
             new ActionForm("Confirm Issuance", m, () -> requestForIssuance(mr)).execute();
             return;
@@ -153,7 +154,7 @@ public class ReceiveMaterialRequested extends AbstractRequestMaterial {
         }
         if(mr.getReserved()) {
             ELabel m = new ELabel("Not yet issued but items are " + (mr.getStatus() == 2 ? "partially" : "fully")
-                    + " reserved.", "red");
+                    + " reserved.", Application.COLOR_ERROR);
             m.newLine().append("Do you want to request for issuance of the reserved items?").update();
             new ActionForm("Confirm Issuance", m, () -> requestForIssuance(mr)).execute();
             return;
@@ -308,11 +309,11 @@ public class ReceiveMaterialRequested extends AbstractRequestMaterial {
             miList.clear();
             miiMap.clear();
             StoredObject.list(MaterialIssued.class, "Request=" + mr.getId(), "Status,No DESC").collectAll(miList);
-            mrDetails.clearContent().append("From: ").append(mr.getToLocation().toDisplay(), "blue").
-                    append("  Receiving at: ").append(mr.getFromLocation().toDisplay(), "blue").
-                    append("  Request Reference: ").append(mr.getReference(), "blue").
-                    append("  Date: ").append(mr.getDate(), "blue").
-                    append("  Status: ").append(mr.getStatusValue(), "blue").update();
+            mrDetails.clearContent().append("From: ").append(mr.getToLocation().toDisplay(), Application.COLOR_SUCCESS).
+                    append("  Receiving at: ").append(mr.getFromLocation().toDisplay(), Application.COLOR_SUCCESS).
+                    append("  Request Reference: ").append(mr.getReference(), Application.COLOR_SUCCESS).
+                    append("  Date: ").append(mr.getDate(), Application.COLOR_SUCCESS).
+                    append("  Status: ").append(mr.getStatusValue(), Application.COLOR_SUCCESS).update();
             setDataProvider(new TreeData());
             receiveButton.setVisible(mr.getStatus() > 1 && mr.getStatus() < 4);
             if(receiveButton.isVisible()) {

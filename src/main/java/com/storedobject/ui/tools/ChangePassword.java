@@ -8,7 +8,6 @@ import com.storedobject.ui.Transactional;
 import com.storedobject.vaadin.DataForm;
 import com.storedobject.vaadin.TextField;
 import com.storedobject.vaadin.View;
-import com.vaadin.flow.component.HasSize;
 import com.vaadin.flow.component.HasValue;
 import com.vaadin.flow.component.textfield.PasswordField;
 import com.vaadin.flow.component.textfield.TextArea;
@@ -113,7 +112,7 @@ public class ChangePassword extends DataForm implements Transactional {
         if(expired) {
             voice = "You password has expired, please change it now!";
             speak(voice);
-            add(new ELabel(voice, "red"));
+            add(new ELabel(voice, Application.COLOR_ERROR));
         }
         TextField user;
         addField(user = new TextField("Username"));

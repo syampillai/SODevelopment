@@ -118,6 +118,7 @@ public class DefineAssembly<T extends InventoryItemType, C extends InventoryItem
         }
         copy.setVisible(false);
         Button exit = new Button("Exit", e -> close());
+        //noinspection resource
         addButtons(add, edit, new TreeSearchField<>(this), delete, selectRoot, copy,
                 new Button("Print", e -> new PrintAssembly()),
                 exit);
@@ -370,7 +371,7 @@ public class DefineAssembly<T extends InventoryItemType, C extends InventoryItem
             ELabelField e;
             e = new ELabelField("Warning");
             e.append("This operation is irreversible, please proceed with it only if you are sure about it!",
-                    "red").update();
+                    Application.COLOR_ERROR).update();
             addField(e);
             e = new ELabelField("Copy from");
             e.append(itemType.toDisplay()).update();

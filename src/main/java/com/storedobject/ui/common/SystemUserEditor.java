@@ -99,9 +99,9 @@ public class SystemUserEditor extends ObjectEditor<SystemUser> {
                     s.append(count == 1 ? "One" : count).append(" login").append(count == 1 ? "" : "s").
                             append(" already exist").append(count == 1 ? "s" : "").
                             append("! Another one will be created!!");
-                    warning.append(s, "red");
+                    warning.append(s, Application.COLOR_ERROR);
                 } else {
-                    warning.append("A login will be created for the selected person.", "blue");
+                    warning.append("A login will be created for the selected person.", Application.COLOR_SUCCESS);
                 }
             }
             warning.update();

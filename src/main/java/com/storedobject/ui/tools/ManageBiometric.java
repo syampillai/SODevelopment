@@ -62,7 +62,7 @@ public class ManageBiometric extends ObjectBrowser<WebBiometric> {
     private HTMLGenerator getThis(WebBiometric biometric) {
         HTMLText h = new HTMLText();
         if(biometric.getId().equals(getApplication().getBiometricDeviceId())) {
-            h.append("This Device", "blue").update();
+            h.append("This Device", Application.COLOR_SUCCESS).update();
         }
         return h;
     }

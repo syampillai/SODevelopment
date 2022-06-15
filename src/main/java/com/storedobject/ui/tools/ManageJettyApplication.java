@@ -3,6 +3,7 @@ package com.storedobject.ui.tools;
 import com.storedobject.common.SORuntimeException;
 import com.storedobject.core.StringUtility;
 import com.storedobject.core.SystemUser;
+import com.storedobject.ui.Application;
 import com.storedobject.ui.ELabel;
 import com.storedobject.ui.Transactional;
 import com.storedobject.vaadin.CompoundField;
@@ -30,7 +31,7 @@ public class ManageJettyApplication extends DataForm implements Transactional {
         server = new TextField("Application");
         setRequired(server);
         addField(server);
-        ELabel warning = new ELabel("Your action may affect other live users!", "red");
+        ELabel warning = new ELabel("Your action may affect other live users!", Application.COLOR_ERROR);
         warning.update();
         addField(new CompoundField("Warning", warning));
     }

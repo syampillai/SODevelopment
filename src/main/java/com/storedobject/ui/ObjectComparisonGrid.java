@@ -29,9 +29,9 @@ public class ObjectComparisonGrid<T extends StoredObject> extends ListGrid<Objec
         createColumn("CurrentValue", Value::currentValue);
         load(current, previous);
         setViewFilter(Value::isChanged);
-        doneBy = new ELabel("(", "green");
-        doneBy.append("Changes done by ").append(current.person(), "blue").append(")", "green")
-                .update();
+        doneBy = new ELabel("(", Application.COLOR_INFO);
+        doneBy.append("Changes done by ").append(current.person(), Application.COLOR_SUCCESS).append(")",
+                Application.COLOR_INFO).update();
     }
 
     @Override
@@ -84,9 +84,9 @@ public class ObjectComparisonGrid<T extends StoredObject> extends ListGrid<Objec
         HTMLText changed() {
             HTMLText html = new HTMLText();
             if(isChanged()) {
-                html.append("Yes", real ? "red" : "#860D9B");
+                html.append("Yes", real ? Application.COLOR_ERROR : "#860D9B");
             } else {
-                html.append("No", "blue");
+                html.append("No", Application.COLOR_SUCCESS);
             }
             html.update();
             return html;

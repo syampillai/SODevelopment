@@ -509,36 +509,22 @@ public class InventoryItem extends StoredObject {
     }
 
     /**
-     * Create the PO for this item. This method is used only for creating POs for the items that are data-picked.
+     * Attach the PO for this item. This method is used only for creating POs for the items that are data-picked.
      *
      * @param transaction Transaction.
-     * @param orderDate Order date.
-     * @param orderNumber Order number.
-     * @return PO.
+     * @param po PO to attach.
      * @throws Exception if transaction errors occur.
      */
-    public InventoryPO createPO(Transaction transaction, Date orderDate, int orderNumber) throws Exception {
-        InventoryGRN grn = getGRN();
-        if(grn == null) {
-            throw new SOException("No GRN found");
-        }
-        return new InventoryPO();
+    public void attachPO(Transaction transaction, InventoryPO po) throws Exception {
     }
 
     /**
-     * Create the RO for this item. This method is used only for creating ROs for the items that are data-picked.
+     * Attach the RO for this item. This method is used only for creating ROs for the items that are data-picked.
      *
      * @param transaction Transaction.
-     * @param orderDate Order date.
-     * @param orderNumber Order number.
-     * @return RO.
+     * @param ro RO to attach.
      * @throws Exception if transaction errors occur.
      */
-    public InventoryRO createRO(Transaction transaction, Date orderDate, int orderNumber) throws Exception {
-        InventoryGRN grn = getGRN();
-        if(grn == null) {
-            throw new SOException("No GRN found");
-        }
-        return new InventoryRO();
+    public void attachRO(Transaction transaction, InventoryRO ro) throws Exception {
     }
 }

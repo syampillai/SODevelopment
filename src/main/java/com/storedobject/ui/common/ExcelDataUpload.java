@@ -5,6 +5,7 @@ import com.storedobject.common.SORuntimeException;
 import com.storedobject.common.StringList;
 import com.storedobject.core.*;
 import com.storedobject.office.Excel;
+import com.storedobject.ui.Application;
 import com.storedobject.ui.ELabel;
 import com.storedobject.ui.Transactional;
 import com.storedobject.ui.UploadProcessorView;
@@ -59,7 +60,7 @@ public class ExcelDataUpload extends UploadProcessorView implements Transactiona
      */
     public ExcelDataUpload() {
         super("Excel Data Upload");
-        add(new ELabel("Choose the Excel file to upload...", "blue"));
+        add(new ELabel("Choose the Excel file to upload...", Application.COLOR_SUCCESS));
         defineCell("Class", "A1");
         defineCell("Attributes", "A2:ZZ2");
         setDataBoundary("A3");

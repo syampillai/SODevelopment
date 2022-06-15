@@ -2,6 +2,7 @@ package com.storedobject.ui.inventory;
 
 import com.storedobject.common.StringList;
 import com.storedobject.core.*;
+import com.storedobject.ui.Application;
 import com.storedobject.ui.DataTreeGrid;
 import com.storedobject.ui.*;
 import com.storedobject.vaadin.*;
@@ -76,7 +77,7 @@ public class ProcessMaterialRequest extends AbstractRequestMaterial {
 
     @Override
     public void createFooters() {
-        appendFooter().join().setComponent(new ELabel("Right-click on the entry for available options", "blue"));
+        appendFooter().join().setComponent(new ELabel("Right-click on the entry for available options", Application.COLOR_SUCCESS));
     }
 
     @Override
@@ -111,7 +112,7 @@ public class ProcessMaterialRequest extends AbstractRequestMaterial {
         }
         mr.reload();
         if(mr.getStatus() > 4) { // Reserved - issue now
-            ELabel m = new ELabel("Items were reserved!", "red");
+            ELabel m = new ELabel("Items were reserved!", Application.COLOR_ERROR);
             m.newLine().append("Do you want to issue them?").update();
             new ActionForm("Confirm Issuance", m, () -> issueReserved(mr)).execute();
             return;
@@ -271,7 +272,7 @@ public class ProcessMaterialRequest extends AbstractRequestMaterial {
         @Override
         public void createFooters() {
             ELabel m = new ELabel(" | ");
-            m.append("Right-click on the entry for entry-specific options", "blue").update();
+            m.append("Right-click on the entry for entry-specific options", Application.COLOR_SUCCESS).update();
             ButtonLayout b = new ButtonLayout(mrDetails, m);
             mrDetails.getElement().getStyle().set("flex-grow", "1");
             appendFooter().join().setComponent(b);
@@ -635,7 +636,7 @@ public class ProcessMaterialRequest extends AbstractRequestMaterial {
                 if(uninitialized) {
                     h.append(pn);
                 } else {
-                    h.append(pn, readyToIssue(mri).isLessThan(mri.getBalance()) ? "red" : "blue");
+                    h.append(pn, readyToIssue(mri).isLessThan(mri.getBalance()) ? Application.COLOR_ERROR : Application.COLOR_SUCCESS);
                 }
             } else if(o instanceof MaterialIssuedItem) {
                 h.append(((MaterialIssuedItem) o).getItem().getLocationDisplay());
@@ -652,17 +653,17 @@ public class ProcessMaterialRequest extends AbstractRequestMaterial {
                 if(uninitialized) {
                     h.append(pn);
                 } else {
-                    h.append(pn, readyToIssue(mri).isLessThan(mri.getBalance()) ? "red" : "blue");
+                    h.append(pn, readyToIssue(mri).isLessThan(mri.getBalance()) ? Application.COLOR_ERROR : Application.COLOR_SUCCESS);
                 }
             } else if(o instanceof MaterialIssuedItem mii) {
                 if(!mii.getItem().getPartNumberId().equals(mii.getRequest().getPartNumberId())) {
-                    h.append("APN: ", "red");
+                    h.append("APN: ", Application.COLOR_ERROR);
                 }
                 String pn = mii.getItem().getPartNumber().getPartNumber();
                 if(mii.getItem().getQuantity().isGreaterThan(mii.getQuantity())) {
                     h.append(pn);
                 } else {
-                    h.append(pn, "blue");
+                    h.append(pn, Application.COLOR_SUCCESS);
                 }
             }
             return h.getHTML();
@@ -709,7 +710,7 @@ public class ProcessMaterialRequest extends AbstractRequestMaterial {
                 if(o instanceof MaterialRequestItem mri) {
                     Quantity qi = shortfall(mri);
                     if(!qi.isZero()) {
-                        h.append(qi, "red");
+                        h.append(qi, Application.COLOR_ERROR);
                     } else {
                         AtomicInteger ma = new AtomicInteger(Integer.MIN_VALUE);
                         items(mri).forEach(mii -> ma.set(Math.max(ma.get(), missing(mii))));
@@ -719,7 +720,7 @@ public class ProcessMaterialRequest extends AbstractRequestMaterial {
                     m = missing(mii);
                 }
                 if(m > Integer.MIN_VALUE && m != 0) {
-                    h.append("Incomplete", m > 0 ? "red" : "pink");
+                    h.append("Incomplete", m > 0 ? Application.COLOR_ERROR : "pink");
                 }
             }
             return h.getHTML();
@@ -795,10 +796,10 @@ public class ProcessMaterialRequest extends AbstractRequestMaterial {
             }
             removeButton.setVisible(!uninitialized);
             saveButton.setVisible(false);
-            mrDetails.clearContent().append("To: ").append(mr.getFromLocation().toDisplay(), "blue").
-                    append("  Reference: ").append(mr.getReference(), "blue").
-                    append("  Date: ").append(mr.getDate(), "blue").
-                    append("  Priority: ").append(mr.getPriority(), "blue").update();
+            mrDetails.clearContent().append("To: ").append(mr.getFromLocation().toDisplay(), Application.COLOR_SUCCESS).
+                    append("  Reference: ").append(mr.getReference(), Application.COLOR_SUCCESS).
+                    append("  Date: ").append(mr.getDate(), Application.COLOR_SUCCESS).
+                    append("  Priority: ").append(mr.getPriority(), Application.COLOR_SUCCESS).update();
             setDataProvider(new TreeData());
         }
 
@@ -1155,7 +1156,7 @@ public class ProcessMaterialRequest extends AbstractRequestMaterial {
         public void setCaption(String caption) {
             super.setCaption(caption);
             if(this.caption != null) {
-                this.caption.clearContent().append(caption, "blue").update();
+                this.caption.clearContent().append(caption, Application.COLOR_SUCCESS).update();
             }
         }
     }

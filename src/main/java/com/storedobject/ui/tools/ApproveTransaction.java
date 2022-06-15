@@ -3,6 +3,7 @@ package com.storedobject.ui.tools;
 import com.storedobject.common.StringList;
 import com.storedobject.core.*;
 import com.storedobject.ui.*;
+import com.storedobject.ui.Application;
 import com.storedobject.vaadin.*;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasValue;
@@ -334,12 +335,12 @@ public class ApproveTransaction extends ObjectBrowser<PseudoTran> {
                 int min = rs.getInt(1), max = rs.getInt(2);
                 if(max > 0) {
                     if(min == max) {
-                        helpLabel.append("Only transaction available is No: " + min, "blue");
+                        helpLabel.append("Only transaction available is No: " + min, Application.COLOR_SUCCESS);
                     } else {
-                        helpLabel.append("Range for No: " + min + " - " + max, "blue");
+                        helpLabel.append("Range for No: " + min + " - " + max, Application.COLOR_SUCCESS);
                     }
                 } else {
-                    helpLabel.append("No transactions found on this date!", "red");
+                    helpLabel.append("No transactions found on this date!", Application.COLOR_ERROR);
                 }
                 helpLabel.update();
             } catch (SQLException e) {

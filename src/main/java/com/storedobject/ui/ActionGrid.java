@@ -17,7 +17,7 @@ public class ActionGrid<T> extends ListGrid<T> {
 
     private final Runnable action;
     private final Component message;
-    private final ELabel confirmMessage = new ELabel("Do you really want to proceed?", "red");
+    private final ELabel confirmMessage = new ELabel("Do you really want to proceed?", Application.COLOR_ERROR);
 
     /**
      * Constructor.

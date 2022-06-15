@@ -1,10 +1,7 @@
 package com.storedobject.ui.inventory;
 
 import com.storedobject.core.*;
-import com.storedobject.ui.ELabelField;
-import com.storedobject.ui.ObjectListField;
-import com.storedobject.ui.QuantityField;
-import com.storedobject.ui.Transactional;
+import com.storedobject.ui.*;
 import com.storedobject.vaadin.ChangedValues;
 import com.storedobject.vaadin.DataForm;
 import com.storedobject.vaadin.TextField;
@@ -39,10 +36,10 @@ class IssueItems extends DataForm implements Transactional {
         if(locationFrom.getId().equals(locationTo.getId())) {
             ef.append("Within the ");
         } else {
-            ef.append(locationFrom.toDisplay(), "blue");
+            ef.append(locationFrom.toDisplay(), Application.COLOR_SUCCESS);
             ef.append(" \u25BA ");
         }
-        ef.append(locationTo.toDisplay(), "blue").update();
+        ef.append(locationTo.toDisplay(), Application.COLOR_SUCCESS).update();
         refField.setLabel("Reference (" + DateUtility.formatDate(date) + ")");
         addField(statusField, ef, itemField, qField, fromBinField, binField);
         setRequired(itemField);
@@ -134,7 +131,7 @@ class IssueItems extends DataForm implements Transactional {
     @Override
     public void warning(Object message) {
         if(message instanceof String) {
-            statusField.clearContent().append(message, "red").update();
+            statusField.clearContent().append(message, Application.COLOR_ERROR).update();
         } else {
             super.warning(message);
         }
@@ -143,7 +140,7 @@ class IssueItems extends DataForm implements Transactional {
     @Override
     public void message(Object message) {
         if(message instanceof String) {
-            statusField.clearContent().append(message, "blue").update();
+            statusField.clearContent().append(message, Application.COLOR_SUCCESS).update();
         } else {
             super.message(message);
         }

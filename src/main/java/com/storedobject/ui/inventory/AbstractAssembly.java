@@ -8,6 +8,7 @@ import com.storedobject.ui.HTMLText;
 import com.storedobject.ui.TreeSearchField;
 import com.storedobject.ui.DataTreeGrid;
 import com.storedobject.ui.util.ChildVisitor;
+import com.storedobject.ui.Application;
 import com.storedobject.vaadin.*;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasValue;
@@ -93,7 +94,7 @@ public abstract class AbstractAssembly<T extends InventoryItem, C extends Invent
             }
         }
         if(!a.getItemTypeId().equals(itemType.getId())) {
-            s.append(" (APN of " + a.getItemType().getPartNumber() + ")", "green");
+            s.append(" (APN of " + a.getItemType().getPartNumber() + ")", Application.COLOR_INFO);
         }
         return s;
     }
@@ -410,7 +411,7 @@ public abstract class AbstractAssembly<T extends InventoryItem, C extends Invent
         private PDFTable table;
 
         public FitList() {
-            super((com.storedobject.ui.Application)Application.get());
+            super(Application.get());
             if(rootItem == null) {
                 return;
             }

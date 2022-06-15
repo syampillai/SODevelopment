@@ -6,6 +6,7 @@ import com.storedobject.core.ApplicationServer;
 import com.storedobject.core.Secret;
 import com.storedobject.core.StringUtility;
 import com.storedobject.core.SystemUser;
+import com.storedobject.ui.Application;
 import com.storedobject.ui.ELabel;
 import com.storedobject.ui.Transactional;
 import com.storedobject.vaadin.CompoundField;
@@ -40,7 +41,7 @@ public class ManageTomcatApplication extends DataForm implements Transactional {
         addField(server);
         action = new RadioField<>("Action", new String[] { "Reload", "Stop", "Start" });
         addField(action);
-        warning = new ELabel("Your action may affect other live users!", "red");
+        warning = new ELabel("Your action may affect other live users!", Application.COLOR_ERROR);
         warning.update();
         addField(new CompoundField("Warning", warning));
     }
@@ -49,13 +50,14 @@ public class ManageTomcatApplication extends DataForm implements Transactional {
     protected boolean process() {
         String a = server.getValue().trim().toLowerCase();
         if(a.isEmpty() || !StringUtility.isLetterOrDigit(a)) {
-            warning.clearContent().append("Invalid application name", "red").update();
+            warning.clearContent().append("Invalid application name", Application.COLOR_ERROR).update();
             warned = false;
             return false;
         }
         if(a.equals(getApplication().getLinkName()) && action.getIndex() == 1 && !warned) {
             warning.clearContent().append(
-                    "You are about to stop this application! Press the 'Proceed' button again.", "red")
+                    "You are about to stop this application! Press the 'Proceed' button again.",
+                            Application.COLOR_ERROR)
                     .update();
             warned = true;
             return false;
@@ -80,10 +82,12 @@ public class ManageTomcatApplication extends DataForm implements Transactional {
             BufferedReader r = http.getReader();
             String ok = r.readLine();
             r.close();
-            warning.clearContent().append(ok, ok.startsWith("OK") ? "blue" : "red").update();
+            warning.clearContent().append(ok, ok.startsWith("OK") ? Application.COLOR_SUCCESS : Application.COLOR_ERROR)
+                    .update();
         } catch (Exception e) {
             error(e);
-            warning.clearContent().append("Error executing the requested action", "red").update();
+            warning.clearContent().append("Error executing the requested action", Application.COLOR_ERROR)
+                    .update();
         }
         warned = false;
         return false;

@@ -3,6 +3,7 @@ package com.storedobject.ui.inventory;
 import com.storedobject.common.SORuntimeException;
 import com.storedobject.common.StringList;
 import com.storedobject.core.*;
+import com.storedobject.ui.Application;
 import com.storedobject.ui.ELabel;
 import com.storedobject.ui.Transactional;
 import com.storedobject.vaadin.*;
@@ -275,7 +276,7 @@ public class ReceiveReturnedItems extends DataForm implements Transactional {
             }
             ELabel h = new ELabel(
                     "These items will be received, please double-check and confirm! Undo not possible after this step!!",
-                    "red");
+                    Application.COLOR_ERROR);
             prependHeader().join().setComponent(h);
         }
 

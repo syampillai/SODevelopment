@@ -4,7 +4,6 @@ import com.storedobject.core.*;
 import com.storedobject.ui.tools.BiometricButton;
 import com.storedobject.ui.tools.LoginNameField;
 import com.storedobject.ui.util.SOServlet;
-import com.storedobject.vaadin.ApplicationLayout;
 import com.storedobject.vaadin.*;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.checkbox.Checkbox;
@@ -13,9 +12,6 @@ import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.template.Id;
 import com.vaadin.flow.shared.Registration;
-
-import java.text.SimpleDateFormat;
-import java.util.Locale;
 
 /**
  * This is a template-based login screen and its template can be defined in the {@link TextContent} named
@@ -45,13 +41,13 @@ import java.util.Locale;
  *
  * @author Syam
  */
-public class LoginForm extends TemplateView implements HomeView {
+public class LoginForm extends TemplateView implements HomeView, FullScreen {
 
     private final Animation[] animation = { Animation.SHAKE, Animation.FLASH };
     private int animationIndex = 0;
 
     @Id
-    private Component layout;
+    private Div layout;
 
     private LoginNameField loginField;
 
@@ -92,7 +88,7 @@ public class LoginForm extends TemplateView implements HomeView {
     private Span year;
 
     @Id
-    private Span timeGMT;
+    private Clock timeGMT;
 
     private SystemUser user;
     private boolean init;
@@ -119,8 +115,6 @@ public class LoginForm extends TemplateView implements HomeView {
 
     private void init() {
         application = Application.get();
-        application.mainLayout.saveHeaderHeight();
-        application.getUI().getElement().getStyle().set("--so-header-height", "0vh");
         application.log("Accessed");
     }
 
@@ -128,9 +122,9 @@ public class LoginForm extends TemplateView implements HomeView {
     public void viewConstructed(View view) {
         super.viewConstructed(view);
         loginField = null;
-        year.setText("" + DateUtility.getYear(DateUtility.today()));
-        timeGMT.setText(new SimpleDateFormat("MMM dd, yyyy HH:mm:ss", Locale.getDefault())
-                .format(DateUtility.now()) + " GMT");
+        if(year != null) {
+            year.setText("" + DateUtility.getYear(DateUtility.today()));
+        }
     }
 
     @Override
@@ -146,9 +140,6 @@ public class LoginForm extends TemplateView implements HomeView {
     @Override
     public void close() {
         if(internal == this) {
-            ApplicationLayout al = application.mainLayout;
-            al.restoreHeaderHeight();
-            al.resizeContent();
             super.close();
         } else {
             internal.close();
@@ -330,7 +321,6 @@ public class LoginForm extends TemplateView implements HomeView {
             loginField.setPasswordField(passwordField);
         }
         return switch(id) {
-            case "layout" -> new Div();
             case "user" -> new TextField();
             case "login" -> loginField;
             case "remember" -> remember;
@@ -342,8 +332,6 @@ public class LoginForm extends TemplateView implements HomeView {
             case "cancel" -> new Button(null, (String) null, e -> getA().close());
             case "forgot" -> new Button(null, (String) null, e -> process(true));
             case "forgotLink" -> new AnchorButton("", e -> process(true));
-            case "terms" -> new Checkbox();
-            case "year", "timeGMT" -> new Span();
             default -> super.createComponentForId(id);
         };
     }

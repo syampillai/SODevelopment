@@ -176,7 +176,7 @@ public abstract class HtmlTemplate extends Component {
                                 component = createComponentForId(id);
                                 component.setId(id);
                             } catch(NO_COMPONENT no_component) {
-                                throw new IllegalArgumentException("There is no element with id " + id + " to match " + field);
+                                //throw new IllegalArgumentException("There is no element with id " + id + " to match " + field);
                             }
                         } else {
                             component = Component.from(idElement, field.getType().asSubclass(Component.class));

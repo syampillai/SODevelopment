@@ -1,16 +1,11 @@
 package com.storedobject.ui.common;
 
 import com.storedobject.core.*;
-import com.storedobject.ui.ELabelField;
-import com.storedobject.ui.IdInput;
-import com.storedobject.ui.ObjectEditor;
-import com.storedobject.ui.ObjectField;
+import com.storedobject.ui.*;
 import com.storedobject.vaadin.DataForm;
 import com.storedobject.vaadin.RadioChoiceField;
 import com.storedobject.vaadin.View;
 import com.vaadin.flow.component.HasValue;
-
-import java.lang.reflect.InvocationTargetException;
 
 /**
  * An editor for {@link PersonRole} in which the fields of the {@link Person} get merged seamlessly with the fields
@@ -180,9 +175,9 @@ public class PersonRoleEditor<T extends PersonRole> extends ObjectEditor<T> {
             if(p != null) {
                 localRole = PersonRole.getByPersonId(se, PersonRoleEditor.this.getObjectClass(), p.getId());
                 if(localRole == null) {
-                    warning.append("An entry will be created for the selected person.", "blue");
+                    warning.append("An entry will be created for the selected person.", Application.COLOR_SUCCESS);
                 } else {
-                    warning.append("An entry already exists! It will be edited.", "red");
+                    warning.append("An entry already exists! It will be edited.", Application.COLOR_ERROR);
                 }
             }
             warning.update();

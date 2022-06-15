@@ -1,44 +1,26 @@
 package com.storedobject.ui;
 
-import com.storedobject.core.DateUtility;
-import com.storedobject.vaadin.DateField;
+import com.storedobject.vaadin.Button;
+import com.storedobject.vaadin.Clock;
+import com.storedobject.vaadin.DataForm;
 import com.storedobject.vaadin.TextField;
-import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.template.Id;
 
-public class Test extends TemplateDataForm {
+public class Test extends DataForm {
 
-    @Id
-    private TextField textField = new TextField();
-    @Id
-    private final DateField dateField = new DateField();
+    private final TextField textField = new TextField();
+    private final Clock clock = new Clock();
 
     public Test() {
-        super();
+        super("Test");
         setRequired(textField);
-        center();
+        add(clock);
+        add(new Button("Local", (String) null, e -> clock.setUTC(false)));
+        add(new Button("AM/PM", (String) null, e -> clock.setAMPM(true)));
     }
 
     @Override
     protected boolean process() {
-        new VerifyOTP("+971506590362", "syam@habibbank.com", () -> {}, () -> {}, () -> {}).execute();
+        message(textField.getValue());
         return false;
-    }
-
-    @Override
-    protected Component createComponentForId(String id) {
-        return switch(id) {
-            case "textField" -> textField;
-            case "dateField" -> dateField;
-            default -> null;
-        };
-    }
-
-    @Override
-    protected String getFieldNameForId(String id) {
-        if("textField".equals(id)) {
-            return "Your Name";
-        }
-        return super.getFieldNameForId(id);
     }
 }

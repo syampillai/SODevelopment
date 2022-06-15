@@ -3,6 +3,7 @@ package com.storedobject.ui.inventory;
 import com.storedobject.common.StringList;
 import com.storedobject.core.*;
 import com.storedobject.ui.*;
+import com.storedobject.ui.Application;
 import com.storedobject.vaadin.*;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.icon.VaadinIcon;
@@ -284,7 +285,7 @@ public class ReceiveAndBin extends ListGrid<InventoryItem> implements Transactio
                 setFieldEditable(binField);
             } else {
                 setFieldReadOnly(binField);
-                currentLocField.append(" (Change not allowed)", "red");
+                currentLocField.append(" (Change not allowed)", Application.COLOR_ERROR);
             }
             currentLocField.update();
             binField.setValue(bin);

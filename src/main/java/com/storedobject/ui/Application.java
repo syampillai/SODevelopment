@@ -31,6 +31,8 @@ import java.util.function.Consumer;
 
 public class Application extends com.storedobject.vaadin.Application implements Device, RunningLogic, RequiresApproval {
 
+    public static final String COLOR_ERROR = "var(--so-error-color)", COLOR_SUCCESS = "var(--so-success-color)",
+            COLOR_INFO = "var(--so-info-color)", COLOR_NORMAL = "var(--so-normal-color)";
     private static final String COMPACT_STYLES =
             """
                     --lumo-size-xl: 3rem;
@@ -130,7 +132,7 @@ public class Application extends com.storedobject.vaadin.Application implements 
             } catch(Throwable ignored) {
             }
         }
-        Button.setNoIcons(!ApplicationServer.getGlobalBooleanProperty("application.button.icon", false));
+        Button.setNoIcons(!ApplicationServer.getGlobalBooleanProperty("application.button.icon", true));
         setSingleLogicMode(singleLogicMode);
         setAbortOnLogicSwitch(abortOnLogicSwitch);
         login = new Login(this, getMessageViewer());
@@ -228,6 +230,8 @@ public class Application extends com.storedobject.vaadin.Application implements 
     public void attached() {
         super.attached();
         setCompactTheme(ApplicationServer.getGlobalBooleanProperty("application.theme.compact", true));
+        getUI().getElement().getStyle().set("--so-error-color", "red").set("--so-success-color", "blue")
+                .set("--so-info-color", "green").set("--so-normal-color", "black");
         loadStyles(SOServlet.getTextContent("styles.css"));
     }
 
@@ -1069,7 +1073,7 @@ public class Application extends com.storedobject.vaadin.Application implements 
                     m = "Password not set! Please contact Technical Support for any help!!";
                 }
             }
-            InformationMessage message = new InformationMessage(new ELabel(m, isChanged() ? "blue" : "red"),
+            InformationMessage message = new InformationMessage(new ELabel(m, isChanged() ? COLOR_SUCCESS : COLOR_ERROR),
                     Application.this::close, "Close");
             message.setCloseable(false);
             message.execute();
@@ -1141,7 +1145,7 @@ public class Application extends com.storedobject.vaadin.Application implements 
         if(autos.isEmpty()) {
             count = frameMenu.getMenuPane().getElement().getChildCount() - count;
             if(count == 0) {
-                ELabel info = new ELabel("Please contact support with the following details:", "red");
+                ELabel info = new ELabel("Please contact support with the following details:", COLOR_ERROR);
                 info.newLine();
                 information(info);
                 Viewer viewer = new Viewer(new CenteredLayout(info), "Support", false) {

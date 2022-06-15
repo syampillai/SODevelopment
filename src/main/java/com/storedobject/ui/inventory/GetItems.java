@@ -58,7 +58,7 @@ class GetItems extends DataForm implements Transactional {
             store = null;
         }
         setButtonsAtTop(true);
-        ELabelField ef = new ELabelField("For", locationTo, "blue");
+        ELabelField ef = new ELabelField("For", locationTo, Application.COLOR_SUCCESS);
         if(date != null) {
             ef.append(" (Date: ").append(date);
         }
@@ -169,7 +169,7 @@ class GetItems extends DataForm implements Transactional {
     @Override
     public void warning(Object message) {
         if(message instanceof String) {
-            statusField.clearContent().append(message, "red").update();
+            statusField.clearContent().append(message, Application.COLOR_ERROR).update();
         } else {
             super.warning(message);
         }
@@ -178,7 +178,7 @@ class GetItems extends DataForm implements Transactional {
     @Override
     public void message(Object message) {
         if(message instanceof String) {
-            statusField.clearContent().append(message, "blue").update();
+            statusField.clearContent().append(message, Application.COLOR_SUCCESS).update();
         } else {
             super.message(message);
         }

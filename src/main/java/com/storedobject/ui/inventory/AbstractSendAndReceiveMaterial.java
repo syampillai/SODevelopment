@@ -226,7 +226,7 @@ public abstract class AbstractSendAndReceiveMaterial<T extends InventoryTransfer
     @Override
     public void createHeaders() {
         ELabel e = new ELabel((receiveMode ? "Receive at" : "From") + ": ").
-                append(fromOrTo.toDisplay(), "blue");
+                append(fromOrTo.toDisplay(), Application.COLOR_SUCCESS);
 
         Button locSwitch = getSwitchLocationButton();
         ButtonLayout buttonLayout = null;
@@ -240,17 +240,17 @@ public abstract class AbstractSendAndReceiveMaterial<T extends InventoryTransfer
             e.append(" ");
         }
         if(otherLocation != null) {
-            e.append((receiveMode ? "From" : "To") + ": ").append(otherLocation.toDisplay(), "blue");
+            e.append((receiveMode ? "From" : "To") + ": ").append(otherLocation.toDisplay(), Application.COLOR_SUCCESS);
         }
         if(receiveMode) {
             e.newLine();
         } else {
-            e.append(" | ", "green");
+            e.append(" | ", Application.COLOR_INFO);
         }
         e.append("Note: ").
                 append("Double-click " + (receiveMode ? "" : "or right-click") + "on the entry to " +
                         (receiveMode ? "receive" : "send")
-                        + (receiveMode ? ". Right-click on the entry for more options." : ""), "blue");
+                        + (receiveMode ? ". Right-click on the entry for more options." : ""), Application.COLOR_SUCCESS);
         e.update();
         if(buttonLayout != null) {
             buttonLayout.add(e);

@@ -42,6 +42,7 @@ public class ApplicationFrame extends com.storedobject.vaadin.ApplicationFrame i
         if(menuLogic.isEmpty()) {
             return super.createMenu();
         }
+        //noinspection CatchMayIgnoreException
         try {
             Class<?> menuLogicClass = JavaClassLoader.getLogic(menuLogic);
             return (ApplicationMenu) menuLogicClass.getDeclaredConstructor(ApplicationFrame.class).
@@ -129,22 +130,6 @@ public class ApplicationFrame extends com.storedobject.vaadin.ApplicationFrame i
     @Override
     public boolean isMenuVisible() {
         return getDrawerToggle().isVisible();
-    }
-
-    @Override
-    public void restoreHeaderHeight() {
-        Application.get().getUI().getElement().getStyle().set("--so-header-height", "9vh");
-        if(getCaptionComponent() instanceof Component c) {
-            c.setVisible(true);
-        }
-    }
-
-    @Override
-    public void saveHeaderHeight() {
-        super.saveHeaderHeight();
-        if(getCaptionComponent() instanceof Component c) {
-            c.setVisible(false);
-        }
     }
 
     @Override
