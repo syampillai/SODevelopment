@@ -42,9 +42,8 @@ public class POEditor<T extends InventoryPO> extends ObjectEditor<T> {
             }
             supplierField = new ObjectField<>(suppliers);
         }
-        addField("ReferenceNumber");
+        addField("Reference");
         addConstructedListener(o -> {
-            setFieldReadOnly("ReferenceNumber");
             if(getObjectClass() == InventoryPO.class) {
                 setCaption("Purchase Order");
             }

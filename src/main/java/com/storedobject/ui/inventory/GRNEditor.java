@@ -20,7 +20,7 @@ public class GRNEditor extends ObjectEditor<InventoryGRN> {
     @Override
     protected void formConstructed() {
         super.formConstructed();
-        setFieldReadOnly("Type", "Date", "Items.l");
+        setFieldReadOnly("Type", "Items.l");
     }
 
     @Override
@@ -38,5 +38,14 @@ public class GRNEditor extends ObjectEditor<InventoryGRN> {
         if(object != null && supplierField != null) {
             supplierField.setLabel(object.getTypeValue());
         }
+    }
+
+    @Override
+    public boolean isFieldEditable(String fieldName) {
+        if("Date".equals(fieldName)) {
+            InventoryGRN grn = getObject();
+            return grn == null || grn.getStatus() == 0;
+        }
+        return super.isFieldEditable(fieldName);
     }
 }

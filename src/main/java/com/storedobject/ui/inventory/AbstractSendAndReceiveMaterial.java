@@ -409,6 +409,18 @@ public abstract class AbstractSendAndReceiveMaterial<T extends InventoryTransfer
                 setCaption("Send Items for Repair");
             }
             setColumns(3);
+            addField("Reference");
+        }
+
+        @Override
+        protected int getFieldOrder(String fieldName) {
+            if("SystemEntity".equals(fieldName)) {
+                return 1;
+            }
+            if("Reference".equals(fieldName)) {
+                return 2;
+            }
+            return super.getFieldOrder(fieldName);
         }
 
         @Override
@@ -429,14 +441,15 @@ public abstract class AbstractSendAndReceiveMaterial<T extends InventoryTransfer
                     setFieldReadOnly(toField);
                 }
             }
-            if(requiresInvoiceDate()) {
-                setFieldLabel("ReferenceNumber", "Supplier Invoice Number");
-                setFieldLabel("InvoiceDate", "Supplier Invoice Date");
-            } else {
-                setFieldHidden("InvoiceDate");
-                setFieldReadOnly("ReferenceNumber");
-            }
             setFieldHidden("Status");
+        }
+
+        @Override
+        public boolean isFieldVisible(String fieldName) {
+            if("InvoiceNumber".equals(fieldName) || "ReferenceNumber".equals(fieldName) || "InvoiceDate".equals(fieldName)) {
+                return requiresInvoiceDate();
+            }
+            return super.isFieldVisible(fieldName);
         }
 
         @Override

@@ -32,6 +32,8 @@ import com.vaadin.flow.shared.Registration;
  * <p>id = "forgot" ('Forgot Password' button. This should be a vaadin-button tag. This is optional.)</p>
  * <p>id = "forgotLink" ('Forgot Password' link. This should be an HTML a tag. This is optional.)</p>
  * <p>id = "terms"  (Should be a vaadin-checkbox tag. User needs to click this always. This is optional.)</p>
+ * <p>id = "year" (Should be a span tag. Value of the current year will be set to this. This is optional.)</p>
+ * <p>id = "timeGMT" (Should be a so-clock tag. A running clock will be displayed. This is optional.)</p>
  * <p>id = "viewX" (The value of X can be anything. Should be an HTML a tag with href attribute set to empty string.
  * Typically used for providing static content views. This is optional.)</p>
  * <p>Additional attributes can be define for certain id values:</p>

@@ -513,7 +513,15 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
         protected void formConstructed() {
             super.formConstructed();
             add.setVisible(false);
-            setFieldReadOnly("Type", "Date", "Items.l");
+            setFieldReadOnly("Type", "Items.l");
+        }
+
+        @Override
+        public boolean isFieldEditable(String fieldName) {
+            if("Date".equals(fieldName)) {
+                return getObject().getStatus() == 0;
+            }
+            return super.isFieldEditable(fieldName);
         }
 
         @Override

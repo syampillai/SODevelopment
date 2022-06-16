@@ -280,6 +280,10 @@ public class POBrowser<T extends InventoryPO> extends ObjectBrowser<T> implement
             warning("Status is already '" + po.getStatusValue() + "'");
             return;
         }
+        if(!po.existsLinks(InventoryPOItem.class, true)) {
+            warning("Item list is empty");
+            return;
+        }
         clearAlerts();
         if(canPlaceOrder(po) && transact(po::placeOrder)) {
             refresh(po);
@@ -484,8 +488,18 @@ public class POBrowser<T extends InventoryPO> extends ObjectBrowser<T> implement
         @Override
         public void constructed() {
             super.constructed();
-            addComponentColumn(this::receive).setHeader("Receive");
-            addComponentColumn(this::excess).setHeader("Excess");
+            addComponentColumn(this::receive).setHeader("Receive").setFlexGrow(0).setWidth("200px");
+            addComponentColumn(this::excess).setHeader("Excess").setFlexGrow(0).setWidth("200px");
+            getColumn("Expected").setFlexGrow(0).setWidth("200px");
+        }
+
+        @Override
+        public int getRelativeColumnWidth(String columnName) {
+            return switch(columnName) {
+                case "PartNumber" -> 30;
+                case "SerialNumber" -> 10;
+                default -> super.getRelativeColumnWidth(columnName);
+            };
         }
 
         private HTMLText pn(InventoryPOItem item) {
@@ -739,7 +753,7 @@ public class POBrowser<T extends InventoryPO> extends ObjectBrowser<T> implement
         private final QuantityField qField = new QuantityField("Quantity");
 
         private SetAPN(T po, InventoryPOItem item) {
-            super("Set APN - PO " + po.getReference());
+            super("Set APN - " + po.getReference());
             this.item = item;
             apnField = new ComboField<>("Select APN", item.getPartNumber().listAPNs());
             ELabelField op = new ELabelField("Original P/N");
