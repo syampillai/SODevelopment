@@ -1073,8 +1073,10 @@ public class Application extends com.storedobject.vaadin.Application implements 
                     m = "Password not set! Please contact Technical Support for any help!!";
                 }
             }
+            String exitSite = identityCheck.getExitSite();
+            Runnable close = exitSite == null ? Application.this::close : () -> Application.this.close(exitSite);
             InformationMessage message = new InformationMessage(new ELabel(m, isChanged() ? COLOR_SUCCESS : COLOR_ERROR),
-                    Application.this::close, "Close");
+                    close, "Close");
             message.setCloseable(false);
             message.execute();
             closeMenu();

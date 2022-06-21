@@ -2,8 +2,8 @@ package com.storedobject.ui;
 
 import com.storedobject.common.SORuntimeException;
 import com.storedobject.common.StringList;
-import com.storedobject.core.*;
 import com.storedobject.core.ObjectForest;
+import com.storedobject.core.*;
 import com.storedobject.vaadin.ActionForm;
 import com.storedobject.vaadin.DataForm;
 import com.storedobject.vaadin.MultiSelectGrid;
@@ -11,7 +11,10 @@ import com.storedobject.vaadin.TokensField;
 import com.vaadin.flow.component.grid.contextmenu.GridContextMenu;
 import com.vaadin.flow.component.grid.contextmenu.GridMenuItem;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
 
@@ -140,7 +143,7 @@ public class FileManager extends ObjectForestBrowser<FileFolder> implements Tran
     @Override
     public void createFooters() {
         appendFooter().join().setComponent(
-                new ELabel("Right-click on Files/Folders for options related to circulation or version control",
+                new ELabel("Right-click on Files/Folders for options related to circulation and version control",
                         Application.COLOR_SUCCESS)
         );
     }
@@ -298,15 +301,6 @@ public class FileManager extends ObjectForestBrowser<FileFolder> implements Tran
         return sugs;
     }
 
-    private List<SystemUser> sus;
-
-    private List<SystemUser> sus() {
-        if(sus == null) {
-            sus = StoredObject.list(SystemUser.class).toList();
-        }
-        return sus;
-    }
-
     private void cEditor(FileFolder ff, FileData f) {
         if(cEditor == null) {
             cEditor = new CEditor();
@@ -322,18 +316,14 @@ public class FileManager extends ObjectForestBrowser<FileFolder> implements Tran
         private final ELabel ffCaption = new ELabel(), fCaption = new ELabel();
         private final TokensField<SystemUserGroup> ffGroup = new TokensField<>("Groups", sugs()),
                 fGroup = new TokensField<>("Groups", sugs());
-        private final TokensField<SystemUser> ffUser = new TokensField<>("Users", sus()),
-                fUser = new TokensField<>("Users", sus());
 
         public CEditor() {
             super("Manage Circulation", false);
             setButtonsAtTop(true);
-            ffUser.setItemLabelGenerator(u -> u.getPerson().getName());
-            fUser.setItemLabelGenerator(u -> u.getPerson().getName());
             add(ffCaption);
-            addField(ffGroup, ffUser);
+            addField(ffGroup);
             add(fCaption);
-            addField(fGroup, fUser);
+            addField(fGroup);
             setColumns(1);
         }
 
@@ -343,20 +333,16 @@ public class FileManager extends ObjectForestBrowser<FileFolder> implements Tran
             ffCaption.clearContent().append("Members of folder ")
                     .append("'" + ff.getName() + "'", Application.COLOR_SUCCESS).update();
             ffGroup.setValue(new HashSet<>(ff.listLinks(SystemUserGroup.class).toList()));
-            ffUser.setValue(new HashSet<>(ff.listLinks(SystemUser.class).toList()));
-            setFieldReadOnly(f != null, ffGroup, ffUser);
+            setFieldReadOnly(f != null, ffGroup);
             if(f == null) {
                 fCaption.setVisible(false);
                 fGroup.setVisible(false);
-                fUser.setVisible(false);
             } else {
                 fCaption.setVisible(true);
                 fGroup.setVisible(true);
-                fUser.setVisible(true);
                 fCaption.clearContent().append("Members of document ")
                         .append("'" + f.getName() + "'", Application.COLOR_SUCCESS).update();
                 fGroup.setValue(new HashSet<>(f.listLinks(SystemUserGroup.class).toList()));
-                fUser.setValue(new HashSet<>(f.listLinks(SystemUser.class).toList()));
             }
         }
 
@@ -367,18 +353,16 @@ public class FileManager extends ObjectForestBrowser<FileFolder> implements Tran
 
         private void save(Transaction t) throws Exception {
             if(f == null) {
-                saveLinks(t, SystemUserGroup.class, ff, ffGroup.getValue());
-                saveLinks(t, SystemUser.class, ff, ffUser.getValue());
+                saveLinks(t, ff, ffGroup.getValue());
                 return;
             }
-            saveLinks(t, SystemUserGroup.class, f, fGroup.getValue());
-            saveLinks(t, SystemUser.class, f, fUser.getValue());
+            saveLinks(t, f, fGroup.getValue());
         }
 
-        private <T extends StoredObject> void saveLinks(Transaction t, Class<T> objectClass, StoredObject parent,
-                                                        Set<T> children) throws Exception {
-            List<T> all = parent.listLinks(objectClass).toList();
-            List<T> toAdd = new ArrayList<>();
+        private void saveLinks(Transaction t, StoredObject parent,
+                                                        Set<SystemUserGroup> children) throws Exception {
+            List<SystemUserGroup> all = parent.listLinks(SystemUserGroup.class).toList();
+            List<SystemUserGroup> toAdd = new ArrayList<>();
             children.forEach(c -> {
                 if(all.contains(c)) {
                     all.remove(c);
@@ -386,10 +370,10 @@ public class FileManager extends ObjectForestBrowser<FileFolder> implements Tran
                     toAdd.add(c);
                 }
             });
-            for(T child: all) {
+            for(SystemUserGroup child: all) {
                 parent.removeLink(t, child);
             }
-            for(T child: toAdd) {
+            for(SystemUserGroup child: toAdd) {
                 parent.addLink(t, child);
             }
         }

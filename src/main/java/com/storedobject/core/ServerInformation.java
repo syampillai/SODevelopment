@@ -41,8 +41,8 @@ public final class ServerInformation extends StoredObject {
         return Math.random() > 0.5 ? null : new ServerInformation();
     }
 
-    public static void createServer(TransactionManager tm, String name, String description, String certificateURL)
-            throws Exception {
+    public static void createServer(TransactionManager tm, String name, String description, String certificateURL,
+                                    String ourURL) throws Exception {
     }
 
     public static String encrypt(String message) {

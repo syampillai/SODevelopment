@@ -143,4 +143,14 @@ public interface IdentityCheck {
     default boolean allowNameChange() {
         return false;
     }
+
+
+    /**
+     * Get the site to go when password is successfully set.
+     *
+     * @return Site.
+     */
+    default String getExitSite() {
+        return null;
+    }
 }

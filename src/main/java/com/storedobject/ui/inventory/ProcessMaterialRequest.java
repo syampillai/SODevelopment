@@ -18,6 +18,7 @@ import com.vaadin.flow.data.provider.hierarchy.AbstractHierarchicalDataProvider;
 import com.vaadin.flow.data.provider.hierarchy.HierarchicalQuery;
 import com.vaadin.flow.data.selection.MultiSelectionEvent;
 
+import java.sql.Date;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
@@ -26,6 +27,7 @@ public class ProcessMaterialRequest extends AbstractRequestMaterial {
 
     private final IssueTreeGrid issueTreeGrid = new IssueTreeGrid();
     private ReservedMIIGrid reservedMIIGrid;
+    private Date dateOfIssue = DateUtility.today();
 
     public ProcessMaterialRequest() {
         this(SelectStore.get());
@@ -273,8 +275,10 @@ public class ProcessMaterialRequest extends AbstractRequestMaterial {
         public void createFooters() {
             ELabel m = new ELabel(" | ");
             m.append("Right-click on the entry for entry-specific options", Application.COLOR_SUCCESS).update();
-            ButtonLayout b = new ButtonLayout(mrDetails, m);
-            mrDetails.getElement().getStyle().set("flex-grow", "1");
+            Button bid = new Button("Change", (String) null, e -> dateOfIssueForm().execute()).asSmall();
+            ELabel filler = new ELabel("");
+            ButtonLayout b = new ButtonLayout(mrDetails, bid, filler, m);
+            filler.getElement().getStyle().set("flex-grow", "1");
             appendFooter().join().setComponent(b);
         }
 
@@ -549,6 +553,7 @@ public class ProcessMaterialRequest extends AbstractRequestMaterial {
                 statusError();
                 return;
             }
+            mi.setDate(dateOfIssue);
             if(transact(t -> {
                 mi.save(t);
                 mi.removeAllLinks(MaterialIssuedItem.class);
@@ -796,11 +801,17 @@ public class ProcessMaterialRequest extends AbstractRequestMaterial {
             }
             removeButton.setVisible(!uninitialized);
             saveButton.setVisible(false);
+            updateFooter();
+            setDataProvider(new TreeData());
+        }
+
+        private void updateFooter() {
             mrDetails.clearContent().append("To: ").append(mr.getFromLocation().toDisplay(), Application.COLOR_SUCCESS).
                     append("  Reference: ").append(mr.getReference(), Application.COLOR_SUCCESS).
-                    append("  Date: ").append(mr.getDate(), Application.COLOR_SUCCESS).
-                    append("  Priority: ").append(mr.getPriority(), Application.COLOR_SUCCESS).update();
-            setDataProvider(new TreeData());
+                    append("  Request Date: ").append(mr.getDate(), Application.COLOR_SUCCESS).
+                    append(" (").append(mr.getPriority(), Application.COLOR_SUCCESS).append(")").
+                    append("  Issue Date: ").append(dateOfIssue, Application.COLOR_SUCCESS).
+                    update();
         }
 
         private MaterialRequestItem mri(MaterialIssuedItem mii) {
@@ -1022,6 +1033,40 @@ public class ProcessMaterialRequest extends AbstractRequestMaterial {
                 requirement.clearContent().append(shortfall).update();
                 quantityField.setValue(mii.getQuantity());
                 execute();
+            }
+        }
+
+        private DateOfIssueForm dateOfIssueForm;
+
+        private DateOfIssueForm dateOfIssueForm() {
+            if(dateOfIssueForm == null) {
+                dateOfIssueForm = new DateOfIssueForm();
+            }
+            return dateOfIssueForm;
+        }
+
+        private class DateOfIssueForm extends DataForm {
+
+            private final DateField doi = new DateField("Date of Issue");
+
+            public DateOfIssueForm() {
+                super("Set Date of Issue");
+                addField(doi);
+            }
+
+            @Override
+            protected boolean process() {
+                close();
+                dateOfIssue = doi.getValue();
+                updateFooter();
+                return true;
+            }
+
+            @Override
+            protected void execute(View parent, boolean doNotLock) {
+                doi.setMin(mr.getDate());
+                doi.setMax(DateUtility.today());
+                super.execute(parent, doNotLock);
             }
         }
     }

@@ -2,10 +2,10 @@ package com.storedobject.ui.tools;
 
 import com.storedobject.common.Executable;
 import com.storedobject.core.ExternalSystemUser;
+import com.storedobject.core.ServerLink;
 import com.storedobject.ui.Application;
 import com.storedobject.ui.ELabel;
 import com.storedobject.ui.FormSubmit;
-import com.storedobject.ui.util.SOServlet;
 import com.storedobject.vaadin.Button;
 import com.storedobject.vaadin.View;
 import com.vaadin.flow.component.listbox.ListBox;
@@ -19,8 +19,12 @@ import java.util.List;
 public class SwitchApplication implements Executable {
 
     private static List<ExternalSystemUser> servers() {
+        String fromURL = ServerLink.trim(Application.get().getURL());
         return Application.get().getTransactionManager().getUser()
-                .listLinks(ExternalSystemUser.class, "Verified").toList();
+                .listLinks(ExternalSystemUser.class, "Verified")
+                .filter(u -> u.getServer().existsLinks(ServerLink.class, "FromLink='" + fromURL + "'",
+                        false))
+                .toList();
     }
 
     public static boolean canSwitch() {
@@ -64,12 +68,8 @@ public class SwitchApplication implements Executable {
             return;
         }
         Application.get().closeAllViews(true);
-        /*
-        form.setSite(SOServlet.getURL() + "/" + user.getServer().getName());
-        form.addData("loginBlock", loginBlock);
-        form.submit();
-        */
-        Application.get().close(SOServlet.getURL() + "/" + user.getServer().getName() + "/?loginBlock="
+        Application.get().close(user.getServer().listLinks(ServerLink.class, "FromLink='"
+                + ServerLink.trim(Application.get().getURL()) + "'").findFirst().getToLink() + "/?loginBlock="
                 + URLEncoder.encode(loginBlock, StandardCharsets.UTF_8));
     }
 

@@ -256,6 +256,9 @@ public abstract class HtmlTemplate extends Component {
                 } catch(NO_COMPONENT ignored) {
                 }
             }
+            if(c == null) {
+                c = createComponent(id, node.nodeName());
+            }
             Component component = c;
             Element flowElement = component == null ? new Element(jsoupElement.tagName()) : component.getElement();
             jsoupElement.attributes().forEach(attr -> {
@@ -297,6 +300,53 @@ public abstract class HtmlTemplate extends Component {
         } else {
             throw new IllegalArgumentException("Unsupported tag: " + node.nodeName());
         }
+    }
+
+    private Component createComponent(String id, String tag) {
+        if(!tag.startsWith("so-")) {
+            return null;
+        }
+        tag = tag.substring(2);
+        Component c = createComponent(tag);
+        if(!id.isEmpty() && c != null) {
+            c.setId(id);
+        }
+        return c;
+    }
+
+    private String cName(String name) {
+        int dash = name.indexOf("-");
+        if(dash < 0) {
+            return name;
+        }
+        String pre = name.substring(0, dash);
+        name = name.substring(dash + 1);
+        name = name.substring(0, 1).toUpperCase() + name.substring(1);
+        return pre + cName(name);
+    }
+
+    private Component createComponent(String name) {
+        name = cName(name);
+        Component component;
+        Class<?> c;
+        try {
+            c = Class.forName("com.storedobject.ui." + name);
+        } catch(Throwable ignored) {
+            try {
+                c = Class.forName("com.storedobject.vaadin." + name);
+            } catch(Throwable ignore) {
+                c = null;
+            }
+        }
+        if(c == null) {
+            return null;
+        }
+        try {
+            component = (Component) c.getDeclaredConstructor().newInstance();
+        } catch(Throwable ignored) {
+            component = null;
+        }
+        return component;
     }
 
     protected Component createComponentForId(String id) {

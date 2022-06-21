@@ -33,10 +33,9 @@ import com.vaadin.flow.shared.Registration;
  * <p>id = "forgotLink" ('Forgot Password' link. This should be an HTML a tag. This is optional.)</p>
  * <p>id = "terms"  (Should be a vaadin-checkbox tag. User needs to click this always. This is optional.)</p>
  * <p>id = "year" (Should be a span tag. Value of the current year will be set to this. This is optional.)</p>
- * <p>id = "timeGMT" (Should be a so-clock tag. A running clock will be displayed. This is optional.)</p>
  * <p>id = "viewX" (The value of X can be anything. Should be an HTML a tag with href attribute set to empty string.
  * Typically used for providing static content views. This is optional.)</p>
- * <p>Additional attributes can be define for certain id values:</p>
+ * <p>Additional attributes can be defined for certain id values:</p>
  * <p>id = "terms" A "message" attribute can be specified for the message to show if it is not checked.</p>
  * <p>id = "viewX" A "file" attribute must be specified with the name of the file to view. A "caption" attribute may
  * be specified if you want to show the caption as something other than the file name.</p>
@@ -88,9 +87,6 @@ public class LoginForm extends TemplateView implements HomeView, FullScreen {
 
     @Id
     private Span year;
-
-    @Id
-    private Clock timeGMT;
 
     private SystemUser user;
     private boolean init;

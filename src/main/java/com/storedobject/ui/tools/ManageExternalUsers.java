@@ -2,7 +2,6 @@ package com.storedobject.ui.tools;
 
 import com.storedobject.core.*;
 import com.storedobject.ui.*;
-import com.storedobject.ui.util.SOServlet;
 import com.storedobject.vaadin.Button;
 import com.storedobject.vaadin.DataForm;
 import com.storedobject.vaadin.TextField;
@@ -91,13 +90,20 @@ public class ManageExternalUsers extends ObjectEditor<SystemUser> {
         return super.createLinkFieldGrid(fieldName, field);
     }
 
-    private static class ExternalUserGrid extends DetailLinkGrid<ExternalSystemUser> {
+    private class ExternalUserGrid extends DetailLinkGrid<ExternalSystemUser> {
 
         public ExternalUserGrid(ObjectLinkField<ExternalSystemUser> linkField) {
             super(linkField);
-            addConstructedListener(f -> (((ObjectField<?>)getObjectEditor().getField("Server")))
-                    .setFilter("lower(Name)<>'" + SQLConnector.getDatabaseName().toLowerCase() + "'",
-                            true));
+            addConstructedListener(f -> {
+                (((ObjectField<?>)getObjectEditor().getField("Server")))
+                        .setFilter("lower(Name)<>'" + SQLConnector.getDatabaseName().toLowerCase() + "'",
+                                true);
+                getObjectEditor().setNewObjectGenerator(() -> {
+                    ExternalSystemUser eu = new ExternalSystemUser();
+                    eu.setExternalUser(ManageExternalUsers.this.getObject().getLogin());
+                    return eu;
+                });
+            });
         }
 
         @Override
@@ -124,12 +130,20 @@ public class ManageExternalUsers extends ObjectEditor<SystemUser> {
         if(esus.isEmpty()) {
             return;
         }
+        ServerInformation server = null;
         for(ExternalSystemUser esu: esus) {
             try {
-                esu.verify(getTransactionManager(), authUser, authPassword, SOServlet.getURL());
-                message("Verification successful on the server - " + esu.getServer().getDescription());
+                server = esu.getServer();
+                ServerLink link = server.listLinks(ServerLink.class,
+                        "FromLink='" + ServerLink.trim(Application.get().getURL()) + "'").findFirst();
+                if(link == null) {
+                    warning("Don't know how to connect to " + server.toDisplay());
+                    continue;
+                }
+                esu.verify(getTransactionManager(), authUser, authPassword, link.getToLink());
+                message("Verification successful on the server - " + server.toDisplay());
             } catch(Exception e) {
-                warning("Verification failed on the server - " + esu.getServer().getDescription());
+                warning("Verification failed on the server - " + (server == null ? "" : server.toDisplay()));
                 warning(e);
             }
         }
