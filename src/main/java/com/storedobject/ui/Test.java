@@ -1,6 +1,6 @@
 package com.storedobject.ui;
 
-import com.storedobject.core.Person;
+import com.storedobject.core.*;
 import com.storedobject.ui.common.EntityEditor;
 import com.storedobject.vaadin.*;
 

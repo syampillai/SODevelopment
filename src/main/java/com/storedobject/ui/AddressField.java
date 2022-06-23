@@ -126,6 +126,7 @@ public class AddressField extends CustomField<String> implements ValueRequired {
         address = Address.create(value);
         if(address != null) {
             countryField.setCountry(address.getCountry());
+            setInvalid(false);
         } else {
             address(countryField.getCountry());
         }
@@ -255,5 +256,13 @@ public class AddressField extends CustomField<String> implements ValueRequired {
         this.form.close();
         this.form = null;
         popup2(address);
+    }
+
+    @Override
+    public boolean isInvalid() {
+        if(address == null) {
+            return false;
+        }
+        return !address.isValid();
     }
 }

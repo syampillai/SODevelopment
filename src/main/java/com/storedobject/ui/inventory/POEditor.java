@@ -35,7 +35,7 @@ public class POEditor<T extends InventoryPO> extends ObjectEditor<T> {
 
     POEditor(Class<T> objectClass, int actions, String caption, String allowedActions) {
         super(objectClass, actions, caption, allowedActions);
-        Collection<Entity> suppliers = GRN.suppliers(0);
+        Collection<Entity> suppliers = GRN.suppliers(grnType());
         if(suppliers != null) {
             if(suppliers.isEmpty()) {
                 throw new SORuntimeException("No suppliers found!");
@@ -48,6 +48,11 @@ public class POEditor<T extends InventoryPO> extends ObjectEditor<T> {
                 setCaption("Purchase Order");
             }
         });
+    }
+
+    private int grnType() {
+        T po = createNewInstance();
+        return po == null ? 0 : po.getGRNType();
     }
 
     @Override

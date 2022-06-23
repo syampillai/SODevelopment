@@ -121,6 +121,9 @@ public class Application extends com.storedobject.vaadin.Application implements 
         waitMessage.setDuration(Integer.MAX_VALUE);
         waitMessage.setPosition(Notification.Position.MIDDLE);
         this.mainLayout = applicationLayout;
+        if(ApplicationServer.getGlobalBooleanProperty("application.allow.deprecated", false)) {
+            HTMLText.setAllowTopLevelHTML();
+        }
         String alertPos = ApplicationServer.getGlobalProperty("application.message.position", "");
         if(!alertPos.isBlank()) {
             alertPos = alertPos.trim().replace(' ', '_').toUpperCase().replace('-', '_');

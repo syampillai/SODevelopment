@@ -60,7 +60,6 @@ public class CrossServerManager extends ObjectBrowser<ServerInformation> {
             addConstructedListener(f -> {
                 TextField tf = (TextField) getField("Name");
                 addValidator(tf, ServerInformation::checkServerName);
-                setFieldReadOnly("Links.l");
             });
         }
 

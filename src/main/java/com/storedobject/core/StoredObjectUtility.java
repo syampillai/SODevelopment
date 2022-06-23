@@ -215,19 +215,6 @@ public final class StoredObjectUtility {
         }
     }
 
-    public static class MethodString {
-
-        public MethodString(String string) {
-        }
-
-        public MethodString(Class<?> objectClass, String string) {
-        }
-
-        public String execute(Object object) {
-            return "";
-        }
-    }
-
     public static boolean execute(Method method, Object object, String value) {
         return false;
     }

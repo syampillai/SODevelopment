@@ -281,7 +281,8 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
         b.add(storeDisplay, switchStore, new ELabel().
                 append(" | ", Application.COLOR_INFO).
                 append("Note: ").
-                append("Double-click or right-click on the entry to receive/process items", Application.COLOR_SUCCESS).
+                append("Double-click or right-click on the entry to receive/process items",
+                        Application.COLOR_SUCCESS).
                 update());
         prependHeader().join().setComponent(b);
     }

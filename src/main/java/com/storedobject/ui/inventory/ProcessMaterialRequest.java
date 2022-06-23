@@ -79,7 +79,8 @@ public class ProcessMaterialRequest extends AbstractRequestMaterial {
 
     @Override
     public void createFooters() {
-        appendFooter().join().setComponent(new ELabel("Right-click on the entry for available options", Application.COLOR_SUCCESS));
+        appendFooter().join()
+                .setComponent(new ELabel("Right-click on the entry for available options", Application.COLOR_SUCCESS));
     }
 
     @Override
@@ -442,7 +443,8 @@ public class ProcessMaterialRequest extends AbstractRequestMaterial {
                     if(!q.isPositive()) {
                         break;
                     }
-                    mii = items(mri).stream().filter(i -> i.getItemId().equals(ii.getId())).findAny().orElse(null);
+                    mii = items(mri).stream().filter(i -> i.getItemId().equals(ii.getId())).findAny()
+                            .orElse(null);
                     if(mii != null) {
                         if(quantityEdited.contains(mii)) {
                             q = q.subtract(mii.getQuantity());
@@ -641,7 +643,8 @@ public class ProcessMaterialRequest extends AbstractRequestMaterial {
                 if(uninitialized) {
                     h.append(pn);
                 } else {
-                    h.append(pn, readyToIssue(mri).isLessThan(mri.getBalance()) ? Application.COLOR_ERROR : Application.COLOR_SUCCESS);
+                    h.append(pn, readyToIssue(mri)
+                            .isLessThan(mri.getBalance()) ? Application.COLOR_ERROR : Application.COLOR_SUCCESS);
                 }
             } else if(o instanceof MaterialIssuedItem) {
                 h.append(((MaterialIssuedItem) o).getItem().getLocationDisplay());
@@ -658,7 +661,8 @@ public class ProcessMaterialRequest extends AbstractRequestMaterial {
                 if(uninitialized) {
                     h.append(pn);
                 } else {
-                    h.append(pn, readyToIssue(mri).isLessThan(mri.getBalance()) ? Application.COLOR_ERROR : Application.COLOR_SUCCESS);
+                    h.append(pn, readyToIssue(mri)
+                            .isLessThan(mri.getBalance()) ? Application.COLOR_ERROR : Application.COLOR_SUCCESS);
                 }
             } else if(o instanceof MaterialIssuedItem mii) {
                 if(!mii.getItem().getPartNumberId().equals(mii.getRequest().getPartNumberId())) {
@@ -788,7 +792,13 @@ public class ProcessMaterialRequest extends AbstractRequestMaterial {
             quantityEdited.clear();
             uninitialized = miiList.isEmpty();
             if(uninitialized) {
-                mr.listLinks(MaterialRequestItem.class).filter(mri -> mri.getBalance().isPositive()).collectAll(mriList);
+                AtomicInteger unitCheck = new AtomicInteger(0);
+                mr.listLinks(MaterialRequestItem.class)
+                        .filter(mri -> checkUnit(mri, unitCheck) && mri.getBalance().isPositive()).collectAll(mriList);
+                if(unitCheck.get() > 0) {
+                    error("Invalid entr" + (unitCheck.get() == 1 ? "y is" : "ies are")
+                            + " ignored for the time being!");
+                }
             } else {
                 miiList.forEach(mii -> items(mri(mii)).add(mii));
             }
@@ -803,6 +813,17 @@ public class ProcessMaterialRequest extends AbstractRequestMaterial {
             saveButton.setVisible(false);
             updateFooter();
             setDataProvider(new TreeData());
+        }
+
+        private boolean checkUnit(MaterialRequestItem mri, AtomicInteger unitCheck) {
+            Quantity uom = mri.getPartNumber().getUnitOfMeasurement();
+            if(mri.getRequested().isCompatible(uom) && mri.getIssued().isCompatible(uom)) {
+                return true;
+            }
+            error("Incompatible unit: " + mri.getPartNumber().toDisplay() + ", Requested: " + mri.getRequested()
+                    + ", Actual UoM: " + uom.getUnit());
+            unitCheck.incrementAndGet();
+            return false;
         }
 
         private void updateFooter() {
