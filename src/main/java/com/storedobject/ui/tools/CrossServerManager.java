@@ -14,9 +14,10 @@ import com.vaadin.flow.component.icon.VaadinIcon;
 
 public class CrossServerManager extends ObjectBrowser<ServerInformation> {
 
-    private final Button connect = new Button("Define Connection", VaadinIcon.CLUSTER, e -> connect());
+    private final Button connect = new Button("Define Connection", VaadinIcon.CLUSTER, e -> connect(false));
     private String connectTo;
     private ConnectForm connectForm;
+    private boolean adding = false;
 
     public CrossServerManager() {
         super(ServerInformation.class);
@@ -37,19 +38,19 @@ public class CrossServerManager extends ObjectBrowser<ServerInformation> {
 
     @Override
     public boolean canEdit(ServerInformation object) {
-        if(connectTo == null) {
-            connect(object);
-            return false;
-        }
+        adding = false;
+        warning("Editing server links - Please makes sure that you make " +
+                "the respective changes on the other servers too.");
         return true;
     }
 
     @Override
     protected boolean canAdd() {
         if(connectTo == null) {
-            connect(null);
+            connect(true);
             return false;
         }
+        adding = true;
         return true;
     }
 
@@ -65,6 +66,9 @@ public class CrossServerManager extends ObjectBrowser<ServerInformation> {
 
         @Override
         protected boolean save() throws Exception {
+            if(!adding) {
+                return super.save();
+            }
             ServerInformation si = getObject();
             ServerInformation.createServer(getTransactionManager(), si.getName(), si.getDescription(),
                     connectTo, ServerLink.trim(Application.get().getURL()));
@@ -72,28 +76,18 @@ public class CrossServerManager extends ObjectBrowser<ServerInformation> {
         }
     }
 
-    private void connect() {
+    private void connect(boolean toAdd) {
         if(connectForm == null) {
             connectForm = new ConnectForm();
         }
-        connectForm.process = false;
-        connectForm.execute();
-    }
-
-    private void connect(ServerInformation server) {
-        if(connectForm == null) {
-            connectForm = new ConnectForm();
-        }
-        connectForm.process = true;
-        connectForm.server = server;
+        connectForm.toAdd = toAdd;
         connectForm.execute();
     }
 
     private class ConnectForm extends DataForm {
 
         private final TextField connectToApp = new TextField("Connect to");
-        private ServerInformation server;
-        private boolean process;
+        private boolean toAdd;
 
         public ConnectForm() {
             super("Connection Information");
@@ -112,12 +106,8 @@ public class CrossServerManager extends ObjectBrowser<ServerInformation> {
                 return false;
             }
             close();
-            if(process) {
-                if(server == null) {
-                    doAdd();
-                } else {
-                    doEdit(server);
-                }
+            if(toAdd) {
+                doAdd();
             }
             return true;
         }

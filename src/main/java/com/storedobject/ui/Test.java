@@ -8,9 +8,11 @@ public class Test extends DataForm implements FullScreen {
 
     private final TextField textField = new TextField();
     private final Clock clock = new Clock();
+    private final ComputedDateField dateField = new ComputedDateField("Date");
 
     public Test() {
         super("Test");
+        add(textField, dateField);
         setRequired(textField);
         add(clock);
         add(new Button("Local", (String) null, e -> clock.setUTC(false)));
@@ -23,6 +25,9 @@ public class Test extends DataForm implements FullScreen {
     @Override
     protected boolean process() {
         message(textField.getValue());
+        message(dateField.getValue());
+        message(dateField.getValue().toString());
+        message(dateField.getValue().getStorableValue());
         return false;
     }
 
