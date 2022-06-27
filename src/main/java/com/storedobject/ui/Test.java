@@ -1,48 +1,16 @@
 package com.storedobject.ui;
 
-import com.storedobject.core.*;
-import com.storedobject.ui.common.EntityEditor;
 import com.storedobject.vaadin.*;
 
-public class Test extends DataForm implements FullScreen {
-
-    private final TextField textField = new TextField();
-    private final Clock clock = new Clock();
-    private final ComputedDateField dateField = new ComputedDateField("Date");
+public class Test extends DataForm {
 
     public Test() {
         super("Test");
-        add(textField, dateField);
-        setRequired(textField);
-        add(clock);
-        add(new Button("Local", (String) null, e -> clock.setUTC(false)));
-        add(new Button("AM/PM", (String) null, e -> clock.setAMPM(true)));
-        add(new Button("Person", (String) null, e -> person()));
-        add(new Button("Info", (String) null, e -> info()));
-        add(new Button("Entity", (String) null, e -> entity()));
+        add(new ELabel().appendHTML("<script><html><style><body><head>Hello</p>").update());
     }
 
     @Override
     protected boolean process() {
-        message(textField.getValue());
-        message(dateField.getValue());
-        message(dateField.getValue().toString());
-        message(dateField.getValue().getStorableValue());
         return false;
-    }
-
-    private void person() {
-        ObjectEditor<Person> pe = new ObjectEditor<>(Person.class);
-        pe.setFullScreen(true);
-        close();
-        pe.execute();
-    }
-
-    private void entity() {
-        new EntityEditor().execute();
-    }
-
-    private void info() {
-        new InformationMessage("Hello").execute();
     }
 }

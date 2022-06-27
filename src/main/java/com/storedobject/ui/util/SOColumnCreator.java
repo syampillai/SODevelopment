@@ -2,6 +2,7 @@ package com.storedobject.ui.util;
 
 import com.storedobject.core.*;
 import com.storedobject.ui.AbstractObjectForest;
+import com.storedobject.ui.TemplateText;
 import com.storedobject.vaadin.HasColumns;
 import com.storedobject.vaadin.ObjectColumnCreator;
 import com.vaadin.flow.component.grid.ColumnTextAlign;
@@ -49,6 +50,10 @@ public class SOColumnCreator<T> implements ObjectColumnCreator<T> {
     @SuppressWarnings("unchecked")
     public Function<T, ?> getColumnFunction(String columnName) {
         if(ca != null) {
+            if(columnName.contains("${")) {
+                valueTypes.put(columnName, String.class);
+                return new TemplateText<>((Class<T>)ca.getObjectClass(), columnName);
+            }
             StoredObjectUtility.MethodList m;
             try {
                 m = StoredObjectUtility.createMethodList(getObjectClass(), columnName);

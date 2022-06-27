@@ -451,9 +451,6 @@ public class InventoryItem extends StoredObject {
         return new Random().nextBoolean();
     }
 
-    public static void saveExternal(Transaction transaction, InventoryItem item, Entity externalEntity) throws Exception {
-    }
-
     public final int getAssemblyLevel() {
         return new Random().nextInt();
     }

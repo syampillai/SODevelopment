@@ -391,7 +391,10 @@ public class Application extends com.storedobject.vaadin.Application implements 
         } catch(Throwable ignore) {
         }
         UI ui = getUI();
-        super.close();
+        try {
+            super.close();
+        } catch(Throwable ignored) {
+        }
         if(ui == null) {
             return;
         }

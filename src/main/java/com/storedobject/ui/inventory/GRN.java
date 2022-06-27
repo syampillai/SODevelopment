@@ -869,6 +869,10 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
                         getObject().getSupplier());
                 case 2 -> InventoryTransaction.createLoanFromLocation(getTransactionManager(),
                         getObject().getSupplier());
+                case 3 -> InventoryTransaction.createRepairLocation(getTransactionManager(),
+                        getObject().getSupplier());
+                case 4 -> InventoryTransaction.createConsumerLocation(getTransactionManager(),
+                        getObject().getSupplier());
                 default -> null;
             });
             return item;

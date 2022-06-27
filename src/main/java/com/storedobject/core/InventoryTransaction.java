@@ -8,10 +8,12 @@ public final class InventoryTransaction {
 
     public final static Date dataPickupDate = DateUtility.today();
 
+    @Deprecated
     public InventoryTransaction(TransactionManager tm) {
         this(tm, "");
     }
 
+    @Deprecated
     public InventoryTransaction(TransactionManager tm, String reference) {
         this(tm, null, reference);
     }
@@ -50,7 +52,7 @@ public final class InventoryTransaction {
         return new InventoryVirtualLocation();
     }
 
-    public static InventoryLocation createExternalOwnerLocation(TransactionManager tm, Entity externalOwner) {
+    public static InventoryLocation createExternalOwnerLocation(TransactionManager tm, Entity externalEntity) {
         return new InventoryVirtualLocation();
     }
 
@@ -110,7 +112,7 @@ public final class InventoryTransaction {
     public void loanTo(InventoryItem item, String reference, Entity entity) {
     }
 
-    public void receiveFrom(InventoryItem item, String reference, InventoryLocation to, Entity entity) {
+    public void receiveFromExternal(InventoryItem item, String reference, InventoryLocation to, Entity entity) {
     }
 
     public void loanFrom(InventoryItem item, String reference, InventoryLocation to, Entity entity) {

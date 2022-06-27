@@ -18,7 +18,7 @@ public class EntityEditor extends ObjectEditor<Entity> {
             "Supplies items to us",
             "We sell items/services to them",
             "Does repair/maintenance work for us",
-            "Occasionally keeps their stock with us",
+            "Occasionally, they keep stock with with us",
             "We rent items out to them",
             "We lease items from them",
             "Provides services to us"

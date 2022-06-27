@@ -27,6 +27,7 @@ public class ReceiveMaterial extends DataForm {
             "GRN - From External Owners",
             "Tools Returned",
             "GRN - Loan from Lender",
+            "Consumption Returns",
     };
     private static final String[] TYPE_4_LOCATIONS = new String[] {
             "Issued from Stores",
@@ -157,6 +158,7 @@ public class ReceiveMaterial extends DataForm {
                 case 6 -> grn(1, to);
                 case 7 -> new ReceiveReturnedItems(18, (InventoryStoreBin) to).execute();
                 case 8 -> grn(2, to);
+                case 9 -> new ConsumptionReturn(16, (InventoryStoreBin) to).execute();
             }
         } else {
             switch(typeFieldForLocations.getValue()) {
