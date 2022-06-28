@@ -811,27 +811,23 @@ public class Application extends com.storedobject.vaadin.Application implements 
             }
         } catch (Throwable ignored) {
         }
-        executeLogin();
-    }
-
-    private void executeLogin() {
-        loginForm = createLogin();
-        if(loginForm == null) {
-            loginForm = createLoginInt();
-        }
+        loginForm = paramLogin();
         if(loginForm != null) {
+            log("Accessed");
             loginForm.run();
+        } else {
+            screenLogin();
         }
     }
 
-    private Runnable createLoginInt() {
+    private Runnable paramLogin() {
         String autoToken = getQueryParameter("loginBlock");
         if(autoToken != null && !autoToken.isBlank()) {
             removeQueryParameter("loginBlock");
             String loginBlock = autoToken;
             return () -> {
                 if(!login.login(loginBlock)) {
-                    executeLogin();
+                    screenLogin();
                 }
             };
         }
@@ -846,11 +842,26 @@ public class Application extends com.storedobject.vaadin.Application implements 
                         null, false);
                 return () -> {
                     if(!login.login(autoLogin.trim(), autoPassword.toCharArray(), false)) {
-                        executeLogin();
+                        screenLogin();
                     }
                 };
             }
         }
+        return null;
+    }
+
+    private void screenLogin() {
+        loginForm = createLogin();
+        if(loginForm == null) {
+            loginForm = createLoginInt();
+        }
+        if(loginForm != null) {
+            log("Accessed");
+            loginForm.run();
+        }
+    }
+
+    private Runnable createLoginInt() {
         String loginLogic = ApplicationServer.getGlobalProperty("application.logic.login",
                 "", true);
         if(loginLogic.isEmpty()) {
@@ -861,9 +872,8 @@ public class Application extends com.storedobject.vaadin.Application implements 
             }
         } else {
             Logic logic = new Logic(loginLogic, "Login");
-            Object ex = server.execute(logic, false);
-            if(ex instanceof Runnable) {
-                loginForm = (Runnable) ex;
+            if(server.execute(logic, false) instanceof Runnable ex) {
+                loginForm = ex;
             }
         }
         return loginForm;

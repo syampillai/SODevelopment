@@ -113,7 +113,6 @@ public class LoginForm extends TemplateView implements HomeView, FullScreen {
 
     private void init() {
         application = Application.get();
-        application.log("Accessed");
     }
 
     @Override
