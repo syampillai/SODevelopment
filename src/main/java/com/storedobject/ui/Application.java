@@ -841,6 +841,7 @@ public class Application extends com.storedobject.vaadin.Application implements 
                 String autoPassword = ApplicationServer.getGlobalProperty("application.autologin.password",
                         null, false);
                 return () -> {
+                    login.setType(4);
                     if(!login.login(autoLogin.trim(), autoPassword.toCharArray(), false)) {
                         screenLogin();
                     }

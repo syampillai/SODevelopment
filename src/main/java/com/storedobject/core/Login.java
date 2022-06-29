@@ -1,5 +1,7 @@
 package com.storedobject.core;
 
+import java.util.Random;
+
 public final class Login {
 
     public Login(Device device) {
@@ -55,5 +57,12 @@ public final class Login {
     }
 
     public void close() {
+    }
+
+    public int getType() {
+        return new Random().nextInt();
+    }
+
+    public void setType(int type) {
     }
 }
