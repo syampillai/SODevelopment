@@ -247,7 +247,7 @@ public class ObjectForestProvider<T extends StoredObject> extends AbstractTreePr
         forest.stream(parent, 0, Integer.MAX_VALUE).forEach(c -> {
             consumer.accept(c);
             if(includeGrandChildren) {
-                visitChildren(parent, consumer, true);
+                visitChildren(c, consumer, true);
             }
         });
     }

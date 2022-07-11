@@ -3,13 +3,12 @@ package com.storedobject.ui.inventory;
 import com.storedobject.common.SORuntimeException;
 import com.storedobject.common.StringList;
 import com.storedobject.core.*;
-import com.storedobject.ui.*;
 import com.storedobject.ui.Application;
 import com.storedobject.ui.DataGrid;
+import com.storedobject.ui.*;
 import com.storedobject.vaadin.*;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.grid.contextmenu.GridContextMenu;
 import com.vaadin.flow.component.grid.contextmenu.GridMenuItem;
 
@@ -26,7 +25,12 @@ import java.util.List;
 public class LocateItem extends DataGrid<InventoryItem> implements CloseableView {
 
     private static final String INSPECT = "INSPECT";
-    private final ChoiceField filter = new ChoiceField(new String[] {
+    private final ChoiceField servFilter = new ChoiceField(new String[] {
+            "Serviceable",
+            "Unserviceable",
+            "All",
+    });
+    private final ChoiceField locFilter = new ChoiceField(new String[] {
             "Stores only",
             "Other locations",
             "Fitted on assembly",
@@ -35,11 +39,10 @@ public class LocateItem extends DataGrid<InventoryItem> implements CloseableView
     private final Class<? extends InventoryItem> itemClass;
     private final ObjectField<? extends InventoryItemType> pnField;
     private final TextField snField;
-    private final Checkbox serviceableOnly = new Checkbox("Serviceable");
     @SuppressWarnings("rawtypes")
     private ObjectEditor editor;
     private InventoryStore store;
-    private boolean allowBreaking;
+    private boolean allowBreaking, allowEditCost;
     private final ELabel help = new ELabel("Right-click on the row to see more options", Application.COLOR_SUCCESS);
     private GRNEditor grnEditor;
 
@@ -152,7 +155,8 @@ public class LocateItem extends DataGrid<InventoryItem> implements CloseableView
 
     private LocateItem(String caption, InventoryItemType partNumber, Class<? extends InventoryItem> itemClass,
                        Class<? extends InventoryItemType> itemTypeClass, boolean canInspect, String originalCaption) {
-        super(InventoryItem.class, StringList.create(ItemField.COLUMNS));
+        super(InventoryItem.class, StringList.concat(ItemField.COLUMNS, StringList.create(new String[] { "Cost" })));
+        allowEditCost = canInspect;
         setCaption(caption == null || caption.isEmpty() ? "Items" : caption);
         if(originalCaption != null && originalCaption.contains("|")) {
             caption = originalCaption.substring(originalCaption.indexOf('|') + 1).
@@ -190,9 +194,8 @@ public class LocateItem extends DataGrid<InventoryItem> implements CloseableView
                 pnField.addValueChangeListener(e -> loadItems());
             }
         }
-        serviceableOnly.setValue(true);
-        serviceableOnly.addValueChangeListener(e -> loadItems());
-        filter.addValueChangeListener(e -> loadItems());
+        servFilter.addValueChangeListener(e -> loadItems());
+        locFilter.addValueChangeListener(e -> loadItems());
         GridContextMenu<InventoryItem> cm = new GridContextMenu<>(this);
         cm.addItem("Item Details", e -> e.getItem().ifPresent(this::view));
         GridMenuItem<InventoryItem> itemAssembly =
@@ -208,9 +211,12 @@ public class LocateItem extends DataGrid<InventoryItem> implements CloseableView
                 cm.addItem("Inspect & Bin", e -> e.getItem().ifPresent(this::inspect));
         GridMenuItem<InventoryItem> breakAssembly =
                 cm.addItem("Break from Assembly", e -> e.getItem().ifPresent(this::breakAssembly));
-        GridMenuItem<InventoryItem> movementReport = cm.addItem("Movement Details",
+        GridMenuItem<InventoryItem> movementDetail = cm.addItem("Movement Details",
                 e -> e.getItem().ifPresent(i -> new ItemMovementView(i).execute()));
         cm.addItem("GRN Details", e -> e.getItem().ifPresent(this::viewGRN));
+        cm.addItem("Cost Details", e -> e.getItem().ifPresent(item -> new EditCost(item, true).execute()));
+        GridMenuItem<InventoryItem> editCost = cm.addItem("Edit Cost",
+                e -> e.getItem().ifPresent(item -> new EditCost(item, false, this::loadItems).execute()));
         cm.setDynamicContentHandler(ii -> {
             deselectAll();
             if(ii == null) {
@@ -221,11 +227,12 @@ public class LocateItem extends DataGrid<InventoryItem> implements CloseableView
             itemAssembly.setVisible(ii.getPartNumber().isAssembly());
             parentAssembly.setVisible(loc instanceof InventoryFitmentPosition);
             inspect.setVisible(canInspect || allowBreaking);
+            editCost.setVisible(allowEditCost);
             viewFitment.setVisible(loc instanceof InventoryFitmentPosition);
             viewFitmentLocations.setVisible(loc instanceof InventoryFitmentPosition);
             breakAssembly.setVisible((canInspect || allowBreaking) &&
                     loc instanceof InventoryFitmentPosition);
-            movementReport.setVisible(ii.isSerialized());
+            movementDetail.setVisible(ii.isSerialized());
             return true;
         });
     }
@@ -288,12 +295,22 @@ public class LocateItem extends DataGrid<InventoryItem> implements CloseableView
     }
 
     @Override
+    public void constructed() {
+        super.constructed();
+        getColumnDetail("Owner").setVisible(false);
+        getColumnDetail("Cost").setVisible(false);
+    }
+
+    @Override
     public Component createHeader() {
-        ButtonLayout b = new ButtonLayout(new ELabel("Filter:"), serviceableOnly, filter);
+        servFilter.setWidth("130px");
+        locFilter.setWidth("155px");
+        ButtonLayout b = new ButtonLayout(getConfigureButton(), servFilter, locFilter);
         if(snField != null) {
             b.add(new ELabel("S/N: "), snField);
         }
         if(pnField != null) {
+            pnField.setItemLabelGenerator(InventoryItemType::getName);
             b.add(new ELabel("P/N: "), pnField);
         }
         b.add(new Button("Exit", e -> close()));
@@ -408,7 +425,7 @@ public class LocateItem extends DataGrid<InventoryItem> implements CloseableView
                 return loc instanceof InventoryBin && ((InventoryBin)loc).getStoreId().equals(store.getId());
             });
         }
-        int filter = this.filter.getValue();
+        int filter = this.locFilter.getValue();
         switch(filter) {
             case 0 -> objects = objects.filter(ii -> ii.getLocation() instanceof InventoryBin);
             case 1 -> objects = objects.filter(ii -> {
@@ -417,8 +434,9 @@ public class LocateItem extends DataGrid<InventoryItem> implements CloseableView
             });
             case 2 -> objects = objects.filter(ii -> ii.getLocation() instanceof InventoryFitmentPosition);
         }
-        if(serviceableOnly.getValue()) {
-            objects = objects.filter(InventoryItem::isServiceable);
+        switch(servFilter.getValue()) {
+            case 0 -> objects = objects.filter(InventoryItem::isServiceable);
+            case 1 -> objects = objects.filter(ii -> !ii.isServiceable());
         }
         objects = objects.filter(ii -> switch(ii.getLocation().getType()) {
             case 1, 2, 7, 9, 12, 15, 16, 17 -> false;
@@ -463,13 +481,32 @@ public class LocateItem extends DataGrid<InventoryItem> implements CloseableView
         return editor;
     }
 
+    /**
+     * Set a store so that the search is limited to the specified store.
+     *
+     * @param store Store.
+     */
     public void setStore(InventoryStore store) {
         this.store = store;
-        filter.setVisible(false);
+        locFilter.setVisible(false);
     }
 
+    /**
+     * Allow breaking of assemblies.
+     *
+     * @param allowBreaking True/false.
+     */
     public void setAllowBreaking(boolean allowBreaking) {
         this.allowBreaking = allowBreaking;
+    }
+
+    /**
+     * Allow editing of cost. (By default, editing of cost is allowed in the inspection mode).
+     *
+     * @param allowEditCost True/false.
+     */
+    public void setAllowEditCost(boolean allowEditCost) {
+        this.allowEditCost = allowEditCost;
     }
 
     private class DetachFromAssembly extends DataForm implements Transactional {

@@ -113,6 +113,9 @@ public class InventoryItemType extends StoredObject implements HasChildren {
 
     public void setAverageLeadTime(int averageLeadTime) {
     }
+    
+    public void changeUnitOfMeasurement(TransactionManager tm, Quantity uom, Quantity uoi) throws Exception {
+    }
 
     public void checkUnit(Quantity quantity, String name) throws Invalid_State {
     }

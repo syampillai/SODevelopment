@@ -511,6 +511,7 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
             if(container instanceof ContentWithHeader) {
                 if(buttonPanel instanceof Component) {
                     ((ContentWithHeader) container).setHeader((Component) buttonPanel);
+                    buttonPanel.getElement().getStyle().set("background", "var(--lumo-base-color)");
                 }
                 ((ContentWithHeader) container).setBody(fc);
             } else if(container instanceof HasComponents) {
@@ -1080,7 +1081,7 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
         if(parentObject != null) {
             object.setMaster(parentObject, parentLinkType);
         }
-        object.save(t);
+        saveObject(t, object);
         if(parentObject != null) {
             parentObject.addLink(t, object, parentLinkType);
         }
@@ -1090,6 +1091,18 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
         if(contactData != null && !contactData.ownedByMaster()) {
             contactData.save(t);
         }
+    }
+
+    /**
+     * Save the given object. This is invoked from the {@link #save(Transaction)} method to just save the object.
+     * The default implementation just saves the object by invoking {@link StoredObject#save(Transaction)}.
+     *
+     * @param t Transaction.
+     * @param object Object to be saved.
+     * @throws Exception Raises when save operation is not successful.
+     */
+    protected void saveObject(Transaction t, T object) throws Exception {
+        object.save(t);
     }
 
     /**
@@ -1991,6 +2004,18 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
     }
 
     /**
+     * Get the tab name for a given field. This method is invoked while constructing the form, and you may return
+     * a name for the tab in which the field will be added in the form.
+     *
+     * @param fieldName Field name.
+     * @param field Field.
+     * @return Name of the tab.
+     */
+    protected String getTabName(String fieldName, HasValue<?, ?> field) {
+        return null;
+    }
+
+    /**
      * Create (or select if already exists) a {@link FormLayout} instance as the tab for the editor. If this method is
      * ever invoked while creating the editor, the editor will become a multi-tabbed editor. If you call this method
      * after the editor is constructed, it will select the tab if one exists. All further fields added to the editor
@@ -2076,13 +2101,15 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
             attachLinkField(f);
             return;
         }
-        if(getFieldCreator() instanceof SOFieldCreator fc) {
+        String tabName = getTabName(fieldName, field);
+        if(tabName == null && getFieldCreator() instanceof SOFieldCreator fc) {
             UIFieldMetadata md = fc.getMD(fieldName);
             if(md != null) {
-                setTab(md.getTabName(), false);
+                tabName = md.getTabName();
             }
         }
-        if(currentTab == null || mainTabName != null) {
+        setTab(tabName, true);
+        if(currentTab == null && mainTabName != null) {
             setTab(mainTabName, false);
         }
         if(currentTab != null) {

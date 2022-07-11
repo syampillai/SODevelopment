@@ -6,6 +6,7 @@ import com.storedobject.common.FilterProvider;
 import com.storedobject.common.SORuntimeException;
 import com.storedobject.core.*;
 import com.storedobject.sms.QuickSender;
+import com.storedobject.ui.common.MemoSystem;
 import com.storedobject.ui.util.ApplicationFrame;
 import com.storedobject.ui.util.*;
 import com.storedobject.vaadin.ApplicationMenu;
@@ -99,6 +100,7 @@ public class Application extends com.storedobject.vaadin.Application implements 
     private Runnable loginForm;
     private IdentityCheck identityCheck;
     private final Notification waitMessage;
+    private MemoSystem memoSystem;
 
     public Application() {
         this(new ApplicationFrame());
@@ -338,6 +340,14 @@ public class Application extends com.storedobject.vaadin.Application implements 
     }
 
     private void executeMe(Logic logic) {
+        if(MemoSystem.class.getName().equals(logic.getClassName())) {
+            if(memoSystem == null) {
+                memoSystem = new MemoSystem();
+            }
+            memoSystem.setCaption(logic.getTitle());
+            memoSystem.execute();
+            return;
+        }
         server.execute(logic);
         if(logic.getExecutable() != null) {
             synchronized(closeMe) {
@@ -729,7 +739,7 @@ public class Application extends com.storedobject.vaadin.Application implements 
     @Override
     public void alert(LoginMessage message) {
         synchronized(messageViewer) {
-            List<com.storedobject.vaadin.Alert> alerts = Application.getAlerts(alertButton);
+            List<com.storedobject.vaadin.Alert> alerts = getAlerts(alertButton);
             if(alerts != null && alerts.stream().filter(a -> a instanceof LoginMessageAlert).
                     map(a -> (LoginMessageAlert)a).anyMatch(a -> a.message.getId().equals(message.getId()))) {
                 return;
@@ -1529,7 +1539,16 @@ public class Application extends com.storedobject.vaadin.Application implements 
             }
             StoredObject ref = message.listGeneratedBy().findFirst();
             if(logic == null && ref != null) {
-                setAlertHandler(ref);
+                if(ref instanceof Memo) {
+                    MemoSystem ms = Application.get().memoSystem;
+                    if(ms == null) {
+                        ms = new MemoSystem(false);
+                        Application.get().memoSystem = ms;
+                    }
+                    setAlertHandler(ms);
+                } else {
+                    setAlertHandler(ref);
+                }
                 reference = ref.getId();
             }
             execute();
@@ -1592,24 +1611,13 @@ public class Application extends com.storedobject.vaadin.Application implements 
     }
 
     private void selectEntity(boolean welcomePassword, boolean passwordExpired) {
-        ArrayList<SystemEntity> entities = new ArrayList<>();
         SystemUser su = getTransactionManager().getUser();
-        if(su.isAppAdmin() || su.isAdmin()) {
-            StoredObject.list(SystemEntity.class, null,"Id").collectAll(entities);
-        } else {
-            su.listLinks(SystemEntity.class, null, "Id").collectAll(entities);
-            if(entities.isEmpty()) {
-                StoredObject.list(SystemEntity.class, null,"Id").collectAll(entities);
-                if(entities.size() > 1) { // Multi
-                    int count = entities.size();
-                    // Remove fresher than mine
-                    entities.removeIf(e -> e.getId().get().compareTo(su.getId().get()) > 0);
-                    if(count == entities.size() || entities.isEmpty()) {
-                        new NoEntityExit(Application.this);
-                        return;
-                    }
-                }
-            }
+        List<SystemEntity> entities;
+        try {
+            entities = su.listEntities();
+        } catch(Throwable e) {
+            new InformationMessage(e.getMessage(), this::close, "Close").execute();
+            return;
         }
         if(entities.size() < 2) {
             if(entities.size() == 1) {
@@ -1620,23 +1628,6 @@ public class Application extends com.storedobject.vaadin.Application implements 
             return;
         }
         new EntitySelector(entities, su.getName(), welcomePassword, passwordExpired).execute();
-    }
-
-    private static class NoEntityExit extends ActionForm {
-
-        public NoEntityExit(Application a) {
-            super("Error",
-                    "You do not have access to any configured organization.\nPlease contact Support!",
-                    a::close, a::close);
-            execute();
-        }
-
-        @Override
-        protected void buildButtons() {
-            super.buildButtons();
-            cancel.setVisible(false);
-            ok.setText("Ok");
-        }
     }
 
     private static class Menu implements com.storedobject.core.ApplicationMenu {
@@ -1942,7 +1933,6 @@ public class Application extends com.storedobject.vaadin.Application implements 
     }
 
     // Timer for alert messages.
-
     private Timer timer;
 
     private void createTimer() {

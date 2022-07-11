@@ -27,7 +27,7 @@ public class ReceiveMaterial extends DataForm {
             "GRN - From External Owners",
             "Tools Returned",
             "GRN - Loan from Lender",
-            "Consumption Returns",
+            //"Consumption Returns",
     };
     private static final String[] TYPE_4_LOCATIONS = new String[] {
             "Issued from Stores",

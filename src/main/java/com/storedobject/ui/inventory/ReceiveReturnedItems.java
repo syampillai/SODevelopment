@@ -87,6 +87,11 @@ public class ReceiveReturnedItems extends DataForm implements Transactional {
         setRequired(eoField);
     }
 
+    @Override
+    public int getMinimumContentWidth() {
+        return 55;
+    }
+
     private static String caption(int type) {
         switch(type) {
             case 3:
@@ -134,14 +139,21 @@ public class ReceiveReturnedItems extends DataForm implements Transactional {
 
     private void proceed() {
         List<InventoryItem> items = StoredObject.list(InventoryItem.class, "Location=" + eo.getId(), true)
-                .filter(ii -> ii.getPreviousLocation() instanceof InventoryBin bin
-                        && bin.getStoreId().equals(storeBin.getStoreId())).toList();
+                .filter(this::validLoc).toList();
         if(items.isEmpty()) {
             processOld();
             message("For this store, no items pending to be received from:<BR/>" + eo.toDisplay());
             return;
         }
         new Select(items, true).execute();
+    }
+
+    private boolean validLoc(InventoryItem ii) {
+        InventoryLocation pLoc = ii.getPreviousLocation();
+        if(pLoc == null) {
+            return true; // Should not happen
+        }
+        return pLoc instanceof InventoryBin bin && bin.getStoreId().equals(storeBin.getStoreId());
     }
 
     private void process(List<InventoryItem> allItems, Set<InventoryItem> selectedItems, boolean confirm) {

@@ -5,7 +5,6 @@ import com.storedobject.core.ExternalSystemUser;
 import com.storedobject.core.ServerLink;
 import com.storedobject.ui.Application;
 import com.storedobject.ui.ELabel;
-import com.storedobject.ui.FormSubmit;
 import com.storedobject.vaadin.Button;
 import com.storedobject.vaadin.View;
 import com.vaadin.flow.component.listbox.ListBox;
@@ -18,7 +17,7 @@ import java.util.List;
 
 public class SwitchApplication implements Executable {
 
-    private static List<ExternalSystemUser> servers() {
+    public static List<ExternalSystemUser> listUsers() {
         String fromURL = ServerLink.trim(Application.get().getURL());
         return Application.get().getTransactionManager().getUser()
                 .listLinks(ExternalSystemUser.class, "Verified")
@@ -28,11 +27,11 @@ public class SwitchApplication implements Executable {
     }
 
     public static boolean canSwitch() {
-        return !servers().isEmpty();
+        return !listUsers().isEmpty();
     }
 
     public static View createView() {
-        List<ExternalSystemUser> servers = servers();
+        List<ExternalSystemUser> servers = listUsers();
         if(servers.isEmpty()) {
             return null;
         }
@@ -47,9 +46,7 @@ public class SwitchApplication implements Executable {
         }
         select.setItems(servers);
         select.setItemLabelGenerator(u -> u.getServer().getDescription());
-        FormSubmit form = new FormSubmit();
-        v.add(form);
-        select.addValueChangeListener(e -> switchTo(e.getValue()));
+        select.addValueChangeListener(e -> switchToInt(e.getValue()));
         v.add(select);
         Button cancel = new Button("Cancel", e -> view.close());
         v.add(cancel);
@@ -59,7 +56,7 @@ public class SwitchApplication implements Executable {
         return view;
     }
 
-    private static void switchTo(ExternalSystemUser user) {
+    private static void switchToInt(ExternalSystemUser user) {
         if(user == null) {
             return;
         }
@@ -78,6 +75,12 @@ public class SwitchApplication implements Executable {
         View v = createView();
         if(v != null) {
             v.execute();
+        }
+    }
+
+    public static void switchTo(ExternalSystemUser user) {
+        if(listUsers().stream().anyMatch(eu -> eu.getId().equals(user.getId()))) {
+            switchToInt(user);
         }
     }
 }

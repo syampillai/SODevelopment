@@ -63,4 +63,8 @@ public final class SystemUserGroup extends StoredObject {
     public ObjectIterator<Logic> listAutoLogic() {
         return listLinks(1, Logic.class);
     }
+
+    public ObjectIterator<SystemUser> listUsers() {
+        return listMasters(SystemUser.class);
+    }
 }

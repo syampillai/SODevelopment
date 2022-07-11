@@ -8,6 +8,7 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 
 /**
@@ -30,14 +31,6 @@ public final class SystemUser extends StoredObject implements RequiresApproval {
     }
 
     public static String getMenuStyleValue(int value) {
-        return null;
-    }
-
-    public static String[] getPreferencesBitValues() {
-        return null;
-    }
-
-    public static String getPreferencesValue(int value) {
         return null;
     }
 
@@ -86,12 +79,12 @@ public final class SystemUser extends StoredObject implements RequiresApproval {
     public void setStatus(int status) {
     }
 
-    public static String[] getStatusValues() {
+    public static String[] getStatusBitValues() {
         return new String[1];
     }
 
     public static String getStatusValue(int value) {
-        return getStatusValues()[value];
+        return getStatusBitValues()[value];
     }
 
     public String getStatusValue() {
@@ -151,26 +144,22 @@ public final class SystemUser extends StoredObject implements RequiresApproval {
         return false;
     }
 
-    public int getMenuStyle() {
-        return 0;
-    }
-
-    public void setMenuStyle(int menuStyle) {
-    }
-
-    public String getMenuStyleValue() {
-        return null;
-    }
-
     public int getPreferences() {
         return 0;
     }
 
     public void setPreferences(int preferences) {
     }
+    public static String[] getPreferencesBitValues() {
+        return new String[] {};
+    }
+
+    public static String getPreferencesValue(int value) {
+        return "";
+    }
 
     public String getPreferencesValue() {
-        return null;
+        return "x";
     }
 
     public String getLocaleLanguage() {
@@ -192,6 +181,18 @@ public final class SystemUser extends StoredObject implements RequiresApproval {
     }
 
     public void setLocale(Locale locale) {
+    }
+
+    public void saveAsProcessUser(Transaction transaction) throws Exception {
+        save(transaction);
+    }
+
+    public void saveAsExternalUser(Transaction transaction) throws Exception {
+        save(transaction);
+    }
+
+    public void saveAsAuditor(Transaction transaction) throws Exception {
+        save(transaction);
     }
 
     public static boolean isValidLogin(String login) {
@@ -223,10 +224,23 @@ public final class SystemUser extends StoredObject implements RequiresApproval {
     }
 
     public String format(Date date) {
-        return null;
+        return "";
+    }
+
+    public boolean isLocked() {
+        return Math.random() > 0.5;
     }
 
     public void unlock(TransactionManager tm) throws Exception {
+    }
+
+    /**
+     * Get the list of entities configured for this user.
+     *
+     * @return List.
+     */
+    public List<SystemEntity> listEntities() {
+        return new ArrayList<>();
     }
 
     public Iterable<SessionLog> getSessionLog(AbstractPeriod<?> period) {

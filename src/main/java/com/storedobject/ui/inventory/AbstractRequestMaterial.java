@@ -227,6 +227,7 @@ public abstract class AbstractRequestMaterial extends ObjectBrowser<MaterialRequ
             } else {
                 setNewObjectGenerator(() -> {
                     MaterialRequest mr = new MaterialRequest();
+                    mr.setSystemEntity(getTransactionManager().getEntity());
                     mr.setFromLocation(fromOrTo);
                     mr.setPriority(normalPriority);
                     if(otherLocation != null) {
@@ -257,6 +258,7 @@ public abstract class AbstractRequestMaterial extends ObjectBrowser<MaterialRequ
                 setFieldHidden(toField);
                 fromField.setLabel("Requested by");
             }
+            setFieldVisible(TransactionManager.isMultiTenant(), getField("SystemEntity"));
         }
 
         @Override

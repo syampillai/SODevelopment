@@ -122,23 +122,15 @@ public class InventoryItem extends StoredObject {
     }
 
     /**
-     * Update the cost of this item. The update is possible only if the item is not yet moved.
+     * Update the cost of this item.
      *
-     * @param transaction Transaction.
+     * @param tm Transaction manager.
      * @param newCost New cost.
-     * @param effectiveFrom Effective from.
+     * @param updateAll Update all items or not (applicable for serialized items only).
      * @throws Exception if error occurs while updating.
+     * @return True if updated.
      */
-    public void updateCost(Transaction transaction, Money newCost, Date effectiveFrom) throws Exception {
-    }
-
-    /**
-     * Check whether cost of this item cab be updated or not.
-     *
-     * @param effectiveFrom Effective from date.
-     * @return True/false.
-     */
-    public boolean canUpdateCost(Date effectiveFrom) {
+    public boolean updateCost(TransactionManager tm, Money newCost, boolean updateAll) throws Exception {
         return Math.random() > 0.5;
     }
 
