@@ -21,7 +21,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public class MemoSystem extends ObjectGrid<MemoComment> implements CloseableView, Transactional, AlertHandler {
 
-    private static final String WHO = "Initiated/Commented/Approved by";
+    private final MemoType memoType;
     private MemoEditor<?> memoEditor;
     private CommentEditor commentEditor;
     private NewMemoType newMemoType;
@@ -35,19 +35,32 @@ public class MemoSystem extends ObjectGrid<MemoComment> implements CloseableView
     private final Map<Id, Set<SystemUser>> commenters = new HashMap<>(), approvers = new HashMap<>();
     private ViewComments viewComments;
     private Id filterMemoId;
-    private MemoComment firstCache, prevCache;
+    private MemoComment prevCache;
 
     public MemoSystem() {
         this(true);
     }
 
+    public MemoSystem(MemoType memoType) {
+        this(memoType, true);
+    }
+
+    public MemoSystem(String memoTypeShortName) {
+        this(mt(memoTypeShortName));
+    }
+
     public MemoSystem(boolean load) {
+        this(null, load);
+    }
+
+    public MemoSystem(MemoType memoType, boolean load) {
         super(MemoComment.class);
+        this.memoType = memoType;
         who = getTransactionManager().getUser();
         if(who.getStatus() != 0) {
             throw new SORuntimeException("Not allowed");
         }
-        setCaption(Application.getLogicCaption("Memo System"));
+        setCaption(memoType == null ? Application.getLogicCaption("Memo System") : memoType.getName());
         GridContextMenu<MemoComment> contextMenu = new GridContextMenu<>(this);
         contextMenu.addItem("View Content", e -> e.getItem().ifPresent(this::viewMemo));
         GridMenuItem<MemoComment> viewComments =
@@ -74,7 +87,8 @@ public class MemoSystem extends ObjectGrid<MemoComment> implements CloseableView
                 contextMenu.addItem("Reject", e -> e.getItem().ifPresent(mc -> memoAction(mc, 4)));
         GridMenuItem<MemoComment> assignAssistant =
                 contextMenu.addItem("Assign Assistant", e -> e.getItem().ifPresent(this::selectAssistant));
-        contextMenu.addItem("Create New", e -> newMemo(e.getItem().orElse(null)));
+        GridMenuItem<MemoComment> createNew =
+                contextMenu.addItem("Create New", e -> newMemo(e.getItem().orElse(null)));
         contextMenu.setDynamicContentHandler(mc -> {
             deselectAll();
             if(mc != null && mc.getCommentCount() != mc.getMemo().getLastComment()) {
@@ -94,6 +108,7 @@ public class MemoSystem extends ObjectGrid<MemoComment> implements CloseableView
                 rejectMemo.setVisible(false);
                 approveMemo.setVisible(false);
                 assignAssistant.setVisible(false);
+                createNew.setVisible(false);
                 return true;
             }
             select(mc);
@@ -113,6 +128,7 @@ public class MemoSystem extends ObjectGrid<MemoComment> implements CloseableView
             approveMemo.setVisible(mine() && canApprove(mc));
             rejectMemo.setVisible(mine() && canApprove(mc));
             assignAssistant.setVisible(mine() && mc.getMemo().getStatus() < 4);
+            createNew.setVisible(memoType == null && !mc.getMemo().getType().getSpecial());
             return true;
         });
         setOrderBy("Memo DESC,CommentedAt DESC", false);
@@ -122,21 +138,33 @@ public class MemoSystem extends ObjectGrid<MemoComment> implements CloseableView
         }
     }
 
+    private static MemoType mt(String shortName) {
+        shortName = StoredObject.toCode(shortName);
+        MemoType t = StoredObject.get(MemoType.class, "ShortPrefix='" + shortName + "'");
+        if(t == null) {
+            throw new SORuntimeException("Memo type " + shortName + " doesn't exist");
+        }
+        return t;
+    }
+
     private boolean mine() {
         return getTransactionManager().getUser().getId().equals(who.getId());
     }
 
     private void loadMemos() {
-        firstCache = prevCache = null;
+        prevCache = null;
         if(viewComments != null) {
             viewComments.memoComment = null;
         }
         String filter = "CommentedBy=" + who.getId();
         if(!history) {
-            filter += " AND Status<3";
+            filter += " AND T.Status<3";
         }
         if(!mine()) {
             filter += " AND EnteredBy=" + getTransactionManager().getUser().getId();
+        }
+        if(memoType != null) {
+            filter += " AND Memo.Type=" + memoType.getId();
         }
         if(filterMemoId != null) {
             filter += " AND Memo=" + filterMemoId;
@@ -146,40 +174,11 @@ public class MemoSystem extends ObjectGrid<MemoComment> implements CloseableView
     }
 
     private boolean ownerFilter(MemoComment mc) {
-        // Not closed or just initiated
-        if(mc.getStatus() < 5 || (mc.getCommentCount() == 0 && mc.getMemo().getLastComment() == 0)) {
-            prevCache = mc;
-            return true;
-        }
-        if(owner(mc)) { // I'm the owner
-            if(mc.getCommentCount() == 0) { // First
-                prevCache = mc;
-                return true;
-            }
-            return false; // Not first
-        }
-        // I'm not the owner
-        if(prevCache == null) {
-            prevCache = mc;
-            return true;
-        }
-        if(prevCache.getMemoId().equals(mc.getMemoId())) {
+        if(prevCache != null && prevCache.getMemoId().equals(mc.getMemoId())) {
             return false;
         }
         prevCache = mc;
         return true;
-    }
-
-    private MemoComment first(MemoComment mc) {
-        if(firstCache != null && firstCache.getMemoId().equals(mc.getMemoId())) {
-            return firstCache;
-        }
-        firstCache = mc.getFirst();
-        return firstCache;
-    }
-
-    private boolean owner(MemoComment mc) {
-        return first(mc).getCommentedById().equals(who.getId());
     }
 
     @Override
@@ -203,7 +202,7 @@ public class MemoSystem extends ObjectGrid<MemoComment> implements CloseableView
         whoButton = new Button(who.getName(), (String) null, e -> selectWho()).asSmall();
         rightClick = new ELabel("Please right-click on the entry to see all options", Application.COLOR_SUCCESS);
         rightClick.setVisible(!isEmpty());
-        ButtonLayout b = new ButtonLayout(new ELabel(WHO), whoButton, rightClick);
+        ButtonLayout b = new ButtonLayout(new ELabel("Of"), whoButton, rightClick);
         prependHeader().join().setComponent(b);
     }
 
@@ -219,6 +218,7 @@ public class MemoSystem extends ObjectGrid<MemoComment> implements CloseableView
     @Override
     public void clean() {
         super.clean();
+        clear();
         filterMemoId = null;
         if(viewComments != null) {
             viewComments.close();
@@ -231,8 +231,9 @@ public class MemoSystem extends ObjectGrid<MemoComment> implements CloseableView
         }
     }
 
-    public String getComment(MemoComment mc) {
-        return "Hello";
+    public void executeAndLoad() {
+        execute();
+        loadMemos();
     }
 
     public String getCommentedAt(MemoComment mc) {
@@ -240,6 +241,10 @@ public class MemoSystem extends ObjectGrid<MemoComment> implements CloseableView
     }
 
     private void newMemo(MemoComment mc) {
+        if(memoType != null) {
+            newMemo(memoType);
+            return;
+        }
         clearAlerts();
         if(newMemoType == null) {
             newMemoType = new NewMemoType();
@@ -254,7 +259,10 @@ public class MemoSystem extends ObjectGrid<MemoComment> implements CloseableView
     private void newMemo(MemoType mt) {
         clearAlerts();
         try {
-            @SuppressWarnings("ConstantConditions") Memo memo = mt.getMemoClass().getDeclaredConstructor().newInstance();
+            Memo memo = mt.getMemoClass().getDeclaredConstructor().newInstance();
+            if(memoType != null) {
+                memo.setSubject(memoType.getName());
+            }
             memo.setSystemEntity(getTransactionManager().getEntity());
             comment = mt.getContentTemplate();
             memo.setType(mt);
@@ -385,7 +393,7 @@ public class MemoSystem extends ObjectGrid<MemoComment> implements CloseableView
         @Override
         protected final boolean process() {
             SystemUser su = suField.getObject();
-            @SuppressWarnings("ConstantConditions") Id eid = getTransactionManager().getEntity().getId();
+            Id eid = getTransactionManager().getEntity().getId();
             if(su.listEntities().stream().noneMatch(e -> e.getId().equals(eid))) {
                 warning(su.getName() + " doesn't belong to " + getTransactionManager().getEntity().getName());
                 return false;
@@ -400,7 +408,7 @@ public class MemoSystem extends ObjectGrid<MemoComment> implements CloseableView
     private class SelectWho extends SelectSU {
 
         public SelectWho() {
-            super(WHO);
+            super("Assist");
         }
 
         @Override
@@ -480,6 +488,7 @@ public class MemoSystem extends ObjectGrid<MemoComment> implements CloseableView
             super("Create New");
             addField(type, creatingFor);
             setRequired(type);
+            type.setFilter("NOT Special");
         }
 
         @Override
@@ -608,7 +617,7 @@ public class MemoSystem extends ObjectGrid<MemoComment> implements CloseableView
 
     private boolean canApprove(MemoComment mc) {
         if(mc.getCommentCount() == 0 || mc.getCommentCount() != mc.getMemo().getLastComment()
-                || mc.getMemo().getStatus() >= 4) {
+                || mc.getMemo().getStatus() >= 4 || mc.getFirst().getCommentedById().equals(who.getId())) {
             return false;
         }
         Set<SystemUser> set = approvers(mc);

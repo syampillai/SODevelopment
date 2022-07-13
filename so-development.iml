@@ -13,7 +13,7 @@
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="Maven: com.sun.mail:jakarta.mail:2.0.1" level="project" />
     <orderEntry type="library" name="Maven: com.sun.activation:jakarta.activation:2.0.1" level="project" />
-    <orderEntry type="library" name="Maven: com.github.syampillai:SOCommon:4.1.18" level="project" />
+    <orderEntry type="library" name="Maven: com.github.syampillai:SOCommon:4.1.19" level="project" />
     <orderEntry type="library" name="Maven: com.fasterxml.jackson.core:jackson-databind:2.13.3" level="project" />
     <orderEntry type="library" name="Maven: com.fasterxml.jackson.core:jackson-annotations:2.13.3" level="project" />
     <orderEntry type="library" name="Maven: com.fasterxml.jackson.core:jackson-core:2.13.3" level="project" />
@@ -21,7 +21,7 @@
     <orderEntry type="library" name="Maven: com.google.zxing:javase:3.4.1" level="project" />
     <orderEntry type="library" name="Maven: com.beust:jcommander:1.78" level="project" />
     <orderEntry type="library" scope="RUNTIME" name="Maven: com.github.jai-imageio:jai-imageio-core:1.4.0" level="project" />
-    <orderEntry type="library" name="Maven: com.storedobject.vaadin:so-components:11.1.0" level="project" />
+    <orderEntry type="library" name="Maven: com.storedobject.vaadin:so-components:11.1.1" level="project" />
     <orderEntry type="library" name="Maven: com.vaadin:vaadin-core:23.1.2" level="project" />
     <orderEntry type="library" name="Maven: com.vaadin:flow-server:23.1.2" level="project" />
     <orderEntry type="library" name="Maven: org.slf4j:slf4j-api:1.7.36" level="project" />
@@ -88,7 +88,7 @@
     <orderEntry type="library" name="Maven: com.storedobject.helper:so-helper:3.0.0" level="project" />
     <orderEntry type="library" name="Maven: org.vaadin:textfieldformatter:5.4.0" level="project" />
     <orderEntry type="library" name="Maven: org.slf4j:slf4j-simple:1.7.36" level="project" />
-    <orderEntry type="library" name="Maven: com.vaadin.componentfactory:multi-combo-box-flow:2.0.0" level="project" />
+    <orderEntry type="library" name="Maven: com.vaadin.componentfactory:multi-combo-box-flow:23.1.2" level="project" />
     <orderEntry type="library" name="Maven: org.apache.xmlgraphics:batik-svggen:1.14" level="project" />
     <orderEntry type="library" name="Maven: org.apache.xmlgraphics:batik-awt-util:1.14" level="project" />
     <orderEntry type="library" name="Maven: org.apache.xmlgraphics:xmlgraphics-commons:2.6" level="project" />

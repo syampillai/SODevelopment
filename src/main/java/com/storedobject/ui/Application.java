@@ -342,10 +342,10 @@ public class Application extends com.storedobject.vaadin.Application implements 
     private void executeMe(Logic logic) {
         if(MemoSystem.class.getName().equals(logic.getClassName())) {
             if(memoSystem == null) {
-                memoSystem = new MemoSystem();
+                memoSystem = new MemoSystem(false);
             }
             memoSystem.setCaption(logic.getTitle());
-            memoSystem.execute();
+            memoSystem.executeAndLoad();
             return;
         }
         server.execute(logic);
@@ -1540,10 +1540,16 @@ public class Application extends com.storedobject.vaadin.Application implements 
             StoredObject ref = message.listGeneratedBy().findFirst();
             if(logic == null && ref != null) {
                 if(ref instanceof Memo) {
-                    MemoSystem ms = Application.get().memoSystem;
-                    if(ms == null) {
-                        ms = new MemoSystem(false);
-                        Application.get().memoSystem = ms;
+                    MemoType memoType = ((Memo)ref).getType();
+                    MemoSystem ms;
+                    if(memoType.getSpecial()) {
+                        ms = new MemoSystem(memoType, false);
+                    } else {
+                        ms = Application.get().memoSystem;
+                        if(ms == null) {
+                            ms = new MemoSystem(false);
+                            Application.get().memoSystem = ms;
+                        }
                     }
                     setAlertHandler(ms);
                 } else {

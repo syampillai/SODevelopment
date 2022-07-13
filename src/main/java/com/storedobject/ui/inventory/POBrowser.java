@@ -99,7 +99,8 @@ public class POBrowser<T extends InventoryPO> extends ObjectBrowser<T> implement
                 e -> e.getItem().ifPresent(i -> closePO()));
         GridMenuItem<T> preGRNs = contextMenu.addItem("Process Associated GRNs",
                 e -> e.getItem().ifPresent(i -> preProcessGRNs()));
-        contextMenu.addItem("View Associated GRNs", e -> e.getItem().ifPresent(i -> preViewGRNs()));
+        GridMenuItem<T> viewGRNs = contextMenu.addItem("View Associated GRNs",
+                e -> e.getItem().ifPresent(i -> preViewGRNs()));
         contextMenu.setDynamicContentHandler(po -> {
             deselectAll();
             if(po == null) {
@@ -107,7 +108,12 @@ public class POBrowser<T extends InventoryPO> extends ObjectBrowser<T> implement
             }
             select(po);
             processButtons.forEach(b -> b.menu.setVisible(b.check.test(po)));
-            switch(po.getStatus()) {
+            int status = po.getStatus();
+            viewGRNs.setVisible(status > 1);
+            if(status > 0) {
+                placeOrder.setVisible(false);
+            }
+            switch(status) {
                 case 0 -> {
                     placeOrder.setVisible(!forGRN && canPlaceOrder(po));
                     receiveItems.setVisible(false);
@@ -116,28 +122,24 @@ public class POBrowser<T extends InventoryPO> extends ObjectBrowser<T> implement
                     preGRNs.setVisible(false);
                 }
                 case 1 -> {
-                    placeOrder.setVisible(false);
                     receiveItems.setVisible(canReceiveItems(po));
                     foreClose.setVisible(canClosePO(po));
                     close.setVisible(false);
                     preGRNs.setVisible(false);
                 }
                 case 2 -> {
-                    placeOrder.setVisible(false);
                     receiveItems.setVisible(canReceiveItems(po));
                     foreClose.setVisible(canClosePO(po));
                     close.setVisible(false);
                     preGRNs.setVisible(canProcessGRN(po));
                 }
                 case 3 -> {
-                    placeOrder.setVisible(false);
                     receiveItems.setVisible(false);
                     foreClose.setVisible(false);
                     close.setVisible(canClosePO(po));
                     preGRNs.setVisible(canProcessGRN(po));
                 }
                 case 4 -> {
-                    placeOrder.setVisible(false);
                     receiveItems.setVisible(false);
                     foreClose.setVisible(false);
                     close.setVisible(false);
@@ -541,10 +543,15 @@ public class POBrowser<T extends InventoryPO> extends ObjectBrowser<T> implement
             return new ButtonLayout(
                     new ConfirmButton("Create New GRN", VaadinIcon.FILE_PROCESS, e -> process(true)),
                     new ConfirmButton("Add to an Existing GRN", VaadinIcon.FILE_ADD, e -> process(false)),
+                    new ConfirmButton("Set Quantities = 0", VaadinIcon.CIRCLE_THIN, e -> zero()),
                     new ConfirmButton("Cancel", e -> close()),
                     confirmExcess,
                     new ELabel("Right-click on the entry to set an APN", Application.COLOR_SUCCESS)
             );
+        }
+
+        private void zero() {
+            qFields.values().forEach(f -> f.setValue(f.getValue().zero()));
         }
 
         private void process(boolean createNew) {

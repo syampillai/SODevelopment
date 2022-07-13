@@ -25,7 +25,7 @@ public class SystemLogViewer extends View implements Transactional, CloseableVie
     private final ObjectField<SystemUser> loginField = new ObjectField<>("User", SystemUser.class);
     private final TextArea logDump = new TextArea("Log");
     private final Button view = new Button("View", this);
-    private final ChoiceField type = new ChoiceField("Type", new String[] { "User Logs", "Server Logs", "Scheduler Logs", "Connector Logs" });
+    private final ChoiceField type = new ChoiceField("Type", new String[] { "User Logs", "Server Logs" });
     private final BooleanField all = new BooleanField("Include Generic Information");
     private final SystemProcess process = new SystemProcess();
     private final LogGrid logGrid = new LogGrid();
@@ -59,8 +59,6 @@ public class SystemLogViewer extends View implements Transactional, CloseableVie
         switch(type.getValue()) {
             case 0 -> login = loginField.getObject().getLogin();
             case 1 -> login = "*";
-            case 2 -> tag = "scheduler";
-            case 3 -> tag = "connector";
         }
         if(login == null) {
             SystemUser su = SystemUser.get(ApplicationServer.getGlobalProperty(tag + ".user", "*"));
@@ -136,7 +134,8 @@ public class SystemLogViewer extends View implements Transactional, CloseableVie
             xml.set(new TagClosedReader(tag));
             logGrid.setXML(xml);
         } catch(SOException soe) {
-            String error = "Log File" + (tag == null ? "" : (" for " + Character.toUpperCase(tag.charAt(0)) + tag.substring(1))) + ": ";
+            String error = "Log File" + (tag == null ? "" : (" for " + Character.toUpperCase(tag.charAt(0))
+                    + tag.substring(1))) + ": ";
             warning(error + soe.getEndUserMessage());
             log(error + TagClosedReader.fileName(tag));
             hideLogs();
