@@ -48,6 +48,17 @@ public class MessageGroup extends StoredObject implements RequiresApproval{
 		return ObjectIterator.create();
 	}
 
+
+	/**
+	 * Get the list of contacts belonging to this message group.
+	 *
+	 * @param contactType Type of contact (0: SMS, 1: Email, 2: Application)
+	 * @return List.
+	 */
+	public List<Contact> listContacts(int contactType) {
+		return new ArrayList<>();
+	}
+
 	public List<SystemUser> listUsers() {
 		return new ArrayList<>();
 	}

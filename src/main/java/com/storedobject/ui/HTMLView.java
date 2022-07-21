@@ -4,10 +4,7 @@ import com.storedobject.common.IO;
 import com.storedobject.common.SORuntimeException;
 import com.storedobject.core.TextContent;
 import com.storedobject.ui.util.SOServlet;
-import com.storedobject.vaadin.ApplicationEnvironment;
-import com.storedobject.vaadin.HomeView;
-import com.storedobject.vaadin.View;
-import com.storedobject.vaadin.Viewer;
+import com.storedobject.vaadin.*;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasSize;
 import com.vaadin.flow.component.dialog.Dialog;
@@ -125,7 +122,27 @@ public class HTMLView extends Viewer {
             component = new TemplateLayout(textContent);
         }
         ((HasSize)component).setSizeFull();
-        setComponent(windowMode ? createWindow(component) : component);
+        Component c;
+        if(windowMode) {
+            c = createWindow(component);
+        } else {
+            if(showHeader()) {
+                c = new ContentWithHeader(new WindowDecorator(this), component);
+                c.getElement().getStyle().set("height", "92%");
+            } else {
+                c = component;
+            }
+        }
+        setComponent(c);
+    }
+
+    /**
+     * Whether to show a header with caption or not even in non-window mode. (Default implementation returns true).
+     *
+     * @return True/false.
+     */
+    protected boolean showHeader() {
+        return true;
     }
 
     @Override

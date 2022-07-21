@@ -110,7 +110,7 @@ public class DocumentViewer extends PDFViewer {
                 view = new ContentView(viewerComponent = new Audio(resource, contentType.getMimeType()));
             } else if(contentType.isImage()) {
                 view = new ContentView(viewerComponent = new Image(resource));
-            } else if(contentType.getMimeType().equals("text/html")) {
+            } else if(contentType.isHTML()) {
                 if(streamData != null) {
                     view = new HTMLView(IO.getReader(streamData.getContent()), isWindow());
                     viewerComponent = ((HTMLView) view).getViewerComponent();
@@ -160,7 +160,7 @@ public class DocumentViewer extends PDFViewer {
                 view = new ContentView(viewerComponent = new Audio(resource));
             } else if(contentType.isImage()) {
                 view = new ContentView(viewerComponent = new Image(resource));
-            } else if(contentType.getMimeType().equals("text/html")) {
+            } else if(contentType.isHTML()) {
                 view = new HTMLView(IO.getReader(input), isWindow());
                 viewerComponent = ((HTMLView)view).getViewerComponent();
             } else {
@@ -183,6 +183,7 @@ public class DocumentViewer extends PDFViewer {
                 return;
             }
         }
+        view.setCaption(this.caption);
         if(listener == null) {
             view.execute();
         } else {
@@ -258,16 +259,20 @@ public class DocumentViewer extends PDFViewer {
     }
 
     private boolean isWindow() {
-        return windowMode || (!application.supportsCloseableView() && !contentType.isPDF());
+        return windowMode || (!application.supportsCloseableView() && !isViewer());
     }
 
     private Component createContentLayout(Component component) {
-        if(application.supportsCloseableView() || !contentType.isPDF()) {
-            return contentType.isPDF() ? component : new CenteredLayout(component);
+        if(application.supportsCloseableView() || !isViewer()) {
+            return isViewer() ? component : new CenteredLayout(component);
         }
         if(isWindow()) {
-            return contentType.isPDF() ? component : new CenteredLayout(component);
+            return isViewer() ? component : new CenteredLayout(component);
         }
         return new VerticalLayout();
+    }
+
+    private boolean isViewer() {
+        return contentType.isPDF() || contentType.isHTML();
     }
 }

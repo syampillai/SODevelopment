@@ -2494,7 +2494,7 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
             });
             this.action = action;
             if(any.get() > 0) {
-                execute();
+                execute(ObjectEditor.this);
             } else {
                 process();
             }

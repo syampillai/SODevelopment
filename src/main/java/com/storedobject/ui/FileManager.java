@@ -4,6 +4,7 @@ import com.storedobject.common.SORuntimeException;
 import com.storedobject.common.StringList;
 import com.storedobject.core.ObjectForest;
 import com.storedobject.core.*;
+import com.storedobject.report.FileCirculationStatus;
 import com.storedobject.vaadin.ActionForm;
 import com.storedobject.vaadin.DataForm;
 import com.storedobject.vaadin.MultiSelectGrid;
@@ -85,6 +86,7 @@ public class FileManager extends ObjectForestBrowser<FileFolder> implements Tran
             }
         });
         contextMenu.addItem("Manage Circulation", e -> manageCirculation());
+        contextMenu.addItem("View Circulation Status", e -> circulationStatus());
         GridMenuItem<Object> newVer = contextMenu.addItem("Create New Version", e -> {
             if(o(e.getItem().orElse(null)) instanceof FileData f) {
                 createNewVersion(f);
@@ -193,6 +195,20 @@ public class FileManager extends ObjectForestBrowser<FileFolder> implements Tran
         } else {
             cEditor((FileFolder) so, null);
         }
+    }
+
+    private void circulationStatus() {
+        if(currentLinkObject == null) {
+            return;
+        }
+        StoredObject so = currentLinkObject.getObject();
+        FileCirculationStatus cs;
+        if(so instanceof FileData f) {
+            cs = new FileCirculationStatus(getApplication(), f);
+        } else {
+            cs = new FileCirculationStatus(getApplication(), (FileFolder) so);
+        }
+        Application.get().view("Circulation Status", cs);
     }
 
     private void circulate(FileFolder folder, boolean recursive) {

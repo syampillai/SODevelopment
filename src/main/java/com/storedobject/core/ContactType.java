@@ -47,4 +47,12 @@ public class ContactType extends StoredObject {
     public int getDisplayOrder() {
         return 0;
     }
+
+    public ContactGroupingCode getContactGroup() {
+        return new ContactGroupingCode();
+    }
+
+    public Class<? extends HasContacts> getContactClass() {
+        return getContactGroup().getContactDataClass();
+    }
 }

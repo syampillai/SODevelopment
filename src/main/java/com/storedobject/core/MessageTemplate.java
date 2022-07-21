@@ -101,6 +101,22 @@ public class MessageTemplate extends StoredObject {
         return 7;
     }
 
+    public List<MessageTemplate> listAll(int deliveryType) {
+        return listAll("", deliveryType);
+    }
+
+    public List<MessageTemplate> listAll() {
+        return listAll("", -1);
+    }
+
+    public static List<MessageTemplate> listAll(String templateName) {
+        return listAll(templateName, -1);
+    }
+
+    public static List<MessageTemplate> listAll(String templateName, int deliveryType) {
+        return new ArrayList<>();
+    }
+
     public static List<Id> send(String templateName, TransactionControl tc, Iterable<Person> persons, Object... messageParameters) throws Throwable {
         return new ArrayList<>();
     }

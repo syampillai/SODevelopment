@@ -24,8 +24,4 @@ public class PackingUnit extends StoredObject {
     public Quantity getQuantity() {
         return null;
     }
-    
-    public String getUnit() {
-        return null;
-    }
 }

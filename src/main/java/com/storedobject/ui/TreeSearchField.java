@@ -2,7 +2,6 @@ package com.storedobject.ui;
 
 import com.storedobject.common.SORuntimeException;
 import com.storedobject.ui.util.ChildVisitor;
-import com.storedobject.vaadin.DataTreeGrid;
 import com.storedobject.vaadin.*;
 import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.icon.VaadinIcon;
@@ -95,6 +94,7 @@ public class TreeSearchField<P extends T, T> extends TextField {
             }
         }
         grid.select(selected);
+        grid.scrollTo(selected);
         focus();
     }
 

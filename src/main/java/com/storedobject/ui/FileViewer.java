@@ -138,7 +138,7 @@ public class FileViewer extends ObjectForestViewer<FileFolder> implements Closea
                 } else if(sd.isVideo()) {
                     view = "Play";
                     icon = "movie";
-                } else if(sd.isImage() || sd.getMimeType().equals("application/pdf")){
+                } else if(sd.isImage() || sd.isPDF() || sd.isHTML()) {
                     view = "View";
                     icon = view;
                 } else {

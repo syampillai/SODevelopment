@@ -13,7 +13,7 @@ public final class PackingUnitEditor extends ObjectEditor<PackingUnit> {
     private Button deploy;
 
     public PackingUnitEditor() {
-        super(PackingUnit.class, EditorAction.ALL & (~EditorAction.DELETE) & (~EditorAction.EDIT));
+        super(PackingUnit.class, EditorAction.ALL & (~EditorAction.DELETE));
     }
 
     @Override

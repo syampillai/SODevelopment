@@ -2,6 +2,7 @@ package com.storedobject.ui.account;
 
 import com.storedobject.common.StringList;
 import com.storedobject.core.*;
+import com.storedobject.ui.Application;
 import com.storedobject.ui.ELabel;
 import com.storedobject.ui.ObjectField;
 import com.storedobject.vaadin.*;
@@ -21,17 +22,23 @@ public class StatementView extends ListGrid<LedgerEntry> implements CloseableVie
     private final Button forward, backward, begin, end, voucher;
     private final LedgerWindow ledger = new LedgerWindow(60, this);
     private Account account;
-    private final ELabel openingBalance = new ELabel(NO_ENTRIES);
+    private final ELabel openingBalance = new ELabel(NO_ENTRIES), accountTitle = new ELabel();
     private JournalVoucherView voucherView;
 
     public StatementView() {
         super(LedgerEntry.class, StringList.create("Date", "Particulars", "Debit", "Credit", "Balance"));
+        accountField.setDisplayDetail(t -> {});
         setCaption("Statement View");
         forward = new Button("Next", this);
         backward = new Button("Previous", this);
         begin = new Button("First Page", VaadinIcon.SIGN_IN_ALT, this);
         end = new Button("Last Page", VaadinIcon.SIGN_OUT_ALT, this);
         voucher = new Button("Voucher", VaadinIcon.FILE_TEXT_O, this);
+        forward.setEnabled(false);
+        backward.setEnabled(false);
+        begin.setEnabled(false);
+        end.setEnabled(false);
+        voucher.setEnabled(false);
         trackValueChange(dateField);
         trackValueChange(accountField);
         new Box(openingBalance);
@@ -48,17 +55,13 @@ public class StatementView extends ListGrid<LedgerEntry> implements CloseableVie
     public Component createHeader() {
         Div h = new Div();
         ButtonLayout b = new ButtonLayout();
-        b.add(new ELabel("Account:"), accountField);
+        b.add(new ELabel("Account:"), accountField, accountTitle);
         h.add(b);
         b = new ButtonLayout();
-        b.add(new ELabel("From Date:"), dateField, forward, backward, begin, end, voucher);
+        b.add(new ELabel("From Date:"), dateField, forward, backward, begin, end, voucher,
+                new Button("Exit", e -> close()));
         b.addFiller();
         b.add(openingBalance);
-        forward.setEnabled(false);
-        backward.setEnabled(false);
-        begin.setEnabled(false);
-        end.setEnabled(false);
-        voucher.setEnabled(false);
         h.add(b);
         return h;
     }
@@ -133,7 +136,7 @@ public class StatementView extends ListGrid<LedgerEntry> implements CloseableVie
             return;
         }
         if(c == voucher) {
-            LedgerEntry le = getSelected();
+            LedgerEntry le = size() == 1 ? get(0) : getSelected();
             if(le == null) {
                 message("Please select an entry");
                 return;
@@ -162,6 +165,7 @@ public class StatementView extends ListGrid<LedgerEntry> implements CloseableVie
                 setCaption("Statement View");
             } else {
                 ledger.setAccount(account);
+                accountTitle.clearContent().append(account.toDisplay(), Application.COLOR_SUCCESS).update();
                 enableButtons();
                 setCaption("Statement: " + account);
             }

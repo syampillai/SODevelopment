@@ -4,11 +4,9 @@ import com.storedobject.common.StringList;
 import com.storedobject.core.Id;
 import com.storedobject.core.JournalVoucher;
 import com.storedobject.core.Money;
+import com.storedobject.ui.Application;
 import com.storedobject.ui.ELabel;
-import com.storedobject.vaadin.Box;
-import com.storedobject.vaadin.ButtonLayout;
-import com.storedobject.vaadin.CloseableView;
-import com.storedobject.vaadin.ListGrid;
+import com.storedobject.vaadin.*;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.grid.ColumnTextAlign;
 
@@ -38,8 +36,9 @@ public class JournalVoucherView extends ListGrid<JournalVoucher.Entry> implement
     @Override
     public Component createHeader() {
         ButtonLayout b = new ButtonLayout(new ELabel("Transaction:"), transaction);
+        b.add(new ELabel(" Entries: "), count);
         b.addFiller();
-        b.add(new ELabel("Entries: "), count);
+        b.add(new Button("Exit", e -> close()));
         return b;
     }
 
@@ -95,15 +94,16 @@ public class JournalVoucherView extends ListGrid<JournalVoucher.Entry> implement
                 id = jv.getTransactionId();
                 if(pid == null || !pid.equals(id)) {
                     if(pid != null) {
-                        transaction.append(", ");
+                        transaction.append(", ", Application.COLOR_SUCCESS);
                     }
                     pid = id;
-                    transaction.append(id);
-                    transaction.append(" dated ").append(jv.getDate());
+                    transaction.append(id, Application.COLOR_SUCCESS);
+                    transaction.append(" dated ", Application.COLOR_SUCCESS)
+                            .append(jv.getDate(), Application.COLOR_SUCCESS);
                 }
             }
             recalculateColumnWidths();
-            count.append(size());
+            count.append("" + size(), Application.COLOR_SUCCESS);
             setCaption("Voucher: " + vouchers.get(0).getTransactionId());
         }
         count.update();

@@ -133,7 +133,7 @@ public interface LinkGrid<T extends StoredObject> {
     }
 
     default void setAllowEdit(boolean allowEdit) {
-        getButtonPanel().setAllowAdd(allowEdit);
+        getButtonPanel().setAllowEdit(allowEdit);
     }
 
     default boolean isAllowDelete() {

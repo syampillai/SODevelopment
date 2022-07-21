@@ -655,11 +655,11 @@ public class Application extends com.storedobject.vaadin.Application implements 
     }
 
     public void view(String caption, Id objectId, String actionName, Consumer<StoredObject> action) {
-        view(caption, StoredObject.get(objectId));
+        view(caption, StoredObject.get(objectId), actionName, null);
     }
 
     public void view(Id objectId, String actionName, Consumer<StoredObject> action) {
-        view(null, objectId);
+        view(null, objectId, actionName, null);
     }
 
     public void view(StoredObject object, String actionName, Consumer<StoredObject> action) {

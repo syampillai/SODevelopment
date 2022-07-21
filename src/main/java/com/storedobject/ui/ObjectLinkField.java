@@ -179,7 +179,7 @@ public final class ObjectLinkField<T extends StoredObject>
     }
 
     public void setAllowEdit(boolean allowEdit) {
-        grid.setAllowAdd(allowEdit);
+        grid.setAllowEdit(allowEdit);
     }
 
     public boolean isAllowDelete() {

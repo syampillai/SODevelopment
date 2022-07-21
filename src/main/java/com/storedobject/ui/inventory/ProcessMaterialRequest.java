@@ -1197,33 +1197,20 @@ public class ProcessMaterialRequest extends AbstractRequestMaterial {
 
     private static class ViewItems extends ObjectGrid<MaterialIssuedItem> {
 
-        private final ELabel caption = new ELabel();
-
         ViewItems(MaterialRequest mr) {
             super(MaterialIssuedItem.class);
-            setWidth("80vw");
-            setHeight("90vh");
-            getView(true).setWindowMode(true);
             setRequest(mr);
         }
 
         @Override
-        public Component createHeader() {
-            return new ButtonLayout(new Button("Exit", e -> close()), new ELabel(" "), caption);
+        public Window createWindow(View view) {
+            return createDecoratedWindow(view);
         }
 
         void setRequest(MaterialRequest mr) {
-            setCaption((mr.getReserved() ? "Reserv" : "Issu") + "ed Items");
+            setCaption((mr.getReserved() ? "Reserv" : "Issu") + "ed Items (Requested by " + mr.getPerson() + ")");
             load(StoredObject.list(MaterialIssued.class, "Request=" + mr.getId())
                     .expand(mi -> mi.listLinks(MaterialIssuedItem.class, "(Quantity).Quantity>0")));
-        }
-
-        @Override
-        public void setCaption(String caption) {
-            super.setCaption(caption);
-            if(this.caption != null) {
-                this.caption.clearContent().append(caption, Application.COLOR_SUCCESS).update();
-            }
         }
     }
 

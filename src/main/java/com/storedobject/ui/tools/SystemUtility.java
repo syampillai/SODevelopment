@@ -243,7 +243,7 @@ public class SystemUtility extends View implements CloseableView, Transactional 
                 select.setValue(columns.toString(", "));
             } else {
                 if(cols.startsWith("/")) {
-                    new QueryGrid(StoredObject.query(objectClass, cols)).execute();
+                    new QueryGrid(StoredObject.query(objectClass, cols, where.getValue(), orderBy.getValue())).execute();
                     return;
                 }
                 columns = StringList.create(cols);

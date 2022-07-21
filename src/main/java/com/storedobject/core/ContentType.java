@@ -32,6 +32,14 @@ public interface ContentType {
         return getMimeType().equals("application/pdf");
     }
 
+    default boolean isHTML() {
+        return getMimeType().equals("text/html");
+    }
+
+    default boolean isText() {
+        return getMimeType().equals("text/plain");
+    }
+
     default String getLink() {
         return null;
     }
