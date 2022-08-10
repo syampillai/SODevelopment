@@ -121,6 +121,7 @@ public class ChangePassword extends DataForm implements Transactional {
         user.setValue(su.getId() + ":" + su.getLogin());
         addField(newUsername);
         password = createPasswordField("Current Password");
+        setFirstFocus(password);
         if(!forgot) {
             addField(password);
         }

@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Return items from a production unit / consumption location (return balance quantity after consumption).
+ * Return items from a consumption location (return balance quantity after consumption).
  *
  * @author Syam
  */
@@ -25,32 +25,30 @@ public class ConsumptionReturn extends DataForm implements Transactional {
     private InventoryLocation cl; // Consumption location
     private final LocationField storeField;
     private final LocationField clField;
-    private final int type;
     private Date date;
 
-    public ConsumptionReturn(int type) {
-        this(type, (InventoryStoreBin) null, null);
+    public ConsumptionReturn() {
+        this((InventoryStoreBin) null, null);
     }
 
-    public ConsumptionReturn(int type, String storeAndEOName) {
-        this(type, LocationField.getStore(storeAndEOName), eoName(storeAndEOName, type));
+    public ConsumptionReturn(String storeAndEOName) {
+        this(LocationField.getStore(storeAndEOName), eoName(storeAndEOName));
     }
 
-    public ConsumptionReturn(int type, InventoryStore store) {
-        this(type, store, null);
+    public ConsumptionReturn(InventoryStore store) {
+        this(store, null);
     }
 
-    public ConsumptionReturn(int type, InventoryStore store, InventoryLocation cl) {
-        this(type, store.getStoreBin(), cl);
+    public ConsumptionReturn(InventoryStore store, InventoryLocation cl) {
+        this(store.getStoreBin(), cl);
     }
 
-    public ConsumptionReturn(int type, InventoryStoreBin storeBin) {
-        this(type, storeBin, null);
+    public ConsumptionReturn(InventoryStoreBin storeBin) {
+        this(storeBin, null);
     }
 
-    public ConsumptionReturn(int type, InventoryStoreBin storeBin, InventoryLocation cl) {
-        super(caption(type));
-        this.type = type;
+    public ConsumptionReturn(InventoryStoreBin storeBin, InventoryLocation cl) {
+        super("Consumption Returns");
         this.storeBin = storeBin;
         this.cl = cl;
         if(storeBin == null) {
@@ -63,17 +61,17 @@ public class ConsumptionReturn extends DataForm implements Transactional {
         }
         storeField.setLabel("Select Store");
         if(cl == null) {
-            clField = LocationField.create(type);
+            clField = LocationField.create(16);
             if(clField.getLocationCount() == 1) {
                 this.cl = clField.getValue();
             }
         } else {
-            if(cl.getType() != type) {
+            if(cl.getType() != 16) {
                 throw new SORuntimeException("Incorrect - " + cl.getTypeValue());
             }
             clField = LocationField.create(cl);
         }
-        clField.setLabel(type == 18 ? "Custodian" : "Organization");
+        clField.setLabel("Consumption Location");
         addField(storeField, clField);
         if(storeBin != null) {
             setFieldReadOnly(storeField);
@@ -85,17 +83,7 @@ public class ConsumptionReturn extends DataForm implements Transactional {
         setRequired(clField);
     }
 
-    private static String caption(int type) {
-        switch(type) {
-            case 4:
-                return "Items Returned from Production";
-            case 16:
-                return "Consumption Returns";
-        }
-        throw new SORuntimeException("Invalid type: " + InventoryLocation.getTypeValue(type));
-    }
-
-    private static InventoryLocation eoName(String storeAndEOName, int type) {
+    private static InventoryLocation eoName(String storeAndEOName) {
         if(storeAndEOName == null || !storeAndEOName.contains("|")) {
             return null;
         }
@@ -103,7 +91,7 @@ public class ConsumptionReturn extends DataForm implements Transactional {
         if(storeAndEOName.isEmpty()) {
             return null;
         }
-        return LocationField.getLocation(storeAndEOName, type);
+        return LocationField.getLocation(storeAndEOName, 16);
     }
 
     @Override
@@ -229,9 +217,11 @@ public class ConsumptionReturn extends DataForm implements Transactional {
         @Override
         public void addExtraButtons() {
             super.addExtraButtons();
+            /*
             if(type != 3) {
                 buttonLayout.add(new ELabel("Date: "), dateField);
             }
+            */
             if(!confirm) {
                 return;
             }

@@ -822,7 +822,7 @@ public abstract class StoredObject implements Displayable, HasId {
     public static <T extends StoredObject> ObjectIterator<T> list(Transaction transaction, Class<T> objectClass,
                                                                   String condition, String order) {
         ClassAttribute<T> ca = StoredObjectUtility.classAttribute(objectClass);
-        return list(transaction, StoredObjectUtility.classAttribute(objectClass), condition, order, false);
+        return list(transaction, ca, condition, order, false);
     }
 
     public static <T extends StoredObject> ObjectIterator<T> list(Class<T> objectClass, boolean any) {
@@ -1400,6 +1400,7 @@ public abstract class StoredObject implements Displayable, HasId {
         return queryLinksOrMasters(transaction, linkType, objectClass, columns, condition, order, any, true);
     }
 
+    @SuppressWarnings("unused")
     private Query queryLinksOrMasters(Transaction transaction, String linkType, Class<? extends StoredObject> objectClass,
                                       String columns, String condition, String order, boolean any, boolean links) {
         return new Query();
@@ -2135,6 +2136,10 @@ public abstract class StoredObject implements Displayable, HasId {
             return link;
         }
         return null;
+    }
+
+    public final StoredObjectLink<?> objectLink(StoredObjectUtility.Link<?> sLink) {
+        return objectLink(sLink.getName(), true);
     }
 
     public final void clearObjectLinks() {

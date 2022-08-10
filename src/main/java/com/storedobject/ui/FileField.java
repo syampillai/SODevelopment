@@ -130,6 +130,9 @@ public class FileField extends AbstractObjectField<StreamData> {
         downloadHidden = download;
         setLabel(label);
         setValue((StreamData) null);
+        new Clickable<>(image, e -> Application.get().view(getInternalLabel(), getValue()));
+        image.getElement().getStyle().set("cursor", "pointer");
+        image.getElement().setAttribute("title", "Click for an enlarged view");
     }
 
     private void hide(ImageButton b) {

@@ -1,13 +1,18 @@
 package com.storedobject.ui.inventory;
 
-import com.storedobject.core.InventoryLocation;
-import com.storedobject.core.InventoryRO;
-import com.storedobject.core.InventoryROItem;
+import com.storedobject.core.*;
+import com.storedobject.ui.ObjectEditorProvider;
 import com.storedobject.vaadin.Button;
 import com.storedobject.vaadin.DataForm;
 import com.vaadin.flow.component.checkbox.Checkbox;
+import com.vaadin.flow.component.icon.VaadinIcon;
 
-public final class SendItemsForRepair extends AbstractSendAndReceiveMaterial<InventoryRO, InventoryROItem> {
+public final class SendItemsForRepair extends AbstractSendAndReceiveMaterial<InventoryRO, InventoryROItem>
+        implements ObjectEditorProvider, ProducesGRN {
+
+    private final Button goToGRNs = new Button("GRNs", VaadinIcon.STOCK, e -> toGRNs());
+    private final Button receiveItems = new Button("Receive", VaadinIcon.STORAGE, e -> receiveItems());
+    private boolean forGRN = false;
 
     public SendItemsForRepair() {
         this(SelectStore.get());
@@ -26,7 +31,7 @@ public final class SendItemsForRepair extends AbstractSendAndReceiveMaterial<Inv
         super.addExtraButtons();
         Checkbox h = new Checkbox("Include History");
         h.addValueChangeListener(e -> setFixedFilter(e.getValue() ? null : "Status<2"));
-        buttonPanel.add(h);
+        buttonPanel.add(receiveItems, h, goToGRNs);
         setFixedFilter("Status<2");
     }
 
@@ -38,6 +43,36 @@ public final class SendItemsForRepair extends AbstractSendAndReceiveMaterial<Inv
     @Override
     protected Button getSwitchLocationButton() {
         return new Button("Change", (String) null, e -> new SwitchStore().execute());
+    }
+
+    public void setForGRNs() {
+        this.forGRN = true;
+        if(add != null) {
+            add.setVisible(false);
+            add = null;
+        }
+        if(edit != null) {
+            edit.setVisible(false);
+            edit = null;
+        }
+    }
+
+    private void toGRNs() {
+        GRN grnView = new GRN(3, ((InventoryStoreBin) getLocationFrom()).getStore());
+        grnView.setPOClass(getClass());
+        if(!forGRN) {
+            grnView.setFromROs();
+            grnView.setAllowSwitchStore(true);
+        }
+        grnView.setGRNProducer(this);
+        grnView.setEditorProvider(this);
+        close();
+        grnView.execute();
+    }
+
+    private void receiveItems() {
+        close();
+        new ReceiveReturnedItems(3, ((InventoryStoreBin) getLocationFrom()).getStore()).execute();
     }
 
     private class SwitchStore extends DataForm {

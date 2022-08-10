@@ -75,7 +75,7 @@ public class ReceiveMaterial extends DataForm {
     }
 
     private ReceiveMaterial(LocationField toField, InventoryLocation to, int type) {
-        super("Receive Material/Tools");
+        super("Receive Materials/Tools");
         if(toField == null) {
             if(to == null) {
                 this.toField = LocationField.create("Receive to", 0, 4, 5, 11);
@@ -158,7 +158,7 @@ public class ReceiveMaterial extends DataForm {
                 case 6 -> grn(1, to);
                 case 7 -> new ReceiveReturnedItems(18, (InventoryStoreBin) to).execute();
                 case 8 -> grn(2, to);
-                case 9 -> new ConsumptionReturn(16, (InventoryStoreBin) to).execute();
+                case 9 -> new ConsumptionReturn((InventoryStoreBin) to).execute();
             }
         } else {
             switch(typeFieldForLocations.getValue()) {

@@ -21,7 +21,6 @@ import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
-@SuppressWarnings("resource")
 public class SOFieldCreator<T> implements ObjectFieldCreator<T> {
 
     private ObjectForm<T> form;
@@ -136,7 +135,9 @@ public class SOFieldCreator<T> implements ObjectFieldCreator<T> {
             return contactTypes;
         }
         try {
-            if(ca.getObjectClass().getDeclaredConstructor().newInstance() instanceof HasContacts hc) {
+            if(HasContacts.class.isAssignableFrom(ca.getObjectClass()) &&
+                    ca.getObjectClass().getDeclaredConstructor().newInstance() instanceof HasContacts hc) {
+                //noinspection resource
                 hc.listContactTypes().filter(ct -> oe.isFieldIncluded(ct.getName() + ".c"))
                         .forEach(contactTypes::add);
             }
@@ -342,8 +343,7 @@ public class SOFieldCreator<T> implements ObjectFieldCreator<T> {
         }
         return o -> {
             StoredObject so = (StoredObject) o;
-            StoredObjectLink<?> soLink = so.objectLink(link.getName(), false);
-            return soLink == null ? StoredObjectLink.create(link, so) : soLink;
+            return so.objectLink(link);
         };
     }
 

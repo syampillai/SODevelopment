@@ -89,18 +89,32 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
      * Constructor.
      *
      * @param classNames Class names to be used.
-     *                   "Class Name of P/N|Store Name|PO browser logic or PO class name".
+     *                   "Class Name of P/N|Store Name|PO browser logic or PO class name or RO class name".
      */
     public GRN(String classNames) {
-        this(0, ParameterParser.itemTypeClass(classNames), EditorAction.ALL, null,
+        this(type(classNames), ParameterParser.itemTypeClass(classNames), EditorAction.ALL, null,
                 ParameterParser.store(classNames));
         String p = ParameterParser.parameter(classNames, 2);
         if(ParameterParser.isClass(p)) {
             try {
-                poClass = JavaClassLoader.getLogic(p);
+                setPOClass(JavaClassLoader.getLogic(p));
             } catch(ClassNotFoundException ignored) {
             }
         }
+    }
+
+    private static int type(String classNames) {
+        String p = ParameterParser.parameter(classNames, 2);
+        if(ParameterParser.isClass(p)) {
+            try {
+                Class<?> bClass = bClass(JavaClassLoader.getLogic(p));
+                if(InventoryRO.class.isAssignableFrom(bClass)) {
+                    return 3;
+                }
+            } catch(ClassNotFoundException ignored) {
+            }
+        }
+        return 0;
     }
 
     /**
@@ -209,6 +223,10 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
         this.fromPOs = true;
     }
 
+    public void setFromROs() {
+        this.fromPOs = true;
+    }
+
     public void setAllowSwitchStore(boolean allowSwitchStore) {
         this.allowSwitchStore = allowSwitchStore;
         switchStore.setVisible(allowSwitchStore);
@@ -254,13 +272,37 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
 
     public void setPOClass(Class<?> poClass) {
         this.poClass = poClass;
+        Class<?> bClass = bClass(poClass);
+        if(bClass == null) {
+            this.poClass = null;
+        }
+        if(bClass == InventoryRO.class && type != 3) {
+            this.poClass = null;
+            bClass = null;
+        }
         if(add != null) {
-            add.setVisible(poClass != null);
-            if(poClass != null) {
-                add.setText("POs");
+            add.setVisible(bClass != null);
+            if(bClass != null) {
+                add.setText(InventoryRO.class.isAssignableFrom(bClass) ? "ROs" : "POs");
                 add.setIcon(VaadinIcon.FILE_TABLE);
             }
         }
+    }
+
+    private static Class<?> bClass(Class<?> poClass) {
+        if(poClass == null) {
+            return null;
+        }
+        if(InventoryPO.class.isAssignableFrom(poClass) || InventoryRO.class.isAssignableFrom(poClass)) {
+            return poClass;
+        }
+        if(POBrowser.class.isAssignableFrom(poClass)) {
+            return InventoryPO.class;
+        }
+        if(SendItemsForRepair.class.isAssignableFrom(poClass)) {
+            return InventoryRO.class;
+        }
+        return null;
     }
 
     @Override
@@ -320,6 +362,17 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
 
     @Override
     public void doAdd() {
+        SendItemsForRepair roBrowser = createROBrowser();
+        if(roBrowser != null) {
+            close();
+            if(!fromPOs) {
+                roBrowser.setCaption("Create GRNs");
+                roBrowser.setForGRNs();
+            }
+            roBrowser.execute();
+            roBrowser.load();
+            return;
+        }
         POBrowser<?> poBrowser = createPOBrowser();
         if(poBrowser == null) {
             return;
@@ -353,6 +406,16 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
         } catch(Throwable e) {
             return null;
         }
+    }
+
+    public SendItemsForRepair createROBrowser() {
+        if(type == 3 || SendItemsForRepair.class == poClass || poClass == InventoryRO.class) {
+            if(editor.store == null) {
+                return new SendItemsForRepair();
+            }
+            return new SendItemsForRepair(editor.store.getStoreBin());
+        }
+        return null;
     }
 
     @Override
@@ -426,6 +489,8 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
             case 0 -> 1;
             case 1 -> 17;
             case 2 -> 9;
+            case 3 -> 3;
+            case 4 -> 2;
             default -> -1;
         };
         return StoredObject.list(InventoryVirtualLocation.class, "Type=" + type).

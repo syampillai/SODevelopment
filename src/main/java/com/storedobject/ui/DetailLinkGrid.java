@@ -184,7 +184,12 @@ public class DetailLinkGrid<T extends StoredObject> extends AbstractLinkGrid<T> 
             select(selected);
             return selected;
         }
-        return super.selected();
+        selected = super.selected();
+        if(selected != null) {
+            Id id = selected.getId();
+            return streamAll().filter(s -> s.getId().equals(id)).findAny().orElse(null);
+        }
+        return null;
     }
 
     @Override

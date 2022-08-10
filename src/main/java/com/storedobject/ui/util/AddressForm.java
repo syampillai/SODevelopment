@@ -84,8 +84,8 @@ public abstract class AddressForm extends DataForm {
     }
 
     protected void loadAddress(Address address) {
-        address.setType((char)('0' + typeField.getValue()));
         address.setApartmentName(apartmentField.getValue());
+        address.setType((char)('0' + typeField.getValue()));
         address.setBuildingName(buildingField.getValue());
         address.setStreetName(streetField.getValue());
         address.setAreaName(areaField.getValue());

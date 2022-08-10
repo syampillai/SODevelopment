@@ -33,7 +33,9 @@ public class POBrowser<T extends InventoryPO> extends ObjectBrowser<T> implement
     private final GridContextMenu<T> contextMenu;
     String filter = "Status<4";
     private boolean forGRN = false;
-    private boolean allowSwitchStore = true;
+    private boolean allowSwitchStore = true, searching = false;
+    private Search search;
+    private final ELabel searchLabel = new ELabel();
 
     public POBrowser(Class<T> objectClass) {
         this(objectClass, (String)null);
@@ -154,6 +156,30 @@ public class POBrowser<T extends InventoryPO> extends ObjectBrowser<T> implement
         }
     }
 
+    @Override
+    public void loaded() {
+        if(searching) {
+            searching = false;
+            setLoadFilter(null, false);
+        } else {
+            searchLabel.clearContent().update();
+        }
+        clearAlerts();
+        message("POs loaded: " + size());
+        if(isEmpty()) {
+            load.setIcon("load");
+            load.setText("Load");
+        } else {
+            load.setIcon("reload");
+            load.setText("Reload");
+        }
+    }
+
+    @Override
+    public boolean canSearch() {
+        return false;
+    }
+
     public void setForGRNs() {
         this.forGRN = true;
         if(add != null) {
@@ -175,7 +201,7 @@ public class POBrowser<T extends InventoryPO> extends ObjectBrowser<T> implement
     protected void addExtraButtons() {
         Checkbox h = new Checkbox("Include History");
         h.addValueChangeListener(e -> setFixedFilter(e.getValue() ? null : filter));
-        buttonPanel.add(h, goToGRNs);
+        buttonPanel.add(new Button("Search", e -> searchPO()), h, goToGRNs);
         super.addExtraButtons();
     }
 
@@ -186,8 +212,15 @@ public class POBrowser<T extends InventoryPO> extends ObjectBrowser<T> implement
                 append(" | ", Application.COLOR_INFO).
                 append("Note: ").
                 append("Right-click on the entry for available process options", Application.COLOR_SUCCESS).
-                update());
+                update(), searchLabel);
         prependHeader().join().setComponent(b);
+    }
+
+    private void searchPO() {
+        if(search == null) {
+            search = new Search();
+        }
+        search.execute();
     }
 
     public void setAllowSwitchStore(boolean allowSwitchStore) {
@@ -815,6 +848,77 @@ public class POBrowser<T extends InventoryPO> extends ObjectBrowser<T> implement
         ProcessButton(String label, Predicate<T> check, Consumer<T> processor) {
             this.check = check == null ? (po -> true) : check;
             menu = contextMenu.addItem(label, e -> e.getItem().ifPresent(processor));
+        }
+    }
+
+    private class Search extends DataForm {
+
+        private final ChoiceField search = new ChoiceField("Search",
+                new String[] { "PO No.", "Date Period", "Part Number" });
+        private final IntegerField noField = new IntegerField("PO No.");
+        private final DatePeriodField periodField = new DatePeriodField("Date Period");
+        private final ObjectGetField<InventoryItemType> pnField =
+                new ObjectGetField<>("Part Number", InventoryItemType.class, true);
+
+        public Search() {
+            super("Search");
+            periodField.setVisible(false);
+            pnField.setVisible(false);
+            search.addValueChangeListener(e -> vis());
+            addField(search, noField, periodField, pnField);
+        }
+
+        private void vis() {
+            int s = search.getValue();
+            noField.setVisible(s == 0);
+            periodField.setVisible(s == 1);
+            pnField.setVisible(s == 2);
+        }
+
+        @Override
+        protected void execute(View parent, boolean doNotLock) {
+            vis();
+            super.execute(parent, doNotLock);
+        }
+
+        @Override
+        protected boolean process() {
+            close();
+            POBrowser.this.clearAlerts();
+            int s = search.getValue();
+            searching = true;
+            String filter = null;
+            switch(s) {
+                case 0 -> {
+                    int no = noField.getValue();
+                    if(no <= 0) {
+                        searching = false;
+                        return true;
+                    }
+                    filter = "PO No. = " + no;
+                    setLoadFilter(p -> p.getNo() == no);
+                }
+                case 1 -> {
+                    DatePeriod period = periodField.getValue();
+                    filter = "Period = " + period;
+                    setLoadFilter(p -> period.inside(p.getDate()));
+                }
+                case 2 -> {
+                    InventoryItemType pn = pnField.getValue();
+                    if(pn == null) {
+                        searching = false;
+                        return true;
+                    }
+                    filter = "Contains " + pn.toDisplay();
+                    Id pnId = pn.getId();
+                    setLoadFilter(p -> p.existsLinks(InventoryPOItem.class, "PartNumber=" + pnId, true));
+                }
+            }
+            if(filter != null) {
+                searchLabel.clearContent().append(" Filter: ", Application.COLOR_ERROR)
+                        .append(filter, Application.COLOR_INFO).update();
+            }
+            return true;
         }
     }
 }

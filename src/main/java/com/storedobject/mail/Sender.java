@@ -151,4 +151,7 @@ public abstract class Sender extends StoredObject implements Closeable {
 	public static int sendMails(int count, TransactionManager tm) {
 		return 0;
 	}
+
+    public void sendTestMail(String to, String subject, String content) throws Exception {
+    }
 }

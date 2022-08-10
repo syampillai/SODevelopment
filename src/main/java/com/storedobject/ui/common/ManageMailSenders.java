@@ -6,10 +6,9 @@ import com.storedobject.mail.GMailSender;
 import com.storedobject.mail.MailSender;
 import com.storedobject.ui.Application;
 import com.storedobject.ui.ELabel;
+import com.storedobject.ui.EmailField;
 import com.storedobject.ui.ObjectEditor;
-import com.storedobject.vaadin.ActionForm;
-import com.storedobject.vaadin.Button;
-import com.storedobject.vaadin.DataForm;
+import com.storedobject.vaadin.*;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 
@@ -24,6 +23,8 @@ public class ManageMailSenders extends ObjectEditor<MailSender> {
 
     private Button gmailSenders;
     private ManageGMailSenders gmsEditor = null;
+    private final Button test = new Button("Test", e -> test());
+    private Tester tester;
 
     public ManageMailSenders() {
         super(MailSender.class);
@@ -51,6 +52,9 @@ public class ManageMailSenders extends ObjectEditor<MailSender> {
     @Override
     protected void addExtraButtons() {
         // buttonPanel.add(gmailSenders);
+        if(getObject() != null) {
+            buttonPanel.add(test);
+        }
     }
 
     @Override
@@ -147,8 +151,9 @@ public class ManageMailSenders extends ObjectEditor<MailSender> {
         private void authorize() throws Exception {
             GMailSender gms = getObject();
             Optional<GMailSender> another =
-                    StoredObject.list(GMailSender.class, "lower(FromAddress)='" + gms.getFromAddress().toLowerCase() + "'").collectAll().
-                            stream().filter(s -> !s.getId().equals(gms.getId()) && s.canSend()).findAny();
+                    StoredObject.list(GMailSender.class, "lower(FromAddress)='"
+                                    + gms.getFromAddress().toLowerCase() + "'").toList().stream()
+                            .filter(s -> !s.getId().equals(gms.getId()) && s.canSend()).findAny();
             if(another.isPresent()) {
                 GMailSender a = another.get();
                 gms.setClientId(a.getClientId());
@@ -204,18 +209,21 @@ public class ManageMailSenders extends ObjectEditor<MailSender> {
                 super("Authenticate GMail");
                 this.url = url;
                 this.sender = sender;
-                gsenders = StoredObject.list(GMailSender.class, "lower(FromAddress)='" + sender.getFromAddress().toLowerCase() + "'").collectAll();
+                gsenders = StoredObject.list(GMailSender.class, "lower(FromAddress)='"
+                        + sender.getFromAddress().toLowerCase() + "'").toList();
             }
 
             @Override
             protected void buildFields() {
                 ELabel m = new ELabel();
                 add(m);
-                m.append("You are about to connect to GMail site to authenticate the following mail senders:", Application.COLOR_SUCCESS);
+                m.append("You are about to connect to GMail site to authenticate the following mail senders:",
+                        Application.COLOR_SUCCESS);
                 for(GMailSender gms: gsenders) {
                     m.newLine().append(gms.getName(), Application.COLOR_ERROR);
                 }
-                m.newLine().append("Once you are done with it, please check the authentication status of this sender again.", Application.COLOR_SUCCESS).update();
+                m.newLine().append("Once you are done with it, please check the authentication status of this sender again.",
+                        Application.COLOR_SUCCESS).update();
             }
 
             @Override
@@ -230,6 +238,54 @@ public class ManageMailSenders extends ObjectEditor<MailSender> {
                 UI.getCurrent().getPage().executeJs("window.open('" + url + "', '_blank', 'height=570,width=520,scrollbars=yes')");
                 return true;
             }
+        }
+    }
+
+    private void test() {
+        if(tester == null) {
+            tester = new Tester();
+        }
+        tester.execute();
+    }
+
+    private class Tester extends DataForm {
+
+        private final EmailField to = new EmailField("To Address");
+        private final TextField subject = new TextField("Subject");
+        private final TextArea content = new TextArea("Content");
+
+        public Tester() {
+            super("Send Test Mail");
+            addField(to, subject, content);
+            setRequired(to);
+            setRequired(subject);
+            setRequired(content);
+            subject.setValue("Test Mail");
+        }
+
+        @Override
+        protected void execute(View parent, boolean doNotLock) {
+            content.setValue("Testing mail sender " + getObject().getName());
+            super.execute(parent, doNotLock);
+        }
+
+        @Override
+        protected boolean process() {
+            try {
+                getObject().sendTestMail(to.getValue(), subject.getValue(), content.getValue());
+                message("Mail sent successfully");
+            } catch(Exception e) {
+                String m = e.getMessage();
+                if(m != null) {
+                    getApplication().log(e);
+                    m += "<BR/>";
+                } else {
+                    m = "Error occurred while sending. ";
+                }
+                m += "Please check the System Log";
+                error(m);
+            }
+            return true;
         }
     }
 }

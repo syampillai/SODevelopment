@@ -334,7 +334,7 @@ public class SystemTableDeployer extends View implements Transactional {
         String tableNameH = tableName.replace(".", ".H_"),
                 pTableNameH = pTableName.replace(".", ".H_");
         String pre = "ALTER TABLE " + tableName + " ";
-        String ppre = "ALTER TABLE " + tableNameH + " ";
+        String preH = "ALTER TABLE " + tableNameH + " ";
         String copy;
         ArrayList<String[]> columns = Database.get().columnDetails(tableName),
                 pColumns = Database.get().columnDetails(pTableName);
@@ -360,7 +360,7 @@ public class SystemTableDeployer extends View implements Transactional {
                     if(!c[1].equals(cds.getType(i))) {
                         alterTable.add(copy = pre + "ALTER COLUMN " + cds.getName(i) + " TYPE " + cds.getType(i) +
                                 " USING " + ColumnDefinition.getDefaultValue(cds.getType(i)));
-                        alterTable.add(copy.replace(pre, ppre));
+                        alterTable.add(copy.replace(pre, preH));
                     }
                     break;
                 }
@@ -383,20 +383,20 @@ public class SystemTableDeployer extends View implements Transactional {
                         found = true;
                         dropOuts.remove(c);
                         alterTable.add(copy = pre + "RENAME COLUMN " + c[0] + " TO " + cds.getName(i));
-                        alterTable.add(copy.replace(pre, ppre));
+                        alterTable.add(copy.replace(pre, preH));
                         break;
                     }
                 }
                 if(!found) {
                     alterTable.add(copy = pre + "ADD COLUMN " + cds.getName(i) + " " + cds.getType(i) +
                             " NOT NULL DEFAULT " + ColumnDefinition.getDefaultValue(cds.getType(i)));
-                    alterTable.add(copy.replace(pre, ppre));
+                    alterTable.add(copy.replace(pre, preH));
                 }
             }
         }
         for(String[] c : dropOuts) {
             alterTable.add(0, copy = pre + "DROP COLUMN " + c[0] + " CASCADE");
-            alterTable.add(1, copy.replace(pre, ppre));
+            alterTable.add(1, copy.replace(pre, preH));
         }
         ArrayList<String> list = Database.get().parentTable(tableName);
         if(list.size() == 0 || !list.get(0).equalsIgnoreCase(pTableName)) {
@@ -407,9 +407,9 @@ public class SystemTableDeployer extends View implements Transactional {
         }
         list = Database.get().parentTable(tableNameH);
         if(list.size() == 0 || !list.get(0).equalsIgnoreCase(pTableNameH)) {
-            alterTable.add(ppre + "INHERIT " + pTableNameH);
+            alterTable.add(preH + "INHERIT " + pTableNameH);
             if(list.size() > 0) {
-                alterTable.add(1, ppre + "NO INHERIT " + list.get(0));
+                alterTable.add(1, preH + "NO INHERIT " + list.get(0));
             }
         }
         ArrayList<String> cons = Database.get().foreignKeyConstraints(tableName);

@@ -18,7 +18,7 @@ public class EntityEditor extends ObjectEditor<Entity> {
             "Supplies items to us",
             "We sell items/services to them",
             "Does repair/maintenance work for us",
-            "Occasionally, they keep stock with with us",
+            "Occasionally, they keep stock with us",
             "We rent items out to them",
             "We lease items from them",
             "Provides services to us"
@@ -79,6 +79,8 @@ public class EntityEditor extends ObjectEditor<Entity> {
                         serviceProviderEditor = ObjectEditor.create((Class<EntityRole>) rClass);
                         serviceProviderMenu = new PopupButton("Service Provider", VaadinIcon.USER);
                         setUpEditor(serviceProviderEditor, serviceProviderMenu);
+                    } else {
+                        serviceProviderEditor = supplierEditor;
                     }
                 }
             } catch(SOException ignored) {
@@ -219,6 +221,7 @@ public class EntityEditor extends ObjectEditor<Entity> {
 
     private void setRel(int r) {
         TransactionManager tm = getTransactionManager();
+        boolean addSP = false;
         Entity e = getObject();
         int p = 0;
         while(r > 0) {
@@ -240,12 +243,20 @@ public class EntityEditor extends ObjectEditor<Entity> {
                         InventoryTransaction.createLoanToLocation(tm, e);
                 case 5 -> // Rent out
                         InventoryTransaction.createLoanFromLocation(tm, e);
+                case 6 -> // Add Service Provider
+                        addSP = serviceProviderEditor != null;
             }
             ++p;
             r >>= 1;
         }
         relCache.remove(e.getId());
         reload();
+        if(addSP) {
+            EntityRole sp = entityRole(serviceProviderClass);
+            if(sp == null) {
+                editEntityRole(serviceProviderEditor);
+            }
+        }
     }
 
     private class RForm extends DataForm {

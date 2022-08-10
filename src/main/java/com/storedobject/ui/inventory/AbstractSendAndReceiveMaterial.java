@@ -84,12 +84,6 @@ public abstract class AbstractSendAndReceiveMaterial<T extends InventoryTransfer
         addConstructedListener(v -> created());
         this.transferItemClass = itemClass;
         this.receiveMode = receiveMode;
-        if(transferClass == InventoryRO.class) {
-            setCaption("Send Items for Repair");
-        } else {
-            setCaption((receiveMode ? "Receive" : (transferClass == MaterialReturned.class ? "Return" : "Transfer")) +
-                    " Materials/Tools");
-        }
         this.fromOrTo = fromOrToField.getValue();
         if(this.fromOrTo == null) {
             throw new LogicRedirected(this::selectLocation);
@@ -142,6 +136,23 @@ public abstract class AbstractSendAndReceiveMaterial<T extends InventoryTransfer
             grnButton = new Button("GRN", VaadinIcon.FILE_TABLE, e -> greSel());
         } else {
             grnButton = null;
+        }
+        if(transferClass == InventoryRO.class) {
+            setCaption("Send Items for Repair");
+        } else {
+            String c = null;
+            if(receiveMode) {
+                c = switch(getLocationFrom().getType()) {
+                    case 3 -> "Materials";
+                    case 18 -> "Tools";
+                    default -> null;
+                };
+            }
+            if(c == null) {
+                c = "Materials/Tools";
+            }
+            setCaption((receiveMode ? "Receive" : (transferClass == MaterialReturned.class ? "Return" : "Transfer")) +
+                    " " + c);
         }
     }
 
@@ -248,7 +259,7 @@ public abstract class AbstractSendAndReceiveMaterial<T extends InventoryTransfer
             e.append(" | ", Application.COLOR_INFO);
         }
         e.append("Note: ").
-                append("Double-click " + (receiveMode ? "" : "or right-click") + "on the entry to " +
+                append("Double-click " + (receiveMode ? "" : "or right-click") + " on the entry to " +
                         (receiveMode ? "receive" : "send")
                         + (receiveMode ? ". Right-click on the entry for more options." : ""), Application.COLOR_SUCCESS);
         e.update();
