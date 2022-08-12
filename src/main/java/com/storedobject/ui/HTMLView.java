@@ -16,7 +16,7 @@ import java.io.Reader;
  * Create a {@link View} from some HTML content. The HTML may contain
  * references to media content using ${media} variable where media is the name of the media to set.
  * ({@link com.storedobject.core.MediaFile}s can be stored in the DB). If the HTML is a full-fledged one (if it
- * starts with an html tag), an {@link IFrame} will be created as the component of the {@link View}. Otherwise,
+ * starts with a html tag), an {@link IFrame} will be created as the component of the {@link View}. Otherwise,
  * a {@link TemplateLayout} is created.
  *
  * @author Syam

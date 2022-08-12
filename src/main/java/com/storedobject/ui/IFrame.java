@@ -8,7 +8,7 @@ import com.vaadin.flow.component.contextmenu.ContextMenu;
 import com.vaadin.flow.dom.Style;
 
 /**
- * Component that represents an HTML iframe element. The source of the iframe should be set and it may contain
+ * Component that represents an HTML iframe element. The source of the iframe should be set, and it may contain
  * references to media content using ${media} variable where media is the name of the media to set.
  *
  * @author Syam

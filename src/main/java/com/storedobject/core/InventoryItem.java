@@ -490,6 +490,26 @@ public class InventoryItem extends StoredObject {
      */
     public InventoryGRN createGRN(Transaction transaction, InventoryStore store, Date grnDate, int grnNumber,
                                   Date invoiceDate, String invoiceReference, Entity supplier) throws Exception {
+        return createGRN(transaction, store, grnDate, grnNumber, invoiceDate, invoiceReference, supplier, 0);
+    }
+
+    /**
+     * Create the GRN for this item. This method is used only for creating GRNs for the items that are data-picked.
+     *
+     * @param transaction Transaction.
+     * @param store Store.
+     * @param grnDate GRN date (Receipt date)
+     * @param grnNumber GRN number (if zero is passed, a new number is generated).
+     * @param invoiceDate Invoice date.
+     * @param invoiceReference Invoice reference (supplier's invoice number).
+     * @param supplier Supplier.
+     * @param grnType GRN Type - 0:Purchase, 1:External Owner, 2:Loaned from, 3:Items Repaired by, 4:Sales Return
+     * @return GRN
+     * @throws Exception if transaction errors occur.
+     */
+    public InventoryGRN createGRN(Transaction transaction, InventoryStore store, Date grnDate, int grnNumber,
+                                  Date invoiceDate, String invoiceReference, Entity supplier, int grnType)
+            throws Exception {
         InventoryGRN grn = getGRN();
         if(grn != null) {
             throw new SOException("GRN already exists - " + grn.toDisplay());
