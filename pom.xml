@@ -6,7 +6,7 @@
 
     <groupId>com.storedobject</groupId>
     <artifactId>so-development</artifactId>
-    <version>8.2.4</version>
+    <version>8.2.5</version>
 
     <properties>
         <so-common-version>4.1.20</so-common-version>
@@ -99,18 +99,18 @@
             <artifactId>vaadin</artifactId>
         </dependency>
 
-        <!-- Vaadin add-on for SpeedDial -->
-        <dependency>
-            <groupId>io.github.tobsef</groupId>
-            <artifactId>speed-dial</artifactId>
-            <version>1.1.4</version>
-        </dependency>
-
         <!-- Vaadin add-on for Full Calendar -->
         <dependency>
             <groupId>org.vaadin.stefan</groupId>
             <artifactId>fullcalendar2</artifactId>
             <version>4.1.2</version>
+        </dependency>
+
+        <!-- Vaadin add-on for HTML Table -->
+        <dependency>
+            <groupId>org.vaadin.stefan</groupId>
+            <artifactId>html-table</artifactId>
+            <version>1.2.0</version>
         </dependency>
 
         <!-- Java Servlet -->
