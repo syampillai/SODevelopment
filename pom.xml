@@ -6,7 +6,7 @@
 
     <groupId>com.storedobject</groupId>
     <artifactId>so-development</artifactId>
-    <version>8.2.5</version>
+    <version>8.2.6</version>
 
     <properties>
         <so-common-version>4.1.20</so-common-version>

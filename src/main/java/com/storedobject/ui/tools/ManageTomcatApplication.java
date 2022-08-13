@@ -49,7 +49,7 @@ public class ManageTomcatApplication extends DataForm implements Transactional {
     @Override
     protected boolean process() {
         String a = server.getValue().trim().toLowerCase();
-        if(a.isEmpty() || !StringUtility.isLetterOrDigit(a)) {
+        if(a.isEmpty() || !StringUtility.isLetterOrDigit(a.replace('_', '0'))) {
             warning.clearContent().append("Invalid application name", Application.COLOR_ERROR).update();
             warned = false;
             return false;

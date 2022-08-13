@@ -59,3 +59,31 @@ span.link:hover, span.contrast:hover {
     border-style: solid;
     border-width: 2px 0px 2px 0px;
 }
+
+/* Default Table Styles */
+table {
+  border-collapse: collapse;
+}
+
+thead {
+  position: sticky;
+  top: 0;
+  text-align: left;
+  background: white;
+  font-size: var(--lumo-font-size-s);
+  font-weight: 900;
+  white-space: normal;
+}
+
+td {
+  text-align: left;
+  padding: 8px;
+  font-family: var(--lumo-font-family);
+  font-size: var(--lumo-font-size-m);
+  line-height: var(--lumo-line-height-s);
+  color: var(--lumo-body-text-color);
+}
+
+tr:nth-child(even) {
+  background-color: var(--so-grid-stripes-background, var(--lumo-primary-color-10pct));
+}
