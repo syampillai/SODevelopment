@@ -137,12 +137,13 @@ public class HTMLView extends Viewer {
     }
 
     /**
-     * Whether to show a header with caption or not even in non-window mode. (Default implementation returns true).
+     * Whether to show a header with caption or not even in non-window mode. (Default implementation returns true)
+     * unless it's a {@link HomeView}.
      *
      * @return True/false.
      */
     protected boolean showHeader() {
-        return true;
+        return !isHomeView();
     }
 
     @Override

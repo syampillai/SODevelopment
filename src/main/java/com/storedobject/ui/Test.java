@@ -1,46 +1,30 @@
 package com.storedobject.ui;
 
-import com.storedobject.common.StringList;
 import com.storedobject.core.Person;
+import com.storedobject.core.StoredObject;
 import com.storedobject.vaadin.Button;
-import com.storedobject.vaadin.ButtonLayout;
-import com.storedobject.vaadin.View;
-import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import org.vaadin.stefan.table.*;
+import com.storedobject.vaadin.DataForm;
+import com.storedobject.vaadin.TokensField;
 
-public class Test extends View {
+public class Test extends DataForm {
+
+    private final TokensField<Person> tf;
 
     public Test() {
         super("Test");
-        Table table = new Table();
-        table.load();
-        setComponent(new Div(table));
+        addField(new WeightField("Weight"), new MoneyField("Amount"));
+        tf = new TokensField<>("Persons", StoredObject.list(Person.class).toList());
+        addField(tf);
     }
 
-    private class Table extends ObjectTable<Person> {
+    @Override
+    protected void buildButtons() {
+        super.buildButtons();
+        buttonPanel.add(new Button("Test", e -> tf.setReadOnly(!tf.isReadOnly())));
+    }
 
-        public Table() {
-            super(Person.class, StringList.create("FirstName", "DateOfBirth", "Age"));
-            TableRow hr = getHead().insertRow(0);
-            TableHeaderCell c = hr.addHeaderCell();
-            c.setColSpan(getColumnCount());
-            c.add(new ButtonLayout(new Button("Exit", e -> close())));
-            load();
-        }
-
-        @Override
-        protected void rowAdded(Person object) {
-            TableDataCell c = addRow().addDataCell();
-            c.add("Added " + object.getName());
-            c.setColSpan(getColumnCount());
-        }
-
-        @Override
-        protected void customizeCell(String columnName, Person object, TableDataCell cell) {
-            if("DateOfBirth".equals(columnName)) {
-                cell.getStyle().set("background", "yellow");
-            }
-        }
+    @Override
+    protected boolean process() {
+        return false;
     }
 }

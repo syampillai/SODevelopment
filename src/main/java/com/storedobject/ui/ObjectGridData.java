@@ -230,6 +230,10 @@ public interface ObjectGridData<T extends StoredObject, ROOT> extends HasColumns
         if(filter == null) {
             load();
         } else {
+            String f = getFilterCondition();
+            if(f != null) {
+                filter = "(" + f + ") AND (" + filter + ")";
+            }
             load(filter);
         }
     }

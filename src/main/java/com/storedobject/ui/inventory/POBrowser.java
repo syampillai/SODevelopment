@@ -33,9 +33,11 @@ public class POBrowser<T extends InventoryPO> extends ObjectBrowser<T> implement
     private final GridContextMenu<T> contextMenu;
     String filter = "Status<4";
     private boolean forGRN = false;
-    private boolean allowSwitchStore = true, searching = false;
+    private boolean allowSwitchStore = true;
+    private boolean searching = false;
     private Search search;
     private final ELabel searchLabel = new ELabel();
+    private final ELabel countLabel = new ELabel("0");
 
     public POBrowser(Class<T> objectClass) {
         this(objectClass, (String)null);
@@ -164,8 +166,7 @@ public class POBrowser<T extends InventoryPO> extends ObjectBrowser<T> implement
         } else {
             searchLabel.clearContent().update();
         }
-        clearAlerts();
-        message("POs loaded: " + size());
+        countLabel.clearContent().append("" + size(), Application.COLOR_SUCCESS).update();
         if(isEmpty()) {
             load.setIcon("load");
             load.setText("Load");
@@ -212,7 +213,8 @@ public class POBrowser<T extends InventoryPO> extends ObjectBrowser<T> implement
                 append(" | ", Application.COLOR_INFO).
                 append("Note: ").
                 append("Right-click on the entry for available process options", Application.COLOR_SUCCESS).
-                update(), searchLabel);
+                update(), searchLabel, new ELabel("| ", Application.COLOR_INFO).append("Entries:").update(),
+                countLabel);
         prependHeader().join().setComponent(b);
     }
 
@@ -854,25 +856,25 @@ public class POBrowser<T extends InventoryPO> extends ObjectBrowser<T> implement
     private class Search extends DataForm {
 
         private final ChoiceField search = new ChoiceField("Search",
-                new String[] { "PO No.", "Date Period", "Part Number" });
-        private final IntegerField noField = new IntegerField("PO No.");
-        private final DatePeriodField periodField = new DatePeriodField("Date Period");
+                new String[] { "Part Number", "Date Period", "PO No." });
         private final ObjectGetField<InventoryItemType> pnField =
                 new ObjectGetField<>("Part Number", InventoryItemType.class, true);
+        private final DatePeriodField periodField = new DatePeriodField("Date Period");
+        private final IntegerField noField = new IntegerField("PO No.");
 
         public Search() {
             super("Search");
+            noField.setVisible(false);
             periodField.setVisible(false);
-            pnField.setVisible(false);
             search.addValueChangeListener(e -> vis());
-            addField(search, noField, periodField, pnField);
+            addField(search, pnField, periodField, noField);
         }
 
         private void vis() {
             int s = search.getValue();
-            noField.setVisible(s == 0);
+            pnField.setVisible(s == 0);
             periodField.setVisible(s == 1);
-            pnField.setVisible(s == 2);
+            noField.setVisible(s == 2);
         }
 
         @Override
@@ -890,20 +892,6 @@ public class POBrowser<T extends InventoryPO> extends ObjectBrowser<T> implement
             String filter = null;
             switch(s) {
                 case 0 -> {
-                    int no = noField.getValue();
-                    if(no <= 0) {
-                        searching = false;
-                        return true;
-                    }
-                    filter = "PO No. = " + no;
-                    setLoadFilter(p -> p.getNo() == no);
-                }
-                case 1 -> {
-                    DatePeriod period = periodField.getValue();
-                    filter = "Period = " + period;
-                    setLoadFilter(p -> period.inside(p.getDate()));
-                }
-                case 2 -> {
                     InventoryItemType pn = pnField.getValue();
                     if(pn == null) {
                         searching = false;
@@ -912,6 +900,20 @@ public class POBrowser<T extends InventoryPO> extends ObjectBrowser<T> implement
                     filter = "Contains " + pn.toDisplay();
                     Id pnId = pn.getId();
                     setLoadFilter(p -> p.existsLinks(InventoryPOItem.class, "PartNumber=" + pnId, true));
+                }
+                case 1 -> {
+                    DatePeriod period = periodField.getValue();
+                    filter = "Period = " + period;
+                    setLoadFilter(p -> period.inside(p.getDate()));
+                }
+                case 2 -> {
+                    int no = noField.getValue();
+                    if(no <= 0) {
+                        searching = false;
+                        return true;
+                    }
+                    filter = "PO No. = " + no;
+                    setLoadFilter(p -> p.getNo() == no);
                 }
             }
             if(filter != null) {

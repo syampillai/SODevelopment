@@ -14,6 +14,7 @@ import com.storedobject.vaadin.*;
 import com.vaadin.flow.component.HasSize;
 import com.vaadin.flow.component.*;
 import com.vaadin.flow.component.combobox.ComboBox;
+import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.notification.NotificationVariant;
@@ -28,6 +29,7 @@ import java.io.StringReader;
 import java.lang.ref.WeakReference;
 import java.sql.Date;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
 public class Application extends com.storedobject.vaadin.Application implements Device, RunningLogic, RequiresApproval {
@@ -448,22 +450,27 @@ public class Application extends com.storedobject.vaadin.Application implements 
         if(forShutdown) {
             closeTimer();
         }
-        ArrayList<View> views = new ArrayList<>();
-        getActiveViews().forEach(views::add);
-        int count = views.size() << 1;
-        while(count-- > 0) {
-            views.removeIf(v -> !v.executing());
-            if(views.isEmpty()) {
+        List<Dialog> dialogs = new ArrayList<>();
+        AtomicBoolean done = new AtomicBoolean(false);
+        int round = 0;
+        while(!done.get()) {
+            done.set(true);
+            getActiveViews().toList().forEach(v -> {
+                try {
+                    Component c = v.getComponent();
+                    v.abort();
+                    if(c instanceof Dialog d) {
+                        dialogs.add(d);
+                    }
+                } catch(Exception ignored) {
+                    done.set(false);
+                }
+            });
+            if(++round > 10) {
                 break;
             }
-            View v = views.remove(0);
-            if(v.executing()) {
-                try {
-                    v.abort();
-                } catch(Throwable ignored) {
-                }
-            }
         }
+        dialogs.forEach(Dialog::close);
     }
 
     public static Application get() {
@@ -1942,14 +1949,17 @@ public class Application extends com.storedobject.vaadin.Application implements 
     private Timer timer;
 
     private void createTimer() {
-        this.timer = new Timer();
         long t;
         try {
             t = Long.parseLong(ApplicationServer.getGlobalProperty("application.refresh.timer",
                     "600", true));
+            if(t == 0) {
+                return;
+            }
         } catch(Throwable ignored) {
             t = 600;
         }
+        this.timer = new Timer();
         this.timer.schedule(new AppTimer(), 20000, t * 1000L);
     }
 

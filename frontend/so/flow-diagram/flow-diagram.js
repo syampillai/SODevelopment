@@ -1,6 +1,6 @@
 import { LitElement, html, css } from 'lit'
 import {property, customElement} from 'lit/decorators.js';
-import nomnoml from './nomnoml'
+import nomnoml from 'nomnoml'
 
 export class FlowDiagram extends LitElement {
 

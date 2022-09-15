@@ -4,9 +4,8 @@ import com.storedobject.common.SORuntimeException;
 import com.storedobject.common.StringList;
 import com.storedobject.core.*;
 import com.storedobject.ui.*;
-import com.storedobject.vaadin.Button;
-import com.storedobject.vaadin.ButtonLayout;
-import com.vaadin.flow.component.Component;
+import com.storedobject.ui.Application;
+import com.storedobject.vaadin.*;
 import com.vaadin.flow.component.HasValue;
 
 public abstract class AbstractRequestMaterial extends ObjectBrowser<MaterialRequest> {
@@ -18,6 +17,10 @@ public abstract class AbstractRequestMaterial extends ObjectBrowser<MaterialRequ
     private final boolean issuing;
     private final InventoryLocation otherLocation;
     Class<? extends InventoryItemType> itemTypeClass;
+    private boolean searching = false;
+    private Search search;
+    private final ELabel searchLabel = new ELabel();
+    private final ELabel countLabel = new ELabel("0");
 
     AbstractRequestMaterial(boolean issuing, int noActions) {
         this(issuing, noActions, null);
@@ -102,6 +105,11 @@ public abstract class AbstractRequestMaterial extends ObjectBrowser<MaterialRequ
         setOrderBy("Date DESC,No DESC", false);
     }
 
+    @Override
+    public boolean canSearch() {
+        return false;
+    }
+
     protected void selectLocation() {
     }
 
@@ -150,18 +158,41 @@ public abstract class AbstractRequestMaterial extends ObjectBrowser<MaterialRequ
     }
 
     @Override
+    public void loaded() {
+        if(searching) {
+            searching = false;
+            setLoadFilter(null, false);
+        } else {
+            searchLabel.clearContent().update();
+        }
+        countLabel.clearContent().append("" + size(), Application.COLOR_SUCCESS).update();
+    }
+
+    @Override
+    protected void addExtraButtons() {
+        buttonPanel.add(new Button("Search", e -> searchFilter()));
+    }
+
+    private void searchFilter() {
+        if(search == null) {
+            search = new Search();
+        }
+        search.execute();
+    }
+
+    @Override
     public void createHeaders() {
         ELabel label = new ELabel(fromOrTo instanceof InventoryCustodyLocation ?
                 "Custodian: " : "Current Location: ")
                 .append(fromOrTo.toDisplay(), Application.COLOR_SUCCESS).update();
         Button locSwitch = getSwitchLocationButton();
-        Component component;
-        if(locSwitch == null) {
-            component = label;
-        } else {
-            component = new ButtonLayout(label, locSwitch.asSmall());
+        ButtonLayout buttonLayout = new ButtonLayout(label);
+        if(locSwitch != null) {
+            buttonLayout.add(locSwitch.asSmall());
         }
-        prependHeader().join().setComponent(component);
+        buttonLayout.add(searchLabel, new ELabel("| ", Application.COLOR_INFO).append("Entries:").update(),
+                countLabel);
+        prependHeader().join().setComponent(buttonLayout);
     }
 
     protected Button getSwitchLocationButton() {
@@ -361,5 +392,77 @@ public abstract class AbstractRequestMaterial extends ObjectBrowser<MaterialRequ
 
     protected Class<? extends InventoryItemType> itemTypeClass() {
         return itemTypeClass;
+    }
+
+    private class Search extends DataForm {
+
+        private final ChoiceField search = new ChoiceField("Search",
+                new String[] { "Part Number", "Date Period", "Request No." });
+        private final ObjectGetField<InventoryItemType> pnField =
+                new ObjectGetField<>("Part Number", InventoryItemType.class, true);
+        private final DatePeriodField periodField = new DatePeriodField("Date Period");
+        private final IntegerField noField = new IntegerField("Request No.");
+
+        public Search() {
+            super("Search");
+            noField.setVisible(false);
+            periodField.setVisible(false);
+            search.addValueChangeListener(e -> vis());
+            addField(search, pnField, periodField, noField);
+        }
+
+        private void vis() {
+            int s = search.getValue();
+            pnField.setVisible(s == 0);
+            periodField.setVisible(s == 1);
+            noField.setVisible(s == 2);
+        }
+
+        @Override
+        protected void execute(View parent, boolean doNotLock) {
+            vis();
+            super.execute(parent, doNotLock);
+        }
+
+        @Override
+        protected boolean process() {
+            close();
+            AbstractRequestMaterial.this.clearAlerts();
+            int s = search.getValue();
+            searching = true;
+            String filter = null;
+            switch(s) {
+                case 0 -> {
+                    InventoryItemType pn = pnField.getValue();
+                    if(pn == null) {
+                        searching = false;
+                        return true;
+                    }
+                    filter = "Contains " + pn.toDisplay();
+                    Id pnId = pn.getId();
+                    setLoadFilter(p -> p.existsLinks(MaterialRequestItem.class, "PartNumber=" + pnId, true));
+                }
+                case 1 -> {
+                    DatePeriod period = periodField.getValue();
+                    filter = "Period = " + period;
+                    setLoadFilter(p -> period.inside(p.getDate()));
+                }
+                case 2 -> {
+                    int no = noField.getValue();
+                    if(no <= 0) {
+                        searching = false;
+                        return true;
+                    }
+                    filter = "No. = " + no;
+                    setLoadFilter(p -> p.getNo() == no);
+                }
+            }
+            if(filter != null) {
+                searchLabel.clearContent().append(" | ", Application.COLOR_INFO)
+                        .append(" Filter: ", Application.COLOR_ERROR)
+                        .append(filter, Application.COLOR_INFO).update();
+            }
+            return true;
+        }
     }
 }

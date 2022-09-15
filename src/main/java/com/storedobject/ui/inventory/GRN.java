@@ -32,6 +32,10 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
     private boolean fromPOs = false;
     private Class<?> poClass;
     private final boolean landedCostModule;
+    private boolean searching = false;
+    private Search search;
+    private final ELabel searchLabel = new ELabel();
+    private final ELabel countLabel = new ELabel("0");
 
     /**
      * Constructor.
@@ -325,7 +329,8 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
                 append("Note: ").
                 append("Double-click or right-click on the entry to receive/process items",
                         Application.COLOR_SUCCESS).
-                update());
+                update(), searchLabel, new ELabel("| ", Application.COLOR_INFO).append("Entries:").update(),
+                countLabel);
         prependHeader().join().setComponent(b);
     }
 
@@ -346,7 +351,7 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
     protected void addExtraButtons() {
         Checkbox h = new Checkbox("Include History");
         h.addValueChangeListener(e -> setFixedFilter("Type=" + type + (e.getValue() ? "" : " AND Status<2")));
-        buttonPanel.add(h);
+        buttonPanel.add(new Button("Search", e -> searchFilter()), h);
         super.addExtraButtons();
     }
 
@@ -1550,6 +1555,101 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
                 }
                 return sn;
             }
+        }
+    }
+
+    @Override
+    public void loaded() {
+        if(searching) {
+            searching = false;
+            setLoadFilter(null, false);
+        } else {
+            searchLabel.clearContent().update();
+        }
+        countLabel.clearContent().append("" + size(), Application.COLOR_SUCCESS).update();
+    }
+
+    @Override
+    public boolean canSearch() {
+        return false;
+    }
+
+    private void searchFilter() {
+        if(search == null) {
+            search = new Search();
+        }
+        search.execute();
+    }
+
+    private class Search extends DataForm {
+
+        private final ChoiceField search = new ChoiceField("Search",
+                new String[] { "Part Number", "Date Period", "No." });
+        private final ObjectGetField<InventoryItemType> pnField =
+                new ObjectGetField<>("Part Number", InventoryItemType.class, true);
+        private final DatePeriodField periodField = new DatePeriodField("Date Period");
+        private final IntegerField noField = new IntegerField("No.");
+
+        public Search() {
+            super("Search");
+            noField.setVisible(false);
+            periodField.setVisible(false);
+            search.addValueChangeListener(e -> vis());
+            addField(search, pnField, periodField, noField);
+        }
+
+        private void vis() {
+            int s = search.getValue();
+            pnField.setVisible(s == 0);
+            periodField.setVisible(s == 1);
+            noField.setVisible(s == 2);
+        }
+
+        @Override
+        protected void execute(View parent, boolean doNotLock) {
+            vis();
+            super.execute(parent, doNotLock);
+        }
+
+        @Override
+        protected boolean process() {
+            close();
+            GRN.this.clearAlerts();
+            int s = search.getValue();
+            searching = true;
+            String filter = null;
+            switch(s) {
+                case 0 -> {
+                    InventoryItemType pn = pnField.getValue();
+                    if(pn == null) {
+                        searching = false;
+                        return true;
+                    }
+                    filter = "Contains " + pn.toDisplay();
+                    Id pnId = pn.getId();
+                    setLoadFilter(p -> p.existsLinks(InventoryGRNItem.class, "PartNumber=" + pnId, true));
+                }
+                case 1 -> {
+                    DatePeriod period = periodField.getValue();
+                    filter = "Period = " + period;
+                    setLoadFilter(p -> period.inside(p.getDate()));
+                }
+                case 2 -> {
+                    int no = noField.getValue();
+                    if(no <= 0) {
+                        searching = false;
+                        return true;
+                    }
+                    filter = "No. = " + no;
+                    setLoadFilter(p -> p.getNo() == no);
+                }
+            }
+            if(filter != null) {
+                searchLabel.clearContent().append(" | ", Application.COLOR_INFO)
+                        .append(" Filter: ", Application.COLOR_ERROR)
+                        .append(filter, Application.COLOR_INFO).update();
+            }
+            return true;
         }
     }
 }

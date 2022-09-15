@@ -11,7 +11,6 @@ import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.textfield.HasPrefixAndSuffix;
 import com.vaadin.flow.component.textfield.TextField;
-import com.vaadin.flow.component.textfield.TextFieldVariant;
 
 import java.math.BigDecimal;
 import java.util.*;
@@ -55,10 +54,9 @@ public class AbstractQuantityField<T extends Quantity> extends CustomTextField<T
     protected void customizeTextField(HasTextValue textField) {
         if (this.unit == null) {
             this.unit = new Span();
+            this.unit.getStyle().set("background", "var(--lumo-error-color-10pct)").set("margin-right", "3px");
         }
-        ((HasPrefixAndSuffix)textField).setSuffixComponent(this.unit);
-        TextField textField1 = (TextField) textField;
-        textField1.addThemeVariants(TextFieldVariant.LUMO_ALIGN_RIGHT);
+        ((HasPrefixAndSuffix)textField).setPrefixComponent(this.unit);
     }
 
     @Override
@@ -289,6 +287,8 @@ public class AbstractQuantityField<T extends Quantity> extends CustomTextField<T
                 popup.setTarget(unit);
             }
         }
+        getField().setValue(getValue().toString(readOnly));
+        unit.setVisible(!readOnly);
     }
 
     private void unit(boolean readOnly) {

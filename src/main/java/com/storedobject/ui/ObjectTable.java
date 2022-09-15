@@ -133,13 +133,22 @@ public class ObjectTable<T extends StoredObject> extends Table implements Object
 
     /**
      * Get the number of object instances rendered. The actual row-count may be different if extra rows are
-     * inserted. To get the actual row-count you may use {@link #getRows()#size()}.
+     * inserted. To get the actual row-count you may use {@link #getRowCount()}.
      *
      * @return Count of the object instances currently rendered.
      */
     @Override
     public final int size() {
         return size;
+    }
+
+    /**
+     * Get the row-count.
+     *
+     * @return Number of rows.
+     */
+    public final int getRowCount() {
+        return getRows().size();
     }
 
     @Override

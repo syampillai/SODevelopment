@@ -271,7 +271,7 @@ import java.util.function.Consumer;
  *
  * @author Syam (Credits to Daniel Kallin for the nomnoml webcomponent)
  */
-@NpmPackage(value = "dagre", version = "0.8.5")
+@NpmPackage(value = "nomnoml", version = "1.5.2")
 @Tag("so-diagram")
 @JsModule("./so/flow-diagram/flow-diagram.js")
 public class FlowDiagram extends LitComponent implements HasSize {

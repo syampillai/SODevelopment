@@ -4,9 +4,8 @@ import com.storedobject.common.SORuntimeException;
 import com.storedobject.common.StringList;
 import com.storedobject.core.*;
 import com.storedobject.ui.*;
-import com.storedobject.vaadin.Button;
-import com.storedobject.vaadin.ButtonLayout;
-import com.storedobject.vaadin.MultiSelectGrid;
+import com.storedobject.ui.Application;
+import com.storedobject.vaadin.*;
 import com.vaadin.flow.component.HasValue;
 import com.vaadin.flow.component.grid.contextmenu.GridContextMenu;
 import com.vaadin.flow.component.grid.contextmenu.GridMenuItem;
@@ -33,6 +32,10 @@ public abstract class AbstractSendAndReceiveMaterial<T extends InventoryTransfer
     Class<? extends InventoryItem> itemClass;
     private GRNEditor grnEditor;
     private InventoryGRN grn;
+    private boolean searching = false;
+    private Search search;
+    private final ELabel searchLabel = new ELabel();
+    private final ELabel countLabel = new ELabel("0");
 
     public AbstractSendAndReceiveMaterial(Class<T> transferClass, Class<L> itemClass, boolean receiveMode) {
         this(transferClass, itemClass, (String) null, receiveMode);
@@ -240,10 +243,10 @@ public abstract class AbstractSendAndReceiveMaterial<T extends InventoryTransfer
                 append(fromOrTo.toDisplay(), Application.COLOR_SUCCESS);
 
         Button locSwitch = getSwitchLocationButton();
-        ButtonLayout buttonLayout = null;
+        ButtonLayout buttonLayout = new ButtonLayout();
         if(locSwitch != null) {
             e.update();
-            buttonLayout = new ButtonLayout(e, locSwitch.asSmall());
+            buttonLayout.add(e, locSwitch.asSmall());
         }
         if(locSwitch != null) {
             e = new ELabel();
@@ -263,10 +266,9 @@ public abstract class AbstractSendAndReceiveMaterial<T extends InventoryTransfer
                         (receiveMode ? "receive" : "send")
                         + (receiveMode ? ". Right-click on the entry for more options." : ""), Application.COLOR_SUCCESS);
         e.update();
-        if(buttonLayout != null) {
-            buttonLayout.add(e);
-        }
-        prependHeader().join().setComponent(buttonLayout == null ? e : buttonLayout);
+        buttonLayout.add(e, searchLabel, new ELabel("| ", Application.COLOR_INFO).append("Entries:").update(),
+                countLabel);
+        prependHeader().join().setComponent(buttonLayout);
     }
 
     protected Button getSwitchLocationButton() {
@@ -280,7 +282,7 @@ public abstract class AbstractSendAndReceiveMaterial<T extends InventoryTransfer
             add.setVisible(false);
             edit.setVisible(false);
         }
-        buttonPanel.add(send, receive, grnButton);
+        buttonPanel.add(new Button("Search", e -> searchFilter()), send, receive, grnButton);
     }
 
     @Override
@@ -656,5 +658,100 @@ public abstract class AbstractSendAndReceiveMaterial<T extends InventoryTransfer
 
     protected boolean requiresInvoiceDate() {
         return false;
+    }
+
+    @Override
+    public void loaded() {
+        if(searching) {
+            searching = false;
+            setLoadFilter(null, false);
+        } else {
+            searchLabel.clearContent().update();
+        }
+        countLabel.clearContent().append("" + size(), Application.COLOR_SUCCESS).update();
+    }
+
+    @Override
+    public boolean canSearch() {
+        return false;
+    }
+
+    private void searchFilter() {
+        if(search == null) {
+            search = new Search();
+        }
+        search.execute();
+    }
+
+    private class Search extends DataForm {
+
+        private final ChoiceField search = new ChoiceField("Search",
+                new String[] { "Part Number", "Date Period", "No." });
+        private final ObjectGetField<InventoryItemType> pnField =
+                new ObjectGetField<>("Part Number", InventoryItemType.class, true);
+        private final DatePeriodField periodField = new DatePeriodField("Date Period");
+        private final IntegerField noField = new IntegerField("No.");
+
+        public Search() {
+            super("Search");
+            noField.setVisible(false);
+            periodField.setVisible(false);
+            search.addValueChangeListener(e -> vis());
+            addField(search, pnField, periodField, noField);
+        }
+
+        private void vis() {
+            int s = search.getValue();
+            pnField.setVisible(s == 0);
+            periodField.setVisible(s == 1);
+            noField.setVisible(s == 2);
+        }
+
+        @Override
+        protected void execute(View parent, boolean doNotLock) {
+            vis();
+            super.execute(parent, doNotLock);
+        }
+
+        @Override
+        protected boolean process() {
+            close();
+            AbstractSendAndReceiveMaterial.this.clearAlerts();
+            int s = search.getValue();
+            searching = true;
+            String filter = null;
+            switch(s) {
+                case 0 -> {
+                    InventoryItemType pn = pnField.getValue();
+                    if(pn == null) {
+                        searching = false;
+                        return true;
+                    }
+                    filter = "Contains " + pn.toDisplay();
+                    Id pnId = pn.getId();
+                    setLoadFilter(p -> p.existsLinks(transferItemClass, "Item.PartNumber=" + pnId, true));
+                }
+                case 1 -> {
+                    DatePeriod period = periodField.getValue();
+                    filter = "Period = " + period;
+                    setLoadFilter(p -> period.inside(p.getDate()));
+                }
+                case 2 -> {
+                    int no = noField.getValue();
+                    if(no <= 0) {
+                        searching = false;
+                        return true;
+                    }
+                    filter = "No. = " + no;
+                    setLoadFilter(p -> p.getNo() == no);
+                }
+            }
+            if(filter != null) {
+                searchLabel.clearContent().append(" | ", Application.COLOR_INFO)
+                        .append(" Filter: ", Application.COLOR_ERROR)
+                        .append(filter, Application.COLOR_INFO).update();
+            }
+            return true;
+        }
     }
 }

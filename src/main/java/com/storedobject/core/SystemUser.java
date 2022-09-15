@@ -243,11 +243,11 @@ public final class SystemUser extends StoredObject implements RequiresApproval {
         return new ArrayList<>();
     }
 
-    public Iterable<SessionLog> getSessionLog(AbstractPeriod<?> period) {
-        return getSessionLog(period, true);
+    public Iterable<SessionLog> getSessionLog(AbstractPeriod<?> period, String server) {
+        return getSessionLog(period, true, server);
     }
 
-    public Iterable<SessionLog> getSessionLog(AbstractPeriod<?> period, boolean reverse) {
+    public Iterable<SessionLog> getSessionLog(AbstractPeriod<?> period, boolean reverse, String server) {
         return new ArrayList<>();
     }
 

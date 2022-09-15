@@ -69,6 +69,7 @@ public class ReceiveMaterialRequested extends AbstractRequestMaterial {
 
     @Override
     public void loaded() {
+        super.loaded();
         if(footer == null) {
             return;
         }

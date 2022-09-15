@@ -9,7 +9,6 @@ import com.storedobject.vaadin.TextField;
 import com.storedobject.vaadin.util.HasTextValue;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.html.Span;
-import com.vaadin.flow.component.textfield.TextFieldVariant;
 
 import java.math.BigDecimal;
 import java.util.*;
@@ -114,7 +113,6 @@ public class MoneyField extends CustomTextField<Money> implements RequiredField 
         setValue(v);
         setPresentationValue(v);
         setLabel(label);
-        ((TextField)getField()).addThemeVariants(TextFieldVariant.LUMO_ALIGN_RIGHT);
         symbol(false);
     }
 
@@ -164,8 +162,7 @@ public class MoneyField extends CustomTextField<Money> implements RequiredField 
         if(symbol == null) {
             symbol = new Span();
         }
-        TextField textField1 = (TextField) textField;
-        textField1.setSuffixComponent(symbol);
+        ((TextField)textField).setPrefixComponent(symbol);
     }
 
     @Override

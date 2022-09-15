@@ -789,8 +789,10 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
      * This method is invoked whenever an instance of the object is set. Typically, "print buttons" can be made
      * visible or hidden by examining the object instance value. The default implementation makes the "print" button
      * visible if the object is non-null. (See {@link PrintButton}).
+     *
+     * @param viewing Whether in view mode or not.
      */
-    protected void enablePrintButtons() {
+    protected void enablePrintButtons(boolean viewing) {
         if(print != null) {
             print.setVisible(getObject() != null);
         }
@@ -849,7 +851,7 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
         if(print != null) {
             buttonPanel.add(print);
         }
-        enablePrintButtons();
+        enablePrintButtons(false);
         if(report != null) {
             buttonPanel.add(report);
         }
@@ -1806,6 +1808,10 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
                     })
             );
         }
+        if(print != null) {
+            buttonPanel.add(print);
+            enablePrintButtons(true);
+        }
         buttonPanel.add(exit);
     }
 
@@ -2102,7 +2108,7 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
             return;
         }
         String tabName = getTabName(fieldName, field);
-        if(tabName == null && getFieldCreator() instanceof SOFieldCreator fc) {
+        if(tabName == null && getFieldCreator() instanceof SOFieldCreator<?> fc) {
             UIFieldMetadata md = fc.getMD(fieldName);
             if(md != null) {
                 tabName = md.getTabName();

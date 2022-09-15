@@ -11,6 +11,7 @@ import com.storedobject.ui.DatePeriodField;
 import com.storedobject.ui.ObjectField;
 import com.storedobject.ui.Transactional;
 import com.storedobject.vaadin.DataForm;
+import com.storedobject.vaadin.TextField;
 
 import java.sql.Timestamp;
 import java.util.*;
@@ -21,6 +22,7 @@ public class DeveloperActivity extends DataForm implements Transactional {
 
     private final ObjectField<SystemUser> userField;
     private final DatePeriodField periodField = new DatePeriodField("Period");
+    private final TextField serverField = new TextField("Server");
     private final boolean developer;
     private final SystemUserGroup devGroup;
     private final TransactionManager tm;
@@ -35,7 +37,7 @@ public class DeveloperActivity extends DataForm implements Transactional {
         this.developer = developer;
         userField = new ObjectField<>((developer ? "Develop" : "Us") + "er (Leave it blank for all)",
                 SystemUser.class);
-        addField(userField, periodField);
+        addField(userField, periodField, serverField);
         if(developer) {
             devGroup = StoredObject.list(SystemUserGroup.class)
                     .find(g -> g.getName().equalsIgnoreCase("Developer"));
@@ -49,7 +51,8 @@ public class DeveloperActivity extends DataForm implements Transactional {
     protected boolean process() {
         close();
         getApplication();
-        new Report(userField.getObject(), periodField.getValue()).execute();
+        //noinspection resource
+        new Report(userField.getObject(), periodField.getValue(), serverField.getValue()).execute();
         return true;
     }
 
@@ -57,11 +60,13 @@ public class DeveloperActivity extends DataForm implements Transactional {
 
         private final AbstractPeriod<?> period;
         private final SystemUser su;
+        private final String server;
 
-        public Report(SystemUser su, AbstractPeriod<?> period) {
+        public Report(SystemUser su, AbstractPeriod<?> period, String server) {
             super(getApplication());
             this.su = su;
             this.period = period;
+            this.server = server == null || server.isBlank() ? "" : server.trim();
             setTitleText((developer ? "Developer Activity" : "User Log") + " for the Period " + period);
         }
 
@@ -135,7 +140,7 @@ public class DeveloperActivity extends DataForm implements Transactional {
                     }));
             table.setHeaderRows(1);
             AtomicInteger count = new AtomicInteger(0);
-            u.getSessionLog(period).forEach(s -> {
+            u.getSessionLog(period, server).forEach(s -> {
                 if(printUser && count.get() == 0) {
                     printUser(u);
                 }

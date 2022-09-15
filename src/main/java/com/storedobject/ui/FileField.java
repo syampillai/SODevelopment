@@ -280,6 +280,7 @@ public class FileField extends AbstractObjectField<StreamData> {
         }
         if(value == null) {
             mediaOff();
+            super.setPresentationValue(null);
         } else {
             if(value.isImage()) {
                 mediaOff(image);

@@ -18,7 +18,7 @@ import java.util.function.Supplier;
 /**
  * A "print button" is created automatically by {@link ObjectEditor}s and
  * {@link ObjectBrowser}s if one or more {@link PrintLogicDefinition}s exist for the {@link StoredObject} class. The
- * "print button" may be a single button if there is only one {@link PrintLogicDefinition} defined or it can contain
+ * "print button" may be a single button if there is only one {@link PrintLogicDefinition} defined, or it can contain
  * multiple buttons.
  * <p>The most common use-case of {@link PrintButton} is to define logic for printing. For defining such logic, either
  * the {@link com.storedobject.pdf.PDFObjectReport} or the {@link com.storedobject.office.ODTObjectReport} may be
@@ -34,7 +34,7 @@ import java.util.function.Supplier;
  * {@link com.storedobject.core.Device} and a {@link StoredObject} instance as its parameters.</p>
  * <p>In {@link ObjectEditor}, by default, the {@link PrintButton} will be hidden if the object instance is null.
  * However, you can control this behaviour and control the visibility of it or its individual buttons by overriding
- * the {@link ObjectEditor#enablePrintButtons()} method.</p>
+ * the {@link ObjectEditor#enablePrintButtons(boolean)} method.</p>
  *
  * @author Syam
  */
@@ -118,7 +118,7 @@ public final class PrintButton extends Composite<Button> {
 
     /**
      * Get the button corresponding to the label passed. (This could be used from
-     * {@link ObjectEditor#enablePrintButtons()} to selectively hide buttons.
+     * {@link ObjectEditor#enablePrintButtons(boolean)} to selectively hide buttons.
      *
      * @param label Label of the button.
      * @return Button.

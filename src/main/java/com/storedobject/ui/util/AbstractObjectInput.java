@@ -4,6 +4,7 @@ import com.storedobject.core.*;
 import com.storedobject.ui.ObjectProvider;
 import com.storedobject.vaadin.HasElement;
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.HasLabel;
 import com.vaadin.flow.component.ItemLabelGenerator;
 
 import java.util.function.Consumer;
@@ -15,7 +16,7 @@ import java.util.function.Consumer;
  * @author Syam
  */
 public interface AbstractObjectInput<T extends StoredObject>
-        extends ObjectProvider<T>, ObjectSetter<T>, ObjectGetter<T>, HasElement, FilterMethods<T> {
+        extends ObjectProvider<T>, ObjectSetter<T>, ObjectGetter<T>, HasElement, HasLabel, FilterMethods<T> {
 
     /**
      * Class of the object supported in this input field.
@@ -178,20 +179,6 @@ public interface AbstractObjectInput<T extends StoredObject>
      * @param prefixFieldControl True if it needs to be controlled by this field.
      */
     void setPrefixFieldControl(boolean prefixFieldControl);
-
-    /**
-     * Set the label for this field.
-     *
-     * @param label Label to set.
-     */
-    void setLabel(String label);
-
-    /**
-     * Get the label of this field.
-     *
-     * @return Current label.
-     */
-    String getLabel();
 
     /**
      * Make this field read-only.

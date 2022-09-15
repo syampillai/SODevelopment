@@ -15,20 +15,25 @@ public abstract class AddressForm extends DataForm {
     private static final String B_NAME = "Building Number/Name";
     private AddressField addressField;
     private Address address;
-    CountryField countryField = new CountryField("Country");
-    ChoiceField typeField = new ChoiceField("Type", Address.getTypeValues());
-    TextField apartmentField = new TextField(Address.getTypeValue('0') + " Number/Name");
-    TextField buildingField = new TextField(B_NAME);
-    TextField streetField = new TextField("Street Number & Name");
-    TextField areaField = new TextField("Area");
-    IntegerField poBoxField = new IntegerField("");
-    TextField postalCodeField = new TextField("");
+    final CountryField countryField = new CountryField("Country");
+    final ChoiceField typeField = new ChoiceField("Type", Address.getTypeValues());
+    final TextField apartmentField = new TextField(Address.getTypeValue('0') + " Number/Name");
+    final TextField buildingField = new TextField(B_NAME);
+    final TextField streetField = new TextField("Street Number & Name");
+    final TextField areaField = new TextField("Area");
+    final IntegerField poBoxField = new IntegerField("");
+    final TextField postalCodeField = new TextField("");
     private CustomStringBlockFormatter formatter;
 
     public AddressForm() {
-        super("",false);
+        super("",true);
         setButtonsAtTop(true);
         setFirstFocus(typeField);
+    }
+
+    @Override
+    public int getMaximumContentWidth() {
+        return 30;
     }
 
     @Override
@@ -49,6 +54,12 @@ public abstract class AddressForm extends DataForm {
                 firstFocus();
             }
         });
+    }
+
+    @Override
+    protected void buildButtons() {
+        super.buildButtons();
+        ok.setText("Save");
     }
 
     void firstFocus() {
