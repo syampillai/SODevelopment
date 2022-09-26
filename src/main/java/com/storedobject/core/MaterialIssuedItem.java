@@ -10,6 +10,10 @@ public final class MaterialIssuedItem extends StoredObject implements Detail, Ha
     public static void columns(Columns columns) {
     }
 
+    public Person getBy() {
+        return person();
+    }
+
     public void setItem(Id itemId) {
     }
 

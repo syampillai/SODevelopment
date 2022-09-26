@@ -34,7 +34,7 @@ public class CreateConsignment implements Executable {
         } else if(parent instanceof InventoryRO) {
             type = 1;
         } else {
-            Application.message("No consignment editor configure!");
+            Application.message("No consignment editor configured!");
             return;
         }
         try {

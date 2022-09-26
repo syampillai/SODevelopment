@@ -1,9 +1,8 @@
 package com.storedobject.core;
 
 import com.storedobject.common.SORuntimeException;
-import com.storedobject.core.annotation.Column;
-import com.storedobject.core.annotation.SetNotAllowed;
 
+import java.math.BigDecimal;
 import java.sql.Date;
 
 public final class Consignment extends StoredObject {
@@ -13,21 +12,13 @@ public final class Consignment extends StoredObject {
     };
     private final Date date = DateUtility.today();
     private int no = 0, type = 0;
+    private String portOfLoading = "", portOfDischarge = "", remark = "";
+    private Id buyerId = Id.ZERO;
 
     public Consignment() {
     }
 
     public static void columns(Columns columns) {
-        columns.add("Type", "int");
-        columns.add("No", "int");
-        columns.add("Date", "date");
-    }
-
-    public static String[] links() {
-        return new String[]{
-                "Packets|com.storedobject.core.ConsignmentPacket|Number||0",
-                "Items|com.storedobject.core.ConsignmentItem|||0",
-        };
     }
 
     public static String[] getTypeValues() {
@@ -44,8 +35,6 @@ public final class Consignment extends StoredObject {
         this.type = type;
     }
 
-    @SetNotAllowed
-    @Column(order = 600)
     public int getType() {
         return type;
     }
@@ -61,12 +50,7 @@ public final class Consignment extends StoredObject {
         this.no = no;
     }
 
-    @SetNotAllowed
-    @Column(style = "(serial)", order = 10)
     public int getNo() {
-        if (no == 0) {
-            no = SerialGenerator.generate(getTransaction(), "CONSIGNMENT-" + type).intValue();
-        }
         return no;
     }
 
@@ -74,8 +58,55 @@ public final class Consignment extends StoredObject {
         this.date.setTime(date.getTime());
     }
 
-    @Column(order = 20)
     public Date getDate() {
         return new Date(date.getTime());
+    }
+
+    public void setPortOfLoading(String portOfLoading) {
+        this.portOfLoading = portOfLoading;
+    }
+
+    public String getPortOfLoading() {
+        return portOfLoading;
+    }
+
+    public void setPortOfDischarge(String portOfDischarge) {
+        this.portOfDischarge = portOfDischarge;
+    }
+
+    public String getPortOfDischarge() {
+        return portOfDischarge;
+    }
+
+    public void setBuyer(Id buyerId) {
+        this.buyerId = buyerId;
+    }
+
+    public void setBuyer(BigDecimal idValue) {
+        setBuyer(new Id(idValue));
+    }
+
+    public void setBuyer(Entity buyer) {
+        setBuyer(buyer == null ? Id.ZERO : buyer.getId());
+    }
+
+    public Id getBuyerId() {
+        return buyerId;
+    }
+
+    public Entity getBuyer() {
+        return get(Entity.class, buyerId);
+    }
+
+    public void setRemark(String remark) {
+        this.remark = remark;
+    }
+
+    public String getRemark() {
+        return remark;
+    }
+
+    public String getReference() {
+        return "" + getNo();
     }
 }

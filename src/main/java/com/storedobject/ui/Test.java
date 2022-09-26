@@ -1,30 +1,32 @@
 package com.storedobject.ui;
 
-import com.storedobject.core.Person;
-import com.storedobject.core.StoredObject;
-import com.storedobject.vaadin.Button;
+import com.storedobject.common.Country;
 import com.storedobject.vaadin.DataForm;
 import com.storedobject.vaadin.TokensField;
 
 public class Test extends DataForm {
 
-    private final TokensField<Person> tf;
+    TokensField<Country> x;
 
     public Test() {
-        super("Test");
-        addField(new WeightField("Weight"), new MoneyField("Amount"));
-        tf = new TokensField<>("Persons", StoredObject.list(Person.class).toList());
+        super("Chart");
+        x = new TokensField<>("Hello", c -> c.getShortName() + " " + c.getFlag() + " " + c.getName());
+        addField(x);
+        x.setValue(Country.list());
+        TokensField<Country> tf = new TokensField<>("Countries", Country.list());
+        tf.setValue(Country.list());
         addField(tf);
+        tf.setItemLabelGenerator(c -> c.getShortName() + " " + c.getFlag() + " " + c.getName());
     }
 
     @Override
-    protected void buildButtons() {
-        super.buildButtons();
-        buttonPanel.add(new Button("Test", e -> tf.setReadOnly(!tf.isReadOnly())));
+    public int getMinimumContentWidth() {
+        return 80;
     }
 
     @Override
     protected boolean process() {
+        System.err.println(x.getValue());
         return false;
     }
 }
