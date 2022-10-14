@@ -856,18 +856,22 @@ public class POBrowser<T extends InventoryPO> extends ObjectBrowser<T> implement
     private class Search extends DataForm {
 
         private final ChoiceField search = new ChoiceField("Search",
-                new String[] { "Part Number", "Date Period", "PO No." });
+                new String[] { "Part Number", "Date Period", "PO No.", "Supplier" });
         private final ObjectGetField<InventoryItemType> pnField =
                 new ObjectGetField<>("Part Number", InventoryItemType.class, true);
         private final DatePeriodField periodField = new DatePeriodField("Date Period");
         private final IntegerField noField = new IntegerField("PO No.");
+        private final ObjectField<Entity> supplierField;
+
 
         public Search() {
             super("Search");
+            supplierField = new ObjectField<>("Supplier", GRN.suppliers(0));
+            supplierField.setVisible(false);
             noField.setVisible(false);
             periodField.setVisible(false);
             search.addValueChangeListener(e -> vis());
-            addField(search, pnField, periodField, noField);
+            addField(search, pnField, periodField, noField, supplierField);
         }
 
         private void vis() {
@@ -875,6 +879,7 @@ public class POBrowser<T extends InventoryPO> extends ObjectBrowser<T> implement
             pnField.setVisible(s == 0);
             periodField.setVisible(s == 1);
             noField.setVisible(s == 2);
+            supplierField.setVisible(s == 3);
         }
 
         @Override
@@ -914,6 +919,16 @@ public class POBrowser<T extends InventoryPO> extends ObjectBrowser<T> implement
                     }
                     filter = "PO No. = " + no;
                     setLoadFilter(p -> p.getNo() == no);
+                }
+                case 3 -> {
+                    Entity supplier = supplierField.getObject();
+                    if(supplier == null) {
+                        searching = false;
+                        return true;
+                    }
+                    filter = "Supplier = " + supplier.toDisplay();
+                    Id sid = supplier.getId();
+                    setLoadFilter(p -> p.getSupplierId().equals(sid));
                 }
             }
             if(filter != null) {

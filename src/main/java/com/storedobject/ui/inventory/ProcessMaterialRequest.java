@@ -476,9 +476,9 @@ public class ProcessMaterialRequest extends AbstractRequestMaterial {
                     mii.setItem(ii);
                     mii.setRequest(mri);
                     if(ii.getQuantity().isLessThan(q)) {
-                        mii.setQuantity(ii.getQuantity());
+                        mii.setQuantity(ii.getQuantity().convert(mri.getRequested().getUnit()));
                     } else {
-                        mii.setQuantity(q);
+                        mii.setQuantity(q.convert(mri.getRequested().getUnit()));
                     }
                     mii.makeVirtual();
                     items(mri).add(mii);
@@ -769,6 +769,7 @@ public class ProcessMaterialRequest extends AbstractRequestMaterial {
                 for(MaterialIssuedItem mii: items(mri)) {
                     q = q.add(mii.getQuantity());
                 }
+                q = q.convert(mri.getRequested(), 6);
                 readyToIssueMap.put(mri.getId(), q);
             }
             return q;

@@ -25,6 +25,7 @@ public class DocumentViewer extends PDFViewer {
     private Component viewerComponent;
     private final Runnable listener;
     private boolean windowMode = false;
+    private Component[] extraButtons;
 
     public DocumentViewer(Runnable listener) {
         this.listener = listener;
@@ -33,6 +34,10 @@ public class DocumentViewer extends PDFViewer {
     }
 
     public static void view(String caption, MediaFile mediaFile, boolean windowMode) {
+        view(caption, mediaFile, windowMode, null);
+    }
+
+    public static void view(String caption, MediaFile mediaFile, boolean windowMode, Component[] extraButtons) {
         if(mediaFile == null) {
             return;
         }
@@ -41,6 +46,7 @@ public class DocumentViewer extends PDFViewer {
         }
         DocumentViewer dv = new DocumentViewer(null);
         dv.setWindowMode(windowMode);
+        dv.setExtraButtons(extraButtons);
         dv.contentType = mediaFile;
         dv.view("media/" + mediaFile.getFileName(), mediaFile.getFile(), caption);
     }
@@ -55,6 +61,10 @@ public class DocumentViewer extends PDFViewer {
 
     public void setWindowMode(boolean windowMode) {
         this.windowMode = windowMode;
+    }
+
+    public void setExtraButtons(Component... extraButtons) {
+        this.extraButtons = extraButtons;
     }
 
     public void setDocument(Id streamDataId) {
@@ -208,7 +218,8 @@ public class DocumentViewer extends PDFViewer {
     private class Content extends ContentGenerator {
 
         protected Content(ContentProducer producer) {
-            super(Application.get(), producer, "_", null, null, null);
+            super(Application.get(), producer, "_", null, null, null,
+                    view != null && view.isWindowMode(), extraButtons);
             setViewer(DocumentViewer.this);
         }
 
@@ -230,7 +241,7 @@ public class DocumentViewer extends PDFViewer {
                 hs.setHeight("95%");
             }
             if(layout instanceof VerticalLayout v) {
-                WindowDecorator wd = new WindowDecorator(this);
+                WindowDecorator wd = new WindowDecorator(this, extraButtons);
                 wd.getElement().getStyle().set("border-radius", "0px");
                 v.add(wd, component);
                 v.setMargin(false);
@@ -256,10 +267,16 @@ public class DocumentViewer extends PDFViewer {
             }
             super.clean();
         }
+
+        @Override
+        protected WindowDecorator createWindowDecorator() {
+            return new WindowDecorator(this, extraButtons);
+        }
     }
 
     private boolean isWindow() {
-        return windowMode || (!application.supportsCloseableView() && !isViewer());
+        return (extraButtons != null && extraButtons.length > 0) || windowMode
+                || (!application.supportsCloseableView() && !isViewer());
     }
 
     private Component createContentLayout(Component component) {

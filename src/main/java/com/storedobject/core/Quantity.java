@@ -189,11 +189,23 @@ public class Quantity implements Storable, Comparable<Quantity> {
 		return quantity;
 	}
 
+	public <Q extends Quantity> Q convert(Q quantity, int decimals) {
+		return quantity;
+	}
+
 	public Quantity convert(MeasurementUnit u) {
 		return Count.ONE;
 	}
 
-    public boolean isGreaterThan(Quantity another) {
+	public Quantity convert(MeasurementUnit u, int decimals) {
+		return this;
+	}
+
+	public Quantity round(int decimals) {
+		return convert((MeasurementUnit) null, decimals);
+	}
+
+	public boolean isGreaterThan(Quantity another) {
         return false;
     }
 

@@ -689,22 +689,29 @@ public class Application extends com.storedobject.vaadin.Application implements 
         v.view(caption, object, actionName, action);
     }
 
-    private record CP(String caption, ContentProducer producer, Consumer<Long> timeTracker) {
+    private record CP(String caption, ContentProducer producer, Consumer<Long> timeTracker, boolean windowMode,
+                      Component[] extraHeaderButtons) {
     }
 
     private final List<CP> contentProducers = new ArrayList<>();
 
     @Override
-    public void view(String caption, ContentProducer producer, Consumer<Long> timeTracker) {
+    public void view(String caption, ContentProducer producer, Consumer<Long> timeTracker, boolean windowMode) {
+        view(caption, producer, timeTracker, windowMode, (Component[]) null);
+    }
+
+    public void view(String caption, ContentProducer producer, Consumer<Long> timeTracker, boolean windowMode,
+                     Component... extraHeaderButtons) {
         synchronized(contentProducers) {
-            CP cp = new CP(caption, producer, timeTracker);
+            CP cp = new CP(caption, producer, timeTracker, windowMode, extraHeaderButtons);
             contentProducers.add(cp);
             if(contentProducers.size() > 1) {
                 startPolling(contentProducers);
                 return;
             }
         }
-        new ContentGenerator(this, producer, caption, this::remove, timeTracker, waitMessage::open).kick();
+        new ContentGenerator(this, producer, caption, this::remove, timeTracker, waitMessage::open,
+                windowMode, extraHeaderButtons).kick();
     }
 
     public void closeWaitMessage() {
@@ -721,7 +728,7 @@ public class Application extends com.storedobject.vaadin.Application implements 
                 } else {
                     CP cp = contentProducers.get(0);
                     new ContentGenerator(this, cp.producer, cp.caption, this::remove, cp.timeTracker,
-                            waitMessage::open).kick();
+                            waitMessage::open, cp.windowMode, cp.extraHeaderButtons).kick();
                 }
             }
         }
@@ -730,7 +737,7 @@ public class Application extends com.storedobject.vaadin.Application implements 
     @Override
     public void download(ContentProducer producer, Consumer<Long> informMe) {
         new ContentGenerator(this, producer, true, null, this::remove, informMe,
-                waitMessage::open).kick();
+                waitMessage::open, false).kick();
     }
 
     public String addResource(ContentProducer producer) {

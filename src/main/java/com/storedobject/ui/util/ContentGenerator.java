@@ -7,6 +7,7 @@ import com.storedobject.office.PDFProperties;
 import com.storedobject.office.od.Office;
 import com.storedobject.ui.Application;
 import com.storedobject.ui.FileResource;
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.WebBrowser;
 
@@ -21,17 +22,22 @@ public class ContentGenerator extends AbstractContentGenerator {
     private boolean started = false, internal = false, download;
     private final String caption;
     private DocumentViewer viewer;
+    private final boolean windowMode;
+    private final Component[] extraHeaderButtons;
 
     public ContentGenerator(Application application, ContentProducer producer, String caption,
                             Consumer<AbstractContentGenerator> inform, Consumer<Long> timeTracker,
-                            Runnable preRun) {
-        this(application, producer, false, caption, inform, timeTracker, preRun);
+                            Runnable preRun, boolean windowMode, Component... extraHeaderButtons) {
+        this(application, producer, false, caption, inform, timeTracker, preRun, windowMode,
+                extraHeaderButtons);
     }
 
     public ContentGenerator(Application application, ContentProducer producer, boolean download, String caption,
                              Consumer<AbstractContentGenerator>  inform, Consumer<Long> timeTracker,
-                            Runnable preRun) {
+                            Runnable preRun, boolean windowMode, Component... extraHeaderButtons) {
         super(application, producer, inform, timeTracker, preRun);
+        this.windowMode = windowMode;
+        this.extraHeaderButtons = extraHeaderButtons;
         this.download = download;
         this.caption = caption;
         fileId = sequencerFileId.next();
@@ -43,7 +49,7 @@ public class ContentGenerator extends AbstractContentGenerator {
     }
 
     private boolean canView() {
-        return producer.isMedia() || producer.isPDF() || producer.getContentType().equals("text/html");
+        return producer.isMedia() || producer.isPDF() || producer.isHTML();
     }
 
     @Override
@@ -83,6 +89,8 @@ public class ContentGenerator extends AbstractContentGenerator {
             viewer = new DocumentViewer(null);
             viewer.contentType = producer;
         }
+        viewer.setWindowMode(windowMode);
+        viewer.setExtraButtons(extraHeaderButtons);
         if(canView()) {
             viewer.view(resource(getContentType()), getContentStream(), caption);
             if(producer.isMedia()) {

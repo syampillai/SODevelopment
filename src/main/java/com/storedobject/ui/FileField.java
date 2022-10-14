@@ -34,6 +34,7 @@ public class FileField extends AbstractObjectField<StreamData> {
     private ImageButton upload;
     private ImageButton link;
     private ImageButton download;
+    private final ImageButton downloadView;
     private final ImageButton downloadHidden;
     private ImageButton captureVideo;
     private ImageButton captureAudio;
@@ -126,13 +127,22 @@ public class FileField extends AbstractObjectField<StreamData> {
         viewContent = new ImageButton("View", VaadinIcon.EYE, clicked).withBox(BUTTON_SIZE);
         playAudio = new ImageButton("Play", VaadinIcon.VOLUME_UP, clicked).withBox(BUTTON_SIZE);
         playVideo = new ImageButton("Play", VaadinIcon.MOVIE, clicked).withBox(BUTTON_SIZE);
-        download = new ImageButton("Download", VaadinIcon.DOWNLOAD, clicked).withBox(BUTTON_SIZE);
+        download = new ImageButton("Download", clicked).withBox(BUTTON_SIZE);
+        downloadView = new ImageButton("Download", clicked).withBox();
+        downloadView.setColor("var(--so-header-color)");
         downloadHidden = download;
         setLabel(label);
         setValue((StreamData) null);
-        new Clickable<>(image, e -> Application.get().view(getInternalLabel(), getValue()));
+        new Clickable<>(image, e -> viewImage());
         image.getElement().getStyle().set("cursor", "pointer");
         image.getElement().setAttribute("title", "Click for an enlarged view");
+    }
+
+    private void viewImage() {
+        String caption = caption();
+        StreamData sd = getValue();
+        Application.get().view(caption, new StreamDataContent(sd, caption), null, true,
+                downloadView);
     }
 
     private void hide(ImageButton b) {
@@ -362,7 +372,7 @@ public class FileField extends AbstractObjectField<StreamData> {
                 added = true;
                 buttonBox.add(download);
             } else {
-                if(active && download != null) {
+                if(download != null) {
                     buttonBox.add(download);
                 }
             }
@@ -386,13 +396,16 @@ public class FileField extends AbstractObjectField<StreamData> {
 
         @Override
         public void clicked(Component component) {
-            if (component == viewContent || component == playAudio || component == playVideo || component == download) {
+            if (component == viewContent || component == playAudio || component == playVideo || component == download
+                    || component == downloadView) {
                 StreamData sd = getObject();
                 if (sd != null) {
-                    if (component == download) {
+                    if (component == download || component == downloadView) {
                         Application.get().download(sd);
                     } else {
-                        Application.get().view(caption(), sd);
+                        String caption = caption();
+                        Application.get().view(caption, new StreamDataContent(sd, caption), null,
+                                true, downloadView);
                     }
                 }
                 return;
@@ -532,6 +545,7 @@ public class FileField extends AbstractObjectField<StreamData> {
     public void disallowDownload() {
         if(download != null && download.getParent().isPresent()) {
             buttonBox.remove(download);
+            downloadView.setVisible(false);
         }
         download = null;
     }

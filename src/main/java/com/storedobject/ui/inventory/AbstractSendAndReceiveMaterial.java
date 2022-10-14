@@ -24,7 +24,7 @@ public abstract class AbstractSendAndReceiveMaterial<T extends InventoryTransfer
     private final Button send = new Button("Send", VaadinIcon.TRUCK, e -> send());
     private final Button receive = new Button("Receive", VaadinIcon.STORAGE, e -> receive());
     private final Button grnButton;
-    private final ObjectField<InventoryLocation> fromField, toField;
+    private final ObjectField<InventoryLocation> fromField, toField, filterField;
     private InventoryLocation fromOrTo;
     private InventoryLocation otherLocation;
     private final boolean receiveMode;
@@ -97,30 +97,40 @@ public abstract class AbstractSendAndReceiveMaterial<T extends InventoryTransfer
         if(this.otherLocation != null && this.otherLocation.equals(this.fromOrTo)) {
             throw new SORuntimeException("Both locations can't be the same - " + this.fromOrTo.toDisplay());
         }
-        LocationField lf;
+        LocationField lf, ff;
         if(receiveMode) {
             this.toField = new ObjectField<>("Receive at", fromOrToField);
             lf = this.otherLocation == null ? new LocationField(ALL_TYPES).remove(this.fromOrTo) :
                     LocationField.create(this.otherLocation);
+            ff = this.otherLocation == null ? new LocationField(ALL_TYPES).remove(this.fromOrTo) :
+                    LocationField.create(this.otherLocation);
             this.fromField = new ObjectField<>("Sent from", lf);
+            this.filterField = new ObjectField<>(this.fromField.getLabel(), ff);
         } else {
             this.fromField = new ObjectField<>("Sent from", fromOrToField);
             if(transferClass == MaterialReturned.class) {
                 lf = this.otherLocation == null ? new LocationField(0).remove(this.fromOrTo) :
                         LocationField.create(this.otherLocation);
+                ff = this.otherLocation == null ? new LocationField(0).remove(this.fromOrTo) :
+                        LocationField.create(this.otherLocation);
                 this.toField = new ObjectField<>("Return to", lf);
+                this.filterField = new ObjectField<>(this.toField.getLabel(), ff);
             } else {
                 if(this.otherLocation == null) {
                     if(transferClass == InventoryRO.class) {
                         lf = new LocationField(3);
+                        ff = new LocationField(3);
                     } else {
                         lf = new LocationField(ALL_TYPES).remove(this.fromOrTo);
+                        ff = new LocationField(ALL_TYPES).remove(this.fromOrTo);
                     }
                 } else {
                     lf = LocationField.create(this.otherLocation);
+                    ff = LocationField.create(this.otherLocation);
                 }
                 this.toField = new ObjectField<>((transferClass == InventoryRO.class ? "Sent" : "Transferred") +
                         " to", lf);
+                this.filterField = new ObjectField<>(this.toField.getLabel(), ff);
             }
         }
         setOrderBy("Date DESC,No DESC");
@@ -686,7 +696,7 @@ public abstract class AbstractSendAndReceiveMaterial<T extends InventoryTransfer
     private class Search extends DataForm {
 
         private final ChoiceField search = new ChoiceField("Search",
-                new String[] { "Part Number", "Date Period", "No." });
+                new String[] { "Part Number", "Date Period", "No.", filterField.getLabel() });
         private final ObjectGetField<InventoryItemType> pnField =
                 new ObjectGetField<>("Part Number", InventoryItemType.class, true);
         private final DatePeriodField periodField = new DatePeriodField("Date Period");
@@ -694,10 +704,11 @@ public abstract class AbstractSendAndReceiveMaterial<T extends InventoryTransfer
 
         public Search() {
             super("Search");
+            filterField.setVisible(false);
             noField.setVisible(false);
             periodField.setVisible(false);
             search.addValueChangeListener(e -> vis());
-            addField(search, pnField, periodField, noField);
+            addField(search, pnField, periodField, noField, filterField);
         }
 
         private void vis() {
@@ -705,6 +716,7 @@ public abstract class AbstractSendAndReceiveMaterial<T extends InventoryTransfer
             pnField.setVisible(s == 0);
             periodField.setVisible(s == 1);
             noField.setVisible(s == 2);
+            filterField.setVisible(s == 3);
         }
 
         @Override
@@ -744,6 +756,16 @@ public abstract class AbstractSendAndReceiveMaterial<T extends InventoryTransfer
                     }
                     filter = "No. = " + no;
                     setLoadFilter(p -> p.getNo() == no);
+                }
+                case 3 -> {
+                    InventoryLocation loc = filterField.getObject();
+                    if(loc == null) {
+                        searching = false;
+                        return true;
+                    }
+                    filter = filterField.getLabel() + " = " + loc.toDisplay();
+                    Id id = loc.getId();
+                    setLoadFilter(p -> p.getToLocationId().equals(id));
                 }
             }
             if(filter != null) {

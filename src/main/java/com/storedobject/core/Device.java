@@ -32,18 +32,50 @@ public interface Device {
     }
 
     default void view(String caption, StreamData streamData) {
-        view(caption, new StreamDataContent(streamData, caption));
+        view(caption, streamData, false);
     }
 
     default void view(StreamData streamData) {
-        view(null, streamData);
+        view(streamData, false);
     }
 
     default void view(FileData fileData) {
-        view(null, fileData);
+        view(fileData, false);
     }
 
     default void view(String caption, FileData fileData) {
+        view(caption, fileData, false);
+    }
+
+    default void view(String caption, ContentProducer producer) {
+        view(caption, producer, false);
+    }
+
+    default void view(ContentProducer producer) {
+        view(producer, false);
+    }
+
+    default void view(ContentProducer producer, Consumer<Long> informMe) {
+        view(producer, informMe, false);
+    }
+
+    default void view(String caption, ContentProducer producer, Consumer<Long> informMe) {
+        view(caption, producer, informMe, false);
+    }
+
+    default void view(String caption, StreamData streamData, boolean windowMode) {
+        view(caption, new StreamDataContent(streamData, caption), windowMode);
+    }
+
+    default void view(StreamData streamData, boolean windowMode) {
+        view(null, streamData, windowMode);
+    }
+
+    default void view(FileData fileData, boolean windowMode) {
+        view(null, fileData, windowMode);
+    }
+
+    default void view(String caption, FileData fileData, boolean windowMode) {
         if(fileData == null) {
             return;
         }
@@ -53,22 +85,22 @@ public interface Device {
                 caption = caption.substring(caption.lastIndexOf('/') + 1);
             }
         }
-        view(caption, fileData.getFile());
+        view(caption, fileData.getFile(), windowMode);
     }
 
-    default void view(String caption, ContentProducer producer) {
-        view(caption, producer, null);
+    default void view(String caption, ContentProducer producer, boolean windowMode) {
+        view(caption, producer, null, windowMode);
     }
 
-    default void view(ContentProducer producer) {
-        view(null, producer);
+    default void view(ContentProducer producer, boolean windowMode) {
+        view(null, producer, windowMode);
     }
 
-    default void view(ContentProducer producer, Consumer<Long> informMe) {
-        view(null, producer, informMe);
+    default void view(ContentProducer producer, Consumer<Long> informMe, boolean windowMode) {
+        view(null, producer, informMe, windowMode);
     }
 
-    void view(String caption, ContentProducer producer, Consumer<Long> informMe);
+    void view(String caption, ContentProducer producer, Consumer<Long> informMe, boolean windowMode);
 
     default void download(StreamData streamData) {
         download(null, streamData);

@@ -107,7 +107,7 @@ public abstract class SystemDevice implements Device {
 	}
 
 	@Override
-	public void view(String caption, ContentProducer producer, Consumer<Long> informMe) {
+	public void view(String caption, ContentProducer producer, Consumer<Long> informMe, boolean windowMode) {
 	}
 
 	@Override
