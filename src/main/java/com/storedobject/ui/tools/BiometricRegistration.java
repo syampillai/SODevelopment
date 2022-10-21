@@ -14,7 +14,6 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.dom.Element;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
@@ -33,7 +32,7 @@ public class BiometricRegistration extends Component implements InvisibleCompone
         biometric = new WebBiometric();
         biometric.setWebURL(SOServlet.getURL());
         biometric.setLogin(user);
-        Collection<WebBiometric> list = StoredObject.list(WebBiometric.class, "Login=" + user.getId()).collectAll();
+        Collection<WebBiometric> list = StoredObject.list(WebBiometric.class, "Login=" + user.getId()).toList();
         if(list.isEmpty()) {
             biometric.setDeviceName("My Device");
         } else {

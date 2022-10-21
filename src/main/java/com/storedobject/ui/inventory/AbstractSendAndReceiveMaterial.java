@@ -21,7 +21,7 @@ public abstract class AbstractSendAndReceiveMaterial<T extends InventoryTransfer
     private static final String LABEL_TOOL = "Tool/Item under Custody";
     private static final String LABEL_TOOLS = "Tools/Items under Custody";
     static final int[] ALL_TYPES = new int[] { 0, 3, 4, 5, 8, 10, 11 };
-    private final Button send = new Button("Send", VaadinIcon.TRUCK, e -> send());
+    private final Button send = new ConfirmButton("Send", VaadinIcon.TRUCK, e -> send());
     private final Button receive = new Button("Receive", VaadinIcon.STORAGE, e -> receive());
     private final Button grnButton;
     private final ObjectField<InventoryLocation> fromField, toField, filterField;
@@ -272,7 +272,7 @@ public abstract class AbstractSendAndReceiveMaterial<T extends InventoryTransfer
             e.append(" | ", Application.COLOR_INFO);
         }
         e.append("Note: ").
-                append("Double-click " + (receiveMode ? "" : "or right-click") + " on the entry to " +
+                append("Double-click" + (receiveMode ? "" : " or right-click") + " on the entry to " +
                         (receiveMode ? "receive" : "send")
                         + (receiveMode ? ". Right-click on the entry for more options." : ""), Application.COLOR_SUCCESS);
         e.update();
@@ -574,6 +574,7 @@ public abstract class AbstractSendAndReceiveMaterial<T extends InventoryTransfer
 
             public MRIEditor() {
                 super(transferItemClass);
+                setCaption("Item Detail");
             }
 
             @Override
@@ -590,6 +591,10 @@ public abstract class AbstractSendAndReceiveMaterial<T extends InventoryTransfer
                 quantityField = (QuantityField) getField("Quantity");
                 //noinspection unchecked
                 ObjectField<InventoryItem> itemField = (ObjectField<InventoryItem>) getField("Item");
+                if(AbstractSendAndReceiveMaterial.this.getObjectClass() == InventoryRO.class
+                        && itemField.getField() instanceof ItemField<InventoryItem> iField) {
+                    iField.getPNField().setLoadFilter(InventoryItemType::isRepairAllowed);
+                }
                 itemInput = (ItemInput<?>)(itemField).getField();
                 if(fromOrTo.getType() != 18) {
                     itemField.addValueChangeListener(e -> changed(itemInput.getValue()));

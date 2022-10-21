@@ -263,6 +263,14 @@ public class InventoryItem extends StoredObject {
         return getPartNumber().isTool();
     }
 
+    public boolean isRepairable() {
+        return true;
+    }
+
+    public final boolean isRepairAllowed() {
+        return isSerialized() && isRepairable();
+    }
+
     public final boolean isShelfLifeApplicable() {
         return getPartNumber().isShelfLifeApplicable();
     }

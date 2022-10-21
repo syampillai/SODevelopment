@@ -389,7 +389,7 @@ public class DefineAssembly<T extends InventoryItemType, C extends InventoryItem
 
         @Override
         protected boolean process() {
-            Collection<InventoryAssembly> assemblies = itemType.listImmediateAssemblies().collectAll();
+            Collection<InventoryAssembly> assemblies = itemType.listImmediateAssemblies().toList();
             if(!transact(t -> {
                 InventoryAssembly ia;
                 for(InventoryAssembly copy: assemblies) {

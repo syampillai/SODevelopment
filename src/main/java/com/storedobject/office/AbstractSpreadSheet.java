@@ -1,5 +1,6 @@
 package com.storedobject.office;
 
+import com.storedobject.core.Device;
 import com.storedobject.core.StreamContentProducer;
 import org.apache.poi.ss.usermodel.*;
 
@@ -220,4 +221,8 @@ public abstract class AbstractSpreadSheet extends StreamContentProducer {
      * Re-evaluate all formula in the worksheet.
      */
     public abstract void recompute();
+
+    public Device getDevice() {
+        return null;
+    }
 }

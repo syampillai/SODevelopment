@@ -99,8 +99,7 @@ public class DownloadStream implements Serializable {
      * about the downloadable stream and their meaning depends on the used
      * adapter. For example in WebAdapter they are interpreted as HTTP response
      * headers.
-     *
-     * If the parameters by this name exists, the old value is replaced.
+     * <p>If the parameters by this name exists, the old value is replaced.</p>
      *
      * @param name the Name of the parameter to set.
      * @param value the Value of the parameter to set.
@@ -189,7 +188,7 @@ public class DownloadStream implements Serializable {
      * {@link #getFileName()}) and transferring the data from the stream (
      * {@link #getStream()}) to the response. Defined parameters (
      * {@link #getParameterNames()}) are also included as headers in the
-     * response. If there's is a parameter named <code>Location</code>, a
+     * response. If there is a parameter named <code>Location</code>, a
      * redirect (302 Moved temporarily) is sent instead of the contents of this
      * stream.
      *
@@ -197,7 +196,8 @@ public class DownloadStream implements Serializable {
      * @param response the Vaadin response to write this download stream to
      * @throws IOException Passed through from the Vaadin response
      */
-    public void writeResponse(@SuppressWarnings("unused") VaadinRequest request, VaadinResponse response) throws IOException {
+    public void writeResponse(@SuppressWarnings("unused") VaadinRequest request, VaadinResponse response)
+            throws IOException {
         if (getParameter("Location") != null) {
             response.setStatus(HttpServletResponse.SC_MOVED_TEMPORARILY);
             response.setHeader("Location", getParameter("Location"));
@@ -210,7 +210,6 @@ public class DownloadStream implements Serializable {
             response.setStatus(HttpServletResponse.SC_NOT_FOUND);
             return;
         }
-
         OutputStream out = null;
         try {
             // Sets content type
@@ -273,7 +272,6 @@ public class DownloadStream implements Serializable {
      */
     public static String rfc5987Encode(String value) {
         StringBuilder builder = new StringBuilder();
-
         for (int i = 0; i < value.length();) {
             int cp = value.codePointAt(i);
             if (cp < 127 && (Character.isLetterOrDigit(cp) || cp == '.')) {
@@ -281,7 +279,6 @@ public class DownloadStream implements Serializable {
             } else {
                 // Create string from a single code point
                 String cpAsString = new String(new int[] { cp }, 0, 1);
-
                 appendHexBytes(builder, cpAsString.getBytes(StandardCharsets.UTF_8));
             }
             // Advance to the next code point

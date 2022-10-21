@@ -20,6 +20,7 @@ public abstract class AbstractContentGenerator extends Thread {
     private final Consumer<AbstractContentGenerator> inform;
     private final Consumer<Long> timeTracker;
     private long startedAt = 0;
+    private InputStream in;
 
     protected AbstractContentGenerator(Application application, ContentProducer producer,
                                        Consumer<AbstractContentGenerator> inform, Consumer<Long> timeTracker,
@@ -82,7 +83,6 @@ public abstract class AbstractContentGenerator extends Thread {
         startedAt = System.currentTimeMillis();
         try {
             int time = 180;
-            InputStream in;
             while ((in = producer.getContent()) == null && time-- > 0) {
                 if(isAlive()) {
                     try {
@@ -112,6 +112,7 @@ public abstract class AbstractContentGenerator extends Thread {
         public void close() throws IOException {
             super.close();
             generated();
+            AbstractContentGenerator.this.in = null;
         }
     }
 
@@ -134,6 +135,12 @@ public abstract class AbstractContentGenerator extends Thread {
 
     public ContentProducer getProducer() {
         return producer;
+    }
+
+    public void abort() {
+        if(producer != null) {
+            producer.abort();
+        }
     }
 
     @Override

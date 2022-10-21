@@ -3,10 +3,7 @@ package com.storedobject.ui;
 import com.storedobject.core.ObjectLoader;
 import com.storedobject.core.*;
 import com.vaadin.flow.component.Component;
-import org.vaadin.stefan.table.Table;
-import org.vaadin.stefan.table.TableBody;
-import org.vaadin.stefan.table.TableDataCell;
-import org.vaadin.stefan.table.TableRow;
+import org.vaadin.stefan.table.*;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
@@ -78,11 +75,14 @@ public class ObjectTable<T extends StoredObject> extends Table implements Object
     private void build() {
         Application a = Application.get();
         TableRow r = getHead().addRow();
+        TableHeaderCell h;
         String caption;
         Function<T, ?> fun;
         for(String c: columns) {
             caption = getColumnCaption(c);
-            r.addCells(caption == null ? StringUtility.makeLabel(c) : caption);
+            h = r.addHeaderCell();
+            h.add(caption == null ? StringUtility.makeLabel(c) : caption);
+            customizeHeaderCell(c, h);
             fun = getColumnFunction(c);
             if(fun == null) {
                 StoredObjectUtility.MethodList m = StoredObjectUtility.createMethodList(objectClass, c);
@@ -229,5 +229,14 @@ public class ObjectTable<T extends StoredObject> extends Table implements Object
      * @param cell Cell that is currently added.
      */
     protected void customizeCell(String columnName, T object, TableDataCell cell) {
+    }
+
+    /**
+     * This method is invoked to customize the header cell.
+     *
+     * @param columnName Column name.
+     * @param cell Header cell that is currently added.
+     */
+    protected void customizeHeaderCell(String columnName, TableHeaderCell cell) {
     }
 }

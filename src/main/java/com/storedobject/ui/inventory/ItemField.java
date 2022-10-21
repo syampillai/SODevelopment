@@ -81,6 +81,11 @@ public class ItemField<I extends InventoryItem> extends ObjectGetField<I> implem
         }
     }
 
+    public <T extends InventoryItemType> ObjectField<T> getPNField() {
+        //noinspection unchecked
+        return (ObjectField<T>) typeField;
+    }
+
     @Override
     public void setRequired(boolean required) {
         super.setRequired(required);
@@ -349,13 +354,12 @@ public class ItemField<I extends InventoryItem> extends ObjectGetField<I> implem
         }
 
         @Override
-        public I getTextObject(SystemEntity systemEntity, String value) throws Exception {
+        public I getTextObject(SystemEntity systemEntity, String value) {
             return convert(InventoryItem.get(getObjectClass(), value, typeField.getObject(), isAllowAny()));
         }
 
         @Override
-        public ObjectIterator<I> listTextObjects(SystemEntity systemEntity, String value) throws Exception {
-            //noinspection resource
+        public ObjectIterator<I> listTextObjects(SystemEntity systemEntity, String value) {
             return InventoryItem.list(getObjectClass(), value, typeField.getObject(), isAllowAny())
                     .convert(this);
         }

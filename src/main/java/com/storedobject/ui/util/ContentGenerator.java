@@ -19,7 +19,7 @@ import java.util.function.Consumer;
 public class ContentGenerator extends AbstractContentGenerator {
 
     private static final Sequencer sequencerFileId = new Sequencer();
-    private boolean started = false, internal = false, download;
+    private boolean kicked = false, started = false, internal = false, download;
     private final String caption;
     private DocumentViewer viewer;
     private final boolean windowMode;
@@ -73,7 +73,7 @@ public class ContentGenerator extends AbstractContentGenerator {
         producer.produce();
     }
 
-    public boolean kick() {
+    public void kick() {
         synchronized (this) {
             while (!started) {
                 try {
@@ -81,9 +81,17 @@ public class ContentGenerator extends AbstractContentGenerator {
                 } catch (InterruptedException ignored) {
                 }
             }
+            if(kicked) {
+                return;
+            }
+            kicked = true;
         }
+        kickInt();
+    }
+
+    private void kickInt() {
         if (!internal) {
-            return false;
+            return;
         }
         if(viewer == null) {
             viewer = new DocumentViewer(null);
@@ -96,7 +104,7 @@ public class ContentGenerator extends AbstractContentGenerator {
             if(producer.isMedia()) {
                 application.access(application::closeWaitMessage);
             }
-            return true;
+            return;
         }
         File file = createFile();
         try {
@@ -112,7 +120,6 @@ public class ContentGenerator extends AbstractContentGenerator {
             //noinspection ResultOfMethodCallIgnored
             file.delete();
         }
-        return true;
     }
 
     private StreamResource resource(String contentType) {

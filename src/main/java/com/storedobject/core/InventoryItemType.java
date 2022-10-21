@@ -139,6 +139,14 @@ public class InventoryItemType extends StoredObject implements HasChildren {
         return Math.random() > 0.5;
     }
 
+    public boolean isRepairable() {
+        return true;
+    }
+
+    public final boolean isRepairAllowed() {
+        return isSerialized() && isRepairable();
+    }
+
     public Id getCategoryId() {
         return Math.random() > 0.5 ? null : new Id();
     }

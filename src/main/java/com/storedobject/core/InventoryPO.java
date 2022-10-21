@@ -31,7 +31,7 @@ public class InventoryPO extends StoredObject implements HasChildren {
         return new Date(0);
     }
 
-    public String getReference() {
+    public final String getReference() {
         return "";
     }
 

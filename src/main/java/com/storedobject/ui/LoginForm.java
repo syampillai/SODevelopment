@@ -216,6 +216,7 @@ public class LoginForm extends TemplateView implements HomeView, FullScreen {
                     } else {
                         shakePW();
                     }
+                    ok.setEnabled(true);
                     return;
                 }
                 if(login.isBlocked()) {
@@ -325,12 +326,18 @@ public class LoginForm extends TemplateView implements HomeView, FullScreen {
             case "authCode" -> new IntegerField();
             case "cram" -> new CRAMField();
             case "biometric" -> new BiometricButton(this::biometricLogin, getA().getLogin());
-            case "ok" -> new Button(null, (String) null, e -> process(false));
+            case "ok" -> createOK();
             case "cancel" -> new Button(null, (String) null, e -> getA().close());
             case "forgot" -> new Button(null, (String) null, e -> process(true));
             case "forgotLink" -> new AnchorButton("", e -> process(true));
             default -> super.createComponentForId(id);
         };
+    }
+
+    private Button createOK() {
+        Button ok = new Button(null, (String) null, e -> process(false));
+        ok.setDisableOnClick(true);
+        return ok;
     }
 
     private int authCode() {
@@ -396,6 +403,7 @@ public class LoginForm extends TemplateView implements HomeView, FullScreen {
             buttonPanel.add(biometricButton = (BiometricButton) createComponentForId("biometric"));
             ok.setText("Sign-in");
             ok.setIcon("ok");
+            ok.setDisableOnClick(true);
             cancel.setText("Cancel");
             cancel.setIcon("cancel");
             forgot = (Button) createComponentForId("forgot");

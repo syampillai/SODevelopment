@@ -391,6 +391,9 @@ public class Application extends com.storedobject.vaadin.Application implements 
         if(server == null) {
             return;
         }
+        contentProducers.clear();
+        dynamicContent.clear();
+        multiContent.clear();
         closeAllViews(true);
         ApplicationServer as = server;
         server = null;
@@ -702,6 +705,9 @@ public class Application extends com.storedobject.vaadin.Application implements 
 
     public void view(String caption, ContentProducer producer, Consumer<Long> timeTracker, boolean windowMode,
                      Component... extraHeaderButtons) {
+        if(server == null) {
+            return;
+        }
         synchronized(contentProducers) {
             CP cp = new CP(caption, producer, timeTracker, windowMode, extraHeaderButtons);
             contentProducers.add(cp);
@@ -1869,6 +1875,7 @@ public class Application extends com.storedobject.vaadin.Application implements 
             try {
                 generator.getContent().writeResponse(vaadinRequest, vaadinResponse);
             } catch(Exception e) {
+                generator.abort();
                 access(() -> error(e));
                 Application.this.log("Content Generator - " + getTransactionManager().getUser().getLogin(), e);
             }
@@ -1877,11 +1884,15 @@ public class Application extends com.storedobject.vaadin.Application implements 
     }
 
     public void addContent(long fileId, AbstractContentGenerator content) {
-        dynamicContent.put(fileId, content);
+        if(server != null) {
+            dynamicContent.put(fileId, content);
+        }
     }
 
     public void addMultiContent(long fileId, AbstractContentGenerator content) {
-        multiContent.put(fileId, new WeakReference<>(content));
+        if(server != null) {
+            multiContent.put(fileId, new WeakReference<>(content));
+        }
     }
 
     private com.storedobject.sms.QuickSender smsSender;

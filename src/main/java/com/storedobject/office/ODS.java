@@ -101,6 +101,7 @@ public class ODS extends AbstractSpreadSheet {
         super(in, out);
     }
 
+    @Override
     public Device getDevice() {
         return null;
     }

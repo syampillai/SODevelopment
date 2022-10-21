@@ -87,6 +87,18 @@ public interface ContentProducer extends Executable, ContentType {
 	}
 
 	default FileData saveTo(FileData fileData, TransactionManager tm) throws Exception {
+		tm.transact(t -> saveTo(fileData, t));
 		return fileData;
+	}
+
+	default String getLink() {
+		return null;
+	}
+
+	/**
+	 * This method may be called when the content generation is aborted due to some error.
+	 * <p>Note: This could be invoked multiple times.</p>
+	 */
+	default void abort() {
 	}
 }
