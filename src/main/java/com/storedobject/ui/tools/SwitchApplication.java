@@ -19,11 +19,7 @@ public class SwitchApplication implements Executable {
 
     public static List<ExternalSystemUser> listUsers() {
         String fromURL = ServerLink.trim(Application.get().getURL());
-        return Application.get().getTransactionManager().getUser()
-                .listLinks(ExternalSystemUser.class, "Verified")
-                .filter(u -> u.getServer().existsLinks(ServerLink.class, "FromLink='" + fromURL + "'",
-                        false))
-                .toList();
+        return Application.get().getTransactionManager().getUser().listExternalUsers(fromURL);
     }
 
     public static boolean canSwitch() {

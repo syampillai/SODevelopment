@@ -206,4 +206,20 @@ public final class TransactionManager {
     public int getTimeDifference() {
         return 0;
     }
+
+    public boolean isPasswordLogin() {
+        return Math.random() > 0.5;
+    }
+
+    public boolean is2FactorLogin() {
+        return Math.random() > 0.5;
+    }
+
+    public boolean isBiometricLogin() {
+        return Math.random() > 0.5;
+    }
+
+    public boolean isCrossServerLogin() {
+        return Math.random() > 0.5;
+    }
 }

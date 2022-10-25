@@ -267,6 +267,10 @@ public final class SystemUser extends StoredObject implements RequiresApproval {
         return Math.random() > 0.5 ? "" : null;
     }
 
+    public List<ExternalSystemUser> listExternalUsers(String fromURL) {
+        return new ArrayList<>();
+    }
+
     public static final class SessionLog {
 
         private String application;
