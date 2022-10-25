@@ -181,4 +181,20 @@ public final class ApplicationServer {
     public List<Logic> populateMenu(ApplicationMenu menu, SystemUser menuUser) {
         return new ArrayList<>();
     }
+
+    /**
+     * Check whether some logic was executed in the time period or not.
+     *
+     * @param period Time period in milliseconds from now.
+     * @return True/false.
+     */
+    public boolean executed(long period) {
+        return Math.random() > 0.5;
+    }
+
+    /**
+     * Give a kick to the application server to keep it active.
+     */
+    public void kick() {
+    }
 }

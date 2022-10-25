@@ -18,6 +18,8 @@ import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.notification.NotificationVariant;
+import com.vaadin.flow.component.orderedlayout.FlexComponent;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.progressbar.ProgressBar;
 import com.vaadin.flow.dom.Style;
 import com.vaadin.flow.server.*;
@@ -25,7 +27,6 @@ import com.vaadin.flow.theme.lumo.Lumo;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.io.StringReader;
 import java.lang.ref.WeakReference;
 import java.sql.Date;
@@ -452,7 +453,8 @@ public class Application extends com.storedobject.vaadin.Application implements 
      */
     public void closeAllViews(boolean forShutdown) {
         if(forShutdown) {
-            closeTimer();
+            closeAlertTimer();
+            closeSessionTimer();
         }
         List<Dialog> dialogs = new ArrayList<>();
         AtomicBoolean done = new AtomicBoolean(false);
@@ -542,7 +544,7 @@ public class Application extends com.storedobject.vaadin.Application implements 
 
     /**
      * Get the title of the currently running logic. Note: A call to this method will reset
-     * it and you can not call it again to get it!
+     * it, and you can not call it again to get it!
      *
      * @param defaultTitle Default title to be returned if there is no current logic.
      * @return Title of the logic or default title.
@@ -556,7 +558,7 @@ public class Application extends com.storedobject.vaadin.Application implements 
     /**
      * Get the caption of the currently running logic from the current {@link Application}.
      * Note: A call to this method will reset
-     * it and you can not call it again to get it!
+     * it, and you can not call it again to get it!
      *
      * @param defaultCaption Default caption to be returned if there is no current logic or application instance in the
      *                       current context..
@@ -962,11 +964,15 @@ public class Application extends com.storedobject.vaadin.Application implements 
                 setSingleLogicMode((getTransactionManager().getUser().getPreferences() & 2) == 2);
             }
         });
-        createTimer();
+        createAlertTimer();
+        createSessionTimer();
     }
 
     @Override
     protected void viewDetached(View view) {
+        if(server != null) {
+            server.kick();
+        }
         if(mainLayout != null) {
             mainLayout.viewDetached(view);
         }
@@ -1965,9 +1971,9 @@ public class Application extends com.storedobject.vaadin.Application implements 
     }
 
     // Timer for alert messages.
-    private Timer timer;
+    private Timer alertTimer;
 
-    private void createTimer() {
+    private void createAlertTimer() {
         long t;
         try {
             t = Long.parseLong(ApplicationServer.getGlobalProperty("application.refresh.timer",
@@ -1978,21 +1984,21 @@ public class Application extends com.storedobject.vaadin.Application implements 
         } catch(Throwable ignored) {
             t = 600;
         }
-        this.timer = new Timer();
-        this.timer.schedule(new AppTimer(), 20000, t * 1000L);
+        this.alertTimer = new Timer();
+        this.alertTimer.schedule(new AlertTimer(), 20000, t * 1000L);
     }
 
-    private void closeTimer() {
+    private void closeAlertTimer() {
         synchronized(messageViewer) {
-            if(this.timer != null) {
-                Timer t = this.timer;
-                this.timer = null;
+            if(this.alertTimer != null) {
+                Timer t = this.alertTimer;
+                this.alertTimer = null;
                 t.cancel();
             }
         }
     }
 
-    private class AppTimer extends TimerTask {
+    private class AlertTimer extends TimerTask {
 
         @Override
         public void run() {
@@ -2003,6 +2009,91 @@ public class Application extends com.storedobject.vaadin.Application implements 
 
         private void task() {
             LoginMessage.showMessages(getServer(), messageViewer.getMinId());
+        }
+    }
+
+    // Timer for alert messages.
+    private Timer sessionTimer;
+    private long sessionTimeout;
+
+    private void createSessionTimer() {
+        try {
+            sessionTimeout = Long.parseLong(ApplicationServer.getGlobalProperty("application.session.timeout",
+                    "0", true));
+        } catch(Throwable ignored) {
+            sessionTimeout = 0;
+        }
+        if(sessionTimeout < 5) {
+            return;
+        }
+        sessionTimeout *= 60000L;
+        sessionMonitor = new SessionMonitor();
+        this.sessionTimer = new Timer();
+        this.sessionTimer.schedule(new SessionTimer(), sessionTimeout, 60000);
+    }
+
+    private void closeSessionTimer() {
+        synchronized(messageViewer) {
+            if(this.sessionTimer != null) {
+                Timer t = this.sessionTimer;
+                this.sessionTimer = null;
+                t.cancel();
+            }
+        }
+    }
+
+    private class SessionTimer extends TimerTask {
+
+        @Override
+        public void run() {
+            if(server == null || server.executed(sessionTimeout)) {
+                return;
+            }
+            synchronized(messageViewer) {
+                if(sessionMonitor.executing()) {
+                    return;
+                }
+                access(sessionMonitor::execute);
+            }
+        }
+    }
+
+    private SessionMonitor sessionMonitor;
+
+    private class SessionMonitor extends View {
+
+        private final TimerComponent timer = new TimerComponent();
+
+        private SessionMonitor() {
+            super("Session");
+            timer.setPrefix("Application will be closed in ");
+            timer.setSuffix(" seconds");
+            timer.addListener(e -> Application.this.close());
+            VerticalLayout v = new VerticalLayout();
+            ELabel caption = new ELabel("Your session will expire due to inactivity");
+            ButtonLayout buttons = new ButtonLayout(new Button("Continue", (String) null, e -> continueSession()),
+                    new Button("Logout", (String) null, e -> Application.this.close()));
+            v.add(caption, timer, buttons);
+            setComponent(v);
+            v.setHorizontalComponentAlignment(FlexComponent.Alignment.CENTER, caption, timer, buttons);
+            setWindowMode(true);
+        }
+
+        @Override
+        protected void execute(View parent, boolean doNotLock) {
+            timer.countDown(30);
+            super.execute(parent, doNotLock);
+        }
+
+        private void continueSession() {
+            sessionMonitor = new SessionMonitor();
+            close();
+        }
+
+        @Override
+        public <A extends com.storedobject.vaadin.Application> A getApplication() {
+            //noinspection unchecked
+            return (A) Application.this;
         }
     }
 }
