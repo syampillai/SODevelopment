@@ -25,6 +25,7 @@ import com.vaadin.flow.theme.lumo.Lumo;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.StringReader;
 import java.lang.ref.WeakReference;
 import java.sql.Date;
@@ -1875,7 +1876,7 @@ public class Application extends com.storedobject.vaadin.Application implements 
             try {
                 generator.getContent().writeResponse(vaadinRequest, vaadinResponse);
             } catch(Exception e) {
-                generator.abort();
+                generator.abort(e);
                 access(() -> error(e));
                 Application.this.log("Content Generator - " + getTransactionManager().getUser().getLogin(), e);
             }

@@ -137,9 +137,9 @@ public abstract class AbstractContentGenerator extends Thread {
         return producer;
     }
 
-    public void abort() {
+    public void abort(Throwable error) {
         if(producer != null) {
-            producer.abort();
+            producer.abort(error);
         }
     }
 

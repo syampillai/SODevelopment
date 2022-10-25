@@ -1,5 +1,6 @@
 package com.storedobject.ui.util;
 
+import com.storedobject.common.IO;
 import com.storedobject.common.Sequencer;
 import com.storedobject.core.ContentProducer;
 import com.storedobject.core.StreamData;
@@ -24,6 +25,7 @@ public class ContentGenerator extends AbstractContentGenerator {
     private DocumentViewer viewer;
     private final boolean windowMode;
     private final Component[] extraHeaderButtons;
+    private InputStream content;
 
     public ContentGenerator(Application application, ContentProducer producer, String caption,
                             Consumer<AbstractContentGenerator> inform, Consumer<Long> timeTracker,
@@ -71,6 +73,13 @@ public class ContentGenerator extends AbstractContentGenerator {
             notifyAll();
         }
         producer.produce();
+        Throwable error = producer.getError();
+        if(error != null) {
+            application.access(() -> {
+                Application.error(error);
+                Application.error("The output may be incomplete!");
+            });
+        }
     }
 
     public void kick() {
@@ -165,7 +174,6 @@ public class ContentGenerator extends AbstractContentGenerator {
             fileName += ext;
         }
         String ct = getContentType();
-        InputStream content;
         content = producer.getContent();
         DownloadStream ds = new DownloadStream(content, ct, fileName);
         if(!download) {
@@ -179,5 +187,11 @@ public class ContentGenerator extends AbstractContentGenerator {
         }
         ds.setCacheTime(0L);
         return ds;
+    }
+
+    @Override
+    public void abort(Throwable error) {
+        super.abort(error);
+        IO.close(content);
     }
 }

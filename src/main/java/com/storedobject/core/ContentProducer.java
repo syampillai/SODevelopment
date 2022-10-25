@@ -98,7 +98,18 @@ public interface ContentProducer extends Executable, ContentType {
 	/**
 	 * This method may be called when the content generation is aborted due to some error.
 	 * <p>Note: This could be invoked multiple times.</p>
+	 *
+	 * @param error Error.
 	 */
-	default void abort() {
+	default void abort(Throwable error) {
+	}
+
+	/**
+	 * Get the current error (set via {@link #abort(Throwable)}).
+	 *
+	 * @return Current error if any.
+	 */
+	default Throwable getError() {
+		return null;
 	}
 }

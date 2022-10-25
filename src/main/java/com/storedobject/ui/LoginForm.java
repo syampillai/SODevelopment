@@ -409,6 +409,8 @@ public class LoginForm extends TemplateView implements HomeView, FullScreen {
             forgot = (Button) createComponentForId("forgot");
             forgot.setText("Forgot Password");
             forgot.setIcon(VaadinIcon.QUESTION_CIRCLE_O);
+            LoginForm.this.ok = ok;
+            LoginForm.this.cancel = cancel;
         }
 
         @Override

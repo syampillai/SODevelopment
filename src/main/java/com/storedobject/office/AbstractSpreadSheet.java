@@ -135,12 +135,26 @@ public abstract class AbstractSpreadSheet extends StreamContentProducer {
     }
 
     /**
-     * Set a value to to the current cell.
+     * Set a value to the current cell.
      * If the value can't be set because the type is not supported, its stringified version will be set.
      *
      * @param cellValue Value to set.
      */
     public void setCellValue(Object cellValue) {
+    }
+
+    /**
+     * Set cell values to consecutive cells from left to right, starting from the current cell.
+     *
+     * @param cellValues Cell values to set.
+     */
+    public void setCellValues(Object... cellValues) {
+        if(cellValues != null) {
+            for(Object v: cellValues) {
+                setCellValue(v);
+                getNextCell();
+            }
+        }
     }
 
     /**

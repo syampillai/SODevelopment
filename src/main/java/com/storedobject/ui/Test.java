@@ -2,6 +2,7 @@ package com.storedobject.ui;
 
 import com.storedobject.core.*;
 import com.storedobject.office.CSVReport;
+import com.storedobject.office.ExcelReport;
 import com.storedobject.vaadin.DataForm;
 import com.storedobject.vaadin.DateField;
 
@@ -26,34 +27,13 @@ public class Test extends DataForm {
     @Override
     protected boolean process() {
         close();
-        //new Report(getApplication(), dateField.getValue()).execute();
-        new Temp(getApplication()).execute();
+        new Report1(getApplication(), dateField.getValue()).execute();
         return true;
     }
 
-    private static class Temp extends CSVReport {
-        Temp(Device device) {
-            super(device,3);
-        }
-
-        @Override
-        public void generateContent() throws Exception {
-            System.err.println("Here1");
-            setValues("One", "Two", "Three");
-            System.err.println("Here2");
-            writeRow();
-            System.err.println("Here3");
-            setValues(1, 2, 3);
-            writeRow();
-            setValues(10, 20, 30);
-            writeRow();
-        }
-    }
-
-    public class Report extends CSVReport {
+    public static class Report extends CSVReport {
 
         private int i = 1;
-        private int row;
 
         private final Date date;
 
@@ -62,7 +42,6 @@ public class Test extends DataForm {
         public Report(Device device, Date date) {
             super(device,26);
             this.date = date;
-            row = 1;
         }
 
         @Override
@@ -70,7 +49,6 @@ public class Test extends DataForm {
 
             final int INITIAL_INVENTORY_VALUE = 12; // Can be found for api docs
             printHeadings();
-            try {
                 for (InventoryItem item : StoredObject.list(InventoryItem.class, true)) {
                     if (item.getStore() == null
                             || item.getLocation().getType() == INITIAL_INVENTORY_VALUE
@@ -79,13 +57,8 @@ public class Test extends DataForm {
                     }
                     if (item.getGRN() == null || item.getGRN().getDate().before(date)) {
                         printItem(item);
-                        row++;
                     }
                 }
-            } catch (Throwable t) {
-                log(t);
-                error("Unable to download the report. Please contact Technical Support");
-            }
         }
 
         private void printHeadings() throws IOException {
@@ -98,14 +71,13 @@ public class Test extends DataForm {
         }
 
         private void printItem(InventoryItem item) throws IOException {
-            int cell = 0;
             InventoryGRN grn = item.getGRN();
             setValues(i++, // 0
                     item.getPartNumber() == null ? " " : item.getPartNumber().getPartNumber(), // 1
                     item.getPartNumber() == null ? " " : item.getPartNumber().getName(), // 2
                     grn == null ? " " : grn.getReference(), // 3
                     grn == null ? " " : dateToString(grn.getDate()), // 4
-                    getNumberType(item.getPartNumber()), // 5
+                    getNumberType(), // 5
                     item.getSerialNumber() == null ? " " : item.getSerialNumber(), // 6
                     item.getStore() == null ? " " : item.getStore(), // 7
                     item.getLocationDisplay(), // 8
@@ -128,7 +100,7 @@ public class Test extends DataForm {
                     grn == null ? "" : grn.getSupplier().getName(), // 17
                     grn == null ? "" : grn.getInvoiceNumber(), // 18
                     grn == null ? "" : dateToString(grn.getInvoiceDate()), // 19
-                    getCategory(item), // 20
+                    getCategory(), // 20
                     "", "", ""); // 21, 22, 23
             StringBuilder orderString = new StringBuilder();
             if (item.getRO() == null) {
@@ -143,11 +115,11 @@ public class Test extends DataForm {
             writeRow();
         }
 
-        private String getNumberType(InventoryItemType type) {
+        private String getNumberType() {
             return "Number Type";
         }
 
-        private String getCategory(InventoryItem item) {
+        private String getCategory() {
             return "Category";
         }
 
@@ -155,4 +127,140 @@ public class Test extends DataForm {
             return DateUtility.format(date);
         }
     }
+
+    public static class Report1 extends ExcelReport {
+
+        private int i = 1;
+        private int row;
+
+        private final Date date;
+
+        Currency baseCurrency = Currency.getInstance("INR");
+
+        public Report1(Device device, Date date) {
+            super(device);
+            this.date = date;
+            row = 1;
+        }
+
+        @Override
+        public void generateContent() throws Exception {
+
+            final int INITIAL_INVENTORY_VALUE = 12; // Can be found for api docs
+            printHeadings();
+            for (InventoryItem item : StoredObject.list(InventoryItem.class, true)) {
+                if (item.getStore() == null
+                        || item.getLocation().getType() == INITIAL_INVENTORY_VALUE
+                        || item.getQuantity().isZero()) {
+                    continue;
+                }
+                if (item.getGRN() == null || item.getGRN().getDate().before(date)) {
+                    printItem(item);
+                    row++;
+                }
+            }
+        }
+
+        private void printHeadings() {
+            getCell("A1").setCellValue("SL.No");
+            getCell("B1").setCellValue("Part Number");
+            getCell("C1").setCellValue("Description");
+            getCell("D1").setCellValue("Receipt No.");
+            getCell("E1").setCellValue("Receipt Date");
+            getCell("F1").setCellValue("Number Type");
+            getCell("G1").setCellValue("Serial No./ Batch No./ Lot Number");
+            getCell("H1").setCellValue("Store");
+            getCell("I1").setCellValue("Sub-Store");
+            getCell("J1").setCellValue("Location");
+            getCell("K1").setCellValue("Unit");
+            getCell("L1").setCellValue("Rate");
+            getCell("M1").setCellValue("Inv. Curr.");
+            getCell("N1").setCellValue("Base Curr.");
+            getCell("O1").setCellValue("Inv. Bal. Qty.");
+            getCell("P1").setCellValue("Amount");
+            getCell("Q1").setCellValue("ExpiryDate");
+            getCell("R1").setCellValue("Source");
+            getCell("S1").setCellValue("Supplier Inv. No.");
+            getCell("T1").setCellValue("Supplier Inv. Date");
+            getCell("U1").setCellValue("Category Name");
+            getCell("V1").setCellValue("IPC Reference");
+            getCell("W1").setCellValue("Release Note No.");
+            getCell("X1").setCellValue("Release Note Date");
+            getCell("Y1").setCellValue("Order No.");
+            getCell("Z1").setCellValue("Order Date");
+        }
+
+        private void printItem(InventoryItem item) {
+            int cell = 0;
+            InventoryGRN grn = item.getGRN();
+            getCell(cell++, row).setCellValue(i++);
+            getCell(cell++, row)
+                    .setCellValue(item.getPartNumber() == null ? " " : item.getPartNumber().getPartNumber());
+            getCell(cell++, row)
+                    .setCellValue(item.getPartNumber() == null ? " " : item.getPartNumber().getName());
+            getCell(cell++, row).setCellValue(grn == null ? " " : grn.getReference());
+            getCell(cell++, row).setCellValue(grn == null ? " " : dateToString(grn.getDate()));
+            getCell(cell++, row).setCellValue("");
+            getCell(cell++, row)
+                    .setCellValue(item.getSerialNumber() == null ? " " : item.getSerialNumber());
+            getCell(cell++, row).setCellValue(item.getStore() == null ? " " : item.getStore().toString());
+            getCell(cell++, row)
+                    .setCellValue("");
+            getCell(cell++, row)
+                    .setCellValue(item.getLocation() == null ? " " : item.getLocation().getName());
+            getCell(cell++, row)
+                    .setCellValue(item.getPartNumber().getUnitOfMeasurement().getUnit().toString());
+            getCell(cell++, row).setCellValue(item.getUnitCost().getCost().getValue().doubleValue());
+            getCell(cell++, row)
+                    .setCellValue(item.getCost() == null ? " " : item.getCost().getCurrency().getSymbol());
+            getCell(cell++, row).setCellValue(baseCurrency.toString());
+            getCell(cell++, row).setCellValue(item.getQuantity().getValue().doubleValue());
+
+            ExchangeRate currencyRate = ExchangeRate.get(baseCurrency, item.getCost().getCurrency());
+            if (currencyRate != null) {
+                getCell(cell++, row)
+                        .setCellValue(
+                                item.getCost() == null
+                                        ? " "
+                                        : (item.getCost().getValue().doubleValue()
+                                        * currencyRate.getRate().getValue().doubleValue())
+                                        + "");
+            } else {
+                getCell(cell++, row)
+                        .setCellValue(
+                                item.getCost() == null ? " " : (item.getCost().getValue().doubleValue()) + "");
+            }
+
+            getCell(cell++, row)
+                    .setCellValue("");
+            getCell(cell++, row).setCellValue(grn == null ? " " : grn.getSupplier().getName());
+            getCell(cell++, row).setCellValue(grn == null ? " " : grn.getInvoiceNumber());
+            getCell(cell++, row).setCellValue(grn == null ? " " : dateToString(grn.getInvoiceDate()));
+            getCell(cell++, row).setCellValue("");
+            getCell(cell++, row)
+                    .setCellValue("");
+            getCell(cell++, row)
+                    .setCellValue("");
+            getCell(cell++, row)
+                    .setCellValue("");
+            StringBuilder orderString = new StringBuilder();
+            if (item.getRO() == null) {
+                orderString.append(item.getPO() == null ? " " : item.getPO().getReference());
+            } else {
+                orderString.append(item.getRO().getReference());
+            }
+            getCell(cell++, row).setCellValue(orderString.toString());
+            getCell(cell, row)
+                    .setCellValue(
+                            item.getRO() == null
+                                    ? item.getPO() == null ? " " : dateToString(item.getPO().getDate())
+                                    : dateToString(item.getRO().getDate()));
+        }
+
+        private String dateToString(Date date) {
+
+            return DateUtility.format(date);
+        }
+    }
+
 }
