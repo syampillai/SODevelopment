@@ -1,6 +1,7 @@
 package com.storedobject.ui.tools;
 
 import com.storedobject.common.Executable;
+import com.storedobject.common.SORuntimeException;
 import com.storedobject.core.ExternalSystemUser;
 import com.storedobject.core.ServerLink;
 import com.storedobject.ui.Application;
@@ -53,17 +54,28 @@ public class SwitchApplication implements Executable {
     }
 
     private static void switchToInt(ExternalSystemUser user) {
-        if(user == null) {
-            return;
+        String loginBlock = null;
+        String error = null;
+        if(user != null) {
+            try {
+                loginBlock = user.createLoginBlock();
+                if(loginBlock == null) {
+                    error = "Encryption";
+                }
+            } catch(SORuntimeException e) {
+                error = e.getMessage();
+            }
         }
-        String loginBlock = user.createLoginBlock();
         if(loginBlock == null) {
+            Application.error(error + " - Unable to switch" + (user == null ? " (user not specified)" : "")
+                    + ", please contact Technical Support");
             return;
         }
-        Application.get().closeAllViews(true);
-        Application.get().close(user.getServer().listLinks(ServerLink.class, "FromLink='"
+        Application a = Application.get();
+        a.closeAllViews(true);
+        a.close(user.getServer().listLinks(ServerLink.class, "FromLink='"
                 + ServerLink.trim(Application.get().getURL()) + "'").findFirst().getToLink() + "/?loginBlock="
-                + URLEncoder.encode(loginBlock, StandardCharsets.UTF_8));
+                + URLEncoder.encode(loginBlock, StandardCharsets.UTF_8), 9);
     }
 
     @Override

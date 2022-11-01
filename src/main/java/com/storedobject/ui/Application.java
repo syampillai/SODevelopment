@@ -105,6 +105,7 @@ public class Application extends com.storedobject.vaadin.Application implements 
     private IdentityCheck identityCheck;
     private final Notification waitMessage;
     private MemoSystem memoSystem;
+    private int closeReason = 0;
 
     public Application() {
         this(new ApplicationFrame());
@@ -363,22 +364,51 @@ public class Application extends com.storedobject.vaadin.Application implements 
     public void logout() {
         TransactionManager tm = getTransactionManager();
         if(tm == null || (tm.getUser().getPreferences() & 2) != 2) {
-            close();
+            close(1);
             return;
         }
-        new ActionForm("Do you really want to exit?", this::close).execute();
+        new ActionForm("Do you really want to exit?", () -> close(1)).execute();
     }
 
     @Override
     public void detached() {
         if(ApplicationServer.getGlobalBooleanProperty("application.log.close", false)) {
-            log(SORuntimeException.getTrace(new Exception("Application Detached")));
+            log(SORuntimeException.getTrace(new Exception("Application Detached (Reason: " + closeReason + ")")));
         }
         super.detached();
     }
 
+    /**
+     * The reason for closing the application. A negative number is returned if a redirection happened while closing.
+     * <p>
+     *     0: Not closed
+     *     1, -1: Logged out by the user.
+     *     2, -2: Closed after showing a message.
+     *     3, -3: Application server session expired.
+     *     4, -4: Login failed and closed.
+     *     5, -5: Cancelled from the login screen.
+     *     6, -6: Cancelled while selecting the entity.
+     *     7, -7: Timed out during interactive session dialog.
+     *     8, -8: Closed by the user in the interactive session dialog.
+     *     9, -9: Closed while switching to another server/DB.
+     *     100, -100: Programmatic close from unknown code.
+     * </p>
+     * @return Reason code.
+     */
+    public int getCloseReason() {
+        return closeReason;
+    }
+
     @Override
     public void close() {
+        close(100);
+    }
+
+    public void close(final String exitSite) {
+        close(exitSite, 100);
+    }
+
+    public void close(int reason) {
         if(server == null) {
             return;
         }
@@ -386,13 +416,15 @@ public class Application extends com.storedobject.vaadin.Application implements 
         if(exit == null) {
             exit = layout == null ? "" : layout.getExitSite().trim();
         }
-        close(exit);
+        close(exit, reason);
     }
 
-    public void close(final String exitSite) {
+
+    public void close(final String exitSite, int reason) {
         if(server == null) {
             return;
         }
+        closeReason = reason;
         contentProducers.clear();
         dynamicContent.clear();
         multiContent.clear();
@@ -413,6 +445,8 @@ public class Application extends com.storedobject.vaadin.Application implements 
         } catch(Throwable ignored) {
         }
         if(ui == null) {
+            // AS Session expired?
+            closeReason = 3;
             return;
         }
         StringBuilder script = new StringBuilder("navigator.credentials.preventSilentAccess();");
@@ -425,6 +459,7 @@ public class Application extends com.storedobject.vaadin.Application implements 
         script.append("this.stopApplication();");
         if(exitSite != null && !exitSite.isEmpty()) {
             script.append("window.open('").append(exitSite).append("', '_self');");
+            closeReason = -closeReason;
         }
         ui.getPage().executeJs(script.toString());
     }
@@ -438,9 +473,9 @@ public class Application extends com.storedobject.vaadin.Application implements 
     public void exit(String message, String exitSite) {
         InformationMessage m = new InformationMessage(message);
         if(exitSite == null) {
-            m.setAction(this::close);
+            m.setAction(() -> close(2));
         } else {
-            m.setAction(() -> close(exitSite));
+            m.setAction(() -> close(exitSite, 2));
         }
         access(m::execute);
     }
@@ -476,7 +511,7 @@ public class Application extends com.storedobject.vaadin.Application implements 
                 break;
             }
         }
-        dialogs.forEach(Dialog::close);
+        access(() -> dialogs.forEach(Dialog::close));
     }
 
     public static Application get() {
@@ -1820,7 +1855,7 @@ public class Application extends com.storedobject.vaadin.Application implements 
         @Override
         public void abort() {
             super.abort();
-            getApplication().close();
+            ((Application)getApplication()).close(6);
         }
     }
 
@@ -2068,11 +2103,11 @@ public class Application extends com.storedobject.vaadin.Application implements 
             super("Session");
             timer.setPrefix("Application will be closed in ");
             timer.setSuffix(" seconds");
-            timer.addListener(e -> Application.this.close());
+            timer.addListener(e -> Application.this.close(7));
             VerticalLayout v = new VerticalLayout();
             ELabel caption = new ELabel("Your session will expire due to inactivity");
             ButtonLayout buttons = new ButtonLayout(new Button("Continue", (String) null, e -> continueSession()),
-                    new Button("Logout", (String) null, e -> Application.this.close()));
+                    new Button("Logout", (String) null, e -> Application.this.close(8)));
             v.add(caption, timer, buttons);
             setComponent(v);
             v.setHorizontalComponentAlignment(FlexComponent.Alignment.CENTER, caption, timer, buttons);

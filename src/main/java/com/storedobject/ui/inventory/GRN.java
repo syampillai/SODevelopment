@@ -3,8 +3,8 @@ package com.storedobject.ui.inventory;
 import com.storedobject.common.SORuntimeException;
 import com.storedobject.common.StringList;
 import com.storedobject.core.*;
-import com.storedobject.ui.*;
 import com.storedobject.ui.Application;
+import com.storedobject.ui.*;
 import com.storedobject.vaadin.*;
 import com.vaadin.flow.component.HasValue;
 import com.vaadin.flow.component.checkbox.Checkbox;
@@ -12,7 +12,9 @@ import com.vaadin.flow.component.grid.contextmenu.GridContextMenu;
 import com.vaadin.flow.component.grid.contextmenu.GridMenuItem;
 import com.vaadin.flow.component.icon.VaadinIcon;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import java.util.function.Consumer;
 
 /**
@@ -287,10 +289,28 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
         if(add != null) {
             add.setVisible(bClass != null);
             if(bClass != null) {
-                add.setText(InventoryRO.class.isAssignableFrom(bClass) ? "ROs" : "POs");
+                add.setText(poLabel(bClass) + "s");
                 add.setIcon(VaadinIcon.FILE_TABLE);
             }
         }
+    }
+
+    private static String poLabel(Class<?> poClass) {
+        if(InventoryRO.class.isAssignableFrom(poClass)) {
+            return "RO";
+        }
+        if(InventoryPO.class.isAssignableFrom(poClass)) {
+            try {
+                return switch(((InventoryPO) poClass.getDeclaredConstructor().newInstance()).getGRNType()) {
+                    case 0 -> "PO";
+                    case 1 -> "EO";
+                    case 2 -> "LO";
+                    default -> "?";
+                };
+            } catch(Throwable ignored) {
+            }
+        }
+        return "?";
     }
 
     private static Class<?> bClass(Class<?> poClass) {
@@ -301,7 +321,10 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
             return poClass;
         }
         if(POBrowser.class.isAssignableFrom(poClass)) {
-            return InventoryPO.class;
+            try {
+                return ((POBrowser<?>) poClass.getDeclaredConstructor().newInstance()).getObjectClass();
+            } catch(Throwable ignored) {
+            }
         }
         if(SendItemsForRepair.class.isAssignableFrom(poClass)) {
             return InventoryRO.class;

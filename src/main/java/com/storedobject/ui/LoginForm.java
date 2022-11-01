@@ -327,7 +327,7 @@ public class LoginForm extends TemplateView implements HomeView, FullScreen {
             case "cram" -> new CRAMField();
             case "biometric" -> new BiometricButton(this::biometricLogin, getA().getLogin());
             case "ok" -> createOK();
-            case "cancel" -> new Button(null, (String) null, e -> getA().close());
+            case "cancel" -> new Button(null, (String) null, e -> getA().close(5));
             case "forgot" -> new Button(null, (String) null, e -> process(true));
             case "forgotLink" -> new AnchorButton("", e -> process(true));
             default -> super.createComponentForId(id);
@@ -356,6 +356,7 @@ public class LoginForm extends TemplateView implements HomeView, FullScreen {
 
         private Div imageHolder = new Div();
         private Registration registration;
+        private int closeReason = 4;
 
         public LF() {
             super("Sign in", "Sign in", "Cancel");
@@ -466,9 +467,15 @@ public class LoginForm extends TemplateView implements HomeView, FullScreen {
         }
 
         @Override
+        protected void cancel() {
+            closeReason = 5;
+            super.cancel();
+        }
+
+        @Override
         public void abort() {
             super.abort();
-            getApplication().close();
+            ((Application)getApplication()).close(closeReason);
         }
 
         @Override
