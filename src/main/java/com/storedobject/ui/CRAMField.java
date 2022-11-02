@@ -6,6 +6,7 @@ import com.storedobject.vaadin.IntegerField;
 import com.storedobject.vaadin.PaintedImage;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.textfield.Autocomplete;
 
 import java.awt.*;
 import java.util.Random;
@@ -29,6 +30,7 @@ public final class CRAMField extends CompoundField {
      */
     public CRAMField() {
         cramInput = new IntegerField();
+        cramInput.setAutocomplete(Autocomplete.OFF);
         cramInput.setLength(3);
         cramInput.setWidth("1.3cm");
         cramInput.setEmptyDisplay("");

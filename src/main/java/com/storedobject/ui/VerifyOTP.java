@@ -9,6 +9,7 @@ import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.textfield.Autocomplete;
 
 import java.util.Random;
 
@@ -445,6 +446,7 @@ public class VerifyOTP extends View implements CloseableView {
             resend = new Button("Resend", VaadinIcon.PAPERPLANE_O, e -> resend());
             resend.setDisableOnClick(true);
             resend.setVisible(false);
+            otpField.setAutocomplete(Autocomplete.OFF);
             otpField.setLength(6);
             otpField.setEmptyDisplay("");
             otpField.setWidth("6em");
