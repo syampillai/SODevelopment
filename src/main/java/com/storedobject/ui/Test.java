@@ -10,6 +10,7 @@ public class Test extends DataForm {
 
     public Test() {
         super("Inventory Stock Report");
+        getApplication().setData(String.class, "Hello World");
     }
 
     @Override
@@ -20,6 +21,7 @@ public class Test extends DataForm {
 
     @Override
     protected boolean process() {
-        throw new NullPointerException("Hello world!");
+        System.err.println(getApplication().getData(String.class));
+        return false;
     }
 }
