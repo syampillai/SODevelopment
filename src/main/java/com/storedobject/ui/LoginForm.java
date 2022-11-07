@@ -183,6 +183,7 @@ public class LoginForm extends TemplateView implements HomeView, FullScreen {
                 m = "Please accept the terms & conditions";
             }
             speak(m, true);
+            ok.setEnabled(true);
             return;
         }
         internal.clearAlerts();
@@ -202,6 +203,7 @@ public class LoginForm extends TemplateView implements HomeView, FullScreen {
         }
         if(u.isBlank()) {
             speak("Please enter a valid user name", false);
+            ok.setEnabled(true);
             return;
         }
         try {
@@ -236,6 +238,7 @@ public class LoginForm extends TemplateView implements HomeView, FullScreen {
             }
             internal.error(error);
             if(login.canRetry()) {
+                ok.setEnabled(true);
                 return;
             }
             abort();
