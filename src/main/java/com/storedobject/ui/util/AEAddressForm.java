@@ -15,6 +15,11 @@ public class AEAddressForm extends AddressForm {
     }
 
     @Override
+    String areaLabelForOffice() {
+        return "Nearest Landmark";
+    }
+
+    @Override
     protected void loadAddress(Address address) {
         super.loadAddress(address);
         ((AEAddress)address).setEmirate(emiratesField.getValue());

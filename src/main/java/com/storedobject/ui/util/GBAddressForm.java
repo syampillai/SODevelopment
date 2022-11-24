@@ -11,7 +11,13 @@ public class GBAddressForm extends AddressForm {
     @Override
     protected void buildFields() {
         super.buildFields();
-        add(postTown);
+        remove(postalCodeField);
+        add(postTown, postalCodeField);
+    }
+
+    @Override
+    boolean hasCommunityName() {
+        return false;
     }
 
     @Override

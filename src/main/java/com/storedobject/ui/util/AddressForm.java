@@ -13,6 +13,7 @@ import org.vaadin.textfieldformatter.CustomStringBlockFormatter;
 public abstract class AddressForm extends DataForm {
 
     private static final String B_NAME = "Building Number/Name";
+    private static final String AREA_LABEL = "Area";
     private AddressField addressField;
     private Address address;
     final CountryField countryField = new CountryField("Country");
@@ -20,7 +21,7 @@ public abstract class AddressForm extends DataForm {
     final TextField apartmentField = new TextField(Address.getTypeValue('0') + " Number/Name");
     final TextField buildingField = new TextField(B_NAME);
     final TextField streetField = new TextField("Street Number & Name");
-    final TextField areaField = new TextField("Area");
+    final TextField areaField = new TextField(AREA_LABEL);
     final IntegerField poBoxField = new IntegerField("");
     final TextField postalCodeField = new TextField("");
     private CustomStringBlockFormatter formatter;
@@ -47,13 +48,24 @@ public abstract class AddressForm extends DataForm {
             apartmentField.setLabel(Address.getTypeValue((char)('0' + v)) + " Number/Name");
             if(v == 1 || v == 2) {
                 buildingField.setLabel("Community Name");
+                buildingField.setVisible(hasCommunityName());
             } else {
                 buildingField.setLabel(B_NAME);
+                buildingField.setVisible(true);
             }
+            areaField.setLabel(v == 3 ? areaLabelForOffice() : AREA_LABEL);
             if(e.isFromClient()) {
                 firstFocus();
             }
         });
+    }
+
+    String areaLabelForOffice() {
+        return AREA_LABEL;
+    }
+
+    boolean hasCommunityName() {
+        return true;
     }
 
     @Override

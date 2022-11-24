@@ -140,7 +140,27 @@ public class Quantity implements Storable, Comparable<Quantity> {
 	public Quantity add(Quantity quantity) {
 		return Count.ONE;
 	}
-	
+
+	/**
+	 * Sum quantities. Quantities should be compatible. Null and zero values are ignored.
+	 *
+	 * @param quantities Quantities to sum together.
+	 * @return Result.
+	 */
+	public static Quantity sum(Quantity... quantities) {
+		Quantity sum = Count.ZERO;
+		if(quantities != null) {
+			for(Quantity q : quantities) {
+				if(sum.isZero()) {
+					sum = q;
+				} else {
+					sum = sum.add(q);
+				}
+			}
+		}
+		return sum;
+	}
+
 	public Quantity subtract(String quantity) {
 		return Count.ONE;
 	}
