@@ -55,4 +55,11 @@ public final class MaterialRequestItem extends StoredObject implements Detail {
     public boolean isDetailOf(Class<? extends StoredObject> masterClass) {
         return masterClass == MaterialRequest.class;
     }
+
+    public void reduceRequestedQuantity(Transaction transaction, Quantity reduceBy) throws Exception {
+        Quantity b = getBalance();
+        if(reduceBy.isGreaterThan(b)) {
+            throw new SOException("Balance to be issued is only " + b);
+        }
+    }
 }

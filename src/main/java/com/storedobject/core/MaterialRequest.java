@@ -183,4 +183,12 @@ public final class MaterialRequest extends StoredObject implements OfEntity {
 
     public void foreclose(Transaction transaction) throws Exception {
     }
+
+    public void reduceRequestedQuantity(Transaction transaction, InventoryItemType partNumber, Quantity reduceBy)
+            throws Exception {
+        if(reduceBy.isPositive()) {
+            transaction.rollback();
+            throw new SOException("Unable to find " + partNumber.toDisplay() + " for quantity " + reduceBy);
+        }
+    }
 }
