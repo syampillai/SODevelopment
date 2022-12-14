@@ -128,7 +128,7 @@ public class ReportDefinition extends Name {
         return Person.class;
     }
 
-    public Class<? extends Executable> getClassForLogic() {
+    public Class<? extends Executable> getClassForLogic(boolean excel) {
         return null;
     }
 

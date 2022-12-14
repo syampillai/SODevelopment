@@ -2,8 +2,8 @@ package com.storedobject.ui.tools;
 
 import com.storedobject.common.StringList;
 import com.storedobject.core.*;
-import com.storedobject.office.Excel;
 import com.storedobject.report.ObjectList;
+import com.storedobject.report.ObjectListExcel;
 import com.storedobject.ui.Application;
 import com.storedobject.ui.*;
 import com.storedobject.ui.common.ExcelDataUpload;
@@ -16,13 +16,11 @@ import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.splitlayout.SplitLayout;
 import com.vaadin.flow.component.textfield.TextArea;
-import org.apache.poi.ss.usermodel.Cell;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Writer;
 import java.math.BigInteger;
-import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Comparator;
 
@@ -270,49 +268,19 @@ public class SystemUtility extends View implements CloseableView, Transactional 
             return;
         }
         if(c == downloadExcelData) {
-            if(cols.isEmpty()) {
-                ClassAttribute<? extends StoredObject> ca = StoredObjectUtility.classAttribute(objectClass);
-                StringBuilder sb = new StringBuilder();
-                assert ca != null;
-                for(String s: ca.getAttributes()) {
-                    sb.append(",").append(s);
-                }
-                cols = sb.substring(1);
-                select.setValue(cols);
-            }
-            Query query = StoredObject.query(objectClass, cols, where.getValue().trim(), orderBy.getValue().trim(),
-                    any.getValue());
-            if(cols.startsWith("/")) {
-                cols = cols.substring(1);
-            }
-            StringList columns = StringList.create(cols);
-            Excel excel = new Excel() {
+            new ObjectListExcel(getApplication(), objectClass, any.getValue(),
+                    cols.startsWith("/") ? StringList.EMPTY : StringList.create(cols)) {
+
                 @Override
-                public void generateContent() throws Exception {
-                    columns.forEach(c -> setCellValue(getNextCell(), c));
-                    getNextRow();
-                    Cell cell;
-                    Object value;
-                    boolean first = true;
-                    for(ResultSet rs: query) {
-                        int colCount = rs.getMetaData().getColumnCount();
-                        for(int c = 1; c <= colCount; c++) {
-                            cell = getNextCell();
-                            setCellValue(cell, value = rs.getObject(c));
-                            if(Utility.isRightAligned(value)) {
-                                cell.setCellStyle(getRightAlignedStyle());
-                                if(first) {
-                                    getCell(getCellIndex(), getRowIndex() - 1).setCellStyle(getRightAlignedStyle());
-                                }
-                            }
-                        }
-                        first = false;
-                        getNextRow();
-                    }
-                    workbook.setSheetName(0, StringUtility.makeLabel(objectClass));
+                public String getOrderBy() {
+                    return orderBy.getValue().trim();
                 }
-            };
-            getApplication().view(excel);
+
+                @Override
+                public String getExtraCondition() {
+                    return where.getValue();
+                }
+            }.execute();
         }
     }
 

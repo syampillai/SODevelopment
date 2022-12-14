@@ -234,6 +234,9 @@ public final class SystemUser extends StoredObject implements RequiresApproval {
     public void unlock(TransactionManager tm) throws Exception {
     }
 
+    public void lock(TransactionManager tm) throws Exception {
+    }
+
     /**
      * Get the list of entities configured for this user.
      *

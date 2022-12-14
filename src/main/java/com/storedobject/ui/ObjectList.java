@@ -5,8 +5,8 @@ import com.storedobject.common.SORuntimeException;
 import com.storedobject.common.StringList;
 import com.storedobject.core.*;
 import com.storedobject.ui.util.SOFieldCreator;
+import com.storedobject.vaadin.ChoiceField;
 import com.storedobject.vaadin.DataForm;
-import com.storedobject.vaadin.View;
 import com.vaadin.flow.component.HasValue;
 
 import java.math.BigDecimal;
@@ -27,6 +27,7 @@ public class ObjectList extends DataForm {
 
     private static final double DIFF = 0.000000001;
     private final ReportDefinition definition;
+    private final ChoiceField format = new ChoiceField("Format", StringList.create("PDF", "Excel"));
     private final List<Field> fields = new ArrayList<>();
     private final List<Field> filters = new ArrayList<>();
 
@@ -51,6 +52,7 @@ public class ObjectList extends DataForm {
     public <T extends StoredObject> ObjectList(ReportDefinition definition) {
         super(definition.getTitle());
         this.definition = definition;
+        addField(format);
         StringList fList = StringList.create(definition.getFilter().split("\n"));
         if(fList.isEmpty()) {
             return;
@@ -170,12 +172,12 @@ public class ObjectList extends DataForm {
     private <T extends StoredObject> void report() {
         filters.clear();
         fields.stream().filter(f -> f.method != null && f.field.getValue() != null).forEach(filters::add);
-        Class<? extends Executable> logicClass = definition.getClassForLogic();
+        Class<? extends Executable> logicClass = definition.getClassForLogic(format.getValue() == 1);
         Executable logic;
         try {
             logic = Utility.construct(logicClass,
-                    new Class<?>[]{Device.class, ReportDefinition.class},
-                    new Object[]{Application.get(), definition});
+                    new Class<?>[]{ Device.class, ReportDefinition.class },
+                    new Object[]{ Application.get(), definition });
         } catch(LogicRedirected ld) {
             logic = ld.getExecutable();
         }
@@ -190,17 +192,15 @@ public class ObjectList extends DataForm {
             if(!filters.isEmpty()) {
                 report.setLoadFilter(this::filter);
             }
+        } else if(logic instanceof com.storedobject.report.ObjectListExcel) {
+            @SuppressWarnings("unchecked")
+            com.storedobject.report.ObjectListExcel<T> report = (com.storedobject.report.ObjectListExcel<T>) logic;
+            report.setExtraCondition(extraCondition());
+            if(!filters.isEmpty()) {
+                report.setLoadFilter(this::filter);
+            }
         }
         logic.execute();
-    }
-
-    @Override
-    protected void execute(View parent, boolean doNotLock) {
-        if(fields.isEmpty()) {
-            report();
-            return;
-        }
-        super.execute(parent, doNotLock);
     }
 
     /**

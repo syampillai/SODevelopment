@@ -137,7 +137,6 @@ public class SOFieldCreator<T> implements ObjectFieldCreator<T> {
         try {
             if(HasContacts.class.isAssignableFrom(ca.getObjectClass()) &&
                     ca.getObjectClass().getDeclaredConstructor().newInstance() instanceof HasContacts hc) {
-                //noinspection resource
                 hc.listContactTypes().filter(ct -> oe.isFieldIncluded(ct.getName() + ".c"))
                         .forEach(contactTypes::add);
             }
@@ -491,14 +490,18 @@ public class SOFieldCreator<T> implements ObjectFieldCreator<T> {
                 ContactType ct = ct(fieldName);
                 if(ct != null) {
                     switch(ct.getType()) {
-                        case 0:
+                        case 0 -> {
                             return new PhoneField(label);
-                        case 1:
+                        }
+                        case 1 -> {
                             return new EmailField(label);
-                        case 2:
+                        }
+                        case 2 -> {
                             return new AddressField(label);
-                        case 3:
+                        }
+                        case 3 -> {
                             return new TextField(label);
+                        }
                     }
                 }
             }
