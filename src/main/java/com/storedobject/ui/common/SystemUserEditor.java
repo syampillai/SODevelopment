@@ -3,10 +3,8 @@ package com.storedobject.ui.common;
 import com.storedobject.core.Person;
 import com.storedobject.core.StoredObject;
 import com.storedobject.core.SystemUser;
-import com.storedobject.ui.Application;
-import com.storedobject.ui.ELabelField;
-import com.storedobject.ui.ObjectEditor;
-import com.storedobject.ui.ObjectField;
+import com.storedobject.core.SystemUserGroup;
+import com.storedobject.ui.*;
 import com.storedobject.ui.util.LogicParser;
 import com.storedobject.vaadin.DataForm;
 import com.storedobject.vaadin.RadioChoiceField;
@@ -21,6 +19,7 @@ public class SystemUserEditor extends ObjectEditor<SystemUser> {
 
     private Person person;
     private Adder adder;
+    private final boolean restricted;
 
     public SystemUserEditor() {
         this(0, null);
@@ -31,7 +30,14 @@ public class SystemUserEditor extends ObjectEditor<SystemUser> {
     }
 
     public SystemUserEditor(int actions, String caption) {
+        this(actions, caption, false);
+        setSearchFilter(Application.getUserVisibility("edit"));
+        LogicParser.checkOverride(this);
+    }
+
+    protected SystemUserEditor(int actions, String caption, boolean restricted) {
         super(SystemUser.class, actions, caption);
+        this.restricted = restricted;
         setSearchFilter(Application.getUserVisibility("edit"));
         LogicParser.checkOverride(this);
     }
@@ -51,6 +57,44 @@ public class SystemUserEditor extends ObjectEditor<SystemUser> {
             su.setPerson(person.getId());
         }
         return su;
+    }
+
+    @Override
+    protected void customizeLinkField(ObjectLinkField<?> field) {
+        if(restricted && "Groups.l".equals(field.getFieldName())) {
+            //noinspection unchecked
+            ((ReferenceLinkGrid<SystemUserGroup>)field.getGrid()).setLoadFilter(SystemUserEditor::allowed);
+        }
+    }
+
+    private static boolean allowed(SystemUserGroup group) {
+        return switch(group.getName().toLowerCase()) {
+            case "admin", "administrator", "application administrator", "system security", "developer",
+                    "system utilities", "initial setup" -> false;
+            default -> true;
+        };
+    }
+
+    private boolean allowed(SystemUser su) {
+        if(su == null) {
+            return false;
+        }
+        if(!restricted || su.listGroups().allMatch(SystemUserEditor::allowed)) {
+            return true;
+        }
+        clearAlerts();
+        warning("Modification not allowed!");
+        return false;
+    }
+
+    @Override
+    public boolean canEdit() {
+        return super.canEdit() && allowed(getObject());
+    }
+
+    @Override
+    public boolean canDelete() {
+        return super.canDelete() && allowed(getObject());
     }
 
     @Override

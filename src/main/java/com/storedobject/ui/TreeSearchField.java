@@ -25,8 +25,12 @@ public class TreeSearchField<P extends T, T> extends TextField {
             throw new SORuntimeException();
         }
         setPlaceholder("Text to search");
-        addToPrefix(new ImageButton("Search backward", VaadinIcon.ANGLE_DOUBLE_UP, e -> search(true)));
-        addToSuffix(new ImageButton("Search forward", VaadinIcon.ANGLE_DOUBLE_DOWN, e -> search(false)));
+        ImageButton ib = new ImageButton("Search backward", VaadinIcon.ANGLE_DOUBLE_UP, e -> search(true));
+        ib.getElement().setAttribute("slot", "prefix");
+        getElement().appendChild(ib.getElement());
+        ib = new ImageButton("Search forward", VaadinIcon.ANGLE_DOUBLE_DOWN, e -> search(false));
+        ib.getElement().setAttribute("slot", "prefix");
+        getElement().appendChild(ib.getElement());
         addKeyPressListener(Key.ENTER, e -> search(false));
         addValueChangeListener(e -> search(false));
     }

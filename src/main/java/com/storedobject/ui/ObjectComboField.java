@@ -139,7 +139,8 @@ public class ObjectComboField<T extends StoredObject> extends ComboField<T>
         if(allowAdd && !isAllowAny()) {
             ObjectField.checkDetailClass(this.objectProvider.getObjectClass(), label);
             addButton = new ImageButton("Add new", VaadinIcon.PLUS, e -> addNew());
-            addToPrefix(addButton);
+            addButton.getElement().setAttribute("slot", "prefix");
+            getElement().appendChild(addButton.getElement());
         }
         ResourceDisposal.register(this);
         setSpellCheck(false);

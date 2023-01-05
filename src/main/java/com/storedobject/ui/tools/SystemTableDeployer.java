@@ -260,16 +260,17 @@ public class SystemTableDeployer extends View implements Transactional {
         }
         if(c == proceed) {
             switch(action) {
-                case 0:
+                case 0 -> {
                     return;
-                case 2:
+                }
+                case 2 -> {
                     if(schemaNotCreated(ca, password)) {
                         message("Error creating schema... Please seek help...");
                         action = 0;
                         return;
                     }
-                    break;
-                case 3:
+                }
+                case 3 -> {
                     try {
                         if(createTable(ca, password)) {
                             break;
@@ -280,16 +281,17 @@ public class SystemTableDeployer extends View implements Transactional {
                     }
                     action = 0;
                     return;
-                case 4:
+                }
+                case 4 -> {
                     try {
                         execCommands(alterTable, password);
-                    } catch (Exception e) {
+                    } catch(Exception e) {
                         message("Error altering data table... Please seek help...\nCommand: " + e.getMessage());
                         action = 0;
                         return;
                     }
-                    break;
-                case 5:
+                }
+                case 5 -> {
                     action = 0;
                     try {
                         if(isSU && system) {
@@ -302,6 +304,7 @@ public class SystemTableDeployer extends View implements Transactional {
                     }
                     status("Reindexing done... Nothing else to do!");
                     return;
+                }
             }
             checkStatus();
         }
@@ -327,7 +330,10 @@ public class SystemTableDeployer extends View implements Transactional {
     }
 
     private static ArrayList<String> checkAlterTable(ClassAttribute<?> ca) throws Exception {
-        ArrayList<String> alterTable;
+        ArrayList<String> alterTable = new ArrayList<>();
+        checkAlterTable(ca, false, alterTable);
+        checkAlterTable(ca, true, alterTable);
+        /*
         ClassAttribute<?> pca = ca.getParent();
         String tableName = ca.getModuleName() + "." + ca.getTableName(),
                 pTableName = pca == null ? "" : (pca.getModuleName() + "." + pca.getTableName());
@@ -348,7 +354,6 @@ public class SystemTableDeployer extends View implements Transactional {
         ColumnDefinitions cds = new ColumnDefinitions();
         Method m = ca.getObjectClass().getMethod("columns", Columns.class);
         m.invoke(null, cds);
-        alterTable = new ArrayList<>();
         ArrayList<String[]> dropOuts = new ArrayList<>();
         boolean found;
         int i;
@@ -426,10 +431,100 @@ public class SystemTableDeployer extends View implements Transactional {
         for(String con: cons) {
             alterTable.add(pre + " DROP CONSTRAINT IF EXISTS " + con);
         }
+        */
         if(alterTable.size() == 0) {
             alterTable = null;
         }
         return alterTable;
+    }
+
+    private static void checkAlterTable(ClassAttribute<?> ca, boolean history, ArrayList<String> alterTable) throws Exception {
+        String h = history ? "H_" : "";
+        ClassAttribute<?> pca = ca.getParent();
+        String tableName = ca.getModuleName() + "." + h + ca.getTableName(),
+                pTableName = pca == null ? "" : (pca.getModuleName() + "." + h + pca.getTableName());
+        String pre = "ALTER TABLE " + tableName + " ";
+        ArrayList<String[]> columns = Database.get().columnDetails(tableName),
+                pColumns = Database.get().columnDetails(pTableName);
+        while(pca != null) {
+            pColumns.forEach(pc -> columns.removeIf(c -> pc[0].equals(c[0])));
+            pca = pca.getParent();
+            if(pca != null) {
+                pColumns = Database.get().columnDetails(pca.getModuleName() + "." + h + pca.getTableName());
+            }
+        }
+        ColumnDefinitions cds = new ColumnDefinitions();
+        Method m = ca.getObjectClass().getMethod("columns", Columns.class);
+        m.invoke(null, cds);
+        ArrayList<String[]> dropOuts = new ArrayList<>();
+        boolean found;
+        int i;
+        for(String[] c : columns) {
+            found = false;
+            for(i = 0; i < cds.size(); i++) {
+                if(c[0].equals(cds.getName(i).toLowerCase())) {
+                    found = true;
+                    if(!c[1].equals(cds.getType(i))) {
+                        alterTable.add(pre + "ALTER COLUMN " + cds.getName(i) + " TYPE " + cds.getType(i) +
+                                " USING " + ColumnDefinition.getDefaultValue(cds.getType(i)));
+                    }
+                    break;
+                }
+            }
+            if(!found) {
+                dropOuts.add(c);
+            }
+        }
+        for(i = 0; i < cds.size(); i++) {
+            found = false;
+            for(String[] c : columns) {
+                if(c[0].equals(cds.getName(i).toLowerCase())) {
+                    found = true;
+                    break;
+                }
+            }
+            if(!found) {
+                for(String[] c : dropOuts) {
+                    if(c[1].equals(cds.getType(i))) {
+                        found = true;
+                        dropOuts.remove(c);
+                        alterTable.add(pre + "RENAME COLUMN " + c[0] + " TO " + cds.getName(i));
+                        break;
+                    }
+                }
+                if(!found) {
+                    alterTable.add(pre + "ADD COLUMN " + cds.getName(i) + " " + cds.getType(i) +
+                            " NOT NULL DEFAULT " + ColumnDefinition.getDefaultValue(cds.getType(i)));
+                }
+            }
+        }
+        for(String[] c : dropOuts) {
+            alterTable.add(0, pre + "DROP COLUMN " + c[0] + " CASCADE");
+        }
+        ArrayList<String> list = Database.get().parentTable(tableName);
+        if(list.size() == 0 || !list.get(0).equalsIgnoreCase(pTableName)) {
+            alterTable.add(pre + "INHERIT " + pTableName);
+            if(list.size() > 0) {
+                alterTable.add(0, pre + "NO INHERIT " + list.get(0));
+            }
+        }
+        if(history) {
+            return;
+        }
+        ArrayList<String> cons = Database.get().foreignKeyConstraints(tableName);
+        String[] fkeys = StoredObjectUtility.foreignKeysDDL(ca.getObjectClass());
+        Optional<String> any;
+        for(String fk: fkeys) {
+            any = cons.stream().filter(con -> fk.contains(" ADD CONSTRAINT " + con.toLowerCase() + " ")).findAny();
+            if(any.isPresent()) {
+                cons.remove(any.get());
+            } else {
+                alterTable.add(fk);
+            }
+        }
+        for(String con: cons) {
+            alterTable.add(pre + " DROP CONSTRAINT IF EXISTS " + con);
+        }
     }
 
     private void processMulti(Component c) {

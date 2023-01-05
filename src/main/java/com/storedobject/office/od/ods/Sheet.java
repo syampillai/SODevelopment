@@ -5,10 +5,7 @@ import org.apache.poi.ss.util.CellAddress;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.ss.util.PaneInformation;
 
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class Sheet implements org.apache.poi.ss.usermodel.Sheet {
 
@@ -51,7 +48,6 @@ public class Sheet implements org.apache.poi.ss.usermodel.Sheet {
 
     @Override
     public void addValidationData(DataValidation dataValidation) {
-
     }
 
     @Override
@@ -76,12 +72,10 @@ public class Sheet implements org.apache.poi.ss.usermodel.Sheet {
 
     @Override
     public void setRepeatingRows(CellRangeAddress cellRangeAddress) {
-
     }
 
     @Override
     public void setRepeatingColumns(CellRangeAddress cellRangeAddress) {
-
     }
 
     @Override
@@ -111,7 +105,6 @@ public class Sheet implements org.apache.poi.ss.usermodel.Sheet {
 
     @Override
     public void setActiveCell(CellAddress cellAddress) {
-
     }
 
     public Cell getCell(int row, int column) {
@@ -129,12 +122,16 @@ public class Sheet implements org.apache.poi.ss.usermodel.Sheet {
     }
 
     @Override
-    public Row createRow(int index) {
+    public org.apache.poi.ss.usermodel.Row createRow(int i) {
         return null;
     }
 
     @Override
     public void removeRow(org.apache.poi.ss.usermodel.Row row) {
+        if(row == null) {
+            return;
+        }
+        ((Row)row).dispose();
     }
 
     @Override
@@ -159,7 +156,6 @@ public class Sheet implements org.apache.poi.ss.usermodel.Sheet {
 
     @Override
     public void setColumnHidden(int index, boolean b) {
-
     }
 
     @Override
@@ -169,7 +165,6 @@ public class Sheet implements org.apache.poi.ss.usermodel.Sheet {
 
     @Override
     public void setRightToLeft(boolean b) {
-
     }
 
     @Override
@@ -179,7 +174,6 @@ public class Sheet implements org.apache.poi.ss.usermodel.Sheet {
 
     @Override
     public void setColumnWidth(int i, int i1) {
-
     }
 
     @Override
@@ -194,7 +188,6 @@ public class Sheet implements org.apache.poi.ss.usermodel.Sheet {
 
     @Override
     public void setDefaultColumnWidth(int i) {
-
     }
 
     @Override
@@ -214,12 +207,10 @@ public class Sheet implements org.apache.poi.ss.usermodel.Sheet {
 
     @Override
     public void setDefaultRowHeight(short i) {
-
     }
 
     @Override
     public void setDefaultRowHeightInPoints(float v) {
-
     }
 
     @Override
@@ -239,17 +230,14 @@ public class Sheet implements org.apache.poi.ss.usermodel.Sheet {
 
     @Override
     public void validateMergedRegions() {
-
     }
 
     @Override
     public void setVerticallyCenter(boolean b) {
-
     }
 
     @Override
     public void setHorizontallyCenter(boolean b) {
-
     }
 
     @Override
@@ -264,12 +252,10 @@ public class Sheet implements org.apache.poi.ss.usermodel.Sheet {
 
     @Override
     public void removeMergedRegion(int i) {
-
     }
 
     @Override
     public void removeMergedRegions(Collection<Integer> collection) {
-
     }
 
     @Override
@@ -294,7 +280,6 @@ public class Sheet implements org.apache.poi.ss.usermodel.Sheet {
 
     @Override
     public void setForceFormulaRecalculation(boolean b) {
-
     }
 
     @Override
@@ -304,17 +289,14 @@ public class Sheet implements org.apache.poi.ss.usermodel.Sheet {
 
     @Override
     public void setAutobreaks(boolean b) {
-
     }
 
     @Override
     public void setDisplayGuts(boolean b) {
-
     }
 
     @Override
     public void setDisplayZeros(boolean b) {
-
     }
 
     @Override
@@ -324,17 +306,14 @@ public class Sheet implements org.apache.poi.ss.usermodel.Sheet {
 
     @Override
     public void setFitToPage(boolean b) {
-
     }
 
     @Override
     public void setRowSumsBelow(boolean b) {
-
     }
 
     @Override
     public void setRowSumsRight(boolean b) {
-
     }
 
     @Override
@@ -369,7 +348,6 @@ public class Sheet implements org.apache.poi.ss.usermodel.Sheet {
 
     @Override
     public void setPrintGridlines(boolean b) {
-
     }
 
     @Override
@@ -379,7 +357,6 @@ public class Sheet implements org.apache.poi.ss.usermodel.Sheet {
 
     @Override
     public void setPrintRowAndColumnHeadings(boolean b) {
-
     }
 
     @Override
@@ -399,7 +376,6 @@ public class Sheet implements org.apache.poi.ss.usermodel.Sheet {
 
     @Override
     public void setSelected(boolean b) {
-
     }
 
     @Override
@@ -408,8 +384,16 @@ public class Sheet implements org.apache.poi.ss.usermodel.Sheet {
     }
 
     @Override
-    public void setMargin(short i, double v) {
+    public double getMargin(PageMargin pageMargin) {
+        return 0;
+    }
 
+    @Override
+    public void setMargin(short i, double v) {
+    }
+
+    @Override
+    public void setMargin(PageMargin pageMargin, double v) {
     }
 
     @Override
@@ -419,7 +403,6 @@ public class Sheet implements org.apache.poi.ss.usermodel.Sheet {
 
     @Override
     public void protectSheet(String s) {
-
     }
 
     @Override
@@ -429,7 +412,6 @@ public class Sheet implements org.apache.poi.ss.usermodel.Sheet {
 
     @Override
     public void setZoom(int i) {
-
     }
 
     @Override
@@ -444,37 +426,34 @@ public class Sheet implements org.apache.poi.ss.usermodel.Sheet {
 
     @Override
     public void showInPane(int i, int i1) {
-
     }
 
     @Override
     public void shiftRows(int i, int i1, int i2) {
-
     }
 
     @Override
     public void shiftRows(int i, int i1, int i2, boolean b, boolean b1) {
-
     }
 
     @Override
     public void shiftColumns(int i, int i1, int i2) {
-
     }
 
     @Override
     public void createFreezePane(int i, int i1, int i2, int i3) {
-
     }
 
     @Override
     public void createFreezePane(int i, int i1) {
-
     }
 
     @Override
     public void createSplitPane(int i, int i1, int i2, int i3, int i4) {
+    }
 
+    @Override
+    public void createSplitPane(int i, int i1, int i2, int i3, PaneType paneType) {
     }
 
     @Override
@@ -484,7 +463,6 @@ public class Sheet implements org.apache.poi.ss.usermodel.Sheet {
 
     @Override
     public void setDisplayGridlines(boolean b) {
-
     }
 
     @Override
@@ -494,7 +472,6 @@ public class Sheet implements org.apache.poi.ss.usermodel.Sheet {
 
     @Override
     public void setDisplayFormulas(boolean b) {
-
     }
 
     @Override
@@ -504,7 +481,6 @@ public class Sheet implements org.apache.poi.ss.usermodel.Sheet {
 
     @Override
     public void setDisplayRowColHeadings(boolean b) {
-
     }
 
     @Override
@@ -514,7 +490,6 @@ public class Sheet implements org.apache.poi.ss.usermodel.Sheet {
 
     @Override
     public void setRowBreak(int i) {
-
     }
 
     @Override
@@ -524,7 +499,6 @@ public class Sheet implements org.apache.poi.ss.usermodel.Sheet {
 
     @Override
     public void removeRowBreak(int i) {
-
     }
 
     @Override
@@ -539,7 +513,6 @@ public class Sheet implements org.apache.poi.ss.usermodel.Sheet {
 
     @Override
     public void setColumnBreak(int i) {
-
     }
 
     @Override
@@ -549,52 +522,42 @@ public class Sheet implements org.apache.poi.ss.usermodel.Sheet {
 
     @Override
     public void removeColumnBreak(int i) {
-
     }
 
     @Override
     public void setColumnGroupCollapsed(int i, boolean b) {
-
     }
 
     @Override
     public void groupColumn(int i, int i1) {
-
     }
 
     @Override
     public void ungroupColumn(int i, int i1) {
-
     }
 
     @Override
     public void groupRow(int i, int i1) {
-
     }
 
     @Override
     public void ungroupRow(int i, int i1) {
-
     }
 
     @Override
     public void setRowGroupCollapsed(int i, boolean b) {
-
     }
 
     @Override
     public void setDefaultColumnStyle(int i, CellStyle cellStyle) {
-
     }
 
     @Override
     public void autoSizeColumn(int i) {
-
     }
 
     @Override
     public void autoSizeColumn(int i, boolean b) {
-
     }
 
     @Override

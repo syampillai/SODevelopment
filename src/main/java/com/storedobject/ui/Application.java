@@ -627,10 +627,6 @@ public class Application extends com.storedobject.vaadin.Application implements 
         LogicParser.parse(logic);
     }
 
-    public String getDateFormat() {
-        return server.getDateFormat();
-    }
-
     @Override
     public final MessageViewer getMessageViewer() {
         return messageViewer;
@@ -1252,7 +1248,7 @@ public class Application extends com.storedobject.vaadin.Application implements 
 
     public void information(StyledBuilder appDetails) {
         appDetails
-                .append("Version: ").append(getDriverIdentifier())
+                .append("Build: ").append(getDriverIdentifier())
                 .newLine().append("Device Size: ").append(getDeviceWidth()).append('x').append(getDeviceHeight())
                 .newLine().append("URL: ").append(getURL())
                 .newLine().append("Biometric Available: ").append(isBiometricAvailable())

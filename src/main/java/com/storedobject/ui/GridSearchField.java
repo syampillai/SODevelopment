@@ -4,7 +4,6 @@ import com.storedobject.common.LogicalOperator;
 import com.storedobject.core.StoredObject;
 import com.storedobject.ui.util.ViewFilterSupport;
 import com.storedobject.vaadin.SearchField;
-import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.data.provider.DataProvider;
 
@@ -34,7 +33,8 @@ public class GridSearchField<T extends StoredObject> extends SearchField impleme
         this.grid = grid;
         Checkbox matchAllWords = new Checkbox("Match All Words");
         matchAllWords.addValueChangeListener(c -> switchWordLogic(c.getValue()));
-        addToSuffix(matchAllWords);
+        matchAllWords.getElement().setAttribute("slot", "prefix");
+        getElement().appendChild(matchAllWords.getElement());
         matchAllWords.setVisible(showMatchAllWords);
     }
 

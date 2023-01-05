@@ -19,6 +19,10 @@ public interface Device {
     DeviceLayout getDeviceLayout();
     void setDeviceLayout(DeviceLayout layout);
     void setLocale(Locale locale);
+    Locale getLocale();
+    default String getDateFormat() {
+        return "";
+    }
     boolean loggedIn(Login login);
 
     void close();

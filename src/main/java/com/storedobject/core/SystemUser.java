@@ -216,7 +216,7 @@ public final class SystemUser extends StoredObject implements RequiresApproval {
     }
 
     public ObjectIterator<SystemUserGroup> listGroups() {
-        return null;
+        return ObjectIterator.create();
     }
 
     public boolean getConfirmLogout() {

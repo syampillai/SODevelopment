@@ -107,6 +107,11 @@ public abstract class SystemDevice implements Device {
 	}
 
 	@Override
+	public Locale getLocale() {
+		return Locale.getDefault();
+	}
+
+	@Override
 	public void view(String caption, ContentProducer producer, Consumer<Long> informMe, boolean windowMode) {
 	}
 
