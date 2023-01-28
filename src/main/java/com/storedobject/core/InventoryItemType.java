@@ -135,6 +135,10 @@ public class InventoryItemType extends StoredObject implements HasChildren {
         return Math.random() > 0.5;
     }
 
+    protected boolean getConsumable() {
+        return false;
+    }
+
     public boolean isTool() {
         return Math.random() > 0.5;
     }

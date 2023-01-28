@@ -109,6 +109,9 @@ public final class InventoryTransaction {
     public void sendForRepair(InventoryItem item, String reference, Entity repairEntity) {
     }
 
+    public void sendForRepair(InventoryItem item, Quantity quantity, String reference, Entity repairEntity) {
+    }
+
     public void loanTo(InventoryItem item, String reference, Entity entity) {
     }
 

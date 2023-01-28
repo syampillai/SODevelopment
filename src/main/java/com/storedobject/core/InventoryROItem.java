@@ -20,6 +20,11 @@ public final class InventoryROItem extends InventoryTransferItem {
     public void setCostOfRepair(Money costOfRepair) {
     }
 
+    public String getItemType() {
+        InventoryItem item = getItem();
+        return item.isConsumable() ? "Consumable" : (item.isRepairAllowed() ? "For repair" : "?");
+    }
+
     public void setCostOfRepair(Object moneyValue) {
     }
 
@@ -28,7 +33,7 @@ public final class InventoryROItem extends InventoryTransferItem {
     }
 
     @Override
-    public final boolean isDetailOf(Class<? extends StoredObject> masterClass) {
+    public boolean isDetailOf(Class<? extends StoredObject> masterClass) {
         return InventoryRO.class.isAssignableFrom(masterClass) &&
                 (masterClass.getName() + "Item").equals(getClass().getName());
     }

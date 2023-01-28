@@ -544,4 +544,7 @@ public class InventoryItem extends StoredObject {
      */
     public void attachRO(Transaction transaction, InventoryRO ro) throws Exception {
     }
+
+    public void changePartNumber(Transaction transaction, InventoryItemType newPartNumber) throws Exception {
+    }
 }

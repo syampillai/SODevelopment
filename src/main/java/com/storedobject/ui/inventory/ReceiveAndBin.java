@@ -2,8 +2,8 @@ package com.storedobject.ui.inventory;
 
 import com.storedobject.common.StringList;
 import com.storedobject.core.*;
-import com.storedobject.ui.*;
 import com.storedobject.ui.Application;
+import com.storedobject.ui.*;
 import com.storedobject.vaadin.*;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.icon.VaadinIcon;
@@ -42,14 +42,23 @@ public class ReceiveAndBin extends ListGrid<InventoryItem> implements Transactio
         this(date, reference, itemList, update, refresher, null);
     }
 
+
     public ReceiveAndBin(Date date, String reference, List<InventoryItem> itemList, TransactionManager.Transact update,
                          Runnable refresher, GRNEditor grnEditor) {
+        this(date, reference, itemList, update, refresher, grnEditor, false);
+    }
+
+    public ReceiveAndBin(Date date, String reference, List<InventoryItem> itemList, TransactionManager.Transact update,
+                         Runnable refresher, GRNEditor grnEditor, boolean allowPNChange) {
         super(InventoryItem.class, filtered(itemList),
                 StringList.create("PartNumber.Name AS Item", "PartNumber.PartNumber AS Part Number",
                         "SerialNumberDisplay as Serial/Batch", "Quantity", "InTransit", "Location"));
         this.update = update;
         this.refresher = refresher;
-        buttonLayout.add(new ELabel("Date"), dateField, new ELabel("Reference"), referenceField, process);
+        Button changePN = new Button("Change P/N", VaadinIcon.EXCHANGE, e -> changePN());
+        buttonLayout.add(new ELabel("Date"), dateField, new ELabel("Reference"), referenceField, process,
+                changePN);
+        changePN.setVisible(allowPNChange);
         if(grnEditor != null && grnEditor.getObject() != null) {
             buttonLayout.add(new Button("GRN", VaadinIcon.FILE_TABLE, e -> {
                 grnEditor.abort();
@@ -251,6 +260,25 @@ public class ReceiveAndBin extends ListGrid<InventoryItem> implements Transactio
                     + "'. Please move it to suitable location.");
         }
         return true;
+    }
+
+    private void changePN() {
+        clearAlerts();
+        InventoryItem item = getSelected();
+        if(item == null && size() == 1) {
+            item = get(0);
+        }
+        if(item == null) {
+            warning("Please select an item");
+            return;
+        }
+        ChangePartNumber cpn = new ChangePartNumber(item);
+        InventoryItem finalItem = item;
+        cpn.setRefresher(() -> {
+            finalItem.reload();
+            refresh(finalItem);
+        });
+        cpn.execute(getView());
     }
 
     private class BinEditor extends DataForm {

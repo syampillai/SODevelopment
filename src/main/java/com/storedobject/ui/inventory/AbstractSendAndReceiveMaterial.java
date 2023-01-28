@@ -409,7 +409,7 @@ public abstract class AbstractSendAndReceiveMaterial<T extends InventoryTransfer
             grnEditor.setObject(grn);
         }
         new ReceiveAndBin(mt.getDate(), "Receipt " + mt.getReference(), items, mt::receive,
-                () -> refresh(mt), gEd).execute(getView());
+                () -> refresh(mt), gEd, true).execute(getView());
     }
 
     private class MTEditor extends ObjectEditor<T> {
@@ -593,7 +593,7 @@ public abstract class AbstractSendAndReceiveMaterial<T extends InventoryTransfer
                 ObjectField<InventoryItem> itemField = (ObjectField<InventoryItem>) getField("Item");
                 if(AbstractSendAndReceiveMaterial.this.getObjectClass() == InventoryRO.class
                         && itemField.getField() instanceof ItemField<InventoryItem> iField) {
-                    iField.getPNField().setLoadFilter(InventoryItemType::isRepairAllowed);
+                    iField.getPNField().setLoadFilter(i -> i.isRepairAllowed() || i.isConsumable());
                 }
                 itemInput = (ItemInput<?>)(itemField).getField();
                 if(fromOrTo.getType() != 18) {
@@ -606,11 +606,8 @@ public abstract class AbstractSendAndReceiveMaterial<T extends InventoryTransfer
                         itemInput.setLocation(fromOrTo);
                     }
                 }
-                if(AbstractSendAndReceiveMaterial.this.getObjectClass() == InventoryRO.class) {
-                    setFieldHidden(quantityField);
-                }
                 if(fromOrTo.getType() == 18) { // Custody location
-                    setFieldHidden("Quantity");
+                    setFieldHidden(quantityField);
                 }
             }
 

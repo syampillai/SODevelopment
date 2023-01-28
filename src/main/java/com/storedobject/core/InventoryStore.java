@@ -60,6 +60,14 @@ public class InventoryStore extends StoredObject implements OfEntity {
         return new InventoryStore();
     }
 
+    public boolean isRepairable() {
+        return getRepairable();
+    }
+
+    public boolean getRepairable() {
+        return true;
+    }
+
     public InventoryBin findBin(InventoryItemType partNumber) {
         return new InventoryBin();
     }
