@@ -63,8 +63,12 @@ public class MeasurementUnitField extends CustomField<MeasurementUnit> {
             @SuppressWarnings("unchecked")
             Class<? extends Quantity> qClass = (Class<? extends Quantity>) e.getValue();
             List<MeasurementUnit> us = MeasurementUnit.list(qClass);
-            units.setItems(us);
-            units.setValue(us.get(0));
+            if(us == null) {
+                classes.focus();
+            } else {
+                units.setItems(us);
+                units.setValue(us.get(0));
+            }
         });
         if(label != null) {
             setLabel(label);

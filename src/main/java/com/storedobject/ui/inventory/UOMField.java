@@ -57,4 +57,9 @@ public class UOMField extends TranslatedField<Quantity, MeasurementUnit> {
     protected boolean valueEquals(Quantity value1, Quantity value2) {
         return value1.equals(value2) && value1.getUnit() == value2.getUnit();
     }
+
+    @Override
+    public boolean isEmpty() {
+        return getValue() == null;
+    }
 }

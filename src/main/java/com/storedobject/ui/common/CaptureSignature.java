@@ -35,10 +35,7 @@ public final class CaptureSignature extends DataForm implements Transactional {
         add(sign);
         RadioChoiceField ink = new RadioChoiceField(new String[] { "Black", "Blue" });
         add(new CompoundField(new ELabel("Ink Color: "), ink));
-        ink.addValueChangeListener(e -> {
-            boolean black = ink.getValue() == 0;
-            sign.color(black ? Application.COLOR_NORMAL : Application.COLOR_SUCCESS, black ? Application.COLOR_SUCCESS : Application.COLOR_NORMAL);
-        });
+        ink.addValueChangeListener(e -> sign.color(ink.getValue() == 0 ? "black" : "blue"));
     }
 
     @Override
@@ -86,7 +83,7 @@ public final class CaptureSignature extends DataForm implements Transactional {
         close();
     }
 
-    @NpmPackage(value = "signature_pad", version = "3.0.0-beta.4")
+    @NpmPackage(value = "signature_pad", version = "4.1.4")
     @Tag("so-sign")
     @JsModule("./so/sign/so-sign.js")
     private class Sign extends LitComponent {
@@ -121,8 +118,8 @@ public final class CaptureSignature extends DataForm implements Transactional {
             executeJS("clear");
         }
 
-        void color(String penColor, String borderColor) {
-            executeJS("color", penColor, borderColor);
+        void color(String penColor) {
+            executeJS("color", penColor, "blue");
         }
 
         void load(String signature) {

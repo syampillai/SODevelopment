@@ -6,6 +6,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
+import java.util.List;
 
 public abstract class Database {
 
@@ -132,15 +133,24 @@ public abstract class Database {
 		return false;
 	}
 
-	public ArrayList<String> foreignKeyConstraints(String tableName) {
+	public List<String> foreignKeyConstraintNames(String tableName) {
+		List<String[]> fkc = foreignKeyConstraints(tableName);
+		return fkc.stream().map(s -> s[12]).toList();
+	}
+
+	public List<String[]> foreignKeyConstraints(String tableName) {
 		return new ArrayList<>();
 	}
 
-	public abstract ArrayList<String> parentTable(String tableName);
+	public List<String[]> dependentConstraints(String tableName) {
+		return new ArrayList<>();
+	}
+
+	public abstract List<String> parentTable(String tableName);
 
 	public abstract String columnType(String columnType, int width, int precision);
 
-	public ArrayList<String[]> columnDetails(String tableName) {
+	public List<String[]> columnDetails(String tableName) {
 		return new ArrayList<>();
 	}
 

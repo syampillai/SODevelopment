@@ -71,7 +71,7 @@ public class SOEnvironment implements ApplicationEnvironment {
         iconNameMap.put("help", "question_circle");
         iconNameMap.put("children", "sitemap");
         iconNameMap.put("tree", "sitemap");
-        iconNameMap.put("excel", "file_excel_o");
+        iconNameMap.put("excel", "table");
         iconNameMap.put("browse", "table");
         iconNameMap.put("load_", "load");
         iconNameMap.put("view", "eye");
@@ -124,7 +124,6 @@ public class SOEnvironment implements ApplicationEnvironment {
             case "previous", "back" -> "angle-double-left";
             case "refresh", "undo", "undelete", "reload", "reset" -> "refresh";
             case "report", "pdf" -> "image:picture-as-pdf";
-            case "excel", "grid" -> "grid";
             case "compile" -> "places:free-breakfast";
             case "format" -> "align-justify";
             case "menu" -> "list-ol";

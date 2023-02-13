@@ -29,6 +29,7 @@ public class GridMenu extends View implements SingletonLogic, CloseableView {
     }
 
     public void add(ReportDefinition reportDefinition) {
+        //noinspection resource
         add(reportDefinition.getDescription(), () -> new ObjectList<>(getApplication(), reportDefinition).execute());
     }
 

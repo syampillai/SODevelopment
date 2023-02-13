@@ -444,7 +444,7 @@ public class SystemTableDeployer extends View implements Transactional {
         String tableName = ca.getModuleName() + "." + h + ca.getTableName(),
                 pTableName = pca == null ? "" : (pca.getModuleName() + "." + h + pca.getTableName());
         String pre = "ALTER TABLE " + tableName + " ";
-        ArrayList<String[]> columns = Database.get().columnDetails(tableName),
+        List<String[]> columns = Database.get().columnDetails(tableName),
                 pColumns = Database.get().columnDetails(pTableName);
         while(pca != null) {
             pColumns.forEach(pc -> columns.removeIf(c -> pc[0].equals(c[0])));
@@ -501,7 +501,7 @@ public class SystemTableDeployer extends View implements Transactional {
         for(String[] c : dropOuts) {
             alterTable.add(0, pre + "DROP COLUMN " + c[0] + " CASCADE");
         }
-        ArrayList<String> list = Database.get().parentTable(tableName);
+        List<String> list = Database.get().parentTable(tableName);
         if(list.size() == 0 || !list.get(0).equalsIgnoreCase(pTableName)) {
             alterTable.add(pre + "INHERIT " + pTableName);
             if(list.size() > 0) {
@@ -511,7 +511,7 @@ public class SystemTableDeployer extends View implements Transactional {
         if(history) {
             return;
         }
-        ArrayList<String> cons = Database.get().foreignKeyConstraints(tableName);
+        List<String> cons = Database.get().foreignKeyConstraintNames(tableName);
         String[] fkeys = StoredObjectUtility.foreignKeysDDL(ca.getObjectClass());
         Optional<String> any;
         for(String fk: fkeys) {

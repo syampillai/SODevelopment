@@ -23,6 +23,7 @@ import java.io.Writer;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.List;
 
 import static com.storedobject.core.EditorAction.*;
 
@@ -78,6 +79,7 @@ public class SystemUtility extends View implements CloseableView, Transactional 
         buttons.add(edit = new Button("Editor", VaadinIcon.EDIT, this));
         buttons.add(editRaw = new Button("Raw Editor", VaadinIcon.LIFEBUOY, this));
         buttons.add(new Button("View SQL", VaadinIcon.BUG, e -> viewSQL()));
+        buttons.add(new Button("Raw Table Details", VaadinIcon.FILE_TABLE, e -> viewTable()));
         form.add(label("Execute Logic"));
         form.add(rawCommand = new TextField("Command"));
         buttons = new ButtonLayout();
@@ -336,6 +338,49 @@ public class SystemUtility extends View implements CloseableView, Transactional 
         tv.append(StoredObjectUtility.createSQL(ClassAttribute.get(objectClass), cols, where.getValue().trim(),
                 orderBy.getValue().trim(), !any.getValue(), false));
         tv.update();
+        tv.execute();
+    }
+
+    private void viewTable() {
+        if(objectClass() == null) {
+            return;
+        }
+        ClassAttribute<?> ca = ClassAttribute.get(objectClass);
+        String tn = ca.getModuleName() + "." + ca.getTableName();
+        List<String[]> details = Database.get().columnDetails(tn);
+        if(details == null) {
+            warning("Unable to obtain table details of " + objectClass.getName());
+            return;
+        }
+        TextView tv = new TextView("Table Details");
+        tv.blueMessage("Table details of " + objectClass.getName()).newLine();
+        for(String[] ss: details) {
+            tv.newLine(true);
+            for(String s: ss) {
+                tv.append(s).append(' ');
+            }
+        }
+        details = Database.get().foreignKeyConstraints(tn);
+        tv.newLine(true).blueMessage("Foreign Key Constraints:");
+        if(details.isEmpty()) {
+            tv.newLine(true).append("None");
+        } else {
+            for(String[] d: details) {
+                tv.newLine(true).append('"').append(d[11]).append("\" FOREIGN KEY (").append(d[7])
+                        .append(") REFERENCES ").append(d[1]).append('.').append(d[2]);
+            }
+        }
+        details = Database.get().dependentConstraints(tn);
+        if(details.isEmpty()) {
+            tv.newLine(true).append("None");
+        } else {
+            tv.newLine(true).blueMessage("Dependents (Referencing this table):");
+            for(String[] d: details) {
+                tv.newLine(true).append('"').append(d[11]).append("\" FOREIGN KEY ").append(d[5]).append('.')
+                        .append(d[6]).append('(').append(d[7]).append(')');
+            }
+        }
+        tv.newLine().update();
         tv.execute();
     }
 

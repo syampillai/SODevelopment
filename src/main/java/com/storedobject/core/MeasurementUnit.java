@@ -61,4 +61,8 @@ public class MeasurementUnit {
 	public static <Q extends Quantity> List<MeasurementUnit> list(Class<Q> quantityClass) {
 		return new ArrayList<>();
 	}
+
+	public boolean isCompatible(MeasurementUnit another) {
+		return getType() == another.getType();
+	}
 }

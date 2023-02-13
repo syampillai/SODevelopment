@@ -322,4 +322,24 @@ public class InventoryItemType extends StoredObject implements HasChildren {
     public static List<InventoryItemType> listAPNs(Id partNumberId) {
         return new ArrayList<>();
     }
+
+    public void validateUoMCorrection(MeasurementUnit from, MeasurementUnit to) throws Exception {
+        MeasurementUnit uom = getUnitOfMeasurement().getUnit();
+        String m = " compatible with the unit '" + uom + "' (default unit of measurement for this item)";
+        if(from.equals(getUnitOfMeasurement().getUnit())) {
+            throw new SOException("The unit '" + from + "' is same as the UoM of this item");
+        }
+        if(from.isCompatible(uom)) {
+            throw new SOException("The unit '" + from + "' is" + m);
+        }
+        if(!to.isCompatible(uom)) {
+            throw new SOException("The unit '" + to + "' is not" + m);
+        }
+        if(isSerialized() && !to.getUnit().equals("NO")) {
+            throw new SOException("Wrong unit for serialized items - " + to);
+        }
+    }
+
+    public void correctUoM(TransactionManager tm, MeasurementUnit from, MeasurementUnit to) throws Exception {
+    }
 }
