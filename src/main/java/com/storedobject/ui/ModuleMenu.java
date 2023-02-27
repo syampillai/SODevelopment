@@ -62,8 +62,9 @@ public class ModuleMenu extends View implements CloseableView, SingletonLogic {
         return modules;
     }
 
-    private boolean drawFailed(Name name) {
-        Breadcrumbs.Breadcrumb bc = breadcrumbs.add(name.getName());
+    private boolean drawFailed(StoredObject name) {
+        String s = name instanceof Name n ? n.getName() : (name instanceof ModuleLogic m ? m.getName() : "");
+        Breadcrumbs.Breadcrumb bc = breadcrumbs.add(s);
         bc.addRemovalListener(modules::remove);
         List<ModuleLogic> moduleList = listModules(name);
         modules.put(bc, moduleList);
