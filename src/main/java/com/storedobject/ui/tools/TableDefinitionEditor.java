@@ -1464,21 +1464,20 @@ public class TableDefinitionEditor extends ObjectEditor<TableDefinition> {
                 proceed.setVisible(false);
                 String[] commands;
                 switch(action) {
-                    case 0:
+                    case 0 -> {
                         return;
-                    case 1:
-                        saveClass();
-                        break;
-                    case 2:
+                    }
+                    case 1 -> saveClass();
+                    case 2 -> {
                         if(!Database.get().createSchema(td.getSchemaName(getTransactionManager()), adminPassword)) {
                             message("Error creating schema... Please seek help...");
                             return;
                         }
-                        break;
-                    case 3:
+                    }
+                    case 3 -> {
                         try {
                             @SuppressWarnings("unchecked") Class<? extends StoredObject> objectClass =
-                                    (Class<? extends StoredObject>)JavaClassLoader.getLogic(td.getClassName());
+                                    (Class<? extends StoredObject>) JavaClassLoader.getLogic(td.getClassName());
                             if(!Database.get().createTable(objectClass, adminPassword)) {
                                 message("Error creating data table... Please seek help...");
                                 action = -1;
@@ -1489,27 +1488,27 @@ public class TableDefinitionEditor extends ObjectEditor<TableDefinition> {
                             action = -1;
                             return;
                         }
-                        break;
-                    case 4:
-                        for(String command: alterTable) {
+                    }
+                    case 4 -> {
+                        for(String command : alterTable) {
                             if(!Database.get().executeSQL(command, adminPassword)) {
                                 message("Error altering data table... Please seek help...\nCommand: " + command);
                                 action = -1;
                                 return;
                             }
                         }
-                        break;
-                    case 5:
+                    }
+                    case 5 -> {
                         try {
                             @SuppressWarnings("unchecked") Class<? extends StoredObject> objectClass =
-                                    (Class<? extends StoredObject>)JavaClassLoader.getLogic(td.getClassName());
+                                    (Class<? extends StoredObject>) JavaClassLoader.getLogic(td.getClassName());
                             commands = StoredObjectUtility.reindex(objectClass);
                         } catch(ClassNotFoundException e) {
                             error(e);
                             action = -1;
                             return;
                         }
-                        for(String comm: commands) {
+                        for(String comm : commands) {
                             if(!Database.get().executeSQL(comm, adminPassword)) {
                                 message("Error reindexing data table... Please seek help...\nCommand: " + comm);
                                 action = -1;
@@ -1519,6 +1518,7 @@ public class TableDefinitionEditor extends ObjectEditor<TableDefinition> {
                         action = 0;
                         status("Reindexing done... Nothing else to do!", Application.COLOR_SUCCESS);
                         return;
+                    }
                 }
                 checkStatus();
             }

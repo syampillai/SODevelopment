@@ -1,6 +1,7 @@
 package com.storedobject.core;
 
 import java.sql.Date;
+import java.util.Random;
 
 public final class Person extends StoredObject implements HasContacts, Comparable<Person>, RequiresApproval {
 
@@ -157,5 +158,24 @@ public final class Person extends StoredObject implements HasContacts, Comparabl
 	@Override
 	public int compareTo(@SuppressWarnings("NullableProblems") Person person) {
 		return 0;
+	}
+
+	public static void addSalutation(TransactionManager tm, String salutation, boolean male, boolean female,
+							  boolean transgender) throws Exception {
+	}
+
+	public static void updateSalutation(TransactionManager tm, int code, String salutation, boolean male, boolean female,
+								 boolean transgender) throws Exception {
+	}
+	public static boolean isMaleAllowed(int title) {
+		return new Random().nextBoolean();
+	}
+
+	public static boolean isFemaleAllowed(int title) {
+		return new Random().nextBoolean();
+	}
+
+	public static boolean isTransgenderAllowed(int title) {
+		return new Random().nextBoolean();
 	}
 }
