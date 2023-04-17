@@ -6,6 +6,7 @@ import com.storedobject.core.StoredObject;
 import com.storedobject.core.StoredObjectUtility;
 import com.storedobject.core.SystemUserGroup;
 import com.storedobject.vaadin.View;
+import com.vaadin.flow.component.grid.Grid;
 
 public abstract class AbstractLinkGrid<T extends StoredObject> extends EditableObjectGrid<T> implements LinkGrid<T> {
 
@@ -16,12 +17,25 @@ public abstract class AbstractLinkGrid<T extends StoredObject> extends EditableO
         super(linkField.getObjectClass(), columns, any);
         this.linkField = linkField;
         this.link = linkField.getLink();
+        setAllRowsVisible(true);
     }
 
     protected AbstractLinkGrid(ObjectLinkField<T> linkField, Filtered<T> list, Iterable<String> columns) {
         super(linkField.getObjectClass(), list, columns);
         this.linkField = linkField;
         this.link = linkField.getLink();
+        setAllRowsVisible(true);
+    }
+
+    @Override
+    protected void reloadedAllNow() {
+        super.reloadedAllNow();
+        if(size() > 450) {
+            int ps = (size() + 50) / 10;
+            if(getPageSize() < ps) {
+                setPageSize(ps);
+            }
+        }
     }
 
     @Override

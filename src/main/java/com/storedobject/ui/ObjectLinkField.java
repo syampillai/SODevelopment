@@ -66,7 +66,6 @@ public final class ObjectLinkField<T extends StoredObject>
         if(isReadOnly()) {
             grid.setReadOnly(true);
         }
-        ((Grid<?>)grid).setAllRowsVisible(true);
         if(!visible) {
             ((Grid<?>)grid).setVisible(false);
         }

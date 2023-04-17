@@ -18,6 +18,7 @@ import com.vaadin.flow.shared.Registration;
 
 import java.lang.reflect.Constructor;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -380,6 +381,15 @@ public class ObjectBrowser<T extends StoredObject> extends ObjectGrid<T>
     protected void addExtraButtons() {
     }
 
+    /**
+     * List of more buttons to be added to the {@link PrintButton}, in addition to the configured buttons.
+     *
+     * @return List of more buttons to be added. The list could contain any type of components.
+     */
+    protected List<Component> listMoreButtons() {
+        return null;
+    }
+
     public boolean canDelete(T object) {
         return true;
     }
@@ -410,7 +420,7 @@ public class ObjectBrowser<T extends StoredObject> extends ObjectGrid<T>
         if(o == null) {
             switch(size()) {
                 case 0 -> {
-                    warning("No item to select!");
+                    warning("Empty, no item to select!");
                     return null;
                 }
                 case 1 -> {

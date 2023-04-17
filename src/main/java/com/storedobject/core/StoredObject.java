@@ -157,6 +157,18 @@ public abstract class StoredObject implements Displayable, HasId {
         return r;
     }
 
+
+    /**
+     * Migrate this instance to another class instance. Please note that there is no error checking or validations when
+     * this is invoked. This is used very rarely, and it may be useful for building low-level utilities.
+     *
+     * @param tm Transaction Manager.
+     * @param migratedInstance Migrated instance. Make sure that all the attribute values are properly set.
+     * @throws Exception thrown for errors.
+     */
+    public void migrate(TransactionManager tm, StoredObject migratedInstance) throws Exception {
+    }
+
     public final void checkTransaction() throws Exception {
         if(tran == null) {
             throw new Transaction_Error(null, "Not In Transaction");
@@ -309,6 +321,16 @@ public abstract class StoredObject implements Displayable, HasId {
     }
 
     public void setRawValue(String attributeName, Object rawValue) throws Exception {
+    }
+
+    /**
+     * Load the values from a map of attribute names and its values. The map may contain extra attributes than are
+     * not matching with any attributes of this class and those values will be ignored.
+     *
+     * @param map Map.
+     * @throws Exception If any error occurs because the map contains incompatible values.
+     */
+    public final void load(Map<String, Object> map) throws Exception {
     }
 
     public void load(LineNumberReader in) throws Exception {

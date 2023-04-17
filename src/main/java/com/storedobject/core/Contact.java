@@ -2,7 +2,7 @@ package com.storedobject.core;
 
 import java.math.BigDecimal;
 
-public class Contact extends StoredObject implements Detail {
+public final class Contact extends StoredObject implements Detail {
 
 	public Contact(Id typeId, String contact) {
 	}
@@ -11,10 +11,6 @@ public class Contact extends StoredObject implements Detail {
 	}
 
 	public static void columns(Columns columns) {
-	}
-
-	protected Class<? extends ContactType> getTypeClass() {
-		return null;
 	}
 
 	public void setType(Id typeId) {

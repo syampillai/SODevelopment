@@ -516,9 +516,15 @@ public class SystemUtility extends View implements CloseableView, Transactional 
         @SuppressWarnings({ "unchecked", "rawtypes" })
         @Override
         public void clicked(Component c) {
-            if(c == links || c == masters) {
-                T selected = getSelected();
+            if(c == links || c == masters || c == view) {
+                T selected = selected();
                 if(selected == null) {
+                    return;
+                }
+                if(c == view) {
+                    getObjectEditor().setCaption(className(selected) + " Id " + selected.getId() + " Transaction "
+                            + selected.getTransactionId());
+                    super.clicked(c);
                     return;
                 }
                 ArrayList<Integer> types = new ArrayList<>();
@@ -551,13 +557,6 @@ public class SystemUtility extends View implements CloseableView, Transactional 
                     warning("No " + (c == links ? "links" : "masters") + " found");
                 }
                 return;
-            }
-            if(c == view) {
-                T selected = getSelected();
-                if(selected != null) {
-                    getObjectEditor().setCaption(className(selected) + " Id " + selected.getId() + " Transaction "
-                            + selected.getTransactionId());
-                }
             }
             super.clicked(c);
         }

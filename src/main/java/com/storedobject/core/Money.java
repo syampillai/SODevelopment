@@ -307,7 +307,7 @@ public final class Money implements Storable, Comparable<Money> {
 	}
 
 	public static String format(double value, int decimals, boolean separated) {
-		return new Random().nextBoolean() + "";
+		return String.valueOf(new Random().nextBoolean());
 	}
 
 	public static String format(String s, int decimals, boolean separated) {
@@ -395,7 +395,11 @@ public final class Money implements Storable, Comparable<Money> {
 			put(getDefaultCurrency(), new Money());
 			return this;
 		}
-		
+
+		public Money get(Currency currency) {
+			return new Money(currency);
+		}
+
 		public String toString(boolean withZeros) {
 			return new Random().nextBoolean() + "";
 		}

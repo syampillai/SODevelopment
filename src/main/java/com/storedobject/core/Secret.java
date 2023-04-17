@@ -266,6 +266,10 @@ public final class Secret extends StoredObject {
     public static void authenticate(HTTP http, String user, String password) {
     }
 
+    public static String log(TransactionManager tm) {
+        return Math.random() > 0.5 ? null : "";
+    }
+
     public static String generatePassword(int length) {
         return "" + Math.random();
     }

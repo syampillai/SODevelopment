@@ -1,11 +1,11 @@
 package com.storedobject.ui;
 
-import com.storedobject.core.EditorAction;
 import com.storedobject.core.StoredObject;
 import com.storedobject.core.StoredObjectLink;
 import com.storedobject.core.StoredObjectUtility;
 import com.storedobject.ui.util.LinkGridButtons;
 import com.storedobject.vaadin.View;
+import com.vaadin.flow.component.grid.Grid;
 
 public interface LinkGrid<T extends StoredObject> {
 
@@ -32,6 +32,15 @@ public interface LinkGrid<T extends StoredObject> {
         }
         setMaster(value.getMaster(), false);
         clear();
+        if(this instanceof Grid<?> g) {
+            int rowCount = value.size();
+            if(rowCount > 450) {
+                int ps = (rowCount + 50) / 10;
+                if(g.getPageSize() < ps) {
+                    g.setPageSize(ps);
+                }
+            }
+        }
         value.streamAll().forEach(o -> {
             if(value.isAdded(o)) {
                 itemInserted(o);

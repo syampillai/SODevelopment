@@ -35,17 +35,18 @@ public class StockReport extends DataForm {
     @Override
     protected boolean process() {
         close();
-        switch (outputField.getValue()) {
-            case 0:
+        switch(outputField.getValue()) {
+            case 0 -> {
                 pdf = new Report(getApplication(), storeField.getObject());
                 pdf.execute();
-                break;
-            case 1:
+            }
+            case 1 -> {
                 excel = new ExReport(getApplication(), storeField.getObject());
                 excel.execute();
-                break;
-            default:
+            }
+            default -> {
                 return false;
+            }
         }
         return true;
     }

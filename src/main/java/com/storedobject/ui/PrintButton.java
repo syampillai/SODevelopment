@@ -7,6 +7,7 @@ import com.storedobject.pdf.PDFObjectReport;
 import com.storedobject.report.ObjectReport;
 import com.storedobject.vaadin.Button;
 import com.storedobject.vaadin.PopupButton;
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Composite;
 import com.vaadin.flow.component.icon.VaadinIcon;
 
@@ -44,13 +45,16 @@ public final class PrintButton extends Composite<Button> {
     private final Button button;
     private final Map<String, PButton> buttons = new HashMap<>();
 
-    private PrintButton(Supplier<StoredObject> objectSupplier, List<PrintLogicDefinition> logics) {
+    private PrintButton(Supplier<StoredObject> objectSupplier, List<PrintLogicDefinition> logics, List<Component> extras) {
         this.objectSupplier = objectSupplier;
-        if(logics.size() == 1) {
+        if(logics.size() == 1 && extras == null) {
             button = new PButton(logics.get(0));
         } else {
             button = new PopupButton("More", VaadinIcon.LINES);
             logics.forEach(d -> ((PopupButton) button).add(new PButton(d)));
+            if(extras != null) {
+                extras.forEach(ec -> ((PopupButton) button).add(ec));
+            }
         }
     }
 
@@ -92,11 +96,15 @@ public final class PrintButton extends Composite<Button> {
 
     private static PrintButton create(Class<? extends StoredObject> objectClass, Supplier<StoredObject> objectSupplier,
                                       String dataLogicName) {
+        List<Component> extras = objectSupplier instanceof ObjectBrowser<?> b ? b.listMoreButtons() : null;
+        if(extras != null && extras.isEmpty()) {
+            extras = null;
+        }
         List<PrintLogicDefinition> list = PrintLogicDefinition.listFor(objectClass, dataLogicName).toList();
-        if(list.isEmpty()) {
+        if(list.isEmpty() && extras == null) {
             return null;
         }
-        return new PrintButton(objectSupplier, list);
+        return new PrintButton(objectSupplier, list, extras);
     }
 
     private static String iconName(PrintLogicDefinition printLogicDefinition) {

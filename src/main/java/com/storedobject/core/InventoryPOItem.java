@@ -91,4 +91,7 @@ public class InventoryPOItem extends StoredObject implements Detail {
 
     public void setAPN(Transaction transaction, InventoryItemType apn, Quantity quantity) throws  Exception {
     }
+
+    public void correctUnitPrice(DBTransaction transaction, Money unitPrice) throws Exception {
+    }
 }

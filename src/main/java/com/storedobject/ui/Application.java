@@ -1,14 +1,14 @@
 package com.storedobject.ui;
 
-import com.storedobject.common.ArrayListSet;
-import com.storedobject.common.Executable;
-import com.storedobject.common.FilterProvider;
-import com.storedobject.common.SORuntimeException;
+import com.storedobject.common.*;
 import com.storedobject.core.*;
+import com.storedobject.core.SOException;
+import com.storedobject.core.StringUtility;
 import com.storedobject.sms.QuickSender;
 import com.storedobject.ui.common.MemoSystem;
 import com.storedobject.ui.util.*;
 import com.storedobject.ui.util.ApplicationFrame;
+import com.storedobject.ui.util.ContentGenerator;
 import com.storedobject.vaadin.ApplicationMenu;
 import com.storedobject.vaadin.*;
 import com.vaadin.flow.component.HasSize;
@@ -31,6 +31,7 @@ import java.io.StringReader;
 import java.lang.ref.WeakReference;
 import java.sql.Date;
 import java.util.*;
+import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
@@ -895,21 +896,30 @@ public class Application extends com.storedobject.vaadin.Application implements 
                 }
             };
         }
-        autoToken = ApplicationServer.getGlobalProperty("application.autologin.token",
-                null, false);
-        if(autoToken != null && autoToken.equals(getQueryParameter("login"))) {
-            removeQueryParameter("login");
-            String autoLogin = ApplicationServer.getGlobalProperty("application.autologin.user",
-                    null, false);
-            if(autoLogin != null && !autoLogin.isBlank()) {
-                String autoPassword = ApplicationServer.getGlobalProperty("application.autologin.password",
-                        null, false);
-                return () -> {
-                    login.setType(4);
-                    if(!login.login(autoLogin.trim(), autoPassword.toCharArray(), false)) {
-                        screenLogin();
+        autoToken = ApplicationServer.getGlobalProperty("application.autologin.token", null, false);
+        if(autoToken != null) {
+            for(String at: StringList.create(autoToken)) {
+                if(at.equals(getQueryParameter("login"))) {
+                    removeQueryParameter("login");
+                    String autoLogin = ApplicationServer.getGlobalProperty("application.autologin.user." + at,
+                            ApplicationServer.getGlobalProperty("application.autologin.user", null, false),
+                            false);
+                    if(autoLogin == null || autoLogin.isBlank()) {
+                        continue;
                     }
-                };
+                    String autoPassword = ApplicationServer.getGlobalProperty("application.autologin.password." + at,
+                            ApplicationServer.getGlobalProperty("application.autologin.password",
+                                    null, false), false);
+                    if(autoPassword == null) {
+                        continue;
+                    }
+                    return () -> {
+                        login.setType(4);
+                        if(!login.login(autoLogin.trim(), autoPassword.toCharArray(), false)) {
+                            screenLogin();
+                        }
+                    };
+                }
             }
         }
         return null;
@@ -1247,14 +1257,21 @@ public class Application extends com.storedobject.vaadin.Application implements 
     }
 
     public void information(StyledBuilder appDetails) {
+        String ls;
         appDetails
                 .append("Build: ").append(getDriverIdentifier())
                 .newLine().append("Device Size: ").append(getDeviceWidth()).append('x').append(getDeviceHeight())
                 .newLine().append("URL: ").append(getURL())
                 .newLine().append("Biometric Available: ").append(isBiometricAvailable())
                 .newLine().append("Biometric Registered: ").append(isBiometricRegistered())
-                .newLine().append("License Status: ").append(ApplicationServer.getLicenseStatus())
-                .update();
+                .newLine().append("License Status: ").append(ls = ApplicationServer.getLicenseStatus());
+        if(!"Free".equals(ls)) {
+            String ld = Secret.log(getTransactionManager());
+            if(ld != null) {
+                appDetails.newLine().append("License Detail:").newLine().append(ld.substring(ld.indexOf('\n') + 1));
+            }
+        }
+        appDetails.update();
     }
 
     protected boolean canCreateMenu(Logic logic) {

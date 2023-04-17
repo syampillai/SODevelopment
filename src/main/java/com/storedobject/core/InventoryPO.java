@@ -88,6 +88,9 @@ public class InventoryPO extends StoredObject implements HasChildren {
         return new Random().nextBoolean();
     }
 
+    public void recallOrder(Transaction transaction) throws Exception {
+    }
+
     public void placeOrder(Transaction transaction) throws Exception {
     }
 

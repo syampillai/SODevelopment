@@ -9,11 +9,21 @@ import java.util.List;
 public class SelectStore extends DataForm {
 
     private final Logic logic;
+    private final boolean utility;
 
     private final ObjectComboField<InventoryStore> storeField;
 
     public SelectStore() {
-        super("Select Store");
+        this("Select Store", true);
+    }
+
+    public SelectStore(String caption) {
+        this(caption, false);
+    }
+
+    private SelectStore(String caption, boolean utility) {
+        super(caption);
+        this.utility = utility;
         List<InventoryStore> stores = Application.get().getTransactionManager().getUser()
                 .listLinks(InventoryStore.class, true).toList();
         if(stores.isEmpty()) {
@@ -22,20 +32,27 @@ public class SelectStore extends DataForm {
         storeField = new ObjectComboField<>("Store", InventoryStore.class, stores);
         addField(storeField);
         setRequired(storeField);
-        this.logic = Application.get().getRunningLogic();
+        Application a = Application.get();
+        this.logic = utility ? a.getRunningLogic() : null;
+        SelectStore.Assignment assignment = a.getData(SelectStore.Assignment.class);
+        if(assignment != null && assignment.store != null) {
+            storeField.setValue(assignment.store);
+        }
     }
 
     @Override
     protected boolean process() {
         Application a = Application.get();
-        close();
+        if(utility) {
+            close();
+        }
         SelectStore.Assignment assignment = a.getData(SelectStore.Assignment.class);
         if(assignment == null) {
             assignment = new SelectStore.Assignment();
             a.setData(SelectStore.Assignment.class, assignment);
         }
         assignment.store = storeField.getValue();
-        if(logic != null) {
+        if(utility && logic != null) {
             Application.get().execute(logic);
         }
         return true;

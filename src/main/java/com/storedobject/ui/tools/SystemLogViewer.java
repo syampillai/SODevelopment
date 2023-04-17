@@ -284,6 +284,12 @@ public class SystemLogViewer extends View implements Transactional, CloseableVie
             while (nodeData.size() > count) {
                 nodeData.remove(0);
             }
+            if(nodeData.size() > 450) {
+                int ps = (nodeData.size() + 50) / 10;
+                if(getPageSize() < ps) {
+                    setPageSize(ps);
+                }
+            }
         }
 
         @Override

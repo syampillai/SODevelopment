@@ -17,7 +17,7 @@ public class PackingUnitBrowser extends ObjectBrowser<PackingUnit> {
         super(PackingUnit.class, EditorAction.ALL & (~EditorAction.DELETE) & (~EditorAction.EDIT));
     }
 
-    public PackingUnitBrowser(String className) throws Exception {
+    public PackingUnitBrowser(String className) {
         this();
     }
 

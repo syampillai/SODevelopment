@@ -1,6 +1,6 @@
 package com.storedobject.core;
 
-public class ContactType extends StoredObject {
+public final class ContactType extends StoredObject {
 
     public ContactType() {
     }

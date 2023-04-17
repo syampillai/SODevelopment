@@ -166,7 +166,7 @@ public class POBrowser<T extends InventoryPO> extends ObjectBrowser<T> implement
         } else {
             searchLabel.clearContent().update();
         }
-        countLabel.clearContent().append("" + size(), Application.COLOR_SUCCESS).update();
+        countLabel.clearContent().append(String.valueOf(size()), Application.COLOR_SUCCESS).update();
         if(isEmpty()) {
             load.setIcon("load");
             load.setText("Load");

@@ -4,6 +4,7 @@ import com.storedobject.core.annotation.Column;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
 import java.util.function.Predicate;
 
 public class InventoryItemType extends StoredObject implements HasChildren {
@@ -341,5 +342,17 @@ public class InventoryItemType extends StoredObject implements HasChildren {
     }
 
     public void correctUoM(TransactionManager tm, MeasurementUnit from, MeasurementUnit to) throws Exception {
+    }
+
+    /**
+     * Migrate this item type to another. All the items of this type will also be migrated using the "item convertor".
+     *
+     * @param tm Transaction Manager.
+     * @param migratedType Migrated item type.
+     * @param itemConvertor Item convertor.
+     * @throws Exception thrown for errors.
+     */
+    public void migrate(TransactionManager tm, InventoryItemType migratedType,
+                        Function<InventoryItem, InventoryItem> itemConvertor) throws Exception {
     }
 }
