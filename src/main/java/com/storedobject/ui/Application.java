@@ -19,8 +19,10 @@ import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.progressbar.ProgressBar;
+import com.vaadin.flow.component.textfield.Autocomplete;
 import com.vaadin.flow.dom.Style;
 import com.vaadin.flow.server.*;
 import com.vaadin.flow.theme.lumo.Lumo;
@@ -313,7 +315,7 @@ public class Application extends com.storedobject.vaadin.Application implements 
     }
 
     public final String getName() {
-        return mainLayout + "";
+        return String.valueOf(mainLayout);
     }
 
     @Override
@@ -364,7 +366,7 @@ public class Application extends com.storedobject.vaadin.Application implements 
 
     public void logout() {
         TransactionManager tm = getTransactionManager();
-        if(tm == null || (tm.getUser().getPreferences() & 2) != 2) {
+        if(tm == null || (tm.getUser().getPreferences() & 1) != 1) {
             close(1);
             return;
         }
@@ -392,6 +394,7 @@ public class Application extends com.storedobject.vaadin.Application implements 
      *     7, -7: Timed out during interactive session dialog.
      *     8, -8: Closed by the user in the interactive session dialog.
      *     9, -9: Closed while switching to another server/DB.
+     *     10, -10: MFA not verified.
      *     100, -100: Programmatic close from unknown code.
      * </p>
      * @return Reason code.
@@ -442,27 +445,32 @@ public class Application extends com.storedobject.vaadin.Application implements 
         }
         UI ui = getUI();
         try {
-            super.close();
-        } catch(Throwable ignored) {
+            if(ui == null) {
+                // AS Session expired?
+                closeReason = 3;
+                return;
+            }
+            StringBuilder script = new StringBuilder("navigator.credentials.preventSilentAccess();");
+            if(exitSite == null || exitSite.isEmpty()) {
+                script.append("window.close();");
+            }
+            if(isSpeakerOn()) {
+                script.append("window.speechSynthesis.speak(new SpeechSynthesisUtterance('Goodbye'));");
+            }
+            script.append("this.stopApplication();");
+            if(exitSite != null && !exitSite.isEmpty()) {
+                script.append("window.open('").append(exitSite).append("', '_self');");
+                closeReason = -closeReason;
+            }
+            ui.getPage().executeJs(script.toString());
+        } catch(Throwable error) {
+            ApplicationServer.log(this, "Error while exiting to " + exitSite, error);
+        } finally {
+            try {
+                super.close();
+            } catch(Throwable ignored) {
+            }
         }
-        if(ui == null) {
-            // AS Session expired?
-            closeReason = 3;
-            return;
-        }
-        StringBuilder script = new StringBuilder("navigator.credentials.preventSilentAccess();");
-        if(exitSite == null || exitSite.isEmpty()) {
-            script.append("window.close();");
-        }
-        if(isSpeakerOn()) {
-            script.append("window.speechSynthesis.speak(new SpeechSynthesisUtterance('Goodbye'));");
-        }
-        script.append("this.stopApplication();");
-        if(exitSite != null && !exitSite.isEmpty()) {
-            script.append("window.open('").append(exitSite).append("', '_self');");
-            closeReason = -closeReason;
-        }
-        ui.getPage().executeJs(script.toString());
     }
 
     /**
@@ -1054,7 +1062,13 @@ public class Application extends com.storedobject.vaadin.Application implements 
         Login l = login;
         login = null;
         boolean cp = checkPassword;
-        selectEntity(cp && l.isWelcomePassword(), cp && su.isPasswordExpired());
+        Runnable selectEntity = () -> selectEntity(cp && l.isWelcomePassword(), cp && su.isPasswordExpired());
+        if((su.getPreferences() & 0b1000) == 0b1000 && PIN.get(su.getId(), "totp") != null) {
+            new VerifyMFA(selectEntity).execute();
+            closeMenu();
+        } else {
+            selectEntity.run();
+        }
     }
 
     @Override
@@ -1099,6 +1113,11 @@ public class Application extends com.storedobject.vaadin.Application implements 
             close();
             return;
         }
+        Runnable changePassword = () -> new SetNewPassword(identityCheck.getPasswordChangeCaption()).execute();
+        if(identityCheck.skipOTP(this)) {
+            identityCheck.doAction(changePassword);
+            return;
+        }
         String exitSite = identityCheck.getOTPExitSite();
         String errorMessage = identityCheck.getOTPErrorMessage();
         if(errorMessage == null) {
@@ -1113,8 +1132,7 @@ public class Application extends com.storedobject.vaadin.Application implements 
         String finalErrorMessage = errorMessage;
         error = () -> exit(finalErrorMessage, exitSite);
         VerifyOTP verifyOTP = new VerifyOTP(identityCheck.isSingleOTP(), identityCheck.getMobile(),
-                identityCheck.getEmail(),
-                () -> new SetNewPassword(identityCheck.getPasswordChangeCaption()).execute(), cancel, error);
+                identityCheck.getEmail(), () -> identityCheck.doAction(changePassword), cancel, error);
         String otpTemplate = identityCheck.getOTPTemplate();
         if(otpTemplate != null) {
             verifyOTP.setTemplateName(otpTemplate);
@@ -1688,6 +1706,63 @@ public class Application extends com.storedobject.vaadin.Application implements 
         protected boolean process() {
             handleAlert(reference);
             return true;
+        }
+    }
+
+    private static class VerifyMFA extends View implements Transactional {
+
+        private final Runnable action;
+        private final TimerComponent timer = new TimerComponent();
+        private final IntegerField code = new IntegerField("Verify Code ", 0, 6);
+
+        private VerifyMFA(Runnable action) {
+            this.action = action;
+            timer.setPrefix("Will abort in ");
+            timer.setSuffix(" seconds");
+            timer.addListener(e -> abort());
+            setCaption("Multi-factor Authenticator");
+            ELabel caption = new ELabel(getCaption(), "font-size:large;font-weight:900");
+            HorizontalLayout h = new HorizontalLayout(caption);
+            h.setVerticalComponentAlignment(FlexComponent.Alignment.CENTER, caption);
+            code.setAutocomplete(Autocomplete.OFF);
+            code.setLength(6);
+            code.setEmptyDisplay("");
+            code.setWidth("6em");
+            code.addValueChangeListener(e -> verify());
+            VerticalLayout layout = new VerticalLayout(caption, code, timer);
+            setComponent(layout);
+            setWindowMode(true);
+        }
+
+        @Override
+        protected void execute(View parent, boolean doNotLock) {
+            super.execute(parent, doNotLock);
+            getApplication().startPolling(this);
+            timer.countDown(180);
+        }
+
+        @Override
+        public void clean() {
+            super.clean();
+            clearAlerts();
+            timer.abort();
+            getApplication().stopPolling(this);
+        }
+
+        @Override
+        public void abort() {
+            super.abort();
+            ((Application)getApplication()).close(10);
+        }
+
+        private void verify() {
+            clearAlerts();
+            if(getTransactionManager().getUser().verifyTOTP(code.getValue())) {
+                close();
+                action.run();
+            } else {
+                warning("Invalid authenticator code!");
+            }
         }
     }
 

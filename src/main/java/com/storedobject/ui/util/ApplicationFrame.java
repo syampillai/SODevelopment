@@ -42,7 +42,6 @@ public class ApplicationFrame extends com.storedobject.vaadin.ApplicationFrame i
         if(menuLogic.isEmpty()) {
             return super.createMenu();
         }
-        //noinspection CatchMayIgnoreException
         try {
             Class<?> menuLogicClass = JavaClassLoader.getLogic(menuLogic);
             return (ApplicationMenu) menuLogicClass.getDeclaredConstructor(ApplicationFrame.class).

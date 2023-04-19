@@ -129,7 +129,7 @@ public class VerifyOTP extends View implements CloseableView {
         }
         oldInstance = true;
         super.execute(parent, doNotLock);
-        a.stopPolling(this);
+        a.startPolling(this);
         if(phone != null) {
             phone.sendOTP();
         }

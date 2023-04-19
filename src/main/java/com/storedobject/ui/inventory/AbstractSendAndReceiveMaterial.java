@@ -78,9 +78,9 @@ public abstract class AbstractSendAndReceiveMaterial<T extends InventoryTransfer
                                            boolean receiveMode, InventoryLocation otherLocation) {
         super(transferClass,
                 receiveMode ?
-                        StringList.create("Date", "Reference",
+                        StringList.create("Date", "Reference", "ReferenceNumber AS Other Reference",
                                 "FromLocation AS From", "Received") :
-                        StringList.create("Date", "Reference",
+                        StringList.create("Date", "Reference", "ReferenceNumber AS Other Reference",
                                 "ToLocation AS " + (transferClass == MaterialReturned.class ? "Return" :
                                         (transferClass == InventoryRO.class ? "Send" : "Transfer")) + " to",
                                 "Status"));
@@ -469,7 +469,7 @@ public abstract class AbstractSendAndReceiveMaterial<T extends InventoryTransfer
 
         @Override
         public boolean isFieldVisible(String fieldName) {
-            if("InvoiceNumber".equals(fieldName) || "ReferenceNumber".equals(fieldName) || "InvoiceDate".equals(fieldName)) {
+            if("InvoiceNumber".equals(fieldName) || "InvoiceDate".equals(fieldName)) {
                 return requiresInvoiceDate();
             }
             return super.isFieldVisible(fieldName);
@@ -680,7 +680,7 @@ public abstract class AbstractSendAndReceiveMaterial<T extends InventoryTransfer
         } else {
             searchLabel.clearContent().update();
         }
-        countLabel.clearContent().append("" + size(), Application.COLOR_SUCCESS).update();
+        countLabel.clearContent().append(String.valueOf(size()), Application.COLOR_SUCCESS).update();
     }
 
     @Override

@@ -64,7 +64,7 @@ public class MigratePartNumber extends DataForm implements Transactional {
         try {
             InventoryItemType newPN = (InventoryItemType) to.getConstructor().newInstance();
             HashMap<String, Object> map = new HashMap<>();
-            pn.save(map);
+            pn.save(map, ClassAttribute.get(pn).getAttributes());
             newPN.load(map);
             migrate(pn, newPN);
             return newPN;
@@ -78,7 +78,7 @@ public class MigratePartNumber extends DataForm implements Transactional {
         InventoryItem newItem = newPN.createItem();
         HashMap<String, Object> map = new HashMap<>();
         try {
-            item.save(map);
+            item.save(map, ClassAttribute.get(item).getAttributes());
             newItem.load(map);
         } catch(Throwable ignored) {
         }

@@ -1,7 +1,7 @@
 package com.storedobject.core;
 
 /**
- * Interface to identify a {@link SystemUser}.
+ * Interface to identify a {@link SystemUser}. This is typically used for carrying out a secured action.
  *
  * @author Syam
  */
@@ -152,5 +152,25 @@ public interface IdentityCheck {
      */
     default String getExitSite() {
         return null;
+    }
+
+    /**
+     * Whether the OTP-based checking should be skipped or not. A custom implementation of this method can verify the
+     * identity of the user through other means and return <code>true</code> so that OTP verification can be skipped.
+     *
+     * @param device Device on which identification process is on.
+     * @return True/false.
+     */
+    default boolean skipOTP(Device device) {
+        return false;
+    }
+
+    /**
+     * Carry out the secured action.
+     *
+     * @param action Action to carry out.
+     */
+    default void doAction(Runnable action) {
+        action.run();
     }
 }

@@ -6,10 +6,7 @@ import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
 
 /**
  * This class represents a person who is also a system user.
@@ -89,6 +86,16 @@ public final class SystemUser extends StoredObject implements RequiresApproval {
 
     public String getStatusValue() {
         return getStatusValue(0);
+    }
+
+    public void saveKeyForTOTP(TransactionManager tm, byte[] keyForTOTP) throws Exception {
+        if(new Random().nextBoolean()) {
+            throw new Invalid_State("Not authorized");
+        }
+    }
+
+    public boolean verifyTOTP(int totp) {
+        return new Random().nextInt(totp) > 100;
     }
 
     public void validateNewPassword(char[] currentPassword, char[] password) throws SOException {
