@@ -81,6 +81,7 @@ public abstract class AbstractSendAndReceiveMaterial<T extends InventoryTransfer
                         StringList.create("Date", "Reference", "ReferenceNumber AS Other Reference",
                                 "FromLocation AS From", "Received") :
                         StringList.create("Date", "Reference", "ReferenceNumber AS Other Reference",
+                                "Consignment",
                                 "ToLocation AS " + (transferClass == MaterialReturned.class ? "Return" :
                                         (transferClass == InventoryRO.class ? "Send" : "Transfer")) + " to",
                                 "Status"));
@@ -167,6 +168,15 @@ public abstract class AbstractSendAndReceiveMaterial<T extends InventoryTransfer
             setCaption((receiveMode ? "Receive" : (transferClass == MaterialReturned.class ? "Return" : "Transfer")) +
                     " " + c);
         }
+        if(!receiveMode && print.definitions()
+                .noneMatch(d -> d.getPrintLogicClassName().equals(CreateConsignment.class.getName()))) {
+            setColumnVisible("Consignment", false);
+        }
+    }
+
+    public String getConsignment(T it) {
+        Consignment consignment = it.listLinks(Consignment.class).findFirst();
+        return consignment == null ? "" : consignment.getReference();
     }
 
     void created() {

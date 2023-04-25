@@ -350,7 +350,12 @@ public class Application extends com.storedobject.vaadin.Application implements 
     private void executeMe(Logic logic) {
         if(MemoSystem.class.getName().equals(logic.getClassName())) {
             if(memoSystem == null) {
-                memoSystem = new MemoSystem(false);
+                try {
+                    memoSystem = new MemoSystem(false);
+                } catch(Throwable e) {
+                    error(e);
+                    return;
+                }
             }
             memoSystem.setCaption(logic.getTitle());
             memoSystem.executeAndLoad();

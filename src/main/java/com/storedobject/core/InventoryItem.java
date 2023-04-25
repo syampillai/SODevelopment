@@ -109,6 +109,10 @@ public class InventoryItem extends StoredObject {
         return new Money();
     }
 
+    public UnitCost getUnitCost(boolean guessIfZero) {
+        return getUnitCost();
+    }
+
     public UnitCost getUnitCost() {
         return new UnitCost(new Money(), Count.ONE);
     }

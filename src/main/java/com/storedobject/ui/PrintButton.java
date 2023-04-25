@@ -15,6 +15,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
+import java.util.stream.Stream;
 
 /**
  * A "print button" is created automatically by {@link ObjectEditor}s and
@@ -135,10 +136,17 @@ public final class PrintButton extends Composite<Button> {
         return buttons.get(label);
     }
 
+    public Stream<PrintLogicDefinition> definitions() {
+        return buttons.values().stream().map(pb -> pb.definition);
+    }
+
     private class PButton extends Button {
+
+        private final PrintLogicDefinition definition;
 
         public PButton(PrintLogicDefinition printLogicDefinition) {
             super(printLogicDefinition.getLabel(), iconName(printLogicDefinition), e -> clicked(printLogicDefinition));
+            definition = printLogicDefinition;
             buttons.put(printLogicDefinition.getLabel(), this);
         }
     }

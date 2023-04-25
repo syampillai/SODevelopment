@@ -45,7 +45,7 @@ public class CreateConsignment implements Executable {
             Application.message("Invalid items!");
             return;
         }
-        consignment = parent.listLinks(Consignment.class, true).single(false);
+        consignment = parent.listLinks(Consignment.class).single(false);
         if(consignment == null) {
             consignment = new Consignment();
             consignment.setType(type);

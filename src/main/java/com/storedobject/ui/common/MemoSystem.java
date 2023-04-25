@@ -58,7 +58,7 @@ public class MemoSystem extends ObjectGrid<MemoComment> implements CloseableView
         this.memoType = memoType;
         who = getTransactionManager().getUser();
         if(who.getStatus() != 0) {
-            throw new SORuntimeException("Not allowed");
+            throw new SORuntimeException("You are not a regular user");
         }
         setCaption(memoType == null ? Application.getLogicCaption("Memo System") : memoType.getName());
         GridContextMenu<MemoComment> contextMenu = new GridContextMenu<>(this);
@@ -136,6 +136,12 @@ public class MemoSystem extends ObjectGrid<MemoComment> implements CloseableView
         if(load) {
             loadMemos();
         }
+        addItemDoubleClickListener(e -> {
+            MemoComment mc = e.getItem();
+            if(mc != null) {
+                viewComments(mc);
+            }
+        });
     }
 
     private static MemoType mt(String shortName) {
@@ -145,6 +151,14 @@ public class MemoSystem extends ObjectGrid<MemoComment> implements CloseableView
             throw new SORuntimeException("Memo type " + shortName + " doesn't exist");
         }
         return t;
+    }
+
+    @Override
+    public boolean includeColumn(String columnName) {
+        if(memoType != null && "Memo.Type.Name".equals(columnName)) {
+            return false;
+        }
+        return super.includeColumn(columnName);
     }
 
     private boolean mine() {
@@ -175,6 +189,9 @@ public class MemoSystem extends ObjectGrid<MemoComment> implements CloseableView
 
     private boolean ownerFilter(MemoComment mc) {
         if(prevCache != null && prevCache.getMemoId().equals(mc.getMemoId())) {
+            return false;
+        }
+        if(mc.getMemo() == null) {
             return false;
         }
         prevCache = mc;
