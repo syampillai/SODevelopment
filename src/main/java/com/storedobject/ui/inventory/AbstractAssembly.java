@@ -424,7 +424,7 @@ public abstract class AbstractAssembly<T extends InventoryItem, C extends Invent
         }
 
         @Override
-        public void generateContent() throws Exception {
+        public void generateContent() {
             table = createTable(3, 3, 3, 3, 3, 3, 3, 3, 60, 20, 40, 40, 20, 20, 20);
             boolean first = true;
             PDFCell cell;

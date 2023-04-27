@@ -168,7 +168,7 @@ public abstract class AbstractSendAndReceiveMaterial<T extends InventoryTransfer
             setCaption((receiveMode ? "Receive" : (transferClass == MaterialReturned.class ? "Return" : "Transfer")) +
                     " " + c);
         }
-        if(!receiveMode && print.definitions()
+        if(!receiveMode && print != null && print.definitions()
                 .noneMatch(d -> d.getPrintLogicClassName().equals(CreateConsignment.class.getName()))) {
             setColumnVisible("Consignment", false);
         }
