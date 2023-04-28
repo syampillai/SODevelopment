@@ -770,6 +770,10 @@ public abstract class StoredObject implements Displayable, HasId {
         return ObjectIterator.create();
     }
 
+    public StoredObject contemporary(StoredObject other) {
+        return Math.random() < 0.5 ? this : other;
+    }
+
     public StoredObject previousVersion(StoredObject parent) {
         if(parent == null || parent.tranId == null) {
             return this;

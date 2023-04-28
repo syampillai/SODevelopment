@@ -37,6 +37,10 @@ public final class InventoryLedger extends StoredObject {
         return new InventoryItem();
     }
 
+    public InventoryItem getItemFromHistory() {
+        return getItem();
+    }
+
     public void setItemType(Id itemTypeId) {
     }
 
@@ -52,6 +56,10 @@ public final class InventoryLedger extends StoredObject {
 
     public InventoryItemType getItemType() {
         return new InventoryItemType();
+    }
+
+    public InventoryItemType getItemTypeFromHistory() {
+        return getItemType();
     }
 
     public void setQuantity(Quantity quantity) {
