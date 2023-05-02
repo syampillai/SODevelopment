@@ -221,14 +221,16 @@ public class SystemTableDeployer extends View implements Transactional {
             warning("Class not found!");
             return;
         }
-        String newClassName = ncn;
-        if(!newClassName.equals(currentClassName) || newClassName.isEmpty()) {
-            currentClassName = newClassName;
+        if(!ncn.equals(currentClassName) || ncn.isEmpty()) {
+            currentClassName = ncn;
             checkStatus();
             return;
         }
         if(c == menuItem) {
-            Logic logic = Logic.get(Logic.class, "ClassName='E:" + currentClassName + "'");
+            Logic logic = Logic.get(Logic.class, "ClassName='" + currentClassName + "'");
+            if(logic == null) {
+                logic = Logic.get(Logic.class, "ClassName='E:" + currentClassName + "'");
+            }
             if(logic == null) {
                 logic = Logic.get(Logic.class, "ClassName='B:" + currentClassName + "'");
             }
@@ -242,13 +244,8 @@ public class SystemTableDeployer extends View implements Transactional {
                 logic = Logic.get(Logic.class, "ClassName='S:" + currentClassName + "'");
             }
             if(logic == null) {
-                if((StoredObjectUtility.hints(ca.getObjectClass()) & ObjectHint.SMALL_LIST) == ObjectHint.SMALL_LIST) {
-                    newClassName = "B";
-                } else {
-                    newClassName = "E";
-                }
-                newClassName += ":" + currentClassName;
-                logic = new Logic(newClassName, StringUtility.makeLabel(currentClassName.substring(currentClassName.lastIndexOf('.') + 1)));
+                logic = new Logic(currentClassName, StringUtility.makeLabel(
+                        currentClassName.substring(currentClassName.lastIndexOf('.') + 1)));
                 logic.setSingleInstance(true);
             }
             new ObjectEditor<>(Logic.class, EditorAction.ALL).editObject(logic);
@@ -333,105 +330,6 @@ public class SystemTableDeployer extends View implements Transactional {
         ArrayList<String> alterTable = new ArrayList<>();
         checkAlterTable(ca, false, alterTable);
         checkAlterTable(ca, true, alterTable);
-        /*
-        ClassAttribute<?> pca = ca.getParent();
-        String tableName = ca.getModuleName() + "." + ca.getTableName(),
-                pTableName = pca == null ? "" : (pca.getModuleName() + "." + pca.getTableName());
-        String tableNameH = tableName.replace(".", ".H_"),
-                pTableNameH = pTableName.replace(".", ".H_");
-        String pre = "ALTER TABLE " + tableName + " ";
-        String preH = "ALTER TABLE " + tableNameH + " ";
-        String copy;
-        ArrayList<String[]> columns = Database.get().columnDetails(tableName),
-                pColumns = Database.get().columnDetails(pTableName);
-        while(pca != null) {
-            pColumns.forEach(pc -> columns.removeIf(c -> pc[0].equals(c[0])));
-            pca = pca.getParent();
-            if(pca != null) {
-                pColumns = Database.get().columnDetails(pca.getModuleName() + "." + pca.getTableName());
-            }
-        }
-        ColumnDefinitions cds = new ColumnDefinitions();
-        Method m = ca.getObjectClass().getMethod("columns", Columns.class);
-        m.invoke(null, cds);
-        ArrayList<String[]> dropOuts = new ArrayList<>();
-        boolean found;
-        int i;
-        for(String[] c : columns) {
-            found = false;
-            for(i = 0; i < cds.size(); i++) {
-                if(c[0].equals(cds.getName(i).toLowerCase())) {
-                    found = true;
-                    if(!c[1].equals(cds.getType(i))) {
-                        alterTable.add(copy = pre + "ALTER COLUMN " + cds.getName(i) + " TYPE " + cds.getType(i) +
-                                " USING " + ColumnDefinition.getDefaultValue(cds.getType(i)));
-                        alterTable.add(copy.replace(pre, preH));
-                    }
-                    break;
-                }
-            }
-            if(!found) {
-                dropOuts.add(c);
-            }
-        }
-        for(i = 0; i < cds.size(); i++) {
-            found = false;
-            for(String[] c : columns) {
-                if(c[0].equals(cds.getName(i).toLowerCase())) {
-                    found = true;
-                    break;
-                }
-            }
-            if(!found) {
-                for(String[] c : dropOuts) {
-                    if(c[1].equals(cds.getType(i))) {
-                        found = true;
-                        dropOuts.remove(c);
-                        alterTable.add(copy = pre + "RENAME COLUMN " + c[0] + " TO " + cds.getName(i));
-                        alterTable.add(copy.replace(pre, preH));
-                        break;
-                    }
-                }
-                if(!found) {
-                    alterTable.add(copy = pre + "ADD COLUMN " + cds.getName(i) + " " + cds.getType(i) +
-                            " NOT NULL DEFAULT " + ColumnDefinition.getDefaultValue(cds.getType(i)));
-                    alterTable.add(copy.replace(pre, preH));
-                }
-            }
-        }
-        for(String[] c : dropOuts) {
-            alterTable.add(0, copy = pre + "DROP COLUMN " + c[0] + " CASCADE");
-            alterTable.add(1, copy.replace(pre, preH));
-        }
-        ArrayList<String> list = Database.get().parentTable(tableName);
-        if(list.size() == 0 || !list.get(0).equalsIgnoreCase(pTableName)) {
-            alterTable.add(pre + "INHERIT " + pTableName);
-            if(list.size() > 0) {
-                alterTable.add(0, pre + "NO INHERIT " + list.get(0));
-            }
-        }
-        list = Database.get().parentTable(tableNameH);
-        if(list.size() == 0 || !list.get(0).equalsIgnoreCase(pTableNameH)) {
-            alterTable.add(preH + "INHERIT " + pTableNameH);
-            if(list.size() > 0) {
-                alterTable.add(1, preH + "NO INHERIT " + list.get(0));
-            }
-        }
-        ArrayList<String> cons = Database.get().foreignKeyConstraints(tableName);
-        String[] fkeys = StoredObjectUtility.foreignKeysDDL(ca.getObjectClass());
-        Optional<String> any;
-        for(String fk: fkeys) {
-            any = cons.stream().filter(con -> fk.contains(" ADD CONSTRAINT " + con.toLowerCase() + " ")).findAny();
-            if(any.isPresent()) {
-                cons.remove(any.get());
-            } else {
-                alterTable.add(fk);
-            }
-        }
-        for(String con: cons) {
-            alterTable.add(pre + " DROP CONSTRAINT IF EXISTS " + con);
-        }
-        */
         if(alterTable.size() == 0) {
             alterTable = null;
         }

@@ -1,49 +1,75 @@
 package com.storedobject.core;
 
-public class AccountChartMap extends com.storedobject.core.StoredObject {
+import java.math.BigDecimal;
+
+public final class AccountChartMap extends StoredObject {
+
+    private String accountClassName;
+    private Id chartId;
 
     public AccountChartMap() {
     }
 
-    public static void columns(com.storedobject.core.Columns p1) {
+    public static void columns(Columns columns) {
+        columns.add("AccountClassName", "text");
+        columns.add("Chart", "id");
     }
 
-    public static void indices(com.storedobject.core.Indices p1) {
+    public static void indices(Indices indices) {
+        indices.add("lower(AccountClassName)", false);
     }
 
-    public static java.lang.String[] displayColumns() {
-        return null;
+    public static String[] displayColumns() {
+        return new String[] { "AccountClassName" };
     }
 
-    public static java.lang.String[] browseColumns() {
-        return null;
-    }
-
-    public void validateData() throws java.lang.Exception {
-    }
-
-    public com.storedobject.core.AccountChart getChart() {
-        return null;
-    }
-
-    public void setChart(java.math.BigDecimal p1) {
-    }
-
-    public void setChart(com.storedobject.core.Id p1) {
-    }
-
-    public com.storedobject.core.Id getChartId() {
-        return null;
+    public static String[] browseColumns() {
+        return new String[] { "AccountClassName", "Chart.Name as Chart Name" };
     }
 
     public static int hints() {
-        return 0;
+        return ObjectHint.SMALL | ObjectHint.SMALL_LIST;
     }
 
-    public void setAccountClassName(java.lang.String p1) {
+    public void setAccountClassName(String className) {
+        this.accountClassName = className;
     }
 
-    public java.lang.String getAccountClassName() {
+    public String getAccountClassName() {
+        return accountClassName;
+    }
+
+    public void setChart(BigDecimal chartId) {
+        setChart(new Id(chartId));
+    }
+
+    public void setChart(Id chartId) {
+        this.chartId = chartId;
+    }
+
+    public Id getChartId() {
+        return chartId;
+    }
+
+    public AccountChart getChart() {
+        return get(AccountChart.class, chartId);
+    }
+
+    @Override
+    public void validateData(TransactionManager tm) throws Exception {
+        if(getAccountClass() == null) {
+            throw new Invalid_Value("Account Class Name");
+        }
+        chartId = tm.checkType(this, chartId, AccountChart.class);
+        super.validateData(tm);
+    }
+
+    public <A extends Account> Class<A> getAccountClass() {
+        try {
+            //noinspection unchecked
+            return (Class<A>) JavaClassLoader.getLogic(accountClassName);
+        } catch(Throwable ignored) {
+        }
         return null;
     }
 }

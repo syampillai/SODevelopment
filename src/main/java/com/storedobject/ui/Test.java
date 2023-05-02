@@ -1,30 +1,28 @@
 package com.storedobject.ui;
 
-import com.storedobject.core.JavaClassLoader;
-import com.storedobject.core.StoredObject;
+import com.storedobject.core.ApplicationModule;
 
-public class Test extends PresentationRunner {
+public class Test extends ModuleMenu {
 
-    public Test() {
-        addScreen("com.engravsystems.emqim.inventory.logic.PurchaseOrderBrowser", 1);
-        addScreen(() -> speak("Hello, this is the Purchase Order screen"), 1);
-        addScreen(this::aircraftStatus, 5);
-        addScreen("com.engravsystems.emqim.inventory.logic.MyChart", 6);
-        addScreen(com.storedobject.ui.inventory.LocateItem.class, 7);
+    public Test(Application application) {
+        super(application);
     }
 
-    private void speak(String sentence) {
-        getApplication().speak(sentence);
+    public Test(Application application, String moduleName) {
+        super(application, moduleName);
     }
 
-    private void aircraftStatus() {
-        try {
-            @SuppressWarnings("unchecked") Class<? extends StoredObject> aClass = (Class<? extends StoredObject>)
-                    JavaClassLoader.getLogic("com.engravsystems.emqim.engineering.Aircraft");
-            StringBuilder s = new StringBuilder();
-            StoredObject.list(aClass).forEach(a -> s.append(a.toDisplay()).append("\n"));
-            speak(s.toString());
-        } catch(ClassNotFoundException ignored) {
-        }
+    public Test(Application application, ApplicationModule module) {
+        super(application, module);
+    }
+
+    @Override
+    public int getSize() {
+        return 200;
+    }
+
+    @Override
+    public String getFontSize() {
+        return "smaller";
     }
 }

@@ -4,6 +4,7 @@ import com.storedobject.core.*;
 import com.storedobject.ui.Application;
 import com.storedobject.ui.ApplicationLayout;
 import com.storedobject.ui.Image;
+import com.storedobject.ui.ViewSelected;
 import com.storedobject.vaadin.ApplicationMenu;
 import com.storedobject.vaadin.ButtonIcon;
 import com.storedobject.vaadin.SpeakerButton;
@@ -75,6 +76,14 @@ public class ApplicationFrame extends com.storedobject.vaadin.ApplicationFrame i
             if(a != null && a.getActiveViewCount() == 0) {
                 openMenu();
             }
+        }
+    }
+
+    @Override
+    public void viewSelected(View view) {
+        super.viewSelected(view);
+        if(view instanceof ViewSelected vs) {
+            vs.viewSelected();
         }
     }
 

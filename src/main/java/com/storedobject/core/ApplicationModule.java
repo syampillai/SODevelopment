@@ -15,4 +15,18 @@ public class ApplicationModule extends Name implements RequiresApproval {
     public static ObjectIterator < ApplicationModule > list(String name) {
         return null;
     }
+
+    public void setSize(int size) {
+    }
+
+    public int getSize() {
+        return 0;
+    }
+
+    public void setFontSize(String fontSize) {
+    }
+
+    public String getFontSize() {
+        return null;
+    }
 }

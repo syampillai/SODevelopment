@@ -59,6 +59,23 @@ public class LogicParser {
         String cn = logic.getClassName();
         int p = cn.indexOf(':');
         if(!(p == 1 || p == 2)) {
+            String className = ApplicationServer.guessClass(cn);
+            if(className != null) {
+                try {
+                    Class<?> lc = JavaClassLoader.getLogic(cn);
+                    if(lc.getName().equals(cn) && StoredObject.class.isAssignableFrom(lc)) {
+                        ClassAttribute<?> ca = ClassAttribute.get((Class<? extends StoredObject>) lc);
+                        if((StoredObjectUtility.hints(ca.getObjectClass()) & ObjectHint.SMALL_LIST) ==
+                                ObjectHint.SMALL_LIST) {
+                            logic.setClassName("B:" + cn);
+                        } else {
+                            logic.setClassName("E:" + cn);
+                        }
+                        parse(logic);
+                    }
+                } catch(Throwable ignored) {
+                }
+            }
             return;
         }
         String action = cn.substring(0, p);
