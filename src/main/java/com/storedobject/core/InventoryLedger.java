@@ -123,6 +123,9 @@ public final class InventoryLedger extends StoredObject {
     public void setReference(String reference) {
     }
 
+    public void updateReference(TransactionManager tm, String newReference) throws Exception {
+    }
+
     public static QuantityWithCost getOpeningStock(InventoryItemType itemType, Date date, InventoryLocation location) {
         return new QuantityWithCost(Count.ZERO, new Money());
     }
