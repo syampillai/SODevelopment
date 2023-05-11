@@ -12,7 +12,7 @@ public final class Consignment extends StoredObject {
     };
     private final Date date = DateUtility.today();
     private int no = 0, type = 0;
-    private String portOfLoading = "", portOfDischarge = "", remark = "";
+    private String portOfLoading = "", portOfDischarge = "", remark = "", airwayBillNumber = "";
     private Id buyerId = Id.ZERO;
 
     public Consignment() {
@@ -98,6 +98,14 @@ public final class Consignment extends StoredObject {
         return get(Entity.class, buyerId);
     }
 
+    public void setAirwayBillNumber(String airwayBillNumber) {
+        this.airwayBillNumber = airwayBillNumber;
+    }
+
+    public String getAirwayBillNumber() {
+        return airwayBillNumber;
+    }
+
     public void setRemark(String remark) {
         this.remark = remark;
     }
@@ -107,6 +115,6 @@ public final class Consignment extends StoredObject {
     }
 
     public String getReference() {
-        return "" + getNo();
+        return String.valueOf(getNo());
     }
 }
