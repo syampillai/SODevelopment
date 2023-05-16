@@ -179,6 +179,10 @@ public abstract class AbstractSendAndReceiveMaterial<T extends InventoryTransfer
         return consignment == null ? "" : consignment.getReference();
     }
 
+    public Class<L> getItemClass() {
+        return transferItemClass;
+    }
+
     void created() {
     }
 

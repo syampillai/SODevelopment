@@ -31,10 +31,4 @@ public final class InventoryROItem extends InventoryTransferItem {
     public Money getCostOfRepair() {
         return new Money();
     }
-
-    @Override
-    public boolean isDetailOf(Class<? extends StoredObject> masterClass) {
-        return InventoryRO.class.isAssignableFrom(masterClass) &&
-                (masterClass.getName() + "Item").equals(getClass().getName());
-    }
 }

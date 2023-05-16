@@ -38,4 +38,14 @@ public abstract class InventoryTransferItem extends StoredObject implements Deta
     public Quantity getQuantity() {
         return Count.ONE;
     }
+
+    @Override
+    public final Id getUniqueId() {
+        return new Id();
+    }
+
+    @Override
+    public final boolean isDetailOf(Class<? extends StoredObject> masterClass) {
+        return getClass().getName().equals(masterClass.getName() + "Item");
+    }
 }

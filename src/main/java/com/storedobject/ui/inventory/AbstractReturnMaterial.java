@@ -14,23 +14,23 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public abstract class AbstractReturnMaterial extends
-        AbstractSendAndReceiveMaterial<MaterialReturned, MaterialReturnedItem> {
+public abstract class AbstractReturnMaterial<M extends MaterialReturned, L extends MaterialReturnedItem> extends
+        AbstractSendAndReceiveMaterial<M, L> {
 
     private FromGRN fromGRN;
     @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
     private CreateFromGRN createFromGRN;
 
-    public AbstractReturnMaterial(String fromLocation) {
-        super(MaterialReturned.class, MaterialReturnedItem.class, fromLocation, false);
+    public AbstractReturnMaterial(Class<M> mrClass, Class<L> mriClass, String fromLocation) {
+        super(mrClass, mriClass, fromLocation, false);
     }
 
-    public AbstractReturnMaterial(InventoryLocation fromLocation) {
-        this(fromLocation, null);
+    public AbstractReturnMaterial(Class<M> mrClass, Class<L> mriClass, InventoryLocation fromLocation) {
+        this(mrClass, mriClass, fromLocation, null);
     }
 
-    public AbstractReturnMaterial(InventoryLocation fromLocation, InventoryLocation otherLocation) {
-        super(MaterialReturned.class, MaterialReturnedItem.class, fromLocation, false, otherLocation);
+    public AbstractReturnMaterial(Class<M> mrClass, Class<L> mriClass, InventoryLocation fromLocation, InventoryLocation otherLocation) {
+        super(mrClass, mriClass, fromLocation, false, otherLocation);
     }
 
     @Override
@@ -155,7 +155,7 @@ public abstract class AbstractReturnMaterial extends
     private class CreateFromGRN extends ObjectListEditor<MaterialReturnedItem> {
 
         private InventoryGRN grn;
-        private MaterialReturned mr;
+        private M mr;
         private final Map<Id, InventoryGRNItem> grnItems = new HashMap<>();
 
         CreateFromGRN() {
@@ -205,16 +205,21 @@ public abstract class AbstractReturnMaterial extends
             grn.listLinks(InventoryGRNItem.class).forEach(gi -> {
                 InventoryItem ii = gi.getItem();
                 if(ii != null) {
-                    MaterialReturnedItem mri = new MaterialReturnedItem();
-                    mri.setItem(ii);
-                    if(ii.isServiceable()) {
-                        mri.setQuantity(gi.getQuantity().zero());
-                    } else {
-                        mri.setQuantity(gi.getQuantity());
+                    L mri;
+                    try {
+                        mri = getItemClass().getDeclaredConstructor().newInstance();
+                        mri.setItem(ii);
+                        if(ii.isServiceable()) {
+                            mri.setQuantity(gi.getQuantity().zero());
+                        } else {
+                            mri.setQuantity(gi.getQuantity());
+                        }
+                        mri.makeVirtual();
+                        grnItems.put(mri.getId(), gi);
+                        add(mri);
+                    } catch(Throwable e) {
+                        error(e);
                     }
-                    mri.makeVirtual();
-                    grnItems.put(mri.getId(), gi);
-                    add(mri);
                 }
             });
             execute();
@@ -230,7 +235,7 @@ public abstract class AbstractReturnMaterial extends
 
         @Override
         protected void aboutToSave(Transaction transaction) throws Exception {
-            mr = new MaterialReturned();
+            mr = AbstractReturnMaterial.this.getObjectClass().getDeclaredConstructor().newInstance();
             mr.setFromLocation(getLocationFrom());
             mr.setToLocation(getLocationTo());
             mr.setRemark("From " + grn.getReference());

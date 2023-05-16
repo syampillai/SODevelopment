@@ -1,68 +1,50 @@
 package com.storedobject.ui;
 
 import com.storedobject.chart.*;
-import com.storedobject.common.JSON;
 import com.storedobject.vaadin.CloseableView;
 import com.storedobject.vaadin.View;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 
+import java.util.Random;
+
 public class Test extends View implements CloseableView {
 
     public Test() {
-        super("Sankey Chart");
+        super("Line Chart with Zoom");
 
         // Creating a chart display area
-        SOChart soChart = new SOChart() {
+        SOChart soChart = new SOChart();
+        soChart.setSize("800px", "600px");
 
-            @Override
-            protected String customizeDataJSON(String json, AbstractDataProvider<?> data) throws Exception {
-                //System.err.println(json);
-                System.err.println(JSON.create(json).toPrettyString());
-                return super.customizeDataJSON(json, data);
-            }
+        // Generating some random values for a LineChart
+        Random random = new Random();
+        Data xValues = new Data(), yValues = new Data();
+        for (int x = 0; x < 100; x++) {
+            xValues.add(x);
+            yValues.add(random.nextDouble());
+        }
+        xValues.setName("X Values");
+        yValues.setName("Random Values");
 
-            @Override
-            protected String customizeJSON(String json) throws Exception {
-                //System.err.println(json);
-                System.err.println(JSON.create(json).toPrettyString());
-                return super.customizeJSON(json);
-            }
-        };
-        soChart.setSize("800px", "500px");
+        // Line chart is initialized with the generated XY values
+        LineChart lineChart = new LineChart(xValues, yValues);
+        lineChart.setName("100 Random Values");
+        lineChart.setSmoothness(true);
 
-        // Create the chart
-        SankeyChart chart = createChart();
+        // Line chart needs a coordinate system to plot on
+        // We need Number-type for both X and Y axes in this case
+        XAxis xAxis = new XAxis(DataType.NUMBER);
+        YAxis yAxis = new YAxis(DataType.NUMBER);
+        RectangularCoordinate rc = new RectangularCoordinate(xAxis, yAxis);
+        lineChart.plotOn(rc);
 
-        // Add the chart to the display area
-        soChart.add(chart);
+        // Data zoom
+        DataZoom zoom = new DataZoom(rc, yAxis); // Only Y-axis
+
+        // Add to the chart display area with a simple title and data zoom
+        soChart.add(lineChart, new Title("Sample Line Chart"), zoom);
 
         // Set the component for the view
         setComponent(new VerticalLayout(soChart));
-    }
-
-    private SankeyChart createChart() {
-        SankeyChart.Node a = new SankeyChart.Node("A"),
-                b = new SankeyChart.Node("B"),
-                c = new SankeyChart.Node("C"),
-                a1 = new SankeyChart.Node("A1"),
-                a2 = new SankeyChart.Node("A2"),
-                b1 = new SankeyChart.Node("B1");
-        SankeyData sd = new SankeyData();
-        sd.addEdge(new SankeyChart.Edge(a, a1, 5));
-        sd.addEdge(new SankeyChart.Edge(a, a2, 3));
-        sd.addEdge(new SankeyChart.Edge(b, b1, 8));
-        sd.addEdge(new SankeyChart.Edge(a, b1, 3));
-        sd.addEdge(new SankeyChart.Edge(b1, a1, 1));
-        sd.addEdge(new SankeyChart.Edge(b1, c, 2));
-        b1.getItemStyle(true).getBorder(true).setColor(new Color("black"));
-        SankeyChart sc = new SankeyChart(sd);
-        Label label = sc.getLabel(true);
-        label.setRotation(90);
-        label.getTextBorder(true).setWidth(5);
-        label.getBorder(true).setWidth(5);
-        label.getBorder(true).setColor(new Color("red"));
-        ItemStyle is = sc.getItemStyle(true);
-        is.getBorder(true).setColor(new Color("blue"));
-        return sc;
     }
 }

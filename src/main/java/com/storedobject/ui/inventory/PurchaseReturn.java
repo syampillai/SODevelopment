@@ -1,10 +1,15 @@
 package com.storedobject.ui.inventory;
 
 import com.storedobject.core.*;
+import com.storedobject.ui.GridMenu;
+import com.storedobject.ui.Transactional;
 import com.storedobject.vaadin.DataForm;
 import com.storedobject.vaadin.View;
 
-public final class PurchaseReturn extends DataForm {
+import java.util.ArrayList;
+import java.util.List;
+
+public final class PurchaseReturn extends DataForm implements Transactional {
 
     private final LocationField fromField;
     private final LocationField toField;
@@ -59,7 +64,7 @@ public final class PurchaseReturn extends DataForm {
     @Override
     protected void execute(View parent, boolean doNotLock) {
         if(from != null && to != null) {
-            returnMaterial();
+            purchaseReturn();
             return;
         }
         super.execute(parent, doNotLock);
@@ -71,14 +76,43 @@ public final class PurchaseReturn extends DataForm {
         to = toField.getObject();
         if(from != null && to != null) {
             close();
-            returnMaterial();
+            purchaseReturn();
             return true;
         }
         message("Please select both the store and the supplier");
         return false;
     }
 
-    private void returnMaterial() {
-        new ReturnMaterial(from, to).execute();
+    private void purchaseReturn() {
+        List<GlobalProperty> prClasses = new ArrayList<>();
+        StoredObject.list(GlobalProperty.class, "SystemEntity=" + getTransactionManager().getEntity().getId()
+                        + " AND Name LIKE 'PURCHASE-RETURN-CLASS%'", "Name").collectAll(prClasses);
+        if(prClasses.isEmpty()) {
+            StoredObject.list(GlobalProperty.class, "SystemEntity=0 AND Name LIKE 'PURCHASE-RETURN-CLASS%'",
+                    "Name").collectAll(prClasses);
+            if(prClasses.isEmpty()) {
+                error("Unable to determine Purchase Return details, please contact Technical Support!");
+                return;
+            }
+        }
+        if(prClasses.size() == 1) {
+            purchaseReturn(prClasses.get(0).getValue());
+            return;
+        }
+        GridMenu menu = new GridMenu("Purchase Return");
+        prClasses.forEach(gp -> menu.add(gp.getDescription(), () -> purchaseReturn(gp.getValue())));
+        menu.setAutoClose(true);
+        menu.execute();
+    }
+
+    private <M extends MaterialReturned, L extends MaterialReturnedItem> void purchaseReturn(String className) {
+        try {
+            @SuppressWarnings("unchecked") Class<M> mrClass = (Class<M>) JavaClassLoader.getLogic(className);
+            @SuppressWarnings("unchecked") Class<L> mriClass = (Class<L>) JavaClassLoader.getLogic(className
+                    + "Item");
+            new ReturnMaterial<>(mrClass, mriClass, from, to).execute();
+        } catch(Throwable e) {
+            error(e);
+        }
     }
 }

@@ -1,6 +1,6 @@
 package com.storedobject.core;
 
-public final class MaterialReturned extends InventoryTransfer {
+public class MaterialReturned extends InventoryTransfer {
 
     public MaterialReturned() {
     }

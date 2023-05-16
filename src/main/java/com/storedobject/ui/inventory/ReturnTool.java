@@ -3,7 +3,7 @@ package com.storedobject.ui.inventory;
 import com.storedobject.common.SORuntimeException;
 import com.storedobject.core.*;
 
-public final class ReturnTool extends AbstractReturnMaterial {
+public final class ReturnTool extends AbstractReturnMaterial<MaterialReturned, MaterialReturnedItem> {
 
     public ReturnTool() {
         this(RequestTool.per());
@@ -18,7 +18,7 @@ public final class ReturnTool extends AbstractReturnMaterial {
     }
 
     private ReturnTool(Person from, String name) {
-        super(RequestTool.loc(from, name));
+        super(MaterialReturned.class, MaterialReturnedItem.class, RequestTool.loc(from, name));
     }
 
     @Override

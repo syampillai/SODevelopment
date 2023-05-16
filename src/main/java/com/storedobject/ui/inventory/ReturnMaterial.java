@@ -1,25 +1,27 @@
 package com.storedobject.ui.inventory;
 
 import com.storedobject.core.InventoryLocation;
+import com.storedobject.core.MaterialReturned;
+import com.storedobject.core.MaterialReturnedItem;
 import com.storedobject.vaadin.Button;
 import com.storedobject.vaadin.DataForm;
 
-public final class ReturnMaterial extends AbstractReturnMaterial {
+public final class ReturnMaterial<M extends MaterialReturned, L extends MaterialReturnedItem> extends AbstractReturnMaterial<M, L> {
 
-    public ReturnMaterial() {
-        this(SelectLocation.get(ALL_TYPES));
+    public ReturnMaterial(Class<M> mrClass, Class<L> mriClass) {
+        this(mrClass, mriClass, SelectLocation.get(ALL_TYPES));
     }
 
-    public ReturnMaterial(String from) {
-        super(from);
+    public ReturnMaterial(Class<M> mrClass, Class<L> mriClass, String from) {
+        super(mrClass, mriClass, from);
     }
 
-    public ReturnMaterial(InventoryLocation from) {
-        this(from, null);
+    public ReturnMaterial(Class<M> mrClass, Class<L> mriClass, InventoryLocation from) {
+        this(mrClass, mriClass, from, null);
     }
 
-    public ReturnMaterial(InventoryLocation from, InventoryLocation otherLocation) {
-        super(from, otherLocation);
+    public ReturnMaterial(Class<M> mrClass, Class<L> mriClass, InventoryLocation from, InventoryLocation otherLocation) {
+        super(mrClass, mriClass, from, otherLocation);
     }
 
     @Override
@@ -49,7 +51,7 @@ public final class ReturnMaterial extends AbstractReturnMaterial {
             }
             message("Location changed to '" + loc.toDisplay() + "'");
             ReturnMaterial.this.close();
-            new ReturnMaterial(loc).execute();
+            new ReturnMaterial<>(getObjectClass(), getItemClass(), loc, getLocationTo()).execute();
             return true;
         }
     }

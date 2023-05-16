@@ -1,11 +1,11 @@
 package com.storedobject.ui.inventory;
 
 import com.storedobject.common.Executable;
+import com.storedobject.common.StringList;
 import com.storedobject.core.*;
+import com.storedobject.ui.*;
 import com.storedobject.ui.Application;
-import com.storedobject.ui.ObjectEditor;
-import com.storedobject.ui.ObjectListEditor;
-import com.storedobject.vaadin.Button;
+import com.storedobject.vaadin.*;
 import com.vaadin.flow.component.icon.VaadinIcon;
 
 import java.util.ArrayList;
@@ -17,10 +17,19 @@ public class CreateConsignment implements Executable {
     private final StoredObject parent;
     private final List<HasInventoryItem> items = new ArrayList<>();
     private Consignment consignment;
+    private final View parentView;
+    @SuppressWarnings("rawtypes")
+    private final ObjectBrowser parentBrowser;
 
     public CreateConsignment(Application application, StoredObject parent) {
         tm = application.getTransactionManager();
         this.parent = parent;
+        parentView = application.getActiveView();
+        if(parentView instanceof WrappedView wv && wv.getComponent() instanceof ObjectBrowser<?> b) {
+            parentBrowser = b;
+        } else {
+            parentBrowser = null;
+        }
     }
 
     @Override
@@ -39,45 +48,76 @@ public class CreateConsignment implements Executable {
             Application.message("No consignment editor configured!");
             return;
         }
+        consignment = parent.listLinks(Consignment.class).single(false);
         try {
             items();
         } catch(Throwable e) {
             Application.message("Invalid items!");
             return;
         }
-        consignment = parent.listLinks(Consignment.class).single(false);
         if(consignment == null) {
-            consignment = new Consignment();
-            consignment.setType(type);
-            try {
-                tm.transact(t -> {
-                   consignment.save(t);
-                   parent.addLink(t, consignment);
-                });
-                consignment.reload();
-            } catch(Exception e) {
-                Application.warning(e);
-                return;
-            }
+            new AskUser(type).execute(parentView);
+            return;
         } else {
             if(consignment.getType() != type) {
                 Application.message("Consistency error, please contact Technical Support!");
+                return;
             }
         }
+        editConsignment();
+    }
+
+    private void editConsignment() {
         Editor editor = new Editor();
         editor.setObject(consignment);
-        editor.execute();
+        editor.execute(parentView);
+    }
+
+    private void createConsignment(int type) {
+        consignment = new Consignment();
+        consignment.setType(type);
+        attachConsignment(true);
+    }
+
+    private void attachConsignment(boolean saveConsignment) {
+        try {
+            tm.transact(t -> {
+                if(saveConsignment) {
+                    consignment.save(t);
+                }
+                parent.addLink(t, consignment);
+                if(parentBrowser != null) {
+                    //noinspection unchecked
+                    parentBrowser.refresh(parent);
+                }
+            });
+            consignment.reload();
+            if(!saveConsignment) {
+                items();
+            }
+            editConsignment();
+        } catch(Exception e) {
+            Application.warning(e);
+        }
     }
 
     private <T extends StoredObject> void items() throws Exception {
         items.clear();
+        List<StoredObject> parents = new ArrayList<>();
+        if(consignment == null) {
+            parents.add(parent);
+        } else {
+            consignment.listMasters(parent.getClass()).map(o -> (StoredObject) o).collectAll(parents);
+        }
         @SuppressWarnings("unchecked")
         Class<T> itemClass = (Class<T>) JavaClassLoader.getLogic(parent.getClass().getName() + "Item");
-        parent.listLinks(itemClass).forEach(i -> {
-            if(i instanceof HasInventoryItem hii) {
-                items.add(hii);
-            }
-        });
+        for(StoredObject p: parents) {
+            p.listLinks(itemClass).forEach(i -> {
+                if(i instanceof HasInventoryItem hii) {
+                    items.add(hii);
+                }
+            });
+        }
     }
 
     private class Editor extends ObjectEditor<Consignment> {
@@ -85,8 +125,24 @@ public class CreateConsignment implements Executable {
         private final Button assignBoxes = new Button("Assign Boxes", VaadinIcon.PACKAGE, e -> assignBoxes());
 
         public Editor() {
-            super(Consignment.class, EditorAction.EDIT | EditorAction.VIEW);
+            super(Consignment.class, EditorAction.EDIT | EditorAction.VIEW | EditorAction.DELETE);
             addConstructedListener(e -> setFieldReadOnly("Type"));
+            if(parentBrowser != null) {
+                addObjectChangedListener(new ObjectChangedListener<>() {
+                    @Override
+                    public void saved(Consignment object) {
+                        //noinspection unchecked
+                        parentBrowser.refresh(parent);
+                    }
+
+                    @Override
+                    public void deleted(Consignment object) {
+                        //noinspection unchecked
+                        parentBrowser.refresh(parent);
+                        close();
+                    }
+                });
+            }
         }
 
         @Override
@@ -101,10 +157,13 @@ public class CreateConsignment implements Executable {
             }
             return super.includeField(fieldName);
         }
+
         private void assignBoxes() {
+            clearAlerts();
             List<ConsignmentPacket> packets = consignment.listLinks(ConsignmentPacket.class, null,"Number")
                     .toList();
             if(packets.isEmpty()) {
+                message("No packages defined!");
                 return;
             }
             List<ConsignmentItem> previousItems = consignment.listLinks(ConsignmentItem.class).toList();
@@ -142,10 +201,19 @@ public class CreateConsignment implements Executable {
 
         public ItemEditor() {
             super(ConsignmentItem.class);
-            addConstructedListener(f -> buttonPanel.add(new Button("Exit (Without Saving)", e -> close())));
+            addConstructedListener(f -> buttonPanel.add(new Button("Exit", e -> checkAndClose())));
             setAllowAdd(false);
             setAllowDelete(false);
             setAllowReloadAll(false);
+        }
+
+        private void checkAndClose() {
+            if(isSavePending()) {
+                new ActionForm("Changes will be lost!\nDo you really want to exit?", this::close, () -> {})
+                        .execute();
+            } else {
+                close();
+            }
         }
 
         @Override
@@ -172,6 +240,67 @@ public class CreateConsignment implements Executable {
         @Override
         public boolean isColumnEditable(String columnName) {
             return "UnitCost".equals(columnName) || "BoxNumber".equals(columnName);
+        }
+    }
+
+    private class AskUser extends DataForm {
+
+        private final int type;
+        private final RadioChoiceField choice = new RadioChoiceField("Choose",
+                StringList.create("Create a New Consignment", "Add to an Existing Consignment"));
+        private final DateField dateField = new DateField("Consignment Date");
+        private final IntegerField noField = new IntegerField("Consignment No.");
+
+        public AskUser(int type) {
+            super("");
+            this.type = type;
+            String caption = "Consignment";
+            try {
+                caption += " for " + parent.getClass().getMethod("getReference")
+                        .invoke(parent);
+            } catch(Throwable ignored) {
+            }
+            setCaption(caption);
+            add(new ELabel("No consignment found!", "red"));
+            addField(choice, dateField, noField);
+            setFieldVisible(false, dateField, noField);
+            choice.addValueChangeListener(e -> setFieldVisible(choice.getValue() == 1, dateField, noField));
+        }
+
+        @Override
+        protected boolean process() {
+            clearAlerts();
+            if(choice.getValue() == 0) {
+                close();
+                createConsignment(type);
+                return true;
+            }
+            int no = noField.getValue();
+            if(no <= 0) {
+                warning("Please select a valid consignment number");
+                noField.focus();
+                return false;
+            }
+            List<Consignment> consignments = StoredObject.list(Consignment.class,
+                    "Type=" + type + " AND No=" + no + " AND Date='"
+                            + Database.format(dateField.getValue()) + "'")
+                    .filter(c -> c.listMasters(parent.getClass()).filter(p -> !p.getId().equals(parent.getId()))
+                            .findFirst() != null).toList();
+            if(consignments.isEmpty()) {
+                warning("No such consignment found!");
+                noField.focus();
+                return false;
+            }
+            close();
+            SelectGrid<Consignment> select = new SelectGrid<>(Consignment.class, consignments,
+                    StoredObjectUtility.browseColumns(Consignment.class),
+                    c -> {
+                        consignment = c;
+                        attachConsignment(false);
+                    });
+            select.setCaption(getCaption());
+            select.execute(parentView);
+            return true;
         }
     }
 }

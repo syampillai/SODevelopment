@@ -12,6 +12,7 @@ public class GridMenu extends View implements SingletonLogic, CloseableView {
 
     @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
     private final Menu menu;
+    private boolean autoClose = false;
 
     public GridMenu(String caption) {
         setCaption(caption);
@@ -42,6 +43,10 @@ public class GridMenu extends View implements SingletonLogic, CloseableView {
         super.execute(parent, doNotLock);
     }
 
+    public void setAutoClose(boolean autoClose) {
+        this.autoClose = autoClose;
+    }
+
     private class Menu extends ListGrid<MenuItem> {
 
         private final SearchField searchField;
@@ -52,7 +57,12 @@ public class GridMenu extends View implements SingletonLogic, CloseableView {
             createColumn(caption, m -> m.description);
             searchField = new SearchField(text -> setViewFilter(m -> m.description.toLowerCase().contains(text)));
             searchField.toLowerCase();
-            addItemClickListener(e -> e.getItem().logic.run());
+            addItemClickListener(e -> {
+                if(autoClose) {
+                    GridMenu.this.close();
+                }
+                e.getItem().logic.run();
+            });
         }
 
         @Override
