@@ -234,6 +234,10 @@ public final class StoredObjectUtility {
         return null;
     }
 
+    public static String toString(StoredObject object, boolean showAttributes) {
+        return "";
+    }
+
     public static String toString(StoredObject object) {
         return "";
     }

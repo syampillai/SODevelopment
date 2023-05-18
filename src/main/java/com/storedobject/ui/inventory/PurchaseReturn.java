@@ -32,7 +32,7 @@ public final class PurchaseReturn extends DataForm implements Transactional {
     }
 
     private PurchaseReturn(String fromStore, InventoryStore from, Entity supplier) {
-        super("Purchase Return");
+        super("Return");
         if(from == null && fromStore != null) {
             this.from = LocationField.getLocation(fromStore, 0);
         } else {
@@ -91,7 +91,7 @@ public final class PurchaseReturn extends DataForm implements Transactional {
             StoredObject.list(GlobalProperty.class, "SystemEntity=0 AND Name LIKE 'PURCHASE-RETURN-CLASS%'",
                     "Name").collectAll(prClasses);
             if(prClasses.isEmpty()) {
-                error("Unable to determine Purchase Return details, please contact Technical Support!");
+                error("Unable to determine Return details, please contact Technical Support!");
                 return;
             }
         }
@@ -99,7 +99,7 @@ public final class PurchaseReturn extends DataForm implements Transactional {
             purchaseReturn(prClasses.get(0).getValue());
             return;
         }
-        GridMenu menu = new GridMenu("Purchase Return");
+        GridMenu menu = new GridMenu("Return");
         prClasses.forEach(gp -> menu.add(gp.getDescription(), () -> purchaseReturn(gp.getValue())));
         menu.setAutoClose(true);
         menu.execute();

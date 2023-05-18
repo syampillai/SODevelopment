@@ -43,7 +43,7 @@ public abstract class AbstractReturnMaterial<M extends MaterialReturned, L exten
         InventoryLocation from = getLocationFrom(), to = getLocationTo();
         if(from != null && to != null) {
             if(from.getType() == 0 && to.getType() == 1) {
-                setCaption("Purchase Return");
+                setCaption("Return");
                 fromGRN = new FromGRN(from, to);
             }
         }
@@ -70,7 +70,7 @@ public abstract class AbstractReturnMaterial<M extends MaterialReturned, L exten
         private final DateField grnDate = new DateField("From Date");
 
         FromGRN(InventoryLocation from, InventoryLocation to) {
-            super("New Purchase Return");
+            super("New Return");
             this.from = from;
             this.to = to;
             addField(choice, grnDate);
@@ -163,7 +163,7 @@ public abstract class AbstractReturnMaterial<M extends MaterialReturned, L exten
             buttonPanel.add(new Button("Exit", e -> exit()).asSmall());
             //noinspection unchecked
             createColumn("Procured", mri -> grnItems.get(mri.getId()).getQuantity());
-            setCaption("Purchase Return (From GRN)");
+            setCaption("Return (From GRN)");
             setAllowAdd(false);
             setAllowView(false);
             setAllowReload(false);

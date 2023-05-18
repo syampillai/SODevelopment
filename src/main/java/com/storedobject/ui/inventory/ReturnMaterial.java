@@ -6,7 +6,7 @@ import com.storedobject.core.MaterialReturnedItem;
 import com.storedobject.vaadin.Button;
 import com.storedobject.vaadin.DataForm;
 
-public final class ReturnMaterial<M extends MaterialReturned, L extends MaterialReturnedItem> extends AbstractReturnMaterial<M, L> {
+public class ReturnMaterial<M extends MaterialReturned, L extends MaterialReturnedItem> extends AbstractReturnMaterial<M, L> {
 
     public ReturnMaterial(Class<M> mrClass, Class<L> mriClass) {
         this(mrClass, mriClass, SelectLocation.get(ALL_TYPES));
@@ -22,6 +22,25 @@ public final class ReturnMaterial<M extends MaterialReturned, L extends Material
 
     public ReturnMaterial(Class<M> mrClass, Class<L> mriClass, InventoryLocation from, InventoryLocation otherLocation) {
         super(mrClass, mriClass, from, otherLocation);
+    }
+
+    public ReturnMaterial() {
+        this(SelectLocation.get(ALL_TYPES));
+    }
+
+    public ReturnMaterial(String from) {
+        //noinspection unchecked
+        super((Class<M>) MaterialReturned.class, (Class<L>) MaterialReturnedItem.class, from);
+    }
+
+    public ReturnMaterial(InventoryLocation from) {
+        //noinspection unchecked
+        this((Class<M>) MaterialReturned.class, (Class<L>) MaterialReturnedItem.class, from, null);
+    }
+
+    public ReturnMaterial(InventoryLocation from, InventoryLocation otherLocation) {
+        //noinspection unchecked
+        super((Class<M>) MaterialReturned.class, (Class<L>) MaterialReturnedItem.class, from, otherLocation);
     }
 
     @Override
