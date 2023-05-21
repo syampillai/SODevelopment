@@ -23,18 +23,18 @@ public final class Contact extends StoredObject implements Detail {
 	}
 
 	public Id getTypeId() {
-		return null;
+		return new Id();
 	}
 
 	public ContactType getType() {
-		return null;
+		return new ContactType();
 	}
 
 	public void setContact(String contact) {
 	}
 
 	public String getContact() {
-		return null;
+		return "";
 	}
 
 	@Override
@@ -43,10 +43,10 @@ public final class Contact extends StoredObject implements Detail {
 	}
 
 	public String getContactValue() {
-		return null;
+		return "";
 	}
 
 	public String getValue() {
-		return null;
+		return "";
 	}
 }

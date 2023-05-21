@@ -10,7 +10,7 @@ public class UnlockUser extends AbstractUserForm {
 
     @Override
     protected boolean processUser(SystemUser user) {
-        if(user.getStatus() == 0) {
+        if((user.getStatus() & 1) == 0) {
             warning(user + " is not locked currently!");
             return false;
         }

@@ -4,7 +4,7 @@ import com.storedobject.core.Columns;
 import com.storedobject.core.Indices;
 import com.storedobject.core.Message;
 
-public class SMSMessage extends Message {
+public final class SMSMessage extends Message {
 
 	public SMSMessage() {
 	}
@@ -40,10 +40,6 @@ public class SMSMessage extends Message {
         return null;
 	}
 	
-	public String toString() {
-        return null;
-	}
-
 	public void validateData() throws Exception {
 	}
 }
