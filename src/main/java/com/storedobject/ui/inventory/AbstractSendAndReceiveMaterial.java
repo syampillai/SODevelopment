@@ -14,10 +14,12 @@ import com.vaadin.flow.component.icon.VaadinIcon;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 
 public abstract class AbstractSendAndReceiveMaterial<T extends InventoryTransfer, L extends InventoryTransferItem>
         extends ObjectBrowser<T> {
 
+    private static final String OLD_ITEM = "Can't edit/delete when Status = Sent";
     private static final String LABEL_TOOL = "Tool/Item under Custody";
     private static final String LABEL_TOOLS = "Tools/Items under Custody";
     static final int[] ALL_TYPES = new int[] { 0, 3, 4, 5, 8, 10, 11 };
@@ -36,6 +38,7 @@ public abstract class AbstractSendAndReceiveMaterial<T extends InventoryTransfer
     private Search search;
     private final ELabel searchLabel = new ELabel();
     private final ELabel countLabel = new ELabel("0");
+    private T parent;
 
     public AbstractSendAndReceiveMaterial(Class<T> transferClass, Class<L> itemClass, boolean receiveMode) {
         this(transferClass, itemClass, (String) null, receiveMode);
@@ -144,10 +147,10 @@ public abstract class AbstractSendAndReceiveMaterial<T extends InventoryTransfer
             }
             grn = receiveMode ? o.listLinks(InventoryGRN.class).findFirst() : null;
             grnMenu.setVisible(grn != null);
-            return grn != null || (receiveMode ? o.getStatus() == 1 : o.getStatus() == 2);
+            return grn != null || (receiveMode ? o.getStatus() == 1 : o.getStatus() == 0);
         });
         if(receiveMode) {
-            grnButton = new Button("GRN", VaadinIcon.FILE_TABLE, e -> greSel());
+            grnButton = new Button("GRN", VaadinIcon.FILE_TABLE, e -> grnSel());
         } else {
             grnButton = null;
         }
@@ -204,7 +207,7 @@ public abstract class AbstractSendAndReceiveMaterial<T extends InventoryTransfer
         grnEditor.execute();
     }
 
-    private void greSel() {
+    private void grnSel() {
         if(!receiveMode) {
             return;
         }
@@ -302,18 +305,29 @@ public abstract class AbstractSendAndReceiveMaterial<T extends InventoryTransfer
     @Override
     protected void addExtraButtons() {
         super.addExtraButtons();
+        ConfirmButton amend = null;
         if(receiveMode) {
             add.setVisible(false);
             edit.setVisible(false);
+        } else {
+            amend = new ConfirmButton("Amend", e -> amend());
         }
-        buttonPanel.add(new Button("Search", e -> searchFilter()), send, receive, grnButton);
+        buttonPanel.add(new Button("Search", e -> searchFilter()), send, amend, receive, grnButton);
+    }
+
+    protected boolean allowAmendment() {
+        return false;
     }
 
     @Override
     public void rowDoubleClicked(T object) {
         if(object != null) {
             select(object);
-            (receiveMode ? receive : send).click();
+            if(receiveMode) {
+                receive();
+            } else {
+                send();
+            }
         }
     }
 
@@ -350,12 +364,17 @@ public abstract class AbstractSendAndReceiveMaterial<T extends InventoryTransfer
     }
 
     private void send() {
+        clearAlerts();
         T mt = selected();
         if(mt == null) {
             return;
         }
         if(mt.getStatus() != 0) {
             warning("Already sent!");
+            return;
+        }
+        if(!mt.existsLinks(getItemClass(), "Amendment=" + mt.getAmendment())) {
+            warning("No items to send");
             return;
         }
         if(transact(mt::send)) {
@@ -422,8 +441,16 @@ public abstract class AbstractSendAndReceiveMaterial<T extends InventoryTransfer
         if(grn != null) {
             grnEditor.setObject(grn);
         }
+        boolean allowPNSNChange = switch(getLocationFrom().getType()) {
+            case 3, 11 -> true;
+            default -> false;
+        };
         new ReceiveAndBin(mt.getDate(), "Receipt " + mt.getReference(), items, mt::receive,
-                () -> refresh(mt), gEd, true).execute(getView());
+                () -> refresh(mt), gEd, allowPNSNChange, allowPNSNChange).execute(getView());
+    }
+
+    private int amendment() {
+        return parent == null ? 0 : parent.getAmendment();
     }
 
     private class MTEditor extends ObjectEditor<T> {
@@ -521,6 +548,7 @@ public abstract class AbstractSendAndReceiveMaterial<T extends InventoryTransfer
         @Override
         public void setObject(T object, boolean load) {
             super.setObject(object, load);
+            parent = object;
             if(object != null && !receiveMode) {
                 if(!fromOrTo.getId().equals(object.getFromLocationId())) {
                     fromOrTo = object.getFromLocation();
@@ -543,6 +571,9 @@ public abstract class AbstractSendAndReceiveMaterial<T extends InventoryTransfer
 
         public MTItemGrid(ObjectLinkField<L> linkField) {
             super(linkField);
+            if(allowAmendment()) {
+                createColumn("Status");
+            }
         }
 
         @Override
@@ -552,6 +583,17 @@ public abstract class AbstractSendAndReceiveMaterial<T extends InventoryTransfer
                 getColumn("Item.PartNumber.Name").setHeader(LABEL_TOOL);
                 getColumn("Quantity").setVisible(false);
             }
+        }
+
+        @SuppressWarnings("unused")
+        public String getStatus(L object) {
+            if(parent != null && parent.getStatus() > 0) {
+                return parent.getStatusValue();
+            }
+            if(parent == null || parent.getAmendment() == object.getAmendment()) {
+                return "Not sent";
+            }
+            return "Sent";
         }
 
         @Override
@@ -580,6 +622,16 @@ public abstract class AbstractSendAndReceiveMaterial<T extends InventoryTransfer
                 o.setQuantity(Count.ONE);
                 add(o);
             });
+        }
+
+        @Override
+        public boolean canEdit(L item) {
+            return can(item);
+        }
+
+        @Override
+        public boolean canDelete(L item) {
+            return can(item);
         }
 
         private class MRIEditor extends ObjectEditor<L> {
@@ -638,6 +690,7 @@ public abstract class AbstractSendAndReceiveMaterial<T extends InventoryTransfer
             @Override
             protected L createObjectInstance() {
                 L object = super.createObjectInstance();
+                object.setAmendment(amendment());
                 if(fromOrTo.getType() == 18) { // Custody location
                     object.setQuantity(Count.ONE);
                 }
@@ -667,7 +720,29 @@ public abstract class AbstractSendAndReceiveMaterial<T extends InventoryTransfer
                 }
                 setFieldVisible(!s, quantityField);
             }
+
+            @Override
+            public boolean canEdit() {
+                return can(getObject()) && super.canEdit();
+            }
+
+            @Override
+            public boolean canDelete() {
+                return can(getObject()) && super.canDelete();
+            }
         }
+    }
+
+    private boolean can(L iti) {
+        if(iti == null) {
+            return false;
+        }
+        if(amendment() != iti.getAmendment()) {
+            clearAlerts();
+            warning(OLD_ITEM);
+            return false;
+        }
+        return true;
     }
 
     private Class<? extends InventoryItem> iClass() {
@@ -790,6 +865,30 @@ public abstract class AbstractSendAndReceiveMaterial<T extends InventoryTransfer
                         .append(filter, Application.COLOR_INFO).update();
             }
             return true;
+        }
+    }
+
+    private void amend() {
+        clearAlerts();
+        T it = selected();
+        if(it == null) {
+            return;
+        }
+        switch(it.getStatus()) {
+            case 0 -> {
+                message("Editing instead of amending...");
+                edit.click();
+            }
+            case 1, 2 -> {
+                AtomicReference<Id> id = new AtomicReference<>(null);
+                if(transact(t -> id.set(it.amend(t)))) {
+                    load();
+                    T itNew = StoredObject.get(getObjectClass(), id.get());
+                    scrollTo(itNew);
+                    select(itNew);
+                }
+            }
+            default -> warning("Can't amend with Status = " + it.getStatusValue());
         }
     }
 }

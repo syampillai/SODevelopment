@@ -202,7 +202,8 @@ public class POBrowser<T extends InventoryPO> extends ObjectBrowser<T> implement
     protected void addExtraButtons() {
         Checkbox h = new Checkbox("Include History");
         h.addValueChangeListener(e -> setFixedFilter(e.getValue() ? null : filter));
-        buttonPanel.add(new Button("Search", e -> searchPO()), h, goToGRNs);
+        buttonPanel.add(new ConfirmButton("Amend", e -> amend()), new Button("Search", e -> searchPO()),
+                h, goToGRNs);
         super.addExtraButtons();
     }
 
@@ -936,6 +937,74 @@ public class POBrowser<T extends InventoryPO> extends ObjectBrowser<T> implement
                         .append(filter, Application.COLOR_INFO).update();
             }
             return true;
+        }
+    }
+
+    private void amend() {
+        clearAlerts();
+        T po = selected();
+        if(po == null) {
+            return;
+        }
+        InventoryGRN grn = po.listLinks(InventoryGRN.class).find(g -> !g.isClosed());
+        if(grn != null) {
+            warning("Please process the GRN - " + grn.getReference() + " related to this PO first!");
+            return;
+        }
+        switch(po.getStatus()) {
+            case 0 -> {
+                warning("Editing instead of amending!");
+                edit.click();
+            }
+            case 1 -> new AmendAction(po).execute();
+            case 2 -> amend(po);
+            default -> warning("Can't amend with Status = " + po.getStatusValue());
+        }
+    }
+
+    private void amend(T po) {
+        final AtomicReference<Id> amendedPO = new AtomicReference<>(null);
+        if(transact(t -> amendedPO.set(po.amendOrder(t)))) {
+            load();
+            T poNew = StoredObject.get(getObjectClass(), amendedPO.get());
+            scrollTo(poNew);
+            select(poNew);
+            warning("Amended to " + poNew.getReference());
+        }
+    }
+
+    private void recall(T po) {
+        if(transact(po::recallOrder)) {
+            message("Recalled: " + po.getReference());
+            refresh(po);
+        }
+    }
+
+    private class AmendAction extends ActionForm {
+
+        private final T po;
+        private final Application a;
+
+        public AmendAction(T po) {
+            super("It is possible to recall this PO. Please choose one action carefully." +
+                    "\nNote: This action can not be undone!");
+            this.po = po;
+            a = getApplication();
+            setConfirmAction(() -> a.access(() -> recall(po)));
+        }
+
+        @Override
+        protected void buildButtons() {
+            super.buildButtons();
+            ok.setText("Recall");
+            ok.setIcon("lumo:undo");
+            buttonPanel.remove(cancel);
+            buttonPanel.add(new Button("Amend", e -> a.access(() -> {
+                abort();
+                amend(po);
+            })));
+            buttonPanel.add(cancel);
+            cancel.setText("Cancel");
         }
     }
 }

@@ -74,7 +74,7 @@ public class CreateConsignment implements Executable {
     }
 
     private void createConsignment(int type) {
-        consignment = new Consignment();
+        consignment = new Consignment(parent);
         consignment.setType(type);
         attachConsignment(true);
     }

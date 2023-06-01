@@ -50,15 +50,22 @@ public class ReceiveAndBin extends ListGrid<InventoryItem> implements Transactio
 
     public ReceiveAndBin(Date date, String reference, List<InventoryItem> itemList, TransactionManager.Transact update,
                          Runnable refresher, GRNEditor grnEditor, boolean allowPNChange) {
+        this(date, reference, itemList, update, refresher, grnEditor, allowPNChange, false);
+    }
+
+    public ReceiveAndBin(Date date, String reference, List<InventoryItem> itemList, TransactionManager.Transact update,
+                         Runnable refresher, GRNEditor grnEditor, boolean allowPNChange, boolean allowSNChange) {
         super(InventoryItem.class, filtered(itemList),
                 StringList.create("PartNumber.Name AS Item", "PartNumber.PartNumber AS Part Number",
                         "SerialNumberDisplay as Serial/Batch", "Quantity", "InTransit", "Location"));
         this.update = update;
         this.refresher = refresher;
         Button changePN = new Button("Change P/N", VaadinIcon.EXCHANGE, e -> changePN());
+        Button changeSN = new Button("Change S/N", VaadinIcon.BARCODE, e -> changeSN());
         buttonLayout.add(new ELabel("Date"), dateField, new ELabel("Reference"), referenceField, process,
-                changePN);
+                changePN, changeSN);
         changePN.setVisible(allowPNChange);
+        changePN.setVisible(allowSNChange);
         if(grnEditor != null && grnEditor.getObject() != null) {
             buttonLayout.add(new Button("GRN", VaadinIcon.FILE_TABLE, e -> {
                 grnEditor.abort();
@@ -210,6 +217,10 @@ public class ReceiveAndBin extends ListGrid<InventoryItem> implements Transactio
     }
 
     private void inspect(InventoryItem item) {
+        inspect(item, false);
+    }
+
+    private void inspect(InventoryItem item, boolean editSN) {
         clearAlerts();
         if(itemEditor != null && itemEditor.getObjectClass() != item.getClass()) {
             itemEditor = null;
@@ -218,10 +229,11 @@ public class ReceiveAndBin extends ListGrid<InventoryItem> implements Transactio
             itemEditor = ObjectEditor.create(item.getClass());
             itemEditor.setCaption("Inspect Item");
             itemEditor.setFieldHidden("Location");
-            itemEditor.setFieldReadOnly("Quantity", "Cost", "Location", "PartNumber", "SerialNumber");
+            itemEditor.setFieldReadOnly("Quantity", "Cost", "Location", "PartNumber");
             //noinspection unchecked
             itemEditor.setSaver(e -> saveItem(item));
         }
+        itemEditor.setFieldReadOnly(!editSN, "SerialNumber");
         previousLocation = item.getLocation();
         item.setInTransit(false);
         //noinspection unchecked
@@ -262,7 +274,7 @@ public class ReceiveAndBin extends ListGrid<InventoryItem> implements Transactio
         return true;
     }
 
-    private void changePN() {
+    private InventoryItem selected() {
         clearAlerts();
         InventoryItem item = getSelected();
         if(item == null && size() == 1) {
@@ -270,13 +282,28 @@ public class ReceiveAndBin extends ListGrid<InventoryItem> implements Transactio
         }
         if(item == null) {
             warning("Please select an item");
+            return null;
+        }
+        return item;
+    }
+
+    private void changeSN() {
+        InventoryItem item = selected();
+        if(item == null) {
+            return;
+        }
+        inspect(item, true);
+    }
+
+    private void changePN() {
+        InventoryItem item = selected();
+        if(item == null) {
             return;
         }
         ChangePartNumber cpn = new ChangePartNumber(item);
-        InventoryItem finalItem = item;
         cpn.setRefresher(() -> {
-            finalItem.reload();
-            refresh(finalItem);
+            item.reload();
+            refresh(item);
         });
         cpn.execute(getView());
     }

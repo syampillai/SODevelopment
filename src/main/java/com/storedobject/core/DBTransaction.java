@@ -43,8 +43,8 @@ public final class DBTransaction extends AbstractTransaction {
     }
 
     // For internal use only.
-    @Override
-    void credit(StoredObject object, int entrySerial, Account account, Money amount, Money localCurrencyAmount, String narration) throws Exception {
+    @SuppressWarnings("unused")
+    void credit(JournalVoucher object, int entrySerial, Account account, Money amount, Money localCurrencyAmount, String narration) throws Exception {
     }
 
     /**

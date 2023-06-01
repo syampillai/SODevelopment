@@ -44,8 +44,4 @@ public final class PseudoTransaction extends AbstractTransaction {
 
     public void replace(Id idToReplace, StoredObject newObject) {
     }
-
-    @Override
-    void credit(StoredObject object, int entrySerial, Account account, Money amount, Money localCurrencyAmount, String narration) {
-    }
 }

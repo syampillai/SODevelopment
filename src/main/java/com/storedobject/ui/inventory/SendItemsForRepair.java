@@ -10,8 +10,6 @@ import com.vaadin.flow.component.icon.VaadinIcon;
 public final class SendItemsForRepair extends AbstractSendAndReceiveMaterial<InventoryRO, InventoryROItem>
         implements ObjectEditorProvider, ProducesGRN {
 
-    private final Button goToGRNs = new Button("GRNs", VaadinIcon.STOCK, e -> toGRNs());
-    private final Button receiveItems = new Button("Receive", VaadinIcon.STORAGE, e -> receiveItems());
     private boolean forGRN = false;
 
     public SendItemsForRepair() {
@@ -29,6 +27,8 @@ public final class SendItemsForRepair extends AbstractSendAndReceiveMaterial<Inv
     @Override
     protected void addExtraButtons() {
         super.addExtraButtons();
+        Button goToGRNs = new Button("GRNs", VaadinIcon.STOCK, e -> toGRNs()),
+                receiveItems = new Button("Receive", VaadinIcon.STORAGE, e -> receiveItems());
         Checkbox h = new Checkbox("Include History");
         h.addValueChangeListener(e -> setFixedFilter(e.getValue() ? null : "Status<2"));
         buttonPanel.add(receiveItems, h, goToGRNs);
@@ -43,6 +43,11 @@ public final class SendItemsForRepair extends AbstractSendAndReceiveMaterial<Inv
     @Override
     protected Button getSwitchLocationButton() {
         return new Button("Change", (String) null, e -> new SwitchStore().execute());
+    }
+
+    @Override
+    protected boolean allowAmendment() {
+        return true;
     }
 
     public void setForGRNs() {
@@ -71,8 +76,13 @@ public final class SendItemsForRepair extends AbstractSendAndReceiveMaterial<Inv
     }
 
     private void receiveItems() {
+        InventoryRO ro = getSelected();
         close();
-        new ReceiveReturnedItems(3, ((InventoryStoreBin) getLocationFrom()).getStore()).execute();
+        ReceiveReturnedItems rri = new ReceiveReturnedItems(3, ((InventoryStoreBin) getLocationFrom()).getStore(),
+                ro == null ? null : ro.getToLocation());
+        final InventoryLocation from = getLocationFrom();
+        rri.setCancelAction(() -> new SendItemsForRepair(from).execute());
+        rri.execute();
     }
 
     private class SwitchStore extends DataForm {

@@ -15,8 +15,11 @@ import java.util.stream.Collectors;
  */
 public class MeasurementUnitField extends CustomField<MeasurementUnit> {
 
-    private final static List<Class<?>> classList = Quantity.types().collect(Collectors.toList());
-    private final static List<Class<?>> qClassList = Quantity.quantityTypes().collect(Collectors.toList());
+    private static List<Class<?>> classList;
+    private static List<Class<?>> qClassList;
+    static {
+        packingUnitsChanged();
+    }
     private final ComboField<Class<?>> classes;
     private final ComboField<MeasurementUnit> units = new ComboField<>(MeasurementUnit.list(Count.class));
 
@@ -109,5 +112,10 @@ public class MeasurementUnitField extends CustomField<MeasurementUnit> {
         super.setReadOnly(readOnly);
         classes.setReadOnly(readOnly);
         units.setReadOnly(readOnly);
+    }
+
+    public static void packingUnitsChanged() {
+        classList = Quantity.types().collect(Collectors.toList());
+        qClassList = Quantity.quantityTypes().collect(Collectors.toList());
     }
 }

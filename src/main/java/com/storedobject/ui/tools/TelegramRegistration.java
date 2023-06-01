@@ -41,13 +41,13 @@ public class TelegramRegistration extends DataForm implements Transactional {
         } else {
             Person person = getTransactionManager().getUser().getPerson();
             contact = person
-                    .listLinks(Contact.class, "Type.Type=3 AND Type.GroupingCode=0").single(false);
+                    .listLinks(Contact.class, "Type.Type=4 AND Type.GroupingCode=0").single(false);
             if(contact == null) {
                 contact = new Contact();
-                ContactType ct = StoredObject.get(ContactType.class, "Type=3 AND GroupingCode=0");
+                ContactType ct = StoredObject.get(ContactType.class, "Type=4 AND GroupingCode=0");
                 if(ct == null) {
                     ct = new ContactType();
-                    ct.setType(3);
+                    ct.setType(4);
                     ct.setDisplayOrder(Integer.MAX_VALUE - 10);
                     ct.setGroupingCode(0);
                 }
@@ -65,7 +65,8 @@ public class TelegramRegistration extends DataForm implements Transactional {
                 }
             }
             if(contact.getContact().equals("Telegram")) {
-                message.append("Send the following to " + bot.getName() + " from your Telegram app", "blue")
+                message.append("Send the following to ", "blue").append( bot.getName(), "red")
+                        .append(" from your Telegram app", "blue")
                         .newLine(true).append("", "red")
                         .appendWithTag("register " + contact.getId(), "h2");
             } else {

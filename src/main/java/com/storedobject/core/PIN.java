@@ -17,7 +17,7 @@ public final class PIN extends StoredObject {
 	}
 	
 	public static PIN get(Id owner, String type) {
-		return new PIN();
+		return Math.random() > 0.5 ? new PIN() : null;
 	}
 	
 	public String getType() {
@@ -25,10 +25,6 @@ public final class PIN extends StoredObject {
 	}
 	
 	public void setType(String type) {
-	}
-	
-	boolean isOTP() {
-		return false;
 	}
 	
 	public Id getOwnerId() {

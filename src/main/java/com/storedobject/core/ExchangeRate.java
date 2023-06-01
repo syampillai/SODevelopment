@@ -22,14 +22,14 @@ public class ExchangeRate extends StoredObject implements CurrencyRateProvider {
     }
 
     public String getLocalCurrency() {
-        return null;
+        return "";
     }
 
     public void setForeignCurrency(String foreignCurrency) {
     }
 
     public String getForeignCurrency() {
-        return null;
+        return "";
     }
 
     public void setBuyingRate(Rate buyingRate) {
@@ -39,7 +39,7 @@ public class ExchangeRate extends StoredObject implements CurrencyRateProvider {
     }
 
     public Rate getBuyingRate() {
-        return null;
+        return new Rate();
     }
 
     public void setSellingRate(Rate sellingRate) {
@@ -49,18 +49,18 @@ public class ExchangeRate extends StoredObject implements CurrencyRateProvider {
     }
 
     public Rate getSellingRate() {
-        return null;
+        return new Rate();
     }
 	
 	public Rate getRate() {
-        return null;
+        return new Rate();
 	}
 
 	public ExchangeRate reverse() {
-        return null;
+        return new ExchangeRate();
 	}
 	
 	public static ExchangeRate get(Currency local, Currency foreign) {
-		return null;
+		return Math.random() > 0.5 ? null : new ExchangeRate();
 	}
 }

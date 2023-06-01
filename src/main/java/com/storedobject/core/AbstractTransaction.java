@@ -3,6 +3,7 @@ package com.storedobject.core;
 public abstract class AbstractTransaction implements Transaction {
 
     // For internal use only.
+    @SuppressWarnings("unused")
     AbstractTransaction(TransactionManager tm) {
     }
 
@@ -44,10 +45,6 @@ public abstract class AbstractTransaction implements Transaction {
     public final TransactionManager getManager() {
         return new TransactionManager(null, null);
     }
-
-    // For internal use only.
-    abstract void credit(StoredObject object, int entrySerial, Account account, Money amount, Money localCurrencyAmount,
-                         String narration) throws Exception;
 
     /**
      * Log something.

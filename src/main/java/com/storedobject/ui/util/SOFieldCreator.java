@@ -861,6 +861,14 @@ public class SOFieldCreator<T> implements ObjectFieldCreator<T> {
             }
             return field;
         }
+        if(md.isStyle("hidden")) {
+            com.vaadin.flow.component.textfield.PasswordField field = new com.vaadin.flow.component.textfield.PasswordField(label);
+            if(p1 > 0) {
+                field.setMaxLength(p1);
+                field.setMinLength(p1);
+            }
+            return field;
+        }
         if(md.isCountry()) {
             return new CountryField(label);
         }
@@ -883,7 +891,7 @@ public class SOFieldCreator<T> implements ObjectFieldCreator<T> {
                 TextArea field = new TextArea(label);
                 int cols = md.getColumnSpan();
                 if(cols > 1) {
-                    field.getElement().setAttribute("colspan", "" + cols);
+                    field.getElement().setAttribute("colspan", String.valueOf(cols));
                 }
                 return field;
             }
@@ -907,7 +915,7 @@ public class SOFieldCreator<T> implements ObjectFieldCreator<T> {
     private ObjectField.Type objectFieldType(String fieldName, UIFieldMetadata md) {
         if(md.getMetadata() != null) {
             for(ObjectField.Type type : ObjectField.Type.values()) {
-                if(md.isStyle("" + type)) {
+                if(md.isStyle(String.valueOf(type))) {
                     return type;
                 }
             }
@@ -922,7 +930,7 @@ public class SOFieldCreator<T> implements ObjectFieldCreator<T> {
             return types;
         }
         for(ObjectField.Type type : ObjectField.Type.values()) {
-            if(md.isStyle("" + type)) {
+            if(md.isStyle(String.valueOf(type))) {
                 types.add(type);
             }
         }
@@ -982,10 +990,6 @@ public class SOFieldCreator<T> implements ObjectFieldCreator<T> {
         }
 
         @Override
-        public void setRequired(boolean required) {
-        }
-
-        @Override
         public boolean isRequired() {
             return false;
         }
@@ -1011,10 +1015,6 @@ public class SOFieldCreator<T> implements ObjectFieldCreator<T> {
         @Override
         public boolean isEmpty() {
             return false;
-        }
-
-        @Override
-        public void setRequired(boolean required) {
         }
 
         @Override

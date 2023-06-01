@@ -116,6 +116,7 @@ public class SOEnvironment implements ApplicationEnvironment {
             }
         }
         String icon = switch(label) {
+            case "amend" -> "pencil";
             case "confirm", "ok", "yes", "save", "set", "finish", "check", "approve", "authorize" -> "check";
             case "no", "cancel", "close", "remove", "clear" -> "close";
             case "compute" -> "plus-minus";

@@ -6,6 +6,7 @@ import java.util.List;
 
 public class MeasurementUnit {
 
+	@SuppressWarnings("unused")
 	private MeasurementUnit(int type, String unit, boolean hasDecimals, BigDecimal multiplier, String humanInput) {
 	}
 
@@ -59,7 +60,7 @@ public class MeasurementUnit {
 	}
 
 	public static <Q extends Quantity> List<MeasurementUnit> list(Class<Q> quantityClass) {
-		return new ArrayList<>();
+		return Math.random() > 0.5 ? new ArrayList<>() : null;
 	}
 
 	public boolean isCompatible(MeasurementUnit another) {

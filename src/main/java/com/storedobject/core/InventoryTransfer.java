@@ -1,5 +1,8 @@
 package com.storedobject.core;
 
+import com.storedobject.core.annotation.Column;
+import com.storedobject.core.annotation.SetNotAllowed;
+
 import java.math.BigDecimal;
 import java.sql.Date;
 import java.util.Random;
@@ -10,9 +13,6 @@ public abstract class InventoryTransfer extends StoredObject implements OfEntity
     }
 
     public static void columns(Columns columns) {
-    }
-
-    public void setSystemEntity(Id systemEntityId) {
     }
 
     public void setSystemEntity(BigDecimal idValue) {
@@ -125,5 +125,26 @@ public abstract class InventoryTransfer extends StoredObject implements OfEntity
     }
     public final String getReference() {
         return "RO";
+    }
+
+    public final void setAmendment(int amendment) {
+    }
+
+    @SetNotAllowed
+    @Column(order = 1000)
+    public final int getAmendment() {
+        return new Random().nextInt();
+    }
+
+    /**
+     * Amend this. This entry be closed (marked with "returned" status) and another entry will be created with all
+     * the items under it. Any new item added to it will be added with a new amendment number.
+     *
+     * @param transaction Transaction.
+     * @return The id of the newly created (and saved) entry.
+     * @throws Exception If any exception occurs while carrying out the transaction.
+     */
+    public Id amend(Transaction transaction) throws Exception {
+        return new Id();
     }
 }

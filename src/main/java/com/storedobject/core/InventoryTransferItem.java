@@ -1,6 +1,7 @@
 package com.storedobject.core;
 
 import java.math.BigDecimal;
+import java.util.Random;
 
 public abstract class InventoryTransferItem extends StoredObject implements Detail, HasInventoryItem {
 
@@ -42,6 +43,13 @@ public abstract class InventoryTransferItem extends StoredObject implements Deta
     @Override
     public final Id getUniqueId() {
         return new Id();
+    }
+
+    public final void setAmendment(int amendment) {
+    }
+
+    public final int getAmendment() {
+        return new Random().nextInt();
     }
 
     @Override

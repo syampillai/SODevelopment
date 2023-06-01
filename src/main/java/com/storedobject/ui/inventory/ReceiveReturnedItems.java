@@ -29,6 +29,7 @@ public class ReceiveReturnedItems extends DataForm implements Transactional {
     private final int type;
     private Date date, invoiceDate;
     private String invoiceRef;
+    private Runnable cancelAction;
 
     public ReceiveReturnedItems(int type) {
         this(type, (InventoryStoreBin) null, null);
@@ -87,21 +88,34 @@ public class ReceiveReturnedItems extends DataForm implements Transactional {
         setRequired(eoField);
     }
 
+    public void setCancelAction(Runnable cancelAction) {
+        this.cancelAction = cancelAction;
+    }
+
+    @Override
+    protected void cancel() {
+        super.cancel();
+        if(cancelAction != null) {
+            getApplication().access(() -> cancelAction.run());
+        }
+    }
+
     @Override
     public int getMinimumContentWidth() {
         return 55;
     }
 
     private static String caption(int type) {
-        switch(type) {
-            case 3:
-                return "Receive Repaired Items";
-            case 8:
-                return "Receive Lease Returns";
-            case 18:
-                return "Receive Tools Returned";
+        String caption = switch(type) {
+            case 3 -> "Receive Repaired Items";
+            case 8 -> "Receive Lease Returns";
+            case 18 -> "Receive Tools Returned";
+            default -> null;
+        };
+        if(caption == null) {
+            throw new SORuntimeException("Invalid type: " + InventoryLocation.getTypeValue(type));
         }
-        throw new SORuntimeException("Invalid type: " + InventoryLocation.getTypeValue(type));
+        return caption;
     }
 
     private static InventoryLocation eoName(String storeAndEOName, int type) {
@@ -308,6 +322,14 @@ public class ReceiveReturnedItems extends DataForm implements Transactional {
             }
             clearAlerts();
             return true;
+        }
+
+        @Override
+        protected void cancel() {
+            super.cancel();
+            if(cancelAction != null) {
+                getApplication().access(() -> cancelAction.run());
+            }
         }
     }
 }

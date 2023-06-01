@@ -62,7 +62,7 @@ public class AuthenticatorRegistration extends DataForm implements Transactional
             String app = ApplicationServer.getApplicationName();
             BarcodeImage bcImage =
                     new BarcodeImage("otpauth://totp/" + app + ":" + user.getLogin() + "@" +
-                            SQLConnector.getDatabaseName() + "?secret=" + new Base32().encodeAsString(secret) +
+                            SQLConnector.getDatabaseName() + "?secret=" + base32() +
                             "&issuer=" + app);
             bcImage.setImageWidth(200);
             bcImage.setWidth("200px");
@@ -83,6 +83,14 @@ public class AuthenticatorRegistration extends DataForm implements Transactional
             timer.setSuffix(" seconds");
             timer.addListener(e -> cancel());
             add(timer);
+        }
+
+        private String base32() {
+            String s = new Base32().encodeAsString(secret);
+            while(s.endsWith("=")) {
+                s = s.substring(0, s.length() - 1);
+            }
+            return s;
         }
 
         @Override

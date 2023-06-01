@@ -120,7 +120,7 @@ public class LoginForm extends TemplateView implements HomeView, FullScreen {
         super.viewConstructed(view);
         loginField = null;
         if(year != null) {
-            year.setText("" + DateUtility.getYear(DateUtility.today()));
+            year.setText(String.valueOf(DateUtility.getYear(DateUtility.today())));
         }
     }
 
@@ -202,7 +202,7 @@ public class LoginForm extends TemplateView implements HomeView, FullScreen {
             u = user.getLogin();
         }
         if(u.isBlank()) {
-            speak("Please enter a valid user name", false);
+            speak("Please enter a valid username", false);
             ok.setEnabled(true);
             return;
         }

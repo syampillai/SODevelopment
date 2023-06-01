@@ -3,6 +3,7 @@ package com.storedobject.ui.inventory;
 import com.storedobject.core.EditorAction;
 import com.storedobject.core.MeasurementUnit;
 import com.storedobject.core.PackingUnit;
+import com.storedobject.ui.MeasurementUnitField;
 import com.storedobject.ui.ObjectEditor;
 import com.storedobject.vaadin.Button;
 import com.storedobject.vaadin.ConfirmButton;
@@ -30,6 +31,7 @@ public final class PackingUnitEditor extends ObjectEditor<PackingUnit> {
     public void clicked(Component c) {
         if(c == deploy) {
             MeasurementUnit.reload();
+            MeasurementUnitField.packingUnitsChanged();
             warning("All 'Packing Units' are updated");
             return;
         }

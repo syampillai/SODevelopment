@@ -88,6 +88,18 @@ public class InventoryPO extends StoredObject implements HasChildren {
         return new Random().nextBoolean();
     }
 
+
+    /**
+     * Amend this PO. This PO will be foreclosed and another PO will be created with the balance items to receive.
+     *
+     * @param transaction Transaction.
+     * @return Id of the newly created (and saved) PO with balance items to receive.
+     * @throws Exception If any exception occurs while carrying out the transaction.
+     */
+    public Id amendOrder(Transaction transaction) throws Exception {
+        return new Id();
+    }
+
     public void recallOrder(Transaction transaction) throws Exception {
     }
 

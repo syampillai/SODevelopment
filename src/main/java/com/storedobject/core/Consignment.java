@@ -18,6 +18,9 @@ public final class Consignment extends StoredObject {
     public Consignment() {
     }
 
+    public Consignment(StoredObject parent) {
+    }
+
     public static void columns(Columns columns) {
     }
 

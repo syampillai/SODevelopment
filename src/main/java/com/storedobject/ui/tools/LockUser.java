@@ -24,6 +24,17 @@ public class LockUser extends AbstractUserForm {
     }
 
     @Override
+    protected String actionWarning(SystemUser su) {
+        if((su.getStatus() & 2) == 2) {
+            return "This is an system-level user!";
+        }
+        if((su.getStatus() & 4) == 4) {
+            return "This is a process-level user!";
+        }
+        return null;
+    }
+
+    @Override
     protected String action() {
         return "lock";
     }
