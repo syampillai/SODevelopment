@@ -551,4 +551,13 @@ public class InventoryItem extends StoredObject {
 
     public void changePartNumber(Transaction transaction, InventoryItemType newPartNumber) throws Exception {
     }
+
+    /**
+     * Resurrect an item so that the same P/N and S/N can be used again.
+     *
+     * @param cost Cost.
+     * @param location New location.
+     */
+    public void resurrect(Money cost, InventoryLocation location) {
+    }
 }

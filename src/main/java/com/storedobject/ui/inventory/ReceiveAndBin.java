@@ -65,7 +65,7 @@ public class ReceiveAndBin extends ListGrid<InventoryItem> implements Transactio
         buttonLayout.add(new ELabel("Date"), dateField, new ELabel("Reference"), referenceField, process,
                 changePN, changeSN);
         changePN.setVisible(allowPNChange);
-        changePN.setVisible(allowSNChange);
+        changeSN.setVisible(allowSNChange);
         if(grnEditor != null && grnEditor.getObject() != null) {
             buttonLayout.add(new Button("GRN", VaadinIcon.FILE_TABLE, e -> {
                 grnEditor.abort();
@@ -90,15 +90,7 @@ public class ReceiveAndBin extends ListGrid<InventoryItem> implements Transactio
     }
 
     private static List<InventoryItem> filtered(List<InventoryItem> items) {
-        items.removeIf(i -> {
-            if(i.getQuantity().isZero()) {
-                return true;
-            }
-            return switch(i.getLocation().getType()) {
-                case 0, 3, 4, 5, 9, 10, 11 -> false;
-                default -> true;
-            };
-        });
+        items.removeIf(i -> !i.getLocation().isInspectionRequired());
         return items;
     }
 

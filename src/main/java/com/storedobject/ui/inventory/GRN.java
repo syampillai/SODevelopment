@@ -955,7 +955,12 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
             Quantity q = grnItem.getQuantity();
             item.setQuantity(q);
             item.setCost(grnItem.getUnitCost().multiply(q));
-            item.setLocation(switch(type) {
+            item.setLocation(location());
+            return item;
+        }
+
+        private InventoryLocation location() {
+            return switch(type) {
                 case 0 -> InventoryTransaction.createSupplierLocation(getTransactionManager(),
                         getObject().getSupplier());
                 case 1 -> InventoryTransaction.createExternalOwnerLocation(getTransactionManager(),
@@ -967,8 +972,7 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
                 case 4 -> InventoryTransaction.createConsumerLocation(getTransactionManager(),
                         getObject().getSupplier());
                 default -> null;
-            });
-            return item;
+            };
         }
 
         private class GRNItemGrid extends DetailLinkGrid<InventoryGRNItem> {
@@ -1015,6 +1019,7 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
                 });
             }
 
+            @SuppressWarnings("unused")
             public String getItem(InventoryGRNItem grnItem) {
                 return grnItem.getPartNumber().getName();
             }
@@ -1160,13 +1165,20 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
                     if(itemType.isSerialized()) {
                         item = InventoryItem.get(grnItem.getSerialNumber(), itemType);
                         if(item != null && item.getSerialNumber().equals(grnItem.getSerialNumber())) {
-                            warn("An item with the same " + itemType.getPartNumberShortName()
-                                    + " already exists: " + item.toDisplay());
-                            snEditor().editObject();
-                            return;
+                            if(!item.getLocation().canResurrect()) {
+                                warn("An item with the same " + itemType.getPartNumberShortName()
+                                        + " already exists: " + item.toDisplay());
+                                snEditor().editObject();
+                                return;
+                            }
+                            item.resurrect(grnItem.getUnitCost(), location());
+                        } else {
+                            item = null;
                         }
                     }
-                    item = createItem(grnItem);
+                    if(item == null) {
+                        item = createItem(grnItem);
+                    }
                 }
                 if(itemEditor != null && itemEditor.getObjectClass() != item.getClass()) {
                     itemEditor = null;
@@ -1561,10 +1573,12 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
                 execute();
             }
 
+            @SuppressWarnings("unused")
             public String getItem(InventoryGRNItem gi) {
                 return gi.getPartNumber().getName();
             }
 
+            @SuppressWarnings("unused")
             public String getPartNumber(InventoryGRNItem gi) {
                 return gi.getItem() == null ? gi.getPartNumber().getPartNumber() :
                         gi.getItem().getPartNumber().getPartNumber();
@@ -1589,7 +1603,7 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
         } else {
             searchLabel.clearContent().update();
         }
-        countLabel.clearContent().append("" + size(), Application.COLOR_SUCCESS).update();
+        countLabel.clearContent().append(String.valueOf(size()), Application.COLOR_SUCCESS).update();
     }
 
     @Override

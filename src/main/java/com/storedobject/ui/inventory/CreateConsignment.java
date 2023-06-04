@@ -111,8 +111,14 @@ public class CreateConsignment implements Executable {
         }
         @SuppressWarnings("unchecked")
         Class<T> itemClass = (Class<T>) JavaClassLoader.getLogic(parent.getClass().getName() + "Item");
+        String amendment;
         for(StoredObject p: parents) {
-            p.listLinks(itemClass).forEach(i -> {
+            if(p instanceof InventoryTransfer it) {
+                amendment = "Amendment=" + it.getAmendment();
+            } else {
+                amendment = null;
+            }
+            p.listLinks(itemClass, amendment).forEach(i -> {
                 if(i instanceof HasInventoryItem hii) {
                     items.add(hii);
                 }
@@ -261,7 +267,7 @@ public class CreateConsignment implements Executable {
             } catch(Throwable ignored) {
             }
             setCaption(caption);
-            add(new ELabel("No consignment found!", "red"));
+            add(new ELabel("No consignment found!", Application.COLOR_ERROR));
             addField(choice, dateField, noField);
             setFieldVisible(false, dateField, noField);
             choice.addValueChangeListener(e -> setFieldVisible(choice.getValue() == 1, dateField, noField));

@@ -102,7 +102,7 @@ public class ReceiveMaterialRequested extends AbstractRequestMaterial {
         });
         buttonPanel.add(cb);
         if(!(getFromOrTo() instanceof InventoryStoreBin)) {
-            buttonPanel.add(new Button("\u21f0 Requests Screen", VaadinIcon.FILE_TABLE, e -> request()));
+            buttonPanel.add(new Button("⇰ Requests Screen", VaadinIcon.FILE_TABLE, e -> request()));
         }
     }
 
@@ -202,6 +202,7 @@ public class ReceiveMaterialRequested extends AbstractRequestMaterial {
             return null;
         }
 
+        @SuppressWarnings("unused")
         public Quantity getQuantity(Object o) {
             if(o instanceof MaterialIssuedItem mii) {
                 return mii.getQuantity();
@@ -209,12 +210,19 @@ public class ReceiveMaterialRequested extends AbstractRequestMaterial {
             return null;
         }
 
+        @SuppressWarnings("unused")
         public String getStatus(Object o) {
             if(o instanceof MaterialIssued mi) {
                 return mi.getStatus() == 1 ? "Issued" : mi.getStatusValue();
             }
             if(o instanceof MaterialIssuedItem mii) {
-                return mii.getItem().getInTransit() ? "In Transit" : "Accepted";
+                InventoryItem ii = mii.getItem();
+                if(!ii.getInTransit()) {
+                    return "Accepted";
+                }
+                InventoryLocation loc = ii.getLocation();
+                return loc.getType() == 16 ? "Consumed"
+                        : (!loc.isInspectionRequired() ? "No Inspection" : "In Transit");
             }
             return null;
         }
