@@ -509,6 +509,8 @@ public class POBrowser<T extends InventoryPO> extends ObjectBrowser<T> implement
             createHTMLColumn("PartNumber", this::pn);
             GridContextMenu<InventoryPOItem> cm = new GridContextMenu<>(this);
             GridMenuItem<InventoryPOItem> noAPN = cm.addItem("No APNs found!");
+            GridMenuItem<InventoryPOItem> createAPN = cm.addItem("Create a new APN",
+                    e -> e.getItem().ifPresent(poi -> createAPN(poi.getPartNumber())));
             GridMenuItem<InventoryPOItem> setAPN = cm.addItem("Set APN", e -> e.getItem().ifPresent(this::apn));
             cm.setDynamicContentHandler(item -> {
                 deselectAll();
@@ -518,6 +520,7 @@ public class POBrowser<T extends InventoryPO> extends ObjectBrowser<T> implement
                 select(item);
                 boolean noAPNs = item.getPartNumber().listAPNs().isEmpty();
                 noAPN.setVisible(noAPNs);
+                createAPN.setVisible(noAPNs);
                 setAPN.setVisible(!noAPNs);
                 return true;
             });
@@ -553,6 +556,11 @@ public class POBrowser<T extends InventoryPO> extends ObjectBrowser<T> implement
         private void apn(InventoryPOItem item) {
             close();
             setAPN(po, item);
+        }
+
+        private void createAPN(InventoryItemType pn) {
+            close();
+            new CreateAPN(pn, getTransactionManager()).execute();
         }
 
         @SuppressWarnings("unused")
@@ -806,6 +814,8 @@ public class POBrowser<T extends InventoryPO> extends ObjectBrowser<T> implement
             addField(op, ef, apnField, qField);
             setRequired(apnField);
             setRequired(qField);
+            qField.setValue(item.getQuantity().zero());
+            qField.setAllowedUnits(MeasurementUnit.list(item.getQuantity().getClass()));
         }
 
         @Override
@@ -828,6 +838,40 @@ public class POBrowser<T extends InventoryPO> extends ObjectBrowser<T> implement
             message("APN " + apn + " set for " + pn);
             close();
             setAPN(item, apn, q);
+            return true;
+        }
+    }
+
+    private static class CreateAPN extends DataForm {
+
+        private final InventoryItemType pn;
+        private final TransactionManager tm;
+        private final TextField pnField = new TextField("Alternate P/N");
+
+        public CreateAPN(InventoryItemType pn, TransactionManager tm) {
+            super("Create APN");
+            this.pn = pn;
+            this.tm = tm;
+            pnField.uppercase();
+            pnField.setValue(pn.getPartNumber() + "-ALT");
+            pnField.addValueChangeListener(e -> pnField.setValue(StoredObject.toCode(e.getValue())));
+            addField(new ELabelField("Warning: Creating APN for", pn.toDisplay(), "red"), pnField);
+            setRequired(pnField);
+        }
+
+        @Override
+        protected boolean process() {
+            clearAlerts();
+            String p = pnField.getValue();
+            if(p.equals(pn.getPartNumber())) {
+                warning("Invalid APN!");
+                return false;
+            }
+            try {
+                pn.createAPN(p, tm);
+            } catch(Exception e) {
+                error(e);
+            }
             return true;
         }
     }

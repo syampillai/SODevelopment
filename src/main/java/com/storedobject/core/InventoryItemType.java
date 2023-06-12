@@ -355,4 +355,43 @@ public class InventoryItemType extends StoredObject implements HasChildren {
     public void migrate(TransactionManager tm, InventoryItemType migratedType,
                         Function<InventoryItem, InventoryItem> itemConvertor) throws Exception {
     }
+
+    /**
+     * Create an APN for this P/N.
+     * <p>Note: All attributes of this P/N will be automatically copied.</p>
+     *
+     * @param apn The P/N of the APN.
+     * @param tm Transaction manager.
+     * @return Newly created P/N that is already added as an APN to this.
+     * @exception Exception is thrown if any DB errors occur while creating the APN.
+     */
+    public InventoryItemType createAPN(String apn, TransactionManager tm) throws Exception {
+        Transaction t = null;
+        try {
+            t = tm.createTransaction();
+            InventoryItemType a = get(getClass(), getId());
+            a.makeNew();
+            a.setPartNumber(apn);
+            a.save(t);
+            InventoryAPN ia = new InventoryAPN();
+            ia.setPartNumber(a);
+            ia.save(t);
+            addLink(t, ia);
+            List<StoredObjectUtility.Link<?>> links = StoredObjectUtility.linkDetails(getClass());
+            for(StoredObjectUtility.Link<?> link: links) {
+                for(StoredObject child: link.list(this)) {
+                    child.makeNew();
+                    child.save(t);
+                    a.addLink(t, child, link.getType());
+                }
+            }
+            t.commit();
+            return get(getClass(), a.getId());
+        } catch(Exception e) {
+            if(t != null) {
+                t.rollback();
+            }
+            throw e;
+        }
+    }
 }

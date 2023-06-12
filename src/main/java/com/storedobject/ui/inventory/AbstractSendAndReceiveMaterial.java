@@ -23,8 +23,8 @@ public abstract class AbstractSendAndReceiveMaterial<T extends InventoryTransfer
     private static final String LABEL_TOOL = "Tool/Item under Custody";
     private static final String LABEL_TOOLS = "Tools/Items under Custody";
     static final int[] ALL_TYPES = new int[] { 0, 3, 4, 5, 8, 10, 11 };
-    private final Button send = new ConfirmButton("Send", VaadinIcon.TRUCK, e -> send());
-    private final Button receive = new Button("Receive", VaadinIcon.STORAGE, e -> receive());
+    private final Button send = new ConfirmButton("Send Items", VaadinIcon.TRUCK, e -> send());
+    private final Button receive = new Button("Receive Items", VaadinIcon.STORAGE, e -> receive());
     private final Button grnButton;
     private final ObjectField<InventoryLocation> fromField, toField, filterField;
     private InventoryLocation fromOrTo;
@@ -139,7 +139,7 @@ public abstract class AbstractSendAndReceiveMaterial<T extends InventoryTransfer
         }
         setOrderBy("Date DESC,No DESC");
         GridContextMenu<T> cm = new GridContextMenu<>(this);
-        cm.addItem(receiveMode ? "Receive" : "Send", e -> e.getItem().ifPresent(this::rowDoubleClicked));
+        cm.addItem((receiveMode ? "Receive" : "Send") + " Items", e -> e.getItem().ifPresent(this::rowDoubleClicked));
         GridMenuItem<T> grnMenu = cm.addItem("Associated GRN", e ->  grn());
         cm.setDynamicContentHandler(o -> {
             if(o == null) {
