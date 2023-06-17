@@ -3,46 +3,55 @@ package com.storedobject.ui;
 import com.storedobject.chart.*;
 import com.storedobject.vaadin.CloseableView;
 import com.storedobject.vaadin.View;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 
-import java.util.Random;
+import java.time.LocalDateTime;
 
 public class Test extends View implements CloseableView {
 
     public Test() {
-        super("Chart Example 2");
+        super("Activity Chart Example");
 
-        // Creating a chart display area
+        // Define a chart component
         SOChart soChart = new SOChart();
-        soChart.setSize("800px", "500px");
-        soChart.getDefaultColors().add(new Color("red"));
-        Font font = new Font(Font.Family.cursive(), Font.Style.OBLIQUE, Font.Size.larger());
-        soChart.getDefaultTextStyle().setFontStyle(font);
+        soChart.setWidth("100%");
 
-        // Generating some random values for a LineChart
-        Random random = new Random();
-        Data xValues = new Data(), yValues = new Data();
-        for (int x = 0; x < 40; x++) {
-            xValues.add(x);
-            yValues.add(random.nextDouble());
-        }
-        xValues.setName("X Values");
-        yValues.setName("Random Values");
+        // Activity list
+        ActivityList activityList = new ActivityList();
+        activityList.setGroupFontSize(18);
+        activityList.setExtraFontSize(12);
+        activityList.setActivityFontSize(14);
+        activityList.setStart(LocalDateTime.now()); // Set the start date
+        // Create some activities
+        ActivityList.ActivityGroup tg1 = activityList.createActivityGroup("Group 1"); // Group 1
+        tg1.setExtraInfo("Cleaning activities"); // Some extra info
+        ActivityList.Activity tg1T1 = // An activity that belongs to group 1
+                tg1.createActivity("Activity 1/1", LocalDateTime.now().minusDays(10), 6);
+        // Add another one just after the first onw
+        ActivityList.Activity tg1T2 = tg1T1.createNext("Activity 1/2", 5);
+        tg1T2.setCompleted(100); // This activity is 100% done
+        ActivityList.Activity tg1T3 = tg1T2.createNext("Activity 1/3", 11); // Next
+        tg1T3.createNext("Activity 1/4", 10)
+                .setExtraInfo("Some extra info"); // Extra info: Will be shown as part of the tooltip
+        ActivityList.ActivityGroup tg2 = activityList.createActivityGroup("Group 2"); // Group 2
+        tg2.setExtraInfo("Other tasks"); // Some extra info
+        // Add some activities under group 2 too
+        ActivityList.Activity tg2T1 = tg2.createActivity("Activity 2/1", LocalDateTime.now(), 3);
+        ActivityList.Activity tg2T2 = tg2T1.createNext("Activity 2/2", 7);
+        ActivityList.Activity tg2T3 = tg2T2.createNext("Activity 2/3", 13);
+        tg2T3.createNext("Activity 2/4", 9);
+        tg2T3.setColor(new Color("green")); // Specific color for this task
+        tg2T1.setCompleted(35); // This activity is 35% complete
 
-        // Line chart is initialized with the generated XY values
-        LineChart lineChart = new LineChart(xValues, yValues);
-        lineChart.setName("40 Random Values");
+        // Plot the activities on an Activity Chart
+        ActivityChart ac = new ActivityChart(activityList);
+        ac.getTimeAxisZoom().hide(); // Hiding the time-axis zoom
+        ac.getTimeAxis().getLabel(true).setFontStyle(new Font(Font.Family.sans_serif(), Font.Size.pixels(16)));
 
-        // Line chart needs a coordinate system to plot on
-        // We need Number-type for both X and Y axes in this case
-        XAxis xAxis = new XAxis(DataType.NUMBER);
-        YAxis yAxis = new YAxis(DataType.NUMBER);
-        RectangularCoordinate rc = new RectangularCoordinate(xAxis, yAxis);
-        lineChart.plotOn(rc);
-
-        // Add to the chart display area with a simple title
-        soChart.add(lineChart, new Title("Sample Line Chart"));
+        // Add the chart to the chart component
+        soChart.add(ac);
 
         // Set the component for the view
-        setComponent(soChart);
+        setComponent(new VerticalLayout(soChart));
     }
 }

@@ -3,8 +3,8 @@ package com.storedobject.ui.inventory;
 import com.storedobject.common.SORuntimeException;
 import com.storedobject.common.StringList;
 import com.storedobject.core.*;
-import com.storedobject.ui.*;
 import com.storedobject.ui.Application;
+import com.storedobject.ui.*;
 import com.storedobject.vaadin.*;
 import com.vaadin.flow.component.HasValue;
 import com.vaadin.flow.component.grid.contextmenu.GridContextMenu;
@@ -19,7 +19,6 @@ import java.util.concurrent.atomic.AtomicReference;
 public abstract class AbstractSendAndReceiveMaterial<T extends InventoryTransfer, L extends InventoryTransferItem>
         extends ObjectBrowser<T> {
 
-    private static final String OLD_ITEM = "Can't edit/delete when Status = Sent";
     private static final String LABEL_TOOL = "Tool/Item under Custody";
     private static final String LABEL_TOOLS = "Tools/Items under Custody";
     static final int[] ALL_TYPES = new int[] { 0, 3, 4, 5, 8, 10, 11 };
@@ -546,6 +545,14 @@ public abstract class AbstractSendAndReceiveMaterial<T extends InventoryTransfer
         }
 
         @Override
+        public boolean canEdit() {
+            T mt = getObject();
+            setFieldReadOnly(mt != null && mt.getAmendment() > 0, "SystemEntity", "FromLocation",
+                    "ToLocation");
+            return super.canEdit();
+        }
+
+        @Override
         public void setObject(T object, boolean load) {
             super.setObject(object, load);
             parent = object;
@@ -626,12 +633,12 @@ public abstract class AbstractSendAndReceiveMaterial<T extends InventoryTransfer
 
         @Override
         public boolean canEdit(L item) {
-            return can(item);
+            return ((MRIEditor)getObjectEditor()).canEdit(item);
         }
 
         @Override
         public boolean canDelete(L item) {
-            return can(item);
+            return ((MRIEditor)getObjectEditor()).canDelete(item);
         }
 
         private class MRIEditor extends ObjectEditor<L> {
@@ -723,26 +730,26 @@ public abstract class AbstractSendAndReceiveMaterial<T extends InventoryTransfer
 
             @Override
             public boolean canEdit() {
-                return can(getObject()) && super.canEdit();
+                return canEdit(getObject());
+            }
+
+            boolean canEdit(L iti) {
+                if(iti == null || !super.canEdit()) {
+                    return false;
+                }
+                setFieldReadOnly(amendment() != iti.getAmendment(), "Item", "Quantity");
+                return true;
             }
 
             @Override
             public boolean canDelete() {
-                return can(getObject()) && super.canDelete();
+                return canDelete(getObject());
+            }
+
+            boolean canDelete(L iti) {
+                return iti != null && amendment() == iti.getAmendment() && super.canDelete();
             }
         }
-    }
-
-    private boolean can(L iti) {
-        if(iti == null) {
-            return false;
-        }
-        if(amendment() != iti.getAmendment()) {
-            clearAlerts();
-            warning(OLD_ITEM);
-            return false;
-        }
-        return true;
     }
 
     private Class<? extends InventoryItem> iClass() {
