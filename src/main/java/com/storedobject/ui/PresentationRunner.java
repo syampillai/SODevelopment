@@ -42,6 +42,7 @@ public abstract class PresentationRunner implements Executable {
     public PresentationRunner(int refresh) {
         this.refresh = (refresh <= 0 ? 10 : refresh) * 1000;
         this.application = Application.get();
+        application.removeToolbarButtons();
     }
 
     /**

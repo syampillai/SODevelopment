@@ -8,9 +8,10 @@ import com.storedobject.ui.Application;
 import com.storedobject.vaadin.*;
 import com.vaadin.flow.component.HasValue;
 
-public abstract class AbstractRequestMaterial extends ObjectBrowser<MaterialRequest> {
+public abstract class AbstractRequestMaterial<MR extends MaterialRequest, MRI extends MaterialRequestItem>
+        extends ObjectBrowser<MR> {
 
-    static final int NO_ACTIONS = EditorAction.NEW | EditorAction.EDIT | EditorAction.DELETE;
+    private static final int NO_ACTIONS = EditorAction.NEW | EditorAction.EDIT | EditorAction.DELETE;
     private final ObjectField<InventoryLocation> fromField, toField;
     private InventoryLocation fromOrTo;
     private MaterialRequestPriority normalPriority;
@@ -21,68 +22,73 @@ public abstract class AbstractRequestMaterial extends ObjectBrowser<MaterialRequ
     private Search search;
     private final ELabel searchLabel = new ELabel();
     private final ELabel countLabel = new ELabel("0");
+    final Class<MRI> mriClass;
 
-    AbstractRequestMaterial(boolean issuing, int noActions) {
-        this(issuing, noActions, null);
+    AbstractRequestMaterial(Class<MR> objectClass, boolean issuing, String fromOrTo) {
+        this(objectClass, issuing, fromOrTo, NO_ACTIONS);
     }
 
-    AbstractRequestMaterial(boolean issuing, int noActions, InventoryLocation otherLocation) {
-        this(issuing, (String) null, noActions, otherLocation);
+    AbstractRequestMaterial(Class<MR> objectClass, boolean issuing, String fromOrTo, int noActions) {
+        this(objectClass, issuing, fromOrTo, noActions, null);
     }
 
-    AbstractRequestMaterial(boolean issuing, String fromOrTo, int noActions) {
-        this(issuing, fromOrTo, noActions, null);
+    AbstractRequestMaterial(Class<MR> objectClass, boolean issuing, String fromOrTo, int noActions, InventoryLocation otherLocation) {
+        this(objectClass, issuing, -1, fromOrTo, noActions, otherLocation);
     }
 
-    AbstractRequestMaterial(boolean issuing, String fromOrTo, int noActions, InventoryLocation otherLocation) {
-        this(issuing, -1, fromOrTo, noActions, otherLocation);
+    AbstractRequestMaterial(Class<MR> objectClass, boolean issuing, InventoryLocation fromOrTo) {
+        this(objectClass, issuing, fromOrTo, NO_ACTIONS);
     }
 
-    AbstractRequestMaterial(boolean issuing, InventoryLocation fromOrTo, int noActions) {
-        this(issuing, fromOrTo, noActions, null);
+    AbstractRequestMaterial(Class<MR> objectClass, boolean issuing, InventoryLocation fromOrTo, int noActions) {
+        this(objectClass, issuing, fromOrTo, noActions, null);
     }
 
-    AbstractRequestMaterial(boolean issuing, InventoryLocation fromOrTo, int noActions,
+    AbstractRequestMaterial(Class<MR> objectClass, boolean issuing, InventoryLocation fromOrTo, int noActions,
                             InventoryLocation otherLocation) {
-        this(issuing, -1, fromOrTo, noActions, otherLocation);
+        this(objectClass, issuing, -1, fromOrTo, noActions, otherLocation);
     }
 
-    AbstractRequestMaterial(boolean issuing, int columnStyle, int noActions) {
-        this(issuing, columnStyle, noActions, null);
+    AbstractRequestMaterial(Class<MR> objectClass, boolean issuing, int columnStyle, String fromOrTo) {
+        this(objectClass, issuing, columnStyle, fromOrTo, NO_ACTIONS);
     }
 
-    AbstractRequestMaterial(boolean issuing, int columnStyle, int noActions, InventoryLocation otherLocation) {
-        this(issuing, columnStyle, (String) null, noActions, otherLocation);
+    AbstractRequestMaterial(Class<MR> objectClass, boolean issuing, int columnStyle, String fromOrTo, int noActions) {
+        this(objectClass, issuing, columnStyle, fromOrTo, noActions, null);
     }
 
-    AbstractRequestMaterial(boolean issuing, int columnStyle, String fromOrTo, int noActions) {
-        this(issuing, columnStyle, fromOrTo, noActions, null);
-    }
-
-    AbstractRequestMaterial(boolean issuing, int columnStyle, String fromOrTo, int noActions,
-                                                        InventoryLocation otherLocation) {
-        this(issuing, columnStyle, issuing ? LocationField.create(null, fromOrTo,0) :
+    AbstractRequestMaterial(Class<MR> objectClass, boolean issuing, int columnStyle, String fromOrTo, int noActions,
+                            InventoryLocation otherLocation) {
+        this(objectClass, issuing, columnStyle, issuing ? LocationField.create(null, fromOrTo,0) :
                         LocationField.create(null, fromOrTo, 0, 4, 5, 10, 11, 16),
                 noActions, otherLocation);
         this.itemTypeClass = ParameterParser.itemTypeClass(fromOrTo);
     }
 
-    AbstractRequestMaterial(boolean issuing, int columnStyle, InventoryLocation fromOrTo, int noActions) {
-        this(issuing, columnStyle, fromOrTo, noActions, null);
+    AbstractRequestMaterial(Class<MR> objectClass, boolean issuing, int columnStyle, InventoryLocation fromOrTo) {
+        this(objectClass, issuing, columnStyle, fromOrTo, NO_ACTIONS, null);
     }
 
-    AbstractRequestMaterial(boolean issuing, int columnStyle, InventoryLocation fromOrTo, int noActions,
-                            InventoryLocation otherLocation) {
-        this(issuing, columnStyle, LocationField.create(fromOrTo), noActions, otherLocation);
+    AbstractRequestMaterial(Class<MR> objectClass, boolean issuing, int columnStyle, InventoryLocation fromOrTo,
+                            int noActions, InventoryLocation otherLocation) {
+        this(objectClass, issuing, columnStyle, LocationField.create(fromOrTo), noActions, otherLocation);
         if(this.fromOrTo.equals(otherLocation)) {
             throw new SORuntimeException("Both locations can't be the same - " + otherLocation.toDisplay());
         }
     }
 
-    private AbstractRequestMaterial(boolean issuing, int columnStyle, LocationField fromOrTo, int noActions,
-                                    InventoryLocation otherLocation) {
-        super(MaterialRequest.class, columns(columnStyle, issuing), EditorAction.ALL & (~noActions),
+    private AbstractRequestMaterial(Class<MR> objectClass, boolean issuing, int columnStyle, LocationField fromOrTo,
+                                    int noActions, InventoryLocation otherLocation) {
+        super(objectClass, columns(columnStyle, issuing), EditorAction.ALLOW_ANY | (EditorAction.ALL & (~noActions)),
                 issuing ? StringList.create("Date") : StringList.create("Date", "ReferenceNumber"));
+        Class<MRI> iClass;
+        try {
+            //noinspection unchecked
+            iClass = (Class<MRI>) JavaClassLoader.getLogic(objectClass.getName() + "Item");
+        } catch(ClassNotFoundException e) {
+            iClass = null;
+        }
+        this.mriClass = iClass;
         addConstructedListener(v -> created());
         this.issuing = issuing;
         if(issuing) {
@@ -165,7 +171,7 @@ public abstract class AbstractRequestMaterial extends ObjectBrowser<MaterialRequ
         } else {
             searchLabel.clearContent().update();
         }
-        countLabel.clearContent().append("" + size(), Application.COLOR_SUCCESS).update();
+        countLabel.clearContent().append(String.valueOf(size()), Application.COLOR_SUCCESS).update();
     }
 
     @Override
@@ -200,7 +206,7 @@ public abstract class AbstractRequestMaterial extends ObjectBrowser<MaterialRequ
     }
 
     @Override
-    public boolean canEdit(MaterialRequest mr) {
+    public boolean canEdit(MR mr) {
         if(mr.getStatus() > 0) {
             warning("Changes not possible with status = " + mr.getStatusValue());
             return false;
@@ -209,7 +215,7 @@ public abstract class AbstractRequestMaterial extends ObjectBrowser<MaterialRequ
     }
 
     @Override
-    public boolean canDelete(MaterialRequest mr) {
+    public boolean canDelete(MR mr) {
         switch(mr.getStatus()) {
             case 0:
             case 4:
@@ -244,20 +250,23 @@ public abstract class AbstractRequestMaterial extends ObjectBrowser<MaterialRequ
     }
 
     @Override
-    protected ObjectEditor<MaterialRequest> createObjectEditor() {
+    protected ObjectEditor<MR> createObjectEditor() {
         createPriority();
         return new MREditor();
     }
 
-    private class MREditor extends ObjectEditor<MaterialRequest> {
+    private class MREditor extends ObjectEditor<MR> {
 
         public MREditor() {
-            super(MaterialRequest.class);
+            super(AbstractRequestMaterial.this.getObjectClass());
             if(issuing) {
                 setNewObjectGenerator(() -> null);
             } else {
                 setNewObjectGenerator(() -> {
-                    MaterialRequest mr = new MaterialRequest();
+                    MR mr = createNewInstance();
+                    if(mr == null) {
+                        return null;
+                    }
                     mr.setSystemEntity(getTransactionManager().getEntity());
                     mr.setFromLocation(fromOrTo);
                     mr.setPriority(normalPriority);
@@ -305,13 +314,13 @@ public abstract class AbstractRequestMaterial extends ObjectBrowser<MaterialRequ
         protected LinkGrid<?> createLinkFieldGrid(String fieldName, ObjectLinkField<?> field) {
             if("Items.l".equals(fieldName)) {
                 //noinspection unchecked
-                return new MRIGrid((ObjectLinkField<MaterialRequestItem>) field);
+                return new MRIGrid((ObjectLinkField<MRI>) field);
             }
             return super.createLinkFieldGrid(fieldName, field);
         }
 
         @Override
-        public void setObject(MaterialRequest object, boolean load) {
+        public void setObject(MR object, boolean load) {
             super.setObject(object, load);
             if(issuing) {
                 if(object != null && !fromOrTo.getId().equals(object.getToLocationId())) {
@@ -325,38 +334,39 @@ public abstract class AbstractRequestMaterial extends ObjectBrowser<MaterialRequ
         }
     }
 
-    private class MRIGrid extends DetailLinkGrid<MaterialRequestItem> {
+    private class MRIGrid extends DetailLinkGrid<MRI> {
 
         private QuantityField qField;
         private ObjectField<? extends InventoryItemType> pnField;
 
-        public MRIGrid(ObjectLinkField<MaterialRequestItem> linkField) {
+        public MRIGrid(ObjectLinkField<MRI> linkField) {
             super(linkField, StringList.create("Item", "PartNumber", "Requested", "Issued", "Balance"));
         }
 
-        public String getItem(MaterialRequestItem mri) {
+        @SuppressWarnings("unused")
+        public String getItem(MRI mri) {
             return mri.getPartNumber().getName();
         }
 
         @SuppressWarnings("unused")
-        public String getPartNumber(MaterialRequestItem mri) {
+        public String getPartNumber(MRI mri) {
             return mri.getPartNumber().getPartNumber();
         }
 
         @Override
-        public ObjectEditor<MaterialRequestItem> constructObjectEditor() {
+        public ObjectEditor<MRI> constructObjectEditor() {
             return new MRIEditor();
         }
 
         @SuppressWarnings("unused")
-        public Quantity getBalance(MaterialRequestItem mri) {
+        public Quantity getBalance(MRI mri) {
             return mri.getRequested().subtract(mri.getIssued());
         }
 
-        private class MRIEditor extends ObjectEditor<MaterialRequestItem> {
+        private class MRIEditor extends ObjectEditor<MRI> {
 
             public MRIEditor() {
-                super(MaterialRequestItem.class);
+                super(mriClass);
             }
 
             @Override
@@ -440,7 +450,7 @@ public abstract class AbstractRequestMaterial extends ObjectBrowser<MaterialRequ
                     }
                     filter = "Contains " + pn.toDisplay();
                     Id pnId = pn.getId();
-                    setLoadFilter(p -> p.existsLinks(MaterialRequestItem.class, "PartNumber=" + pnId, true));
+                    setLoadFilter(p -> p.existsLinks(mriClass, "PartNumber=" + pnId, true));
                 }
                 case 1 -> {
                     DatePeriod period = periodField.getValue();

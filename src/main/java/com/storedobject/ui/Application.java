@@ -800,6 +800,20 @@ public class Application extends com.storedobject.vaadin.Application implements 
         return "so" + mcg.getId() + "." + producer.getFileExtension();
     }
 
+    /**
+     * Remove the alert and speaker buttons from the toolbar.
+     */
+    public void removeToolbarButtons() {
+        alertButton.setVisible(false);
+        if(mainLayout instanceof ApplicationFrame af) {
+            af.getToolbox().getChildren().forEach(c -> {
+                if(!"Sign out".equals(c.getElement().getAttribute("title"))) {
+                    c.setVisible(false);
+                }
+            });
+        }
+    }
+
     public Component getAlertButton() {
         return alertButton;
     }

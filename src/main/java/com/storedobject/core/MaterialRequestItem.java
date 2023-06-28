@@ -2,7 +2,7 @@ package com.storedobject.core;
 
 import java.math.BigDecimal;
 
-public final class MaterialRequestItem extends StoredObject implements Detail {
+public class MaterialRequestItem extends StoredObject implements Detail {
 
     public MaterialRequestItem() {
     }
@@ -53,7 +53,7 @@ public final class MaterialRequestItem extends StoredObject implements Detail {
 
     @Override
     public boolean isDetailOf(Class<? extends StoredObject> masterClass) {
-        return masterClass == MaterialRequest.class;
+        return MaterialRequest.class.isAssignableFrom(masterClass);
     }
 
     public void reduceRequestedQuantity(Transaction transaction, Quantity reduceBy) throws Exception {
