@@ -27,9 +27,6 @@ public abstract class PersonRole extends StoredObject implements OfEntity, HasCo
         return new Person();
     }
     
-    public void setSystemEntity(Id systemEntityId) {
-    }
-
     public void setSystemEntity(BigDecimal idValue) {
     }
 
@@ -109,5 +106,14 @@ public abstract class PersonRole extends StoredObject implements OfEntity, HasCo
     @Override
     public String getName() {
         return getPerson().getName();
+    }
+
+    /**
+     * Check if this role is currently active or not.
+     *
+     * @return True/false.
+     */
+    public boolean isActive() {
+        return true;
     }
 }

@@ -350,4 +350,8 @@ public abstract class InventoryLocation extends StoredObject {
             default -> false;
         };
     }
+
+    public boolean isActive() {
+        return true;
+    }
 }

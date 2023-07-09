@@ -1,6 +1,8 @@
 package com.storedobject.ui.common;
 
+import com.storedobject.common.StringList;
 import com.storedobject.core.*;
+import com.storedobject.ui.ELabel;
 import com.storedobject.ui.ELabelField;
 import com.storedobject.ui.ObjectEditor;
 import com.storedobject.ui.Application;
@@ -11,6 +13,8 @@ import com.vaadin.flow.component.icon.VaadinIcon;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.function.Consumer;
 
 public class EntityEditor extends ObjectEditor<Entity> {
 
@@ -23,9 +27,8 @@ public class EntityEditor extends ObjectEditor<Entity> {
             "We lease items from them",
             "Provides services to us"
     };
-    private final Map<Id, Integer> relCache;
-    private Button editRel;
-    private PopupButton supplierMenu, customerMenu, serviceProviderMenu;
+    private final Map<Id, Integer> relCache, activeCache;
+    private PopupButton relMenu, supplierMenu, customerMenu, serviceProviderMenu;
     private RForm RFormEditor;
     private ObjectEditor<EntityRole> supplierEditor, customerEditor, serviceProviderEditor;
     private Class<EntityRole> serviceProviderClass;
@@ -46,9 +49,13 @@ public class EntityEditor extends ObjectEditor<Entity> {
         super(Entity.class, actions, caption, allowedActions);
         if(StoredObject.exists(InventoryStore.class, null, true)) {
             relCache = new HashMap<>();
+            activeCache = new HashMap<>();
             addField(new TextArea("Relationships"), this::getRS);
             Class<?> rClass;
-            editRel = new Button("Define Relationships", VaadinIcon.CLUSTER, e -> editRel());
+            relMenu = new PopupButton("Relationships", VaadinIcon.CLUSTER);
+            relMenu.add(new Button("Define New", VaadinIcon.PLUS, e -> editRel()));
+            relMenu.add(new Button("Deactivate", VaadinIcon.UNLINK, e -> switchRel(false)));
+            relMenu.add(new Button("Activate", VaadinIcon.LINK, e -> switchRel(true)));
             try {
                 rClass = JavaClassLoader.createClassFromProperty("SUPPLIER-CLASS");
                 if(rClass != null && EntityRole.class.isAssignableFrom(rClass)) {
@@ -87,6 +94,7 @@ public class EntityEditor extends ObjectEditor<Entity> {
             }
         } else {
             relCache = null;
+            activeCache = null;
         }
     }
 
@@ -100,12 +108,12 @@ public class EntityEditor extends ObjectEditor<Entity> {
     @Override
     protected void addExtraButtons() {
         super.addExtraButtons();
-        if(editRel != null) {
+        if(relMenu != null) {
             Entity e = getObject();
             if(e == null || us(e)) {
                 return;
             }
-            buttonPanel.add(editRel);
+            buttonPanel.add(relMenu);
             if(supplierEditor != null && (getR(e) & 0b101) > 0) {
                 buttonPanel.add(supplierMenu);
             }
@@ -128,6 +136,8 @@ public class EntityEditor extends ObjectEditor<Entity> {
     }
 
     private String getRS(int r) {
+        Integer active = activeCache.get(getObjectId());
+        int a = active == null ? 0 : active;
         StringBuilder s = new StringBuilder();
         int p = 0, no = 0;
         while(r > 0) {
@@ -136,7 +146,10 @@ public class EntityEditor extends ObjectEditor<Entity> {
                     s.append('\n');
                 }
                 ++no;
-                s.append('(').append(no).append(") ").append(REL[p]);
+                s.append('(').append(no).append(") ").append(REL[p]).append(' ');
+                if(p < 6) {
+                    s.append((a & 1) == 1 ? '✓' : '×');
+                }
             }
             ++p;
             r >>= 1;
@@ -155,30 +168,57 @@ public class EntityEditor extends ObjectEditor<Entity> {
         if(rel != null) {
             return rel;
         }
-        int r = 0;
+        int r = 0, a = 0;
+        boolean active;
         List<InventoryVirtualLocation> locs =
                 StoredObject.list(InventoryVirtualLocation.class, "Entity=" + entity.getId()).
                         toList();
         for(InventoryVirtualLocation loc: locs) {
+            active = loc.isActive();
             switch(loc.getType()) {
-                case 1 -> // Supplier
-                        r |= 1;
-                case 2 -> // Customer
-                        r |= 2;
-                case 3 -> // Repair Org.
-                        r |= 4;
-                case 17 -> // External owner
-                        r |= 8;
-                case 8 -> // Rent out
-                        r |= 16;
-                case 9 -> // Lease in
-                        r |= 32;
+                case 1 -> { // Supplier
+                    r |= 1;
+                    if(active) {
+                        a |= 1;
+                    }
+                }
+                case 2 -> { // Customer
+                    r |= 2;
+                    if(active) {
+                        a |= 2;
+                    }
+                }
+                case 3 -> { // Repair Org.
+                    r |= 4;
+                    if(active) {
+                        a |= 4;
+                    }
+                }
+                case 17 -> { // External owner
+                    r |= 8;
+                    if(active) {
+                        a |= 8;
+                    }
+                }
+                case 8 -> { // Rent out
+                    r |= 16;
+                    if(active) {
+                        a |= 16;
+                    }
+                }
+                case 9 -> { // Lease in
+                    r |= 32;
+                    if(active) {
+                        a |= 32;
+                    }
+                }
             }
         }
         if(serviceProviderClass != null && entityRole(serviceProviderClass) != null) {
             r |= 64;
         }
         relCache.put(entity.getId(), r);
+        activeCache.put(entity.getId(), a);
         return r;
     }
 
@@ -249,7 +289,6 @@ public class EntityEditor extends ObjectEditor<Entity> {
             ++p;
             r >>= 1;
         }
-        relCache.remove(e.getId());
         reload();
         if(addSP) {
             EntityRole sp = entityRole(serviceProviderClass);
@@ -257,6 +296,14 @@ public class EntityEditor extends ObjectEditor<Entity> {
                 editEntityRole(serviceProviderEditor);
             }
         }
+    }
+
+    @Override
+    public void reload() {
+        Entity e = getObject();
+        relCache.remove(e.getId());
+        activeCache.remove(e.getId());
+        super.reload();
     }
 
     private class RForm extends DataForm {
@@ -336,5 +383,66 @@ public class EntityEditor extends ObjectEditor<Entity> {
             error(e);
         }
         return null;
+    }
+
+    private void switchRel(boolean activate) {
+        Entity entity = getObject();
+        if(entity == null) {
+            return;
+        }
+        List<InventoryVirtualLocation> locs = StoredObject.list(InventoryVirtualLocation.class,
+                "Entity=" + entity.getId() + " AND Status=" + (activate ? 1 : 0)).toList();
+        if(locs.isEmpty()) {
+            clearAlerts();
+            message("No relationship found to " + (activate ? "" : "de") + "activate");
+            return;
+        }
+        new RelGrid(entity, locs, activate,
+                items -> switchRel(items, activate))
+                .execute(EntityEditor.this);
+    }
+
+    private void switchRel(Set<InventoryVirtualLocation> locations, boolean activate) {
+        if(locations.isEmpty()) {
+            return;
+        }
+        transact(t -> {
+            for(InventoryVirtualLocation loc: locations) {
+                loc.setStatus(activate ? 0 : 1);
+                loc.save(t);
+            }
+        });
+        reload();
+    }
+
+    private static class RelGrid extends MultiSelectGrid<InventoryVirtualLocation> {
+
+        private final Entity entity;
+
+        public RelGrid(Entity entity, List<InventoryVirtualLocation> items, boolean activate,
+                       Consumer<Set<InventoryVirtualLocation>> rels) {
+            super(InventoryVirtualLocation.class, items, StringList.create("Relationship", "Status"), rels);
+            setCaption((activate ? "A" : "Dea") + "ctivate Relationships");
+            this.entity = entity;
+        }
+
+        @SuppressWarnings("unused")
+        public String getRelationship(InventoryVirtualLocation location) {
+            return switch(location.getType()) {
+                case 1 -> REL[0];
+                case 2 -> REL[1];
+                case 3 -> REL[2];
+                case 17 -> REL[3];
+                case 8 -> REL[4];
+                case 9 -> REL[5];
+                default -> "Unknown";
+            };
+        }
+
+        @Override
+        public void createHeaders() {
+            ELabel e = new ELabel("Entity: ").append(entity.toDisplay(), Application.COLOR_SUCCESS).update();
+            prependHeader().join().setComponent(e);
+        }
     }
 }

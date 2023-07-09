@@ -17,7 +17,7 @@ public class ItemsSentForRepair<I extends InventoryItem> extends LocationMonitor
 
     @Override
     protected ObjectInput<InventoryVirtualLocation> getLocationField() {
-        return new ObjectComboField<>("Repair Agency", InventoryVirtualLocation.class);
+        return new ObjectComboField<>("Repair Agency", InventoryVirtualLocation.class, "Status=0");
     }
 
     @Override

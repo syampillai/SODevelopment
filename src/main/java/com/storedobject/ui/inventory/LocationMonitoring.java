@@ -49,10 +49,10 @@ public abstract class LocationMonitoring<I extends InventoryItem, L extends Inve
         ObjectIterator<L> locations;
         if(location == null) {
             int type = getLocationType();
-            if(type< 0) {
+            if(type < 0) {
                 locations = StoredObject.list(locationClass, true);
             } else {
-                locations = StoredObject.list(locationClass, "Type=" + type);
+                locations = StoredObject.list(locationClass, "Type=" + type + " AND Status=0");
             }
         } else {
             locations = ObjectIterator.create(location);

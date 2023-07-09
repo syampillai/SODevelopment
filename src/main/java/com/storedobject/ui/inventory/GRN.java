@@ -521,7 +521,7 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
             case 4 -> 2;
             default -> -1;
         };
-        return StoredObject.list(InventoryVirtualLocation.class, "Type=" + type).
+        return StoredObject.list(InventoryVirtualLocation.class, "Type=" + type + " AND Status=0").
                 map(InventoryVirtualLocation::getEntity).toList();
     }
 

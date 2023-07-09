@@ -1,10 +1,7 @@
 package com.storedobject.ui;
 
 import com.storedobject.common.SORuntimeException;
-import com.storedobject.core.Filtered;
-import com.storedobject.core.MemoryCache;
-import com.storedobject.core.StoredObject;
-import com.storedobject.core.StoredObjectUtility;
+import com.storedobject.core.*;
 import com.storedobject.ui.util.ViewFilterSupport;
 import com.storedobject.vaadin.DataList;
 import com.vaadin.flow.component.grid.GridSortOrder;
@@ -19,11 +16,13 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 
+@SuppressWarnings("RedundantThrows")
 public class DataGrid<T> extends com.storedobject.vaadin.ListGrid<T>
         implements ViewFilterSupport<T>, Transactional {
 
     static final String NOTHING_SELECTED = "Nothing selected";
     static final String NOTHING_TO_SELECT = "No item available to select!";
+    static final String ACTION_NOT_ALLOWED = "Your profile doesn't allow the requested action";
     private GridListDataView<T> dataView;
 
     public DataGrid(Class<T> objectClass) {
@@ -498,5 +497,65 @@ public class DataGrid<T> extends com.storedobject.vaadin.ListGrid<T>
      * @throws Exception The exception should be a user-friendly one because it will be displayed on the screen.
      */
     protected void validateReload(T object) throws Exception {
+    }
+
+    /**
+     * Prefix string that is added to the "action" string to determine the actual {@link UIAction} to be checked. See
+     * {@link #actionAllowed(String)}. For example, {@link com.storedobject.ui.inventory.POBrowser} returns the value
+     * "PO" for this method.
+     *
+     * @return Prefix string. Default implementation returns null. That means that all the actions are allowed.
+     */
+    protected String getActionPrefix() {
+        return null;
+    }
+
+    /**
+     * Check whether a specific action is allowed or not. An action is defined in the UI logic as a keyword like
+     * "SEND-ITEMS", "PLACE-ORDER", "RECEIVE-ITEMS", "PRINT-VOUCHER", etc. and there could be corresponding access
+     * control applicable within the logic. The user's groups determine whether that user can carry out that action or
+     * not. This method returns <code>true/false</code> to denote that the user can carry out the action or not.
+     * However, it is up to the logic to decide the course of action.
+     * <p>The user's groups can be configured to allow various UI actions ({@link com.storedobject.core.UIAction}.
+     * Each {@link com.storedobject.core.UIAction} represents a unique "action" string ({@link UIAction#getAction()})
+     * and that value should be equal to {@link #getActionPrefix()} + "-" + action in order to allow that action.</p>
+     *
+     * @param action Action string.
+     * @return True/false. Please note that it will always return <code>true</code> if {@link #getActionPrefix()}
+     * returns <code>null</code>.
+     */
+    public boolean actionAllowed(String action) {
+        return actionAllowed(getTransactionManager(), action, getActionPrefix());
+    }
+
+    /**
+     * Same as {@link #actionAllowed(String)} except that this shows a message to the user about it if the action is not
+     * allowed.
+     *
+     * @param action Action string.
+     * @return True/false.
+     */
+    public final boolean canAllowAction(String action) {
+        if(!actionAllowed(action)) {
+            clearAlerts();
+            warning(ACTION_NOT_ALLOWED);
+            return false;
+        }
+        return true;
+    }
+
+    static boolean actionAllowed(TransactionManager tm, String action, String prefix) {
+        prefix = StoredObject.toCode(prefix);
+        if(prefix.isEmpty()) {
+            return true;
+        }
+        action = StoredObject.toCode(action);
+        if(!action.startsWith(prefix + "-")) {
+            action = prefix + "-" + action;
+            while(action.contains("--")) {
+                action = action.replace("--", "-");
+            }
+        }
+        return tm.actionAllowed(action);
     }
 }

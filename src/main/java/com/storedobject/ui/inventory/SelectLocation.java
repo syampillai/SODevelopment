@@ -18,7 +18,7 @@ public class SelectLocation extends DataForm {
     public SelectLocation(int... types) {
         super("Select Your Location");
         List<InventoryLocation> locations = Application.get().getTransactionManager().getUser()
-                .listLinks(InventoryVirtualLocation.class).map(o -> (InventoryLocation)o).toList();
+                .listLinks(InventoryVirtualLocation.class, "Status=0").map(o -> (InventoryLocation)o).toList();
         if(types.length > 0) {
             locations.removeIf(loc -> !checkType(loc, types));
         }
@@ -69,7 +69,7 @@ public class SelectLocation extends DataForm {
             return assignment.location;
         }
         InventoryLocation loc = a.getTransactionManager().getUser()
-                .listLinks(InventoryVirtualLocation.class)
+                .listLinks(InventoryVirtualLocation.class, "Status=0")
                 .filter(l -> checkType(l, types)).single(false);
         if(loc == null) {
             return null;

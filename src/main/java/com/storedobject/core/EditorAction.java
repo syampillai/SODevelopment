@@ -14,6 +14,7 @@ public class EditorAction {
     public final static int REMOVE = 512;
     public final static int SELECT = 1024;
     public final static int PDF = 8192;
+    public final static int PRINT = 8192;
     public final static int EXCEL = 16384;
     public final static int AUDIT = 32768;
     public final static int APPEND = 65536;

@@ -8,23 +8,23 @@ import com.storedobject.core.MaterialRequestItem;
 public class RequestMaterial extends BaseRequestMaterial<MaterialRequest, MaterialRequestItem> {
 
     public RequestMaterial() {
-        this(SelectLocation.get(0, 4, 5, 10, 11, 16));
+        super(MaterialRequest.class);
     }
 
     public RequestMaterial(String from) {
-        this(ParameterParser.itemTypeClass(from), ParameterParser.location(from, 0, 4, 5, 10, 11, 16));
+        super(MaterialRequest.class, from);
     }
 
     public RequestMaterial(InventoryLocation from) {
-        this(null, from, null);
+        super(MaterialRequest.class, from);
     }
 
     public RequestMaterial(InventoryLocation from, InventoryLocation to) {
-        this(null, from, to);
+        super(MaterialRequest.class, from, to);
     }
 
     public RequestMaterial(Class<? extends InventoryItemType> itemTypeClass, InventoryLocation from) {
-        this(itemTypeClass, from, null);
+        super(MaterialRequest.class, itemTypeClass, from);
     }
 
     public RequestMaterial(Class<? extends InventoryItemType> itemTypeClass, InventoryLocation from,

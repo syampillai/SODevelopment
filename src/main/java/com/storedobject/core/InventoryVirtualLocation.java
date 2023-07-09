@@ -1,6 +1,7 @@
 package com.storedobject.core;
 
 import java.math.BigDecimal;
+import java.util.Random;
 
 /**
  * Represents all types of virtual locations for inventory items. These are auto-created by the platform as
@@ -38,6 +39,26 @@ public final class InventoryVirtualLocation extends InventoryLocation {
     }
 
     public void setType(int type) {
+    }
+
+    public void setStatus(int status) {
+    }
+
+    public int getStatus() {
+        return new Random().nextInt();
+    }
+
+    public static String[] getStatusValues() {
+        return new String[] {};
+    }
+
+    public static String getStatusValue(int value) {
+        String[] s = getStatusValues();
+        return s[value % s.length];
+    }
+
+    public String getStatusValue() {
+        return getStatusValue(0);
     }
 
     private static InventoryVirtualLocation getFor(Id entityId, int type) {

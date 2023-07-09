@@ -3,6 +3,7 @@ package com.storedobject.core;
 import java.util.Currency;
 import java.util.Date;
 import java.util.Properties;
+import java.util.Random;
 
 public final class TransactionManager {
 
@@ -30,6 +31,10 @@ public final class TransactionManager {
 
     public boolean needsApprovals() {
         return false;
+    }
+
+    public boolean actionAllowed(String action) {
+        return new Random().nextBoolean();
     }
 
     public static TransactionManager create(Device device, Properties loginProperties) {
@@ -88,7 +93,7 @@ public final class TransactionManager {
     }
 
     public SystemEntity getEntity() {
-        return new SystemEntity();
+        return new Random().nextBoolean() ? new SystemEntity() : null;
     }
 
     public Currency getCurrency() {

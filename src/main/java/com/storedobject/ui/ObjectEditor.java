@@ -105,7 +105,7 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
     private ExtraInfo<?> extraInfo;
     private ContactData contactData;
     private boolean doNotSave = false, allowDoNotSave = true;
-    private String allowedActions;
+    private final String allowedActions;
     private AnchorForm anchorForm;
     private ObjectLinkField.Tabs linkTabs;
     private StoredObject parentObject;
@@ -318,7 +318,7 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
 
     private void setLinkTabColumns(int columns) {
         if(linkTabs != null) {
-            linkTabs.getElement().setAttribute("colspan", "" + columns);
+            linkTabs.getElement().setAttribute("colspan", String.valueOf(columns));
         }
     }
 
@@ -433,27 +433,6 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
      */
     protected int filterActions(int actions) {
         return actions;
-    }
-
-    /**
-     * Check whether a specific string representation of action is allowed or not.
-     *
-     * @param action Action name to check.
-     * @return True/false.
-     */
-    protected boolean isActionAllowed(String action) {
-        return allowedActions == null || allowedActions.contains(action);
-    }
-
-    /**
-     * Remove a specific string representation of action from the allowed list of actions.
-     *
-     * @param action Action name to remove.
-     */
-    protected void removeAllowedAction(String action) {
-        if(allowedActions != null) {
-            allowedActions = allowedActions.replace(action, "-");
-        }
     }
 
     /**
@@ -677,16 +656,16 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
         boolean notInvI = !inventoryItem();
         boolean notInv = !inventory();
         boolean nm = !MasterObject.class.isAssignableFrom(getObjectClass());
-        if(nm && notInvI && notInv && ((actions & EditorAction.NEW) == EditorAction.NEW)) {
+        if(nm && notInvI && notInv && ((actions & EditorAction.NEW) == EditorAction.NEW) && actionAllowed("NEW")) {
             add = new Button("Add", this);
         }
-        if(nm && notInv && ((actions & EditorAction.EDIT) == EditorAction.EDIT)) {
+        if(nm && notInv && ((actions & EditorAction.EDIT) == EditorAction.EDIT) && actionAllowed("EDIT")) {
             edit = new Button("Edit", this);
         }
-        if(nm && notInvI && notInv && ((actions & EditorAction.DELETE) == EditorAction.DELETE)) {
+        if(nm && notInvI && notInv && ((actions & EditorAction.DELETE) == EditorAction.DELETE) && actionAllowed("DELETE")) {
             delete = new ConfirmButton("Delete", this);
         }
-        if((actions & EditorAction.SEARCH) == EditorAction.SEARCH) {
+        if(((actions & EditorAction.SEARCH) == EditorAction.SEARCH) && actionAllowed("SEARCH")) {
             searcherField = ObjectSearcherField.create(getObjectClass(), this);
             if(searcherField == null) {
                 search = new Button("Search", this);
@@ -697,10 +676,10 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
             }
         }
         print = PrintButton.create(this);
-        if(print == null && ((actions & EditorAction.AUDIT) == EditorAction.AUDIT)) {
+        if(print == null && ((actions & EditorAction.PRINT) == EditorAction.PRINT) && actionAllowed("PRINT")) {
             report = new Button("Report", this);
         }
-        if(nm && ((actions & EditorAction.AUDIT) == EditorAction.AUDIT)) {
+        if(nm && ((actions & EditorAction.AUDIT) == EditorAction.AUDIT) && actionAllowed("AUDIT")) {
             audit = new Button("Audit", "user", this);
         }
         exit = new Button("Exit", this);
@@ -1631,10 +1610,6 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
         objectChangedListeners.forEach(ocl -> ocl.deleted(object));
     }
 
-    @Override
-    public void saved(T object) {
-    }
-
     void savedInternal(T object) {
         saved(object);
     }
@@ -2507,11 +2482,6 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
         }
     }
 
-    @Override
-    public boolean equals(Object another) {
-        return this == another;
-    }
-
     boolean editItem(T item) {
         if(item == null) {
             return false;
@@ -2733,5 +2703,51 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
 
     public final String getFieldName() {
         return fieldName;
+    }
+
+    /**
+     * Prefix string that is added to the "action" string to determine the actual {@link UIAction} to be checked. See
+     * {@link #actionAllowed(String)}. For example, {@link com.storedobject.ui.inventory.POBrowser} returns the value
+     * "PO" for this method.
+     *
+     * @return Prefix string. Default implementation returns null. That means that all the actions are allowed.
+     */
+    protected String getActionPrefix() {
+        return null;
+    }
+
+    /**
+     * Check whether a specific action is allowed or not. An action is defined in the UI logic as a keyword like
+     * "SEND-ITEMS", "PLACE-ORDER", "RECEIVE-ITEMS", "PRINT-VOUCHER", etc. and there could be corresponding access
+     * control applicable within the logic. The user's groups determine whether that user can carry out that action or
+     * not. This method returns <code>true/false</code> to denote that the user can carry out the action or not.
+     * However, it is up to the logic to decide the course of action.
+     * <p>The user's groups can be configured to allow various UI actions ({@link com.storedobject.core.UIAction}.
+     * Each {@link com.storedobject.core.UIAction} represents a unique "action" string ({@link UIAction#getAction()})
+     * and that value should be equal to {@link #getActionPrefix()} + "-" + action in order to allow that action.</p>
+     *
+     * @param action Action string.
+     * @return True/false. Please note that it will always return <code>true</code> if {@link #getActionPrefix()}
+     * returns <code>null</code>.
+     */
+    public boolean actionAllowed(String action) {
+        return (allowedActions == null || allowedActions.contains(action))
+                && DataGrid.actionAllowed(getTransactionManager(), action, getActionPrefix());
+    }
+
+    /**
+     * Same as {@link #actionAllowed(String)} except that this shows a message to the user about it if the action is not
+     * allowed.
+     *
+     * @param action Action string.
+     * @return True/false.
+     */
+    public boolean canAllowAction(String action) {
+        if(!actionAllowed(action)) {
+            clearAlerts();
+            warning(DataGrid.ACTION_NOT_ALLOWED);
+            return false;
+        }
+        return true;
     }
 }

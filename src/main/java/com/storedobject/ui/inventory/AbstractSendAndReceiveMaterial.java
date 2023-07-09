@@ -600,7 +600,7 @@ public abstract class AbstractSendAndReceiveMaterial<T extends InventoryTransfer
             if(parent == null || parent.getAmendment() == object.getAmendment()) {
                 return "Not sent";
             }
-            return "Sent";
+            return parent.getToLocationId().equals(object.getItem().getLocationId()) ? "Sent" : "Received";
         }
 
         @Override

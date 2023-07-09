@@ -32,7 +32,7 @@ public class ObjectBrowser<T extends StoredObject> extends ObjectGrid<T>
     protected final ButtonLayout buttonPanel = new ButtonLayout();
     protected PrintButton print;
     protected Button add, edit, delete, search, filter, load, view, report, excel, audit, exit, save, cancel;
-    private String allowedActions;
+    private final String allowedActions;
     ObjectEditor<T> editor;
     private T editingItem;
     private boolean rowMode = false;
@@ -148,15 +148,15 @@ public class ObjectBrowser<T extends StoredObject> extends ObjectGrid<T>
                 buttonPanel.add(search);
                 actions |= RELOAD;
             }
-            if(nm && ((actions & NEW) == NEW)) {
+            if(nm && ((actions & NEW) == NEW) && actionAllowed("NEW")) {
                 add = new Button("New", this);
                 buttonPanel.add(add);
             }
-            if(nm && ((actions & EDIT) == EDIT)) {
+            if(nm && ((actions & EDIT) == EDIT) && actionAllowed("EDIT")) {
                 edit = new Button("Edit", this);
                 buttonPanel.add(edit);
             }
-            if(nm && ((actions & DELETE) == DELETE)) {
+            if(nm && ((actions & DELETE) == DELETE) && actionAllowed("DELETE")) {
                 delete = new ConfirmButton("Delete", this);
                 ((ConfirmButton)delete).setPreconfirm(this::checkDelete);
                 buttonPanel.add(delete);
@@ -171,21 +171,21 @@ public class ObjectBrowser<T extends StoredObject> extends ObjectGrid<T>
                 view = new Button("View", this);
                 buttonPanel.add(view);
             }
-            if((actions & PDF) == PDF) {
+            if((actions & PDF) == PDF && actionAllowed("PDF")) {
                 print = PrintButton.create(this);
                 if(print != null) {
                     buttonPanel.add(print);
                 }
-                if(print == null && ((actions & AUDIT) == AUDIT)) {
+                if(print == null && ((actions & PRINT) == PRINT) && actionAllowed("PRINT")) {
                     report = new Button("Report", this);
                     buttonPanel.add(report);
                 }
             }
-            if((actions & EXCEL) == EXCEL) {
+            if((actions & EXCEL) == EXCEL && actionAllowed("EXCEL")) {
                 excel = new Button("Excel", this);
                 buttonPanel.add(excel);
             }
-            if(nm && ((actions & AUDIT) == AUDIT)) {
+            if(nm && ((actions & AUDIT) == AUDIT) && actionAllowed("AUDIT")) {
                 audit = new Button("Audit", "user", this);
                 buttonPanel.add(audit);
             }
@@ -357,16 +357,6 @@ public class ObjectBrowser<T extends StoredObject> extends ObjectGrid<T>
         return EditorAction.getActions(className.substring(1, p), developer);
     }
 
-    protected boolean isActionAllowed(String action) {
-        return allowedActions == null || allowedActions.contains(action);
-    }
-
-    protected void removeAllowedAction(String action) {
-        if(allowedActions != null) {
-            allowedActions = allowedActions.replace(action, "-");
-        }
-    }
-
     int filterActionsInternal(int actions) {
         return filterActions(actions);
     }
@@ -388,14 +378,6 @@ public class ObjectBrowser<T extends StoredObject> extends ObjectGrid<T>
      */
     protected List<Component> listMoreButtons() {
         return null;
-    }
-
-    public boolean canDelete(T object) {
-        return true;
-    }
-
-    public boolean canEdit(T object) {
-        return true;
     }
 
     protected boolean canAdd() {
@@ -995,5 +977,10 @@ public class ObjectBrowser<T extends StoredObject> extends ObjectGrid<T>
                 objectChangedListeners.forEach(l -> undeleted(object));
             }
         }
+    }
+
+    @Override
+    public boolean actionAllowed(String action) {
+        return (allowedActions == null || allowedActions.contains(action)) && super.actionAllowed(action);
     }
 }

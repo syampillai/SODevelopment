@@ -159,6 +159,11 @@ public class POBrowser<T extends InventoryPO> extends ObjectBrowser<T> implement
     }
 
     @Override
+    protected String getActionPrefix() {
+        return "PO";
+    }
+
+    @Override
     public void loaded() {
         if(searching) {
             searching = false;
@@ -202,8 +207,9 @@ public class POBrowser<T extends InventoryPO> extends ObjectBrowser<T> implement
     protected void addExtraButtons() {
         Checkbox h = new Checkbox("Include History");
         h.addValueChangeListener(e -> setFixedFilter(e.getValue() ? null : filter));
-        buttonPanel.add(new ConfirmButton("Amend", e -> amend()), new Button("Search", e -> searchPO()),
-                h, goToGRNs);
+        buttonPanel.add(actionAllowed("AMEND") ? new ConfirmButton("Amend", e -> amend()) : null,
+                actionAllowed("SEARCH") ? new Button("Search", e -> searchPO()) : null,
+                h, actionAllowed("GO-TO-GRN") ? goToGRNs : null);
         super.addExtraButtons();
     }
 
@@ -330,14 +336,13 @@ public class POBrowser<T extends InventoryPO> extends ObjectBrowser<T> implement
     }
 
     /**
-     * Check whether this PO can be placed now or not. Default implementation returns ture but this can be
-     * overridden to implement access control as per the organization's policy.
+     * Check whether this PO can be placed now or not.
      *
      * @param po PO.
      * @return True/false.
      */
     protected boolean canPlaceOrder(T po) {
-        return true;
+        return actionAllowed("PLACE-ORDER");
     }
 
     private void receiveItems() {
@@ -373,16 +378,14 @@ public class POBrowser<T extends InventoryPO> extends ObjectBrowser<T> implement
         new ReceiveItems(po, items).execute(this.getView());
     }
 
-
     /**
-     * Check whether items can be received form this PO or not. Default implementation returns ture but this can be
-     * overridden to implement access control as per the organization's policy.
+     * Check whether items can be received form this PO or not.
      *
      * @param po PO.
      * @return True/false.
      */
     protected boolean canReceiveItems(T po) {
-        return true;
+        return actionAllowed("RECEIVE-ITEMS");
     }
 
     private void closePO() {
@@ -421,7 +424,7 @@ public class POBrowser<T extends InventoryPO> extends ObjectBrowser<T> implement
                 return;
             }
         }
-        if(pendingGRNs(po) || !canClosePO(po)) {
+        if(pendingGRNs(po) || !canForeclosePO(po)) {
             return;
         }
         String m = "Status of this order is '" + po.getStatusValue() + "'.\nDo you really want to foreclose this?";
@@ -435,17 +438,26 @@ public class POBrowser<T extends InventoryPO> extends ObjectBrowser<T> implement
         }
     }
 
-
     /**
-     * Check whether this PO can be closed now or not. Default implementation returns ture but this can be
-     * overridden to implement access control as per the organization's policy.
+     * Check whether this PO can be closed now or not.
      *
      * @param po PO.
      * @return True/false.
      */
     @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     protected boolean canClosePO(T po) {
-        return true;
+        return actionAllowed("CLOSE");
+    }
+
+    /**
+     * Check whether this PO can be foreclosed now or not.
+     *
+     * @param po PO.
+     * @return True/false.
+     */
+    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
+    protected boolean canForeclosePO(T po) {
+        return actionAllowed("FORECLOSE");
     }
 
     private boolean pendingGRNs(T po) {
@@ -457,7 +469,7 @@ public class POBrowser<T extends InventoryPO> extends ObjectBrowser<T> implement
     }
 
     protected boolean canProcessGRN(T po) {
-        return true;
+        return actionAllowed("PROCESS-GRN");
     }
 
     private void preProcessGRNs() {

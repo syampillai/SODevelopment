@@ -170,7 +170,7 @@ public class LocationField extends ObjectComboField<InventoryLocation> {
             return locations;
         }
         stypes.append(')');
-        StoredObject.list(InventoryVirtualLocation.class, stypes.toString()).forEach(locations::add);
+        StoredObject.list(InventoryVirtualLocation.class, stypes + " AND Status=0").forEach(locations::add);
         return locations;
     }
 

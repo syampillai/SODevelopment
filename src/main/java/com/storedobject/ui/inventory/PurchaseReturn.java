@@ -38,7 +38,8 @@ public final class PurchaseReturn extends DataForm implements Transactional {
         } else {
             this.from = from == null ? null : from.getStoreBin();
         }
-        this.to = supplier == null ? null : StoredObject.list(InventoryVirtualLocation.class, "Type=1")
+        this.to = supplier == null ? null : StoredObject.list(InventoryVirtualLocation.class,
+                        "Type=1 AND Status=0")
                 .filter(loc -> loc.getEntityId().equals(supplier.getId())).findFirst();
         if(this.from != null && this.to != null) {
             fromField = null;

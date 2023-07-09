@@ -24,7 +24,8 @@ import java.util.Optional;
 
 public class SystemTableDeployer extends View implements Transactional {
 
-    private final Button proceed;
+    private final Button create;
+    private final Button drop;
     private final Button menuItem;
     private final PopupButton upload, all;
     private final Button uploadProcess;
@@ -59,10 +60,11 @@ public class SystemTableDeployer extends View implements Transactional {
         tableName.setEnabled(false);
         VerticalLayout layout = new VerticalLayout();
         ButtonLayout buttons = new ButtonLayout();
-        buttons.add(proceed = new Button("Proceed", this));
+        buttons.add(create = new Button("Create/Alter/Reindex", "ok", this));
+        buttons.add(drop = new ConfirmButton("Drop", "delete", this));
         buttons.add(menuItem = new Button("Create Menu Item", "menu", this));
         menuItem.setVisible(false);
-        uploadProcess = new Button("Create / Alter", "", this);
+        uploadProcess = new Button("Create/Alter", "", this);
         uploadProcessAndReindex = new Button("Reindex", "", this);
         upload = new PopupButton("Upload Class List", VaadinIcon.UPLOAD);
         upload.add(uploadProcess, uploadProcessAndReindex);
@@ -94,7 +96,7 @@ public class SystemTableDeployer extends View implements Transactional {
         super.execute(parent, doNotLock);
     }
 
-    private void checkStatus() {
+    private void checkStatus(boolean drop) {
         menuItem.setVisible(false);
         if(action == -1) {
             return;
@@ -109,6 +111,9 @@ public class SystemTableDeployer extends View implements Transactional {
         }
         String tn = ca.getModuleName() + "." + ca.getTableName();
         tableName.setValue(tn);
+        if(drop) {
+            return;
+        }
         if(!Database.get().tableExists(tn)) {
             if(Database.get().schemaExists(ca.getModuleName())) {
                 status("Data Table '" + tn + "' does not exist in the database...\nYou may create it now...");
@@ -161,25 +166,25 @@ public class SystemTableDeployer extends View implements Transactional {
     }
 
     @SuppressWarnings("unchecked")
-    private void setKlass(String currentClassName) throws Exception {
-        if(!JavaClass.checkName(currentClassName)) {
+    private void setKlass(String currClassName) throws Exception {
+        if(!JavaClass.checkName(currClassName)) {
             throw new Exception("Invalid class name");
         }
         Class<? extends StoredObject> objectClass;
         try {
-            objectClass = (Class<? extends StoredObject>)JavaClassLoader.getLogic(currentClassName);
+            objectClass = (Class<? extends StoredObject>)JavaClassLoader.getLogic(currClassName);
         } catch(ClassNotFoundException e) {
             objectClass = null;
         }
         if(objectClass == null) {
-            throw new Exception("Class not found: " + currentClassName);
+            throw new Exception("Class not found: " + currClassName);
         }
         if(!StoredObject.class.isAssignableFrom(objectClass) || objectClass == StoredObject.class) {
-            throw new Exception("Not a Data Class: " + currentClassName + " (If it is really a Data Class, try after restarting the application)");
+            throw new Exception("Not a Data Class: " + currClassName + " (If it is really a Data Class, try after restarting the application)");
         }
         ca = StoredObjectUtility.classAttribute(objectClass);
         if(ca == null) {
-            throw new Exception("Invalid Data Class: " + currentClassName);
+            throw new Exception("Invalid Data Class: " + currClassName);
         }
     }
 
@@ -195,7 +200,7 @@ public class SystemTableDeployer extends View implements Transactional {
             }
             error("Invalid administrator password");
         } catch (Exception e) {
-            proceed.setVisible(false);
+            create.setVisible(false);
             upload.setVisible(false);
             all.setVisible(false);
             action = -1;
@@ -223,8 +228,10 @@ public class SystemTableDeployer extends View implements Transactional {
         }
         if(!ncn.equals(currentClassName) || ncn.isEmpty()) {
             currentClassName = ncn;
-            checkStatus();
-            return;
+            checkStatus(c == drop);
+            if(c != drop) {
+                return;
+            }
         }
         if(c == menuItem) {
             Logic logic = Logic.get(Logic.class, "ClassName='" + currentClassName + "'");
@@ -255,7 +262,22 @@ public class SystemTableDeployer extends View implements Transactional {
         if(password == null) {
             return;
         }
-        if(c == proceed) {
+        if(c == drop) {
+            action = 0;
+            clearAlerts();
+            if(!isSU && !getTransactionManager().getUser().isAppAdmin()) {
+                warning("Not authorized!");
+                return;
+            }
+            try {
+                dropTable(ca, password);
+            } catch(Exception e) {
+                error(e);
+                close();
+            }
+            return;
+        }
+        if(c == create) {
             switch(action) {
                 case 0 -> {
                     return;
@@ -303,12 +325,20 @@ public class SystemTableDeployer extends View implements Transactional {
                     return;
                 }
             }
-            checkStatus();
+            checkStatus(false);
         }
     }
 
     private static boolean schemaNotCreated(ClassAttribute<?> ca, String password) {
         return !Database.get().createSchema(ca.getModuleName(), password);
+    }
+
+    private void dropTable(ClassAttribute<?> ca, String password) throws Exception {
+        ArrayList<String> commands = new ArrayList<>();
+        commands.add("DROP TABLE " + ca.getModuleName() + "." + ca.getTableName());
+        commands.add("DROP TABLE " + ca.getModuleName() + ".H_" + ca.getTableName());
+        execCommands(commands, password);
+        message("Data class dropped: " + ca.getObjectClass().getName());
     }
 
     private boolean createTable(ClassAttribute<?> ca, String password) throws Exception {
