@@ -472,18 +472,4 @@ public abstract class PDFReport extends PDF {
 		}
 		return table;
 	}
-
-	@Override
-	public void dumpError(Throwable error) {
-		log(error);
-	}
-
-	/**
-	 * Log something via the logger associated with this report.
-	 *
-	 * @param anything Anything to log.
-	 */
-	public void log(Object anything) {
-		getDevice().log(anything);
-	}
 }

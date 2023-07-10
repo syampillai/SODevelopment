@@ -190,6 +190,26 @@ public final class Money implements Storable, Comparable<Money> {
 		return new Money();
 	}
 
+	/**
+	 * Convert this monetary value to the equivalent in local currency by applying the current "exchange rate". Unlike
+	 * the {@link #convert(Rate, Currency)} method, this method multiplies the monetary value with the exchange rate.
+	 * @param tm Transaction manager (Local currency will be determined from this)
+	 * @return Result
+	 */
+	public Money toLocal(TransactionManager tm) {
+		return toLocal(tm.getEntity());
+	}
+
+	/**
+	 * Convert this monetary value to the equivalent in local currency by applying the current "exchange rate". Unlike
+	 * the {@link #convert(Rate, Currency)} method, this method multiplies the monetary value with the exchange rate.
+	 * @param systemEntity System entity (Local currency will be determined from this)
+	 * @return Result
+	 */
+	public Money toLocal(SystemEntity systemEntity) {
+		return new Money();
+	}
+
 	public Money percentage(double percentage) {
 		return new Money();
 	}
@@ -295,15 +315,15 @@ public final class Money implements Storable, Comparable<Money> {
     }
 
 	public static String format(double value) {
-		return new Random().nextBoolean() + "";
+		return String.valueOf(new Random().nextBoolean());
 	}
 
 	public static String format(double value, boolean separated) {
-		return new Random().nextBoolean() + "";
+		return String.valueOf(new Random().nextBoolean());
 	}
 
 	public static String format(double value, int decimals) {
-		return new Random().nextBoolean() + "";
+		return String.valueOf(new Random().nextBoolean());
 	}
 
 	public static String format(double value, int decimals, boolean separated) {
@@ -311,7 +331,7 @@ public final class Money implements Storable, Comparable<Money> {
 	}
 
 	public static String format(String s, int decimals, boolean separated) {
-		return new Random().nextBoolean() + "";
+		return String.valueOf(new Random().nextBoolean());
 	}
 
 	public String toString(SystemUser forUser) {
@@ -319,41 +339,41 @@ public final class Money implements Storable, Comparable<Money> {
 	}
 
 	public String toString(boolean showSymbol) {
-		return new Random().nextBoolean() + "";
+		return String.valueOf(new Random().nextBoolean());
 	}
 
 	public String toString(boolean showSymbol, SystemUser forUser) {
-		return new Random().nextBoolean() + "";
+		return String.valueOf(new Random().nextBoolean());
 	}
 
 	public String toString(boolean showSymbol, boolean tagDebit) {
-		return new Random().nextBoolean() + "";
+		return String.valueOf(new Random().nextBoolean());
 	}
 
 	public String toString(boolean showSymbol, boolean tagDebit, SystemUser forUser) {
-		return new Random().nextBoolean() + "";
+		return String.valueOf(new Random().nextBoolean());
 	}
 
 	public static String getSymbol(Currency currency) {
-		return new Random().nextBoolean() + "";
+		return String.valueOf(new Random().nextBoolean());
 	}
 
 	@Override
 	public String getStorableValue() {
-		return new Random().nextBoolean() + "";
+		return String.valueOf(new Random().nextBoolean());
 	}
 
 	@Override
-	public int compareTo(@SuppressWarnings("NullableProblems") Money money) {
+	public int compareTo(@SuppressWarnings({"NullableProblems", "ComparatorMethodParameterNotUsed"}) Money money) {
 		return new Random().nextInt();
 	}
 
 	public String words() {
-		return new Random().nextBoolean() + "";
+		return String.valueOf(new Random().nextBoolean());
 	}
 
 	public String words(SystemUser forUser) {
-		return new Random().nextBoolean() + "";
+		return String.valueOf(new Random().nextBoolean());
 	}
 
 	public boolean wasRounded() {
@@ -401,7 +421,7 @@ public final class Money implements Storable, Comparable<Money> {
 		}
 
 		public String toString(boolean withZeros) {
-			return new Random().nextBoolean() + "";
+			return String.valueOf(new Random().nextBoolean());
 		}
 
 		public String toString(Predicate<Money> filter) {

@@ -25,10 +25,16 @@ public final class SendItemsForRepair extends AbstractSendAndReceiveMaterial<Inv
     }
 
     @Override
+    protected String getActionPrefix() {
+        return "RO";
+    }
+
+    @Override
     protected void addExtraButtons() {
         super.addExtraButtons();
-        Button goToGRNs = new Button("GRNs", VaadinIcon.STOCK, e -> toGRNs()),
-                receiveItems = new Button("Receive", VaadinIcon.STORAGE, e -> receiveItems());
+        Button goToGRNs = actionAllowed("GO-TO-GRN") ? new Button("GRNs", VaadinIcon.STOCK, e -> toGRNs()) : null,
+                receiveItems = actionAllowed("GO-TO-RECEIVE-ITEMS") ?
+                        new Button("Receive", VaadinIcon.STORAGE, e -> receiveItems()) : null;
         Checkbox h = new Checkbox("Include History");
         h.addValueChangeListener(e -> setFixedFilter(e.getValue() ? null : "Status<2"));
         buttonPanel.add(receiveItems, h, goToGRNs);

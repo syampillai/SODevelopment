@@ -50,6 +50,11 @@ public class POEditor<T extends InventoryPO> extends ObjectEditor<T> {
         });
     }
 
+    @Override
+    protected String getActionPrefix() {
+        return "PO";
+    }
+
     private int grnType() {
         T po = createNewInstance();
         return po == null ? 0 : po.getGRNType();

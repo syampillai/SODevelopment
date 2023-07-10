@@ -10,6 +10,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.logging.Level;
 import java.util.stream.Stream;
 
 /**
@@ -1497,7 +1498,25 @@ public abstract class PDF implements java.io.Closeable, com.storedobject.core.Co
      *
      * @param error Error o dump.
      */
-    public void dumpError(Throwable error) {
+    public final void dumpError(Throwable error) {
+    }
+
+    /**
+     * Log something via the logger associated with this report.
+     *
+     * @param anything Anything to log.
+     */
+    public final void log(Object anything) {
+        Device d = getDevice();
+        if(d == null) {
+            StoredObject.logger.log(Level.WARNING, getClass().getName(), anything);
+        } else {
+            d.log(anything);
+        }
+    }
+
+    public Device getDevice() {
+        return null;
     }
 
     /**

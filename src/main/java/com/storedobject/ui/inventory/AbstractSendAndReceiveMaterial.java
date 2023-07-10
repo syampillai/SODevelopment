@@ -94,8 +94,8 @@ public abstract class AbstractSendAndReceiveMaterial<T extends InventoryTransfer
         if(this.fromOrTo == null) {
             throw new LogicRedirected(this::selectLocation);
         }
-        send.setVisible(!receiveMode);
-        receive.setVisible(receiveMode);
+        send.setVisible(!receiveMode && actionAllowed("SEND-ITEMS"));
+        receive.setVisible(receiveMode && actionAllowed("RECEIVE-ITEMS"));
         this.otherLocation = otherLocation;
         if(this.otherLocation != null && this.otherLocation.equals(this.fromOrTo)) {
             throw new SORuntimeException("Both locations can't be the same - " + this.fromOrTo.toDisplay());
@@ -138,7 +138,11 @@ public abstract class AbstractSendAndReceiveMaterial<T extends InventoryTransfer
         }
         setOrderBy("Date DESC,No DESC");
         GridContextMenu<T> cm = new GridContextMenu<>(this);
-        cm.addItem((receiveMode ? "Receive" : "Send") + " Items", e -> e.getItem().ifPresent(this::rowDoubleClicked));
+        final boolean allowed = actionAllowed((receiveMode ? "RECEIVE" : "SEND") + "-ITEMS");
+        if(allowed) {
+            cm.addItem((receiveMode ? "Receive" : "Send") + " Items", e -> e.getItem()
+                    .ifPresent(this::rowDoubleClicked));
+        }
         GridMenuItem<T> grnMenu = cm.addItem("Associated GRN", e ->  grn());
         cm.setDynamicContentHandler(o -> {
             if(o == null) {
@@ -146,7 +150,7 @@ public abstract class AbstractSendAndReceiveMaterial<T extends InventoryTransfer
             }
             grn = receiveMode ? o.listLinks(InventoryGRN.class).findFirst() : null;
             grnMenu.setVisible(grn != null);
-            return grn != null || (receiveMode ? o.getStatus() == 1 : o.getStatus() == 0);
+            return grn != null || (allowed && (receiveMode ? o.getStatus() == 1 : o.getStatus() == 0));
         });
         if(receiveMode) {
             grnButton = new Button("GRN", VaadinIcon.FILE_TABLE, e -> grnSel());
