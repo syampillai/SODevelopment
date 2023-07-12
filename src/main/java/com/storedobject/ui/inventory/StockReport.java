@@ -11,7 +11,7 @@ import com.storedobject.vaadin.DataForm;
 public class StockReport extends DataForm {
 
     private ObjectField<InventoryStore> storeField;
-    private BooleanField zerosField;
+    private BooleanField zerosField, localCurrencyField;
     private ChoiceField outputField;
     private boolean customized = true;
     private Report pdf;
@@ -28,6 +28,8 @@ public class StockReport extends DataForm {
         addField(storeField);
         zerosField = new BooleanField("Print Zero-Quantity Items");
         addField(zerosField);
+        localCurrencyField = new BooleanField("Print Cost in Accounting Currency", true);
+        addField(localCurrencyField);
         outputField = new ChoiceField("Format", new String[] { "PDF", "Excel" });
         addField(outputField);
     }
@@ -98,6 +100,7 @@ public class StockReport extends DataForm {
         public Report(Device device, InventoryStore store) {
             super(device, store);
             printZeros(zerosField.getValue());
+            printCostInLocalCurrency(localCurrencyField.getValue());
             setCaption(getCaption());
             setItemFilter(StockReport.this::canPrint);
             configure(this);
@@ -128,6 +131,7 @@ public class StockReport extends DataForm {
         public ExReport(Device device, InventoryStore store) {
             super(device, store);
             printZeros(zerosField.getValue());
+            printCostInLocalCurrency(localCurrencyField.getValue());
             setCaption(getCaption());
             setItemFilter(StockReport.this::canPrint);
             configure(this);

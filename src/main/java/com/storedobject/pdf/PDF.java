@@ -1494,6 +1494,15 @@ public abstract class PDF implements java.io.Closeable, com.storedobject.core.Co
     }
 
     /**
+     * Set additional error information such that it will be printed in the log when an error happens. Any error
+     * thrown when generating reports will be dumped to the report output and system log.
+     *
+     * @param error Error information.
+     */
+    public final void setError(String error) {
+    }
+
+    /**
      * Dump the error that happened during reporting.
      *
      * @param error Error o dump.

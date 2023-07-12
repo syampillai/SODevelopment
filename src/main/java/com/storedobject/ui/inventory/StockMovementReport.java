@@ -1,11 +1,6 @@
 package com.storedobject.ui.inventory;
 
-import com.storedobject.core.DatePeriod;
-import com.storedobject.core.DateUtility;
-import com.storedobject.core.Device;
-import com.storedobject.core.InventoryItemType;
-import com.storedobject.core.InventoryStore;
-import com.storedobject.core.ObjectIterator;
+import com.storedobject.core.*;
 import com.storedobject.ui.Application;
 import com.storedobject.ui.DatePeriodField;
 import com.storedobject.ui.ObjectField;
@@ -16,9 +11,10 @@ public class StockMovementReport extends DataForm {
 
     private ObjectField<InventoryStore> storeField;
     private DatePeriodField periodField;
-    private BooleanField summaryField, zerosField;
+    private BooleanField summaryField, zerosField, localCurrencyField;
     private boolean customized = true;
     private Report report;
+    private ObjectField<InventoryItemType> pnField;
 
     public StockMovementReport(Application a) {
         super(a.getLogicTitle("Stock Movement"));
@@ -35,6 +31,11 @@ public class StockMovementReport extends DataForm {
         addField(summaryField);
         zerosField = new BooleanField("Print Zero-Quantity Items");
         addField(zerosField);
+        localCurrencyField = new BooleanField("Print Cost in Accounting Currency", true);
+        addField(localCurrencyField);
+        pnField = new ObjectField<>("Part Number", InventoryItemType.class, true);
+        pnField.setHelperText("Leave it blank for printing all items");
+        addField(pnField);
     }
 
     @Override
@@ -72,6 +73,11 @@ public class StockMovementReport extends DataForm {
             super(device, store, period);
             printZeros(zerosField.getValue());
             printSummary(summaryField.getValue());
+            printCostInLocalCurrency(localCurrencyField.getValue());
+            InventoryItemType pn = pnField.getObject();
+            if(pn != null) {
+                setPartNumber(pn);
+            }
             setCaption(getCaption());
             configure(this);
         }

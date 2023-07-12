@@ -416,7 +416,7 @@ public final class Money implements Storable, Comparable<Money> {
 			return this;
 		}
 
-		public Money get(Currency currency) {
+		public Money to(Currency currency) {
 			return new Money(currency);
 		}
 
@@ -426,6 +426,14 @@ public final class Money implements Storable, Comparable<Money> {
 
 		public String toString(Predicate<Money> filter) {
 			return toString(true);
+		}
+
+		public Money toLocal(TransactionManager tm) {
+			return toLocal(tm.getEntity());
+		}
+
+		public Money toLocal(SystemEntity systemEntity) {
+			return new Money();
 		}
 	}
 

@@ -52,6 +52,9 @@ public class StockReport extends PDFReport {
         this.printZeros = printZeros;
     }
 
+    public void printCostInLocalCurrency(boolean costInLocalCurrency) {
+    }
+
     public void setPartNumber(InventoryItemType partNumber) {
         setPartNumbers(ObjectIterator.create(partNumber));
         separateCategories = false;

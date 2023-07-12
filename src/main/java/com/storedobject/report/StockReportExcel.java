@@ -6,6 +6,7 @@ import com.storedobject.office.ExcelReport;
 import org.apache.poi.ss.usermodel.Cell;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Predicate;
 
 public class StockReportExcel extends ExcelReport {
@@ -15,6 +16,8 @@ public class StockReportExcel extends ExcelReport {
     private ObjectIterator<? extends InventoryItemType> partNumbers;
     private boolean printZeros = false;
     private boolean separateCategories;
+    private boolean costInLocalCurrency = true;
+    SystemEntity se;
     private int maxRow = -1;
     private Predicate<InventoryItem> itemFilter;
 
@@ -47,6 +50,10 @@ public class StockReportExcel extends ExcelReport {
 
     public void printZeros(boolean printZeros) {
         this.printZeros = printZeros;
+    }
+
+    public void printCostInLocalCurrency(boolean costInLocalCurrency) {
+        this.costInLocalCurrency = costInLocalCurrency;
     }
 
     public void setPartNumber(InventoryItemType partNumber) {
@@ -96,14 +103,18 @@ public class StockReportExcel extends ExcelReport {
     }
 
     public void printStock(ObjectIterator<? extends InventoryItemType> partNumbers, String categoryHeading) {
+        se = getTransactionManager().getEntity();
         printTitle();
         if(partNumbers == null) {
             partNumbers = StoredObject.list(InventoryItemType.class, null, "T_Family", true);
             separateCategories = true;
         }
-        Quantity total, inTransit, q;
+        Quantity totalQuantity, inTransitQuantity, q;
+        Money totalCost, inTransitCost, c = new Money(se.getCurrency());
+        totalCost = inTransitCost = c;
         StyledString stockLocation, sno;
-        ArrayList<Quantity> quantity = new ArrayList<>();
+        List<Quantity> quantities = new ArrayList<>();
+        List<Money> costs = new ArrayList<>();
         ObjectIterator<? extends InventoryLocation> locations;
         ObjectIterator<InventoryItem> stockList;
         String s, error = null;
@@ -122,11 +133,15 @@ public class StockReportExcel extends ExcelReport {
             } else {
                 locations = ObjectIterator.create(this.location);
             }
-            total = itemType.getUnitOfMeasurement().zero();
-            inTransit = total.zero();
+            totalQuantity = itemType.getUnitOfMeasurement().zero();
+            inTransitQuantity = totalQuantity.zero();
             q = itemType.getUnitOfMeasurement().zero();
+            totalCost = totalCost.zero();
+            inTransitCost = inTransitCost.zero();
+            c = c.zero();
             stockLocation = new StyledString();
-            quantity.clear();
+            quantities.clear();
+            costs.clear();
             sno = new StyledString();
             for(InventoryLocation loc: locations) {
                 if(loc instanceof InventoryStoreBin) {
@@ -139,8 +154,14 @@ public class StockReportExcel extends ExcelReport {
                 }
                 for(InventoryItem ii : stockList) {
                     q = ii.getQuantity();
+                    if(costInLocalCurrency) {
+                        c = ii.getCost().toLocal(se);
+                    }
                     try {
-                        total = total.add(q);
+                        totalQuantity = totalQuantity.add(q);
+                        if(costInLocalCurrency) {
+                            totalCost = totalCost.add(c);
+                        }
                     } catch(Throwable e) {
                         error = e.getMessage();
                     }
@@ -149,28 +170,36 @@ public class StockReportExcel extends ExcelReport {
                     }
                     if(ii.getInTransit()) {
                         stockLocation.append(" (In Transit)");
-                        inTransit = inTransit.add(q);
+                        inTransitQuantity = inTransitQuantity.add(q);
+                        if(costInLocalCurrency) {
+                            inTransitCost = inTransitCost.add(c);
+                        }
                     }
                     stockLocation.newLine();
                     s = ii.getSerialNumber();
                     sno.append(s == null ? "" : s).newLine();
-                    quantity.add(q);
+                    quantities.add(q);
+                    if(costInLocalCurrency) {
+                        costs.add(c);
+                    }
                 }
             }
-            if(error == null && (total.isZero() || total.isGreaterThan(q))) {
-                if(!total.isZero()) {
+            if(error == null && (totalQuantity.isZero() || totalQuantity.isGreaterThan(q))) {
+                if(!totalQuantity.isZero()) {
                     stockLocation.newLine();
                 }
                 stockLocation.append("Total");
-                quantity.add(total);
+                quantities.add(totalQuantity);
+                costs.add(totalCost);
             }
-            if(!inTransit.isZero()) {
+            if(!inTransitQuantity.isZero()) {
                 stockLocation.newLine();
                 stockLocation.append("In Transit");
-                quantity.add(inTransit);
+                quantities.add(inTransitQuantity);
+                costs.add(inTransitCost);
             }
             if(error == null) {
-                if(total.isZero()) {
+                if(totalQuantity.isZero()) {
                     if(!printZeros) {
                         continue;
                     }
@@ -193,6 +222,9 @@ public class StockReportExcel extends ExcelReport {
                 tcell("Location");
                 tcellR();
                 tcell("Unit");
+                if(costInLocalCurrency) {
+                    tcell("Cost");
+                }
                 getNextRow();
                 headerPrinted = true;
             }
@@ -205,7 +237,7 @@ public class StockReportExcel extends ExcelReport {
                 error = null;
             }
             createCell(stockLocation);
-            createCell(quantity);
+            createCell(quantities, costs);
             goToCell(0, maxRow + 1);
         }
     }
@@ -231,16 +263,21 @@ public class StockReportExcel extends ExcelReport {
         goToCell(c, r);
     }
 
-    private void createCell(ArrayList<Quantity> quantities) {
-        int c = getCellIndex();
-        quantities.forEach(q -> {
+    private void createCell(List<Quantity> quantities, List<Money> costs) {
+        int colIndex = getCellIndex();
+        Quantity q;
+        for(int i = 0; i < quantities.size(); i++) {
+            q = quantities.get(i);
             getCell().setCellValue(q.getValue().doubleValue());
             getNextCell().setCellValue(q.getUnit().getUnit());
+            if(costInLocalCurrency) {
+                getNextCell().setCellValue(costs.get(i).toString());
+            }
             if(getRowIndex() > maxRow) {
                 maxRow = getRowIndex();
             }
-            goToCell(c, getRowIndex() + 1);
-        });
+            goToCell(colIndex, getRowIndex() + 1);
+        }
     }
 
     private void tcell(String s) {

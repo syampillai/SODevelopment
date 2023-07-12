@@ -26,6 +26,9 @@ public class StockMovementReport extends PDFReport {
 	public void printZeros(boolean printZeros) {
 	}
 
+	public void printCostInLocalCurrency(boolean costInLocalCurrency) {
+	}
+
 	public void setPartNumber(InventoryItemType partNumber) {
 		if(partNumber != null) {
 			setPartNumbers(ObjectIterator.create(partNumber));

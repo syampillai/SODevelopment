@@ -9,6 +9,7 @@ import com.storedobject.vaadin.Button;
 import com.storedobject.vaadin.View;
 
 import java.awt.*;
+import java.util.Currency;
 
 @SuppressWarnings("DataFlowIssue")
 public class Test extends View implements Transactional {
@@ -16,6 +17,10 @@ public class Test extends View implements Transactional {
     public Test() {
         super("Image Test");
         setComponent(new Button("Test", e -> attach()));
+        Money m = new Money(100, "USD");
+        System.err.println(m.getSellingRate(Currency.getInstance("INR"), getTransactionManager().getEntity()));
+        System.err.println(m.getSellingRate(Currency.getInstance("USD"), getTransactionManager().getEntity()));
+        System.err.println(m + ", " + m.toLocal(getTransactionManager()));
     }
 
     private void attach() {
