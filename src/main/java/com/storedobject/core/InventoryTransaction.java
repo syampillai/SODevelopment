@@ -8,16 +8,6 @@ public final class InventoryTransaction {
 
     public final static Date dataPickupDate = DateUtility.today();
 
-    @Deprecated
-    public InventoryTransaction(TransactionManager tm) {
-        this(tm, "");
-    }
-
-    @Deprecated
-    public InventoryTransaction(TransactionManager tm, String reference) {
-        this(tm, null, reference);
-    }
-
     public InventoryTransaction(TransactionManager tm, Date date) {
         this(tm, date, null);
     }
@@ -29,8 +19,8 @@ public final class InventoryTransaction {
         return new Date(0);
     }
 
-    public static InventoryTransaction forDataPickup(TransactionManager tm) {
-        return new InventoryTransaction(tm, null, null);
+    public static InventoryTransaction forDataPickup(TransactionManager tm, String reference) {
+        return new InventoryTransaction(tm, null, reference);
     }
 
     /**
@@ -95,6 +85,9 @@ public final class InventoryTransaction {
     }
 
     public void sale(InventoryItem item, Quantity quantity, String reference, Entity toEntity) {
+    }
+
+    public void splitQuantity(InventoryItem item, Quantity quantity, String reference) {
     }
 
     public void moveTo(InventoryItem item, Quantity quantity, String reference, InventoryLocation to) {

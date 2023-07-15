@@ -157,11 +157,6 @@ public class ObjectTree<T extends StoredObject> extends DataTreeGrid<T>
     }
 
     @Override
-    public void setObjects(Iterable<T> objects) {
-        load(ObjectIterator.create(objects.iterator()));
-    }
-
-    @Override
     public void setObjectSetter(ObjectSetter<T> setter) {
     }
 
@@ -326,5 +321,50 @@ public class ObjectTree<T extends StoredObject> extends DataTreeGrid<T>
     @Override
     public void visitChildren(T parent, Consumer<T> consumer, boolean includeGrandChildren) {
         getDataProvider().visitChildren(parent, consumer, includeGrandChildren);
+    }
+
+    /**
+     * Prefix string that is added to the "action" string to determine the actual {@link UIAction} to be checked. See
+     * {@link #actionAllowed(String)}. For example, {@link com.storedobject.ui.inventory.POBrowser} returns the value
+     * "PO" for this method.
+     *
+     * @return Prefix string. Default implementation returns null. That means that all the actions are allowed.
+     */
+    protected String getActionPrefix() {
+        return null;
+    }
+
+    /**
+     * Check whether a specific action is allowed or not. An action is defined in the UI logic as a keyword like
+     * "SEND-ITEMS", "PLACE-ORDER", "RECEIVE-ITEMS", "PRINT-VOUCHER", etc. and there could be corresponding access
+     * control applicable within the logic. The user's groups determine whether that user can carry out that action or
+     * not. This method returns <code>true/false</code> to denote that the user can carry out the action or not.
+     * However, it is up to the logic to decide the course of action.
+     * <p>The user's groups can be configured to allow various UI actions ({@link com.storedobject.core.UIAction}.
+     * Each {@link com.storedobject.core.UIAction} represents a unique "action" string ({@link UIAction#getAction()})
+     * and that value should be equal to {@link #getActionPrefix()} + "-" + action in order to allow that action.</p>
+     *
+     * @param action Action string.
+     * @return True/false. Please note that it will always return <code>true</code> if {@link #getActionPrefix()}
+     * returns <code>null</code>.
+     */
+    public boolean actionAllowed(String action) {
+        return DataGrid.actionAllowed(getTransactionManager(), action, getActionPrefix());
+    }
+
+    /**
+     * Same as {@link #actionAllowed(String)} except that this shows a message to the user about it if the action is not
+     * allowed.
+     *
+     * @param action Action string.
+     * @return True/false.
+     */
+    public boolean canAllowAction(String action) {
+        if(!actionAllowed(action)) {
+            clearAlerts();
+            warning(DataGrid.ACTION_NOT_ALLOWED);
+            return false;
+        }
+        return true;
     }
 }

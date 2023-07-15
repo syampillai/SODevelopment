@@ -9,6 +9,7 @@ import java.util.List;
 
 public class AssemblyDataPickup<T extends InventoryItem, C extends InventoryItem> extends Assembly<T, C> {
 
+    private static final String REF = "Initial assembly";
     public AssemblyDataPickup(Class<T> itemClass) {
         this(null, null, itemClass, null);
     }
@@ -164,7 +165,7 @@ public class AssemblyDataPickup<T extends InventoryItem, C extends InventoryItem
                 return false;
             }
             if(inventoryTransaction == null) {
-                inventoryTransaction = InventoryTransaction.forDataPickup(getTransactionManager());
+                inventoryTransaction = InventoryTransaction.forDataPickup(getTransactionManager(), REF);
             } else {
                 inventoryTransaction.abandon();
             }
@@ -307,7 +308,7 @@ public class AssemblyDataPickup<T extends InventoryItem, C extends InventoryItem
                 }
             }
             if(inventoryTransaction == null) {
-                inventoryTransaction = InventoryTransaction.forDataPickup(getTransactionManager());
+                inventoryTransaction = InventoryTransaction.forDataPickup(getTransactionManager(), REF);
             } else {
                 inventoryTransaction.abandon();
             }

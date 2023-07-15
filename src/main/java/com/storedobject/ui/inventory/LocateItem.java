@@ -209,6 +209,8 @@ public class LocateItem extends DataGrid<InventoryItem> implements CloseableView
                 cm.addItem("Fitment Locations", e -> e.getItem().ifPresent(FitmentLocations::new));
         GridMenuItem<InventoryItem> inspect =
                 cm.addItem("Inspect & Bin", e -> e.getItem().ifPresent(this::inspect));
+        GridMenuItem<InventoryItem> split =
+                cm.addItem("Split Quantity", e -> e.getItem().ifPresent(this::split));
         GridMenuItem<InventoryItem> breakAssembly =
                 cm.addItem("Break from Assembly", e -> e.getItem().ifPresent(this::breakAssembly));
         GridMenuItem<InventoryItem> movementDetail = cm.addItem("Movement Details",
@@ -227,6 +229,8 @@ public class LocateItem extends DataGrid<InventoryItem> implements CloseableView
             itemAssembly.setVisible(ii.getPartNumber().isAssembly());
             parentAssembly.setVisible(loc instanceof InventoryFitmentPosition);
             inspect.setVisible(canInspect || allowBreaking);
+            split.setVisible(canInspect && !ii.isSerialized() && ii.getQuantity().isPositive()
+                    && !ii.getQuantity().equals(Count.ONE));
             editCost.setVisible(allowEditCost);
             viewFitment.setVisible(loc instanceof InventoryFitmentPosition);
             viewFitmentLocations.setVisible(loc instanceof InventoryFitmentPosition);
@@ -454,6 +458,11 @@ public class LocateItem extends DataGrid<InventoryItem> implements CloseableView
         new ReceiveAndBin(list).execute();
     }
 
+    private void split(InventoryItem ii) {
+        close();
+        new SplitQuantity(ii).execute();
+    }
+
     private void breakAssembly(InventoryItem ii) {
         ELabel m = new ELabel(ii.toDisplay(), Application.COLOR_SUCCESS);
         m.newLine().append("Do you really want to take out this item?", Application.COLOR_ERROR).newLine();
@@ -603,6 +612,52 @@ public class LocateItem extends DataGrid<InventoryItem> implements CloseableView
         public Component createHeader() {
             return new ButtonLayout(new ELabel("Fitment Locations under ").append(item.toDisplay()).update(),
                     new Button("Exit", e -> close()).asSmall());
+        }
+    }
+
+    private static class SplitQuantity extends DataForm implements Transactional {
+
+        private final InventoryItem item;
+        private final QuantityField splitQuantityField;
+        private final Quantity quantity;
+
+        public SplitQuantity(InventoryItem item) {
+            super("Split Quantity");
+            addField(new ELabelField("Item", item.toDisplay(), Application.COLOR_SUCCESS));
+            this.item = item;
+            quantity = item.getQuantity();
+            QuantityField quantityField = new QuantityField("Current Quantity");
+            quantityField.setValue(quantity);
+            splitQuantityField = new QuantityField("Quantity to Split");
+            splitQuantityField.setValue(quantity.zero());
+            addField(quantityField, splitQuantityField);
+            setFieldReadOnly(quantityField);
+            setRequired(splitQuantityField);
+        }
+
+        @Override
+        protected boolean process() {
+            clearAlerts();
+            Quantity q = splitQuantityField.getValue();
+            try {
+                if(!quantity.canConvert(q)) {
+                    return false;
+                }
+            } catch(Invalid_State e) {
+                warning(e);
+                return false;
+            }
+            if(q.isGreaterThanOrEqual(quantity)) {
+                warning("Invalid quantity specified");
+                return false;
+            }
+            close();
+            String reference = "Split";
+            InventoryTransaction it = new InventoryTransaction(getTransactionManager(), DateUtility.today(), reference);
+            it.splitQuantity(item, q, reference);
+            transact(it::save);
+            message("Quantity split successfully");
+            return true;
         }
     }
 }

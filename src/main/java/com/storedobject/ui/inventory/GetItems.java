@@ -30,6 +30,7 @@ class GetItems extends DataForm implements Transactional {
     private ObjectEditor editor;
     private final Consumer<GetItems> moveAction;
     private final String reference;
+    private final Application application;
 
     GetItems(String caption, InventoryLocation locationTo, Date date, String reference, Consumer<GetItems> moveAction) {
         this(caption, locationTo, null, date, reference, moveAction);
@@ -78,6 +79,7 @@ class GetItems extends DataForm implements Transactional {
             ef.append(')');
         }
         ef.update();
+        snField.uppercase();
         addField(statusField, ef, pnField, snField, qField, costField);
         snField.addValueChangeListener(e -> {
             if(e.isFromClient()) {
@@ -91,6 +93,7 @@ class GetItems extends DataForm implements Transactional {
         trackValueChange(pnField);
         trackValueChange(qField);
         setRequired(qField);
+        application = getApplication();
     }
 
     @Override
@@ -231,7 +234,11 @@ class GetItems extends DataForm implements Transactional {
         InventoryItemType pn = pnField.getObject();
         if(pn == null || !pn.isSerialized()) {
             qField.setEnabled(true);
-            qField.clear();
+            if(pn == null) {
+                qField.clear();
+            } else {
+                qField.setValue(pn.getUnitOfMeasurement());
+            }
         } else {
             qField.setEnabled(false);
             qField.setValue(Count.ONE);
@@ -252,25 +259,15 @@ class GetItems extends DataForm implements Transactional {
     }
 
     private boolean move() {
-        try {
-            moveTo();
-            return true;
-        } catch(Throwable error) {
-            error(error);
-        }
-        return false;
-    }
-
-    private void moveTo() throws Exception {
-        Transaction t = getTransactionManager().createTransaction();
-        try {
+        if(transact(t -> {
             item.save(t);
             inventoryTransaction.save(t);
-            t.commit();
-        } catch(Throwable error) {
-            t.rollback();
-            throw error;
+        })) {
+            application.access(() -> message("Saved: " + item.toDisplay() + ", Quantity: " + item.getQuantity()
+                    + ", Location: " + item.getLocationDisplay()));
+            return true;
         }
+        return false;
     }
 
     public final InventoryItem getItem() {

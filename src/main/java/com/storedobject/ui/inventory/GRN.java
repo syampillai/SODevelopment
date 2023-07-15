@@ -1035,11 +1035,6 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
                 return bin == null ? "[Not set]" : bin.toDisplay();
             }
 
-            @SuppressWarnings("unused")
-            public boolean getInspected(InventoryGRNItem grnItem) {
-                return !Id.isNull(grnItem.getItemId());
-            }
-
             @Override
             public boolean isColumnEditable(String columnName) {
                 if("Inspected".equals(columnName)) {

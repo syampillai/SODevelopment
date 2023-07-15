@@ -64,15 +64,15 @@ public class ObjectTreeBrowser<T extends StoredObject> extends ObjectTree<T> {
         }
         if(actions > 0) {
             boolean nm = !MasterObject.class.isAssignableFrom(getObjectClass());
-            if(nm && ((actions & NEW) == NEW)) {
+            if(nm && ((actions & NEW) == NEW) && actionAllowed("NEW")) {
                 add = new Button("New", this);
                 buttonPanel.add(add);
             }
-            if(nm && ((actions & EDIT) == EDIT)) {
+            if(nm && ((actions & EDIT) == EDIT) && actionAllowed("EDIT")) {
                 edit = new Button("Edit", this);
                 buttonPanel.add(edit);
             }
-            if(nm && ((actions & DELETE) == DELETE)) {
+            if(nm && ((actions & DELETE) == DELETE) && actionAllowed("DELETE")) {
                 delete = new ConfirmButton("Delete", this);
                 ((ConfirmButton)delete).setPreconfirm(this::checkDelete);
                 buttonPanel.add(delete);
@@ -88,15 +88,15 @@ public class ObjectTreeBrowser<T extends StoredObject> extends ObjectTree<T> {
                 view = new Button("View", this);
                 buttonPanel.add(view);
             }
-            if((actions & PDF) == PDF) {
+            if((actions & PDF) == PDF && actionAllowed("PDF")) {
                 report = new Button("Report", this);
                 buttonPanel.add(report);
             }
-            if((actions & EXCEL) == EXCEL) {
+            if((actions & EXCEL) == EXCEL && actionAllowed("EXCEL")) {
                 excel = new Button("Excel", this);
                 buttonPanel.add(excel);
             }
-            if(nm && ((actions & AUDIT) == AUDIT)) {
+            if(nm && ((actions & AUDIT) == AUDIT) && actionAllowed("AUDIT")) {
                 audit = new Button("Audit", "user", this);
                 buttonPanel.add(audit);
             }
