@@ -12,6 +12,7 @@ public class ItemMovementReport extends DataForm {
 
     public ItemMovementReport(Application a) {
         super(a.getLogicTitle("Item Movement"));
+        itemField.setLoadFilter(InventoryItem::isSerialized);
         addField(itemField);
         setRequired(itemField);
     }

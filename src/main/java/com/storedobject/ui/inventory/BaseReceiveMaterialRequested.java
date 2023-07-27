@@ -40,6 +40,9 @@ public class BaseReceiveMaterialRequested<MR extends MaterialRequest, MRI extend
         GridMenuItem<MR> release = contextMenu.addItem("Cancel Reservation",
                 e -> releaseReservation(e.getItem().orElse(null)));
         contextMenu.setDynamicContentHandler(o -> {
+            if(o == null) {
+                return false;
+            }
             deselectAll();
             select(o);
             if(switch(o.getStatus()) {

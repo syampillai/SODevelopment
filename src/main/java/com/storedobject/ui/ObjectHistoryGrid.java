@@ -14,7 +14,6 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.function.BiPredicate;
 
-@SuppressWarnings("resource")
 public class ObjectHistoryGrid<T extends StoredObject> extends DataGrid<T> implements CloseableView {
 
     private T object;
@@ -92,14 +91,14 @@ public class ObjectHistoryGrid<T extends StoredObject> extends DataGrid<T> imple
     @Override
     public String getColumnCaption(String columnName) {
         return switch(columnName) {
-            case "Timestamp" -> "Timestamp (UTC)";
-            case "TransactionIP" -> "IP Address";
+            case "TransactionIP" -> "I Address";
+            case "Timestamp" -> "Timestamp (" + getTransactionManager().getEntity().getTimeZone() + ")";
             default -> super.getColumnCaption(columnName);
         };
     }
 
     public Timestamp getTimestamp(T object) {
-        return object.timestamp();
+        return getTransactionManager().date(object.timestamp());
     }
 
     public Person getChangedBy(T object) {
@@ -184,6 +183,7 @@ public class ObjectHistoryGrid<T extends StoredObject> extends DataGrid<T> imple
                     new Button("Load Another (New View)",
                             e -> loadAnother(o -> new ObjectHistoryGrid<>(o, getATC()).executeAll())));
         }
+        buttons.add(new Button("User Details", e -> showMore()));
         buttons.add(new Button("Exit", e -> close()));
         return buttons;
     }
@@ -219,5 +219,28 @@ public class ObjectHistoryGrid<T extends StoredObject> extends DataGrid<T> imple
         }
         T previous = get(n);
         new ObjectComparisonGrid<>(current, previous).execute();
+    }
+
+    private void showMore() {
+        clearAlerts();
+        T current  = selected();
+        if(current == null) {
+            return;
+        }
+        showTrail(AuditTrail.create(current), getTransactionManager()).popup();
+    }
+
+    static TextView showTrail(AuditTrail auditTrail, TransactionManager tm) {
+        TextView tv = new TextView("User Details");
+        String tz = " " + tm.getEntity().getTimeZone();
+        tv.append("Person: " + auditTrail.getUser().getPerson()).newLine()
+                .append("Username: " + auditTrail.getUser().getLogin()).newLine()
+                .append("Timestamp: " + DateUtility.formatWithTimeHHMM(tm.date(auditTrail.getTimestamp())) + tz)
+                .newLine()
+                .append("IP Address: ").append(auditTrail.getIPAddress()).newLine()
+                .append("Connected from: " + auditTrail.getApplicationClient()).newLine()
+                .append("Logged in at: " + DateUtility.formatWithTimeHHMM(auditTrail.getLoginTime()) + tz)
+                .update();
+        return tv;
     }
 }

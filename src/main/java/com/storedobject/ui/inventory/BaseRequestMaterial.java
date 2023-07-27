@@ -84,7 +84,7 @@ public class BaseRequestMaterial<MR extends MaterialRequest, MRI extends Materia
             warning("Already sent");
             return;
         }
-        if(!mr.existsLinks(MaterialRequestItem.class)) {
+        if(!mr.existsLinks(mriClass)) {
             warning("No items to request");
             return;
         }
@@ -123,7 +123,20 @@ public class BaseRequestMaterial<MR extends MaterialRequest, MRI extends Materia
 
     private void receive() {
         close();
-        new ReceiveMaterialRequested(getFromOrTo()).execute();
+        Class<? extends BaseReceiveMaterialRequested<MR, MRI>> logic = getReceiveLogic();
+        if(logic == null) {
+            new BaseReceiveMaterialRequested<>(getObjectClass(), getFromOrTo()).execute();
+            return;
+        }
+        try {
+            logic.getConstructor(InventoryLocation.class).newInstance(getFromOrTo()).execute();
+        } catch(Throwable e) {
+            error(e);
+        }
+    }
+
+    protected Class<? extends BaseReceiveMaterialRequested<MR, MRI>> getReceiveLogic() {
+        return null;
     }
 
     @Override

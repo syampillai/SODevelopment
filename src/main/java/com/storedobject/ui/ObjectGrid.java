@@ -5,10 +5,6 @@ import com.storedobject.core.ObjectList;
 import com.storedobject.core.ObjectSetter;
 import com.storedobject.core.StoredObject;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-
 public class ObjectGrid<T extends StoredObject> extends ObjectListGrid<T> implements ObjectGridData<T, T> {
 
     static final String NOTHING_SELECTED = "Nothing selected";

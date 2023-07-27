@@ -1,10 +1,7 @@
 package com.storedobject.ui;
 
 import com.storedobject.common.StringList;
-import com.storedobject.core.ClassAttribute;
-import com.storedobject.core.StoredObject;
-import com.storedobject.core.StoredObjectUtility;
-import com.storedobject.core.StringUtility;
+import com.storedobject.core.*;
 import com.storedobject.vaadin.Button;
 import com.storedobject.vaadin.ButtonLayout;
 import com.storedobject.vaadin.CloseableView;
@@ -17,9 +14,11 @@ import java.util.function.Function;
 
 @SuppressWarnings("unchecked")
 public class ObjectComparisonGrid<T extends StoredObject> extends ListGrid<ObjectComparisonGrid.Value>
-        implements CloseableView {
+        implements CloseableView, Transactional {
 
     private final ELabel doneBy;
+    private final AuditTrail auditTrail;
+
     public ObjectComparisonGrid(T current, T previous) {
         super(Value.class, StringList.EMPTY);
         setCaption("Changes");
@@ -27,11 +26,12 @@ public class ObjectComparisonGrid<T extends StoredObject> extends ListGrid<Objec
         createHTMLColumn("Changed", Value::changed);
         createColumn("PreviousValue", Value::previousValue);
         createColumn("CurrentValue", Value::currentValue);
+        auditTrail = AuditTrail.create(current);
         load(current, previous);
         setViewFilter(Value::isChanged);
         doneBy = new ELabel("(", Application.COLOR_INFO);
-        doneBy.append("Changes done by ").append(current.person(), Application.COLOR_SUCCESS).append(")",
-                Application.COLOR_INFO).update();
+        doneBy.append("Changes done by ").append(auditTrail.getUser().getPerson(),
+                Application.COLOR_SUCCESS).append(")", Application.COLOR_INFO).update();
     }
 
     @Override
@@ -44,7 +44,10 @@ public class ObjectComparisonGrid<T extends StoredObject> extends ListGrid<Objec
                 setViewFilter(Value::isChanged);
             }
         });
-        return new ButtonLayout(cb, doneBy, new Button("Exit", e -> close()));
+        return new ButtonLayout(cb, doneBy,
+                new Button("User Details",
+                        e -> ObjectHistoryGrid.showTrail(auditTrail, getTransactionManager()).popup()),
+                new Button("Exit", e -> close()));
     }
 
     private void load(T current, T previous) {

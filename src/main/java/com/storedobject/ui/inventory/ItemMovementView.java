@@ -81,6 +81,18 @@ public class ItemMovementView extends ListGrid<InventoryLedger> implements Close
                 forEach(this::add);
     }
 
+    public String getReference(InventoryLedger ledger) {
+        InventoryLocation locFrom = ledger.getLocationFrom();
+        String ref = ledger.getReference();
+        if(locFrom.getType() == 12) { // Data-pickup
+            AuditTrail at = AuditTrail.create(ledger);
+            if(at != null) {
+                ref += " (Created at " + DateUtility.formatWithTimeHHMM(at.getTimestamp()) + ")";
+            }
+        }
+        return ref;
+    }
+
     @Override
     public Component createHeader() {
         itemField.setWidthFull();

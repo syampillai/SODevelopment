@@ -125,6 +125,9 @@ public class TransactionControl extends ErrorText {
         return Math.random() > 0.5;
     }
 
+    public void log(Object anything) {
+    }
+
     public interface CommitListener {
         void committing(TransactionControl transactionControl) throws Throwable;
         void committed(TransactionControl transactionControl);

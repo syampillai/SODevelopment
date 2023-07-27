@@ -79,7 +79,7 @@ public abstract class AbstractRequestMaterial<MR extends MaterialRequest, MRI ex
 
     private AbstractRequestMaterial(Class<MR> objectClass, boolean issuing, int columnStyle, LocationField fromOrTo,
                                     int noActions, InventoryLocation otherLocation) {
-        super(objectClass, columns(columnStyle, issuing), EditorAction.ALLOW_ANY | (EditorAction.ALL & (~noActions)),
+        super(objectClass, columns(objectClass, columnStyle, issuing), EditorAction.ALL & (~noActions),
                 issuing ? StringList.create("Date") : StringList.create("Date", "ReferenceNumber"));
         Class<MRI> iClass;
         try {
@@ -127,18 +127,22 @@ public abstract class AbstractRequestMaterial<MR extends MaterialRequest, MRI ex
     void created() {
     }
 
-    private static StringList columns(int style, boolean issuing) {
+    private static StringList columns(Class<? extends StoredObject> mrClass, int style, boolean issuing) {
         if(style == -1) {
             style = issuing ? 0 : 1;
         }
+        StringList bc = StoredObjectUtility.browseColumns(mrClass);
+        bc = bc.minus(StringList.create("Date", "Reference", "Remarks", "FromLocation", "ToLocation", "Status",
+                "Priority", "RequiredBefore", "Received"));
         return switch(style) {
             case 0 -> StringList.create("Date", "IssueReference", "Reference AS Request Reference", "Remarks",
-                    "FromLocation AS Requested Location", "Person AS By", "Status", "Priority", "RequiredBefore");
-            case 1 -> StringList.create("Date", "Reference", "ToLocation", "Status",
-                    "Priority", "RequiredBefore");
-            case 2 -> StringList.create("Date", "Reference", "ToLocation AS From", "Status",
-                    "Priority", "RequiredBefore", "Received");
-            default -> columns(0, false);
+                    "FromLocation AS Requested Location", "Person AS By", "Status", "Priority", "RequiredBefore")
+                    .concat(bc);
+            case 1 -> StringList.create("Date", "Reference", "ToLocation", "Status", "Priority", "RequiredBefore")
+                    .concat(bc);
+            case 2 -> StringList.create("Date", "Reference", "ToLocation AS From", "Status", "Priority",
+                    "RequiredBefore", "Received").concat(bc);
+            default -> columns(mrClass, 0, false);
         };
     }
 
@@ -450,7 +454,7 @@ public abstract class AbstractRequestMaterial<MR extends MaterialRequest, MRI ex
                     }
                     filter = "Contains " + pn.toDisplay();
                     Id pnId = pn.getId();
-                    setLoadFilter(p -> p.existsLinks(mriClass, "PartNumber=" + pnId, true));
+                    setLoadFilter(p -> p.existsLinks(mriClass, "PartNumber=" + pnId));
                 }
                 case 1 -> {
                     DatePeriod period = periodField.getValue();
