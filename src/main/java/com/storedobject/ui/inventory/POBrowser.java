@@ -93,6 +93,8 @@ public class POBrowser<T extends InventoryPO> extends ObjectBrowser<T> implement
             }
         });
         contextMenu = new GridContextMenu<>(this);
+        GridMenuItem<T> approveOrder = contextMenu.addItem("Approve the Order",
+                e -> e.getItem().ifPresent(i -> approveOrder()));
         GridMenuItem<T> placeOrder = contextMenu.addItem("Place the Order",
                 e -> e.getItem().ifPresent(i -> placeOrder()));
         GridMenuItem<T> receiveItems = contextMenu.addItem("Receive Items",
@@ -116,10 +118,17 @@ public class POBrowser<T extends InventoryPO> extends ObjectBrowser<T> implement
             viewGRNs.setVisible(status > 1);
             if(status > 0) {
                 placeOrder.setVisible(false);
+                approveOrder.setVisible(false);
             }
             switch(status) {
                 case 0 -> {
-                    placeOrder.setVisible(!forGRN && canPlaceOrder(po));
+                    if(po.getApprovalRequired()) {
+                        approveOrder.setVisible(!forGRN && canApprovePO(po));
+                        placeOrder.setVisible(false);
+                    } else {
+                        placeOrder.setVisible(!forGRN && canPlaceOrder(po));
+                        approveOrder.setVisible(false);
+                    }
                     receiveItems.setVisible(false);
                     foreClose.setVisible(canClosePO(po));
                     close.setVisible(false);
@@ -315,23 +324,56 @@ public class POBrowser<T extends InventoryPO> extends ObjectBrowser<T> implement
         }
     }
 
-    private void placeOrder() {
-        T po = selected();
-        if(po == null) {
-            return;
-        }
-        if(po.getStatus() != 0) {
-            warning("Status is already '" + po.getStatusValue() + "'");
-            return;
-        }
-        if(!po.existsLinks(InventoryPOItem.class, true)) {
-            warning("Item list is empty");
-            return;
-        }
+    private T check0(boolean forApproval) {
         clearAlerts();
-        if(canPlaceOrder(po) && transact(po::placeOrder)) {
-            refresh(po);
-            message("Order placed");
+        T selected = selected();
+        if(selected == null) {
+            return null;
+        }
+        if(selected.getStatus() != 0) {
+            warning("Status is already '" + selected.getStatusValue() + "'");
+            return null;
+        }
+        if(forApproval) {
+            if(!selected.getApprovalRequired()) {
+                warning("Already approved");
+                return null;
+            }
+        } else {
+            if(selected.getApprovalRequired()) {
+                warning("Approval required");
+                return null;
+            }
+        }
+        if(!selected.existsLinks(InventoryPOItem.class, true)) {
+            warning("Item list is empty");
+            return null;
+        }
+        return selected;
+    }
+
+    private void approveOrder() {
+        T po = check0(true);
+        if(po != null) {
+            if(canApprovePO(po) && approve(po)) {
+                refresh(po);
+                message("Approved");
+            }
+        }
+    }
+
+    private boolean approve(T po) {
+        po.setApprovalRequired(false);
+        return transact(po::save);
+    }
+
+    private void placeOrder() {
+        T po = check0(false);
+        if(po != null) {
+            if(canPlaceOrder(po) && transact(po::placeOrder)) {
+                refresh(po);
+                message("Order placed");
+            }
         }
     }
 
@@ -394,14 +436,16 @@ public class POBrowser<T extends InventoryPO> extends ObjectBrowser<T> implement
             return;
         }
         switch(po.getStatus()) {
-            case 4:
+            case 4 -> {
                 message("Already closed");
                 return;
-            case 3:
-                break;
-            default:
+            }
+            case 3 -> {
+            }
+            default -> {
                 message("Can't proceed with Status = " + po.getStatusValue());
                 return;
+            }
         }
         if(pendingGRNs(po) || !canClosePO(po)) {
             return;
@@ -436,6 +480,16 @@ public class POBrowser<T extends InventoryPO> extends ObjectBrowser<T> implement
             refresh(po);
             message("Closed");
         }
+    }
+
+    /**
+     * Check whether this PO can be approved or not.
+     *
+     * @param po PO.
+     * @return True/false.
+     */
+    protected boolean canApprovePO(T po) {
+        return actionAllowed("APPROVE");
     }
 
     /**

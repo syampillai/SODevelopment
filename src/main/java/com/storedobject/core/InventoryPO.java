@@ -84,6 +84,17 @@ public class InventoryPO extends StoredObject implements HasChildren {
         return "";
     }
 
+    public static String getStatusValue(int value) {
+        return "";
+    }
+
+    public void setApprovalRequired(boolean approvalRequired) {
+    }
+
+    public boolean getApprovalRequired() {
+        return Math.random() > 0.5;
+    }
+
     public boolean isClosed() {
         return new Random().nextBoolean();
     }

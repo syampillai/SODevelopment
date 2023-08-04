@@ -6,10 +6,10 @@
 
     <groupId>com.storedobject</groupId>
     <artifactId>so-development</artifactId>
-    <version>8.8.10</version>
+    <version>8.8.11</version>
 
     <properties>
-        <so-common-version>4.3.0</so-common-version>
+        <so-common-version>4.4.1</so-common-version>
         <so-components-version>11.1.17</so-components-version>
         <so-charts-version>3.2.4</so-charts-version>
         <vaadin.version>23.2.16</vaadin.version>
@@ -64,13 +64,6 @@
     </dependencyManagement>
 
     <dependencies>
-
-        <!-- Forcing version for vulnerability handling -->
-        <dependency>
-            <groupId>commons-fileupload</groupId>
-            <artifactId>commons-fileupload</artifactId>
-            <version>1.5</version>
-        </dependency>
 
         <!-- Java mail -->
         <dependency>

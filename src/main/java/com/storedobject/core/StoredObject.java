@@ -63,6 +63,10 @@ public abstract class StoredObject implements Displayable, HasId {
         return isVirtual();
     }
 
+    protected int getKeyIndex(String attributeName) {
+        return 0;
+    }
+
     public final String getTransactionIP() {
         return "" + r;
     }

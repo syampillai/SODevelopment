@@ -147,4 +147,11 @@ public abstract class InventoryTransfer extends StoredObject implements OfEntity
     public Id amend(Transaction transaction) throws Exception {
         return new Id();
     }
+
+    public void setApprovalRequired(boolean approvalRequired) {
+    }
+
+    public boolean getApprovalRequired() {
+        return false;
+    }
 }

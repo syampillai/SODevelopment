@@ -22,6 +22,7 @@ public abstract class AbstractSendAndReceiveMaterial<T extends InventoryTransfer
     private static final String LABEL_TOOL = "Tool/Item under Custody";
     private static final String LABEL_TOOLS = "Tools/Items under Custody";
     static final int[] ALL_TYPES = new int[] { 0, 3, 4, 5, 8, 10, 11 };
+    private final Button approve = new ConfirmButton("Approve", "ok", e -> approve());
     private final Button send = new ConfirmButton("Send Items", VaadinIcon.TRUCK, e -> send());
     private final Button receive = new Button("Receive Items", VaadinIcon.STORAGE, e -> receive());
     private final Button grnButton;
@@ -94,6 +95,7 @@ public abstract class AbstractSendAndReceiveMaterial<T extends InventoryTransfer
         if(this.fromOrTo == null) {
             throw new LogicRedirected(this::selectLocation);
         }
+        approve.setVisible(!receiveMode && actionAllowed("APPROVE"));
         send.setVisible(!receiveMode && actionAllowed("SEND-ITEMS"));
         receive.setVisible(receiveMode && actionAllowed("RECEIVE-ITEMS"));
         this.otherLocation = otherLocation;
@@ -138,19 +140,27 @@ public abstract class AbstractSendAndReceiveMaterial<T extends InventoryTransfer
         }
         setOrderBy("Date DESC,No DESC");
         GridContextMenu<T> cm = new GridContextMenu<>(this);
-        final boolean allowed = actionAllowed((receiveMode ? "RECEIVE" : "SEND") + "-ITEMS");
-        if(allowed) {
-            cm.addItem((receiveMode ? "Receive" : "Send") + " Items", e -> e.getItem()
-                    .ifPresent(this::rowDoubleClicked));
-        }
+        final boolean approvalAllowed = !receiveMode && actionAllowed("APPROVE");
+        final GridMenuItem<T> approvalMenu = approvalAllowed ? cm.addItem("Approve", e ->  approve()) : null;
+        final boolean actionAllowed = actionAllowed((receiveMode ? "RECEIVE" : "SEND") + "-ITEMS");
+        final GridMenuItem<T> actionMenu = actionAllowed ? cm.addItem((receiveMode ? "Receive" : "Send")
+                + " Items", e -> e.getItem().ifPresent(this::rowDoubleClicked)) : null;
         GridMenuItem<T> grnMenu = cm.addItem("Associated GRN", e ->  grn());
         cm.setDynamicContentHandler(o -> {
             if(o == null) {
                 return false;
             }
+            select(o);
+            boolean req = o.getApprovalRequired();
+            if(approvalMenu != null) {
+                approvalMenu.setVisible(req);
+            }
+            if(actionMenu != null) {
+                actionMenu.setVisible(receiveMode || !req);
+            }
             grn = receiveMode ? o.listLinks(InventoryGRN.class).findFirst() : null;
             grnMenu.setVisible(grn != null);
-            return grn != null || (allowed && (receiveMode ? o.getStatus() == 1 : o.getStatus() == 0));
+            return grn != null || (actionAllowed && (receiveMode ? o.getStatus() == 1 : o.getStatus() == 0));
         });
         if(receiveMode) {
             grnButton = new Button("GRN", VaadinIcon.FILE_TABLE, e -> grnSel());
@@ -315,7 +325,7 @@ public abstract class AbstractSendAndReceiveMaterial<T extends InventoryTransfer
         } else {
             amend = new ConfirmButton("Amend", e -> amend());
         }
-        buttonPanel.add(new Button("Search", e -> searchFilter()), send, amend, receive, grnButton);
+        buttonPanel.add(new Button("Search", e -> searchFilter()), approve, send, amend, receive, grnButton);
     }
 
     protected boolean allowAmendment() {
@@ -366,23 +376,56 @@ public abstract class AbstractSendAndReceiveMaterial<T extends InventoryTransfer
         return super.canDelete(object);
     }
 
-    private void send() {
+    private T check0(boolean forApproval) {
         clearAlerts();
-        T mt = selected();
-        if(mt == null) {
-            return;
+        T selected = selected();
+        if(selected == null) {
+            return null;
         }
-        if(mt.getStatus() != 0) {
-            warning("Already sent!");
-            return;
+        if(selected.getStatus() != 0) {
+            warning("Status is already '" + selected.getStatusValue() + "'");
+            return null;
         }
-        if(!mt.existsLinks(getItemClass(), "Amendment=" + mt.getAmendment())) {
-            warning("No items to send");
-            return;
+        if(forApproval) {
+            if(!selected.getApprovalRequired()) {
+                warning("Already approved");
+                return null;
+            }
+        } else {
+            if(selected.getApprovalRequired()) {
+                warning("Approval required");
+                return null;
+            }
         }
-        if(transact(mt::send)) {
-            refresh(mt);
-            message("Sent successfully");
+        if(!selected.existsLinks(getItemClass(), "Amendment=" + selected.getAmendment())) {
+            warning("Item list is empty");
+            return null;
+        }
+        return selected;
+    }
+
+    private void approve() {
+        T mt = check0(true);
+        if(mt != null) {
+            if(approve(mt)) {
+                refresh(mt);
+                message("Approved");
+            }
+        }
+    }
+
+    private boolean approve(T mt) {
+        mt.setApprovalRequired(false);
+        return transact(mt::save);
+    }
+
+    private void send() {
+        T mt = check0(false);
+        if(mt != null) {
+            if(transact(mt::send)) {
+                refresh(mt);
+                message("Sent successfully");
+            }
         }
     }
 
@@ -392,16 +435,19 @@ public abstract class AbstractSendAndReceiveMaterial<T extends InventoryTransfer
             return;
         }
         switch(mt.getStatus()) {
-            case 0:
+            case 0 -> {
                 warning("Not yet dispatched");
                 return;
-            case 1:
-                break;
-            case 2:
+            }
+            case 1 -> {
+            }
+            case 2 -> {
                 warning("Already received!");
                 return;
-            default:
+            }
+            default -> {
                 return;
+            }
         }
         List<InventoryItem> items = mt.listLinks(transferItemClass).map(InventoryTransferItem::getItem).toList();
         List<InventoryItem> moved = new ArrayList<>();
@@ -574,6 +620,14 @@ public abstract class AbstractSendAndReceiveMaterial<T extends InventoryTransfer
                 }
             }
         }
+
+        @Override
+        protected void saveObject(Transaction t, T object) throws Exception {
+            if(object.getStatus() == 0 && !object.getApprovalRequired()) {
+                object.setApprovalRequired(true);
+            }
+            super.saveObject(t, object);
+        }
     }
 
     private class MTItemGrid extends DetailLinkGrid<L> {
@@ -730,6 +784,15 @@ public abstract class AbstractSendAndReceiveMaterial<T extends InventoryTransfer
                     }
                 }
                 setFieldVisible(!s, quantityField);
+            }
+
+            @Override
+            public boolean canAdd() {
+                if(!super.canAdd()) {
+                    return false;
+                }
+                setFieldReadOnly(false, "Item", "Quantity");
+                return true;
             }
 
             @Override

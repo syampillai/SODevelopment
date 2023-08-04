@@ -87,6 +87,20 @@ public class ItemField<I extends InventoryItem> extends ObjectGetField<I> implem
     }
 
     @Override
+    public void clear() {
+        super.clear();
+        typeField.clear();
+    }
+
+    @Override
+    public void setValue(I value) {
+        super.setValue(value);
+        if(value == null) {
+            typeField.clear();
+        }
+    }
+
+    @Override
     public void setRequired(boolean required) {
         super.setRequired(required);
         typeField.setRequired(required);

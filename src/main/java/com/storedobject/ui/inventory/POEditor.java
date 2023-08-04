@@ -1,10 +1,7 @@
 package com.storedobject.ui.inventory;
 
 import com.storedobject.common.SORuntimeException;
-import com.storedobject.core.Entity;
-import com.storedobject.core.InventoryPO;
-import com.storedobject.core.InventoryStore;
-import com.storedobject.core.ObjectSearcher;
+import com.storedobject.core.*;
 import com.storedobject.ui.ObjectEditor;
 import com.storedobject.ui.ObjectField;
 import com.storedobject.vaadin.ActionForm;
@@ -99,16 +96,18 @@ public class POEditor<T extends InventoryPO> extends ObjectEditor<T> {
 
     public boolean deletePO(T po, Runnable how) {
         switch(po.getStatus()) {
-            case 0:
-                break;
-            case 3: // Closed entry
+            case 0 -> {
+            }
+            case 3 -> { // Closed entry
                 new ActionForm(
                         "Entry will be removed but this will not affect the items already received via this order.\nAre you sure?",
                         how).
                         execute();
                 return false;
-            default:
+            }
+            default -> {
                 return false;
+            }
         }
         return true;
     }
@@ -131,5 +130,13 @@ public class POEditor<T extends InventoryPO> extends ObjectEditor<T> {
     protected void anchorsSet() throws Exception {
         super.anchorsSet();
         store = (InventoryStore) ((ObjectField<?>)getAnchorField("Store")).getObject();
+    }
+
+    @Override
+    protected void saveObject(Transaction t, T object) throws Exception {
+        if(object.getStatus() == 0 && !object.getApprovalRequired()) {
+            object.setApprovalRequired(true);
+        }
+        super.saveObject(t, object);
     }
 }

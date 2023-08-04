@@ -13,6 +13,7 @@ import java.sql.Date;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Return items from an external organization / custody that were sent to them earlier
@@ -152,11 +153,29 @@ public class ReceiveReturnedItems extends DataForm implements Transactional {
     }
 
     private void proceed() {
+        List<Id> amends = new ArrayList<>();
+        StoredObject.list(InventoryTransfer.class,
+                "Status=0 AND Amendment>0 AND ToLocation=" + eo.getId(), true)
+                .forEach(it -> it.listLinks(InventoryTransferItem.class, true)
+                        .forEach(iti -> amends.add(iti.getItemId())));
+        AtomicBoolean amended = new AtomicBoolean(false);
         List<InventoryItem> items = StoredObject.list(InventoryItem.class, "Location=" + eo.getId(), true)
-                .filter(this::validLoc).toList();
+                .filter(i -> {
+                    if(validLoc(i)) {
+                        if(!amends.contains(i.getId())) {
+                            return true;
+                        }
+                        amended.set(true);
+                    }
+                    return false;
+                })
+                .filter( i -> !amends.contains(i.getId()) && validLoc(i)).toList();
         if(items.isEmpty()) {
             processOld();
             message("For this store, no items pending to be received from:<BR/>" + eo.toDisplay());
+            if(amended.get()) {
+                warning("Note: Amended entries exist that require attention!");
+            }
             return;
         }
         new Select(items, true).execute();
