@@ -2,9 +2,7 @@ package com.storedobject.ui.tools;
 
 import com.storedobject.core.*;
 import com.storedobject.vaadin.CustomTextField;
-import com.storedobject.vaadin.FormLayout;
 import com.storedobject.vaadin.util.HasTextValue;
-import com.vaadin.flow.component.textfield.TextField;
 
 public class ClassNameField extends CustomTextField<String> {
 

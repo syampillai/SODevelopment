@@ -8,7 +8,7 @@ public class ReportDefinitionEditor extends ReportEditor<ReportDefinition> {
         super(ReportDefinition.class);
     }
 
-    public ReportDefinitionEditor(String className) throws Exception {
+    public ReportDefinitionEditor(String className) {
         this();
     }
 }

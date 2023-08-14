@@ -3,7 +3,6 @@ package com.storedobject.ui;
 import com.storedobject.core.Filtered;
 import com.storedobject.core.EditableList;
 import com.storedobject.core.EditorAction;
-import com.storedobject.core.Id;
 import com.vaadin.flow.component.Focusable;
 import com.vaadin.flow.component.HasValue;
 import com.vaadin.flow.component.dependency.CssImport;

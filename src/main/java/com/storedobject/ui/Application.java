@@ -181,7 +181,6 @@ public class Application extends com.storedobject.vaadin.Application implements 
         new ApplicationServer(this, link);
         if(server == null) {
             showNotification("System not available, please try later.");
-            server = null;
             return false;
         }
         return true;

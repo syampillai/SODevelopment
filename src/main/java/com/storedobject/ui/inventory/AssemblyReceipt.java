@@ -25,11 +25,6 @@ public class AssemblyReceipt<T extends InventoryItem, C extends InventoryItem> e
     }
 
     @Override
-    boolean canSet(InventoryItem item) {
-        return true;
-    }
-
-    @Override
     FitItem createFitItem(Class<C> itemClass) {
         return new ItemFit(itemClass);
     }
@@ -177,7 +172,7 @@ public class AssemblyReceipt<T extends InventoryItem, C extends InventoryItem> e
             Quantity qToRemove = qFittedField.getValue();
             if(!item.isSerialized()) {
                 if(!qToRemove.equals(item.getQuantity())) {
-                    warning("Quantity mismatch " + item.getQuantity() + " \u2260 " + qToRemove);
+                    warning("Quantity mismatch " + item.getQuantity() + " ≠ " + qToRemove);
                     return false;
                 }
             }

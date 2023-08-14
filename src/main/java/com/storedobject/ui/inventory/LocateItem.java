@@ -22,6 +22,7 @@ import java.util.List;
  *
  * @author Syam
  */
+@SuppressWarnings("resource")
 public class LocateItem extends DataGrid<InventoryItem> implements CloseableView {
 
     private static final String INSPECT = "INSPECT";

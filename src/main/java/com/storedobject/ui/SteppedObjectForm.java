@@ -20,7 +20,7 @@ import java.util.ArrayList;
 public class SteppedObjectForm<T extends StoredObject> extends SteppedView implements ObjectSetter<T> {
 
     private final Class<T> objectClass;
-    private ArrayList<ObjectForm<T>> forms = new ArrayList<>();
+    private final ArrayList<ObjectForm<T>> forms = new ArrayList<>();
     private T object;
 
     /**

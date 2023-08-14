@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 
+@SuppressWarnings("resource")
 public abstract class AbstractSendAndReceiveMaterial<T extends InventoryTransfer, L extends InventoryTransferItem>
         extends ObjectBrowser<T> {
 
@@ -119,7 +120,6 @@ public abstract class AbstractSendAndReceiveMaterial<T extends InventoryTransfer
                 ff = this.otherLocation == null ? new LocationField(0).remove(this.fromOrTo) :
                         LocationField.create(this.otherLocation);
                 this.toField = new ObjectField<>("Return to", lf);
-                this.filterField = new ObjectField<>(this.toField.getLabel(), ff);
             } else {
                 if(this.otherLocation == null) {
                     if(transferClass == InventoryRO.class) {
@@ -135,8 +135,8 @@ public abstract class AbstractSendAndReceiveMaterial<T extends InventoryTransfer
                 }
                 this.toField = new ObjectField<>((transferClass == InventoryRO.class ? "Sent" : "Transferred") +
                         " to", lf);
-                this.filterField = new ObjectField<>(this.toField.getLabel(), ff);
             }
+            this.filterField = new ObjectField<>(this.toField.getLabel(), ff);
         }
         setOrderBy("Date DESC,No DESC");
         GridContextMenu<T> cm = new GridContextMenu<>(this);
@@ -261,7 +261,7 @@ public abstract class AbstractSendAndReceiveMaterial<T extends InventoryTransfer
     }
 
     void receive(T entry) {
-        if(receiveMode) {
+        if(receiveMode && receive != null) {
             select(entry);
             receive.click();
         }
@@ -386,31 +386,38 @@ public abstract class AbstractSendAndReceiveMaterial<T extends InventoryTransfer
             warning("Status is already '" + selected.getStatusValue() + "'");
             return null;
         }
+        if(selected.getAmendment() == 0 && noItems(selected)) {
+            warning("Item list is empty");
+            return null;
+        }
         if(forApproval) {
             if(!selected.getApprovalRequired()) {
                 warning("Already approved");
                 return null;
             }
+            return selected;
         } else {
             if(selected.getApprovalRequired()) {
                 warning("Approval required");
                 return null;
             }
         }
-        if(!selected.existsLinks(getItemClass(), "Amendment=" + selected.getAmendment())) {
-            warning("Item list is empty");
-            return null;
-        }
         return selected;
+    }
+
+    private boolean noItems(T mt) {
+        return !mt.existsLinks(getItemClass(), "Amendment=" + mt.getAmendment());
     }
 
     private void approve() {
         T mt = check0(true);
         if(mt != null) {
-            if(approve(mt)) {
-                refresh(mt);
-                message("Approved");
+            Application a = getApplication();
+            if(mt.getAmendment() > 0 && noItems(mt)) {
+                ActionForm.execute("Item list is empty, do you really want to approve?", () -> approveInt(a, mt));
+                return;
             }
+            approveInt(a, mt);
         }
     }
 
@@ -419,14 +426,34 @@ public abstract class AbstractSendAndReceiveMaterial<T extends InventoryTransfer
         return transact(mt::save);
     }
 
+    private void approveInt(Application a, T mt) {
+        a.access(() -> {
+            if(approve(mt)) {
+                refresh(mt);
+                message("Approved");
+            }
+        });
+    }
+
     private void send() {
         T mt = check0(false);
         if(mt != null) {
+            if(mt.getAmendment() > 0 && noItems(mt)) {
+                Application a = getApplication();
+                ActionForm.execute("Item list is empty, do you really want to send?", () -> sendInt(a, mt));
+                return;
+            }
+            sendInt(getApplication(), mt);
+        }
+    }
+
+    private void sendInt(Application a, T mt) {
+        a.access(() -> {
             if(transact(mt::send)) {
                 refresh(mt);
                 message("Sent successfully");
             }
-        }
+        });
     }
 
     private void receive() {
@@ -950,6 +977,10 @@ public abstract class AbstractSendAndReceiveMaterial<T extends InventoryTransfer
         }
         switch(it.getStatus()) {
             case 0 -> {
+                if(edit == null) {
+                    warning("You can edit it instead of amending it");
+                    return;
+                }
                 message("Editing instead of amending...");
                 edit.click();
             }

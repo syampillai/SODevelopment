@@ -2,7 +2,6 @@ package com.storedobject.ui;
 
 import com.storedobject.core.DateUtility;
 import com.storedobject.core.TimestampPeriod;
-import com.storedobject.vaadin.DateField;
 
 import java.sql.Timestamp;
 import java.time.Duration;

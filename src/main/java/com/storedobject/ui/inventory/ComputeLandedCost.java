@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@SuppressWarnings("resource")
 public class ComputeLandedCost extends DataForm implements Transactional {
 
     private final InventoryGRN grn;

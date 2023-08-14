@@ -2,7 +2,6 @@ package com.storedobject.ui.util;
 
 import com.storedobject.vaadin.Button;
 import com.storedobject.vaadin.ButtonLayout;
-import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasValue;
 import com.vaadin.flow.shared.Registration;
 

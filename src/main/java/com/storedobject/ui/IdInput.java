@@ -3,8 +3,6 @@ package com.storedobject.ui;
 import com.storedobject.core.Id;
 import com.storedobject.core.StoredObject;
 import com.storedobject.ui.util.AbstractObjectInput;
-import com.storedobject.vaadin.HasElement;
-import com.vaadin.flow.component.HasValue;
 
 /**
  * Fields that can input {@link Id} values.

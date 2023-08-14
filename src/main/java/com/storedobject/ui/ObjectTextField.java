@@ -9,8 +9,8 @@ import com.storedobject.vaadin.TextField;
 
 public class ObjectTextField<T extends StoredObject> extends CustomField<ObjectText<T>> {
 
-    private TF textField = new TF();
-    private ObjectGetField<T> objectField;
+    private final TF textField = new TF();
+    private final ObjectGetField<T> objectField;
     private final Class<T> objectClass;
 
     public ObjectTextField(Class<T> objectClass) {
@@ -34,7 +34,7 @@ public class ObjectTextField<T extends StoredObject> extends CustomField<ObjectT
         objectField = new ObjectGetField<>(objectClass, any);
         add(new ButtonLayout(textField, objectField));
         setLabel(label);
-        objectField.setNotFoundTacker(text -> textField.setValue(text));
+        objectField.setNotFoundTacker(textField::setValue);
         objectField.addValueChangeListener(e -> {
             T o = objectField.getValue();
             if(o == null) {
@@ -72,7 +72,7 @@ public class ObjectTextField<T extends StoredObject> extends CustomField<ObjectT
         objectField.setValue(objectText.getObject());
     }
 
-    private class TF extends TextField {
+    private static class TF extends TextField {
 
         private String saved;
 

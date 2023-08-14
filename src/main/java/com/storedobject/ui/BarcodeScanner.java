@@ -14,7 +14,6 @@ import com.vaadin.flow.component.html.Div;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.function.Consumer;

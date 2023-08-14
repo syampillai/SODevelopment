@@ -26,7 +26,7 @@ public class ApplicationModuleEditor extends ObjectEditor<ApplicationModule> {
         super(ApplicationModule.class, actions, caption);
     }
 
-    public ApplicationModuleEditor(String className) throws Exception {
+    public ApplicationModuleEditor(String className) {
         this();
     }
 

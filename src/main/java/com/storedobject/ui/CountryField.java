@@ -3,7 +3,6 @@ package com.storedobject.ui;
 import com.storedobject.common.Country;
 import com.storedobject.vaadin.ComboField;
 import com.storedobject.vaadin.TranslatedField;
-import com.vaadin.flow.component.select.Select;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -78,7 +77,7 @@ public class CountryField extends TranslatedField<String, Country> {
      * @param countries Disallowed countries. (If <code>null</code> is set, full list will be allowed).
      */
     public void setDisallowedValues(Stream<Country> countries) {
-        List<Country> cList = countries == null ? null : countries.collect(Collectors.toList());
+        List<Country> cList = countries == null ? null : countries.toList();
         if(cList == null || cList.isEmpty()) {
             ((CField)getField()).setItems(Country.list());
         } else {

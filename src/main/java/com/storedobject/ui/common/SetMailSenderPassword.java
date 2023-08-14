@@ -2,7 +2,6 @@ package com.storedobject.ui.common;
 
 import com.storedobject.common.Email;
 import com.storedobject.core.*;
-import com.storedobject.mail.Mail;
 import com.storedobject.mail.MailSender;
 import com.storedobject.ui.ELabelField;
 import com.storedobject.ui.Transactional;
@@ -15,8 +14,8 @@ import java.util.ArrayList;
 
 public class SetMailSenderPassword extends DataForm implements Transactional {
 
-    private ArrayList<MailSender> senders = new ArrayList<>();
-    private String email;
+    private final ArrayList<MailSender> senders = new ArrayList<>();
+    private final String email;
     private PasswordField password, newPassword, repeatNewPassword;
     private final Person person;
     private int attempts = 0;

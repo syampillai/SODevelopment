@@ -3,7 +3,6 @@ package com.storedobject.ui.inventory;
 import com.storedobject.core.InventoryItem;
 import com.storedobject.core.ObjectIterator;
 import com.storedobject.vaadin.MultiSelectGrid;
-import com.storedobject.vaadin.SelectGrid;
 
 import java.util.Set;
 import java.util.function.Consumer;

@@ -6,8 +6,6 @@ import com.storedobject.vaadin.RequiredField;
 import com.storedobject.vaadin.TextArea;
 import com.storedobject.vaadin.util.HasTextValue;
 
-import java.io.IOException;
-
 public class JSONField extends CustomTextField<JSON> implements RequiredField {
 
     private boolean required = false;
@@ -55,10 +53,6 @@ public class JSONField extends CustomTextField<JSON> implements RequiredField {
 
         TA() {
             setWidthFull();
-        }
-
-        @Override
-        public void setPattern(String pattern) {
         }
     }
 }

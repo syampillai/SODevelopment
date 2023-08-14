@@ -9,6 +9,7 @@ import com.storedobject.vaadin.*;
 
 import java.util.List;
 
+@SuppressWarnings("resource")
 public class POCorrection extends SelectStore implements Transactional {
 
     private final DateField dateField = new DateField("PO Date");

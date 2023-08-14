@@ -6,42 +6,76 @@ import com.storedobject.pdf.PDFColor;
 import com.storedobject.pdf.PDFReport;
 import com.storedobject.pdf.PDFTable;
 
+import java.sql.Date;
 import java.util.function.Predicate;
 
+@SuppressWarnings("resource")
 public class StockReport extends PDFReport {
 
     private static final int LOC_WIDTH = 47;
     private String caption = "Stock Report";
-    private final InventoryLocation location;
     private ObjectIterator<? extends InventoryItemType> partNumbers;
     private boolean printZeros = false;
     private boolean separateCategories;
+    private boolean costInLocalCurrency = true;
     private int count;
     private Predicate<InventoryItem> itemFilter;
+    private final Stock stock;
 
     public StockReport(Device device) {
-        this(device, (InventoryLocation)null, null);
+        this(device, (InventoryLocation)null, null, null);
+    }
+
+    public StockReport(Device device, Date date) {
+        this(device, (InventoryLocation)null, null, date);
     }
 
     public StockReport(Device device, InventoryStore store) {
-        this(device, store, null);
+        this(device, store, null, null);
+    }
+
+    public StockReport(Device device, InventoryStore store, Date date) {
+        this(device, store, null, date);
     }
 
     public StockReport(Device device, InventoryStore store, ObjectIterator<? extends InventoryItemType> partNumbers) {
         this(device, store == null ? null : store.getStoreBin(), partNumbers);
     }
 
-    public StockReport(Device device, InventoryLocation location) {
-        this(device, location, null);
+    public StockReport(Device device, InventoryStore store, ObjectIterator<? extends InventoryItemType> partNumbers,
+                       Date date) {
+        this(device, store == null ? null : store.getStoreBin(), partNumbers, date);
     }
 
-    public StockReport(Device device, InventoryLocation location, ObjectIterator<? extends InventoryItemType> partNumbers) {
+    public StockReport(Device device, InventoryLocation location) {
+        this(device, location, null, null);
+    }
+
+    public StockReport(Device device, InventoryLocation location, Date date) {
+        this(device, location, null, date);
+    }
+
+    public StockReport(Device device, InventoryLocation location,
+                       ObjectIterator<? extends InventoryItemType> partNumbers) {
+        this(device, location, partNumbers, null);
+    }
+
+    public StockReport(Device device, InventoryLocation location,
+                       ObjectIterator<? extends InventoryItemType> partNumbers, Date date) {
         super(device);
-        this.location = location;
+        stock = new Stock(location, date);
         this.partNumbers = partNumbers;
         separateCategories = partNumbers == null;
         setPageSizeIndex(2);
         setFontSize(8);
+    }
+
+    public void addStore(InventoryStore store) {
+        stock.addStore(store);
+    }
+
+    public void addLocation(InventoryLocation location) {
+        stock.addLocation(location);
     }
 
     public void setCaption(String caption) {
@@ -53,6 +87,7 @@ public class StockReport extends PDFReport {
     }
 
     public void printCostInLocalCurrency(boolean costInLocalCurrency) {
+        this.costInLocalCurrency = costInLocalCurrency;
     }
 
     public void setPartNumber(InventoryItemType partNumber) {
@@ -70,11 +105,8 @@ public class StockReport extends PDFReport {
 
     @Override
     public Object getTitleText() {
-        PDFCell c = createCenteredCell(createTitleText(caption + " (" +
-                (location == null ? "All Stores" : (location instanceof InventoryStoreBin ? "Store" :
-                        (location instanceof InventoryFitmentPosition ? "Assembly" : "Location")) + ": " + location) +
-                ") Date: " +
-                DateUtility.formatDate(DateUtility.today()), getFontSize() + 4));
+        PDFCell c = createCenteredCell(createTitleText(caption + " (" + stock.getLabel() + ") Date: " +
+                DateUtility.formatDate(stock.getDate()), getFontSize() + 4));
         c.setGrayFill(0.9f);
         return c;
     }
@@ -109,36 +141,45 @@ public class StockReport extends PDFReport {
     }
 
     public void printStock(ObjectIterator<? extends InventoryItemType> partNumbers, String categoryHeading, boolean newPage) {
+        SystemEntity se = getTransactionManager().getEntity();
+        if(se == null) {
+            return;
+        }
         boolean needGap = count > 0;
-        int catCount = 0;
+        int catCount = 0, countCat = 0;
         if(partNumbers == null) {
             partNumbers = StoredObject.list(InventoryItemType.class, null, "T_Family", true);
             separateCategories = true;
         }
-        Money totalCost, costInTransit, cost;
+        String catName = categoryHeading;
+        Money grandTotalCost = new Money(se.getCurrency()), totalCostCat = new Money(se.getCurrency()),
+                totalCost, costInTransit, cost;
         Quantity totalQty, qtyInTransit, qty;
         Text stockLocation, qtyStr, sno, costStr;
         PDFTable table = table();
         if(!newPage && needGap) {
             table.setSkipFirstHeader(true);
         }
-        ObjectIterator<? extends InventoryLocation> locations;
         ObjectIterator<InventoryItem> stockList;
         String s, s1, error = null;
         Class<? extends InventoryItemType> type, currentType = null;
         boolean categoryHeaderPrinted = categoryHeading == null, headerPrinted = false, wide;
         for(InventoryItemType itemType: partNumbers) {
+            setError("Printing " + itemType.toDisplay());
+            stock.setPartNumber(itemType);
             if(separateCategories) {
                 type = itemType.getClass();
                 if(currentType == null || type != currentType) {
+                    if(costInLocalCurrency) {
+                        if(countCat > 0) {
+                            table.addRowCell(createCell(catName + " (" + countCat + ") Stock Value: " + totalCostCat, true));
+                        }
+                        countCat = 0;
+                        totalCostCat = totalCostCat.zero();
+                    }
                     currentType = type;
                     categoryHeaderPrinted = false;
                 }
-            }
-            if(this.location == null) {
-                locations = StoredObject.list(InventoryStoreBin.class);
-            } else {
-                locations = ObjectIterator.create(this.location);
             }
             totalQty = itemType.getUnitOfMeasurement();
             qtyInTransit = totalQty;
@@ -150,57 +191,61 @@ public class StockReport extends PDFReport {
             sno = new Text();
             costStr = new Text();
             InventoryLocation tLoc;
-            for(InventoryLocation loc: locations) {
-                if(loc instanceof InventoryStoreBin) {
-                    stockList = InventoryItem.listStock(itemType, ((InventoryStoreBin) loc).getStore());
+            stockList = ObjectIterator.create(stock.getStocks());
+            if(itemFilter != null) {
+                stockList = stockList.filter(itemFilter);
+            }
+            for(InventoryItem ii : stockList) {
+                qty = ii.getQuantity();
+                cost = ii.getCost();
+                if(costInLocalCurrency) {
+                    cost = cost.toLocal(se);
+                    grandTotalCost = grandTotalCost.add(cost);
+                    totalCostCat = totalCostCat.add(cost);
+                }
+                try {
+                    totalQty = totalQty.add(qty);
+                } catch(Throwable e) {
+                    error = e.getMessage();
+                }
+                try {
+                    totalCost = totalCost.add(cost);
+                } catch(Throwable e) {
+                    error = e.getMessage();
+                }
+                stockLocation.append(s = trim(ii.getLocation()));
+                wide = false;
+                if(ii.getInTransit()) {
+                    s1 = " - In transit";
+                    tLoc = ii.getPreviousLocation();
+                    if(tLoc != null) {
+                        s1 += " from " + tLoc.toDisplay();
+                    }
+                    if(s.length() <= (LOC_WIDTH >> 1)) {
+                        s = trim(s1, LOC_WIDTH - s.length());
+                    } else {
+                        wide = true;
+                        s = trim(s1, LOC_WIDTH);
+                        stockLocation.newLine(true);
+                    }
+                    stockLocation.append(PDFColor.RED).append(s).append(PDFColor.BLACK);
+                    qtyInTransit = qtyInTransit.add(qty);
+                    costInTransit = costInTransit.add(cost);
+                }
+                stockLocation.newLine(true);
+                s = ii.getSerialNumber();
+                if(s == null || s.isBlank()) {
+                    s = "";
                 } else {
-                    stockList = InventoryItem.listStock(itemType, loc);
+                    s = ii.getSerialNumberShortName() + " " + s;
                 }
-                if(itemFilter != null) {
-                    stockList = stockList.filter(itemFilter);
-                }
-                for(InventoryItem ii : stockList) {
-                    qty = ii.getQuantity();
-                    cost = ii.getCost();
-                    try {
-                        totalQty = totalQty.add(qty);
-                    } catch(Throwable e) {
-                        error = e.getMessage();
-                    }
-                    try {
-                        totalCost = totalCost.add(cost);
-                    } catch(Throwable e) {
-                        error = e.getMessage();
-                    }
-                    stockLocation.append(s = trim(ii.getLocation()));
-                    wide = false;
-                    if(ii.getInTransit()) {
-                        s1 = " - In transit";
-                        tLoc = ii.getPreviousLocation();
-                        if(tLoc != null) {
-                            s1 += " from " + tLoc.toDisplay();
-                        }
-                        if(s.length() <= (LOC_WIDTH >> 1)) {
-                            s = trim(s1, LOC_WIDTH - s.length());
-                        } else {
-                            wide = true;
-                            s = trim(s1, LOC_WIDTH);
-                            stockLocation.newLine(true);
-                        }
-                        stockLocation.append(PDFColor.RED).append(s).append(PDFColor.BLACK);
-                        qtyInTransit = qtyInTransit.add(qty);
-                        costInTransit = costInTransit.add(cost);
-                    }
-                    stockLocation.newLine(true);
-                    s = ii.getSerialNumber();
-                    sno.append(s == null ? "" : s).newLine(true);
-                    qtyStr.append(qty).newLine(true);
-                    costStr.append(cost).newLine(true);
-                    if(wide) {
-                        sno.newLine(true);
-                        qtyStr.newLine(true);
-                        costStr.newLine(true);
-                    }
+                sno.append(s).newLine(true);
+                qtyStr.append(qty).newLine(true);
+                costStr.append(cost).newLine(true);
+                if(wide) {
+                    sno.newLine(true);
+                    qtyStr.newLine(true);
+                    costStr.newLine(true);
                 }
             }
             if(error == null && (totalQty.isZero() || totalQty.isGreaterThan(qty))) {
@@ -229,7 +274,7 @@ public class StockReport extends PDFReport {
                 }
             }
             if(!categoryHeaderPrinted) {
-                printHeading(categoryHeading == null ? getItemTypeTitle(itemType) : categoryHeading, table);
+                printHeading(catName = categoryHeading == null ? getItemTypeTitle(itemType) : categoryHeading, table);
                 categoryHeaderPrinted = true;
                 categoryHeading = null;
                 ++catCount;
@@ -238,6 +283,7 @@ public class StockReport extends PDFReport {
                 headerPrinted = true;
             }
             ++count;
+            ++countCat;
             table.addCell(createCell((separateCategories ? (catCount + "/") : "") + count));
             table.addCell(createCell(itemType.getName()));
             table.addCell(createCell(itemType.getPartNumber()));
@@ -271,7 +317,15 @@ public class StockReport extends PDFReport {
                 addGap(5);
             }
         }
+        if(separateCategories && costInLocalCurrency && countCat >  0 && count > countCat) {
+            table.addRowCell(createCell(catName + " (" + countCat + ") Stock Value: " + totalCostCat, true));
+        }
         add(table);
+        if(costInLocalCurrency) {
+            table.addBlankRow();
+            table.addRowCell(createCell("Total (" + count + ") Stock Value: " + grandTotalCost, true));
+            add(table);
+        }
     }
 
     private static String trim(StoredObject so) {
@@ -282,10 +336,17 @@ public class StockReport extends PDFReport {
         if(width <= 0) {
             return "";
         }
-        if(s.length() <= width) {
-            return s;
+        int i = 0, len = s.length(), w = 0;
+        char c;
+        while(i < len) {
+            c = s.charAt(i);
+            w += c >= 'a' && c <= 'z' ? 4 : 5;
+            if((w >> 2) > width) {
+                return s.substring(0, i - 3) + "...";
+            }
+            i++;
         }
-        return s.substring(0, width - 3) + "...";
+        return s;
     }
 
     private PDFTable table() {
@@ -298,6 +359,7 @@ public class StockReport extends PDFReport {
         table.addCell(tCellR("Quantity"));
         table.addCell(tCellR("Value"));
         table.setHeaderRows(1);
+        table.setSplitRows(true);
         return table;
     }
 

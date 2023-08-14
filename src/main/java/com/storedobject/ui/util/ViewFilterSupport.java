@@ -8,6 +8,7 @@ import com.vaadin.flow.data.provider.DataProvider;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
+@SuppressWarnings("rawtypes")
 public interface ViewFilterSupport<T> {
 
     DataProvider<?, ?> getDataProvider();

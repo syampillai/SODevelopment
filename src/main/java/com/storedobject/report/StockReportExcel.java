@@ -5,14 +5,15 @@ import com.storedobject.core.*;
 import com.storedobject.office.ExcelReport;
 import org.apache.poi.ss.usermodel.Cell;
 
+import java.sql.Date;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
 
+@SuppressWarnings("resource")
 public class StockReportExcel extends ExcelReport {
 
     private String caption = "Stock Report";
-    private final InventoryLocation location;
     private ObjectIterator<? extends InventoryItemType> partNumbers;
     private boolean printZeros = false;
     private boolean separateCategories;
@@ -20,28 +21,61 @@ public class StockReportExcel extends ExcelReport {
     SystemEntity se;
     private int maxRow = -1;
     private Predicate<InventoryItem> itemFilter;
+    private final Stock stock;
 
     public StockReportExcel(Device device) {
-        this(device, (InventoryLocation)null, null);
+        this(device, (InventoryLocation)null, null, null);
+    }
+
+    public StockReportExcel(Device device, Date date) {
+        this(device, (InventoryLocation)null, null, date);
     }
 
     public StockReportExcel(Device device, InventoryStore store) {
-        this(device, store, null);
+        this(device, store, null, null);
     }
 
-    public StockReportExcel(Device device, InventoryStore store, ObjectIterator<? extends InventoryItemType> partNumbers) {
+    public StockReportExcel(Device device, InventoryStore store, Date date) {
+        this(device, store, null, date);
+    }
+
+    public StockReportExcel(Device device, InventoryStore store,
+                            ObjectIterator<? extends InventoryItemType> partNumbers) {
         this(device, store == null ? null : store.getStoreBin(), partNumbers);
     }
 
-    public StockReportExcel(Device device, InventoryLocation location) {
-        this(device, location, null);
+    public StockReportExcel(Device device, InventoryStore store,
+                            ObjectIterator<? extends InventoryItemType> partNumbers, Date date) {
+        this(device, store == null ? null : store.getStoreBin(), partNumbers, date);
     }
 
-    public StockReportExcel(Device device, InventoryLocation location, ObjectIterator<? extends InventoryItemType> partNumbers) {
+    public StockReportExcel(Device device, InventoryLocation location) {
+        this(device, location, null, null);
+    }
+
+    public StockReportExcel(Device device, InventoryLocation location, Date date) {
+        this(device, location, null, date);
+    }
+
+    public StockReportExcel(Device device, InventoryLocation location,
+                            ObjectIterator<? extends InventoryItemType> partNumbers) {
+        this(device, location, partNumbers, null);
+    }
+
+    public StockReportExcel(Device device, InventoryLocation location,
+                            ObjectIterator<? extends InventoryItemType> partNumbers, Date date) {
         super(device);
-        this.location = location;
+        this.stock = new Stock(location, date);
         this.partNumbers = partNumbers;
         separateCategories = partNumbers == null;
+    }
+
+    public void addStore(InventoryStore store) {
+        stock.addStore(store);
+    }
+
+    public void addLocation(InventoryLocation location) {
+        stock.addLocation(location);
     }
 
     public void setCaption(String caption) {
@@ -70,10 +104,7 @@ public class StockReportExcel extends ExcelReport {
     }
 
     public String getReportTitle() {
-        return caption + " (" +
-                (location == null ? "All Stores" : (location instanceof InventoryStoreBin ? "Store" :
-                        (location instanceof InventoryFitmentPosition ? "Assembly" : "Location")) + ": " + location) +
-                ") Date: " + DateUtility.formatDate(DateUtility.today());
+        return caption + " (" + stock.getLabel() + ") Date: " + DateUtility.formatDate(stock.getDate());
     }
 
     public String getItemTypeTitle(InventoryItemType itemType) {
@@ -115,23 +146,18 @@ public class StockReportExcel extends ExcelReport {
         StyledString stockLocation, sno;
         List<Quantity> quantities = new ArrayList<>();
         List<Money> costs = new ArrayList<>();
-        ObjectIterator<? extends InventoryLocation> locations;
         ObjectIterator<InventoryItem> stockList;
         String s, error = null;
         Class<? extends InventoryItemType> type, currentType = null;
         boolean categoryHeaderPrinted = categoryHeading == null, headerPrinted = false;
         for(InventoryItemType itemType: partNumbers) {
+            stock.setPartNumber(itemType);
             if(separateCategories) {
                 type = itemType.getClass();
                 if(currentType == null || type != currentType) {
                     currentType = type;
                     categoryHeaderPrinted = false;
                 }
-            }
-            if(this.location == null) {
-                locations = StoredObject.list(InventoryStoreBin.class, true);
-            } else {
-                locations = ObjectIterator.create(this.location);
             }
             totalQuantity = itemType.getUnitOfMeasurement().zero();
             inTransitQuantity = totalQuantity.zero();
@@ -143,45 +169,39 @@ public class StockReportExcel extends ExcelReport {
             quantities.clear();
             costs.clear();
             sno = new StyledString();
-            for(InventoryLocation loc: locations) {
-                if(loc instanceof InventoryStoreBin) {
-                    stockList = InventoryItem.listStock(itemType, ((InventoryStoreBin) loc).getStore());
-                } else {
-                    stockList = InventoryItem.listStock(itemType, loc);
+            stockList = ObjectIterator.create(stock.getStocks());
+            if(itemFilter != null) {
+                stockList = stockList.filter(itemFilter);
+            }
+            for(InventoryItem ii : stockList) {
+                q = ii.getQuantity();
+                if(costInLocalCurrency) {
+                    c = ii.getCost().toLocal(se);
                 }
-                if(itemFilter != null) {
-                    stockList = stockList.filter(itemFilter);
+                try {
+                    totalQuantity = totalQuantity.add(q);
+                    if(costInLocalCurrency) {
+                        totalCost = totalCost.add(c);
+                    }
+                } catch(Throwable e) {
+                    error = e.getMessage();
                 }
-                for(InventoryItem ii : stockList) {
-                    q = ii.getQuantity();
+                if(!ii.getInTransit()) {
+                    stockLocation.append(ii.getLocation());
+                }
+                if(ii.getInTransit()) {
+                    stockLocation.append(" (In Transit)");
+                    inTransitQuantity = inTransitQuantity.add(q);
                     if(costInLocalCurrency) {
-                        c = ii.getCost().toLocal(se);
+                        inTransitCost = inTransitCost.add(c);
                     }
-                    try {
-                        totalQuantity = totalQuantity.add(q);
-                        if(costInLocalCurrency) {
-                            totalCost = totalCost.add(c);
-                        }
-                    } catch(Throwable e) {
-                        error = e.getMessage();
-                    }
-                    if(!ii.getInTransit()) {
-                        stockLocation.append(ii.getLocation());
-                    }
-                    if(ii.getInTransit()) {
-                        stockLocation.append(" (In Transit)");
-                        inTransitQuantity = inTransitQuantity.add(q);
-                        if(costInLocalCurrency) {
-                            inTransitCost = inTransitCost.add(c);
-                        }
-                    }
-                    stockLocation.newLine();
-                    s = ii.getSerialNumber();
-                    sno.append(s == null ? "" : s).newLine();
-                    quantities.add(q);
-                    if(costInLocalCurrency) {
-                        costs.add(c);
-                    }
+                }
+                stockLocation.newLine();
+                s = ii.getSerialNumber();
+                sno.append(s == null ? "" : s).newLine();
+                quantities.add(q);
+                if(costInLocalCurrency) {
+                    costs.add(c);
                 }
             }
             if(error == null && (totalQuantity.isZero() || totalQuantity.isGreaterThan(q))) {

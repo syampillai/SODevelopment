@@ -4,9 +4,7 @@ import com.storedobject.common.SORuntimeException;
 import com.storedobject.core.Filtered;
 import com.storedobject.core.StoredObject;
 import com.storedobject.core.StoredObjectUtility;
-import com.storedobject.core.SystemUserGroup;
 import com.storedobject.vaadin.View;
-import com.vaadin.flow.component.grid.Grid;
 
 public abstract class AbstractLinkGrid<T extends StoredObject> extends EditableObjectGrid<T> implements LinkGrid<T> {
 

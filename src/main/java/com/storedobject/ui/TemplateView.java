@@ -2,7 +2,6 @@ package com.storedobject.ui;
 
 import com.storedobject.core.StringUtility;
 import com.storedobject.core.TextContent;
-import com.storedobject.vaadin.Button;
 import com.storedobject.vaadin.ExecutableView;
 import com.storedobject.vaadin.View;
 import com.storedobject.vaadin.WrappedView;

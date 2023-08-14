@@ -3,14 +3,21 @@ package com.storedobject.ui.inventory;
 import com.storedobject.core.*;
 import com.storedobject.report.StockReportExcel;
 import com.storedobject.ui.Application;
+import com.storedobject.ui.ELabel;
 import com.storedobject.ui.ObjectField;
-import com.storedobject.vaadin.BooleanField;
-import com.storedobject.vaadin.ChoiceField;
-import com.storedobject.vaadin.DataForm;
+import com.storedobject.vaadin.*;
+import com.vaadin.flow.component.icon.VaadinIcon;
+
+import java.sql.Date;
+import java.util.ArrayList;
+import java.util.List;
 
 public class StockReport extends DataForm {
 
     private ObjectField<InventoryStore> storeField;
+    private final ELabel locInfo = new ELabel();
+    private final List<InventoryLocation> locations = new ArrayList<>();
+    private DateField dateField;
     private BooleanField zerosField, localCurrencyField;
     private ChoiceField outputField;
     private boolean customized = true;
@@ -23,9 +30,13 @@ public class StockReport extends DataForm {
 
     @Override
     protected void buildFields() {
-        storeField = new ObjectField<>("Store", InventoryStore.class, true);
-        storeField.setPlaceholder("All");
-        addField(storeField);
+        storeField = new ObjectField<>(InventoryStore.class, true);
+        storeField.setPlaceholder("All Stores");
+        addField(new CompoundField("Store/Locations", storeField,
+                new Button("Custom Selection", VaadinIcon.STOCK, e -> customLocations()),
+                locInfo));
+        dateField = new DateField("As of");
+        addField(dateField);
         zerosField = new BooleanField("Print Zero-Quantity Items");
         addField(zerosField);
         localCurrencyField = new BooleanField("Print Cost in Accounting Currency", true);
@@ -34,16 +45,74 @@ public class StockReport extends DataForm {
         addField(outputField);
     }
 
+    private void customLocations() {
+        storeField.setVisible(false);
+        LocationField lf = LocationField.create(0, 4, 5, 8, 10, 11, 18);
+        MultiSelectGrid<InventoryLocation> ms = new MultiSelectGrid<>(InventoryLocation.class, lf.getLocations(),
+                s -> {
+                    locations.clear();
+                    locations.addAll(s);
+                    locLabel();
+                }) {
+            @Override
+            protected void cancel() {
+                super.cancel();
+                locations.clear();
+                locInfo.clear();
+                locInfo.update();
+                storeField.setVisible(true);
+            }
+        };
+        ms.select(locations);
+        ms.setCaption("Select Stores/Locations");
+        ms.execute(this);
+    }
+
+    private void locLabel() {
+        locInfo.clear();
+        if(locations.isEmpty()) {
+            locInfo.append("All stores");
+        } else if(locations.size() == 1) {
+            locInfo.append(locations.get(0).toDisplay());
+        } else {
+            int stores = (int) locations.stream().filter(loc -> loc instanceof InventoryStoreBin).count();
+            int locs = (int) locations.stream().filter(loc -> !(loc instanceof InventoryStoreBin)).count();
+            if(stores == 0) {
+                locInfo.append(locs + " locations selected", Application.COLOR_SUCCESS);
+            } else if(locs == 0) {
+                locInfo.append(stores + " stores selected", Application.COLOR_SUCCESS);
+            } else {
+                locInfo.append(stores + " store" + (stores > 1 ? "s" : "") + " and " + locs + " location"
+                        + (locs > 1 ? "s" : "") + " selected", Application.COLOR_SUCCESS);
+            }
+        }
+        locInfo.update();
+    }
+
     @Override
     protected boolean process() {
         close();
+        InventoryLocation loc = null;
+        if(storeField.isVisible()) {
+            InventoryStore store = storeField.getObject();
+            if(store != null) {
+                loc = store.getStoreBin();
+            }
+            locations.clear();
+        } else {
+            if(!locations.isEmpty()) {
+                loc = locations.remove(0);
+            }
+        }
         switch(outputField.getValue()) {
             case 0 -> {
-                pdf = new Report(getApplication(), storeField.getObject());
+                pdf = new Report(getApplication(), loc, dateField.getValue());
+                locations.forEach(pdf::addLocation);
                 pdf.execute();
             }
             case 1 -> {
-                excel = new ExReport(getApplication(), storeField.getObject());
+                excel = new ExReport(getApplication(), loc, dateField.getValue());
+                locations.forEach(excel::addLocation);
                 excel.execute();
             }
             default -> {
@@ -97,8 +166,8 @@ public class StockReport extends DataForm {
 
     private class Report extends com.storedobject.report.StockReport {
 
-        public Report(Device device, InventoryStore store) {
-            super(device, store);
+        public Report(Device device, InventoryLocation location, Date date) {
+            super(device, location, date);
             printZeros(zerosField.getValue());
             printCostInLocalCurrency(localCurrencyField.getValue());
             setCaption(getCaption());
@@ -128,8 +197,8 @@ public class StockReport extends DataForm {
 
     private class ExReport extends StockReportExcel {
 
-        public ExReport(Device device, InventoryStore store) {
-            super(device, store);
+        public ExReport(Device device, InventoryLocation location, Date date) {
+            super(device, location, date);
             printZeros(zerosField.getValue());
             printCostInLocalCurrency(localCurrencyField.getValue());
             setCaption(getCaption());

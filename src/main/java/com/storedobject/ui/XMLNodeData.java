@@ -18,7 +18,7 @@ public class XMLNodeData implements XGrid.XData {
     @Override
     public Object getDataValue(String columnName) {
         try {
-            return xml.get(node, columnName);
+            return xml.getText(node, columnName);
         } catch (Exception e) {
             return "Error";
         }

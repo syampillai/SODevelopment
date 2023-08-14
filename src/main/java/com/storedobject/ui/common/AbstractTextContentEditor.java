@@ -3,7 +3,6 @@ package com.storedobject.ui.common;
 import com.storedobject.core.TextContent;
 import com.storedobject.ui.ObjectEditor;
 import com.storedobject.ui.util.SOServlet;
-import com.storedobject.vaadin.IntegerField;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasValue;
 
