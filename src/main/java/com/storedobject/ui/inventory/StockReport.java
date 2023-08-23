@@ -47,7 +47,7 @@ public class StockReport extends DataForm {
 
     private void customLocations() {
         storeField.setVisible(false);
-        LocationField lf = LocationField.create(0, 4, 5, 8, 10, 11, 18);
+        LocationField lf = LocationField.create(0, 3, 4, 5, 8, 10, 11, 18);
         MultiSelectGrid<InventoryLocation> ms = new MultiSelectGrid<>(InventoryLocation.class, lf.getLocations(),
                 s -> {
                     locations.clear();

@@ -3,6 +3,7 @@ package com.storedobject.core;
 import com.storedobject.common.Storable;
 
 import java.math.BigDecimal;
+import java.sql.Date;
 import java.util.ArrayList;
 import java.util.Currency;
 import java.util.Hashtable;
@@ -203,10 +204,32 @@ public final class Money implements Storable, Comparable<Money> {
 	/**
 	 * Convert this monetary value to the equivalent in local currency by applying the current "exchange rate". Unlike
 	 * the {@link #convert(Rate, Currency)} method, this method multiplies the monetary value with the exchange rate.
+	 * @param date Effective date.
+	 * @param tm Transaction manager (Local currency will be determined from this)
+	 * @return Result
+	 */
+	public Money toLocal(Date date, TransactionManager tm) {
+		return toLocal(date, tm.getEntity());
+	}
+
+	/**
+	 * Convert this monetary value to the equivalent in local currency by applying the current "exchange rate". Unlike
+	 * the {@link #convert(Rate, Currency)} method, this method multiplies the monetary value with the exchange rate.
 	 * @param systemEntity System entity (Local currency will be determined from this)
 	 * @return Result
 	 */
 	public Money toLocal(SystemEntity systemEntity) {
+		return toLocal((Date) null, systemEntity);
+	}
+
+	/**
+	 * Convert this monetary value to the equivalent in local currency by applying the current "exchange rate". Unlike
+	 * the {@link #convert(Rate, Currency)} method, this method multiplies the monetary value with the exchange rate.
+	 * @param date Effective date.
+	 * @param systemEntity System entity (Local currency will be determined from this)
+	 * @return Result
+	 */
+	public Money toLocal(Date date, SystemEntity systemEntity) {
 		return new Money();
 	}
 

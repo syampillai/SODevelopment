@@ -16,6 +16,7 @@ import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.data.provider.hierarchy.AbstractHierarchicalDataProvider;
 import com.vaadin.flow.data.provider.hierarchy.HierarchicalQuery;
 
+import java.sql.Date;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -149,13 +150,13 @@ public class BaseReceiveMaterialRequested<MR extends MaterialRequest, MRI extend
             new ActionForm("Confirm Issuance", m, () -> requestForIssuance(mr)).execute();
             return;
         }
-        switch(mr.getStatus()) {
-            case 2:
-            case 3:
-                break;
-            default:
+        switch (mr.getStatus()) {
+            case 2, 3 -> {
+            }
+            default -> {
                 warning("Status is '" + mr.getStatusValue() + "'");
                 return;
+            }
         }
         if(mr.getReserved()) {
             ELabel m = new ELabel("Not yet issued but items are " + (mr.getStatus() == 2 ? "partially" : "fully")
@@ -295,9 +296,7 @@ public class BaseReceiveMaterialRequested<MR extends MaterialRequest, MRI extend
             }
             deselectAll();
             clearAlerts();
-            new ReceiveAndBin(mi.getDate(),
-                    "Request " + mr.getReference() + "/" + DateUtility.formatDate(mr.getDate()) +
-                            ", Issue " + mi.getReference() + "/" + DateUtility.formatDate(mi.getDate()),
+            new ReceiveAndBin(getReceiptDate(mi, mr), getReceiptReference(mi, mr),
                     items, transact, () -> refreshAgain(mi)).
                     execute(getView());
         }
@@ -321,7 +320,8 @@ public class BaseReceiveMaterialRequested<MR extends MaterialRequest, MRI extend
             this.mr = mr;
             miList.clear();
             miiMap.clear();
-            StoredObject.list(MaterialIssued.class, "Request=" + mr.getId(), "Status,No DESC").collectAll(miList);
+            StoredObject.list(MaterialIssued.class, "Request=" + mr.getId(), "Status,No DESC")
+                    .collectAll(miList);
             mrDetails.clearContent().append("From: ").append(mr.getToLocation().toDisplay(), Application.COLOR_SUCCESS).
                     append("  Receiving at: ").append(mr.getFromLocation().toDisplay(), Application.COLOR_SUCCESS).
                     append("  Request Reference: ").append(mr.getReference(), Application.COLOR_SUCCESS).
@@ -372,5 +372,14 @@ public class BaseReceiveMaterialRequested<MR extends MaterialRequest, MRI extend
                 return true;
             }
         }
+    }
+
+    protected Date getReceiptDate(MaterialIssued mi, MaterialRequest mr) {
+        return mi.getDate();
+    }
+
+    protected String getReceiptReference(MaterialIssued mi, MaterialRequest mr) {
+        return "Request " + mr.getReference() + "/" + DateUtility.formatDate(mr.getDate()) +
+                ", Issue " + mi.getReference() + "/" + DateUtility.formatDate(mi.getDate());
     }
 }

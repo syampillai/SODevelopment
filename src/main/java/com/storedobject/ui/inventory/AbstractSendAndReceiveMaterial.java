@@ -16,7 +16,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 
-@SuppressWarnings("resource")
 public abstract class AbstractSendAndReceiveMaterial<T extends InventoryTransfer, L extends InventoryTransferItem>
         extends ObjectBrowser<T> {
 

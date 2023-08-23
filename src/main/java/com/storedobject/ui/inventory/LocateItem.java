@@ -22,7 +22,6 @@ import java.util.List;
  *
  * @author Syam
  */
-@SuppressWarnings("resource")
 public class LocateItem extends DataGrid<InventoryItem> implements CloseableView {
 
     private static final String INSPECT = "INSPECT";
@@ -219,7 +218,10 @@ public class LocateItem extends DataGrid<InventoryItem> implements CloseableView
         cm.addItem("GRN Details", e -> e.getItem().ifPresent(this::viewGRN));
         cm.addItem("Cost Details", e -> e.getItem().ifPresent(item -> new EditCost(item, true).execute()));
         GridMenuItem<InventoryItem> editCost = cm.addItem("Edit Cost",
-                e -> e.getItem().ifPresent(item -> new EditCost(item, false, this::loadItems).execute()));
+                e -> e.getItem().ifPresent(item -> {
+                    close();
+                    new EditCost(item, false, this::loadItems).execute();
+                }));
         cm.setDynamicContentHandler(ii -> {
             deselectAll();
             if(ii == null) {
@@ -353,7 +355,7 @@ public class LocateItem extends DataGrid<InventoryItem> implements CloseableView
             s = location instanceof InventoryFitmentPosition ?
                     ((InventoryFitmentPosition) location).toDisplay(false) :
                     item.getLocationDisplay();
-            if(sb.length() > 0) {
+            if(!sb.isEmpty()) {
                 sb.append('\n');
             }
             sb.append(s);
@@ -656,8 +658,9 @@ public class LocateItem extends DataGrid<InventoryItem> implements CloseableView
             String reference = "Split";
             InventoryTransaction it = new InventoryTransaction(getTransactionManager(), DateUtility.today(), reference);
             it.splitQuantity(item, q, reference);
-            transact(it::save);
-            message("Quantity split successfully");
+            if(transact(it::save)) {
+                message("Quantity split successfully");
+            }
             return true;
         }
     }

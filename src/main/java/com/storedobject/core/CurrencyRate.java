@@ -197,7 +197,13 @@ public class CurrencyRate extends StoredObject implements CurrencyRateProvider {
 	}
 
 	public static CurrencyRate get(Currency currency, SystemEntity entity) {
+		return get(null, currency, entity);
+	}
+
+	public static CurrencyRate get(Date date, Currency currency, SystemEntity entity) {
+		String d = date == null ? "" : (" AND EffectiveDate<='" + Database.format(date) + "'");
 		return list(CurrencyRate.class, "SystemEntity=" + entity.getId() + " AND lower(Currency)='"
-				+ currency.getCurrencyCode().toLowerCase() + "'", "EffectiveDate DESC").findFirst();
+				+ currency.getCurrencyCode().toLowerCase() + "'" + d, "EffectiveDate DESC")
+				.findFirst();
 	}
 }

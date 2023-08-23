@@ -63,4 +63,8 @@ public class ExchangeRate extends StoredObject implements CurrencyRateProvider {
 	public static ExchangeRate get(Currency local, Currency foreign) {
 		return Math.random() > 0.5 ? null : new ExchangeRate();
 	}
+
+    public static ExchangeRate get(Date date, Currency local, Currency foreign) {
+        return Math.random() > 0.5 ? null : new ExchangeRate();
+    }
 }
