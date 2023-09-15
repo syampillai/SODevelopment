@@ -160,6 +160,7 @@
     </distributionManagement>
 
     <build>
+
         <plugins>
             <!-- Compile -->
             <plugin>
@@ -171,6 +172,7 @@
                     <target>17</target>
                 </configuration>
             </plugin>
+
             <!-- Create jar file -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -185,6 +187,14 @@
                     </archive>
                 </configuration>
             </plugin>
+
+            <!-- Resources plug-in -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>3.3.1</version>
+            </plugin>
+
         </plugins>
     </build>
 

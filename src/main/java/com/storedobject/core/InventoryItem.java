@@ -5,6 +5,7 @@ import java.sql.Date;
 import java.util.Random;
 import java.util.function.Predicate;
 
+@SuppressWarnings("RedundantThrows")
 public class InventoryItem extends StoredObject {
 
     private static final int r = new Random().nextInt();
