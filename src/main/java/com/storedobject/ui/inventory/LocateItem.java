@@ -636,6 +636,7 @@ public class LocateItem extends DataGrid<InventoryItem> implements CloseableView
             addField(quantityField, splitQuantityField);
             setFieldReadOnly(quantityField);
             setRequired(splitQuantityField);
+            setFirstFocus(splitQuantityField);
         }
 
         @Override

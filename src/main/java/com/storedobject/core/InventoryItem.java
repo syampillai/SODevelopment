@@ -43,6 +43,13 @@ public class InventoryItem extends StoredObject {
         return "";
     }
 
+    public void setBatchTag(String batchTag) {
+    }
+
+    public String getBatchTag() {
+        return "";
+    }
+
     public void setStore(Id storeId) {
     }
 

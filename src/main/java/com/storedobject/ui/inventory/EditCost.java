@@ -41,7 +41,6 @@ public class EditCost extends DataForm implements Transactional {
         newCost = new MoneyField("Cost to Set");
         newCost.setValue(item.getCost());
         addField(newCost);
-        setRequired(newCost);
         if(item.isSerialized()) {
             addField(updateAll = new Checkbox("Update all Serial Numbers?"));
         }
