@@ -3,6 +3,7 @@ package com.storedobject.core;
 import java.math.BigDecimal;
 import java.sql.Date;
 
+@SuppressWarnings("RedundantThrows")
 public final class InventoryLedger extends StoredObject {
 
     public static final Date dataPickupDate = DateUtility.create(2000, 1, 1);
@@ -124,6 +125,9 @@ public final class InventoryLedger extends StoredObject {
     }
 
     public void updateReference(TransactionManager tm, String newReference) throws Exception {
+    }
+
+    public void updateCost(TransactionManager tm, Money newCost) throws Exception {
     }
 
     public static QuantityWithCost getOpeningStock(InventoryItemType itemType, Date date, InventoryLocation location) {

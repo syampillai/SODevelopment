@@ -1,7 +1,6 @@
 package com.storedobject.ui.inventory;
 
 import com.storedobject.common.SORuntimeException;
-import com.storedobject.common.StringList;
 import com.storedobject.core.*;
 import com.storedobject.ui.Application;
 import com.storedobject.ui.DataGrid;
@@ -155,7 +154,7 @@ public class LocateItem extends DataGrid<InventoryItem> implements CloseableView
 
     private LocateItem(String caption, InventoryItemType partNumber, Class<? extends InventoryItem> itemClass,
                        Class<? extends InventoryItemType> itemTypeClass, boolean canInspect, String originalCaption) {
-        super(InventoryItem.class, StringList.concat(ItemField.COLUMNS, StringList.create(new String[] { "Cost" })));
+        super(InventoryItem.class, ItemField.COLUMNS);
         allowEditCost = canInspect;
         setCaption(caption == null || caption.isEmpty() ? "Items" : caption);
         if(originalCaption != null && originalCaption.contains("|")) {

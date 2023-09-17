@@ -19,6 +19,7 @@ public class StockReport extends DataForm {
     private final List<InventoryLocation> locations = new ArrayList<>();
     private DateField dateField;
     private BooleanField zerosField, localCurrencyField;
+    private ObjectField<InventoryItemType> pnField;
     private ChoiceField outputField;
     private boolean customized = true;
     private Report pdf;
@@ -41,6 +42,9 @@ public class StockReport extends DataForm {
         addField(zerosField);
         localCurrencyField = new BooleanField("Print Cost in Accounting Currency", true);
         addField(localCurrencyField);
+        pnField = new ObjectField<>("Part Number", InventoryItemType.class, true);
+        pnField.setHelperText("Leave it blank for printing all items");
+        addField(pnField);
         outputField = new ChoiceField("Format", new String[] { "PDF", "Excel" });
         addField(outputField);
     }
@@ -170,6 +174,10 @@ public class StockReport extends DataForm {
             super(device, location, date);
             printZeros(zerosField.getValue());
             printCostInLocalCurrency(localCurrencyField.getValue());
+            InventoryItemType pn = pnField.getObject();
+            if(pn != null) {
+                setPartNumber(pn);
+            }
             setCaption(getCaption());
             setItemFilter(StockReport.this::canPrint);
             configure(this);
@@ -202,6 +210,10 @@ public class StockReport extends DataForm {
             printZeros(zerosField.getValue());
             printCostInLocalCurrency(localCurrencyField.getValue());
             setCaption(getCaption());
+            InventoryItemType pn = pnField.getObject();
+            if(pn != null) {
+                setPartNumber(pn);
+            }
             setItemFilter(StockReport.this::canPrint);
             configure(this);
         }
