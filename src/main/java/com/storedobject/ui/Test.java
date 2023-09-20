@@ -1,41 +1,25 @@
 package com.storedobject.ui;
 
-import com.storedobject.common.StringList;
-import com.storedobject.core.Signature;
-import com.storedobject.vaadin.View;
-import org.vaadin.stefan.table.TableDataCell;
+import com.storedobject.vaadin.DataForm;
 
-import java.util.function.Function;
+public class Test extends DataForm {
 
-public class Test extends View {
+    QuantityField qf;
+    WeightField wf;
+    VolumeField vf;
 
     public Test() {
-        setCaption("Signatures");
-        setComponent(new SignatureTable());
+        super("Test");
+        addField(qf = new QuantityField("Quantity"));
+        addField(wf = new WeightField("Weight"));
+        addField(vf = new VolumeField("Volume"));
     }
 
-    static class SignatureTable extends ObjectTable<Signature> {
-
-        public SignatureTable() {
-            super(Signature.class, StringList.create("Person", "Signature"));
-            load();
-        }
-
-        @Override
-        public Function<Signature, ?> getColumnFunction(String columnName) {
-            if("Signature".equals(columnName)) {
-                return s -> "";
-            }
-            return super.getColumnFunction(columnName);
-        }
-
-        @Override
-        protected void customizeCell(String columnName, Signature signature, TableDataCell cell) {
-            if("Signature".equals(columnName)) {
-                Image image = new Image();
-                image.setSource(signature);
-                cell.add(image);
-            }
-        }
+    @Override
+    protected boolean process() {
+        message("Quantity = " + qf.getValue());
+        message("Weight = " + wf.getValue());
+        message("Volume = " + vf.getValue());
+        return false;
     }
 }

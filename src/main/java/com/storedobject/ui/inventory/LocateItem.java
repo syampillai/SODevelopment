@@ -341,7 +341,11 @@ public class LocateItem extends DataGrid<InventoryItem> implements CloseableView
         clearAlerts();
     }
 
-    public static String getLocationDisplay(InventoryItem item) {
+    public String getLocationDisplay(InventoryItem item) {
+        return locationDisplay(item);
+    }
+
+    static String locationDisplay(InventoryItem item) {
         InventoryLocation loc = item.getLocation();
         if(!(loc instanceof InventoryFitmentPosition)) {
             return item.getLocationDisplay();
