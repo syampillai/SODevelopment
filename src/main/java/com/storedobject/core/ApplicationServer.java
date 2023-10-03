@@ -8,7 +8,10 @@ import java.util.Random;
 
 public final class ApplicationServer {
 
+    private final Device device;
+
     public ApplicationServer(Device device, String link) {
+        this.device = device;
     }
 
     public static String getLicenseStatus() {
@@ -23,7 +26,15 @@ public final class ApplicationServer {
     }
 
     public Device getDevice() {
-        return null;
+        return device;
+    }
+
+    public boolean checkDeviceSize(Logic logic) {
+        return device == null;
+    }
+
+    public boolean canExecute(Logic logic) {
+        return device == null;
     }
 
     public static String getLogFile() {
@@ -159,6 +170,10 @@ public final class ApplicationServer {
 
     public static String runMode() {
         return "";
+    }
+
+    public synchronized static void initialize(Properties properties) {
+        initialize(null, properties);
     }
 
     public synchronized static void initialize(String propertiesFileName) {

@@ -78,7 +78,7 @@ public class ReceiveMaterial extends DataForm {
         super("Receive Materials/Tools");
         if(toField == null) {
             if(to == null) {
-                this.toField = LocationField.create("Receive to", 0, 4, 5, 11);
+                this.toField = LocationField.create("Receive to", 0, 4, 5, 10, 11);
             } else {
                 this.toField = LocationField.create("To", to);
                 setFieldReadOnly(this.toField);
