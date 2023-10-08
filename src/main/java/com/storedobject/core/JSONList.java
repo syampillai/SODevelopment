@@ -8,6 +8,6 @@ public class JSONList extends JSONRetrieve {
 
     @Override
     public void execute(Device device, JSON json, Map<String, Object> result) {
-        super.execute(device, json, result, true);
+        super.execute(device, json, result, 1);
     }
 }
