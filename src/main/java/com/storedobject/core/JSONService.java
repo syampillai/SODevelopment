@@ -2,17 +2,15 @@ package com.storedobject.core;
 
 import com.storedobject.common.ComputedValue;
 import com.storedobject.common.JSON;
+import com.storedobject.common.MathUtility;
 
 import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.sql.Date;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.function.BiFunction;
 
 /**
  * Interface defining the JSON Service interface. (SO Connector logic should implement this interface).
@@ -96,17 +94,184 @@ public interface JSONService {
 	 * @return {@link Id} if found, otherwise null.
 	 */
 	static Id getId(JSON json, String attribute) {
-		Number n = json.getNumber(attribute);
+		BigDecimal n = getBigDecimal(json, attribute);
 		if(n == null) {
+			String s = json.getString(attribute);
+			if(StringUtility.isNumber(s)) {
+				return new Id(s);
+			} else {
+				return null;
+			}
+		}
+		return new Id(n);
+	}
+
+	/**
+	 * Helper method to retrieve a quantity value from the JSON request.
+	 * @param json Request received.
+	 * @param attribute Attribute name.
+	 * @return Quantity if found, otherwise null.
+	 */
+	static Quantity getQuantity(JSON json, String attribute) {
+		json = json.get(attribute);
+		if(json == null) {
 			return null;
 		}
-		if(n instanceof BigDecimal bd) {
-			return new Id(bd);
+		MeasurementUnit unit = MeasurementUnit.get(json.getString("unit"));
+		BigDecimal quantity = MathUtility.toBigDecimal(json.getNumber("quantity"));
+		if(unit == null || quantity == null) {
+			return null;
 		}
-		if(n instanceof BigInteger bi) {
-			return new Id(bi);
+		return Quantity.create(quantity, unit);
+	}
+
+	/**
+	 * Helper method to retrieve a monetary value from the JSON request.
+	 * @param json Request received.
+	 * @param attribute Attribute name.
+	 * @return Money if found, otherwise null.
+	 */
+	static Money getMoney(JSON json, String attribute) {
+		json = json.get(attribute);
+		if(json == null) {
+			return null;
 		}
-		return new Id(BigInteger.valueOf(n.longValue()));
+		Currency currency = Money.getCurrency(json.getString("currency"));
+		BigDecimal amount = MathUtility.toBigDecimal(json.getNumber("amount"));
+		if(currency == null || amount == null) {
+			return null;
+		}
+		return new Money(amount, currency);
+	}
+
+	/**
+	 * Helper method to retrieve a {@link ComputedDate} value from the JSON request.
+	 * @param json Request received.
+	 * @param attribute Attribute name.
+	 * @return {@link ComputedDate} value if found, otherwise null.
+	 */
+	static ComputedDate getComputedDate(JSON json, String attribute) {
+		json = json.get(attribute);
+		if(json == null) {
+			return null;
+		}
+		Boolean available = json.getBoolean("available");
+		if(available == null) {
+			return null;
+		}
+		Date date = getDate(json, "value");
+		if(date == null) {
+			if(available) {
+				return null;
+			} else {
+				date = DateUtility.today();
+			}
+		}
+		return new ComputedDate(date, !available);
+	}
+
+	/**
+	 * Helper method to retrieve a {@link ComputedMinute} value from the JSON request.
+	 * @param json Request received.
+	 * @param attribute Attribute name.
+	 * @return {@link ComputedMinute} value if found, otherwise null.
+	 */
+	static ComputedMinute getComputedMinute(JSON json, String attribute) {
+		return (ComputedMinute) getComputed(json, attribute, (n, b) -> new ComputedMinute(n.intValue(), b));
+	}
+
+	/**
+	 * Helper method to retrieve a {@link ComputedDouble} value from the JSON request.
+	 * @param json Request received.
+	 * @param attribute Attribute name.
+	 * @return {@link ComputedDouble} value if found, otherwise null.
+	 */
+	static ComputedDouble getComputedDouble(JSON json, String attribute) {
+		return (ComputedDouble) getComputed(json, attribute, (n, b) -> new ComputedDouble(n.doubleValue(), b));
+	}
+
+	/**
+	 * Helper method to retrieve a {@link ComputedInteger} value from the JSON request.
+	 * @param json Request received.
+	 * @param attribute Attribute name.
+	 * @return {@link ComputedInteger} value if found, otherwise null.
+	 */
+	static ComputedInteger getComputedInteger(JSON json, String attribute) {
+		return (ComputedInteger) getComputed(json, attribute, (n, b) -> new ComputedInteger(n.intValue(), b));
+	}
+
+	/**
+	 * Helper method to retrieve a {@link ComputedLong} value from the JSON request.
+	 * @param json Request received.
+	 * @param attribute Attribute name.
+	 * @return {@link ComputedLong} value if found, otherwise null.
+	 */
+	static ComputedLong getComputedLong(JSON json, String attribute) {
+		return (ComputedLong) getComputed(json, attribute, (n, b) -> new ComputedLong(n.longValue(), b));
+	}
+
+	private static <T> ComputedValue<T> getComputed(JSON json, String attribute,
+													BiFunction<Number, Boolean, ComputedValue<T>> func) {
+		json = json.get(attribute);
+		if(json == null) {
+			return null;
+		}
+		Boolean available = json.getBoolean("available");
+		if(available == null) {
+			return null;
+		}
+		Number number = json.getNumber("value");
+		if(number == null) {
+			if(available) {
+				return null;
+			} else {
+				number = 0;
+			}
+		}
+		return func.apply(number, !available);
+	}
+
+	/**
+	 * Helper method to retrieve a {@link Integer} value from the JSON request.
+	 * @param json Request received.
+	 * @param attribute Attribute name.
+	 * @return {@link Integer} value if found, otherwise null.
+	 */
+	static Integer getInteger(JSON json, String attribute) {
+		Number n = json.getNumber(attribute);
+		return n == null ? null : n.intValue();
+	}
+
+	/**
+	 * Helper method to retrieve a {@link Long} value from the JSON request.
+	 * @param json Request received.
+	 * @param attribute Attribute name.
+	 * @return {@link Long} value if found, otherwise null.
+	 */
+	static Long getLong(JSON json, String attribute) {
+		Number n = json.getNumber(attribute);
+		return n == null ? null : n.longValue();
+	}
+
+	/**
+	 * Helper method to retrieve a {@link Double} value from the JSON request.
+	 * @param json Request received.
+	 * @param attribute Attribute name.
+	 * @return {@link Double} value if found, otherwise null.
+	 */
+	static Double getDouble(JSON json, String attribute) {
+		Number n = json.getNumber(attribute);
+		return n == null ? null : n.doubleValue();
+	}
+
+	/**
+	 * Helper method to retrieve a {@link BigDecimal} value from the JSON request.
+	 * @param json Request received.
+	 * @param attribute Attribute name.
+	 * @return {@link BigDecimal} value if found, otherwise null.
+	 */
+	static BigDecimal getBigDecimal(JSON json, String attribute) {
+		return MathUtility.toBigDecimal(json.getNumber(attribute));
 	}
 
 	/**
@@ -149,7 +314,7 @@ public interface JSONService {
 			m.put("quantity", q.getValue());
 			return m;
 		} else if(value instanceof Id id) {
-			return id.get();
+			return id.toString();
 		}
 		return value;
 	}
@@ -199,5 +364,31 @@ public interface JSONService {
 			}
 		}
 		return objects;
+	}
+
+	/**
+	 * Get the {@link StreamData} instance for the given name. The name could be the {@link Id} of the instance or the
+	 * {@link Id} or name of a {@link FileData} instance as a string.
+	 *
+	 * @param name Name.
+	 * @return {@link StreamData} instance if available.
+	 */
+	static StreamData getStreamData(String name) {
+		StreamData sd = null;
+		if(StringUtility.isDigit(name)) {
+			sd = StreamData.get(StreamData.class, "Id=" + name);
+			if(sd == null) {
+				FileData file = FileData.get(FileData.class, "Id=" + name, true);
+				if(file != null) {
+					sd = file.getFile();
+				}
+			}
+		} else {
+			FileData file = FileData.get(name);
+			if(file != null) {
+				sd = file.getFile();
+			}
+		}
+		return sd;
 	}
 }

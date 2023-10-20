@@ -1,5 +1,7 @@
 package com.storedobject.core;
 
+import com.storedobject.common.SORuntimeException;
+
 import java.lang.reflect.Method;
 import java.util.Date;
 import java.util.Iterator;
@@ -111,7 +113,7 @@ public class Utility {
      * with the parameters passed.
      *
      * @param objectClass  The class of the object to be created.
-     * @param paramClasses List of classes of the parameters. (These could be sub-classes of the classes of the
+     * @param paramClasses List of classes of the parameters. (These could be subclasses of the classes of the
      *                     actual parameter instances).
      * @param params       Actual parameter instances to be used.
      * @param <T>          The type of object to be created.
@@ -145,5 +147,28 @@ public class Utility {
             return null;
         }
         return getMethod(ofClass, methodName, parameter.getSuperclass());
+    }
+
+    /**
+     * Return the stack trace of the current thread at the current line as a string. Useful for logging.
+     *
+     * @return Stack trace as a string.
+     */
+    public static String stackTrace() {
+        String st = SORuntimeException.getTrace(Thread.currentThread());
+        for(int i = 0; i < 4; i++) {
+            st = st.substring(st.indexOf('\n') + 1);
+        }
+        return st;
+    }
+
+    /**
+     * Return the stack trace of the given {@link Throwable} as a string. Useful for logging.
+     *
+     * @param error Throwable instance.
+     * @return Stack trace as a string.
+     */
+    public static String stackTrace(Throwable error) {
+        return SORuntimeException.getTrace(error, true);
     }
 }

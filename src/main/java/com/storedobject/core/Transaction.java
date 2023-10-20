@@ -1,5 +1,7 @@
 package com.storedobject.core;
 
+import java.math.BigInteger;
+
 /**
  * SO transaction interface.
  *
@@ -75,7 +77,8 @@ public interface Transaction {
 	TransactionManager getManager();
 
 	default Id getUserId() {
-		return null;
+		TransactionManager tm = getManager();
+		return tm == null ? new Id(new BigInteger("2")) : tm.getUser().getId();
 	}
 
 	/**
@@ -84,7 +87,8 @@ public interface Transaction {
 	 * @return Session Id.
 	 */
 	default Id getSession() {
-		return null;
+		TransactionManager tm = getManager();
+		return tm == null ? new Id(BigInteger.ZERO) : tm.getSession();
 	}
 
 	<T extends StoredObject> T get(T object);
@@ -131,4 +135,29 @@ public interface Transaction {
 	 * @return True if active. False if already committed or rolled back.
 	 */
 	boolean isActive();
+
+	/**
+	 * Log something.
+	 *
+	 * @param anything Something to log.
+	 */
+	default void log(Object anything) {
+		getManager().log(anything);
+	}
+
+	/**
+	 * Log the current stack trace.
+	 */
+	default void logStackTrace() {
+		getManager().log(Utility.stackTrace());
+	}
+
+	/**
+	 * Log the stack trace of the giver error
+	 *
+	 * @param error Error.
+	 */
+	default void logStackTrace(Throwable error) {
+		getManager().log(Utility.stackTrace(error));
+	}
 }

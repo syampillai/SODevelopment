@@ -190,7 +190,7 @@ public class ReceiveAndBin extends ListGrid<InventoryItem> implements Transactio
                 newBin = bins.get(item.getId());
                 if(newBin != null && !newBin.getId().equals(item.getLocationId())) {
                     any = true;
-                    it.moveTo(item, reference, newBin);
+                    it.moveTo(StoredObject.get(item.getClass(), item.getId()), reference, newBin);
                 }
             }
             if(any) {
@@ -315,7 +315,7 @@ public class ReceiveAndBin extends ListGrid<InventoryItem> implements Transactio
 
         public void binItem(InventoryItem item) {
             clearAlerts();
-            this.item = item;
+            this.item = (InventoryItem) item.reload();
             itemField.clearContent().append(item.toDisplay()).update();
             InventoryLocation loc = item.getLocation();
             currentLocField.clearContent().append(loc.toDisplay());
