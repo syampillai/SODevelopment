@@ -91,8 +91,10 @@ public class StockReportExcel extends ExcelReport {
     }
 
     public void setPartNumber(InventoryItemType partNumber) {
-        setPartNumbers(ObjectIterator.create(partNumber));
-        separateCategories = false;
+        if(partNumber != null) {
+            setPartNumbers(ObjectIterator.create(partNumber));
+            separateCategories = false;
+        }
     }
 
     public void setPartNumbers(ObjectIterator<? extends InventoryItemType> partNumbers) {
@@ -176,7 +178,7 @@ public class StockReportExcel extends ExcelReport {
             for(InventoryItem ii : stockList) {
                 q = ii.getQuantity();
                 if(costInLocalCurrency) {
-                    c = ii.getCost().toLocal(se);
+                    c = ii.getCost().toLocal(stock.getDate(), se);
                 }
                 try {
                     totalQuantity = totalQuantity.add(q);

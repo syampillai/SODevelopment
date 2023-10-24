@@ -34,19 +34,7 @@ public abstract class JSONRetrieve implements JSONService {
             result.put(dataLabel, p.exists());
             return;
         }
-        StringList attributes = null;
-        json = json.get("attributes");
-        if(json != null) {
-            if(json.getType() == JSON.Type.ARRAY) {
-                String[] as = new String[json.getArraySize()];
-                for(int i = 0; i < as.length; i++) {
-                    as[i] = json.get(i).getString();
-                }
-                attributes = StringList.create(as);
-            } else if(json.getType() == JSON.Type.STRING) {
-                attributes = StringList.create(json.getString());
-            }
-        }
+        StringList attributes = JSONService.getStringList(json, "attributes");
         try {
             if(so == null) {
                 List<Object> oList = new ArrayList<>();
@@ -79,24 +67,8 @@ public abstract class JSONRetrieve implements JSONService {
         final int linkType;
 
         Parameters(JSON json) throws Exception {
-            String className = json.getString("className");
-            try {
-                if(className == null) {
-                    throw new Exception("Class not specified");
-                }
-                Class<?> dClass = JavaClassLoader.getLogic(ApplicationServer.guessClass(className));
-                if(StoredObject.class.isAssignableFrom(dClass)) {
-                    //noinspection unchecked
-                    dataClass = (Class<T>) dClass;
-                } else {
-                    throw new Exception("Not a data class - " + dClass.getName());
-                }
-                if(dataClass == Secret.class) {
-                    throw new Exception("No access - " + dClass.getName());
-                }
-            } catch (ClassNotFoundException e) {
-                throw new Exception("Class not found - " + className);
-            }
+            //noinspection unchecked
+            dataClass = (Class<T>) JSONService.getDataClass(json, "className");
             where = json.getString("where");
             orderBy = json.getString("order");
             Boolean b = json.getBoolean("any");

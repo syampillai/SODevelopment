@@ -17,13 +17,14 @@ import com.storedobject.pdf.PDFFont;
 import com.storedobject.pdf.PDFReport;
 import com.storedobject.pdf.PDFTable;
 
+@SuppressWarnings("unused")
 public class FileCirculationStatus extends PDFReport {
 	
 	private final static long H = 3600000L;
-	private FileData file;
+	private final FileData file;
 	private FileFolder folder;
 	private boolean recursive;
-	private Timestamp now = DateUtility.now();
+	private final Timestamp now = DateUtility.now();
 	private long readBefore;
 	
 	public FileCirculationStatus(Device device) {
@@ -71,7 +72,7 @@ public class FileCirculationStatus extends PDFReport {
 		return createCenteredCell(createTitleText(object.toString()));
 	}
 	
-	private void print(FileData file) throws Exception {
+	private void print(FileData file) {
 		PDFTable table = createTable(40, 20, 20, 20);
 		PDFCell cell;
 		cell = tcell(file);
@@ -152,7 +153,7 @@ public class FileCirculationStatus extends PDFReport {
 		return PDFColor.ORANGE;
 	}
 	
-	private void print(FileFolder folder) throws Exception {
+	private void print(FileFolder folder) {
 		add(tcell("Folder: " + folder));
 		for(FileData file: folder.listLinks(FileData.class, true)) {
 			print(file);

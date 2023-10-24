@@ -2,6 +2,7 @@ package com.storedobject.core;
 
 import com.storedobject.common.DateUtility;
 
+import java.sql.Date;
 import java.sql.Time;
 import java.util.Calendar;
 
@@ -21,6 +22,10 @@ public class DatePeriod extends AbstractPeriod<java.sql.Date> {
 
 	private DatePeriod() {
 		super(null, null);
+	}
+
+	public static DatePeriod create(Date dateFrom, Date dateTo) {
+		return dateFrom.after(dateTo) ? new DatePeriod(dateTo, dateFrom) : new DatePeriod(dateFrom, dateTo);
 	}
 
 	public TimePeriod getTimePeriod() {

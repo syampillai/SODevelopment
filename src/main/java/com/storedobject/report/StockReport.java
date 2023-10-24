@@ -91,8 +91,10 @@ public class StockReport extends PDFReport {
     }
 
     public void setPartNumber(InventoryItemType partNumber) {
-        setPartNumbers(ObjectIterator.create(partNumber));
-        separateCategories = false;
+        if(partNumber != null) {
+            setPartNumbers(ObjectIterator.create(partNumber));
+            separateCategories = false;
+        }
     }
 
     public void setPartNumbers(ObjectIterator<? extends InventoryItemType> partNumbers) {
@@ -142,9 +144,6 @@ public class StockReport extends PDFReport {
 
     public void printStock(ObjectIterator<? extends InventoryItemType> partNumbers, String categoryHeading, boolean newPage) {
         SystemEntity se = getTransactionManager().getEntity();
-        if(se == null) {
-            return;
-        }
         boolean needGap = count > 0;
         int catCount = 0, countCat = 0;
         if(partNumbers == null) {
@@ -199,7 +198,7 @@ public class StockReport extends PDFReport {
                 qty = ii.getQuantity();
                 cost = ii.getCost();
                 if(costInLocalCurrency) {
-                    cost = cost.toLocal(se);
+                    cost = cost.toLocal(stock.getDate(), se);
                     grandTotalCost = grandTotalCost.add(cost);
                     totalCostCat = totalCostCat.add(cost);
                 }

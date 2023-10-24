@@ -11,12 +11,12 @@ import java.util.List;
 
 public class StockAvailability extends PDFReport {
 
-    private final List<InventoryItemType> itemTypes = new ArrayList<>();
-    private final List<Quantity> quantities = new ArrayList<>();
-    private final InventoryStore store;
+	private final List<InventoryItemType> itemTypes = new ArrayList<>();
+	private final List<Quantity> quantities = new ArrayList<>();
+	private final InventoryStore store;
 
     public StockAvailability(Device device) {
-        this(device, null, null, null);
+    	this(device, null, null, null);
     }
 
     public StockAvailability(Device device, InventoryItemType partNumber, Quantity quantity) {
@@ -66,7 +66,7 @@ public class StockAvailability extends PDFReport {
                 b1.append(inventory.getLocation());
                 sn = inventory.getSerialNumber();
                 if(!StringUtility.isWhite(sn)) {
-                    b1.append(" (").append(itemType.isSerialized() ? "S/N" : "Batch/Lot").append(": ").append(sn).append(")");
+                    b1.append(" (").append(itemType.getSerialNumberShortName()).append(": ").append(sn).append(")");
                 }
                 if(inventory.getInTransit()) {
                     b1.append(PDFColor.RED).append(" (In Transit)").append(PDFColor.BLACK);

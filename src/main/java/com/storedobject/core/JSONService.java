@@ -3,6 +3,7 @@ package com.storedobject.core;
 import com.storedobject.common.ComputedValue;
 import com.storedobject.common.JSON;
 import com.storedobject.common.MathUtility;
+import com.storedobject.common.StringList;
 
 import java.math.BigDecimal;
 import java.sql.Date;
@@ -55,6 +56,15 @@ public interface JSONService {
 		} catch(Throwable e) {
 			return null;
 		}
+	}
+
+	/**
+	 * Helper method to retrieve a date value from the JSON request assuming that the attribute name is "Date".
+	 * @param json Request received.
+	 * @return Date if found, otherwise null.
+	 */
+	static Date getDate(JSON json) {
+		return getDate(json, "Date");
 	}
 
 	/**
@@ -275,6 +285,75 @@ public interface JSONService {
 	}
 
 	/**
+	 * Helper method to retrieve a {@link StringList} from the JSON request.
+	 * @param json Request received.
+	 * @param attribute Attribute name.
+	 * @return {@link StringList} if found, otherwise null.
+	 */
+	static StringList getStringList(JSON json, String attribute) {
+		json = json.get(attribute);
+		if(json == null) {
+			return null;
+		}
+		if(json.getType() == JSON.Type.ARRAY) {
+			String[] as = new String[json.getArraySize()];
+			for(int i = 0; i < as.length; i++) {
+				as[i] = json.get(i).getString();
+				if(as[i] == null) {
+					return null;
+				}
+			}
+			return StringList.create(as);
+		} else if(json.getType() == JSON.Type.STRING) {
+			return StringList.create(json.getString());
+		}
+		return null;
+	}
+
+	/**
+	 * Helper method to retrieve a {@link DatePeriod} value from the JSON request assuming that "dateFrom" and
+	 * "dateTo" are the names of the attributes.
+	 * @param json Request received.
+	 * @return {@link BigDecimal} value if found, otherwise null.
+	 */
+	static DatePeriod getDatePeriod(JSON json) {
+		Date d1 = getDate(json, "dateFrom"), d2 = getDate(json, "dateTo");
+		if(d1 == null || d2 == null) {
+			return null;
+		}
+		return DatePeriod.create(d1, d2);
+	}
+
+	/**
+	 * Helper method to retrieve a {@link StoredObject} class value from the JSON request.
+	 * @param json Request received.
+	 * @return {@link StoredObject} class value if found, otherwise an exception is raised.
+	 * @exception Exception is thrown if class name can't be extracted or the name is invalid.
+	 */
+	static Class<? extends StoredObject> getDataClass(JSON json, String attribute) throws Exception {
+		String className = json.getString(attribute);
+		try {
+			if(className == null) {
+				throw new Exception("Class not specified");
+			}
+			Class<?> dClass = JavaClassLoader.getLogic(ApplicationServer.guessClass(className));
+			Class<? extends StoredObject> dataClass;
+			if(StoredObject.class.isAssignableFrom(dClass) && dClass != StoredObject.class) {
+				//noinspection unchecked
+				dataClass = (Class<? extends StoredObject>) dClass;
+			} else {
+				throw new Exception("Not a data class - " + dClass.getName());
+			}
+			if(dataClass == Secret.class) {
+				throw new Exception("No access - " + dClass.getName());
+			}
+			return dataClass;
+		} catch (ClassNotFoundException e) {
+			throw new Exception("Class not found - " + className);
+		}
+	}
+
+	/**
 	 * Put some value in to the result. This method converts the value to a valid JSON value.
 	 *
 	 * @param attribute Attribute name.
@@ -299,10 +378,12 @@ public interface JSONService {
 		} else if(value instanceof java.util.Date d) {
 			return new SimpleDateFormat(DATE_FORMAT).format(d);
 		} else if(value instanceof StoredObject so) {
-			if(so instanceof FileData || so instanceof StreamData) { // Note: JSON service will handle it!
+			if (so instanceof FileData || so instanceof StreamData) { // Note: JSON service will handle it!
 				return so;
 			}
 			return so.toDisplay();
+		} else if(value instanceof ContentProducer) {
+			return value; // Note: JSON service will handle it!
 		} else if(value instanceof Money money) {
 			Map<String, Object> m = new HashMap<>();
 			m.put("currency", money.getCurrency().getCurrencyCode());
@@ -374,6 +455,9 @@ public interface JSONService {
 	 * @return {@link StreamData} instance if available.
 	 */
 	static StreamData getStreamData(String name) {
+		if(name == null || name.isBlank() || name.equals("0")) {
+			return null;
+		}
 		StreamData sd = null;
 		if(StringUtility.isDigit(name)) {
 			sd = StreamData.get(StreamData.class, "Id=" + name);
