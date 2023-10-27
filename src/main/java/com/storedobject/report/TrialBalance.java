@@ -1,6 +1,5 @@
 package com.storedobject.report;
 
-import com.storedobject.common.JSON;
 import com.storedobject.core.*;
 import com.storedobject.pdf.PDFCell;
 import com.storedobject.pdf.PDFFont;
@@ -39,8 +38,8 @@ public class TrialBalance extends PDFReport implements JSONParameter {
 
     @Override
     public void setParameters(JSON json) {
-        date = JSONService.getDate(json, "date");
-        Id entityId = JSONService.getId(json, "systemEntity");
+        date = json.getDate("date");
+        Id entityId = json.getId("systemEntity");
         if(entityId != null) {
             entity = StoredObject.get(SystemEntity.class, entityId);
             setEntity(entity.getEntity());

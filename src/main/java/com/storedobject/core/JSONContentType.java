@@ -1,23 +1,26 @@
 package com.storedobject.core;
 
-import com.storedobject.common.JSON;
-
-import java.util.Map;
-
 public class JSONContentType implements JSONService {
 
     @Override
-    public void execute(Device device, JSON json, Map<String, Object> result) {
-        String filePathName = json.getString("file");
+    public void execute(Device device, JSON json, JSONMap result) {
+        String filePathName = json.getString("name");
         if(filePathName == null) {
-            JSONService.error("Name not specified", result);
+            filePathName = json.getString("file");
+        }
+        if(filePathName == null) {
+            filePathName = json.getString("stream");
+        }
+        if(filePathName == null) {
+            result.error("Name not specified");
             return;
         }
-        StreamData sd = JSONService.getStreamData(filePathName);
+        StreamData sd = StreamData.get(filePathName);
         if(sd == null) {
-            JSONService.error("Not found", result);
+            result.error("Not found");
             return;
         }
         result.put("type", sd.getMimeType());
+        result.put("id", sd.getId());
     }
 }

@@ -18,9 +18,9 @@ import java.util.function.Predicate;
  * @param <T> Type of objects to list (as defined in the {@link ReportDefinition}).
  * @author Syam
  */
-public class ObjectListExcel<T extends StoredObject> extends ExcelReport {
+public class ObjectListExcel<T extends StoredObject> extends ExcelReport implements JSONParameter {
 
-    protected final ReportDefinition reportDefinition;
+    protected ReportDefinition reportDefinition;
     private List<ReportColumnDefinition> columns;
     protected long row = 0;
     private String error;
@@ -116,6 +116,9 @@ public class ObjectListExcel<T extends StoredObject> extends ExcelReport {
     }
 
     private void init() {
+        if(error != null || reportDefinition == null) {
+            return;
+        }
         columns = reportDefinition.getColumns();
         String[] captions = new String[columns.size()];
         int i;
@@ -242,5 +245,32 @@ public class ObjectListExcel<T extends StoredObject> extends ExcelReport {
 
     public long getRowCount(T object) {
         return row;
+    }
+
+    @Override
+    public void setParameters(JSON json) {
+        String definition = json.getString("definition");
+        if(definition != null) {
+            reportDefinition = rd(definition);
+            if(reportDefinition == null) {
+                return;
+            }
+            error = "Definition not found: " + definition;
+            return;
+        }
+        try {
+            @SuppressWarnings("unchecked") Class<T> dataClass = (Class<T>) json.getDataClass("className");
+            reportDefinition = ReportDefinition.create(dataClass, json.getStringList("attributes"));
+            Boolean any = json.getBoolean("any");
+            if(any != null && any) {
+                reportDefinition.setIncludeSubclasses(true);
+            }
+            String extra = json.getString("extraCondition");
+            if(extra != null) {
+                extraCondition = extra;
+            }
+        } catch (Exception e) {
+            error = e.getMessage();
+        }
     }
 }

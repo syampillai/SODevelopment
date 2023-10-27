@@ -1,7 +1,5 @@
 package com.storedobject.core;
 
-import com.storedobject.common.JSON;
-
 /**
  * Interface to denote that a {@link ContentProducer} instance such as a report supports
  * {@link com.storedobject.common.JSON} parameter.

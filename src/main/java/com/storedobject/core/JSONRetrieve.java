@@ -1,6 +1,5 @@
 package com.storedobject.core;
 
-import com.storedobject.common.JSON;
 import com.storedobject.common.StringList;
 
 import java.util.ArrayList;
@@ -10,7 +9,7 @@ import java.util.Map;
 
 public abstract class JSONRetrieve implements JSONService {
 
-    protected <T extends StoredObject> void execute(Device device, JSON json, Map<String, Object> result, int type) {
+    protected <T extends StoredObject> void execute(Device device, JSON json, JSONMap result, int type) {
         T so = null;
         Parameters<T> p;
         try {
@@ -19,7 +18,7 @@ public abstract class JSONRetrieve implements JSONService {
                 so = p.so();
             }
         } catch (Exception e) {
-            JSONService.error(e.getMessage(), result);
+            result.error(e.getMessage());
             return;
         }
         String dataLabel = json.getString("dataLabel");
@@ -34,7 +33,7 @@ public abstract class JSONRetrieve implements JSONService {
             result.put(dataLabel, p.exists());
             return;
         }
-        StringList attributes = JSONService.getStringList(json, "attributes");
+        StringList attributes = json.getStringList("attributes");
         try {
             if(so == null) {
                 List<Object> oList = new ArrayList<>();
@@ -54,7 +53,7 @@ public abstract class JSONRetrieve implements JSONService {
             }
         } catch (Throwable e) {
             device.log(e);
-            JSONService.error("Error while retrieving data", result);
+            result.error("Error while retrieving data");
         }
     }
 
@@ -68,20 +67,20 @@ public abstract class JSONRetrieve implements JSONService {
 
         Parameters(JSON json) throws Exception {
             //noinspection unchecked
-            dataClass = (Class<T>) JSONService.getDataClass(json, "className");
+            dataClass = (Class<T>) json.getDataClass("className");
             where = json.getString("where");
             orderBy = json.getString("order");
             Boolean b = json.getBoolean("any");
             any = b != null && b;
             b = json.getBoolean("master");
             master = b != null && b;
-            Id id = JSONService.getId(json, "this");
+            Id id = json.getId("this");
             Number n = json.getNumber("link");
             linkType = n == null ? (master ? 0 : -1) : n.intValue();
             if(id == null && (master || linkType >= 0)) {
-                JSON curr = json.get("this");
+                com.storedobject.common.JSON curr = json.get("this");
                 if(curr != null) {
-                    Parameters<?> p = new Parameters<>(curr);
+                    Parameters<?> p = new Parameters<>(new JSON(curr));
                     try {
                         StoredObject so = p.so();
                         id = so.getId();

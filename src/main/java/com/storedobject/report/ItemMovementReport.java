@@ -8,10 +8,10 @@ import com.storedobject.pdf.PDFTable;
 
 import java.sql.Date;
 
-public class ItemMovementReport extends PDFReport {
+public class ItemMovementReport extends PDFReport implements JSONParameter {
 
     private String caption = "Item Movement";
-    private final InventoryItem item;
+    private InventoryItem item;
 
     public ItemMovementReport(Device device, InventoryItem item) {
         super(device);
@@ -26,7 +26,9 @@ public class ItemMovementReport extends PDFReport {
     public Object getTitleText() {
         Text t = new Text();
         t.append(getFontSize() + 6, PDFFont.BOLD).append(caption);
-        t.newLine().append(getFontSize() + 4).append(item.toDisplay());
+        if(item != null) {
+            t.newLine().append(getFontSize() + 4).append(item.toDisplay());
+        }
         PDFCell c = createCell(t);
         c.setGrayFill(0.9f);
         return c;
@@ -34,6 +36,10 @@ public class ItemMovementReport extends PDFReport {
 
     @Override
     public void generateContent() {
+        if(item == null) {
+            add("Item not specified");
+            return;
+        }
         if(!item.isSerialized()) {
             add("Item selected is not a trackable item");
             return;
@@ -84,5 +90,18 @@ public class ItemMovementReport extends PDFReport {
         PDFCell c = createCell(createTitleText(s, getFontSize()));
         c.setGrayFill(0.9f);
         return c;
+    }
+
+    @Override
+    public void setParameters(JSON json) {
+        Id id = json.getId("item");
+        if(id == null) {
+            return;
+        }
+        item = StoredObject.get(InventoryItem.class, id, true);
+        String c = json.getString("caption");
+        if(c != null) {
+            caption = c;
+        }
     }
 }

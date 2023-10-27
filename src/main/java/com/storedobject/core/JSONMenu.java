@@ -1,7 +1,5 @@
 package com.storedobject.core;
 
-import com.storedobject.common.JSON;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -11,10 +9,11 @@ public class JSONMenu implements JSONService {
     private final DeviceMenu dm = new DeviceMenu();
     private boolean populated = false;
 
-    public void execute(Device device, JSON json, Map<String, Object> result) {
+    public void execute(Device device, JSON json, JSONMap result) {
         if(!populated) {
             //noinspection ResultOfMethodCallIgnored
             device.getServer().populateMenu(dm, null);
+            dm.clean();
             populated = true;
         }
         result.put("menu", dm);
@@ -26,25 +25,37 @@ public class JSONMenu implements JSONService {
         DeviceMenu() {
         }
 
+        private void clean() {
+            boolean removed = true;
+            while (removed) {
+                removed = false;
+                for(Map<String, Object> m: this) {
+                    if(m.get("menu") instanceof DeviceMenu dm) {
+                        dm.clean();
+                        if(dm.isEmpty()) {
+                            remove(m);
+                            removed = true;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
         @Override
         public void add(Logic logic) {
             ConnectorLogic cl = ConnectorLogic.get(ConnectorLogic.class,
-                    "LogicName='" + logic.getClassName() + "'");
+                    "lower(LogicName)='" + logic.getClassName().toLowerCase() + "'");
             if (cl == null || !cl.getActive()) {
                 return;
             }
             Map<String, Object> m = new HashMap<>();
             add(m);
             m.put("command", cl.getConnectorCommand());
-            String s = logic.getClassName();
-            s = s.substring(s.lastIndexOf('.') + 1);
-            s = s.substring(0, 1).toLowerCase() + s.substring(1);
-            m.put("command", s);
             m.put("title", logic.getTitle());
             String icon = logic.getIconImageName();
             m.put("icon", icon == null || icon.isBlank() || "go".equals(icon) ? "" : icon);
             m.put("id", String.valueOf(logic.getId()));
-            m.put("menu", new ArrayList<>());
         }
 
         @Override

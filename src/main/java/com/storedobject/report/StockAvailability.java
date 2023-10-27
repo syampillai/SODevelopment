@@ -58,7 +58,8 @@ public class StockAvailability extends PDFReport {
             InventoryItemType itemType = itemTypes.get(index);
             b1.append(12, PDFFont.BOLD).append(itemType).newLine().append(10, PDFFont.NORMAL);
             b2.newLine(true);
-            Quantity total = itemType.getUnitOfMeasurement(), inTransit = itemType.getUnitOfMeasurement(), q = itemType.getUnitOfMeasurement();
+            Quantity total = itemType.getUnitOfMeasurement(), inTransit = itemType.getUnitOfMeasurement(),
+                    q = itemType.getUnitOfMeasurement();
             String sn;
             for(InventoryItem inventory: InventoryItem.listStock(itemType, store)) {
                 q = inventory.getQuantity();

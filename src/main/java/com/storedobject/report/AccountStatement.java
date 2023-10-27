@@ -1,6 +1,5 @@
 package com.storedobject.report;
 
-import com.storedobject.common.JSON;
 import com.storedobject.core.*;
 import com.storedobject.pdf.*;
 
@@ -53,11 +52,11 @@ public class AccountStatement extends PDFReport implements JSONParameter {
 
     @Override
     public void setParameters(JSON json) {
-        datePeriod = JSONService.getDatePeriod(json);
+        datePeriod = json.getDatePeriod();
         if(datePeriod == null) {
             return;
         }
-        Id accountId = JSONService.getId(json, "account");
+        Id accountId = json.getId("account");
         if(accountId != null) {
             account = StoredObject.get(Account.class, accountId, true);
         }

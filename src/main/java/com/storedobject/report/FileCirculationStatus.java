@@ -2,15 +2,7 @@ package com.storedobject.report;
 
 import java.sql.Timestamp;
 
-import com.storedobject.core.ComputedDate;
-import com.storedobject.core.ComputedMinute;
-import com.storedobject.core.DateUtility;
-import com.storedobject.core.Device;
-import com.storedobject.core.FileCirculation;
-import com.storedobject.core.FileData;
-import com.storedobject.core.FileFolder;
-import com.storedobject.core.Logic;
-import com.storedobject.core.StringUtility;
+import com.storedobject.core.*;
 import com.storedobject.pdf.PDFCell;
 import com.storedobject.pdf.PDFColor;
 import com.storedobject.pdf.PDFFont;
@@ -18,10 +10,10 @@ import com.storedobject.pdf.PDFReport;
 import com.storedobject.pdf.PDFTable;
 
 @SuppressWarnings("unused")
-public class FileCirculationStatus extends PDFReport {
+public class FileCirculationStatus extends PDFReport implements JSONParameter {
 	
 	private final static long H = 3600000L;
-	private final FileData file;
+	private FileData file;
 	private FileFolder folder;
 	private boolean recursive;
 	private final Timestamp now = DateUtility.now();
@@ -174,4 +166,26 @@ public class FileCirculationStatus extends PDFReport {
 		t.newLine().append(14).append("Date: " + DateUtility.formatWithTimeHHMM(now) + " UTC");
     	return t;
     }
+
+	@Override
+	public void setParameters(JSON json) {
+		String fileName = json.getString("file"), folderName = json.getString("folder");
+		if(fileName == null && folderName == null) {
+			return;
+		}
+		if(fileName != null) {
+			file = FileData.get(fileName);
+			if(file == null && StringUtility.isNumber(fileName)) {
+				file = StoredObject.get(FileData.class, new Id(fileName), true);
+			}
+		}
+		if(folderName != null) {
+			folder = FileFolder.get(folderName);
+			if(folder == null && StringUtility.isNumber(folderName)) {
+				folder = StoredObject.get(FileFolder.class, new Id(folderName));
+			}
+		}
+		Boolean b = json.getBoolean("recursive");
+		recursive = b != null && b;
+	}
 }

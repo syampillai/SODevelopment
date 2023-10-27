@@ -2,23 +2,18 @@ package com.storedobject.report;
 
 import java.sql.Date;
 
-import com.storedobject.core.ComputedDate;
-import com.storedobject.core.DateUtility;
-import com.storedobject.core.Device;
-import com.storedobject.core.FileData;
-import com.storedobject.core.FileFolder;
-import com.storedobject.core.Logic;
+import com.storedobject.core.*;
 import com.storedobject.pdf.PDFCell;
 import com.storedobject.pdf.PDFColor;
 import com.storedobject.pdf.PDFFont;
 import com.storedobject.pdf.PDFReport;
 import com.storedobject.pdf.PDFTable;
 
-public class FileExpiryReport extends PDFReport {
+public class FileExpiryReport extends PDFReport implements JSONParameter {
 	
 	private FileFolder folder;
 	private boolean recursive;
-	private Date today = DateUtility.today();
+	private final Date today = DateUtility.today();
 	private int days;
 
 	public FileExpiryReport(Device device) {
@@ -49,7 +44,7 @@ public class FileExpiryReport extends PDFReport {
 		super(device);
 		this.folder = folder;
 		this.recursive = recursive;
-		this.days = days < 2 ? 2 : days;
+		this.days = Math.max(days, 2);
 	}
 
 	@Override
@@ -65,7 +60,7 @@ public class FileExpiryReport extends PDFReport {
 		return createCenteredCell(createTitleText(object.toString()));
 	}
 	
-	private void printFiles(FileFolder folder) throws Exception {
+	private void printFiles(FileFolder folder) {
 		PDFTable table = createTable(15, 40, 25, 20);
 		int n = 0, rem;
 		ComputedDate d;
@@ -98,7 +93,7 @@ public class FileExpiryReport extends PDFReport {
 		add(table);
 	}
 	
-	private void print(FileFolder folder) throws Exception {
+	private void print(FileFolder folder) {
 		add(tcell("Folder: " + folder));
 		printFiles(folder);
 		if(!recursive) {
@@ -116,4 +111,20 @@ public class FileExpiryReport extends PDFReport {
 		t.newLine().append(14).append("Files/Documents Expiring in " + days + " days. Date: " + DateUtility.formatDate(today));
     	return t;
     }
+
+	@Override
+	public void setParameters(JSON json) {
+		String folderName = json.getString("folder");
+		if(folderName == null) {
+			return;
+		}
+		folder = FileFolder.get(folderName);
+		if(folder == null && StringUtility.isNumber(folderName)) {
+			folder = StoredObject.get(FileFolder.class, new Id(folderName));
+		}
+		Boolean b = json.getBoolean("recursive");
+		recursive = b != null && b;
+		Integer d = json.getInteger("days");
+		days = d == null ? 30 : Math.max(d, 2);
+	}
 }

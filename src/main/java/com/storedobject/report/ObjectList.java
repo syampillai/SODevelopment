@@ -1,6 +1,5 @@
 package com.storedobject.report;
 
-import com.storedobject.common.JSON;
 import com.storedobject.core.*;
 import com.storedobject.pdf.*;
 
@@ -75,7 +74,7 @@ public class ObjectList<T extends StoredObject> extends PDFReport implements JSO
 
     @Override
     public void setParameters(JSON json) {
-        String definition = json.getString("Definition");
+        String definition = json.getString("definition");
         if(definition != null) {
             reportDefinition = rd(definition);
             if(reportDefinition == null) {
@@ -85,12 +84,15 @@ public class ObjectList<T extends StoredObject> extends PDFReport implements JSO
             return;
         }
         try {
-            @SuppressWarnings("unchecked") Class<T> dataClass = (Class<T>) JSONService.getDataClass(json, "className");
-            reportDefinition = ReportDefinition.create(dataClass,
-                    JSONService.getStringList(json, "attributes"));
+            @SuppressWarnings("unchecked") Class<T> dataClass = (Class<T>) json.getDataClass("className");
+            reportDefinition = ReportDefinition.create(dataClass, json.getStringList("attributes"));
             Boolean any = json.getBoolean("any");
             if(any != null && any) {
                 reportDefinition.setIncludeSubclasses(true);
+            }
+            String extra = json.getString("extraCondition");
+            if(extra != null) {
+                extraCondition = extra;
             }
         } catch (Exception e) {
             error = e.getMessage();
