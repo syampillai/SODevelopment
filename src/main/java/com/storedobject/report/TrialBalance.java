@@ -33,7 +33,7 @@ public class TrialBalance extends PDFReport implements JSONParameter {
         }
         this.entity = entity;
         this.date = date;
-        setEntity(entity.getEntity());
+        setEntity(entity == null ? null : entity.getEntity());
     }
 
     @Override
