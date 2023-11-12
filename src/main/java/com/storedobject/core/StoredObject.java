@@ -336,6 +336,9 @@ public abstract class StoredObject implements Displayable, HasId {
      * @throws Exception If any error occurs because the map contains incompatible values.
      */
     public final void load(Map<String, Object> map) throws Exception {
+        if(map.get("id") == null) {
+            throw new Exception();
+        }
     }
 
     public void load(LineNumberReader in) throws Exception {
