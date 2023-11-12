@@ -213,6 +213,9 @@ public abstract class StoredObject implements Displayable, HasId {
     }
 
     public void validateUndelete() throws Exception {
+        if(getId() == null) {
+            throw new Exception();
+        }
         if(transacting()) {
                 throw new Design_Error(tran, this);
         }
@@ -228,18 +231,30 @@ public abstract class StoredObject implements Displayable, HasId {
     }
 
     public void validateChildDetach(StoredObject child, int linkType) throws Exception {
+        if(getId() == null) {
+            throw new Exception();
+        }
     }
 
     public void validateChildUpdate(StoredObject child, int linkType) throws Exception {
+        if(getId() == null) {
+            throw new Exception();
+        }
     }
 
     public void validateParentAttach(StoredObject parent, int linkType) throws Exception {
     }
 
     public void validateParentDetach(StoredObject parent, int linkType) throws Exception {
+        if(getId() == null) {
+            throw new Exception();
+        }
     }
 
     public void validateParentUpdate(StoredObject parent, int linkType) throws Exception {
+        if(getId() == null) {
+            throw new Exception();
+        }
     }
 
     public final void delete(Transaction transaction) throws Exception {
@@ -284,6 +299,9 @@ public abstract class StoredObject implements Displayable, HasId {
     }
 
     public final String stringify() throws Exception {
+        if(getId() == null) {
+            throw new Exception();
+        }
         return getClass().getName() + "?";
     }
 
