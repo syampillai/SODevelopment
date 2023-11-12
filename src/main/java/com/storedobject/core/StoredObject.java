@@ -359,6 +359,9 @@ public abstract class StoredObject implements Displayable, HasId {
     }
 
     public void setRawValue(String attributeName, Object rawValue) throws Exception {
+        if(getId() == null) {
+            throw new Exception();
+        }
     }
 
     /**
@@ -489,6 +492,9 @@ public abstract class StoredObject implements Displayable, HasId {
     }
 
     public final void removeLink(Transaction transaction, Id id, String linkType) throws Exception {
+        if(getId() == null) {
+            throw new Exception();
+        }
         loading();
     }
 
@@ -513,6 +519,9 @@ public abstract class StoredObject implements Displayable, HasId {
     }
 
     public final void removeAllLinks(Transaction transaction, String linkType) throws Exception {
+        if(getId() == null) {
+            throw new Exception();
+        }
         loading();
     }
 
@@ -530,6 +539,9 @@ public abstract class StoredObject implements Displayable, HasId {
 
     public final void removeAllLinks(Transaction transaction, Class<? extends StoredObject> objectClass, int linkType)
             throws Exception {
+        if(getId() == null) {
+            throw new Exception();
+        }
         loading();
     }
 
@@ -538,6 +550,9 @@ public abstract class StoredObject implements Displayable, HasId {
     }
 
     public final void removeAllLinks(Transaction transaction, Class<? extends StoredObject> objectClass, String linkType) throws Exception {
+        if(getId() == null) {
+            throw new Exception();
+        }
         loading();
     }
 
@@ -546,6 +561,9 @@ public abstract class StoredObject implements Displayable, HasId {
     }
 
     public final void removeReverseLinks(Transaction transaction) throws Exception {
+        if(getId() == null) {
+            throw new Exception();
+        }
         loading();
     }
 
