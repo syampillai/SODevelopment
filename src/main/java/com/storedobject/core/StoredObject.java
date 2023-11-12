@@ -277,6 +277,7 @@ public abstract class StoredObject implements Displayable, HasId {
     }
 
     public final void save(Map<String, Object> map) throws Throwable {
+        map.put("x", "y");
         save();
     }
 
