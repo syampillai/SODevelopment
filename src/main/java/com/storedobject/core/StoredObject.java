@@ -72,6 +72,9 @@ public abstract class StoredObject implements Displayable, HasId {
     }
 
     public void setTransaction(Transaction transaction) throws Exception {
+        if(transaction == null) {
+            throw new Exception();
+        }
     }
 
     public final Transaction getTransaction() {
@@ -171,6 +174,9 @@ public abstract class StoredObject implements Displayable, HasId {
      * @throws Exception thrown for errors.
      */
     public void migrate(TransactionManager tm, StoredObject migratedInstance) throws Exception {
+        if(tm == null) {
+            throw new Exception();
+        }
     }
 
     public final void checkTransaction() throws Exception {
@@ -180,18 +186,27 @@ public abstract class StoredObject implements Displayable, HasId {
     }
 
     public void validateInsert() throws Exception {
+        if(getId() == null) {
+            throw new Exception();
+        }
         if(transacting()) {
                 throw new Design_Error(tran, this);
         }
     }
 
     public void validateUpdate() throws Exception {
+        if(getId() == null) {
+            throw new Exception();
+        }
         if(transacting()) {
                 throw new Design_Error(tran, this);
         }
     }
 
     public void validateDelete() throws Exception {
+        if(getId() == null) {
+            throw new Exception();
+        }
         if(transacting()) {
                 throw new Design_Error(tran, this);
         }
