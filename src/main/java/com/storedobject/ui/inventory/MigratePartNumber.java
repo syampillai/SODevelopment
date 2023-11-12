@@ -1,5 +1,6 @@
 package com.storedobject.ui.inventory;
 
+import com.storedobject.common.SORuntimeException;
 import com.storedobject.core.*;
 import com.storedobject.ui.Transactional;
 import com.storedobject.vaadin.ActionForm;
@@ -55,6 +56,7 @@ public class MigratePartNumber extends DataForm implements Transactional {
     private void convert(InventoryItemType pn, InventoryItemType newPN) {
         try {
             pn.migrate(getTransactionManager(), newPN, item -> convert(item, newPN));
+            message("Migrated successfully");
         } catch(Exception e) {
             error(e);
         }
@@ -63,7 +65,7 @@ public class MigratePartNumber extends DataForm implements Transactional {
     private InventoryItemType convert(InventoryItemType pn, Class<?> to) {
         try {
             InventoryItemType newPN = (InventoryItemType) to.getConstructor().newInstance();
-            HashMap<String, Object> map = new HashMap<>();
+            Map<String, Object> map = new HashMap<>();
             pn.save(map, ClassAttribute.get(pn).getAttributes());
             newPN.load(map);
             migrate(pn, newPN);
@@ -76,11 +78,13 @@ public class MigratePartNumber extends DataForm implements Transactional {
 
     private InventoryItem convert(InventoryItem item, InventoryItemType newPN) {
         InventoryItem newItem = newPN.createItem();
-        HashMap<String, Object> map = new HashMap<>();
+        Map<String, Object> map = new HashMap<>();
         try {
-            item.save(map, ClassAttribute.get(item).getAttributes());
+            item.save(map);
             newItem.load(map);
-        } catch(Throwable ignored) {
+        } catch(Throwable e) {
+            error(e);
+            throw new SORuntimeException(e);
         }
         migrate(item, newItem);
         return newItem;

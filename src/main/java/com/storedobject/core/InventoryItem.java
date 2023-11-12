@@ -3,6 +3,7 @@ package com.storedobject.core;
 import java.math.BigDecimal;
 import java.sql.Date;
 import java.util.Random;
+import java.util.function.Function;
 import java.util.function.Predicate;
 
 @SuppressWarnings("RedundantThrows")
@@ -567,5 +568,20 @@ public class InventoryItem extends StoredObject {
      * @param location New location.
      */
     public void resurrect(Money cost, InventoryLocation location) {
+    }
+
+    /**
+     * Migrate this item to another type.
+     *
+     * @param tm Transaction Manager.
+     * @param migratedType Migrated item type.
+     * @param itemConvertor Item convertor.
+     * @throws Exception thrown for errors.
+     */
+    public void migrate(TransactionManager tm, InventoryItemType migratedType,
+                        Function<InventoryItem, InventoryItem> itemConvertor) throws Exception {
+        if(getPartNumberId().equals(migratedType.getId())) {
+            throw new Invalid_State("Same type");
+        }
     }
 }
