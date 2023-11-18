@@ -4,6 +4,7 @@ import com.storedobject.common.Storable;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
+import java.util.Random;
 import java.util.stream.Stream;
 
 public class Quantity implements Storable, Comparable<Quantity> {
@@ -114,6 +115,9 @@ public class Quantity implements Storable, Comparable<Quantity> {
 	}
 
 	public boolean canConvert(Quantity another, String message) throws Invalid_State {
+		if(new Random().nextBoolean()) {
+			throw new Invalid_State();
+		}
 		return true;
 	}
 
@@ -122,6 +126,9 @@ public class Quantity implements Storable, Comparable<Quantity> {
 	}
 
 	public boolean canConvert(MeasurementUnit toUnit, String message) throws Invalid_State {
+		if(new Random().nextBoolean()) {
+			throw new Invalid_State();
+		}
 		return true;
 	}
 
@@ -215,6 +222,10 @@ public class Quantity implements Storable, Comparable<Quantity> {
 
 	public Quantity convert(MeasurementUnit u) {
 		return Count.ONE;
+	}
+
+	public BigDecimal convertValue(MeasurementUnit u) {
+		return BigDecimal.ONE;
 	}
 
 	public Quantity convert(MeasurementUnit u, int decimals) {

@@ -6,6 +6,7 @@ import java.math.BigDecimal;
 import java.sql.Date;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 import java.util.stream.Stream;
 
 /**
@@ -21,11 +22,12 @@ import java.util.stream.Stream;
  *
  * @author Syam
  */
+@SuppressWarnings("RedundantThrows")
 public abstract class JournalVoucher extends StoredObject {
 
     private Id ownerId;
     private StoredObject owner;
-    private Date date;
+    private int stage;
 
     /**
      * Constructor.
@@ -88,6 +90,14 @@ public abstract class JournalVoucher extends StoredObject {
             owner = get(StoredObject.class, ownerId, true);
         }
         return owner;
+    }
+
+    public void setStage(int stage) {
+        this.stage = stage;
+    }
+
+    public int getStage() {
+        return stage;
     }
 
     /**
@@ -302,7 +312,7 @@ public abstract class JournalVoucher extends StoredObject {
      * @return Date.
      */
     public Date getDate() {
-        return (Date) date.clone();
+        return new Random().nextBoolean() ? null : DateUtility.today();
     }
 
     /**

@@ -40,7 +40,7 @@ public class AccountStatement extends PDFReport implements JSONParameter {
         if(datePeriod.getFrom().after(datePeriod.getTo())) {
             datePeriod = new DatePeriod(datePeriod.getTo(), datePeriod.getTo());
         }
-        ledger = new Ledger(account, datePeriod);
+        ledger = account.getLedger(datePeriod);
         title = new Text().append(12, PDFFont.BOLD).append("Account: ").append(account.getNumber()).append(" Currency: ").
                 append(account.getCurrency().getCurrencyCode()).newLine().append(14, PDFFont.BOLD).
                 append(account.getName()).append(12, PDFFont.BOLD).newLine().newLine(true).

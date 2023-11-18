@@ -1,4 +1,4 @@
-package com.storedobject.account;
+package com.storedobject.accounts;
 
 import com.storedobject.core.Columns;
 
