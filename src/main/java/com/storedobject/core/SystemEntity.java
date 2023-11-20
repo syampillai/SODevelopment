@@ -41,6 +41,13 @@ public final class SystemEntity extends StoredObject implements RequiresApproval
 	public void setEntity(BigDecimal idValue) {
 	}
 
+	public void setEntity(Id entityId) {
+	}
+
+	public void setEntity(Entity entity) {
+		setEntity(entity.getId());
+	}
+
 	public Entity getEntity() {
 		return new Entity();
 	}
