@@ -512,6 +512,10 @@ public class Account extends StoredObject implements OfEntity {
         return listByNameOrNumber(systemEntity, Account.class, name, true);
     }
 
+    public static Account getFor(String number) {
+        return get(Account.class, "lower(number)='" + toCode(number) + "'", true);
+    }
+
     public Ledger getLedger(DatePeriod period) {
         return new Ledger() {
             @Override

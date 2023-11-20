@@ -4,17 +4,12 @@ import com.storedobject.core.annotation.*;
 
 public final class DocumentType extends Name {
 
-    private static final String[] typeBitValues =
-            new String[] {
-                    "Personal", "Business", "Account Related", "Others",
-            };
     private static final String[] contentTypeBitValues =
             new String[] {
                     "Image", "PDF", "Audio", "Video", "Other",
             };
     private boolean expiryApplicable;
     private boolean issued;
-    private int type = 0;
     private int contentType = 0;
 
     public DocumentType() {
@@ -61,28 +56,6 @@ public final class DocumentType extends Name {
     @Column(caption = "Issued by an Authority", order = 300)
     public boolean getIssued() {
         return issued;
-    }
-
-    public void setType(int type) {
-        this.type = type;
-    }
-
-    @Column(order = 400)
-    public int getType() {
-        return type;
-    }
-
-    public static String[] getTypeBitValues() {
-        return typeBitValues;
-    }
-
-    public static String getTypeValue(int value) {
-        String[] s = getTypeBitValues();
-        return StringUtility.bitsValue(value, s);
-    }
-
-    public String getTypeValue() {
-        return getTypeValue(type);
     }
 
     public void setContentType(int contentType) {

@@ -4,9 +4,9 @@ import com.storedobject.core.annotation.*;
 import java.math.BigDecimal;
 import java.sql.Date;
 
-public abstract class Document extends FileData {
+public abstract class Document<T extends StoredObject> extends FileData {
 
-    private Id typeId;
+    private Id typeId, ownerId;
     private String no;
     private final Date issuedOn = DateUtility.today();
     private final Date expiry = DateUtility.today();
@@ -17,6 +17,7 @@ public abstract class Document extends FileData {
     public static void columns(Columns columns) {
         columns.add("Type", "id");
         columns.add("No", "text");
+        columns.add("Owner", "id");
         columns.add("IssuedOn", "date");
         columns.add("Expiry", "date");
     }
@@ -24,6 +25,7 @@ public abstract class Document extends FileData {
     public static void indices(Indices indices) {
         indices.add("lower(No),Type");
         indices.add("Type,lower(No)");
+        indices.add("Owner");
     }
 
     public void setType(Id typeId) {
@@ -77,6 +79,8 @@ public abstract class Document extends FileData {
     @Override
     public void validateData(TransactionManager tm) throws Exception {
         typeId = tm.checkType(this, typeId, DocumentType.class, false);
+        ownerId = allowAny() ? tm.checkTypeAny(this, typeId, getOwnerClass(), false)
+                : tm.checkType(this, typeId, getOwnerClass(), false);
         if (StringUtility.isWhite(no)) {
             throw new Invalid_Value("No");
         }
@@ -89,9 +93,32 @@ public abstract class Document extends FileData {
         super.validateData(tm);
     }
 
-    public abstract StoredObject getOwner();
+    public T getOwner() {
+        return getRelated(getOwnerClass(), ownerId);
+    }
 
-    public abstract Id getOwnerId();
+    public final Id getOwnerId() {
+        return ownerId;
+    }
 
-    public abstract void setOwner(Id ownerId);
+    public final void setOwner(BigDecimal idValue) {
+        setOwner(new Id(idValue));
+    }
+
+    public final void setOwner(T owner) {
+        setOwner(owner == null ? null : owner.getId());
+    }
+
+    public final void setOwner(Id ownerId) {
+        if (!loading() && !Id.equals(this.getOwnerId(), ownerId)) {
+            throw new Set_Not_Allowed("Owner");
+        }
+        this.ownerId = ownerId;
+    }
+
+    protected abstract Class<T> getOwnerClass();
+
+    protected boolean allowAny() {
+        return false;
+    }
 }
