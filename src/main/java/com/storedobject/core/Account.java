@@ -177,12 +177,19 @@ public class Account extends StoredObject implements OfEntity {
         return systemEntityId;
     }
 
-    // For internal use only.
     public void setSystemEntity(BigDecimal idValue) {
+        setSystemEntity(new Id(idValue));
+    }
+
+    public void setSystemEntity(SystemEntity systemEntity) {
+        setSystemEntity(systemEntity.getId());
+    }
+
+    public void setSystemEntity(Id systemEntityId) {
         if(!loading()) {
             throw new Set_Not_Allowed("System Entity");
         }
-        this.systemEntityId = new Id(idValue);
+        this.systemEntityId = systemEntityId;
     }
 
     /**
