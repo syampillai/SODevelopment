@@ -4,6 +4,7 @@ import com.storedobject.core.annotation.SetNotAllowed;
 
 import java.math.BigDecimal;
 
+@SuppressWarnings("RedundantThrows")
 public final class BranchAccount extends Account {
 
     private Id branchId;
@@ -51,7 +52,11 @@ public final class BranchAccount extends Account {
         return getBranch().toString();
     }
 
-    public static BranchAccount create(TransactionManager tm, SystemEntity branch) throws Exception {
+    public static BranchAccount createTo(TransactionManager tm, SystemEntity branch) throws Exception {
+        return new BranchAccount();
+    }
+
+    public static BranchAccount createFrom(TransactionManager tm, SystemEntity master) throws Exception {
         return new BranchAccount();
     }
 }

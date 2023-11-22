@@ -47,6 +47,10 @@ public final class AccountChartMap extends StoredObject {
         this.chartId = chartId;
     }
 
+    public void setChart(AccountChart chart) {
+        setChart(chart.getId());
+    }
+
     public Id getChartId() {
         return chartId;
     }

@@ -441,6 +441,10 @@ public class Account extends StoredObject implements OfEntity {
         }
     }
 
+    public void setChart(AccountChart chart) {
+        setChart(chart.getId());
+    }
+
     public Id getChartId() {
         return chartId;
     }
