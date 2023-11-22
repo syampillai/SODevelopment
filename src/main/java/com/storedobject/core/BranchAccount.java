@@ -1,44 +1,57 @@
 package com.storedobject.core;
 
-public class BranchAccount extends com.storedobject.core.Account {
+import com.storedobject.core.annotation.SetNotAllowed;
+
+import java.math.BigDecimal;
+
+public final class BranchAccount extends Account {
+
+    private Id branchId;
 
     public BranchAccount() {
     }
 
-    public static void columns(com.storedobject.core.Columns p1) {
+    public static void columns(Columns columns) {
+        columns.add("Branch", "id");
     }
 
-    public static void indices(com.storedobject.core.Indices p1) {
+    public static void indices(Indices indices) {
+        indices.add("SystemEntity,Branch", true);
     }
 
-    public static java.lang.String[] protectedColumns() {
-        return null;
+    public static String[] protectedColumns() {
+        return new String[] { "Name" };
     }
 
-    public void validateData() throws java.lang.Exception {
+    public void setBranch(Id branchId) {
+        if(!loading()) {
+            throw new Set_Not_Allowed("Branch");
+        }
+        this.branchId = branchId;
     }
 
-    public java.lang.String getTitle() {
-        return null;
+    public void setBranch(BigDecimal idValue) {
+        setBranch(new Id(idValue));
     }
 
-    public void saved() throws java.lang.Exception {
+    public void setBranch(SystemEntity branch) {
+        setBranch(branch.getId());
     }
 
-    public void setBranch(com.storedobject.core.Id p1) {
+    @SetNotAllowed
+    public Id getBranchId() {
+        return branchId;
     }
 
-    public void setBranch(java.math.BigDecimal p1) {
+    public SystemEntity getBranch() {
+        return get(SystemEntity.class, branchId);
     }
 
-    public void setBranch(com.storedobject.core.SystemEntity p1) {
+    public String getTitle() {
+        return getBranch().toString();
     }
 
-    public com.storedobject.core.Id getBranchId() {
-        return null;
-    }
-
-    public com.storedobject.core.SystemEntity getBranch() {
-        return null;
+    public static BranchAccount create(TransactionManager tm, SystemEntity branch) throws Exception {
+        return new BranchAccount();
     }
 }
