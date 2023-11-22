@@ -4,7 +4,7 @@ import com.storedobject.core.Columns;
 
 /**
  * Concrete implementation of the Journal Voucher (JV) (See {@link com.storedobject.core.JournalVoucher}).
- * This implementation doesn't have any "owner" and can be used to create generic JV entries.
+ * This implementation doesn't have any "owner" (self-owning) and can be used to create generic JV entries.
  *
  * @author Syam
  */
