@@ -63,6 +63,28 @@ public abstract class StoredObject implements Displayable, HasId {
         return isVirtual();
     }
 
+    /**
+     * Check if any of the attribute values of this instance is modified or not, by comparing the values with
+     * respective values available in the DB.
+     * <p>Note: A virtual instance will become a new instance (with all the attribute values intact - equivalent of
+     * invoking {@link #makeNew()}) if this method is invoked and it will always return
+     * <code>true</code>.</p>
+     *
+     * @return True/false
+     */
+    public final boolean isModified() {
+        if(isVirtual()) {
+            makeNew();
+            return true;
+        }
+        try {
+            String s1 = stringify();
+            String s2 = get(getClass(), id).stringify();
+            return !s1.equals(s2);
+        } catch (Exception ignored) {
+        }
+        return true;
+    }
     protected int getKeyIndex(String attributeName) {
         return 0;
     }
