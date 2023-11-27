@@ -5,12 +5,12 @@ import com.storedobject.core.annotation.*;
 import com.storedobject.common.Address;
 import com.storedobject.common.PhoneNumber;
 
-public abstract class AccountEntity<T extends StoredObject> extends StoredObject {
+public abstract class AccountEntity<T extends StoredObject> extends StoredObject implements HasContacts {
 
     private T party;
     private String shortName;
-    private String address;
-    private String phone;
+    private String primaryAddress;
+    private String primaryPhone;
     private String taxCode;
 
     public AccountEntity() {
@@ -18,13 +18,22 @@ public abstract class AccountEntity<T extends StoredObject> extends StoredObject
 
     public static void columns(Columns columns) {
         columns.add("ShortName", "text");
-        columns.add("Address", "address");
-        columns.add("Phone", "phone");
+        columns.add("PrimaryAddress", "address");
+        columns.add("PrimaryPhone", "phone");
         columns.add("TaxCode", "text");
     }
 
     public static void indices(Indices indices) {
         indices.add("lower(ShortName)", "ShortName<>''", true);
+    }
+
+    public static String[] browseColumns() {
+        return new String[] {
+                "ShortName as Code",
+                "Name",
+                "Address",
+                "Phone",
+        };
     }
 
     public final void setParty(Id partyId) {
@@ -59,26 +68,26 @@ public abstract class AccountEntity<T extends StoredObject> extends StoredObject
         return shortName;
     }
 
-    public void setAddress(String address) {
-        this.address = address;
+    public void setPrimaryAddress(String primaryAddress) {
+        this.primaryAddress = primaryAddress;
     }
 
     @Column(style = "(address)", required = false, order = 300)
-    public String getAddress() {
-        return address;
+    public String getPrimaryAddress() {
+        return primaryAddress;
     }
 
-    public Address getAddressValue() {
-        return Address.create(address);
+    public Address getPrimaryAddressValue() {
+        return Address.create(primaryAddress);
     }
 
-    public void setPhone(String phone) {
-        this.phone = phone;
+    public void setPrimaryPhone(String primaryPhone) {
+        this.primaryPhone = primaryPhone;
     }
 
     @Column(style = "(phone)", required = false, order = 400)
-    public String getPhone() {
-        return phone;
+    public String getPrimaryPhone() {
+        return primaryPhone;
     }
 
     public void setTaxCode(String taxCode) {
@@ -94,21 +103,21 @@ public abstract class AccountEntity<T extends StoredObject> extends StoredObject
     public void validateData(TransactionManager tm) throws Exception {
         setPartyId(tm.checkType(this, getPartyId(), getPartyClass(), false));
         shortName = toCode(shortName);
-        if (address == null) {
-            address = "";
+        if (primaryAddress == null) {
+            primaryAddress = "";
         } else {
-            address = address.trim();
+            primaryAddress = primaryAddress.trim();
         }
-        if (!address.isEmpty()) {
-            address = Address.check(address);
+        if (!primaryAddress.isEmpty()) {
+            primaryAddress = Address.check(primaryAddress);
         }
-        if (phone == null) {
-            phone = "";
+        if (primaryPhone == null) {
+            primaryPhone = "";
         } else {
-            phone = phone.trim();
+            primaryPhone = primaryPhone.trim();
         }
-        if (!phone.isEmpty()) {
-            phone = PhoneNumber.check(phone);
+        if (!primaryPhone.isEmpty()) {
+            primaryPhone = PhoneNumber.check(primaryPhone);
         }
         taxCode = toCode(taxCode);
         super.validateData(tm);
@@ -124,5 +133,14 @@ public abstract class AccountEntity<T extends StoredObject> extends StoredObject
 
     public final boolean isBusiness() {
         return getPartyClass() == Entity.class;
+    }
+
+    @Override
+    public String toString() {
+        String s = shortName + " " + getName();
+        if(!primaryAddress.isEmpty()) {
+            s += ", " + getPrimaryAddressValue().toString().replace("\n", ", ");
+        }
+        return s;
     }
 }

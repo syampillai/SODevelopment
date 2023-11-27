@@ -4,12 +4,12 @@ import com.storedobject.core.*;
 import com.storedobject.core.annotation.*;
 import java.math.BigDecimal;
 
-public class Account extends com.storedobject.core.Account {
+public class EntityAccount extends com.storedobject.core.Account {
 
     private Id entityId;
     private AccountEntity<?> entity;
 
-    public Account() {
+    public EntityAccount() {
     }
 
     public static void columns(Columns columns) {
@@ -17,6 +17,9 @@ public class Account extends com.storedobject.core.Account {
     }
 
     public void setEntity(Id entityId) {
+        if(!loading()) {
+            throw new Set_Not_Allowed("Entity");
+        }
         this.entity = null;
         this.entityId = entityId;
     }
@@ -29,6 +32,7 @@ public class Account extends com.storedobject.core.Account {
         setEntity(entity == null ? null : entity.getId());
     }
 
+    @SetNotAllowed
     @Column(style = "(any)", order = 100)
     public Id getEntityId() {
         return entityId;
@@ -41,12 +45,12 @@ public class Account extends com.storedobject.core.Account {
         return this.entity;
     }
 
-    public static Account get(SystemEntity systemEntity, String name) {
-        return Account.getByNameOrNumber(systemEntity, Account.class, name, true);
+    public static EntityAccount get(SystemEntity systemEntity, String name) {
+        return EntityAccount.getByNameOrNumber(systemEntity, EntityAccount.class, name, true);
     }
 
-    public static ObjectIterator<? extends Account> list(SystemEntity systemEntity, String name) {
-        return Account.listByNameOrNumber(systemEntity, Account.class, name, true);
+    public static ObjectIterator<? extends EntityAccount> list(SystemEntity systemEntity, String name) {
+        return EntityAccount.listByNameOrNumber(systemEntity, EntityAccount.class, name, true);
     }
 
     @Override
@@ -58,7 +62,7 @@ public class Account extends com.storedobject.core.Account {
     public void validateData(TransactionManager tm) throws Exception {
         entityId = tm.checkTypeAny(this, entityId, AccountEntity.class, false);
         if(getEntity() != null) {
-            setName(getEntity().getName());
+            setName(entity.getName());
         }
         super.validateData(tm);
     }
