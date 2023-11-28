@@ -77,13 +77,7 @@ public abstract class StoredObject implements Displayable, HasId {
             makeNew();
             return true;
         }
-        try {
-            String s1 = stringify();
-            String s2 = get(getClass(), id).stringify();
-            return !s1.equals(s2);
-        } catch (Exception ignored) {
-        }
-        return true;
+        return !valueEquals(get(getClass(), id));
     }
     protected int getKeyIndex(String attributeName) {
         return 0;
