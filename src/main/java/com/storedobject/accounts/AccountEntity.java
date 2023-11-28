@@ -1,5 +1,6 @@
 package com.storedobject.accounts;
 
+import com.storedobject.common.Email;
 import com.storedobject.core.*;
 import com.storedobject.core.annotation.*;
 import com.storedobject.common.Address;
@@ -10,6 +11,7 @@ public abstract class AccountEntity<T extends StoredObject> extends StoredObject
     private T party;
     private String shortName;
     private String primaryAddress;
+    private String primaryEmail;
     private String primaryPhone;
     private String taxCode;
 
@@ -19,6 +21,7 @@ public abstract class AccountEntity<T extends StoredObject> extends StoredObject
     public static void columns(Columns columns) {
         columns.add("ShortName", "text");
         columns.add("PrimaryAddress", "address");
+        columns.add("PrimaryEmail", "email");
         columns.add("PrimaryPhone", "phone");
         columns.add("TaxCode", "text");
     }
@@ -31,8 +34,9 @@ public abstract class AccountEntity<T extends StoredObject> extends StoredObject
         return new String[] {
                 "ShortName as Code",
                 "Name",
-                "Address",
-                "Phone",
+                "PrimaryAddress",
+                "PrimaryEmail",
+                "PrimaryPhone",
         };
     }
 
@@ -81,11 +85,20 @@ public abstract class AccountEntity<T extends StoredObject> extends StoredObject
         return Address.create(primaryAddress);
     }
 
+    public void setPrimaryEmail(String primaryEmail) {
+        this.primaryEmail = primaryEmail;
+    }
+
+    @Column(style = "(email)", required = false, order = 400)
+    public String getPrimaryEmail() {
+        return primaryEmail;
+    }
+
     public void setPrimaryPhone(String primaryPhone) {
         this.primaryPhone = primaryPhone;
     }
 
-    @Column(style = "(phone)", required = false, order = 400)
+    @Column(style = "(phone)", required = false, order = 500)
     public String getPrimaryPhone() {
         return primaryPhone;
     }
@@ -94,7 +107,7 @@ public abstract class AccountEntity<T extends StoredObject> extends StoredObject
         this.taxCode = taxCode;
     }
 
-    @Column(style = "(code)", required = false, order = 500)
+    @Column(style = "(code)", required = false, order = 600)
     public String getTaxCode() {
         return taxCode;
     }
@@ -118,6 +131,10 @@ public abstract class AccountEntity<T extends StoredObject> extends StoredObject
         }
         if (!primaryPhone.isEmpty()) {
             primaryPhone = PhoneNumber.check(primaryPhone);
+        }
+        primaryEmail = StringUtility.pack(primaryEmail);
+        if (!primaryEmail.isEmpty()) {
+            primaryEmail = Email.check(primaryEmail);
         }
         taxCode = toCode(taxCode);
         super.validateData(tm);
