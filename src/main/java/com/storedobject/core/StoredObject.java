@@ -124,6 +124,20 @@ public abstract class StoredObject implements Displayable, HasId {
         return id.equals(so.id) && Objects.equals(tranId, so.tranId);
     }
 
+    /**
+     * Check if the attribute values of this instance is exactly same as the values of another instance.
+     *
+     * @param another Another instance.
+     * @return True if the attribute  values are same.
+     */
+    public final boolean valueEquals(StoredObject another) {
+        try {
+            return getClass() == another.getClass() && stringify().equals(another.stringify());
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
     @Override
     public final int hashCode() {
         return id == null ? new Id().hashCode() : id.hashCode();
