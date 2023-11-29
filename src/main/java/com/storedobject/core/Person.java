@@ -3,6 +3,7 @@ package com.storedobject.core;
 import java.sql.Date;
 import java.util.Random;
 
+@SuppressWarnings("RedundantThrows")
 public final class Person extends StoredObject implements HasContacts, Comparable<Person>, HasName {
 
 	public Person(String name) {

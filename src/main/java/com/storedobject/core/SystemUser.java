@@ -11,6 +11,7 @@ import java.util.*;
 /**
  * This class represents a person who is also a system user.
  */
+@SuppressWarnings("RedundantThrows")
 public final class SystemUser extends StoredObject implements HasName {
 
     public SystemUser(String login, Id personId) {
