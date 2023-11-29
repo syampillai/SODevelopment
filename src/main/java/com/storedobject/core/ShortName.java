@@ -2,7 +2,7 @@ package com.storedobject.core;
 
 import com.storedobject.core.annotation.*;
 
-public class ShortName extends Name {
+public abstract class ShortName extends Name implements HasShortName {
 
     private String shortName;
 
@@ -17,14 +17,6 @@ public class ShortName extends Name {
         indices.add("lower(ShortName),T_Family", true);
     }
 
-    public static ShortName get(String name) {
-        return StoredObjectUtility.get(ShortName.class, "Name", name, false);
-    }
-
-    public static ObjectIterator<ShortName> list(String name) {
-        return StoredObjectUtility.list(ShortName.class, "Name", name, false);
-    }
-
     public static int hints() {
         return ObjectHint.SMALL;
     }
@@ -33,6 +25,7 @@ public class ShortName extends Name {
         this.shortName = shortName;
     }
 
+    @Override
     @Column(order = 200)
     public String getShortName() {
         return shortName;
