@@ -11,7 +11,7 @@ import java.util.*;
 /**
  * This class represents a person who is also a system user.
  */
-public final class SystemUser extends StoredObject implements RequiresApproval {
+public final class SystemUser extends StoredObject implements HasName {
 
     public SystemUser(String login, Id personId) {
         this();

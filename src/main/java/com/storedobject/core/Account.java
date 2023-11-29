@@ -24,7 +24,7 @@ import java.util.Objects;
  * 10,9: [Chart level] 00 = Debit and credit trans allowed, 01 = Generally debited, 10 = Generally credited, 11 = Frozen
  * </pre>
  */
-public class Account extends StoredObject implements OfEntity {
+public class Account extends StoredObject implements OfEntity, HasName {
 
     private Id chartId, systemEntityId;
     private Money openingBalance, openingBalanceLC, balance, balanceLC;

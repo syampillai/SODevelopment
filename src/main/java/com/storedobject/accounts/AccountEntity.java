@@ -6,7 +6,8 @@ import com.storedobject.core.annotation.*;
 import com.storedobject.common.Address;
 import com.storedobject.common.PhoneNumber;
 
-public abstract class AccountEntity<T extends StoredObject> extends StoredObject implements HasContacts {
+public abstract class AccountEntity<T extends StoredObject> extends StoredObject
+        implements HasContacts, HasName, HasShortName {
 
     private T party;
     private String shortName;
