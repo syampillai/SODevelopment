@@ -4,6 +4,7 @@ import java.util.Currency;
 import java.util.Date;
 import java.util.Properties;
 import java.util.Random;
+import java.util.function.Consumer;
 
 public final class TransactionManager {
 
@@ -204,6 +205,15 @@ public final class TransactionManager {
     }
 
     /**
+     * Log something with a specific error.
+     * @param anything Anything, including exceptions, to be logged.
+     * @param error Error.
+     */
+    public void log(Object anything, Throwable error) {
+        device.log(anything, error);
+    }
+
+    /**
      * Get the time difference in minutes.
      *
      * @return Time difference.
@@ -226,5 +236,13 @@ public final class TransactionManager {
 
     public boolean isCrossServerLogin() {
         return Math.random() > 0.5;
+    }
+
+    /**
+     * Set a logger so that you can geet the logged text to your own destination.
+     *
+     * @param logger Place where logs should be shipped.
+     */
+    public void setLogger(Consumer<String> logger) {
     }
 }
