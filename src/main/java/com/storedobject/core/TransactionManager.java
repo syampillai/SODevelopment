@@ -6,6 +6,7 @@ import java.util.Properties;
 import java.util.Random;
 import java.util.function.Consumer;
 
+@SuppressWarnings("RedundantThrows")
 public final class TransactionManager {
 
     private final Device device;
