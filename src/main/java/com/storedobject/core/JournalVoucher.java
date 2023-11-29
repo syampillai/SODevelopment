@@ -1,6 +1,7 @@
 package com.storedobject.core;
 
 import com.storedobject.core.annotation.Column;
+import com.storedobject.core.annotation.SetNotAllowed;
 
 import java.math.BigDecimal;
 import java.sql.Date;
@@ -25,7 +26,7 @@ import java.util.stream.Stream;
 @SuppressWarnings("RedundantThrows")
 public abstract class JournalVoucher extends StoredObject {
 
-    private Id ownerId;
+    private Id ownerId, typeId;
     private StoredObject owner;
     private int stage;
 
@@ -90,6 +91,55 @@ public abstract class JournalVoucher extends StoredObject {
             owner = get(StoredObject.class, ownerId, true);
         }
         return owner;
+    }
+
+    /**
+     * Set the transaction type of this JV.
+     *
+     * @param typeId Type Id.
+     */
+    public void setType(Id typeId) {
+        if(!loading()) {
+            throw new Set_Not_Allowed("Transaction Type");
+        }
+        this.typeId = typeId;
+    }
+
+    /**
+     * Set the transaction type of this JV.
+     *
+     * @param idValue Type.
+     */
+    public void setType(BigDecimal idValue) {
+        setType(new Id(idValue));
+    }
+
+    /**
+     * Set the transaction type of this JV.
+     *
+     * @param type Type.
+     */
+    public void setType(TransactionType type) {
+        setType(type == null ? null : type.getId());
+    }
+
+    /**
+     * Get the transaction type Id.
+     *
+     * @return Id.
+     */
+    @SetNotAllowed
+    public Id getTypeId() {
+        return typeId;
+    }
+
+    /**
+     * Get the transaction type.
+     *
+     * @return Type.
+     */
+    public TransactionType getType() {
+        return get(TransactionType.class, typeId, true);
     }
 
     public void setStage(int stage) {
