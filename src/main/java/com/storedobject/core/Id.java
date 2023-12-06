@@ -1296,4 +1296,8 @@ public class Id {
 	public final ObjectIterator<? extends FileData> listFileData(Transaction transaction) {
 		return ObjectIterator.create();
 	}
+
+	static int compare(Id id1, Id id2) {
+		return id1.id.compareTo(id2.id);
+	}
 }

@@ -90,6 +90,12 @@ public class InventoryItem extends StoredObject {
         return "";
     }
 
+    void location(InventoryLocation location) {
+    }
+
+    void quantity(Quantity quantity) {
+    }
+
     public InventoryLocation getRealLocation() {
         return getLocation();
     }

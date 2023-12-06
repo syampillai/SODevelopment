@@ -2,6 +2,7 @@ package com.storedobject.core;
 
 import java.math.BigDecimal;
 import java.sql.Date;
+import java.util.Random;
 
 @SuppressWarnings("RedundantThrows")
 public final class InventoryLedger extends StoredObject {
@@ -35,11 +36,19 @@ public final class InventoryLedger extends StoredObject {
     }
 
     public InventoryItem getItem() {
-        return new InventoryItem();
+        return new Random().nextBoolean() ? new InventoryItem() : null;
     }
 
     public InventoryItem getItemFromHistory() {
         return getItem();
+    }
+
+    InventoryItem getItemAnyway() {
+        InventoryItem item = getItem();
+        if(item == null) {
+            item = (InventoryItem) getDeleted(getItemId());
+        }
+        return item;
     }
 
     public void setItemType(Id itemTypeId) {
