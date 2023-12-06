@@ -1298,6 +1298,6 @@ public class Id {
 	}
 
 	static int compare(Id id1, Id id2) {
-		return id1.id.compareTo(id2.id);
+		return id1.get().compareTo(id2.get());
 	}
 }
