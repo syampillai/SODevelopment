@@ -465,4 +465,9 @@ public abstract class JournalVoucher extends StoredObject {
             return "";
         }
     }
+
+    @Override
+    protected String transactionCode() {
+        return "JV";
+    }
 }
