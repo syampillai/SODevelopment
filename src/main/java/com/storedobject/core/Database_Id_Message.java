@@ -1,21 +1,30 @@
 package com.storedobject.core;
 
-@SuppressWarnings("serial")
-public abstract class Database_Id_Message extends com.storedobject.core.Database_Message {
+public abstract class Database_Id_Message extends Database_Message {
 
-    public Database_Id_Message(java.lang.String p1) {
-        this();
+    private final String id;
+    private final String tail;
+
+    public Database_Id_Message(String id) {
+        int p = id.indexOf(',');
+        if(p > 0) {
+            tail = id.substring(p + 1).trim();
+            id = id.substring(0, p);
+        } else {
+            tail = null;
+        }
+        this.id = id;
     }
 
-    private Database_Id_Message() {
+    protected String getCustomMessage() {
+        return tail == null ? id : (id + ", " + tail);
     }
 
-    public com.storedobject.core.Id getId() {
-        return null;
+    public Id getId() {
+        return new Id(id);
     }
 
-    @Override
-	protected java.lang.String getCustomMessage() {
-        return null;
+    String getTail() {
+        return tail;
     }
 }

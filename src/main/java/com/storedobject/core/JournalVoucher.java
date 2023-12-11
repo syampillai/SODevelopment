@@ -34,6 +34,15 @@ public abstract class JournalVoucher extends StoredObject {
      * Constructor.
      */
     public JournalVoucher() {
+        this(null);
+    }
+
+    /**
+     * Constructor.
+     * @param owner Owner.
+     */
+    public JournalVoucher(StoredObject owner) {
+        this.owner = owner == null ? this : owner;
     }
 
     /**
@@ -148,20 +157,6 @@ public abstract class JournalVoucher extends StoredObject {
 
     public int getStage() {
         return stage;
-    }
-
-    /**
-     * Override this method and generate all financial
-     * transactions here. You may invoke debit() or credit() methods as many
-     * times as needed to generate financial transactions.
-     * However, please make sure that super.generateTransactions() is
-     * called from the overridden method. Otherwise, a {@link Design_Error} will occur.
-     * Also, please note that this method should not be invoked directly from any logic. It will be automatically
-     * invoked by the system when the object is saved to the database.
-     *
-     * @exception Exception Transaction will be rolled back if any exception is thrown.
-     */
-    public void generateTransactions() throws Exception {
     }
 
     /**
@@ -464,6 +459,9 @@ public abstract class JournalVoucher extends StoredObject {
         public String getParticulars() {
             return "";
         }
+    }
+
+    public void allowExcess(Account account, Money excess) {
     }
 
     @Override
