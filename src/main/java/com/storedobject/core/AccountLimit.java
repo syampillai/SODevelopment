@@ -116,6 +116,9 @@ public final class AccountLimit extends StoredObject {
         if (Utility.isEmpty(validTo)) {
             throw new Invalid_Value("Valid to");
         }
+        if(limitAmount.getCurrency() != getAccount().getCurrency()) {
+            throw new Invalid_State("Limit currency mismatch");
+        }
         super.validateData(tm);
     }
 
@@ -143,7 +146,12 @@ public final class AccountLimit extends StoredObject {
     }
 
     public static AccountLimit getApplicable(Account account) {
-        return StoredObject.list(AccountLimit.class, "Account=" + account.getId() + " AND ValidFrom<='"
-                + Database.format(DateUtility.today()) + "'", "ValidFrom DESC").limit(1).findFirst();
+        return getApplicable(account.getId());
+    }
+
+    public static AccountLimit getApplicable(Id accountId) {
+        String today = "'" + Database.format(DateUtility.today()) + "'";
+        return StoredObject.list(AccountLimit.class, "Account=" + accountId + " AND ValidFrom<="
+                + today + " AND ValidTo>=" + today, "ValidFrom DESC").limit(1).findFirst();
     }
 }
