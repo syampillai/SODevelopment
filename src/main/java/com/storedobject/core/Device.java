@@ -4,7 +4,7 @@ import java.sql.Date;
 import java.util.Locale;
 import java.util.function.Consumer;
 
-public interface Device {
+public interface Device extends ErrorLogger {
 
     void setServer(ApplicationServer server);
     ApplicationServer getServer();

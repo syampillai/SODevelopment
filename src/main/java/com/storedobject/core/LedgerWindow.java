@@ -181,4 +181,12 @@ public class LedgerWindow {
     protected List<LedgerEntry> getTail() {
         return null;
     }
+
+    /**
+     * Set the error logger to capture the errors while generating the ledger entries.
+     *
+     * @param errorLogger Error logger.
+     */
+    public void setErrorLogger(ErrorLogger errorLogger) {
+    }
 }

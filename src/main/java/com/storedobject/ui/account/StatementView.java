@@ -32,6 +32,10 @@ public class StatementView extends ListGrid<LedgerEntry> implements CloseableVie
 
     public StatementView() {
         super(LedgerEntry.class, StringList.create("Date", "Particulars", "Debit", "Credit", "Balance"));
+        ledger.setErrorLogger((m, e) -> {
+            error(m);
+            error(e);
+        });
         accountField.setDisplayDetail(t -> {});
         setCaption("Statement View");
         forward = new Button("Next", this);
