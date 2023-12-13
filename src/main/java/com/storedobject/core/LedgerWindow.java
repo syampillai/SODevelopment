@@ -11,10 +11,14 @@ import java.util.Random;
  * keep the entries and this class will maintain that list by adding/removing entries to/from it when the "window" is
  * moved forward/backward. When the instance is initialized with an {@link Account}, it will automatically
  * load entries corresponding to the latest transactions.
+ * <p>Note: Please note that this class doesn't support generic ledger entries of external systems. However, there is
+ * a provision to append additional entries (could be un-posted ones). Override the {@link #getTail()} method for
+ * returning the tail entries. The date in the tail must be the same for all the entries in the tail and it will be
+ * automatically fixed as the upper date boundary.</p>
  *
  * @author Syam
  */
-public final class LedgerWindow {
+public class LedgerWindow {
 
     /**
      * Constructor. Default window size is 10.
@@ -167,5 +171,14 @@ public final class LedgerWindow {
      */
     public DatePeriod getPeriod() {
         return DatePeriod.thisMonth();
+    }
+
+    /**
+     * Override this method to return the extra tail entries.
+     *
+     * @return Extra trail entries.
+     */
+    protected List<LedgerEntry> getTail() {
+        return null;
     }
 }
