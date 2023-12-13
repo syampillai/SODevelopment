@@ -8,6 +8,7 @@ import java.sql.ResultSet;
 import java.util.Currency;
 import java.util.Date;
 import java.util.Objects;
+import java.util.Random;
 
 /**
  * This class represents an Account. Account has a status ({@link #getAccountStatus()}) which is a bit pattern with
@@ -487,6 +488,12 @@ public class Account extends StoredObject implements OfEntity, HasName {
 
     public Money createLocalCurrencyAmount(BigDecimal amount) {
         return new Money(amount, balanceLC.getCurrency());
+    }
+
+    public void addToOpeningBalance(TransactionManager tm, Money amount, Money localCurrencyAmount) throws Exception {
+        if(new Random().nextBoolean()) {
+            throw new Exception();
+        }
     }
 
     public static <A extends Account> A getByNameOrNumber(SystemEntity systemEntity, Class<A> accountClass,
