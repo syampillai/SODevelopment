@@ -20,7 +20,12 @@ public class StatementView extends ListGrid<LedgerEntry> implements CloseableVie
     private final ObjectField<Account> accountField = new ObjectField<>(Account.class, true);
     private final DateField dateField = new DateField();
     private final Button forward, backward, begin, end, voucher;
-    private final LedgerWindow ledger = new LedgerWindow(60, this);
+    private final LedgerWindow ledger = new LedgerWindow(60, this) {
+        @Override
+        protected List<LedgerEntry> getTail() {
+            return StatementView.this.getTail(getAccount());
+        }
+    };
     private Account account;
     private final ELabel openingBalance = new ELabel(NO_ENTRIES), accountTitle = new ELabel();
     private JournalVoucherView voucherView;
@@ -45,9 +50,16 @@ public class StatementView extends ListGrid<LedgerEntry> implements CloseableVie
     }
 
     public StatementView(Account account) {
+        this(account, true);
+    }
+
+    public StatementView(Account account, boolean lockAccountField) {
         this();
         if(account != null) {
             accountField.setValue(account);
+            if(lockAccountField) {
+                accountField.setReadOnly(true);
+            }
         }
     }
 
@@ -63,6 +75,7 @@ public class StatementView extends ListGrid<LedgerEntry> implements CloseableVie
         b.addFiller();
         b.add(openingBalance);
         h.add(b);
+        accountField.focus();
         return h;
     }
 
@@ -224,5 +237,9 @@ public class StatementView extends ListGrid<LedgerEntry> implements CloseableVie
         }
         forward.setEnabled(end.isEnabled());
         backward.setEnabled(begin.isEnabled());
+    }
+
+    protected List<LedgerEntry> getTail(Account account) {
+        return null;
     }
 }
