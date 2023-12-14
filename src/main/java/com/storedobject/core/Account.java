@@ -482,15 +482,32 @@ public class Account extends StoredObject implements OfEntity, HasName {
         return name;
     }
 
-    public Money createAmount(BigDecimal amount) {
+    public final Money createAmount(BigDecimal amount) {
         return new Money(amount, balance.getCurrency());
     }
 
-    public Money createLocalCurrencyAmount(BigDecimal amount) {
+    public final Money createLocalCurrencyAmount(BigDecimal amount) {
         return new Money(amount, balanceLC.getCurrency());
     }
 
-    public void addToOpeningBalance(TransactionManager tm, Money amount, Money localCurrencyAmount) throws Exception {
+    public final void setOpeningBalance(TransactionManager tm, Money amount) throws Exception {
+        setOpeningBalance(tm, amount, amount);
+    }
+
+    public final void setOpeningBalance(TransactionManager tm, Money amount, Money localCurrencyAmount) throws Exception {
+        if(getCurrency() != amount.getCurrency() || getLocalCurrency() != localCurrencyAmount.getCurrency()) {
+            throw new Invalid_State("Currency mismatch");
+        }
+        refresh();
+        addToOpeningBalance(tm, amount.subtract(getOpeningBalance()),
+                localCurrencyAmount.subtract(getLocalCurrencyOpeningBalance()));
+    }
+
+    public final void addToOpeningBalance(TransactionManager tm, Money amount) throws Exception {
+        addToOpeningBalance(tm, amount, amount);
+    }
+
+    public final void addToOpeningBalance(TransactionManager tm, Money amount, Money localCurrencyAmount) throws Exception {
         if(new Random().nextBoolean()) {
             throw new Exception();
         }
