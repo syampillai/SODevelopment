@@ -100,8 +100,8 @@ public class AccountStatement extends PDFReport implements JSONParameter {
         }
         table.setHeaderRows(2);
         table.setFooterRows(1);
-        table.addCell(createCell(ledger.getDate()), grey);
-        Money a = ledger.getBalance(), b = a;
+        table.addCell(createCell(ledger.getPeriod().getFrom()), grey);
+        Money a = ledger.getOpeningBalance(), b = a;
         table.addCell(createCell("Previous " + b(a), true, grey));
         if(a.isDebit()) {
             table.addCell(createCell(a.negate(), grey));
@@ -134,17 +134,16 @@ public class AccountStatement extends PDFReport implements JSONParameter {
                 table.addBlankCell(hollow);
                 table.addCell(createCell(a), hollow);
             }
-            b = ledger.getBalance();
+            b = le.getBalance();
         }
         table.addCell(createCell(ledger.getPeriod().getTo(), grey));
-        a = ledger.getBalance();
-        table.addCell(createCell("Closing " + b(a), true), grey);
-        if(a.isDebit()) {
-            table.addCell(createCell(a.negate()), grey);
+        table.addCell(createCell("Closing " + b(b), true), grey);
+        if(b.isDebit()) {
+            table.addCell(createCell(b.negate()), grey);
             table.addBlankCell(grey);
         } else {
             table.addBlankCell(grey);
-            table.addCell(createCell(a), grey);
+            table.addCell(createCell(b), grey);
         }
         add(table);
     }

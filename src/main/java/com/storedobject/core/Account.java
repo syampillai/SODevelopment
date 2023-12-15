@@ -554,18 +554,13 @@ public class Account extends StoredObject implements OfEntity, HasName {
     public Ledger getLedger(DatePeriod period) {
         return new Ledger() {
             @Override
-            public Money getBalance() {
-                return null;
+            public Money getOpeningBalance() {
+                return new Money();
             }
 
             @Override
-            public Money getLocalCurrencyBalance() {
-                return null;
-            }
-
-            @Override
-            public java.sql.Date getDate() {
-                return null;
+            public Money getLocalCurrencyOpeningBalance() {
+                return new Money();
             }
 
             @Override

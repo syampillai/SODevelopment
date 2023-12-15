@@ -1,7 +1,6 @@
 package com.storedobject.core;
 
 import javax.annotation.Nonnull;
-import java.sql.Date;
 import java.util.Iterator;
 
 /**
@@ -15,31 +14,18 @@ import java.util.Iterator;
 public interface Ledger extends Iterator<LedgerEntry>, Iterable<LedgerEntry> {
 
     /**
-     * Foreign currency balance, including the current entry. Before the iteration starts, this will return
-     * the "Opening Balance" for the date-period selected and when the iteration is over, it will be
-     * the "Closing Balance" for the date-period selected.
+     * Foreign currency opening balance.
      *
      * @return Foreign currency balance.
      */
-    Money getBalance();
+    Money getOpeningBalance();
 
     /**
-     * Local currency balance, including the current entry. Before the iteration starts, this will return
-     * the "Opening Balance" for the date-period selected and when the iteration is over, it will be
-     * the "Closing Balance" for the date-period selected.
+     * Local currency opening balance.
      *
      * @return Local currency balance.
      */
-    Money getLocalCurrencyBalance();
-
-    /**
-     * Date of the current {@link LedgerEntry}. Before the iteration starts, this will return
-     * the "Opening Date" of the date-period selected and when the iteration is over, it will be
-     * the "Closing Date" of the date-period selected.
-     *
-     * @return Date.
-     */
-    Date getDate();
+    Money getLocalCurrencyOpeningBalance();
 
     /**
      * The account of this ledger.
