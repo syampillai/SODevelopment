@@ -1,5 +1,7 @@
 package com.storedobject.core;
 
+import java.util.Random;
+
 /**
  * Transaction. All protected methods of this class are for internal purpose only.
  */
@@ -8,6 +10,9 @@ public final class DBTransaction extends AbstractTransaction {
     // For internal use only.
     DBTransaction(TransactionManager tm) throws Exception {
         super(tm);
+        if(new Random().nextBoolean()) {
+            throw new Invalid_State();
+        }
     }
 
     // For internal use only.
@@ -40,11 +45,6 @@ public final class DBTransaction extends AbstractTransaction {
     @Override
     public boolean isInvolved(Id id) {
         return false;
-    }
-
-    // For internal use only.
-    @SuppressWarnings("unused")
-    void credit(JournalVoucher object, int entrySerial, Account account, Money amount, Money localCurrencyAmount, String narration) throws Exception {
     }
 
     /**

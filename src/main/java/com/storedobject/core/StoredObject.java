@@ -2268,18 +2268,4 @@ public abstract class StoredObject implements Displayable, HasId {
     public static String toCode(String code) {
         return code;
     }
-
-    /**
-     * Get the transaction code associated with this instance. "Transaction Code" is a short name that corresponds
-     * to the {@link TransactionType} instance. It is typically used for tracking financial transaction entries
-     * associated with instance. All {@link JournalVoucher} entries created for this instance (i.e., if the owner of the
-     * {@link JournalVoucher} instance is this instance), the "Transaction Code" returned by this instance determines
-     * the {@link TransactionType} of those {@link JournalVoucher}s. If <code>null</code> is returned as the
-     * "Transaction Code", then, the {@link JournalVoucher} uses its own code.
-     *
-     * @return Transaction code.
-     */
-    protected String transactionCode() {
-        return null;
-    }
 }
