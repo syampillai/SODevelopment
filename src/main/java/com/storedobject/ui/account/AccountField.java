@@ -106,7 +106,7 @@ public class AccountField<T extends Account> extends ObjectField<T> {
      * @param type Desired type of the field.
      */
     public AccountField(String label, Class<T> accountClass, boolean any, Type type) {
-        super(label, accountClass, type);
+        super(label, accountClass, any, type);
     }
 
     public T getAccount() {
