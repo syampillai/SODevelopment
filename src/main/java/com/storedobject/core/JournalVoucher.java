@@ -5,10 +5,9 @@ import com.storedobject.core.annotation.SetNotAllowed;
 
 import java.math.BigDecimal;
 import java.sql.Date;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
 import java.util.stream.Stream;
 
 /**
@@ -24,12 +23,19 @@ import java.util.stream.Stream;
  *
  * @author Syam
  */
-public class JournalVoucher extends StoredObject {
+public class JournalVoucher extends StoredObject implements OfEntity {
 
+    static Function<JournalVoucher, String> tag, patternTag;
+    static final Map<String, String> serialPattern = new HashMap<>();
     private Id ownerId;
     private StoredObject owner;
     private Date date;
     private int stage = 0;
+    private final List<Entry> entries = new ArrayList<>();
+    private final Map<Id, Money> excess = new HashMap<>();
+    private Id systemEntityId;
+    int no = 0;
+    private String reference;
 
     /**
      * Constructor.
@@ -54,13 +60,74 @@ public class JournalVoucher extends StoredObject {
     public static void columns(Columns columns) {
     }
 
+    public void setSystemEntity(Id systemEntityId) {
+        if(!loading()) {
+            throw new Set_Not_Allowed("System Entity");
+        }
+        this.systemEntityId = systemEntityId;
+    }
+
+    public void setSystemEntity(BigDecimal idValue) {
+        setSystemEntity(new Id(idValue));
+    }
+
+    public void setSystemEntity(SystemEntity systemEntity) {
+        setSystemEntity(systemEntity == null ? null : systemEntity.getId());
+    }
+
+    @SetNotAllowed
+    @Column(order = 10, caption = "Of")
+    public Id getSystemEntityId() {
+        return systemEntityId;
+    }
+
+    public SystemEntity getSystemEntity() {
+        return SystemEntity.getCached(systemEntityId);
+    }
+
+    public void setNo(int no) {
+        if (!loading()) {
+            throw new Set_Not_Allowed("No");
+        }
+        this.no = no;
+    }
+
+    @SetNotAllowed
+    @Column(style = "(serial)", order = 200)
+    public int getNo() {
+        return no;
+    }
+
+    public final String getReference() {
+        if(reference == null) {
+            reference = String.valueOf(no);
+        }
+        return reference;
+    }
+
+    public String getGeneratedBy() {
+        return StringUtility.makeLabel(getOwner().getClass());
+    }
+
     /**
      * Set the owner of this JV.
      *
      * @param ownerId Owner Id.
      */
     public void setOwner(Id ownerId) {
+        if(!loading() || owner != null) {
+            throw new Set_Not_Allowed("JV Owner");
+        }
         this.ownerId = ownerId;
+    }
+
+    /**
+     * Set the owner of this JV.
+     *
+     * @param idValue Owner.
+     */
+    public void setOwner(BigDecimal idValue) {
+        setOwner(new Id(idValue));
     }
 
     /**
@@ -69,7 +136,14 @@ public class JournalVoucher extends StoredObject {
      * @param owner Owner.
      */
     public void setOwner(StoredObject owner) {
-        this.owner = owner;
+        if(owner == this) {
+            if (this.owner == null) {
+                this.owner = this;
+                return;
+            }
+            throw new Set_Not_Allowed("JV Owner");
+        }
+        setOwner(owner == null ? null : owner.getId());
     }
 
     /**
@@ -78,7 +152,7 @@ public class JournalVoucher extends StoredObject {
      * @return Id.
      */
     @SetNotAllowed
-    @Column(style = "(any)")
+    @Column(style = "(any)", order = 400)
     public Id getOwnerId() {
         return ownerId;
     }
@@ -89,6 +163,9 @@ public class JournalVoucher extends StoredObject {
      * @return Owner.
      */
     public StoredObject getOwner() {
+        if(owner == null) {
+            owner = Objects.equals(getId(), ownerId) ? this : get(StoredObject.class, ownerId, true);
+        }
         return owner;
     }
 
@@ -207,8 +284,8 @@ public class JournalVoucher extends StoredObject {
      */
     public final void credit(Account account, Money amount, Money localCurrencyAmount, int entrySerial,
                              String type, String particulars) throws Exception {
-        if(isVirtual() || account.isVirtual()) {
-            throw new SOException("Virtual instance");
+        if(excess.isEmpty()) {
+            throw new Exception();
         }
     }
 
@@ -347,6 +424,7 @@ public class JournalVoucher extends StoredObject {
      * @return Date.
      */
     @SetNotAllowed
+    @Column(order = 300)
     public Date getDate() {
         return date == null ? null : new Date(date.getTime());
     }
@@ -370,7 +448,7 @@ public class JournalVoucher extends StoredObject {
      * @return Stream of entries.
      */
     public Stream<Entry> entries() {
-        return Stream.empty();
+        return entries.stream();
     }
 
     /**
@@ -379,7 +457,7 @@ public class JournalVoucher extends StoredObject {
      * @return Entry count.
      */
     public int getEntryCount() {
-        return new Random().nextInt();
+        return entries.size();
     }
 
     /**
@@ -389,8 +467,7 @@ public class JournalVoucher extends StoredObject {
      * @return Entry at the index (<code>null</code> will be returned for out-of-range index values).
      */
     public Entry getEntry(int index) {
-        return new Random().nextBoolean() ? null :
-                new Entry(this,null, null, null, 0, null, null);
+        return index >= 0 && index < entries.size() ? entries.get(index) : null;
     }
 
     /**
@@ -407,20 +484,20 @@ public class JournalVoucher extends StoredObject {
      *
      * @author Syam
      */
-    public static class Entry {
+    public final static class Entry {
 
         private static final AtomicInteger ID = new AtomicInteger(0);
         private final int id = ID.incrementAndGet();
-        private final JournalVoucher journalVoucher;
-        private final Account account;
-        private final Money amount;
-        private final Money localCurrencyAmount;
-        private final int entrySerial;
-        private final Id type;
-        private final String particulars;
+        final JournalVoucher journalVoucher;
+        final Account account;
+        final Money amount;
+        final Money localCurrencyAmount;
+        final int entrySerial;
+        final Id type;
+        final String particulars;
 
-        private Entry(JournalVoucher journalVoucher, Account account, Money amount, Money localCurrencyAmount,
-                      int entrySerial, Id type, String particulars) {
+        Entry(JournalVoucher journalVoucher, Account account, Money amount, Money localCurrencyAmount,
+              int entrySerial, Id type, String particulars) {
             this.journalVoucher = journalVoucher;
             this.account = account;
             this.amount = amount;
@@ -428,6 +505,7 @@ public class JournalVoucher extends StoredObject {
             this.entrySerial = entrySerial;
             this.type = type;
             this.particulars = particulars;
+            journalVoucher.entries.add(this);
         }
 
         /**
@@ -475,6 +553,15 @@ public class JournalVoucher extends StoredObject {
             return particulars;
         }
 
+        /**
+         * Get transaction type.
+         *
+         * @return Transaction type.
+         */
+        public TransactionType getType() {
+            return Id.isNull(type) ? null : get(TransactionType.class, type);
+        }
+
         @Override
         public boolean equals(Object obj) {
             return obj == this;
@@ -483,21 +570,6 @@ public class JournalVoucher extends StoredObject {
         @Override
         public int hashCode() {
             return id;
-        }
-
-        /**
-         * Get transaction type.
-         *
-         * @return Transaction type.
-         */
-        public TransactionType getType() {
-            return get(TransactionType.class, type);
-        }
-
-        @Override
-        public String toString() {
-            return account.toDisplay() + " [" + account.getSystemEntity().getName() + "]"
-                    + ", Amount " + amount + ", LC Amount " + localCurrencyAmount + ", " + particulars;
         }
 
         /**
@@ -510,7 +582,6 @@ public class JournalVoucher extends StoredObject {
         }
     }
 
-
     /**
      * Allow excess in an account participating in this transaction. (The user should have the authority to set this).
      *
@@ -518,6 +589,7 @@ public class JournalVoucher extends StoredObject {
      * @param excess Excess amount (on top of the allowed limit).
      */
     public void allowExcess(Account account, Money excess) {
+        this.excess.put(account.getId(), excess);
     }
 
     /**
