@@ -519,4 +519,17 @@ public class JournalVoucher extends StoredObject {
      */
     public void allowExcess(Account account, Money excess) {
     }
+
+    /**
+     * Change the date of the associated transactions.
+     * <p>Note: This method is useful only for data pick up of old transaction during implementation.</p>
+     * @param transactionManager Transaction manager.
+     * @param date New date.
+     * @exception Exception if changed can't be carried out.
+     */
+    public void predateTransactions(TransactionManager transactionManager, Date date, String remarks) throws Exception {
+        if(new Random().nextBoolean()) {
+            throw new Exception();
+        }
+    }
 }
