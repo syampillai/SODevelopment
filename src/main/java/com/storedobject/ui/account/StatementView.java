@@ -4,7 +4,6 @@ import com.storedobject.common.StringList;
 import com.storedobject.core.*;
 import com.storedobject.ui.Application;
 import com.storedobject.ui.ELabel;
-import com.storedobject.ui.ObjectField;
 import com.storedobject.vaadin.*;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.grid.ColumnTextAlign;
@@ -17,7 +16,7 @@ import java.util.List;
 public class StatementView extends ListGrid<LedgerEntry> implements CloseableView {
 
     private static final String NO_ENTRIES = "No entries";
-    private final ObjectField<Account> accountField = new ObjectField<>(Account.class, true);
+    private final AccountField<Account> accountField = new AccountField<>();
     private final DateField dateField = new DateField();
     private final Button forward, backward, begin, end, voucher;
     private final LedgerWindow ledger = new LedgerWindow(60, this) {
@@ -177,7 +176,7 @@ public class StatementView extends ListGrid<LedgerEntry> implements CloseableVie
     @Override
     public void valueChanged(ChangedValues changedValues) {
         if(changedValues.isChanged(accountField)) {
-            account = accountField.getObject();
+            account = accountField.getAccount();
             if(account == null) {
                 setCaption("Statement View");
             } else {
