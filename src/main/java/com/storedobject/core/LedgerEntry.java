@@ -74,8 +74,35 @@ public interface LedgerEntry {
     String getParticulars();
 
     /**
+     * Get the entry serial number.
+     *
+     * @return Entry serial number.
+     */
+    default int getEntrySerial() {
+        return -1;
+    }
+
+    /**
+     * Get the transaction Id that created this entry.
+     *
+     * @return Transaction Id.
+     */
+    default Id getLedgerTran() {
+        return Id.ZERO;
+    }
+
+    /**
+     * Get the voucher for this entry.
+     *
+     * @return Voucher.
+     */
+    default JournalVoucher getVoucher() {
+        return null;
+    }
+
+    /**
      * Get the vouchers for this transaction. The first entry in the list will be the voucher for this entry.
-     * <p>Note: This could return an empty list the voucher is not available in the current implementation.</p>
+     * <p>Note: This could return an empty list if the voucher is not available in the current implementation.</p>
      *
      * @return List of journal vouchers.
      */
@@ -89,7 +116,7 @@ public interface LedgerEntry {
      * @return A string representation suitable for human-friendly display.
      */
     default String toDisplay() {
-        return DateUtility.formatDate(getDate()) + ' ' + getOpeningBalance() + ' ' + getAmount() + ' ' + getBalance() +
-                ' ' + getParticulars();
+        return DateUtility.formatDate(getDate()) + ' ' + getOpeningBalance() + " => " + getAmount() + " => "
+                + getBalance() + '\n' + getParticulars();
     }
 }

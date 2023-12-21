@@ -189,8 +189,7 @@ public class JournalVoucher extends StoredObject implements OfEntity {
      */
     public final void debit(Account account, Money amount, int entrySerial, String type, String particulars)
             throws Exception {
-        Money r = amount.negate();
-        credit(account, r, r, entrySerial, type, particulars);
+        debit(account, amount, entrySerial, type, particulars, null);
     }
 
     /**
@@ -205,8 +204,7 @@ public class JournalVoucher extends StoredObject implements OfEntity {
      */
     public final void debit(Account account, BigDecimal amount, int entrySerial, String type, String particulars)
             throws Exception {
-        BigDecimal r = amount.negate();
-        credit(account, r, r, entrySerial, type, particulars);
+        debit(account, amount, entrySerial, type, particulars, null);
     }
 
     /**
@@ -222,7 +220,7 @@ public class JournalVoucher extends StoredObject implements OfEntity {
      */
     public final void debit(Account account, Money amount, Money localCurrencyAmount, int entrySerial,
                             String type, String particulars) throws Exception {
-        credit(account, amount.negate(), localCurrencyAmount.negate(), entrySerial, type, particulars);
+        debit(account, amount, localCurrencyAmount, entrySerial, type, particulars, null);
     }
 
     /**
@@ -238,7 +236,7 @@ public class JournalVoucher extends StoredObject implements OfEntity {
      */
     public final void debit(Account account, BigDecimal amount, BigDecimal localCurrencyAmount, int entrySerial,
                             String type, String particulars) throws Exception {
-        credit(account, amount.negate(), localCurrencyAmount.negate(), entrySerial, type, particulars);
+        debit(account, amount, localCurrencyAmount, entrySerial, type, particulars, null);
     }
 
     /**
@@ -284,6 +282,23 @@ public class JournalVoucher extends StoredObject implements OfEntity {
      */
     public final void credit(Account account, Money amount, Money localCurrencyAmount, int entrySerial,
                              String type, String particulars) throws Exception {
+        credit(account, amount, localCurrencyAmount, entrySerial, type, particulars, null);
+    }
+
+    /**
+     * Credit a foreign currency account.
+     *
+     * @param account Account to be credited.
+     * @param amount Amount in account currency.
+     * @param localCurrencyAmount Amount in local currency.
+     * @param entrySerial Entry serial.
+     * @param type Transaction type (As defined in {@link TransactionType}).
+     * @param particulars Particulars (narration) of the transaction entry. (Can not be empty or <code>null</code>).
+     * @param valueDate Value-date.
+     * @throws Exception Any exception.
+     */
+    public final void credit(Account account, Money amount, Money localCurrencyAmount, int entrySerial,
+                             String type, String particulars, Date valueDate) throws Exception {
         if(excess.isEmpty()) {
             throw new Exception();
         }
@@ -419,6 +434,250 @@ public class JournalVoucher extends StoredObject implements OfEntity {
     }
 
     /**
+     * Debit a local currency account.
+     *
+     * @param account Account to be debited.
+     * @param amount Amount.
+     * @param entrySerial Entry serial.
+     * @param type Transaction type (As defined in {@link TransactionType}).
+     * @param particulars Particulars (narration) of the transaction entry. (Can not be empty or <code>null</code>).
+     * @param valueDate Value-date.
+     * @throws Exception Any exception.
+     */
+    public final void debit(Account account, Money amount, int entrySerial, String type, String particulars,
+                            Date valueDate)
+            throws Exception {
+        Money r = amount.negate();
+        credit(account, r, r, entrySerial, type, particulars, valueDate);
+    }
+
+    /**
+     * Debit a local currency account.
+     *
+     * @param account Account to be debited.
+     * @param amount Amount.
+     * @param entrySerial Entry serial.
+     * @param type Transaction type (As defined in {@link TransactionType}).
+     * @param particulars Particulars (narration) of the transaction entry. (Can not be empty or <code>null</code>).
+     * @param valueDate Value-date.
+     * @throws Exception Any exception.
+     */
+    public final void debit(Account account, BigDecimal amount, int entrySerial, String type, String particulars,
+                            Date valueDate) throws Exception {
+        BigDecimal r = amount.negate();
+        credit(account, r, r, entrySerial, type, particulars, valueDate);
+    }
+
+    /**
+     * Debit a foreign currency account.
+     *
+     * @param account Account to be debited.
+     * @param amount Amount in account currency.
+     * @param localCurrencyAmount Amount in local currency.
+     * @param entrySerial Entry serial.
+     * @param type Transaction type (As defined in {@link TransactionType}).
+     * @param particulars Particulars (narration) of the transaction entry. (Can not be empty or <code>null</code>).
+     * @param valueDate Value-date.
+     * @throws Exception Any exception.
+     */
+    public final void debit(Account account, Money amount, Money localCurrencyAmount, int entrySerial,
+                            String type, String particulars, Date valueDate) throws Exception {
+        credit(account, amount.negate(), localCurrencyAmount.negate(), entrySerial, type, particulars, valueDate);
+    }
+
+    /**
+     * Debit a foreign currency account.
+     *
+     * @param account Account to be debited.
+     * @param amount Amount in account currency.
+     * @param localCurrencyAmount Amount in local currency.
+     * @param entrySerial Entry serial.
+     * @param type Transaction type (As defined in {@link TransactionType}).
+     * @param particulars Particulars (narration) of the transaction entry. (Can not be empty or <code>null</code>).
+     * @param valueDate Value-date.
+     * @throws Exception Any exception.
+     */
+    public final void debit(Account account, BigDecimal amount, BigDecimal localCurrencyAmount, int entrySerial,
+                            String type, String particulars, Date valueDate) throws Exception {
+        credit(account, amount.negate(), localCurrencyAmount.negate(), entrySerial, type, particulars, valueDate);
+    }
+
+    /**
+     * Credit a local currency account.
+     *
+     * @param account Account to be credited.
+     * @param amount Amount.
+     * @param entrySerial Entry serial.
+     * @param type Transaction type (As defined in {@link TransactionType}).
+     * @param particulars Particulars (narration) of the transaction entry. (Can not be empty or <code>null</code>).
+     * @param valueDate Value-date.
+     * @throws Exception Any exception.
+     */
+    public final void credit(Account account, Money amount, int entrySerial, String type, String particulars,
+                             Date valueDate) throws Exception {
+        credit(account, amount, amount, entrySerial, type, particulars, valueDate);
+    }
+
+    /**
+     * Credit a local currency account.
+     *
+     * @param account Account to be credited.
+     * @param amount Amount.
+     * @param entrySerial Entry serial.
+     * @param type Transaction type (As defined in {@link TransactionType}).
+     * @param particulars Particulars (narration) of the transaction entry. (Can not be empty or <code>null</code>).
+     * @param valueDate Value-date.
+     * @throws Exception Any exception.
+     */
+    public final void credit(Account account, BigDecimal amount, int entrySerial, String type, String particulars,
+                             Date valueDate) throws Exception {
+        credit(account, amount, amount, entrySerial, type, particulars, valueDate);
+    }
+
+
+    /**
+     * Credit a foreign currency account.
+     *
+     * @param account Account to be credited.
+     * @param amount Amount in account currency.
+     * @param localCurrencyAmount Amount in local currency.
+     * @param entrySerial Entry serial.
+     * @param type Transaction type (As defined in {@link TransactionType}).
+     * @param particulars Particulars (narration) of the transaction entry. (Can not be empty or <code>null</code>).
+     * @param valueDate Value-date.
+     * @throws Exception Any exception.
+     */
+    public final void credit(Account account, BigDecimal amount, BigDecimal localCurrencyAmount, int entrySerial,
+                             String type, String particulars, Date valueDate) throws Exception {
+        credit(account, account.createAmount(amount), account.createLocalCurrencyAmount(localCurrencyAmount),
+                entrySerial, type, particulars, valueDate);
+    }
+
+    /**
+     * Debit a local currency account.
+     *
+     * @param account Account to be debited.
+     * @param amount Amount.
+     * @param type Transaction type (As defined in {@link TransactionType}).
+     * @param particulars Particulars (narration) of the transaction entry. (Can not be empty or <code>null</code>).
+     * @param valueDate Value-date.
+     * @throws Exception Any exception.
+     */
+    public final void debit(Account account, Money amount, String type, String particulars, Date valueDate)
+            throws Exception {
+        debit(account, amount, 0, type, particulars, valueDate);
+    }
+
+    /**
+     * Debit a local currency account.
+     *
+     * @param account Account to be debited.
+     * @param amount Amount.
+     * @param type Transaction type (As defined in {@link TransactionType}).
+     * @param particulars Particulars (narration) of the transaction entry. (Can not be empty or <code>null</code>).
+     * @param valueDate Value-date.
+     * @throws Exception Any exception.
+     */
+    public final void debit(Account account, BigDecimal amount, String type, String particulars, Date valueDate)
+            throws Exception {
+        debit(account, amount, 0, type, particulars, valueDate);
+    }
+
+    /**
+     * Debit a foreign currency account.
+     *
+     * @param account Account to be debited.
+     * @param amount Amount in account currency.
+     * @param localCurrencyAmount Amount in local currency.
+     * @param type Transaction type (As defined in {@link TransactionType}).
+     * @param particulars Particulars (narration) of the transaction entry. (Can not be empty or <code>null</code>).
+     * @param valueDate Value-date.
+     * @throws Exception Any exception.
+     */
+    public final void debit(Account account, Money amount, Money localCurrencyAmount, String type, String particulars,
+                            Date valueDate) throws Exception {
+        debit(account, amount, localCurrencyAmount, 0, type, particulars, valueDate);
+    }
+
+    /**
+     * Debit a foreign currency account.
+     *
+     * @param account Account to be debited.
+     * @param amount Amount in account currency.
+     * @param localCurrencyAmount Amount in local currency.
+     * @param type Transaction type (As defined in {@link TransactionType}).
+     * @param particulars Particulars (narration) of the transaction entry. (Can not be empty or <code>null</code>).
+     * @param valueDate Value-date.
+     * @throws Exception Any exception.
+     */
+    public final void debit(Account account, BigDecimal amount, BigDecimal localCurrencyAmount, String type,
+                            String particulars, Date valueDate) throws Exception {
+        debit(account, amount, localCurrencyAmount, 0, type, particulars, valueDate);
+    }
+
+    /**
+     * Credit a local currency account.
+     *
+     * @param account Account to be credited.
+     * @param amount Amount.
+     * @param type Transaction type (As defined in {@link TransactionType}).
+     * @param particulars Particulars (narration) of the transaction entry. (Can not be empty or <code>null</code>).
+     * @param valueDate Value-date.
+     * @throws Exception Any exception.
+     */
+    public final void credit(Account account, Money amount, String type, String particulars, Date valueDate)
+            throws Exception {
+        credit(account, amount, 0, type, particulars, valueDate);
+    }
+
+    /**
+     * Credit a local currency account.
+     *
+     * @param account Account to be credited.
+     * @param amount Amount.
+     * @param type Transaction type (As defined in {@link TransactionType}).
+     * @param particulars Particulars (narration) of the transaction entry. (Can not be empty or <code>null</code>).
+     * @param valueDate Value-date.
+     * @throws Exception Any exception.
+     */
+    public final void credit(Account account, BigDecimal amount, String type, String particulars, Date valueDate)
+            throws Exception {
+        credit(account, amount, amount, 0, type, particulars, valueDate);
+    }
+
+    /**
+     * Credit a foreign currency account.
+     *
+     * @param account Account to be credited.
+     * @param amount Amount in account currency.
+     * @param localCurrencyAmount Amount in local currency.
+     * @param type Transaction type (As defined in {@link TransactionType}).
+     * @param particulars Particulars (narration) of the transaction entry. (Can not be empty or <code>null</code>).
+     * @param valueDate Value-date.
+     * @throws Exception Any exception.
+     */
+    public final void credit(Account account, Money amount, Money localCurrencyAmount, String type, String particulars,
+                             Date valueDate) throws Exception {
+        credit(account, amount, localCurrencyAmount, 0, type, particulars, valueDate);
+    }
+
+    /**
+     * Credit a foreign currency account.
+     *
+     * @param account Account to be credited.
+     * @param amount Amount in account currency.
+     * @param localCurrencyAmount Amount in local currency.
+     * @param type Transaction type (As defined in {@link TransactionType}).
+     * @param particulars Particulars (narration) of the transaction entry. (Can not be empty or <code>null</code>).
+     * @param valueDate Value-date.
+     * @throws Exception Any exception.
+     */
+    public final void credit(Account account, BigDecimal amount, BigDecimal localCurrencyAmount, String type,
+                             String particulars, Date valueDate) throws Exception {
+        credit(account, amount, localCurrencyAmount, 0, type, particulars, valueDate);
+    }
+
+    /**
      * Get the date of this JV.
      *
      * @return Date.
@@ -440,6 +699,16 @@ public class JournalVoucher extends StoredObject implements OfEntity {
             return;
         }
         throw new Set_Not_Allowed("Date");
+    }
+
+    /**
+     * Get the original transaction Id of this voucher for which ledger entries are created.
+     *
+     * @return An instance of the {@link DecimalNumber} that embeds the transaction Id.
+     */
+    @SetNotAllowed
+    public DecimalNumber getLedgerTran() {
+        return DecimalNumber.ZERO;
     }
 
     /**
@@ -495,9 +764,10 @@ public class JournalVoucher extends StoredObject implements OfEntity {
         final int entrySerial;
         final Id type;
         final String particulars;
+        Date valueDate;
 
         Entry(JournalVoucher journalVoucher, Account account, Money amount, Money localCurrencyAmount,
-              int entrySerial, Id type, String particulars) {
+              int entrySerial, Id type, String particulars, Date valueDate) {
             this.journalVoucher = journalVoucher;
             this.account = account;
             this.amount = amount;
@@ -505,6 +775,7 @@ public class JournalVoucher extends StoredObject implements OfEntity {
             this.entrySerial = entrySerial;
             this.type = type;
             this.particulars = particulars;
+            this.valueDate = valueDate;
             journalVoucher.entries.add(this);
         }
 
@@ -579,6 +850,15 @@ public class JournalVoucher extends StoredObject implements OfEntity {
          */
         public JournalVoucher getVoucher() {
             return journalVoucher;
+        }
+
+        /**
+         * Get the value-date of this entry.
+         *
+         * @return Value-date.
+         */
+        public Date getValueDate() {
+            return valueDate;
         }
     }
 
