@@ -83,7 +83,7 @@ public interface LedgerEntry {
     }
 
     /**
-     * Get the transaction Id that created this entry.
+     * Get the transaction Id that created this entry. (This is not available in external systems).
      *
      * @return Transaction Id.
      */
@@ -92,7 +92,7 @@ public interface LedgerEntry {
     }
 
     /**
-     * Get the voucher for this entry.
+     * Get the voucher for this entry. (This is not available in external systems).
      *
      * @return Voucher.
      */
@@ -128,5 +128,28 @@ public interface LedgerEntry {
      */
     default boolean isPosted() {
         return true;
+    }
+
+    /**
+     * Return a short-string representing the type of the entry. In SO platform, this is available only if a
+     * {@link TransactionType} is set while posting the entry.
+     * <p>In some external system, it could be numeric value but the String representation will be returned by this
+     * method even though it is a bit inefficient.</p>
+     *
+     * @return A short-string representing the transaction. Otherwise, <code>null</code> is returned.
+     */
+    default String getType() {
+        return null;
+    }
+
+    /**
+     * Certain external systems still follows batch processing and the entry may have a batch number. This method
+     * returns that number.
+     * <p>SO platform is not batch-based and returns -1 from this method. </p>
+     *
+     * @return Batch number for batch-based systems and -1 if not batch-based or not available.
+     */
+    default int getBatchNumber() {
+        return -1;
     }
 }
