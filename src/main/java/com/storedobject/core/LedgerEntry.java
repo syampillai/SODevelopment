@@ -19,6 +19,16 @@ public interface LedgerEntry {
     Date getDate();
 
     /**
+     * Value-date of this entry. Normally, value-date is the same as the{@link #getDate()}. However, for
+     * the purpose of interest calculations, the effective date of any entry may have a different date.
+     *
+     * @return Value-date of the entry.
+     */
+    default Date getValueDate() {
+        return getDate();
+    }
+
+    /**
      * Foreign currency amount of this entry.
      *
      * @return Foreign currency amount.
@@ -74,6 +84,27 @@ public interface LedgerEntry {
     String getParticulars();
 
     /**
+     * Transaction particulars (narration) of this entry.
+     *
+     * @param includeValueDatedDetails Whether to include value-dated details or not.
+     * @return Transaction particulars.
+     */
+    default String getParticulars(boolean includeValueDatedDetails) {
+        String p = getParticulars();
+        if(isUnposted()) {
+            p = "[Not Posted] ";
+        }
+        if(!includeValueDatedDetails) {
+            return p;
+        }
+        Date d = getDate(), vd = getValueDate();
+        if(DateUtility.isSameDate(d, vd)) {
+            return p;
+        }
+        return "Value Dated: " + DateUtility.formatDate(vd) + '\n' + p;
+    }
+
+    /**
      * Get the entry serial number.
      *
      * @return Entry serial number.
@@ -116,18 +147,51 @@ public interface LedgerEntry {
      * @return A string representation suitable for human-friendly display.
      */
     default String toDisplay() {
-        return DateUtility.formatDate(getDate()) + ' ' + getOpeningBalance() + " => " + getAmount() + " => "
-                + getBalance() + '\n' + getParticulars();
+        StringBuilder s = new StringBuilder(DateUtility.formatDate(getDate())).append('\n');
+        Money m = getOpeningBalance();
+        if(m.isNegative()) {
+            s.append('-');
+            m = m.negate();
+        }
+        s.append(m).append(' ');
+        m = getAmount();
+        if(m.isNegative()) {
+            s.append("- ");
+            m = m.negate();
+        }
+        s.append(m).append(" = ");
+        m = getBalance();
+        if(m.isNegative()) {
+            s.append('-');
+            m = m.negate();
+        }
+        s.append(m);
+        s.append('\n').append(getParticulars(true));
+        int bn = getBatchNumber();
+        String type = getType();
+        if(bn > 0 || type != null) {
+            s.append('\n');
+            if(bn > 0) {
+                s.append("Batch Number: ").append(bn);
+                if(type != null) {
+                    s.append(", ");
+                }
+            }
+            if(type != null) {
+                s.append("Type: ").append(type);
+            }
+        }
+        return s.toString();
     }
 
     /**
-     * Check if this entry is already posted on the ledger in the DB. This is always true in the case of SO platform.
+     * Check if this entry is not yet posted on the ledger in the DB. This is always false in the case of SO platform.
      * However, if you are abstracting away entries from external systems, it may contain un-posted entries.
      *
-     * @return The default implementation always returns <code>true</code>.
+     * @return The default implementation always returns <code>false</code>.
      */
-    default boolean isPosted() {
-        return true;
+    default boolean isUnposted() {
+        return false;
     }
 
     /**
