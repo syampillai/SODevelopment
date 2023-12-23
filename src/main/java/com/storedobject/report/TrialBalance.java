@@ -6,7 +6,7 @@ import com.storedobject.pdf.PDFFont;
 import com.storedobject.pdf.PDFReport;
 import com.storedobject.pdf.PDFTable;
 
-import java.util.Date;
+import java.sql.Date;
 
 /**
  * Trial Balance.

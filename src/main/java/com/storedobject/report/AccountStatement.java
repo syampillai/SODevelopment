@@ -126,7 +126,7 @@ public class AccountStatement extends PDFReport implements JSONParameter {
             a = le.getAmount();
             d = le.getDate();
             table.addCell(createCell(d), hollow);
-            table.addCell(createCell(le.getParticulars()), hollow);
+            table.addCell(createCell(le.getParticulars(true)), hollow);
             if(a.isDebit()) {
                 table.addCell(createCell(a.negate()), hollow);
                 table.addBlankCell(hollow);

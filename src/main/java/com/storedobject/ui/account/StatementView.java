@@ -95,6 +95,10 @@ public class StatementView extends ListGrid<LedgerEntry> implements CloseableVie
         return false;
     }
 
+    public String getParticulars(LedgerEntry le) {
+        return le.getParticulars(true);
+    }
+
     public String getDebit(LedgerEntry le) {
         Money a = le.getAmount();
         if(a.isDebit()) {

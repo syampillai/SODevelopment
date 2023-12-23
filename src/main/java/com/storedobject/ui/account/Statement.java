@@ -40,7 +40,8 @@ public class Statement extends DataForm {
     protected boolean process() {
         close();
         Application a = Application.get();
-        PDFReport statement = new com.storedobject.report.AccountStatement(a, accountField.getObject(), datePeriodField.getValue());
+        PDFReport statement = new com.storedobject.report.AccountStatement(a, accountField.getObject(),
+                datePeriodField.getValue());
         a.view("Statement", statement);
         return true;
     }
