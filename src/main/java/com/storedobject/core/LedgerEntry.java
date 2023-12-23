@@ -1,6 +1,6 @@
 package com.storedobject.core;
 
-import java.sql.*;
+import java.sql.Date;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -118,5 +118,15 @@ public interface LedgerEntry {
     default String toDisplay() {
         return DateUtility.formatDate(getDate()) + ' ' + getOpeningBalance() + " => " + getAmount() + " => "
                 + getBalance() + '\n' + getParticulars();
+    }
+
+    /**
+     * Check if this entry is already posted on the ledger in the DB. This is always true in the case of SO platform.
+     * However, if you are abstracting away entries from external systems, it may contain un-posted entries.
+     *
+     * @return The default implementation always returns <code>true</code>.
+     */
+    default boolean isPosted() {
+        return true;
     }
 }
