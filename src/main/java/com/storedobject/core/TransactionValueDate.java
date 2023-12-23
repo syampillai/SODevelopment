@@ -9,35 +9,14 @@ public final class TransactionValueDate extends StoredObject {
     private DecimalNumber ledgerTran = DecimalNumber.zero(0);
     private Id voucherId;
     private int entrySerial;
-    private final Date date = DateUtility.today();
     private final Date valueDate = DateUtility.today();
+    private final Date newValueDate = DateUtility.today();
     private Id accountId;
-    private Money amount = new Money();
-    private Money localCurrencyAmount = new Money();
 
     public TransactionValueDate() {
     }
 
     public static void columns(Columns columns) {
-        columns.add("LedgerTran", "numeric(30,0)");
-        columns.add("Voucher", "id");
-        columns.add("EntrySerial", "int");
-        columns.add("Date", "date");
-        columns.add("ValueDate", "date");
-        columns.add("Account", "id");
-        columns.add("Amount", "money");
-        columns.add("LocalCurrencyAmount", "money");
-    }
-
-    public static void indices(Indices indices) {
-        indices.add("LedgerTran, Voucher, EntrySerial", true);
-        indices.add("Account, Date");
-        indices.add("Account, ValueDate");
-    }
-
-    public String getUniqueCondition() {
-        return "LedgerTran=" + ledgerTran.getStorableValue() + " AND Voucher=" + getVoucherId() + " AND EntrySerial="
-                + entrySerial;
     }
 
     private boolean notLoading() {
@@ -69,7 +48,7 @@ public final class TransactionValueDate extends StoredObject {
 
     public void setVoucher(Id voucherId) {
         if (notLoading() && !Id.equals(this.getVoucherId(), voucherId)) {
-            throw new Set_Not_Allowed("Voucher");
+            throw new Set_Not_Allowed("Illegal call");
         }
         this.voucherId = voucherId;
     }
@@ -94,7 +73,7 @@ public final class TransactionValueDate extends StoredObject {
 
     public void setEntrySerial(int entrySerial) {
         if (notLoading()) {
-            throw new Set_Not_Allowed("Entry Serial");
+            throw new Set_Not_Allowed("Illegal call");
         }
         this.entrySerial = entrySerial;
     }
@@ -105,31 +84,31 @@ public final class TransactionValueDate extends StoredObject {
         return entrySerial;
     }
 
-    public void setDate(Date date) {
+    public void setNewValueDate(Date date) {
         if (notLoading()) {
-            throw new Set_Not_Allowed("Date");
+            throw new Set_Not_Allowed("Illegal call");
         }
-        this.date.setTime(date.getTime());
+        this.newValueDate.setTime(date.getTime());
     }
 
     @SetNotAllowed
-    @Column(order = 400)
-    public Date getDate() {
-        return new Date(date.getTime());
+    @Column(order = 500)
+    public Date getNewValueDate() {
+        return new Date(newValueDate.getTime());
     }
 
     public void setValueDate(Date valueDate) {
         this.valueDate.setTime(valueDate.getTime());
     }
 
-    @Column(order = 500)
+    @Column(order = 400)
     public Date getValueDate() {
         return new Date(valueDate.getTime());
     }
 
     public void setAccount(Id accountId) {
         if (notLoading() && !Id.equals(this.getAccountId(), accountId)) {
-            throw new Set_Not_Allowed("Account");
+            throw new Set_Not_Allowed("Illegal call");
         }
         this.accountId = accountId;
     }
@@ -152,37 +131,32 @@ public final class TransactionValueDate extends StoredObject {
         return getRelated(Account.class, accountId, true);
     }
 
-    public void setAmount(Money amount) {
-        if (notLoading()) {
-            throw new Set_Not_Allowed("Amount");
+    public static void changeTo(Date newValueDate, Id accountId, Date transactionDate, Money amount,
+                                TransactionManager tm) throws Exception {
+        changeTo(newValueDate, accountId, transactionDate, amount, tm, null);
+    }
+
+    public static void changeTo(Date newValueDate, Id accountId, Date transactionDate, Money amount, Id voucherId,
+                                TransactionManager tm) throws Exception {
+        changeTo(newValueDate, accountId, transactionDate, amount, tm, "Voucher=" + voucherId);
+    }
+
+    public static void changeTo(Date newValueDate, Id accountId, Date transactionDate, Money amount, Id voucherId,
+                                int entrySerial, TransactionManager tm) throws Exception {
+        changeTo(newValueDate, accountId, transactionDate, amount, tm, "Voucher=" + voucherId
+                + " AND EntrySerial=" + entrySerial);
+    }
+
+    public static void changeTo(Date newValueDate, Id accountId, Date transactionDate, Money amount,
+                                int entrySerial, TransactionManager tm) throws Exception {
+        changeTo(newValueDate, accountId, transactionDate, amount, tm, "EntrySerial=" + entrySerial);
+    }
+
+    private static void changeTo(Date newValueDate, Id accountId, Date transactionDate, Money amount,
+                                  TransactionManager tm, String condition) throws Exception {
+        if(newValueDate == null || accountId == null || transactionDate == null || amount == null || tm == null ||
+                (condition != null && condition.isEmpty())) {
+            throw new Exception();
         }
-        this.amount = amount;
-    }
-
-    public void setAmount(Object moneyValue) {
-        setAmount(Money.create(moneyValue));
-    }
-
-    @SetNotAllowed
-    @Column(order = 700)
-    public Money getAmount() {
-        return amount;
-    }
-
-    public void setLocalCurrencyAmount(Money localCurrencyAmount) {
-        if (notLoading()) {
-            throw new Set_Not_Allowed("Local Currency Amount");
-        }
-        this.localCurrencyAmount = localCurrencyAmount;
-    }
-
-    public void setLocalCurrencyAmount(Object moneyValue) {
-        setLocalCurrencyAmount(Money.create(moneyValue));
-    }
-
-    @SetNotAllowed
-    @Column(order = 800)
-    public Money getLocalCurrencyAmount() {
-        return localCurrencyAmount;
     }
 }
