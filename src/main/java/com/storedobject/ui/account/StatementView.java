@@ -10,7 +10,6 @@ import com.vaadin.flow.component.grid.ColumnTextAlign;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.icon.VaadinIcon;
 
-import java.sql.Date;
 import java.util.List;
 
 public class StatementView extends ListGrid<LedgerEntry> implements CloseableView {
@@ -19,9 +18,9 @@ public class StatementView extends ListGrid<LedgerEntry> implements CloseableVie
     private final AccountField<Account> accountField = new AccountField<>();
     private final DateField dateField = new DateField();
     private final Button forward, backward, begin, end, voucher;
-    private final LedgerWindow ledger = new LedgerWindow(60, this) {
+    private final LedgerWindow ledger = new LedgerWindow(20, this) {
         @Override
-        protected List<LedgerEntry> getTail() {
+        protected List<LedgerEntry> getUnposted() {
             return StatementView.this.getTail(getAccount());
         }
     };
@@ -73,8 +72,9 @@ public class StatementView extends ListGrid<LedgerEntry> implements CloseableVie
         b.add(new ELabel("Account:"), accountField, accountTitle);
         h.add(b);
         b = new ButtonLayout();
-        b.add(new ELabel("From Date:"), dateField, forward, backward, begin, end, voucher,
-                new Button("Exit", e -> close()));
+        b.add(new ELabel("From Date:"), dateField, forward, backward, begin, end, voucher);
+        addExtraButtons(b);
+        b.add(new Button("Exit", e -> close()));
         b.addFiller();
         b.add(openingBalance);
         h.add(b);
@@ -82,12 +82,15 @@ public class StatementView extends ListGrid<LedgerEntry> implements CloseableVie
         return h;
     }
 
+    protected void addExtraButtons(ButtonLayout buttonLayout) {
+    }
+
     @Override
     public ColumnTextAlign getTextAlign(String columnName) {
-        if("Debit".equals(columnName) || "Credit".equals(columnName) || "Balance".equals(columnName)) {
-            return ColumnTextAlign.END;
-        }
-        return super.getTextAlign(columnName);
+        return switch (columnName) {
+          case "Debit", "Credit", "Balance" -> ColumnTextAlign.END;
+            default -> super.getTextAlign(columnName);
+        };
     }
 
     @Override
@@ -127,8 +130,7 @@ public class StatementView extends ListGrid<LedgerEntry> implements CloseableVie
     public void clicked(Component c) {
         if(c == forward) {
             if(ledger.moveForward()) {
-                begin.setEnabled(true);
-                setOB();
+                enableButtons();
             } else {
                 forward.setEnabled(false);
             }
@@ -136,8 +138,7 @@ public class StatementView extends ListGrid<LedgerEntry> implements CloseableVie
         }
         if(c == backward) {
             if(ledger.moveBackward()) {
-                end.setEnabled(true);
-                setOB();
+                enableButtons();
             } else {
                 backward.setEnabled(false);
             }
@@ -145,14 +146,12 @@ public class StatementView extends ListGrid<LedgerEntry> implements CloseableVie
         }
         if(c == begin) {
             ledger.moveToBeginning();
-            begin.setEnabled(false);
-            setOB();
+            enableButtons();
             return;
         }
         if(c == end) {
             ledger.moveToEnd();
-            end.setEnabled(false);
-            setOB();
+            enableButtons();
             return;
         }
         if(c == voucher) {
@@ -183,6 +182,7 @@ public class StatementView extends ListGrid<LedgerEntry> implements CloseableVie
             account = accountField.getAccount();
             if(account == null) {
                 setCaption("Statement View");
+                accountTitle.clearContent().append("<Account Not Selected>");
             } else {
                 ledger.setAccount(account);
                 accountTitle.clearContent().append(account.toDisplay(), Application.COLOR_SUCCESS).update();
@@ -204,15 +204,10 @@ public class StatementView extends ListGrid<LedgerEntry> implements CloseableVie
         if(isEmpty()) {
             openingBalance.append(NO_ENTRIES);
         } else {
-            LedgerEntry le = get(0);
+            LedgerEntry le = get(size() - 1);
             dateField.setValue(le.getDate());
-            openingBalance.append("Opening balance as of ").append(le.getDate()).append(" is ");
-            Money b = le.getOpeningBalance();
-            if(b.isDebit()) {
-                openingBalance.append("DB ");
-                b = b.negate();
-            }
-            openingBalance.append(b.toString(false));
+            openingBalance.append("Opening balance as of ").append(le.getDate()).append(" is ")
+                    .append(le.getOpeningBalance());
         }
         openingBalance.update();
         recalculateColumnWidths();
@@ -229,21 +224,12 @@ public class StatementView extends ListGrid<LedgerEntry> implements CloseableVie
             return;
         }
         voucher.setEnabled(true);
-        DatePeriod p = ledger.getPeriod();
-        Date m = ledger.getMostRecentDate();
-        if(m == null) {
-            end.setEnabled(true);
-        } else {
-            end.setEnabled(p.getTo().before(m));
-        }
-        m = ledger.getEarliestDate();
-        if(m == null) {
-            begin.setEnabled(true);
-        } else {
-            begin.setEnabled(p.getFrom().after(m));
-        }
-        forward.setEnabled(end.isEnabled());
-        backward.setEnabled(begin.isEnabled());
+        boolean can = ledger.canMoveBackward();
+        begin.setEnabled(can);
+        backward.setEnabled(can);
+        can = ledger.canMoveForward();
+        end.setEnabled(can);
+        forward.setEnabled(can);
     }
 
     protected List<LedgerEntry> getTail(Account account) {

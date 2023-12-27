@@ -11,7 +11,7 @@ import java.util.Iterator;
  *
  * @author Syam
  */
-public interface Ledger extends Iterator<LedgerEntry>, Iterable<LedgerEntry> {
+public interface Ledger extends Iterator<LedgerEntry>, Iterable<LedgerEntry>, AutoCloseable {
 
     /**
      * Foreign currency opening balance.

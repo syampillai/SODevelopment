@@ -15,7 +15,7 @@ public class Statement extends DataForm {
 
     public Statement() {
         super("Account Statement");
-        accountField = new ObjectField<>("Account", Account.class, true);
+        accountField = new AccountField<>("Account");
         addField(accountField);
         datePeriodField = new DatePeriodField("Statement Period");
         addField(datePeriodField);

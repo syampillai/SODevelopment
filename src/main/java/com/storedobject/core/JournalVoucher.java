@@ -178,6 +178,22 @@ public class JournalVoucher extends StoredObject implements OfEntity {
     }
 
     /**
+     * Get the offset amount of this JV. The offset amount is the amount that is required to balance this JV.
+     *
+     * @return Offset amount.
+     */
+    public Money getOffsetAmount() {
+        if(entries.isEmpty()) {
+            return new Money();
+        }
+        Money a = entries.get(0).amount.zero();
+        for(Entry e: entries) {
+            a = a.add(e.amount);
+        }
+        return a.negate();
+    }
+
+    /**
      * Debit a local currency account.
      *
      * @param account Account to be debited.

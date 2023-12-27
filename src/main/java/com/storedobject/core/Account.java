@@ -4,9 +4,9 @@ import com.storedobject.core.annotation.Column;
 import com.storedobject.core.annotation.SetNotAllowed;
 
 import java.math.BigDecimal;
+import java.sql.Date;
 import java.sql.ResultSet;
 import java.util.Currency;
-import java.util.Date;
 import java.util.Objects;
 import java.util.Random;
 
@@ -249,6 +249,10 @@ public class Account extends StoredObject implements OfEntity, HasName {
         this.openingBalance = Money.create(openingBalance);
     }
 
+    public Money getOpeningBalance(Date date) {
+        return getBalance(DateUtility.addDay(date, -1));
+    }
+
     @SetNotAllowed
     public Money getOpeningBalance() {
         return openingBalance;
@@ -259,6 +263,10 @@ public class Account extends StoredObject implements OfEntity, HasName {
             throw new Set_Not_Allowed("Balance");
         }
         this.openingBalanceLC = Money.create(localCurrencyOpeningBalance);
+    }
+
+    public Money getLocalCurrencyOpeningBalance(Date date) {
+        return getLocalCurrencyBalance(DateUtility.addDay(date, -1));
     }
 
     public Money getLocalCurrencyOpeningBalance() {
@@ -554,6 +562,10 @@ public class Account extends StoredObject implements OfEntity, HasName {
     public Ledger getLedger(DatePeriod period) {
         return new Ledger() {
             @Override
+            public void close() {
+            }
+
+            @Override
             public Money getOpeningBalance() {
                 return new Money();
             }
@@ -583,5 +595,9 @@ public class Account extends StoredObject implements OfEntity, HasName {
                 return null;
             }
         };
+    }
+
+    public Ledger getLedger(Date from, Date to) {
+        return getLedger(DatePeriod.create(from, to));
     }
 }

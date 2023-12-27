@@ -4,7 +4,7 @@ import java.sql.Date;
 import java.util.Random;
 
 @SuppressWarnings("RedundantThrows")
-public final class Person extends StoredObject implements HasContacts, Comparable<Person>, HasName {
+public final class Person extends StoredObject implements HasContacts, Comparable<Person>, HasName, HasShortName {
 
 	public Person(String name) {
 	}
@@ -39,7 +39,7 @@ public final class Person extends StoredObject implements HasContacts, Comparabl
 
 	@Override
 	public String getName() {
-		return null;
+		return "x";
 	}
 
 	public void setName(String name) {
@@ -69,6 +69,7 @@ public final class Person extends StoredObject implements HasContacts, Comparabl
 	public void setShortName(String name) {
 	}
 
+	@Override
 	public String getShortName() {
 		return null;
 	}

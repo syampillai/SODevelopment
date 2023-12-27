@@ -61,6 +61,11 @@ public class Utility {
     public static final long BLANK_TIME = -5364662400000L;
 
     /**
+     * Blank date: The local date Jan 1, 1800 is considered blank by the platform for internal purposes.
+     */
+    public static final java.sql.Date BLANK_DATE = new java.sql.Date(BLANK_TIME);
+
+    /**
      * Is the given value right-aligned? (Examples of right-aligned values are numeric values, quantity etc.) The
      * notion of right-alignment depends on the locale. Here, the meaning is as per left-to-right language convention.
      * <p>Note: A null value is considered as not right-aligned.</p>

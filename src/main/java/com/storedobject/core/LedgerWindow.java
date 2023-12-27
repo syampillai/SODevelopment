@@ -3,7 +3,6 @@ package com.storedobject.core;
 import java.sql.Date;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 /**
  * Representation of a "window" of entries (instances of {@link LedgerEntry}) of the "Transaction Ledger".
@@ -11,9 +10,10 @@ import java.util.Random;
  * keep the entries and this class will maintain that list by adding/removing entries to/from it when the "window" is
  * moved forward/backward. When the instance is initialized with an {@link Account}, it will automatically
  * load entries corresponding to the latest transactions.
- * <p>Note: Please note that this class doesn't support generic ledger entries of external systems. However, there is
- * a provision to append additional entries (could be un-posted ones). Override the {@link #getTail()} method for
- * returning the tail entries. The date in the tail must be the same for all the entries in the tail and it will be
+ * <p>Note: Please note that this class doesn't support generic ledger entries of external systems unless you override
+ * methods: {@link #getLedger(Date, Date)}, {@link #getMaxDate(Date)}, {@link #getMinDate(Date)}. However, there is
+ * a provision to append additional entries (could be un-posted ones). Override the {@link #getUnposted()} method for
+ * returning the unposted entries. All the entries in the unposted entry list must have the same date, and it will be
  * automatically fixed as the upper date boundary.</p>
  *
  * @author Syam
@@ -114,6 +114,24 @@ public class LedgerWindow {
     }
 
     /**
+     * Can we move backward?
+     *
+     * @return True/false.
+     */
+    public boolean canMoveBackward() {
+        return !isError();
+    }
+
+    /**
+     * Can we move forward?
+     *
+     * @return True/false.
+     */
+    public boolean canMoveForward() {
+        return !isError();
+    }
+
+    /**
      * Move window to the end.
      */
     public void moveToEnd() {
@@ -147,38 +165,11 @@ public class LedgerWindow {
     }
 
     /**
-     * Get the most recent transaction date of this account.
+     * Override this method to return any unposted entries to be appended.
      *
-     * @return Most recent transaction date. This method returns <code>null</code> if transactions are not yet loaded.
+     * @return Unposted entries.
      */
-    public Date getMostRecentDate() {
-        return new Random().nextBoolean() ? DateUtility.today() : null;
-    }
-
-    /**
-     * Get the earliest transaction date of this account.
-     *
-     * @return Earliest transaction date. This method returns <code>null</code> if transactions are not fully loaded.
-     */
-    public Date getEarliestDate() {
-        return new Random().nextBoolean() ? DateUtility.today() : null;
-    }
-
-    /**
-     * Get the period for which ledger entries are loaded.
-     *
-     * @return Period. This method returns <code>null</code> if transactions are not loaded.
-     */
-    public DatePeriod getPeriod() {
-        return DatePeriod.thisMonth();
-    }
-
-    /**
-     * Override this method to return the extra tail entries.
-     *
-     * @return Extra trail entries.
-     */
-    protected List<LedgerEntry> getTail() {
+    protected List<LedgerEntry> getUnposted() {
         return null;
     }
 
@@ -188,5 +179,43 @@ public class LedgerWindow {
      * @param errorLogger Error logger.
      */
     public void setErrorLogger(ErrorLogger errorLogger) {
+    }
+
+
+    /**
+     * Get the date of the first transaction available for the current account. Override this method if you override
+     * {@link #getLedger(Date, Date)}
+     * to bring entries from an external system.
+     *
+     * @param lowerBoundary Lower boundary. If not null, the date returned should be greater than or equal to this.
+     *                      Null can be returned if no transactions found.
+     * @return Date of the first transaction available.
+     */
+    public Date getMinDate(Date lowerBoundary) {
+        return null;
+    }
+
+    /**
+     * Get the date of the most recent transaction within the upper boundary. Override this method if you override
+     * {@link #getLedger(Date, Date)} to bring entries from an external system.
+     *
+     * @param upperBoundary Upper boundary. If not null, the date returned should be less than this. Null can be
+     *                      returned if no transactions found.
+     * @return Most recent transaction date.
+     */
+    public Date getMaxDate(Date upperBoundary) {
+        return null;
+    }
+
+    /**
+     * Get the ledger entries for the given period for the account. This method is invoked to obtain ledger entries
+     * from the system. You may override this method to return entries from external systems.
+     *
+     * @param from From date.
+     * @param to To date.
+     * @return Ledger.
+     */
+    public Ledger getLedger(Date from, Date to) {
+        return getAccount().getLedger(DatePeriod.create(from, to));
     }
 }
