@@ -65,6 +65,15 @@ public class StatementView extends ListGrid<LedgerEntry> implements CloseableVie
         }
     }
 
+    public Account getAccount() {
+        return account;
+    }
+
+    public void setAccount(Account account) {
+        accountField.setValue((Id)null);
+        accountField.setValue(account);
+    }
+
     @Override
     public Component createHeader() {
         Div h = new Div();

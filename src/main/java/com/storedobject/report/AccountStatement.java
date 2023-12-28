@@ -18,6 +18,7 @@ public class AccountStatement extends PDFReport implements JSONParameter {
     private Account account;
     private Text title;
     private String currency;
+    private Boolean init = null;
 
     public AccountStatement(Device device) {
         this(device, null, null);
@@ -30,8 +31,12 @@ public class AccountStatement extends PDFReport implements JSONParameter {
     }
 
     private boolean init() {
+        if(init != null) {
+            return init;
+        }
         if(datePeriod == null || account == null) {
             title = new Text().append("Statement of Account");
+            init = false;
             return false;
         }
         if(datePeriod.getTo().after(DateUtility.today())) {
@@ -41,12 +46,13 @@ public class AccountStatement extends PDFReport implements JSONParameter {
             datePeriod = new DatePeriod(datePeriod.getTo(), datePeriod.getTo());
         }
         ledger = account.getLedger(datePeriod);
-        title = new Text().append(12, PDFFont.BOLD).append("Account: ").append(account.getNumber()).append(" Currency: ").
-                append(account.getCurrency().getCurrencyCode()).newLine().append(14, PDFFont.BOLD).
-                append(account.getName()).append(12, PDFFont.BOLD).newLine().newLine(true).
-                append("Statement for the Period: ").append(datePeriod);
+        title = new Text().append(14, PDFFont.BOLD).append(account.toDisplay())
+                .append(12, PDFFont.BOLD).newLine().newLine(true)
+                .append("Statement for the Period: ").append(datePeriod);
+        title.update();
         currency = account.getCurrency().getCurrencyCode();
         setEntity(account.getSystemEntity().getEntity());
+        init = true;
         return true;
     }
 
@@ -64,7 +70,8 @@ public class AccountStatement extends PDFReport implements JSONParameter {
 
     @Override
 	public Object getTitleText() {
-        PDFCell cell = new PDFCell(title);
+        init();
+        PDFCell cell = createCell(title);
         cell.setBorder(0);
         return cell;
     }

@@ -5,12 +5,11 @@ import com.storedobject.core.DatePeriod;
 import com.storedobject.pdf.PDFReport;
 import com.storedobject.ui.Application;
 import com.storedobject.ui.DatePeriodField;
-import com.storedobject.ui.ObjectField;
 import com.storedobject.vaadin.DataForm;
 
 public class Statement extends DataForm {
 
-    private final ObjectField<Account> accountField;
+    private final AccountField<Account> accountField;
     private final DatePeriodField datePeriodField;
 
     public Statement() {
@@ -38,11 +37,16 @@ public class Statement extends DataForm {
 
     @Override
     protected boolean process() {
+        Account account = accountField.getAccount();
+        if(account == null) {
+            warning("Please select an account");
+            return false;
+        }
+        clearAlerts();
         close();
         Application a = Application.get();
-        PDFReport statement = new com.storedobject.report.AccountStatement(a, accountField.getObject(),
-                datePeriodField.getValue());
-        a.view("Statement", statement);
+        PDFReport statement = new com.storedobject.report.AccountStatement(a, account, datePeriodField.getValue());
+        a.view("Statement - " + account.toDisplay(), statement);
         return true;
     }
 }
