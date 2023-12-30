@@ -169,6 +169,13 @@ public final class Person extends StoredObject implements HasContacts, Comparabl
 	public static void updateSalutation(TransactionManager tm, int code, String salutation, boolean male, boolean female,
 								 boolean transgender) throws Exception {
 	}
+
+	public static void addSuffix(TransactionManager tm, String suffix) throws Exception {
+	}
+
+	public static void updateSuffix(TransactionManager tm, int code, String suffix) throws Exception {
+	}
+
 	public static boolean isMaleAllowed(int title) {
 		return new Random().nextBoolean();
 	}

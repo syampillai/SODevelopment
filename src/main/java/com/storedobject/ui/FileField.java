@@ -136,6 +136,10 @@ public class FileField extends AbstractObjectField<StreamData> {
         new Clickable<>(image, e -> viewImage());
         image.getElement().getStyle().set("cursor", "pointer");
         image.getElement().setAttribute("title", "Click for an enlarged view");
+        int max = GlobalProperty.getInteger("MAX-FILE-SIZE-MB");
+        if(max > 0) {
+            maxFileSize = max * 1000000;
+        }
     }
 
     private void viewImage() {
@@ -419,7 +423,7 @@ public class FileField extends AbstractObjectField<StreamData> {
                 Upload u = new Upload(FileField.this::receiveUpload);
                 u.setMaxFiles(1);
                 u.setMaxFileSize(maxFileSize);
-                if(mimeTypes != null && mimeTypes.size() > 0) {
+                if(mimeTypes != null && !mimeTypes.isEmpty()) {
                     u.setAcceptedFileTypes(String.join(",", mimeTypes));
                 }
                 buttonBox.add(u);
@@ -463,13 +467,13 @@ public class FileField extends AbstractObjectField<StreamData> {
             s.append("Images");
         }
         if(containsAny(ObjectField.Type.AUDIO, ObjectField.Type.MIC)) {
-            if(s.length() > 0) {
+            if(!s.isEmpty()) {
                 s.append(", ");
             }
             s.append("Audio Files");
         }
         if(containsAny(ObjectField.Type.VIDEO, ObjectField.Type.VIDEO_CAMERA)) {
-            if(s.length() > 0) {
+            if(!s.isEmpty()) {
                 s.append(", ");
             }
             s.append("Video Files");

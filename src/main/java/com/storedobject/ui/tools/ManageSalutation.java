@@ -52,7 +52,7 @@ public class ManageSalutation extends DataGrid<ManageSalutation.Salutation> {
             return;
         }
         if(s.code <= 7) {
-            warning("No editable");
+            warning("Not editable");
             return;
         }
         clearAlerts();
