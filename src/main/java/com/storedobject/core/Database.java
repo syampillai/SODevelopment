@@ -13,7 +13,7 @@ public abstract class Database {
 	private static Database db;
 
 	public static void login(String driver, String ip, int port, String database, String databaseMaster,
-							 String user, String password) throws Exception {
+							 String user, String password, String securityLogin) throws Exception {
 		db = get();
 	}
 
@@ -26,7 +26,9 @@ public abstract class Database {
 
 	public abstract String name();
 
-	public abstract String securityLogin();
+	public final String securityLogin() {
+		return "";
+	}
 
 	public abstract String modelDatabase();
 

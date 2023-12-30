@@ -159,7 +159,7 @@ public class SystemTableDeployer extends View implements Transactional {
     }
 
     private void status(String message) {
-        if(message.length() > 0) {
+        if(!message.isEmpty()) {
             message(message);
         }
         status.setValue("<div>" + message.replace("\n", "<br/>") + "</div>");
@@ -190,7 +190,7 @@ public class SystemTableDeployer extends View implements Transactional {
 
     private String password() {
         String password;
-        if((password = adminPassword.getValue()).length() == 0) {
+        if((password = adminPassword.getValue()).isEmpty()) {
             error("Please enter administrator password");
             return null;
         }
@@ -360,7 +360,7 @@ public class SystemTableDeployer extends View implements Transactional {
         ArrayList<String> alterTable = new ArrayList<>();
         checkAlterTable(ca, false, alterTable);
         checkAlterTable(ca, true, alterTable);
-        if(alterTable.size() == 0) {
+        if(alterTable.isEmpty()) {
             alterTable = null;
         }
         return alterTable;
@@ -430,9 +430,9 @@ public class SystemTableDeployer extends View implements Transactional {
             alterTable.add(0, pre + "DROP COLUMN " + c[0] + " CASCADE");
         }
         List<String> list = Database.get().parentTable(tableName);
-        if(list.size() == 0 || !list.get(0).equalsIgnoreCase(pTableName)) {
+        if(list.isEmpty() || !list.get(0).equalsIgnoreCase(pTableName)) {
             alterTable.add(pre + "INHERIT " + pTableName);
-            if(list.size() > 0) {
+            if(!list.isEmpty()) {
                 alterTable.add(0, pre + "NO INHERIT " + list.get(0));
             }
         }
