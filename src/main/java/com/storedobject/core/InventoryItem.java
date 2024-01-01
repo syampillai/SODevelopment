@@ -590,4 +590,16 @@ public class InventoryItem extends StoredObject {
             throw new Invalid_State("Same type");
         }
     }
-}
+
+    /**
+     * Change the ownership of an item. The location may be updated accordingly. Only items that are not in the active
+     * inventory can be updated this way.
+     *
+     * @param tm Transaction manager.
+     * @param newOwner New owner.
+     * @throws Exception If ownership can't be changed.
+     */
+    public void changeOwner(TransactionManager tm, Entity newOwner) throws Exception {
+        throw new Invalid_State("Not yet implemented");
+    }
+ }
