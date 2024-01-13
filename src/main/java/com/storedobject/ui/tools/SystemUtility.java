@@ -197,6 +197,7 @@ public class SystemUtility extends View implements CloseableView, Transactional 
             TextArea ta = new TextArea();
             ta.setWidthFull();
             ta.setValue(s.toString());
+            ta.setReadOnly(true);
             View.createCloseableView(ta, "Transaction " + t).execute();
             return;
         }

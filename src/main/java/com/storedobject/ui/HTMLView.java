@@ -181,7 +181,7 @@ public class HTMLView extends Viewer {
         String line;
         try {
             while((line = r.readLine()) != null) {
-                if(s.length() > 0) {
+                if(!s.isEmpty()) {
                     s.append('\n');
                 }
                 if((s.length() + line.length()) > (100 * 1024)) {

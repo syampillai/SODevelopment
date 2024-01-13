@@ -609,7 +609,7 @@ public class Application extends com.storedobject.vaadin.Application implements 
      * it, and you can not call it again to get it!
      *
      * @param defaultCaption Default caption to be returned if there is no current logic or application instance in the
-     *                       current context..
+     *                       current context.
      * @return Title of the logic or default caption.
      */
     public static String getLogicCaption(String defaultCaption) {
@@ -794,7 +794,7 @@ public class Application extends com.storedobject.vaadin.Application implements 
     }
 
     public String addResource(ContentProducer producer) {
-        MultiContentGenerator mcg = new MultiContentGenerator(this, producer, this::remove, null,
+        @SuppressWarnings("InstantiatingAThreadWithDefaultRunMethod") MultiContentGenerator mcg = new MultiContentGenerator(this, producer, this::remove, null,
                 waitMessage::open);
         return "so" + mcg.getId() + "." + producer.getFileExtension();
     }
@@ -1136,6 +1136,18 @@ public class Application extends com.storedobject.vaadin.Application implements 
             identityCheck.doAction(changePassword);
             return;
         }
+        VerifyOTP verifyOTP = getVerifyOTP(identityCheck, changePassword);
+        String otpTemplate = identityCheck.getOTPTemplate();
+        if(otpTemplate != null) {
+            verifyOTP.setTemplateName(otpTemplate);
+        }
+        verifyOTP.setUserTimeout(identityCheck.getOTPTimeout());
+        verifyOTP.setCustomTag(identityCheck.getOTPTag());
+        verifyOTP.execute();
+        closeMenu();
+    }
+
+    private VerifyOTP getVerifyOTP(IdentityCheck identityCheck, Runnable changePassword) {
         String exitSite = identityCheck.getOTPExitSite();
         String errorMessage = identityCheck.getOTPErrorMessage();
         if(errorMessage == null) {
@@ -1149,16 +1161,8 @@ public class Application extends com.storedobject.vaadin.Application implements 
         }
         String finalErrorMessage = errorMessage;
         error = () -> exit(finalErrorMessage, exitSite);
-        VerifyOTP verifyOTP = new VerifyOTP(identityCheck.isSingleOTP(), identityCheck.getMobile(),
+        return new VerifyOTP(identityCheck.isSingleOTP(), identityCheck.getMobile(),
                 identityCheck.getEmail(), () -> identityCheck.doAction(changePassword), cancel, error);
-        String otpTemplate = identityCheck.getOTPTemplate();
-        if(otpTemplate != null) {
-            verifyOTP.setTemplateName(otpTemplate);
-        }
-        verifyOTP.setUserTimeout(identityCheck.getOTPTimeout());
-        verifyOTP.setCustomTag(identityCheck.getOTPTag());
-        verifyOTP.execute();
-        closeMenu();
     }
 
     private class SetNewPassword extends com.storedobject.ui.tools.ChangePassword {
@@ -1971,7 +1975,7 @@ public class Application extends com.storedobject.vaadin.Application implements 
 
         @Override
         public boolean handleRequest(VaadinSession vaadinSession, VaadinRequest vaadinRequest, VaadinResponse vaadinResponse) {
-            if(multiContent.size() > 0 && ((System.currentTimeMillis() - multiClean) / 1000) > 600) {
+            if(!multiContent.isEmpty() && ((System.currentTimeMillis() - multiClean) / 1000) > 600) {
                 boolean removed = true;
                 while(removed) {
                     removed = false;

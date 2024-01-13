@@ -266,7 +266,7 @@ public abstract class HtmlTemplate extends Component {
                 String key = attr.getKey();
                 if (key.startsWith("!")) {
                     String propertyName = SharedUtil.dashSeparatedToCamelCase(key.substring(1));
-                    boolean valueBoolean = value.equals("") || value.equalsIgnoreCase("true")
+                    boolean valueBoolean = value.isEmpty() || value.equalsIgnoreCase("true")
                             || value.contentEquals("1");
                     flowElement.setProperty(propertyName, valueBoolean);
                 } else if (key.startsWith(".")) {
@@ -279,7 +279,7 @@ public abstract class HtmlTemplate extends Component {
                     } catch (NumberFormatException e) {
                         throw new RuntimeException("Cannot parse value for numeric property: " + propertyName);
                     }
-                } else if (value.equals("")) {
+                } else if (value.isEmpty()) {
                     flowElement.setAttribute(key, true);
                 } else {
                     flowElement.setAttribute(key, value);

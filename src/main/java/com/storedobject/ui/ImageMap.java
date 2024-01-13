@@ -244,7 +244,7 @@ public class ImageMap extends Component {
      * @param x The x coordinate of the area, in pixels
      * @param y The y coordinate of the area, in pixels
      * @param width The area width, in pixels
-     * @param height The aread height, in pixels
+     * @param height The area height, in pixels
      * @return the created area, not <code>null</code>
      */
     public Area addArea(int x, int y, int width, int height) {

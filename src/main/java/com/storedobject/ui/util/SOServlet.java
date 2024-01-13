@@ -319,6 +319,9 @@ public class SOServlet extends VaadinServlet {
     }
 
     public static MediaFile getMedia(String name) {
+        if(name == null || name.isBlank()) {
+            return null;
+        }
         name = name.trim().toLowerCase();
         MediaFile mf = null;
         boolean isId = StringUtility.isDigit(name);

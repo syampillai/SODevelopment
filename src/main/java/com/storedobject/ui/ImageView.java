@@ -32,6 +32,6 @@ public class ImageView extends com.storedobject.vaadin.ImageView {
     }
 
     public ImageView(MediaFile mediaFile) {
-        this(mediaFile != null && mediaFile.isImage() ? ("media/" + mediaFile.getFileName()) : "");
+        this(mediaFile != null && mediaFile.isImage() ? ("media/" + mediaFile.getFileName()) : null);
     }
 }
