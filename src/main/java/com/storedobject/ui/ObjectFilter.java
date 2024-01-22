@@ -333,11 +333,6 @@ public class ObjectFilter<T extends StoredObject> extends Form implements Object
     }
 
     @Override
-    public boolean addSearchField(String fieldName) {
-        return false;
-    }
-
-    @Override
     public boolean removeSearchField(String fieldName) {
         if(fieldName.indexOf('.') < 0) {
             fieldName = "T." + fieldName;
