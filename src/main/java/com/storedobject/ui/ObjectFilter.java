@@ -151,6 +151,7 @@ public class ObjectFilter<T extends StoredObject> extends Form implements Object
                     continue;
                 }
                 try {
+                    //noinspection ResultOfMethodCallIgnored
                     StoredObjectUtility.createMethodList(objectClass, columns[i] + "Id");
                 } catch(Throwable e) {
                     columnMethods[i] = null;
