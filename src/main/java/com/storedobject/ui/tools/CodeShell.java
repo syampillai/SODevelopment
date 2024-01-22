@@ -25,7 +25,10 @@ public class CodeShell extends DataForm {
     protected boolean process() {
         String code = this.code.getValue();
         if(!code.isBlank()) {
+            //code = "double eval() { double r = 0;" + code + "return r;}";
             shell.eval(code);
+            //shell.eval("double r = eval();");
+            System.err.println(shell.snippets().count());
             shell.variables().forEach(v -> message(v.name() + " = " + shell.varValue(v)));
         }
         return false;

@@ -5,6 +5,7 @@ import com.storedobject.common.SORuntimeException;
 import com.storedobject.common.Storable;
 import com.storedobject.common.StringList;
 import com.storedobject.core.*;
+import com.storedobject.core.annotation.Column;
 import com.storedobject.ui.util.LogicParser;
 import com.storedobject.vaadin.*;
 import com.vaadin.flow.component.Component;
@@ -67,7 +68,7 @@ public class ObjectFilter<T extends StoredObject> extends Form implements Object
     public ObjectFilter(Class<T> objectClass, StringList columns, Consumer<ObjectSearchBuilder<T>> changeConsumer) {
         this.changeConsumer = changeConsumer;
         this.objectClass = objectClass;
-        if(columns == null || columns.size() == 0) {
+        if(columns == null || columns.isEmpty()) {
             columns = StoredObjectUtility.searchColumns(objectClass);
         }
         this.columns = removeContacts(columns);
@@ -218,8 +219,17 @@ public class ObjectFilter<T extends StoredObject> extends Form implements Object
                 fields[n] = new QField();
                 combos[n] = new ChoiceField(selectNumber);
             } else if(StoredObject.class.isAssignableFrom(c)) {
+                boolean any = false;
+                try {
+                    Method m = objectClass.getMethod(columnMethods[i].getName() + "Id");
+                    if(m.getReturnType() == Id.class) {
+                        Column cc = m.getAnnotation(Column.class);
+                        any = cc != null && cc.style().contains("(any)");
+                    }
+                } catch (NoSuchMethodException ignored) {
+                }
                 //noinspection rawtypes
-                fields[n] = new ObField(c);
+                fields[n] = new ObField(c, any);
                 combos[n] = new ChoiceField(selectId);
                 columnMethods[n] = StoredObjectUtility.createMethodList(objectClass, columns[i] + "Id");
             } else if(int.class == c || long.class == c || short.class == c || (Number.class).isAssignableFrom(c)) {
@@ -498,7 +508,7 @@ public class ObjectFilter<T extends StoredObject> extends Form implements Object
                 }
                 b.append(s);
             }
-            if(sb.length() > 0) {
+            if(!sb.isEmpty()) {
                 sb.append(" AND ");
             }
             sb.append(b);
@@ -750,7 +760,7 @@ public class ObjectFilter<T extends StoredObject> extends Form implements Object
     @Override
     public String getFilterText() {
         StringBuilder sb = buildCriteria();
-        return sb.length() == 0 ? null : sb.toString();
+        return sb.isEmpty() ? null : sb.toString();
     }
 
     @Override
@@ -762,8 +772,8 @@ public class ObjectFilter<T extends StoredObject> extends Form implements Object
     }
 
     private static class ObField<O extends StoredObject> extends ObjectField<O> {
-        private ObField(Class<O> objectClass) {
-            super(objectClass);
+        private ObField(Class<O> objectClass, boolean any) {
+            super(objectClass, any);
             ObjectInput<O> field = getField();
             if(field instanceof ObjectGetField) {
                 TextField searchField = ((ObjectGetField<?>)field).getSearchField();

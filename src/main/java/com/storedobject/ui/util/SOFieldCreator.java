@@ -743,7 +743,7 @@ public class SOFieldCreator<T> implements ObjectFieldCreator<T> {
             ComputedMinutesField mf = new ComputedMinutesField(label);
             mf.setLength(md.getIntParameter(9, 0));
             String p = md.getParameter(1);
-            if(p != null && p.length() == 0) {
+            if(p != null && p.isEmpty()) {
                 p = null;
             }
             if(p != null) {
@@ -836,7 +836,7 @@ public class SOFieldCreator<T> implements ObjectFieldCreator<T> {
             if(f instanceof MinutesField mf) {
                 mf.setLength(md.getIntParameter(9, 0));
                 String p = md.getParameter(1);
-                if(p != null && p.length() == 0) {
+                if(p != null && p.isEmpty()) {
                     p = null;
                 }
                 if(p != null) {

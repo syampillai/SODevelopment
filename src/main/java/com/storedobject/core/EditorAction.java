@@ -18,7 +18,8 @@ public class EditorAction {
     public final static int EXCEL = 16384;
     public final static int AUDIT = 32768;
     public final static int APPEND = 65536;
-    public final static int ALL = NEW | EDIT | DELETE | SEARCH | TREEVIEW | VIEW | RELOAD | APPEND;
+    public final static int NO_EXIT = 131072;
+    public final static int ALL = NEW | EDIT | DELETE | SEARCH | PRINT | TREEVIEW | VIEW | RELOAD | APPEND;
 
     public static int getActions(String actions) {
     	return 0;

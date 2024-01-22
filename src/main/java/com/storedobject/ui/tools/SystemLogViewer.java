@@ -33,7 +33,9 @@ public class SystemLogViewer extends View implements Transactional, CloseableVie
 
     public SystemLogViewer() {
         super("System Log");
-        FormLayout form = new FormLayout(lines, loginField, new ButtonLayout(view), type, all, logGrid, logDump);
+        FormLayout form = new FormLayout(lines, loginField, new ButtonLayout(view), type, all,
+                new ButtonLayout(new Button("Exit", e -> close())),
+                logGrid, logDump);
         trackValueChange(type);
         trackValueChange(all);
         form.setColumns(3);

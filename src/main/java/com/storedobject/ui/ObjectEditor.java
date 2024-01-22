@@ -682,7 +682,9 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
         if(nm && ((actions & EditorAction.AUDIT) == EditorAction.AUDIT) && actionAllowed("AUDIT")) {
             audit = new Button("Audit", "user", this);
         }
-        exit = new Button("Exit", this);
+        if(!((actions & EditorAction.NO_EXIT) == EditorAction.NO_EXIT)) {
+            exit = new Button("Exit", this);
+        }
         save = new Button("Save", this).asPrimary();
         cancel = new Button("Cancel", this);
         createExtraButtons();
@@ -1498,6 +1500,7 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
      *
      * @return True if allowed.
      */
+    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     public boolean canSearch() {
         return search != null && search.isEnabled();
     }
@@ -2376,7 +2379,7 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
         @Override
         protected void buildFields() {
             StringList fields = ((SOFieldCreator<T>) getFieldCreator()).getAnchors();
-            if(fields == null || fields.size() == 0) {
+            if(fields == null || fields.isEmpty()) {
                 return;
             }
             fields.forEach(fieldName -> {
@@ -2403,7 +2406,7 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
                 if(f != null) {
                     Object v = f.getValue();
                     ObjectEditor.this.setFixedValue(fieldName, v);
-                    if(s.length() > 0) {
+                    if(!s.isEmpty()) {
                         s.append(" AND ");
                     }
                     if(v instanceof String) {

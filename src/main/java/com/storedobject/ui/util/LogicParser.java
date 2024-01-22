@@ -44,6 +44,12 @@ public class LogicParser {
                 return p;
             }
         }
+        if(objectName.startsWith(SO_DOT + "iot.")) {
+            p = SO_DOT + "ui.iot" + c;
+            if(JavaClassLoader.exists(p)) {
+                return p;
+            }
+        }
         if("Editor".equals(tag) || "Browser".equals(tag)) {
             if(objectClass == null) {
                 objectClass = findClass(objectName);

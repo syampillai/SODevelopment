@@ -2,6 +2,7 @@ package com.storedobject.core;
 
 import com.storedobject.common.Displayable;
 import com.storedobject.common.SORuntimeException;
+import com.storedobject.common.StringFiller;
 import com.storedobject.common.StringList;
 
 import java.io.InputStream;
@@ -16,7 +17,7 @@ import java.util.function.Predicate;
 import java.util.logging.Logger;
 
 @SuppressWarnings({"ResultOfMethodCallIgnored", "unchecked"})
-public abstract class StoredObject implements Displayable, HasId {
+public abstract class StoredObject implements Displayable, HasId, StringFiller {
 
     public static final Logger logger = Logger.getLogger("stored");
     private Id id, tranId;

@@ -104,7 +104,7 @@ public interface ObjectInput<T extends StoredObject> extends AbstractObjectInput
             if(searcher != null) {
                 StringBuilder s = new StringBuilder();
                 for(Class<? extends T> c : classes) {
-                    if(s.length() > 0) {
+                    if(!s.isEmpty()) {
                         s.append(',');
                     }
                     s.append(ClassAttribute.get(c).getFamily());

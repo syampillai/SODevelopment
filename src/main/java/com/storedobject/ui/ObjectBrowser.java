@@ -190,7 +190,9 @@ public class ObjectBrowser<T extends StoredObject> extends ObjectGrid<T>
                 buttonPanel.add(audit);
             }
         }
-        exit = new Button(search == null ? "Exit" : "Quit", this);
+        if(!((actions & EditorAction.NO_EXIT) == EditorAction.NO_EXIT)) {
+            exit = new Button(search == null ? "Exit" : "Quit", this);
+        }
     }
 
     @SuppressWarnings("unchecked")
@@ -481,7 +483,7 @@ public class ObjectBrowser<T extends StoredObject> extends ObjectGrid<T>
                 close();
                 return;
             }
-            if(selection != null && selection.size() == 0) {
+            if(selection != null && selection.isEmpty()) {
                 if(size() == 1) {
                     select(getDataProvider().get(0));
                     selection = getSelectedItems();
@@ -489,7 +491,7 @@ public class ObjectBrowser<T extends StoredObject> extends ObjectGrid<T>
                     selection = null;
                 }
             }
-            if(selection == null || selection.size() == 0) {
+            if(selection == null || selection.isEmpty()) {
                 warning(NOTHING_SELECTED);
                 return;
             }
