@@ -1,12 +1,13 @@
 package com.storedobject.ui;
 
+import com.storedobject.core.StringUtility;
 import com.storedobject.vaadin.Box;
 import com.storedobject.vaadin.CustomField;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.HasText;
 import com.vaadin.flow.component.html.Div;
 
-public class ELabelField extends CustomField<String> implements StyledBuilder, HasText {
+public class ELabelField extends CustomField<Object> implements StyledBuilder, HasText {
 
     private final ELabel label = new ELabel();
     private Application application;
@@ -47,10 +48,9 @@ public class ELabelField extends CustomField<String> implements StyledBuilder, H
     }
 
     @Override
-    protected void setPresentationValue(String value) {
+    protected void setPresentationValue(Object value) {
     }
 
-    @Override
     public void setValue(String value) {
         super.setValue(value);
         label.setValue(value);
@@ -60,6 +60,11 @@ public class ELabelField extends CustomField<String> implements StyledBuilder, H
     public void clear() {
         setValue("");
         label.clearContent().update();
+    }
+
+    @Override
+    public void setValue(Object object) {
+        setValue(StringUtility.toString(object));
     }
 
     @Override
@@ -89,7 +94,7 @@ public class ELabelField extends CustomField<String> implements StyledBuilder, H
 
     @Override
     public String getText() {
-        return getValue();
+        return label.getValue();
     }
 
     @Override

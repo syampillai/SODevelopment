@@ -94,4 +94,14 @@ public class InventoryPOItem extends StoredObject implements Detail {
 
     public void correctUnitPrice(DBTransaction transaction, Money unitPrice) throws Exception {
     }
+
+    /**
+     * Check whether this item can be received now or not. If this method returns <code>false</code>, no GRN entries
+     * will be generated for this item.
+     *
+     * @return True/false.
+     */
+    public boolean canReceive() {
+        return true;
+    }
 }

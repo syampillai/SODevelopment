@@ -11,11 +11,11 @@ public interface StyledBuilder extends com.storedobject.common.StyledBuilder, HT
         getInternalStyledBuilder().setValue(object, style);
     }
 
-    default void setValue(String value) {
-        getInternalStyledBuilder().setValue(value);
+    default void setValue(Object value) {
+        setValue(value, new String[]{});
     }
 
-    default String getValue() {
+    default Object getValue() {
         return getInternalStyledBuilder().getValue();
     }
 
@@ -32,8 +32,9 @@ public interface StyledBuilder extends com.storedobject.common.StyledBuilder, HT
 
     @Override
     default boolean isEmpty() {
-        String v = getValue();
-        return v == null || v.isEmpty();
+        Object v = getValue();
+        String s = v == null ? "" : v.toString();
+        return s == null || s.isEmpty();
     }
 
     @Override

@@ -416,12 +416,17 @@ public class POBrowser<T extends InventoryPO> extends ObjectBrowser<T> implement
             message("No more items to receive.");
             return;
         }
+        items.removeIf(i -> !i.canReceive());
+        if(items.isEmpty()) {
+            message("Can't receive remaining items now.");
+            return;
+        }
         deselectAll();
         new ReceiveItems(po, items).execute(this.getView());
     }
 
     /**
-     * Check whether items can be received form this PO or not.
+     * Check whether items can be received from this PO or not.
      *
      * @param po PO.
      * @return True/false.

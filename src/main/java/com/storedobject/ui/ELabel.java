@@ -1,6 +1,7 @@
 package com.storedobject.ui;
 
 import com.storedobject.common.HTMLText;
+import com.storedobject.core.StringUtility;
 import com.storedobject.vaadin.StyledText;
 import com.vaadin.flow.component.HasText;
 import com.vaadin.flow.component.icon.Icon;
@@ -146,7 +147,8 @@ public class ELabel extends StyledText implements StyledBuilder, HasText {
     }
 
     @Override
-    public void setValue(String value) {
+    public void setValue(Object object) {
+        String value = StringUtility.toString(object);
         if(value != null) {
             value = value.replace(" ", "&nbsp;");
         }

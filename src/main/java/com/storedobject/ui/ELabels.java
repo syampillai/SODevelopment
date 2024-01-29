@@ -74,11 +74,6 @@ public class ELabels extends Div implements StyledBuilder, HasText {
     }
 
     @Override
-    public void setValue(String value) {
-        setValue((Object)value);
-    }
-
-    @Override
     public String getValue() {
         return null;
     }

@@ -1,8 +1,8 @@
 package com.storedobject.ui;
 
 import com.storedobject.core.MediaFile;
-import com.storedobject.vaadin.*;
 import com.storedobject.vaadin.Image;
+import com.storedobject.vaadin.*;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.dnd.*;
 import com.vaadin.flow.component.html.Div;
@@ -140,6 +140,15 @@ public class ImageViewer extends View {
     }
 
     /**
+     * Check whether movement is allowed or not.
+     *
+     * @return True/false.
+     */
+    public final boolean isMovementAllowed() {
+        return allowMovement;
+    }
+
+    /**
      * Add a component at the given location (relative to the parent component if exists, otherwise relative
      * the origin - origin (0, 0) in the upper left corner).
      *
@@ -217,6 +226,8 @@ public class ImageViewer extends View {
             y += offsetY;
         }
         element.getStyle().set("margin-left", x + "px").set("margin-top", y + "px")
+                .set("margin-right", "0px").set("margin-bottom", "0px").set("padding", "0px")
+                .set("box-sizing", "border-box")
                 .set("position", "absolute");
         parent.getElement().appendChild(element);
     }
@@ -338,14 +349,16 @@ public class ImageViewer extends View {
         int x = (int)eventData.getNumber("event.offsetX");
         int y = (int)eventData.getNumber("event.offsetY");
         if(movingItem != null) {
-            new SavePos(movingItem, movingComponent, x, y).execute();
+            if(children.get(movingComponent.getElement()) != null) {
+                new SavePos(movingItem, movingComponent, x, y).execute();
+            }
             movingItem = null;
         }
     }
 
     private void dropped(DropEvent<Image> de) {
         Component component = de.getDragSourceComponent().orElse(null);
-        if(component != null) {
+        if(component != null && children.get(component.getElement()) != null) {
             movingItem = de.getDragData().orElse(null);
             if(movingItem != null) {
                 movingComponent = component;
