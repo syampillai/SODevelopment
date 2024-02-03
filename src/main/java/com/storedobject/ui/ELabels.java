@@ -38,7 +38,7 @@ public class ELabels extends Div implements StyledBuilder, HasText {
 
     @Override
     public void setText(String text) {
-        setValue((Object)text);
+        setValue(text);
     }
 
     @Override

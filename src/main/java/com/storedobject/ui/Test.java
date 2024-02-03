@@ -1,21 +1,33 @@
 package com.storedobject.ui;
 
-import com.storedobject.core.EditorAction;
-import com.storedobject.core.Entity;
-import com.storedobject.core.Person;
-import com.storedobject.vaadin.CloseableView;
-import com.storedobject.vaadin.Tabs;
+import com.storedobject.common.JSON;
 import com.storedobject.vaadin.View;
+import com.storedobject.vaadin.Window;
+import com.storedobject.vaadin.WindowDecorator;
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.html.IFrame;
 
-public class Test extends View implements CloseableView {
+public class Test extends View {
 
     public Test() {
-        super("Multiple Object Editors");
-        Tabs tabs = new Tabs();
-        ObjectEditor<Person> pe = ObjectEditor.create(Person.class, EditorAction.ALL | EditorAction.NO_EXIT);
-        tabs.createTab("Person", pe.getComponent());
-        ObjectEditor<Entity> ee = ObjectEditor.create(Entity.class, EditorAction.ALL | EditorAction.NO_EXIT);
-        tabs.createTab("Entity", ee.getComponent());
-        setComponent(tabs);
+        super("Test");
+        IFrame iFrame =
+                new IFrame(
+                        "https://toolbox-iframe.private.fin.ag/?demo=true&redirectUrl=https://flinks.com/contact/"
+                                + "thank-you&innerRedirect=true&theme=light&consentEnable=true&customerName=FinTech&backgroundColor="
+                                + "f7f7f7&foregroundColor1=000000&desktopLayout=true&headerEnable=false&institutionFilterEnable=true");
+        iFrame.setHeight("600px");
+        setComponent(iFrame);
+        setWindowMode(true);
+    }
+
+    @Override
+    protected Window createWindow(Component component) {
+        return new Window(new WindowDecorator(this), component, new BrowserMessage(this::test));
+    }
+
+    private void test(String origin, JSON message) {
+        message("From " + origin);
+        message(message.toPrettyString());
     }
 }
