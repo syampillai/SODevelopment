@@ -7,7 +7,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MessageGroup extends StoredObject implements RequiresApproval{
+public final class MessageGroup extends StoredObject implements RequiresApproval{
 
 	public MessageGroup() {
 	}
@@ -158,5 +158,16 @@ public class MessageGroup extends StoredObject implements RequiresApproval{
 		public String getEndUserMessage() {
 			return "Message Group '" + getMessage() + "' not found";
 		}
+	}
+
+	/**
+	 * Create a new message group if it doesn't exist.
+	 *
+	 * @param tm Transaction manager.
+	 * @param name Name of the group.
+	 * @return Message group instance.
+	 */
+	public static MessageGroup create(TransactionManager tm, String name) {
+		return new MessageGroup();
 	}
 }

@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-public class MessageTemplate extends StoredObject {
+public final class MessageTemplate extends StoredObject {
 
     public MessageTemplate() {
     }

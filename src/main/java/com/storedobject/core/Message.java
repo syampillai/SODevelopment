@@ -52,13 +52,6 @@ public abstract class Message extends StoredObject {
         return null;
     }
 
-    public void setDelivered(boolean delivered) {
-    }
-
-    public boolean getDelivered() {
-        return false;
-    }
-
     public void setError(int error) {
     }
 

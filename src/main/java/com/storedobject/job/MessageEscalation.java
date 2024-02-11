@@ -3,7 +3,7 @@ package com.storedobject.job;
 import com.storedobject.core.*;
 import java.math.BigDecimal;
 
-public class MessageEscalation extends StoredObject implements Detail {
+public final class MessageEscalation extends StoredObject implements Detail {
 
     public MessageEscalation() {
     }

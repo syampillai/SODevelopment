@@ -8,7 +8,7 @@ import com.storedobject.core.ObjectIterator;
 import com.storedobject.core.Person;
 import com.storedobject.core.SystemUser;
 
-public class MessageEscalationGroup extends Name {
+public final class MessageEscalationGroup extends Name {
 
     public MessageEscalationGroup() {
     }

@@ -1,9 +1,6 @@
 package com.storedobject.ui.tools;
 
-import com.storedobject.core.Contact;
-import com.storedobject.core.ContactType;
-import com.storedobject.core.Person;
-import com.storedobject.core.StoredObject;
+import com.storedobject.core.*;
 import com.storedobject.telegram.Bot;
 import com.storedobject.ui.ELabel;
 import com.storedobject.ui.Transactional;
@@ -43,21 +40,9 @@ public class TelegramRegistration extends DataForm implements Transactional {
             contact = person
                     .listLinks(Contact.class, "Type.Type=4 AND Type.GroupingCode=0").single(false);
             if(contact == null) {
-                contact = new Contact();
-                ContactType ct = StoredObject.get(ContactType.class, "Type=4 AND GroupingCode=0");
-                if(ct == null) {
-                    ct = new ContactType();
-                    ct.setType(4);
-                    ct.setDisplayOrder(Integer.MAX_VALUE - 10);
-                    ct.setGroupingCode(0);
-                }
-                contact.setType(ct);
-                ContactType finalCt = ct;
+                ContactType ct = ContactType.createForTelegram(getTransactionManager());
                 if(!transact(t -> {
-                        if(finalCt.created()) {
-                            finalCt.save(t);
-                        }
-                        contact.setType(finalCt);
+                        contact.setType(ct);
                         contact.save(t);
                         person.addLink(t, contact);
                     })) {

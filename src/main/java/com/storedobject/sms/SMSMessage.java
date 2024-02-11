@@ -25,9 +25,6 @@ public final class SMSMessage extends Message {
 		return 0;
 	}
 
-	public void setErrorValue(String errorValue) {
-	}
-	
 	public static String[] getErrorValues() {
         return null;
 	}
@@ -39,7 +36,14 @@ public final class SMSMessage extends Message {
 	public String getErrorValue() {
         return null;
 	}
-	
+
+	public void setDelivered(boolean delivered) {
+	}
+
+	public boolean getDelivered() {
+		return false;
+	}
+
 	public void validateData() throws Exception {
 	}
 }

@@ -55,4 +55,8 @@ public final class ContactType extends StoredObject {
     public Class<? extends HasContacts> getContactClass() {
         return getContactGroup().getContactDataClass();
     }
+
+    public static ContactType createForTelegram(TransactionManager tm) {
+        return null;
+    }
 }

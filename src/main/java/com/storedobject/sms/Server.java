@@ -1,27 +1,23 @@
 package com.storedobject.sms;
 
-import com.storedobject.job.Job;
+import com.storedobject.core.Id;
+import com.storedobject.job.MessageSender;
 import com.storedobject.job.Schedule;
 
-public abstract class Server extends Job {
+public abstract class Server extends MessageSender<SMSMessage> {
+
+	private final Id providerId;
 
 	public Server(Schedule schedule) {
-		super(schedule);
+		super(schedule, SMSMessage.class);
+		Provider p = Provider.get(getProviderName());
+		providerId = p == null ? null : p.getId();
 	}
 
 	@Override
-	public final void execute() throws Exception {
+	public boolean isActive() {
+		return providerId != null;
 	}
 
-	public boolean canSend(SMSMessage messge) {
-		return false;
-	}
-	
 	public abstract String getProviderName();
-	
-	public abstract int credits() throws Exception;
-	
-	public abstract void send(SMSMessage message) throws Exception;
-	
-	public abstract void checkDelivery(SMSMessage message) throws Exception;
 }

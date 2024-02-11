@@ -21,9 +21,6 @@ public final class Telegram extends Message {
         return 0L;
     }
 
-    public void setErrorValue(String errorValue) {
-    }
-
     public static String[] getErrorValues() {
         return new String[] {};
     }
