@@ -39,9 +39,6 @@ public final class MessageEscalation extends StoredObject implements Detail {
         return null;
     }
 
-    public void copyValuesFrom(Detail detail) {
-    }
-
     public boolean isDetailOf(Class <? extends StoredObject > masterClass) {
         return false;
     }
