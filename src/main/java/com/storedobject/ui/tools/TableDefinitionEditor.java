@@ -754,10 +754,6 @@ public class TableDefinitionEditor extends ObjectEditor<TableDefinition> {
         }
 
         @Override
-        protected void buildFields() {
-        }
-
-        @Override
         protected boolean process() {
             reorderFields(startingNumberField.getValue(), gapField.getValue());
             return true;
@@ -1048,7 +1044,7 @@ public class TableDefinitionEditor extends ObjectEditor<TableDefinition> {
             t.addCell(createCenteredCell(createTitleText(mCount + "." + tdmCount + (linkIndex == 0 ? "" : ("." + linkIndex)))));
             s = td.getAbstractClass() ? "Abstract" : "";
             if(td.hasDetailInterface()) {
-                if(s.length() > 0) {
+                if(!s.isEmpty()) {
                     s += " ";
                 }
                 s += "Detail";
@@ -1395,7 +1391,7 @@ public class TableDefinitionEditor extends ObjectEditor<TableDefinition> {
         }
 
         private void status(String message, String color) {
-            if(message.length() > 0) {
+            if(!message.isEmpty()) {
                 message(message);
             }
             String[] m = message.split("\\n");

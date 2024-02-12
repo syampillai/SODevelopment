@@ -195,48 +195,7 @@ public class JavaClassEditor extends ObjectEditor<JavaClass> {
             clicked(createSourceAll);
         }
         if(c == createSourceAll || c == compileSourceAll) {
-            final Component pressed = c;
-            TextView v = new TextView((pressed == createSourceAll ? "Creat" : "Compil") + "ing classes");
-            v.setProcessor(() -> {
-                int total = 0, count = 0, errorCount = 0;
-                JavaClass errorJC = null;
-                for(JavaClass jc: StoredObject.list(JavaClass.class)) {
-                    ++total;
-                    try {
-                        if(jc.getGenerated()) {
-                            continue;
-                        }
-                        jc.download();
-                        ++count;
-                        if(pressed == compileSourceAll) {
-                            if(jc.compile() != null) {
-                                v.redMessage(jc.getName());
-                                errorJC = jc;
-                                ++errorCount;
-                            } else {
-                                v.blueMessage(jc.getName());
-                            }
-                        }
-                    } catch (Exception e) {
-                        error(e);
-                    }
-                }
-                if(pressed == createSourceAll) {
-                    v.message("Source files created: " + count + "/" + total);
-                    v.setCaption("Sources Created");
-                } else {
-                    if(errorJC != null && getObject() == null) {
-                        JavaClass jc = errorJC;
-                        getApplication().access(() -> setObject(jc));
-                    }
-                    v.newLine(true).append("Total classes: ").append(count).append(", ");
-                    v.append("Classes with errors: " + errorCount, errorCount == 0 ? Application.COLOR_SUCCESS
-                            : Application.COLOR_ERROR);
-                    v.update();
-                    v.setCaption("Compilation Done");
-                }
-            });
-            v.execute();
+            sourceAction(c);
             return;
         }
         if(c == uploadAll || c == uploadCompile || c == uploadCompare) {
@@ -246,19 +205,63 @@ public class JavaClassEditor extends ObjectEditor<JavaClass> {
         super.clicked(c);
     }
 
+    private void sourceAction(Component pressed) {
+        TextView v = new TextView((pressed == createSourceAll ? "Creat" : "Compil") + "ing classes");
+        v.setProcessor(() -> {
+            int total = 0, count = 0, errorCount = 0;
+            JavaClass errorJC = null;
+            for(JavaClass jc: StoredObject.list(JavaClass.class)) {
+                ++total;
+                try {
+                    if(jc.getGenerated()) {
+                        continue;
+                    }
+                    jc.download();
+                    ++count;
+                    if(pressed == compileSourceAll) {
+                        if(jc.compile() != null) {
+                            v.redMessage(jc.getName());
+                            errorJC = jc;
+                            ++errorCount;
+                        } else {
+                            v.blueMessage(jc.getName());
+                        }
+                    }
+                } catch (Exception e) {
+                    error(e);
+                }
+            }
+            if(pressed == createSourceAll) {
+                v.message("Source files created: " + count + "/" + total);
+                v.setCaption("Sources Created");
+            } else {
+                if(errorJC != null && getObject() == null) {
+                    JavaClass jc = errorJC;
+                    getApplication().access(() -> setObject(jc));
+                }
+                v.newLine(true).append("Total classes: ").append(count).append(", ");
+                v.append("Classes with errors: " + errorCount, errorCount == 0 ? Application.COLOR_SUCCESS
+                        : Application.COLOR_ERROR);
+                v.update();
+                v.setCaption("Compilation Done");
+            }
+        });
+        v.execute();
+    }
+
     private void download(String module) {
         ContentProducer cp = new TextContentProducer() {
             @Override
             public void generateContent() throws Exception {
                 String filter = "NOT Generated";
                 if(module != null && !module.isEmpty()) {
-                    filter += " AND Name LIKE '%";
+                    filter += " AND (Name LIKE '%";
                     if(module.contains(".")) {
                         filter += module;
                     } else {
                         filter += "." + module + ".";
                     }
-                    filter += "%'";
+                    filter += "%')";
                 }
                 Writer w = getWriter();
                 for(JavaClass jc: StoredObject.list(JavaClass.class, filter)) {
@@ -341,11 +344,12 @@ public class JavaClassEditor extends ObjectEditor<JavaClass> {
 
         @Override
         public void process(InputStream data, String dataType) {
+            TransactionManager tm = getTransactionManager();
             try {
                 switch(action) {
-                    case 0 -> JavaTool.loadDefinitions(getTransactionManager(), data, this);
-                    case 1 -> JavaTool.compareDefinitions(getTransactionManager(), data, this);
-                    case 2 -> JavaTool.updateDefinitions(getTransactionManager(), data, this);
+                    case 0 -> JavaTool.loadDefinitions(tm, data, this);
+                    case 1 -> JavaTool.compareDefinitions(tm, data, this);
+                    case 2 -> JavaTool.updateDefinitions(tm, data, this);
                 }
             } catch (Throwable error) {
                 log(error);
