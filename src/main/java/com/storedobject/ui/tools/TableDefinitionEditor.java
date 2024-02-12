@@ -154,20 +154,22 @@ public class TableDefinitionEditor extends ObjectEditor<TableDefinition> {
         ContentProducer cp = new TextContentProducer() {
             @Override
             public void generateContent() throws Exception {
-                String filter;
-                if(module != null && !module.isEmpty()) {
-                    filter = "ClassName LIKE '%";
-                    if(module.contains(".")) {
-                        filter += module;
-                    } else {
-                        filter += "." + module + ".";
+                StringBuilder filter = new StringBuilder();
+                if(module != null && !module.isBlank()) {
+                    String[] ms = StringUtility.trim(module.trim().split("\\s"));
+                    for(int i = 0; i < ms.length; i++) {
+                        if(ms[i].isBlank()) {
+                            continue;
+                        }
+                        if(i > 0) {
+                            filter.append(" OR ");
+                        }
+                        filter.append("ClassName LIKE '%").append(ms[i]).append("%'");
                     }
-                    filter += "%'";
-                } else {
-                    filter = null;
                 }
                 Writer w = getWriter();
-                for(TableDefinition td: StoredObject.list(TableDefinition.class, filter)) {
+                for(TableDefinition td: StoredObject.list(TableDefinition.class,
+                        filter.isEmpty() ? null : filter.toString())) {
                     td.save(w);
                 }
             }
@@ -356,7 +358,7 @@ public class TableDefinitionEditor extends ObjectEditor<TableDefinition> {
 
         @Override
         protected void buildFields() {
-            addField(module = new TextField("Module Name / Class Name"));
+            addField(module = new TextField("Filter Words (Separated by Space)"));
             module.setHelperText("Leave it empty for all");
             module.setSpellCheck(false);
         }
@@ -628,7 +630,6 @@ public class TableDefinitionEditor extends ObjectEditor<TableDefinition> {
                 td.delete(t);
                 t.commit();
             }
-            //noinspection ResultOfMethodCallIgnored
             StoredObject.load(getTransactionManager(), new StringReader(d), null);
             getApplication().access(() -> {
                 if(td != null) {
@@ -1525,7 +1526,6 @@ public class TableDefinitionEditor extends ObjectEditor<TableDefinition> {
                 jc.setGenerated(true);
                 Transaction t = getTransactionManager().createTransaction();
                 try {
-                    //noinspection ResultOfMethodCallIgnored
                     jc.upload(t);
                     t.commit();
                 } catch(Exception e) {

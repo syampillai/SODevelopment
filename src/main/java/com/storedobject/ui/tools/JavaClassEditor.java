@@ -253,18 +253,23 @@ public class JavaClassEditor extends ObjectEditor<JavaClass> {
         ContentProducer cp = new TextContentProducer() {
             @Override
             public void generateContent() throws Exception {
-                String filter = "NOT Generated";
-                if(module != null && !module.isEmpty()) {
-                    filter += " AND (Name LIKE '%";
-                    if(module.contains(".")) {
-                        filter += module;
-                    } else {
-                        filter += "." + module + ".";
+                StringBuilder filter = new StringBuilder("NOT Generated");
+                if(module != null && !module.isBlank()) {
+                    filter.append(" AND (");
+                    String[] ms = StringUtility.trim(module.trim().split("\\s"));
+                    for(int i = 0; i < ms.length; i++) {
+                        if(ms[i].isBlank()) {
+                            continue;
+                        }
+                        if(i > 0) {
+                            filter.append(" OR ");
+                        }
+                        filter.append("Name LIKE '%").append(ms[i]).append("%'");
                     }
-                    filter += "%')";
+                    filter.append(")");
                 }
                 Writer w = getWriter();
-                for(JavaClass jc: StoredObject.list(JavaClass.class, filter)) {
+                for(JavaClass jc: StoredObject.list(JavaClass.class, filter.toString())) {
                     jc.save(w);
                 }
             }
@@ -389,7 +394,7 @@ public class JavaClassEditor extends ObjectEditor<JavaClass> {
 
         @Override
         protected void buildFields() {
-            addField(module = new TextField("Module Name / Class Name"));
+            addField(module = new TextField("Filter Words (Separated by Space)"));
             module.setHelperText("Leave it empty for all");
             module.setSpellCheck(false);
         }
