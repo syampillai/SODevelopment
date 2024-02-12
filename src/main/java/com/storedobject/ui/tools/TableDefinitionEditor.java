@@ -628,6 +628,7 @@ public class TableDefinitionEditor extends ObjectEditor<TableDefinition> {
                 td.delete(t);
                 t.commit();
             }
+            //noinspection ResultOfMethodCallIgnored
             StoredObject.load(getTransactionManager(), new StringReader(d), null);
             getApplication().access(() -> {
                 if(td != null) {
@@ -1202,7 +1203,7 @@ public class TableDefinitionEditor extends ObjectEditor<TableDefinition> {
             layout.add(status);
             layout.setMargin(true);
             setComponent(layout);
-            setTable(tableDefinition, true);
+            setTable(tableDefinition);
         }
 
         @Override
@@ -1224,11 +1225,7 @@ public class TableDefinitionEditor extends ObjectEditor<TableDefinition> {
             return t == null ? "<Not Available>" : t;
         }
 
-        public void setTable(TableDefinition tableDefinition) {
-            setTable(tableDefinition, false);
-        }
-
-        private void setTable(TableDefinition tableDefinition, boolean nullAllowed) {
+        private void setTable(TableDefinition tableDefinition) {
             jc = null;
             action = -1;
             proceed.setVisible(false);
@@ -1236,9 +1233,6 @@ public class TableDefinitionEditor extends ObjectEditor<TableDefinition> {
             className.setValue(td == null ? "" : td.getClassName());
             tableName.setValue("<Not set yet>");
             if(td == null) {
-                if(!nullAllowed) {
-                    status("No Data Class definition set");
-                }
                 deleteLogic.setVisible(false);
                 deleteTable.setVisible(false);
                 return;
@@ -1531,6 +1525,7 @@ public class TableDefinitionEditor extends ObjectEditor<TableDefinition> {
                 jc.setGenerated(true);
                 Transaction t = getTransactionManager().createTransaction();
                 try {
+                    //noinspection ResultOfMethodCallIgnored
                     jc.upload(t);
                     t.commit();
                 } catch(Exception e) {
