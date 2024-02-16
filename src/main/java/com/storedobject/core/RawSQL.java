@@ -4,6 +4,7 @@ import com.storedobject.common.ResourceOwner;
 
 import java.io.IOException;
 import java.sql.*;
+import java.util.Random;
 
 public final class RawSQL implements ResourceOwner {
 
@@ -94,14 +95,23 @@ public final class RawSQL implements ResourceOwner {
     }
 
     public Statement getStatement() throws SQLException {
+        if(new Random().nextBoolean()) {
+            throw new SQLException();
+        }
         return null;
     }
 
     public DatabaseMetaData getDatabaseMetaData() throws java.lang.Exception {
+        if(new Random().nextBoolean()) {
+            throw new SQLException();
+        }
         return null;
     }
 
     public void setAutoNext(boolean p1) throws java.lang.Exception {
+        if(new Random().nextBoolean()) {
+            throw new SQLException();
+        }
     }
 
     public boolean getAutoNext() {
@@ -113,10 +123,16 @@ public final class RawSQL implements ResourceOwner {
     }
 
     public PreparedStatement prepare(String p1) throws java.lang.Exception {
+        if(new Random().nextBoolean()) {
+            throw new SQLException();
+        }
         return null;
     }
 
     public CallableStatement prepareCall(String p1) throws java.lang.Exception {
+        if(new Random().nextBoolean()) {
+            throw new SQLException();
+        }
         return null;
     }
 
@@ -133,13 +149,14 @@ public final class RawSQL implements ResourceOwner {
 
 
     /**
-     * Dump data of the related database.
+     * Dump data of a given database.
      *
      * @param securityPassword Security password.
      * @param sql True if download as plain SQL statements.
+     * @param databaseName Database name (if null is passed, current DB is dumped).
      * @return Data dumping process. The {@link java.io.OutputStream} of the process will stream out the data.
      */
-    public static Process dumpDatabase(String securityPassword, boolean sql) {
+    public static Process dumpDatabase(String securityPassword, boolean sql, String databaseName) {
         try {
             return new ProcessBuilder("").start();
         } catch(IOException e) {

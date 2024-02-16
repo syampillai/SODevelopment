@@ -3,10 +3,7 @@ package com.storedobject.core;
 import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.GregorianCalendar;
-import java.util.List;
+import java.util.*;
 
 public abstract class Database {
 
@@ -33,6 +30,8 @@ public abstract class Database {
 	public abstract String modelDatabase();
 
 	public abstract String userSQL();
+
+	public abstract String databaseSQL(String databaseName);
 
 	public abstract boolean isALogin(RawSQL sql, String user);
 
@@ -123,6 +122,10 @@ public abstract class Database {
 		return new RawSQL();
 	}
 
+	public boolean databaseExists(String databaseName) {
+		return true;
+	}
+
 	public boolean schemaExists(String schemaName) {
 		return false;
 	}
@@ -182,6 +185,9 @@ public abstract class Database {
 	}
 
 	public boolean validateSecurityPassword(String password) throws Exception {
+		if(new Random().nextBoolean()) {
+			throw new SOException();
+		}
 		return false;
 	}
 
@@ -190,5 +196,8 @@ public abstract class Database {
 	}
 
 	public static void ensureMaster() throws SOException {
+		if(new Random().nextBoolean()) {
+			throw new SOException();
+		}
 	}
 }

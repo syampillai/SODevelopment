@@ -5,18 +5,21 @@ import com.storedobject.core.*;
 import com.storedobject.ui.Application;
 import com.storedobject.ui.ELabelField;
 import com.storedobject.ui.PasswordField;
+import com.storedobject.ui.Transactional;
 import com.storedobject.vaadin.DataForm;
 import com.storedobject.vaadin.RadioChoiceField;
+import com.storedobject.vaadin.TextField;
 
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
 
-public class DataDownload extends DataForm {
+public class DataDownload extends DataForm implements Transactional {
 
     private final PasswordField adminPassword;
     private final RadioChoiceField format = new RadioChoiceField("Format", new String[] { "Compressed", "Plain" });
     private final ELabelField plainWarn = new ELabelField(null,
             "File size will be much larger for plain format!", Application.COLOR_ERROR);
+    private final TextField databaseName = new TextField("Name of the database");
 
     public DataDownload() {
         super("Data Download");
@@ -33,6 +36,13 @@ public class DataDownload extends DataForm {
         addField(format);
         plainWarn.setVisible(false);
         format.addValueChangeListener(e -> plainWarn.setVisible(e.getValue() == 1));
+        addField(databaseName);
+        databaseName.setValue(SQLConnector.getDatabaseName());
+        SystemUser su = getTransactionManager().getUser();
+        if(!(su.isAdmin() || su.isAppAdmin())) {
+            setFieldReadOnly(databaseName);
+        }
+        setRequired(databaseName);
     }
 
     @Override
@@ -52,13 +62,18 @@ public class DataDownload extends DataForm {
             warning(e);
             return false;
         }
+        String dbName = databaseName.getValue();
+        if(!Database.get().databaseExists(dbName)) {
+            warning("Database doesn't exist: " + dbName);
+            return false;
+        }
         boolean sql = format.getValue() == 1;
-        Process dump = RawSQL.dumpDatabase(password, sql);
+        Process dump = RawSQL.dumpDatabase(password, sql, dbName);
         if(dump == null) {
             error("Technical error, please contact Technical Support");
             return false;
         }
-        Application.get().download(new Data(dump.getInputStream(), sql));
+        Application.get().download(new Data(dump.getInputStream(), sql, dbName));
         return true;
     }
 
@@ -66,10 +81,12 @@ public class DataDownload extends DataForm {
 
         private final InputStream data;
         private final boolean sql;
+        private final String dbName;
 
-        private Data(InputStream data, boolean sql) {
+        private Data(InputStream data, boolean sql, String dbName) {
             this.data = data;
             this.sql = sql;
+            this.dbName = dbName;
         }
 
         @Override
@@ -79,8 +96,7 @@ public class DataDownload extends DataForm {
 
         @Override
         public String getFileName() {
-            return SQLConnector.getDatabaseName() + "-"
-                    + new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss").format(DateUtility.now());
+            return dbName + "-" + new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss").format(DateUtility.now());
         }
 
         @Override

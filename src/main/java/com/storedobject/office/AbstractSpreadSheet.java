@@ -17,7 +17,7 @@ public abstract class AbstractSpreadSheet extends StreamContentProducer {
     /**
      * Constructor.
      *
-     * @param in  Input stream containing an spreadsheet file with some content.
+     * @param in  Input stream containing a spreadsheet file with some content.
      * @param out Output is written to this stream.
      */
     public AbstractSpreadSheet(InputStream in, OutputStream out) {
@@ -77,6 +77,20 @@ public abstract class AbstractSpreadSheet extends StreamContentProducer {
 
     public Row getPreviousRow() {
         return null;
+    }
+
+    public boolean moveLeft() {
+        return true;
+    }
+
+    public void moveRight() {
+    }
+
+    public boolean moveUp() {
+        return true;
+    }
+
+    public void moveDown() {
     }
 
     public int getCellIndex() {
@@ -167,10 +181,6 @@ public abstract class AbstractSpreadSheet extends StreamContentProducer {
     public void setCellValue(Cell cell, Object cellValue) {
     }
 
-    @Override
-    public void close() {
-    }
-
     /*
      * Generate the content of the excel in this method. Variable 'workbook' (which is of type Workbook is available here).
      */
@@ -180,6 +190,10 @@ public abstract class AbstractSpreadSheet extends StreamContentProducer {
     }
 
     public CellStyle getDateStyle() {
+        return workbook.createCellStyle();
+    }
+
+    public CellStyle getDateTimeStyle() {
         return workbook.createCellStyle();
     }
 
