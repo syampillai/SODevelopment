@@ -344,4 +344,8 @@ public final class SystemUser extends StoredObject implements HasName {
             return executed;
         }
     }
+
+    public AutoLogin getAutoLogin() {
+        return null;
+    }
 }

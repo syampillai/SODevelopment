@@ -24,7 +24,7 @@ public class JavaClassEditor extends ObjectEditor<JavaClass> {
     private TextArea source;
     private final TextArea error;
     private TextField name;
-    private Button compileSource, compileSourceAll, format, createSourceAll, downloadAll,
+    private Button compileSource, compileSourceAll, format, createSourceAll, download, downloadAll,
             uploadAll, uploadCompile, uploadCompare,
             prevVersion, nextVersion;
     private PopupButton uploadMenu;
@@ -100,7 +100,8 @@ public class JavaClassEditor extends ObjectEditor<JavaClass> {
         compileSourceAll = new ConfirmButton("Compile All", this);
         format = new Button("Format", this);
         createSourceAll = new Button("Create Source Files", "download", this);
-        downloadAll = new Button("Download All", "download", e -> new DownloadAll().execute(getView()));
+        download = new Button("Download", e -> download());
+        downloadAll = new Button("Download All", e -> new DownloadAll().execute(getView()));
         uploadAll = new Button("Bulk Upload", "upload", this);
         uploadCompile = new Button("Bulk Upload & Deploy", "upload", this);
         uploadCompare = new Button("Bulk Upload & Compare", "upload", this);
@@ -118,6 +119,7 @@ public class JavaClassEditor extends ObjectEditor<JavaClass> {
                 compileSourceAll,
                 no ? null : format,
                 createSourceAll,
+                no || jc.getGenerated() ? null : download,
                 downloadAll,
                 uploadMenu,
                 no ? null : prevVersion,
@@ -272,6 +274,21 @@ public class JavaClassEditor extends ObjectEditor<JavaClass> {
                 for(JavaClass jc: StoredObject.list(JavaClass.class, filter.toString())) {
                     jc.save(w);
                 }
+            }
+        };
+        getApplication().view(cp);
+    }
+
+    private void download() {
+        JavaClass jc = getObject();
+        if(jc == null) {
+            return;
+        }
+        ContentProducer cp = new TextContentProducer() {
+            @Override
+            public void generateContent() throws Exception {
+                Writer w = getWriter();
+                jc.save(w);
             }
         };
         getApplication().view(cp);

@@ -154,6 +154,13 @@ public class Application extends com.storedobject.vaadin.Application implements 
     @Override
     protected void init(VaadinRequest request) {
         super.init(request);
+        String auth = request.getHeader("Authorization");
+        if(auth != null && auth.startsWith("Bearer ")) {
+            auth = auth.substring(7).trim();
+            if(!auth.isEmpty()) {
+                setData(String.class, auth);
+            }
+        }
         VaadinSession vs = VaadinSession.getCurrent();
         vs.addRequestHandler(new DownloadHandler());
         vs.setErrorHandler(e -> {
@@ -882,6 +889,9 @@ public class Application extends com.storedobject.vaadin.Application implements 
 
     @Override
     public final void login() {
+        if(login == null) {
+            return;
+        }
         String s = ApplicationServer.getApplicationName();
         if(!"-".equals(s)) {
             setCaption(s + " " + getDisplayVersion());
@@ -912,7 +922,21 @@ public class Application extends com.storedobject.vaadin.Application implements 
     }
 
     private Runnable paramLogin() {
-        String autoToken = getQueryParameter("loginBlock");
+        String autoToken = getData(String.class); // Authorization - Bearer token
+        if(autoToken != null) {
+            removeData(String.class);
+            String via = getQueryParameter("via");
+            if(via != null && !via.isBlank()) {
+                removeQueryParameter("via");
+                String loginBlock = autoToken;
+                return () -> {
+                    if(!login.login(loginBlock, via)) {
+                        screenLogin();
+                    }
+                };
+            }
+        }
+        autoToken = getQueryParameter("loginBlock");
         if(autoToken != null && !autoToken.isBlank()) {
             removeQueryParameter("loginBlock");
             String loginBlock = autoToken;

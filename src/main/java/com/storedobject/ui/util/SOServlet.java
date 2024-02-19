@@ -74,6 +74,7 @@ public class SOServlet extends VaadinServlet {
                 url = url.substring(0, p);
             }
             url = url.replace("\n", "//");
+            request.getHeader("Authorization");
         }
 
         // Check for CORS requests

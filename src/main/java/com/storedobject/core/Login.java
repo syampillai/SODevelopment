@@ -36,6 +36,10 @@ public final class Login {
         return false;
     }
 
+    public boolean login(String loginBlock, String via) {
+        return false;
+    }
+
     public boolean forgotPassword(String user) {
         return false;
     }

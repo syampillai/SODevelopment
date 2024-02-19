@@ -239,6 +239,10 @@ public final class TransactionManager {
         return Math.random() > 0.5;
     }
 
+    public boolean isAutoLogin() {
+        return Math.random() > 0.5;
+    }
+
     /**
      * Set a logger so that you can geet the logged text to your own destination.
      *
