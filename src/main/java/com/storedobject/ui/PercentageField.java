@@ -31,6 +31,14 @@ public class PercentageField extends AbstractQuantityField<Percentage> {
         super(label, width, decimals, Percentage.class, MeasurementUnit.get("%", Percentage.class));
     }
 
+    public PercentageField(int width, int decimals, String unit) {
+        this(null, width, decimals, MeasurementUnit.get(unit, Weight.class));
+    }
+
+    public PercentageField(int width, int decimals, MeasurementUnit unit) {
+        super(null, width, decimals, Percentage.class, unit);
+    }
+
     public PercentageField(String label, int width, int decimals, String unit) {
         this(label, width, decimals, MeasurementUnit.get(unit, Weight.class));
     }
