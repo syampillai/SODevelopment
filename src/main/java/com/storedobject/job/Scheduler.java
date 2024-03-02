@@ -15,6 +15,9 @@ public final class Scheduler extends SystemDevice {
     public static void restart() {
     }
 
+    public static void kill() {
+    }
+
     @Override
     public String getDeviceType() {
         return "scheduler";

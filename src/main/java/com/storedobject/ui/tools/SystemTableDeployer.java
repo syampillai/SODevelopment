@@ -25,7 +25,7 @@ import java.util.Optional;
 public class SystemTableDeployer extends View implements Transactional {
 
     private final Button create;
-    private final Button drop;
+    private final Button dropTable, dropColumn;
     private final Button menuItem;
     private final PopupButton upload, all;
     private final Button uploadProcess;
@@ -61,7 +61,8 @@ public class SystemTableDeployer extends View implements Transactional {
         VerticalLayout layout = new VerticalLayout();
         ButtonLayout buttons = new ButtonLayout();
         buttons.add(create = new Button("Create/Alter/Reindex", "ok", this));
-        buttons.add(drop = new ConfirmButton("Drop", "delete", this));
+        buttons.add(dropTable = new ConfirmButton("Drop Table", "delete", this));
+        buttons.add(dropColumn = new Button("Drop Attribute", "delete", this));
         buttons.add(menuItem = new Button("Create Menu Item", "menu", this));
         menuItem.setVisible(false);
         uploadProcess = new Button("Create/Alter", "", this);
@@ -228,8 +229,8 @@ public class SystemTableDeployer extends View implements Transactional {
         }
         if(!ncn.equals(currentClassName) || ncn.isEmpty()) {
             currentClassName = ncn;
-            checkStatus(c == drop);
-            if(c != drop) {
+            checkStatus(c == dropTable || c == dropColumn);
+            if(c != dropTable && c != dropColumn) {
                 return;
             }
         }
@@ -262,11 +263,15 @@ public class SystemTableDeployer extends View implements Transactional {
         if(password == null) {
             return;
         }
-        if(c == drop) {
+        if(c == dropTable || c == dropColumn) {
             action = 0;
             clearAlerts();
             if(!isSU && !getTransactionManager().getUser().isAppAdmin()) {
                 warning("Not authorized!");
+                return;
+            }
+            if(c == dropColumn) {
+                dropColumn(ca, password);
                 return;
             }
             try {
@@ -335,10 +340,30 @@ public class SystemTableDeployer extends View implements Transactional {
 
     private void dropTable(ClassAttribute<?> ca, String password) throws Exception {
         ArrayList<String> commands = new ArrayList<>();
-        commands.add("DROP TABLE " + ca.getModuleName() + "." + ca.getTableName());
-        commands.add("DROP TABLE " + ca.getModuleName() + ".H_" + ca.getTableName());
+        String command = "DROP TABLE " + ca.getModuleName() + ".", table = ca.getTableName();
+        commands.add(command + table);
+        commands.add(command + "H_" + table);
         execCommands(commands, password);
         message("Data class dropped: " + ca.getObjectClass().getName());
+        currentClassName = null;
+    }
+
+    private void dropTable(ClassAttribute<?> ca, String password, String attribute) {
+        try {
+            ArrayList<String> commands = new ArrayList<>();
+            String command = "ALTER TABLE " + ca.getModuleName() + ".", table = ca.getTableName() + " DROP COLUMN "
+                    + attribute;
+            commands.add(command + table);
+            commands.add(command + "H_" + table);
+            execCommands(commands, password);
+            message("Data class attribute dropped: " + ca.getObjectClass().getName() + ", Attribute: " + attribute);
+        } catch (Exception e) {
+            warning(e);
+        }
+    }
+
+    private void dropColumn(ClassAttribute<?> ca, String password) {
+        new DropColumn(ca, password).execute();
     }
 
     private boolean createTable(ClassAttribute<?> ca, String password) throws Exception {
@@ -647,5 +672,34 @@ public class SystemTableDeployer extends View implements Transactional {
         }
 
         private record M(Object m, int color) {}
+    }
+
+    private class DropColumn extends DataForm {
+
+        private final ClassAttribute<?> ca;
+        private final String password;
+        private final ComboField<String> attribute;
+
+        public DropColumn(ClassAttribute<?> ca, String password) {
+            super("Drop Attribute");
+            this.ca = ca;
+            this.password = password;
+            addField(new ELabelField("Data Class", ca.getObjectClass().getName()));
+            attribute = new ComboField<>("Attribute", StringList.create(ca.getAttributes()));
+            addField(attribute);
+            currentClassName = null;
+        }
+
+        @Override
+        protected boolean process() {
+            String a = attribute.getValue();
+            if(a == null || a.isBlank()) {
+                return false;
+            }
+            close();
+            new ActionForm("Warning", "Data for '" + a + ", in " + ca.getObjectClass().getName()
+                    + " will be permanently lost!\nAre you sure?", () -> dropTable(ca, password, a)).execute();
+            return true;
+        }
     }
 }

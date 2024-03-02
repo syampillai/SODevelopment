@@ -6,6 +6,8 @@ import javax.crypto.SecretKey;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.Authenticator;
+import java.net.PasswordAuthentication;
 import java.util.Random;
 
 /**
@@ -13,6 +15,7 @@ import java.util.Random;
  *
  * @author Syam
  */
+@SuppressWarnings("RedundantThrows")
 public final class Secret extends StoredObject {
 
     public Secret() {
@@ -264,6 +267,15 @@ public final class Secret extends StoredObject {
     }
     
     public static void authenticate(HTTP http, String user, String password) {
+    }
+
+    public static java.net.Authenticator authenticator(String user, String password) {
+        return new Authenticator() {
+            @Override
+            protected PasswordAuthentication getPasswordAuthentication() {
+                return new PasswordAuthentication(user, password.toCharArray());
+            }
+        };
     }
 
     public static String log(TransactionManager tm) {

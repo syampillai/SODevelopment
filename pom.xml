@@ -6,10 +6,10 @@
 
     <groupId>com.storedobject</groupId>
     <artifactId>so-development</artifactId>
-    <version>10.2.0</version>
+    <version>10.2.1</version>
 
     <properties>
-        <so-common-version>4.5.11</so-common-version>
+        <so-common-version>4.5.12</so-common-version>
         <so-components-version>11.1.17</so-components-version>
         <so-charts-version>3.2.4</so-charts-version>
         <vaadin.version>23.2.16</vaadin.version>

@@ -15,12 +15,14 @@ import com.vaadin.flow.server.WebBrowser;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
+import java.util.concurrent.CountDownLatch;
 import java.util.function.Consumer;
 
 public class ContentGenerator extends AbstractContentGenerator {
 
     private static final Sequencer sequencerFileId = new Sequencer();
-    private boolean kicked = false, started = false, internal = false, download;
+    private boolean kicked = false, internal = false, download;
+    private final CountDownLatch started = new CountDownLatch(1);
     private final String caption;
     private DocumentViewer viewer;
     private final boolean windowMode;
@@ -68,10 +70,7 @@ public class ContentGenerator extends AbstractContentGenerator {
         if(!internal) {
             started();
         }
-        synchronized(this) {
-            started = true;
-            notifyAll();
-        }
+        started.countDown();
         producer.produce();
         Throwable error = producer.getError();
         if(error != null) {
@@ -84,11 +83,9 @@ public class ContentGenerator extends AbstractContentGenerator {
 
     public void kick() {
         synchronized (this) {
-            while (!started) {
-                try {
-                    wait();
-                } catch (InterruptedException ignored) {
-                }
+            try {
+                started.await();
+            } catch (InterruptedException ignored) {
             }
             if(kicked) {
                 return;

@@ -43,6 +43,9 @@ public class SOServlet extends VaadinServlet {
     }
 
     private boolean isAllowedRequestOrigin(String origin) {
+        if("null".equals(origin)) {
+            return true;
+        }
         try {
             if(CORS.isEmpty()) {
                 Arrays.stream(GlobalProperty.get("SECURITY-CORS").split(","))
@@ -74,33 +77,38 @@ public class SOServlet extends VaadinServlet {
                 url = url.substring(0, p);
             }
             url = url.replace("\n", "//");
-            request.getHeader("Authorization");
         }
 
         // Check for CORS requests
         String origin = request.getHeader("Origin");
         if (origin != null) {
+            if("null".equals(origin)) {
+                origin = "*";
+            }
             if(isAllowedRequestOrigin(origin)) { // Allowed
-                if("options".equalsIgnoreCase(request.getMethod())) { // Handle a preflight "option" requests
-                    response.addHeader("Access-Control-Allow-Origin", origin);
-                    response.setHeader("Allow", "GET, HEAD, POST, PUT, DELETE, TRACE, OPTIONS");
+                switch (request.getMethod().toLowerCase()) {
+                    case "options" -> {
+                        response.addHeader("Access-Control-Allow-Origin", origin);
+                        response.setHeader("Allow", "GET, HEAD, POST, PUT, DELETE, TRACE, OPTIONS");
 
-                    // Allow the requested method
-                    String method = request.getHeader("Access-Control-Request-Method");
-                    response.addHeader("Access-Control-Allow-Methods", method);
+                        // Allow the requested method
+                        String method = request.getHeader("Access-Control-Request-Method");
+                        response.addHeader("Access-Control-Allow-Methods", method);
 
-                    // Allow the requested headers
-                    String headers = request.getHeader("Access-Control-Request-Headers");
-                    response.addHeader("Access-Control-Allow-Headers", headers);
+                        // Allow the requested headers
+                        String headers = request.getHeader("Access-Control-Request-Headers");
+                        response.addHeader("Access-Control-Allow-Headers", headers);
 
-                    response.addHeader("Access-Control-Allow-Credentials", "true");
-                    response.setContentType("text/plain");
-                    response.setCharacterEncoding("utf-8");
-                    response.getWriter().flush();
-                    return;
-                } else if("post".equalsIgnoreCase(request.getMethod())) { // Handle UIDL post requests
-                    response.addHeader("Access-Control-Allow-Origin", origin);
-                    response.addHeader("Access-Control-Allow-Credentials", "true");
+                        response.addHeader("Access-Control-Allow-Credentials", "true");
+                        response.setContentType("text/plain");
+                        response.setCharacterEncoding("utf-8");
+                        response.getWriter().flush();
+                        return;
+                    }
+                    case "post", "get" -> {
+                        response.addHeader("Access-Control-Allow-Origin", origin);
+                        response.addHeader("Access-Control-Allow-Credentials", "true");
+                    }
                 }
             } else { // Not allowed
                 response.sendError(HttpServletResponse.SC_FORBIDDEN);

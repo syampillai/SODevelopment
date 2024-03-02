@@ -923,11 +923,15 @@ public class Application extends com.storedobject.vaadin.Application implements 
 
     private Runnable paramLogin() {
         String autoToken = getData(String.class); // Authorization - Bearer token
+        if(autoToken == null) {
+            autoToken = getQueryParameter("token");
+            removeQueryParameter("token");
+        }
         if(autoToken != null) {
             removeData(String.class);
             String via = getQueryParameter("via");
+            removeQueryParameter("via");
             if(via != null && !via.isBlank()) {
-                removeQueryParameter("via");
                 String loginBlock = autoToken;
                 return () -> {
                     if(!login.login(loginBlock, via)) {

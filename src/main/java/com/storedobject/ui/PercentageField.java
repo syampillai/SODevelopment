@@ -2,6 +2,7 @@ package com.storedobject.ui;
 
 import com.storedobject.core.MeasurementUnit;
 import com.storedobject.core.Percentage;
+import com.storedobject.core.Weight;
 import com.storedobject.ui.util.AbstractQuantityField;
 
 public class PercentageField extends AbstractQuantityField<Percentage> {
@@ -28,5 +29,13 @@ public class PercentageField extends AbstractQuantityField<Percentage> {
 
     public PercentageField(String label, int width, int decimals) {
         super(label, width, decimals, Percentage.class, MeasurementUnit.get("%", Percentage.class));
+    }
+
+    public PercentageField(String label, int width, int decimals, String unit) {
+        this(label, width, decimals, MeasurementUnit.get(unit, Weight.class));
+    }
+
+    public PercentageField(String label, int width, int decimals, MeasurementUnit unit) {
+        super(label, width, decimals, Percentage.class, unit);
     }
 }
