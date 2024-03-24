@@ -1,7 +1,6 @@
 package com.storedobject.ui;
 
 import com.storedobject.chart.*;
-import com.storedobject.common.JSON;
 import com.storedobject.vaadin.CloseableView;
 import com.storedobject.vaadin.View;
 

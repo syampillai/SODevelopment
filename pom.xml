@@ -11,7 +11,7 @@
     <properties>
         <so-common-version>4.6.0</so-common-version>
         <so-components-version>11.1.17</so-components-version>
-        <so-charts-version>3.2.4</so-charts-version>
+        <so-charts-version>3.2.5</so-charts-version>
         <vaadin.version>23.2.16</vaadin.version>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
