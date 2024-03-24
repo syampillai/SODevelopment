@@ -41,6 +41,7 @@ public class TelegramRegistration extends DataForm implements Transactional {
                     .listLinks(Contact.class, "Type.Type=4 AND Type.GroupingCode=0").single(false);
             if(contact == null) {
                 ContactType ct = ContactType.createForTelegram(getTransactionManager());
+                contact = new Contact();
                 if(!transact(t -> {
                         contact.setType(ct);
                         contact.save(t);

@@ -15,7 +15,7 @@ import java.util.List;
 public class StatementView extends ListGrid<LedgerEntry> implements CloseableView {
 
     private static final String NO_ENTRIES = "No entries";
-    private final AccountField<Account> accountField = new AccountField<>();
+    private final AccountField<Account> accountField;
     private final DateField dateField = new DateField();
     private final Button forward, backward, begin, end, voucher;
     private final LedgerWindow ledger = new LedgerWindow(20, this) {
@@ -34,6 +34,7 @@ public class StatementView extends ListGrid<LedgerEntry> implements CloseableVie
             error(m);
             error(e);
         });
+        accountField = createAccountField();
         accountField.setDisplayDetail(t -> {});
         setCaption("Statement View");
         forward = new Button("Next", this);
@@ -63,6 +64,10 @@ public class StatementView extends ListGrid<LedgerEntry> implements CloseableVie
                 accountField.setReadOnly(true);
             }
         }
+    }
+
+    protected AccountField<Account> createAccountField() {
+        return new AccountField<>();
     }
 
     public Account getAccount() {
@@ -193,6 +198,7 @@ public class StatementView extends ListGrid<LedgerEntry> implements CloseableVie
                 setCaption("Statement View");
                 accountTitle.clearContent().append("<Account Not Selected>");
             } else {
+                loadingAccont(account);
                 ledger.setAccount(account);
                 accountTitle.clearContent().append(account.toDisplay(), Application.COLOR_SUCCESS).update();
                 enableButtons();
@@ -206,6 +212,9 @@ public class StatementView extends ListGrid<LedgerEntry> implements CloseableVie
             return;
         }
         super.valueChanged(changedValues);
+    }
+
+    protected void loadingAccont(Account account) {
     }
 
     private void setOB() {

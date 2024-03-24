@@ -1,24 +1,22 @@
 package com.storedobject.ui.common;
 
 import com.storedobject.core.*;
-import com.storedobject.mail.Mail;
-import com.storedobject.mail.Sender;
-import com.storedobject.mail.SenderGroup;
 import com.storedobject.pdf.PDFFont;
 import com.storedobject.pdf.PDFReport;
 import com.storedobject.pdf.PDFTable;
+import com.storedobject.telegram.Telegram;
 import com.storedobject.ui.DatePeriodField;
 import com.storedobject.ui.Transactional;
 import com.storedobject.vaadin.ChoiceField;
 import com.storedobject.vaadin.DataForm;
 
-public class MailLog extends DataForm implements Transactional {
+public class TelegramLog extends DataForm implements Transactional {
 
     private DatePeriodField periodField;
     private ChoiceField statusField;
 
-    public MailLog() {
-        super("Mail Log");
+    public TelegramLog() {
+        super("Telegram Message Log");
     }
 
     @Override
@@ -49,22 +47,18 @@ public class MailLog extends DataForm implements Transactional {
         }
 
         @Override
-        public int getPageOrientation() {
-            return ORIENTATION_LANDSCAPE;
-        }
-
-        @Override
         public Object getTitleText() {
             Text t = new Text();
-            t.append(16, PDFFont.BOLD).append("Email Log (Delivery Status: ").append(statusField.getChoice()).append(")");
-            t.newLine().append(10, PDFFont.BOLD).newLine(true).append("Period: ").append(period);
+            t.append(16, PDFFont.BOLD).append("Telegram Message Log (Delivery Status: ")
+                    .append(statusField.getChoice()).append(")").newLine().append(10, PDFFont.BOLD)
+                    .newLine(true).append("Period: ").append(period);
             return t;
         }
 
         @Override
         public void generateContent() {
             TransactionManager tm = getTransactionManager();
-            PDFTable table = createTable(80, 10, 10);
+            PDFTable table = createTable(80, 20, 10);
             addTitle(table, "Message");
             addTitle(table, "Sent at");
             addTitle(table, "Status");
@@ -75,27 +69,17 @@ public class MailLog extends DataForm implements Transactional {
             } else if(status == 2) {
                 c.append(" AND NOT Sent");
             }
-            Sender sender;
-            SenderGroup senderGroup = null;
             Person person;
-            for(Mail mail: StoredObject.list(Mail.class, c.toString(), "SentAt DESC")) {
-                mail.getSenderGroup();
-                Contact contact = StoredObject.get(Contact.class, "Contact='" + mail.getToAddress() + "'");
+            for(Telegram mail: StoredObject.list(Telegram.class, c.toString(), "SentAt DESC")) {
+                Contact contact = StoredObject.get(Contact.class, "Contact LIKE '" + mail.getTelegramNumber() + "/%'");
                 if(contact != null) {
                     person = contact.getMaster(Person.class);
                 } else {
                     person = null;
                 }
-                sender = mail.getSender();
-                if(sender == null) {
-                    senderGroup = mail.getSenderGroup();
-                }
                 addToTable(table, "Created at " + DateUtility.formatWithTimeHHMM(tm.date(mail.getCreatedAt())) +
-                        "\nFrom: " +
-                        (sender == null ? (senderGroup == null ? "" : senderGroup.getName()) : sender.getFromAddress()) +
-                        "\nTo: " + mail.getToAddress() +
-                                (person == null ? "" : (" <" + person.getName() + ">")) +
-                        "\nSubject: " + mail.getSubject() + "\n" + mail.getMessage());
+                        "\nTo: " + (person == null ? mail.getTelegramNumber() : (" <" + person.getName() + ">")) +
+                        "\n" + mail.getMessage());
                 addToTable(table, mail.getSent() ? DateUtility.formatWithTimeHHMM(tm.date(mail.getSentAt())) : "Not sent");
                 addToTable(table, mail.getSent() ? "Sent" : mail.getErrorValue());
             }

@@ -11,6 +11,7 @@ import com.vaadin.flow.component.icon.VaadinIcon;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 /**
  * A field to accept instances of {@link StoredObject}s that are searchable using some keywords.
@@ -36,6 +37,7 @@ public class ObjectGetField<T extends StoredObject> extends AbstractObjectField<
     private TextField searchField;
     private Consumer<String> notFound;
     private ImageButton addButton;
+    private Function<String, T> notFoundHandler;
 
     /**
      * Constructor.
@@ -189,6 +191,10 @@ public class ObjectGetField<T extends StoredObject> extends AbstractObjectField<
         return searchField;
     }
 
+    public void setNotFoundHandler(Function<String, T> notFoundHandler) {
+        this.notFoundHandler = notFoundHandler;
+    }
+
     @Override
     protected T generateModelValue() {
         T value;
@@ -198,6 +204,9 @@ public class ObjectGetField<T extends StoredObject> extends AbstractObjectField<
         } else {
             try {
                 value = getProvider().getTextObject(Application.get().getTransactionManager().getEntity(), text);
+                if(value == null && notFoundHandler != null) {
+                    value = notFoundHandler.apply(text);
+                }
                 if(value != null) {
                     value = filter(value);
                 } else {

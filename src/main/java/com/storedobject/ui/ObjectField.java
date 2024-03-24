@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Predicate;
 
 /**
@@ -751,6 +752,7 @@ public class ObjectField<T extends StoredObject> extends CustomField<Id>
      */
     public void load(ObjectIterator<T> objects) {
         if(objects == null) {
+            //noinspection resource
             objects = ObjectIterator.create();
         }
         getField().load(objects);
@@ -785,6 +787,12 @@ public class ObjectField<T extends StoredObject> extends CustomField<Id>
         List<O> list = new ArrayList<>();
         list.add(object);
         return new SingleField<>(label, list);
+    }
+
+    public void setNotFoundHandler(Function<String, T> notFoundHandler) {
+        if(field instanceof ObjectGetField<T> ogf) {
+            ogf.setNotFoundHandler(notFoundHandler);
+        }
     }
 
     @Override

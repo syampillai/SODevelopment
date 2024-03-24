@@ -368,4 +368,14 @@ public class JSON extends com.storedobject.common.JSON {
             throw new Exception("Class not found - " + className);
         }
     }
+
+    /**
+     * Helper method to retrieve an {@link Account} instance from the JSON request. The parameter value must be
+     * the "account number".
+     * @param attribute Attribute name.
+     * @return {@link Account} instance if found, otherwise null.
+     */
+    public Account getAccount(String attribute) {
+        return Account.getFor(getString(attribute));
+    }
 }

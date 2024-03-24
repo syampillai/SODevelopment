@@ -3,6 +3,8 @@ package com.storedobject.core;
 import com.storedobject.core.annotation.Column;
 import com.storedobject.core.annotation.SetNotAllowed;
 
+import java.io.LineNumberReader;
+import java.io.StringReader;
 import java.math.BigDecimal;
 import java.sql.Date;
 import java.util.*;
@@ -27,15 +29,15 @@ public class JournalVoucher extends StoredObject implements OfEntity {
 
     static Function<JournalVoucher, String> tag, patternTag;
     static final Map<String, String> serialPattern = new HashMap<>();
+    private static final Map<String, Id> types = new HashMap<>();
     private Id ownerId;
     private StoredObject owner;
     private Date date;
-    private int stage = 0;
+    private int entrySerial = 0;
     private final List<Entry> entries = new ArrayList<>();
-    private final Map<Id, Money> excess = new HashMap<>();
-    private Id systemEntityId;
+    private Id systemEntityId, originId = Id.ZERO;
     int no = 0;
-    private String reference;
+    private DecimalNumber ledgerTran = DecimalNumber.zero(0);
 
     /**
      * Constructor.
@@ -58,6 +60,30 @@ public class JournalVoucher extends StoredObject implements OfEntity {
      * @param columns Column holder. Column definitions to be added to this.
      */
     public static void columns(Columns columns) {
+        columns.add("SystemEntity", "id");
+        columns.add("No", "int");
+        columns.add("Owner", "id");
+        columns.add("Date", "date");
+        columns.add("LedgerTran", "numeric(30,0)");
+        columns.add("Origin", "id");
+    }
+
+    public static void indices(Indices indices) {
+        indices.add("SystemEntity,No,T_Family", true);
+        indices.add("SystemEntity,Date,No");
+    }
+
+    public static String[] protectedColumns() {
+        return new String[] { "No", "LedgerTran" };
+    }
+
+    public static String[] browseColumns() {
+        return new String[] {
+                "Date",
+                "Reference",
+                "GeneratedBy",
+                "OriginatedFrom"
+        };
     }
 
     public void setSystemEntity(Id systemEntityId) {
@@ -99,14 +125,21 @@ public class JournalVoucher extends StoredObject implements OfEntity {
     }
 
     public final String getReference() {
-        if(reference == null) {
-            reference = String.valueOf(no);
-        }
-        return reference;
+        return "";
     }
 
     public String getGeneratedBy() {
+        if(ownerId == null || ownerId.equals(getId())) {
+            return "JV Creation";
+        }
         return StringUtility.makeLabel(getOwner().getClass());
+    }
+
+    public String getOriginatedFrom() {
+        if(Id.isNull(originId)) {
+            return "Current System";
+        }
+        return getOrigin().getName();
     }
 
     /**
@@ -169,12 +202,75 @@ public class JournalVoucher extends StoredObject implements OfEntity {
         return owner;
     }
 
-    public void setStage(int stage) {
-        this.stage = stage;
+    /**
+     * Set the original transaction Id of this voucher for which ledger entries are created.
+     * <p>Note: For internal use only.</p>
+     *
+     * @param ledgerTran An instance of the {@link DecimalNumber} that embeds the transaction Id.
+     */
+    public void setLedgerTran(DecimalNumber ledgerTran) {
+        if (!loading()) {
+            throw new Set_Not_Allowed("Ledger Tran");
+        }
+        this.ledgerTran = new DecimalNumber(ledgerTran.getValue(), 0);
     }
 
-    public int getStage() {
-        return stage;
+
+    /**
+     * Set the original transaction Id of this voucher for which ledger entries are created.
+     * <p>Note: For internal use only.</p>
+     *
+     * @param value Value that embeds the transaction Id.
+     */
+    public void setLedgerTran(Object value) {
+        setLedgerTran(DecimalNumber.create(value, 0));
+    }
+
+    /**
+     * Get the original transaction Id of this voucher for which ledger entries are created.
+     *
+     * @return An instance of the {@link DecimalNumber} that embeds the transaction Id.
+     */
+    @SetNotAllowed
+    public DecimalNumber getLedgerTran() {
+        return ledgerTran;
+    }
+
+    public void setOrigin(Id originId) {
+        if(!loading()) {
+            throw new Set_Not_Allowed("Origin");
+        }
+        this.originId = originId;
+    }
+
+    public void setOrigin(BigDecimal idValue) {
+        setOrigin(new Id(idValue));
+    }
+
+    public void setOrigin(ForeignFinancialSystem foreignSystem) {
+        setOrigin(foreignSystem == null ? null : foreignSystem.getId());
+    }
+
+    @Column(order = 200)
+    public Id getOriginId() {
+        return originId;
+    }
+
+    public ForeignFinancialSystem getOrigin() {
+        return Id.isNull(originId) ? null : getRelated(ForeignFinancialSystem.class, originId);
+    }
+
+    public void ignoreForeignSystem(ForeignFinancialSystem ffs) {
+    }
+
+    public void ignoreForeignSystem(Id ffsId) {
+    }
+
+    public void setForeignReference(String foreignReference) {
+    }
+
+    public String getForeignReference() {
+        return "";
     }
 
     /**
@@ -315,9 +411,54 @@ public class JournalVoucher extends StoredObject implements OfEntity {
      */
     public final void credit(Account account, Money amount, Money localCurrencyAmount, int entrySerial,
                              String type, String particulars, Date valueDate) throws Exception {
-        if(excess.isEmpty()) {
-            throw new Exception();
+        if(account instanceof AccountTitle at) {
+            account = at.getAccount();
         }
+        if(isVirtual() || account.isVirtual()) {
+            throw new SOException("Virtual instance");
+        }
+        if(getId() != null) {
+            throw new SOException("JV was already saved");
+        }
+        if(account instanceof BranchAccount) {
+            throw new SOException("Branch Account - " + account.toDisplay());
+        }
+        if(localCurrencyAmount == null) {
+            localCurrencyAmount = amount;
+        }
+        if(amount == null || localCurrencyAmount.isZero()) {
+            throw new SOException("Amount is zero");
+        }
+        Currency c = account.getCurrency(), lc = account.getLocalCurrency();
+        if(c == lc) {
+            if(!amount.equals(localCurrencyAmount)) {
+                throw new SOException("Local currency amount mismatch: " + amount + ", " + localCurrencyAmount);
+            }
+        } else {
+            if(c != amount.getCurrency()) {
+                throw new SOException("Currency amount mismatch: " + amount + ", Expected currency: "
+                        + Money.getSymbol(c));
+            }
+        }
+        if(StringUtility.isWhite(particulars)) {
+            throw new SOException("Transaction narration/particulars can't be empty");
+        }
+        if(entrySerial >= 1000000000) { // Conflict with IB transactions (Check in DBTransaction class)
+            throw new SOException("Entry serial should be less than 1000000000");
+        }
+        creditInt(account, amount, localCurrencyAmount, entrySerial, typeId(type), particulars, valueDate);
+    }
+
+    private void creditInt(Account account, Money amount, Money localCurrencyAmount, int entrySerial, Id type,
+                           String particulars, Date valueDate) {
+        if(entrySerial <= 0) {
+            entrySerial = this.entrySerial + 1;
+        }
+        this.entrySerial = entrySerial;
+        entries.add(new Entry(this, account, amount, localCurrencyAmount, entrySerial,
+                type, particulars, valueDate));
+        account.addBalance(amount);
+        account.addLocalCurrencyBalance(localCurrencyAmount);
     }
 
     /**
@@ -693,6 +834,23 @@ public class JournalVoucher extends StoredObject implements OfEntity {
         credit(account, amount, localCurrencyAmount, 0, type, particulars, valueDate);
     }
 
+    private Id typeId(String type) throws Invalid_State {
+        if(type == null || type.isBlank()) {
+            return Id.ZERO;
+        }
+        type = StoredObject.toCode(type);
+        Id tid = types.get(type);
+        if(tid == null) {
+            TransactionType tt = TransactionType.getFor(type);
+            if(tt == null) {
+                throw new Invalid_State("Unknown transaction type: " + type);
+            }
+            tid = tt.getId();
+            types.put(type, tid);
+        }
+        return tid;
+    }
+
     /**
      * Get the date of this JV.
      *
@@ -715,16 +873,6 @@ public class JournalVoucher extends StoredObject implements OfEntity {
             return;
         }
         throw new Set_Not_Allowed("Date");
-    }
-
-    /**
-     * Get the original transaction Id of this voucher for which ledger entries are created.
-     *
-     * @return An instance of the {@link DecimalNumber} that embeds the transaction Id.
-     */
-    @SetNotAllowed
-    public DecimalNumber getLedgerTran() {
-        return DecimalNumber.ZERO;
     }
 
     /**
@@ -780,7 +928,7 @@ public class JournalVoucher extends StoredObject implements OfEntity {
         final int entrySerial;
         final Id type;
         final String particulars;
-        Date valueDate;
+        Date date, valueDate;
 
         Entry(JournalVoucher journalVoucher, Account account, Money amount, Money localCurrencyAmount,
               int entrySerial, Id type, String particulars, Date valueDate) {
@@ -791,8 +939,8 @@ public class JournalVoucher extends StoredObject implements OfEntity {
             this.entrySerial = entrySerial;
             this.type = type;
             this.particulars = particulars;
-            this.valueDate = valueDate;
-            journalVoucher.entries.add(this);
+            this.date = journalVoucher.date;
+            this.valueDate = valueDate == null ? new Date(Utility.BLANK_TIME) : valueDate;
         }
 
         /**
@@ -821,6 +969,7 @@ public class JournalVoucher extends StoredObject implements OfEntity {
         public Money getLocalCurrencyAmount() {
             return localCurrencyAmount;
         }
+
 
         /**
          * Get the serial number of this entry in the JV.
@@ -859,6 +1008,12 @@ public class JournalVoucher extends StoredObject implements OfEntity {
             return id;
         }
 
+        @Override
+        public String toString() {
+            return account.toDisplay() + " [" + account.getSystemEntity().getName() + "]"
+                    + ", Amount " + amount + ", LC Amount " + localCurrencyAmount + ", " + particulars;
+        }
+
         /**
          * Get the voucher associated with this entry.
          *
@@ -874,7 +1029,7 @@ public class JournalVoucher extends StoredObject implements OfEntity {
          * @return Value-date.
          */
         public Date getValueDate() {
-            return valueDate;
+            return Utility.isEmpty(valueDate) ? null : valueDate;
         }
     }
 
@@ -885,7 +1040,6 @@ public class JournalVoucher extends StoredObject implements OfEntity {
      * @param excess Excess amount (on top of the allowed limit).
      */
     public void allowExcess(Account account, Money excess) {
-        this.excess.put(account.getId(), excess);
     }
 
     /**
@@ -896,8 +1050,46 @@ public class JournalVoucher extends StoredObject implements OfEntity {
      * @exception Exception if changed can't be carried out.
      */
     public void predateTransactions(TransactionManager transactionManager, Date date, String remarks) throws Exception {
-        if(new Random().nextBoolean()) {
+        if(Math.random() > 0.5) {
             throw new Exception();
         }
+    }
+
+    @Override
+    public String toDisplay() {
+        return DateUtility.formatDate(date) + ", " + getReference() + ", From: " + getGeneratedBy();
+    }
+
+    @Override
+    public String toString() {
+        return toDisplay();
+    }
+
+    public UnpostedJournal saveAsUnposted(TransactionManager tm) throws Exception {
+        if(Math.random() > 0.5) {
+            throw new Exception();
+        }
+        return new UnpostedJournal();
+    }
+
+    public static JournalVoucher createFrom(UnpostedJournal unpostedJournal) throws Exception {
+        JournalVoucher jv = (JournalVoucher) JavaClassLoader.getLogic(unpostedJournal.getJVClassName())
+                .getConstructor().newInstance();
+        if(jv.getClass() != JournalVoucher.class) {
+            jv.load(new LineNumberReader(new StringReader(unpostedJournal.getExtraInformation())));
+        }
+        Account a;
+        Money amount, lcAmount;
+        for(UnpostedJournalEntry e: unpostedJournal.listLinks(UnpostedJournalEntry.class, null, "DisplayOrder")) {
+            a = e.getAccount();
+            amount = e.getAmount();
+            lcAmount = e.getLocalCurrencyAmount();
+            jv.entries.add(new Entry(jv, a, amount, lcAmount, e.getEntrySerial(), e.getTypeId(), e.getParticulars(),
+                    e.getValueDate()));
+            jv.entrySerial = e.getEntrySerial();
+            a.addBalance(amount);
+            a.addLocalCurrencyBalance(lcAmount);
+        }
+        return jv;
     }
 }

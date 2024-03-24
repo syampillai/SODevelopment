@@ -406,7 +406,7 @@ public class SystemTableDeployer extends View implements Transactional {
                 pColumns = Database.get().columnDetails(pca.getModuleName() + "." + h + pca.getTableName());
             }
         }
-        ColumnDefinitions cds = new ColumnDefinitions();
+        CD cds = new CD();
         Method m = ca.getObjectClass().getMethod("columns", Columns.class);
         m.invoke(null, cds);
         ArrayList<String[]> dropOuts = new ArrayList<>();
@@ -419,7 +419,7 @@ public class SystemTableDeployer extends View implements Transactional {
                     found = true;
                     if(!c[1].equals(cds.getType(i))) {
                         alterTable.add(pre + "ALTER COLUMN " + cds.getName(i) + " TYPE " + cds.getType(i) +
-                                " USING " + ColumnDefinition.getDefaultValue(cds.getType(i)));
+                                " USING " + ColumnDefinition.getDefaultValue(cds.soType(i)));
                     }
                     break;
                 }
@@ -447,7 +447,7 @@ public class SystemTableDeployer extends View implements Transactional {
                 }
                 if(!found) {
                     alterTable.add(pre + "ADD COLUMN " + cds.getName(i) + " " + cds.getType(i) +
-                            " NOT NULL DEFAULT " + ColumnDefinition.getDefaultValue(cds.getType(i)));
+                            " NOT NULL DEFAULT " + ColumnDefinition.getDefaultValue(cds.soType(i)));
                 }
             }
         }
@@ -477,6 +477,22 @@ public class SystemTableDeployer extends View implements Transactional {
         }
         for(String con: cons) {
             alterTable.add(pre + " DROP CONSTRAINT IF EXISTS " + con);
+        }
+    }
+
+
+    private static class CD extends ColumnDefinitions {
+
+        private final List<String> soTypes = new ArrayList<>();
+
+        @Override
+        public void add(String name, String type) {
+            super.add(name, type);
+            soTypes.add(type);
+        }
+
+        String soType(int i) {
+            return soTypes.get(i);
         }
     }
 

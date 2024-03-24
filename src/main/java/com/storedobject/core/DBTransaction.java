@@ -20,6 +20,12 @@ public final class DBTransaction extends AbstractTransaction {
         this(null);
     }
 
+    /**
+     * Skip limit check for this transaction.
+     */
+    public void skipLimitCheck() {
+    }
+
     @Override
     public <T extends StoredObject> T get(T object) {
         return null;
