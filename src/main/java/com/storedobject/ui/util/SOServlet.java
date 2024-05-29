@@ -7,6 +7,7 @@ import com.storedobject.ui.Application;
 import com.storedobject.ui.MediaCSS;
 import com.vaadin.flow.server.VaadinServlet;
 
+import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.annotation.WebInitParam;
@@ -23,7 +24,7 @@ import java.util.concurrent.TimeUnit;
 @MultipartConfig(maxFileSize = Integer.MAX_VALUE, maxRequestSize = Integer.MAX_VALUE)
 public class SOServlet extends VaadinServlet {
 
-    private static String url;
+    private static String url, folder;
     private static final WeakHashMap<String, MediaFile> mediaCache = new WeakHashMap<>();
     private static final WeakHashMap<String, TextContent> tcCache = new WeakHashMap<>();
     private static final long CACHE_TIME_IN_MILLIS = TimeUnit.MILLISECONDS.convert(365, TimeUnit.DAYS);
@@ -33,7 +34,9 @@ public class SOServlet extends VaadinServlet {
     @Override
     public void init() throws ServletException {
         super.init();
-        String link = getServletConfig().getServletContext().getContextPath();
+        ServletContext context = getServletContext();
+        folder = context.getRealPath("/");
+        String link = context.getContextPath();
         if (link != null && link.length() > 1 && link.startsWith("/")) {
             link = link.substring(1);
         } else {
@@ -414,6 +417,10 @@ public class SOServlet extends VaadinServlet {
     public static MediaFile getVideo(String name) {
         MediaFile mf = getMedia(name);
         return (mf != null && mf.isVideo()) ? mf : null;
+    }
+
+    public static String getFolder() {
+        return folder;
     }
 
     public static String getURL() {

@@ -146,13 +146,14 @@ public class SystemTableDeployer extends View implements Transactional {
             s.append("\n").append(t);
         }
         status(s.toString());
-        if(isSU && system) {
-            trace(alterTable);
-        }
+        trace(alterTable);
         action = 4;
     }
 
     private void trace(Iterable<String> trace) {
+        if(!isSU) {
+            return;
+        }
         TextView b = new TextView("Trace");
         b.setApplication(application);
         trace.forEach(s -> b.append(s).append(';').newLine());
@@ -318,7 +319,7 @@ public class SystemTableDeployer extends View implements Transactional {
                 case 5 -> {
                     action = 0;
                     try {
-                        if(isSU && system) {
+                        if(isSU) {
                             trace(StringList.create(StoredObjectUtility.reindex(ca.getObjectClass())));
                         }
                         execCommands(new Array<>(StoredObjectUtility.reindex(ca.getObjectClass())), password);
@@ -367,7 +368,7 @@ public class SystemTableDeployer extends View implements Transactional {
     }
 
     private boolean createTable(ClassAttribute<?> ca, String password) throws Exception {
-        if(isSU && system) {
+        if(isSU) {
             trace(StringList.create(StoredObjectUtility.createDDL(ca.getObjectClass())));
         }
         return Database.get().createTable(ca.getObjectClass(), password);

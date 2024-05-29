@@ -1,6 +1,9 @@
 package com.storedobject.core;
 
+import com.storedobject.common.Fault;
 import com.storedobject.common.SORuntimeException;
+
+import java.sql.Date;
 
 public class JSONTransact implements JSONService {
 
@@ -17,7 +20,7 @@ public class JSONTransact implements JSONService {
         error = true; // Assume error by default
         String action = json.getString("action");
         if(action == null) {
-            result.error("No action specified");
+            result.error(Fault.ACTION_NOT_SPECIFIED);
             return;
         }
         switch (action) {
@@ -36,12 +39,15 @@ public class JSONTransact implements JSONService {
                         }
                         Account account = json.getAccount("account");
                         if(account == null) {
-                            result.error("Account not specified/found");
+                            account = getAccount(device, json.getString("account"));
+                        }
+                        if(account == null) {
+                            result.error(Fault.ACCOUNT_NOT_FOUND);
                             return;
                         }
                         Money amount = json.getMoney("amount");
                         if(amount == null) {
-                            result.error("Amount not specified");
+                            result.error(Fault.INVALID_AMOUNT);
                             return;
                         }
                         Money lcAmount = json.getMoney("lcAmount");
@@ -57,28 +63,40 @@ public class JSONTransact implements JSONService {
                                     json.getString("type"),
                                     json.getString("narration"),
                                     json.getDate("valueDate"));
+                            entryCreated(device, jv, json);
                             error = false;
                         } catch (SOException | SORuntimeException soe) {
-                            result.error(soe.getEndUserMessage());
+                            result.error(Fault.TECHNICAL_FAULT.replace(soe.getEndUserMessage()));
                         } catch (Exception e) {
                             device.log(e);
-                            result.error("Technical error");
+                            result.error(Fault.TECHNICAL_FAULT);
                         }
                     }
                     default -> { // Commit
                         if(jv.getEntryCount() == 0) {
-                            result.error("No entries");
+                            result.error(Fault.NO_ENTRIES_FOUND);
+                            return;
+                        }
+                        if(!validateWorkingDate(device, jv, json.getDate())) {
+                            result.error(Fault.INVALID_DATE);
                             return;
                         }
                         if(origin(json, result, false)) {
                             try {
-                                commit(device, jv);
-                                result.put("reference", jv.getForeignReference());
-                            } catch (SOException | SORuntimeException soe) {
-                                result.error(soe.getEndUserMessage());
+                                Fault fault = commit(device, jv);
+                                if(fault == null) {
+                                    result.put("reference", jv.getForeignReference());
+                                } else {
+                                    result.error(fault);
+                                }
+                            } catch (SOException soe) {
+                                result.error(Fault.TECHNICAL_FAULT.replace(soe.getEndUserMessage()));
+                            } catch (SORuntimeException sore) {
+                                device.log(sore);
+                                result.error(Fault.TECHNICAL_FAULT.replace(sore.getEndUserMessage()));
                             } catch (Exception e) {
                                 device.log(e);
-                                result.error("Technical error");
+                                result.error(Fault.TECHNICAL_FAULT);
                             }
                         }
                     }
@@ -86,6 +104,14 @@ public class JSONTransact implements JSONService {
             }
             default -> result.error("Invalid action specified");
         }
+    }
+
+    protected void entryCreated(Device device, JournalVoucher jv, JSON json) {
+    }
+
+    protected boolean validateWorkingDate(Device device, JournalVoucher jv, Date date) {
+        return (date == null && jv.getDate() == null) ||
+                DateUtility.isSameDate(device.getServer().getTransactionManager().getWorkingDate(), date);
     }
 
     private boolean origin(JSON json, JSONMap result, boolean check) {
@@ -120,7 +146,7 @@ public class JSONTransact implements JSONService {
                     result.put("exists", true);
                     return true;
                 }
-                result.error("Already exists");
+                result.error(Fault.REFERENCE_ALREADY_EXISTS);
                 return false;
             }
             jv.setForeignReference(ref);
@@ -130,19 +156,30 @@ public class JSONTransact implements JSONService {
             }
         } else {
             if(check) {
-                result.error("Reference not specified");
+                result.error(Fault.REFERENCE_NOT_SPECIFIED);
                 return false;
             }
         }
         return true;
     }
 
-    protected void commit(Device device, JournalVoucher jv) throws Exception {
-        //noinspection ResultOfMethodCallIgnored
+    protected Fault commit(Device device, JournalVoucher jv) throws Exception {
         device.getServer().getTransactionManager().transact(jv::save);
+        return null;
     }
 
     protected Id getOrigin() {
         return origin;
+    }
+
+    private Account getAccount(Device device, String account) {
+        if(account == null || account.isEmpty()) {
+            return null;
+        }
+        return createAccount(device, account);
+    }
+
+    protected Account createAccount(Device device, String account) {
+        return null;
     }
 }

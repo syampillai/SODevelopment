@@ -166,6 +166,21 @@ public abstract class ObjectIterator<O extends StoredObject> implements Iterator
     }
 
     /**
+     * Do some processing on each object.
+     * <p>There is no need to maintain any references to this instance after this operation for the purpose of closing etc.
+     * and you need to take care of the resulting instance only.</p>
+     *
+     * @param consumer Processor that consume the object instance.
+     * @return Filtered iterator that invokes the processor internally.
+     */
+    public ObjectIterator<O> process(Consumer<? super O> consumer) {
+        return filter(o -> {
+            consumer.accept(o);
+            return true;
+        });
+    }
+
+    /**
      * Convert the iterator to a new one by eliminating duplicate consecutive entries if any from it.
      *
      * @return Converted iterator.

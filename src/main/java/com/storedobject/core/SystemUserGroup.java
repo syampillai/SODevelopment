@@ -67,4 +67,11 @@ public final class SystemUserGroup extends StoredObject {
     public ObjectIterator<SystemUser> listUsers() {
         return listMasters(SystemUser.class);
     }
+
+    public boolean isMember(SystemUser user) {
+        if(user == null) {
+            return false;
+        }
+        return user.isMemberOf(this);
+    }
 }

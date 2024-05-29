@@ -1,4 +1,4 @@
-package com.storedobject.ui.account;
+package com.storedobject.ui.accounts;
 
 import com.storedobject.common.StringList;
 import com.storedobject.core.Id;
@@ -51,8 +51,22 @@ public class JournalVoucherView extends ListGrid<JournalVoucher.Entry> implement
     }
 
     @Override
+    public int getRelativeColumnWidth(String columnName) {
+        return switch (columnName) {
+            case "Reference" -> 18;
+            case "Account" -> 80;
+            case "Particulars" -> 100;
+            default -> 16;
+        };
+    }
+
+    @Override
     public boolean isColumnSortable(String columnName) {
         return false;
+    }
+
+    public String getParticulars(JournalVoucher.Entry entry) {
+        return StatementView.wrap(entry.getParticulars());
     }
 
     public String getDebit(JournalVoucher.Entry entry) {
@@ -106,7 +120,6 @@ public class JournalVoucherView extends ListGrid<JournalVoucher.Entry> implement
                             .append(jv.getDate(), Application.COLOR_SUCCESS);
                 }
             }
-            recalculateColumnWidths();
             count.append("" + size(), Application.COLOR_SUCCESS);
             setCaption("Voucher: " + vouchers.get(0).getReference());
         }

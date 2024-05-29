@@ -1,4 +1,4 @@
-package com.storedobject.ui.account;
+package com.storedobject.ui.accounts;
 
 import com.storedobject.core.Account;
 import com.storedobject.core.DatePeriod;

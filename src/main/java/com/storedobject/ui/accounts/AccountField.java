@@ -1,4 +1,4 @@
-package com.storedobject.ui.account;
+package com.storedobject.ui.accounts;
 
 import com.storedobject.core.Account;
 import com.storedobject.core.AccountTitle;
@@ -125,5 +125,14 @@ public class AccountField<T extends Account> extends ObjectField<T> {
     public Id getAccountId() {
         T a = getAccount();
         return a == null ? null : a.getId();
+    }
+
+    @Override
+    public void setValue(T a) {
+        if(a instanceof AccountTitle at) {
+            setValue(at.getAccount().getId());
+        } else {
+            super.setValue(a);
+        }
     }
 }

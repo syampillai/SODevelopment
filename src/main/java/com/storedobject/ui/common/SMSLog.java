@@ -69,6 +69,7 @@ public class SMSLog extends DataForm implements Transactional {
             table.addCell(createCell(createTitleText("Message", 10)));
             table.addCell(createCenteredCell(createTitleText("Date & Time", 10)));
             table.addCell(createCenteredCell(createTitleText("Delivery Status", 10)));
+            table.setHeaderRows(1);
             StringBuilder c = new StringBuilder("CreatedAt");
             c.append(period.getDBTimeCondition(tm));
             if(delivered.getValue()) {

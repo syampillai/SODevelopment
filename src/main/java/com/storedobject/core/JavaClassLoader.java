@@ -50,4 +50,7 @@ public class JavaClassLoader extends ClassLoader {
             throw new SOException("Can't create logic instance associated with " + propertyName);
         }
     }
+
+    public static void clearNoFoundCache() {
+    }
 }

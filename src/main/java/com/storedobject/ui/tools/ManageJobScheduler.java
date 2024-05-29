@@ -18,6 +18,7 @@ public class ManageJobScheduler extends DataForm {
         super("Manage Job Scheduler");
         addField(statusField);
         statusField.setMaxHeight("40vh");
+        statusField.setMinWidth("70vw");
         add(timer);
         timer.setPrefix("Restarting in ");
         timer.setSuffix(" seconds");

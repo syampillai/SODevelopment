@@ -236,9 +236,11 @@ public class LogicParser {
 
     public static <O extends StoredObject> ObjectBrowser<O> createInternalBrowser(Class<O> objectClass,
                                                                                   Iterable<String> browseColumns,
-                                                                                  int actions, String title) {
+                                                                                  int actions,
+                                                                                  Iterable<String> filterColumns,
+                                                                                  String title) {
         ObjectBrowser<O> browser = browser(objectClass, actions, title);
-        return browser == null ? new ObjectBrowser<>(objectClass, browseColumns, actions, title) : browser;
+        return browser == null ? new ObjectBrowser<>(objectClass, browseColumns, actions, filterColumns, title) : browser;
     }
 
     private static String editorName(Class<?> objectClass) {

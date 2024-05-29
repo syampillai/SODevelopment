@@ -93,11 +93,11 @@ public class JSON extends com.storedobject.common.JSON {
     }
 
     /**
-     * Helper method to retrieve a date value from the JSON request assuming that the attribute name is "Date".
+     * Helper method to retrieve a date value from the JSON request assuming that the attribute name is "date".
      * @return Date if found, otherwise null.
      */
     public Date getDate() {
-        return getDate("Date");
+        return getDate("date");
     }
 
     /**

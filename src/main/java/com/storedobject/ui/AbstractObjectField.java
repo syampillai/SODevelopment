@@ -1,5 +1,6 @@
 package com.storedobject.ui;
 
+import com.storedobject.common.StringList;
 import com.storedobject.core.*;
 import com.storedobject.vaadin.ButtonLayout;
 import com.storedobject.vaadin.CustomField;
@@ -45,6 +46,7 @@ public abstract class AbstractObjectField<T extends StoredObject> extends Custom
     private String label;
     private ObjectEditor<T> objectAdder;
     private ItemLabelGenerator<T> itemLabelGenerator;
+    private StringList browseColumns, searchColumns;
 
     /**
      * Constructor.
@@ -243,15 +245,16 @@ public abstract class AbstractObjectField<T extends StoredObject> extends Custom
      * @return Searcher (which is an {@link ObjectBrowser}).
      */
     protected final ObjectBrowser<T> createDefaultSearcher() {
-        searcher = ObjectBrowser.create(getObjectClass(),
-                EditorAction.SEARCH | EditorAction.RELOAD | (isAllowAny() ? EditorAction.ALLOW_ANY : 0));
+        searcher = ObjectBrowser.create(getObjectClass(), getBrowseColumns(),
+                EditorAction.SEARCH | EditorAction.RELOAD | (isAllowAny() ? EditorAction.ALLOW_ANY : 0),
+                getSearchColumns());
         searcher.editor = editor();
         return searcher;
     }
 
     /**
      * Return the {@link ObjectEditor} associated with this. This will be invoked when the searcher is set and the
-     * editor will be checked for additional filter conditions..
+     * editor will be checked for additional filter conditions.
      *
      * @return Editor instance is available.
      */
@@ -394,5 +397,37 @@ public abstract class AbstractObjectField<T extends StoredObject> extends Custom
         if(!searcher.canContain(v)) {
             clear();
         }
+    }
+
+    /**
+     * Set browse columns of the searcher.
+     * @param browseColumns Browse columns.
+     */
+    public void setBrowseColumns(StringList browseColumns) {
+        this.browseColumns = browseColumns;
+    }
+
+    /**
+     * Get browse columns of the searcher. Used by {@link #createDefaultSearcher()}.
+     * @return Browse columns of the searcher.
+     */
+    public StringList getBrowseColumns() {
+        return browseColumns;
+    }
+
+    /**
+     * Set search columns.
+     * @param searchColumns Search columns of the searcher's browser.
+     */
+    public void setSearchColumns(StringList searchColumns) {
+        this.searchColumns = searchColumns;
+    }
+
+    /**
+     * Get search columns. Used by {@link #createDefaultSearcher()}.
+     * @return Search columns of the searcher's browser.
+     */
+    public StringList getSearchColumns() {
+        return searchColumns;
     }
 }

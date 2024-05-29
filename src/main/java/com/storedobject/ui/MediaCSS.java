@@ -45,7 +45,7 @@ public class MediaCSS {
                 p2 = p1 + 2;
                 continue;
             }
-            m = SOServlet.getMedia(line.substring(p1 + 2, p2));
+            m = SOServlet.getMedia(stripMedia(line.substring(p1 + 2, p2)));
             if(m == null) {
                 p2 = p1 + 2;
                 continue;
@@ -54,5 +54,12 @@ public class MediaCSS {
             ++p2;
         }
         return line;
+    }
+
+    private static String stripMedia(String media) {
+        if(media.startsWith("media:")) {
+            media = media.substring("media:".length());
+        }
+        return media;
     }
 }

@@ -348,4 +348,15 @@ public final class SystemUser extends StoredObject implements HasName {
     public AutoLogin getAutoLogin() {
         return null;
     }
+
+    public boolean isMemberOf(SystemUserGroup group) {
+        if(group == null) {
+            return false;
+        }
+        if(group.equals(SystemUserGroup.getDefault())) {
+            return true;
+        }
+        return existsLinks(SystemUserGroup.class, "Id=" + group.getId());
+    }
+
 }

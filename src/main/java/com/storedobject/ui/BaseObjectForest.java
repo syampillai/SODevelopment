@@ -152,7 +152,8 @@ public abstract class BaseObjectForest<T extends StoredObject> extends AbstractO
             searcher = createObjectSearcher(objectClass);
             if(searcher == null) {
                 searcher = ObjectBrowser.create(objectClass, null,
-                        EditorAction.SEARCH | EditorAction.RELOAD | (isAllowAny() ? EditorAction.ALLOW_ANY : 0), null);
+                        EditorAction.SEARCH | EditorAction.RELOAD | (isAllowAny() ? EditorAction.ALLOW_ANY : 0),
+                        null, null);
             }
             searchers.put(objectClass, searcher);
         }

@@ -236,16 +236,38 @@ public class ObjectBrowser<T extends StoredObject> extends ObjectGrid<T>
         return create(objectClass, actions, null);
     }
 
+    public static <O extends StoredObject> ObjectBrowser<O> create(Class<O> objectClass, Iterable<String> browseColumns,
+                                                                   int actions) {
+        return create(objectClass, browseColumns, actions, (String) null);
+    }
+
+    public static <O extends StoredObject> ObjectBrowser<O> create(Class<O> objectClass, Iterable<String> browseColumns,
+                                                                   int actions, Iterable<String> filterColumns) {
+        return create(objectClass, browseColumns, actions, filterColumns, null);
+    }
+
     public static <O extends StoredObject> ObjectBrowser<O> create(Class<O> objectClass, int actions, String title) {
         return create(objectClass, null, actions, title);
     }
 
-    @SuppressWarnings("unchecked")
     public static <O extends StoredObject> ObjectBrowser<O> create(Class<O> objectClass, Iterable<String> browseColumns,
                                                                    int actions, String title) {
+        return create(objectClass, browseColumns, actions, null, title);
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <O extends StoredObject> ObjectBrowser<O> create(Class<O> objectClass, Iterable<String> browseColumns,
+                                                                   int actions, Iterable<String> filterColumns, String title) {
         try {
             Class<?> logic = JavaClassLoader.getLogic(LogicParser.createLogicName(objectClass, "Browser"));
             Constructor<?> c = null;
+            try {
+                c = logic.getConstructor(Iterable.class, int.class, Iterable.class, String.class);
+            } catch(NoSuchMethodException ignored) {
+            }
+            if(c != null) {
+                return (ObjectBrowser<O>) c.newInstance(browseColumns, actions, filterColumns, title);
+            }
             try {
                 c = logic.getConstructor(Iterable.class, int.class, String.class);
             } catch(NoSuchMethodException ignored) {
@@ -291,7 +313,7 @@ public class ObjectBrowser<T extends StoredObject> extends ObjectGrid<T>
         } catch (Throwable t) {
             Application.get().log(t);
         }
-        return LogicParser.createInternalBrowser(objectClass, browseColumns, actions, title);
+        return LogicParser.createInternalBrowser(objectClass, browseColumns, actions, filterColumns, title);
     }
 
     @Override

@@ -68,6 +68,7 @@ public class MailLog extends DataForm implements Transactional {
             addTitle(table, "Message");
             addTitle(table, "Sent at");
             addTitle(table, "Status");
+            table.setHeaderRows(1);
             StringBuilder c = new StringBuilder("SentAt");
             c.append(period.getDBTimeCondition(tm));
             if(status == 1) {

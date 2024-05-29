@@ -1,4 +1,4 @@
-package com.storedobject.ui.account;
+package com.storedobject.ui.accounts;
 
 import com.storedobject.common.StringList;
 import com.storedobject.core.*;
@@ -14,7 +14,6 @@ import java.util.List;
 
 public class StatementView extends ListGrid<LedgerEntry> implements CloseableView {
 
-    private static final String NO_ENTRIES = "No entries";
     private final AccountField<Account> accountField;
     private final DateField dateField = new DateField();
     private final Button forward, backward, begin, end, voucher;
@@ -25,7 +24,7 @@ public class StatementView extends ListGrid<LedgerEntry> implements CloseableVie
         }
     };
     private Account account;
-    private final ELabel openingBalance = new ELabel(NO_ENTRIES), accountTitle = new ELabel();
+    private final ELabel openingBalance = new ELabel(), accountTitle = new ELabel();
     private JournalVoucherView voucherView;
 
     public StatementView() {
@@ -108,12 +107,37 @@ public class StatementView extends ListGrid<LedgerEntry> implements CloseableVie
     }
 
     @Override
+    public int getRelativeColumnWidth(String columnName) {
+        return switch (columnName) {
+            case "Balance" -> 18;
+            case "Date" -> 12;
+            case "Particulars" -> 100;
+            default -> 15;
+        };
+    }
+
+    @Override
     public boolean isColumnSortable(String columnName) {
         return false;
     }
 
     public String getParticulars(LedgerEntry le) {
-        return le.getParticulars(true);
+        return wrap(le.getParticulars(true));
+    }
+
+    static String wrap(String p) {
+        if(p.length() <= 100) {
+            return p;
+        }
+        String[] ps = StringUtility.split(p, 100);
+        StringBuilder s = new StringBuilder();
+        for (int i = 0; i < ps.length; i++) {
+            if (i > 0) {
+                s.append("\n");
+            }
+            s.append(ps[i]);
+        }
+        return s.toString();
     }
 
     public String getDebit(LedgerEntry le) {
@@ -198,7 +222,7 @@ public class StatementView extends ListGrid<LedgerEntry> implements CloseableVie
                 setCaption("Statement View");
                 accountTitle.clearContent().append("<Account Not Selected>");
             } else {
-                loadingAccont(account);
+                loadingAccount(account);
                 ledger.setAccount(account);
                 accountTitle.clearContent().append(account.toDisplay(), Application.COLOR_SUCCESS).update();
                 enableButtons();
@@ -214,21 +238,20 @@ public class StatementView extends ListGrid<LedgerEntry> implements CloseableVie
         super.valueChanged(changedValues);
     }
 
-    protected void loadingAccont(Account account) {
+    protected void loadingAccount(Account account) {
     }
 
     private void setOB() {
         openingBalance.clear();
         if(isEmpty()) {
-            openingBalance.append(NO_ENTRIES);
+            openingBalance.append("Opening Balance: ").append(account.getOpeningBalance());
         } else {
             LedgerEntry le = get(size() - 1);
             dateField.setValue(le.getDate());
-            openingBalance.append("Opening balance as of ").append(le.getDate()).append(" is ")
+            openingBalance.append("Opening Balance as of ").append(le.getDate()).append(": ")
                     .append(le.getOpeningBalance());
         }
         openingBalance.update();
-        recalculateColumnWidths();
     }
 
     private void enableButtons() {
@@ -252,5 +275,9 @@ public class StatementView extends ListGrid<LedgerEntry> implements CloseableVie
 
     protected List<LedgerEntry> getTail(Account account) {
         return null;
+    }
+
+    protected LedgerWindow getLedger() {
+        return ledger;
     }
 }

@@ -198,7 +198,7 @@ public class ReferenceLinkGrid<T extends StoredObject> extends AbstractLinkGrid<
         if (searcher == null) {
             ObjectBrowser<T> s = ObjectBrowser.create(getObjectClass(), null,
                     EditorAction.SEARCH | EditorAction.RELOAD | (isAllowAny() ? EditorAction.ALLOW_ANY : 0),
-                    null);
+                    null, null);
             s.setFilter(getEffectiveCondition(getFilterCondition()));
             s.setLoadFilter(getLoadFilter().getLoadingPredicate());
             searcher = s;

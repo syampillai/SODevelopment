@@ -929,6 +929,7 @@ public class JournalVoucher extends StoredObject implements OfEntity {
         final Id type;
         final String particulars;
         Date date, valueDate;
+        private String extraData;
 
         Entry(JournalVoucher journalVoucher, Account account, Money amount, Money localCurrencyAmount,
               int entrySerial, Id type, String particulars, Date valueDate) {
@@ -1030,6 +1031,24 @@ public class JournalVoucher extends StoredObject implements OfEntity {
          */
         public Date getValueDate() {
             return Utility.isEmpty(valueDate) ? null : valueDate;
+        }
+
+        /**
+         * Sets the extra data for this entry.
+         *
+         * @param extraData The extra data to be set.
+         */
+        public void setExtraData(String extraData) {
+            this.extraData = extraData;
+        }
+
+        /**
+         * Returns the extra data associated with this entry.
+         *
+         * @return The extra data as an Object.
+         */
+        public String getExtraData() {
+            return extraData;
         }
     }
 

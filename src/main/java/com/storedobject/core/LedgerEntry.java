@@ -92,7 +92,7 @@ public interface LedgerEntry {
     default String getParticulars(boolean includeValueDatedDetails) {
         String p = getParticulars();
         if(isUnposted()) {
-            p = "[Not Posted] ";
+            p = "[Not Posted] " + p;
         }
         if(!includeValueDatedDetails) {
             return p;
@@ -156,10 +156,12 @@ public interface LedgerEntry {
         s.append(m).append(' ');
         m = getAmount();
         if(m.isNegative()) {
-            s.append("- ");
+            s.append('-');
             m = m.negate();
+        } else {
+            s.append('+');
         }
-        s.append(m).append(" = ");
+        s.append(' ').append(m).append(" = ");
         m = getBalance();
         if(m.isNegative()) {
             s.append('-');
@@ -215,5 +217,28 @@ public interface LedgerEntry {
      */
     default int getBatchNumber() {
         return -1;
+    }
+
+    /**
+     * Check if this entry is created by the given foreign financial system.
+     *
+     * @param ffs Foreign financial system. If null, we are checking if it is created by the SO platform.
+     * @return True if created by the given foreign financial system.
+     */
+    default boolean isCreatedBy(ForeignFinancialSystem ffs) {
+        JournalVoucher jv = getVoucher();
+        if(ffs == null) {
+            return jv == null || Id.isNull(jv.getOriginId());
+        }
+        return jv != null && jv.getOriginId().equals(ffs.getId());
+    }
+
+    /**
+     * Returns the reference of the entry.
+     *
+     * @return The reference.
+     */
+    default String getReference() {
+        return null;
     }
 }

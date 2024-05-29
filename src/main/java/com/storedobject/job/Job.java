@@ -81,4 +81,12 @@ public abstract class Job {
 	 */
 	public void alert(Object... messageParameters) {
 	}
+
+	/**
+	 * Get current status information if any.
+	 * @return Current status information to display in the log.
+	 */
+	public String getStatus() {
+		return "";
+	}
 }

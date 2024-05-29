@@ -112,16 +112,23 @@ public class Account extends StoredObject implements OfEntity, HasName {
     }
 
     public static String[] displayColumns() {
-        return new String[] { "Number", "Name" };
+        return new String[] { "AccountNumber", "Name" };
     }
 
     public static String[] browseColumns() {
-        return new String[] { "Number", "Name", "Balance" };
+        return new String[] { "AccountNumber", "Name", "Balance" };
     }
 
     public static String[] protectedColumns() {
         return new String[] { "SystemEntity", "OpeningBalance", "LocalCurrencyOpeningBalance",
                 "LocalCurrencyBalance", "AccountStatus" };
+    }
+
+    public final String getAccountNumber() {
+        if(this instanceof AccountTitle) {
+            return number.substring(0, number.indexOf("-ALT"));
+        }
+        return number;
     }
 
     /**

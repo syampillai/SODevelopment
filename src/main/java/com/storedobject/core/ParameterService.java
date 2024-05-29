@@ -3,6 +3,7 @@ package com.storedobject.core;
 import com.storedobject.common.JSON;
 import com.storedobject.common.StringList;
 
+import javax.servlet.http.HttpServletRequest;
 import java.io.PrintWriter;
 import java.util.Map;
 
@@ -50,7 +51,7 @@ public interface ParameterService {
 	 * Implement the service here. If the service requires JSON body received for processing, implement the other
 	 * "serve" method that passes JSON as an additional parameter. (The default implementation does nothing).
 	 * @param parameters Map of the parameters received.
-	 * @return Status of the service such as "Ok", "Created" etc. This will be send as JSON response.
+	 * @return Status of the service such as "Ok", "Created" etc. This will be sent as JSON response.
 	 * Example: { "Status": "Ok" }. If plain text needs to be sent as response, the status should be prefixed with
 	 * "Plain:". Example: "Plain:Error while creating login".
 	 * @throws Exception Any
@@ -63,7 +64,7 @@ public interface ParameterService {
 	 * Same like the other "serve" method except that additional JSON parameter received is also passed here.
 	 * (The default implementation simply invokes the other "serve" method, ignoring the JSON parameter).
 	 * @param parameters Map of the parameters received.
-	 * @param jsonReceived JSON parameter received.
+	 * @param jsonReceived JSON parameter received. This could be null.
 	 * @return Status like the other "serve" method.
 	 * @throws Exception Any
 	 */
@@ -81,12 +82,23 @@ public interface ParameterService {
 	}
 
 	/**
-	 * This will be invoked if the getContentType method returns a non-null value. In this case, none of the "serve"
-	 * methods will be invoked.
+	 * This will be invoked if the getContentType method returns a non-null value and the request contains JSON.
+	 * In this case, none of the "serve" methods will be invoked.
 	 * @param parameters Map of the parameters received.
 	 * @param jsonReceived JSON parameter received.
 	 * @param response Response needs to be written into this and format of that should match the mime type.
 	 */
 	default void writeResponse(Map<String, String[]> parameters, JSON jsonReceived, PrintWriter response) {
+	}
+
+
+	/**
+	 * This will be invoked if the getContentType method returns a non-null value and the request does not contain JSON.
+	 * In this case, none of the "serve" methods will be invoked.
+	 * @param request Request received.
+	 * @param parameters Map of the parameters received.
+	 * @param response Response needs to be written into this and format of that should match the mime type.
+	 */
+	default void writeResponse(HttpServletRequest request, Map<String, String[]> parameters, PrintWriter response) {
 	}
 }

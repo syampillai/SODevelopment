@@ -330,6 +330,15 @@ public abstract class StoredObject implements Displayable, HasId, StringFiller {
     public void validateData(TransactionManager tm) throws Exception {
     }
 
+    /**
+     * For internal use only.
+     *
+     * @throws Exception Error if any while saving.
+     */
+    void savedCore() throws Exception {
+        saved();
+    }
+
     public void saved() throws Exception {
     }
 

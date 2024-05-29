@@ -5,6 +5,7 @@ import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
+@SuppressWarnings("NullableProblems")
 public class MemoryCache<T> implements List<T>, Filtered<T> {
 
     ArrayList<T> original = new ArrayList<>(), sorted, filtered;
@@ -283,19 +284,11 @@ public class MemoryCache<T> implements List<T>, Filtered<T> {
 
     @Override
     public Stream<T> stream(int startingIndex, int endingIndex) {
-        endingIndex = Math.min(endingIndex, size());
-        endingIndex = Math.max(0, endingIndex);
-        startingIndex = Math.max(startingIndex, 0);
-        startingIndex = Math.min(startingIndex, endingIndex);
-        return sorted.stream().skip(startingIndex).limit(endingIndex - startingIndex);
+        return Utility.stream(sorted, startingIndex, endingIndex);
     }
 
     @Override
     public Stream<T> streamAll(int startingIndex, int endingIndex) {
-        endingIndex = Math.min(endingIndex, sizeAll());
-        endingIndex = Math.max(0, endingIndex);
-        startingIndex = Math.max(startingIndex, 0);
-        startingIndex = Math.min(startingIndex, endingIndex);
-        return original.stream().skip(startingIndex).limit(endingIndex - startingIndex);
+        return Utility.stream(original, startingIndex, endingIndex);
     }
 }

@@ -93,7 +93,11 @@ public class LoginMessage extends StoredObject {
 
     public void setGeneratedBy(Transaction transaction, StoredObject generatedBy) throws Exception {
     }
-    
+
+	public StoredObject getGeneratedBy() {
+		return listGeneratedBy().findFirst();
+	}
+
     public ObjectIterator<StoredObject> listGeneratedBy() {
     	return null;
     }

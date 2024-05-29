@@ -1,34 +1,86 @@
 package com.storedobject.core;
 
+import com.storedobject.core.annotation.*;
 import java.math.BigDecimal;
 import java.sql.Date;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 public class Memo extends StoredObject implements OfEntity {
+
+    final static String ILLEGAL = "Illegal modification attempt";
+    private static final String[] statusValues =
+            new String[] {
+                    "Initiated", "Forwarded", "Returned", "Being Approved", "Approved", "Rejected", "Abandoned"
+            };
+    private Id typeId;
+    private MemoType type;
+    private int no = 0;
+    int lastComment = 0;
+    final Date date = DateUtility.today();
+    private String subject;
+    int status = 0;
+    boolean internal = false;
+    private Id systemEntityId;
+    private SystemUser initiatedBy;
 
     public Memo() {
     }
 
     public static void columns(Columns columns) {
+        columns.add("SystemEntity", "id");
+        columns.add("Type", "id");
+        columns.add("No", "int");
+        columns.add("Date", "date");
+        columns.add("Subject", "text");
+        columns.add("Status", "int");
+        columns.add("LastComment", "int");
+    }
+
+    public static String[] browseColumns() {
+        return new String[] {
+                "Reference", "Date", "Type.Name AS Type", "Subject AS Subject / Short Description", "Status",
+                "PendingWith",
+        };
+    }
+
+    public static String[] protectedColumns() {
+        return new String[] {
+                "LastComment",
+        };
     }
 
     public final void setSystemEntity(Id systemEntityId) {
+        if(!loading()) {
+            throw new Set_Not_Allowed("System Entity");
+        }
+        this.systemEntityId = systemEntityId;
     }
 
     public final void setSystemEntity(BigDecimal idValue) {
+        setSystemEntity(new Id(idValue));
     }
 
     public final void setSystemEntity(SystemEntity systemEntity) {
+        setSystemEntity(systemEntity == null ? null : systemEntity.getId());
     }
 
+    @SetNotAllowed
+    @Column(order = 10, caption = "Of")
     public final Id getSystemEntityId() {
-        return new Id();
+        return systemEntityId;
     }
 
     public final SystemEntity getSystemEntity() {
-        return new SystemEntity();
+        return SystemEntity.getCached(systemEntityId);
     }
 
     public final void setType(Id typeId) {
+        if (!loading() && !Id.equals(this.typeId, typeId)) {
+            throw new Set_Not_Allowed("Type");
+        }
+        this.typeId = typeId;
     }
 
     public final void setType(BigDecimal idValue) {
@@ -39,78 +91,225 @@ public class Memo extends StoredObject implements OfEntity {
         setType(type == null ? null : type.getId());
     }
 
+    @SetNotAllowed
+    @Column(order = 100)
     public Id getTypeId() {
-        return new Id();
+        return typeId;
     }
 
     public final MemoType getType() {
-        return new MemoType();
+        if(type == null) {
+            type = MemoType.get(this);
+        }
+        return type;
     }
 
     public void setNo(int no) {
+        if (!loading()) {
+            throw new Set_Not_Allowed("No");
+        }
+        this.no = no;
     }
 
+    @SetNotAllowed
+    @Column(style = "(serial)", order = 200)
     public final int getNo() {
-        return Math.random() > 0.5 ? 1 : 20;
+        if (no == 0) {
+            Transaction t = getTransaction();
+            no = SerialGenerator.generate(t, "MEMO-" + systemEntityId + "-" + typeId).intValue();
+        }
+        return no;
     }
 
     public void setDate(Date date) {
+        if (!loading() && !DateUtility.isSameDate(date, this.date)) {
+            throw new Set_Not_Allowed("Date");
+        }
+        this.date.setTime(date.getTime());
     }
 
+    @SetNotAllowed
+    @Column(order = 300)
     public final Date getDate() {
-        return DateUtility.today();
+        return new Date(date.getTime());
     }
 
     public void setSubject(String subject) {
+        this.subject = subject;
     }
 
+    @Column(order = 500, caption = "Subject / Short Description")
     public String getSubject() {
-        return "";
+        return subject;
     }
 
     public final void setStatus(int status) {
+        if(!loading() && status != this.status) {
+            throw new Set_Not_Allowed("Status");
+        }
+        this.status = status;
     }
 
+    @SetNotAllowed
+    @Column(order = 400)
     public final int getStatus() {
-        return Math.random() > 0.5 ? 1 : 3;
+        return status;
     }
 
     public static String[] getStatusValues() {
-        return new String[3];
+        return statusValues;
     }
 
     public static String getStatusValue(int value) {
-        return getStatusValues()[1];
+        String[] s = getStatusValues();
+        return s[value % s.length];
     }
 
     public String getStatusValue() {
-        return "" + getStatus();
+        return renameAction(getStatusValue(status));
     }
 
-    public final void setLastComment(int lastComment) {
-    }
-
-    public final int getLastComment() {
-        return getStatus();
-    }
-
-    public final String getPendingWith() {
+    protected  String getMemoStatus() {
         return getStatusValue();
     }
 
+    public String renameAction(String action) {
+        return action;
+    }
+
+    public String renameCommentAction(String action) {
+        return action;
+    }
+
+    public String renameActionVerb(String action) {
+        return action;
+    }
+
+    public final void setLastComment(int lastComment) {
+        if (!loading() && this.lastComment != lastComment) {
+            throw new Set_Not_Allowed("Last Comment");
+        }
+        this.lastComment = lastComment;
+    }
+
+    @SetNotAllowed
+    @Column(order = 600)
+    public final int getLastComment() {
+        return lastComment;
+    }
+
+    @Override
+    public void validateData(TransactionManager tm) throws Exception {
+        systemEntityId = check(tm, systemEntityId);
+        typeId = tm.checkType(this, typeId, MemoType.class, false);
+        if(StringUtility.isWhite(subject)) {
+            throw new Invalid_Value("Empty subject");
+        }
+        super.validateData(tm);
+    }
+
+    public final String getPendingWith() {
+        if(status >= 4 || (lastComment == 0 && status == 0)) {
+            return "None";
+        }
+        return pendingWith(getLatestComment());
+    }
+
+    String pendingWith(MemoComment mc) {
+        if(status >= 4 || (lastComment == 0 && status == 0)) {
+            return "None";
+        }
+        if(mc == null) {
+            return "Unknown";
+        }
+        if(lastComment != mc.commentCount) {
+            return pendingWith(getLatestComment());
+        }
+        return mc.getCommentedBy().getName();
+    }
+
+    @Override
+    public void validateDelete() throws Exception {
+        super.validateDelete();
+        throw new SOException("Delete not allowed");
+    }
+
+    @Override
+    public void validate() throws Exception {
+        super.validate();
+        if(!internal) {
+            throw new SOException(ILLEGAL);
+        }
+    }
+
+    public MemoComment getLatestComment() {
+        return get(MemoComment.class, "Memo=" + getId() + " AND CommentCount=" + lastComment);
+    }
+
     public Id save(Transaction transaction, String content, SystemUser enteredFor) throws Exception {
-        return save(transaction);
+        boolean created = created();
+        if(content == null || content.isBlank()) {
+            if(created) {
+                content = subject;
+            } else {
+                throw new SOException("Empty content");
+            }
+        }
+        if(enteredFor == null) {
+            throw new SOException("Owner");
+        }
+        MemoComment mc;
+        internal = true;
+        Id id = save(transaction);
+        if(created) {
+            mc = new MemoComment();
+            mc.memoId = id;
+            mc.commentedById = enteredFor.getId();
+            mc.status = 1;
+        } else {
+            if(lastComment != 0 || status > 1) {
+                throw new SOException(ILLEGAL);
+            }
+            mc = get(MemoComment.class, "Memo=" + getId() + " AND CommentCount=0");
+            if(!mc.commentedById.equals(enteredFor.getId())) {
+                throw new SOException(ILLEGAL);
+            }
+        }
+        mc.enteredById = transaction.getUserId();
+        mc.comment = content;
+        mc.save(transaction);
+        return id;
     }
 
     public void updateSubject(Transaction transaction, String subject) throws Exception {
+        if(status >= 4) {
+            throw new SOException("Can't change subject when status is '" + getStatusValue() + "'");
+        }
+        Id owner = getInitiatedById();
+        if(!owner.equals(transaction.getUserId())) {
+            MemoComment mc = get(MemoComment.class, "Memo=" + getId() + " AND CommentCount=" + lastComment);
+            if(mc == null || !mc.getCommentedById().equals(owner)
+                    || mc.getEnteredById().equals(transaction.getUserId())) {
+                throw new SOException(ILLEGAL);
+            }
+        }
+        internal = true;
+        this.subject = subject;
+        save(transaction);
+    }
+
+    @Override
+    void savedCore() throws Exception {
+        internal = false;
+        super.savedCore();
     }
 
     public final boolean isLatestComment(MemoComment memoComment) {
-        return Math.random() > 0.5;
+        return memoComment.getMemoId().equals(getId()) && memoComment.getCommentCount() == lastComment;
     }
 
     public final String getReference() {
-        return "" + getNo();
+        return getType().getShortPrefix() + "-" + (no == 0 ? "___" : no);
     }
 
     /**
@@ -122,6 +321,11 @@ public class Memo extends StoredObject implements OfEntity {
      */
     public int getApprovalsRequired() {
         return getType().getApprovalCount();
+    }
+
+    @Override
+    public String toDisplay() {
+        return getReference() + " ("+ getType().getName() + ")";
     }
 
     /**
@@ -140,19 +344,107 @@ public class Memo extends StoredObject implements OfEntity {
     protected void rejected() {
     }
 
+    /**
+     * This method is invoked when a memo is escalated to another level. This should return a system user at next level.
+     * <p>Note: This is not used by the basic memo system because there is no concept of "escalation" in memo system.
+     * However, it could be implemented in a derived class.</p>
+     *
+     * @return A system user at the next level.
+     */
+    protected SystemUser escalating() {
+        return null;
+    }
+
+    /**
+     * This is invoked just before the memo is reopened. You may set/change attributes of the memo at this stage. The
+     * memo will be saved after this call.
+     * <p>Note: This is not used by the basic memo system because there is no concept of reopening a memo.
+     * However, it could be implemented in derived classes.</p>
+     */
+    protected void reopening() {
+    }
+
     public final String getContent() {
-        return "" + Math.random();
+        MemoComment mc = getInitialComment();
+        return mc == null ? "" : mc.getComment();
+    }
+
+    public MemoComment getInitialComment() {
+        return get(MemoComment.class, "Memo=" + getId() + " AND CommentCount=0");
     }
 
     public final Id getInitiatedById() {
-        return new Id();
+        getInitiatedBy();
+        return initiatedBy == null ? Id.ZERO : initiatedBy.getId();
     }
 
     public SystemUser getInitiatedBy() {
-        return new SystemUser();
+        if(initiatedBy == null) {
+            MemoComment mc = getInitialComment();
+            initiatedBy = mc == null ? null : mc.getCommentedBy();
+        }
+        return initiatedBy;
     }
 
     public SystemUser getLastCommentBy() {
-        return new SystemUser();
+        if(lastComment == 0) {
+            return null;
+        }
+        MemoComment mc = get(MemoComment.class, "Memo=" + getId() + " AND CommentCount=" + lastComment);
+        if(mc == null) {
+            return null;
+        }
+        if(mc.status > 0) {
+            return mc.getCommentedBy();
+        }
+        if(lastComment == 1) {
+            return null;
+        }
+        mc = get(MemoComment.class, "Memo=" + getId() + " AND CommentCount=" + (lastComment - 1));
+        return mc == null ? null : mc.getCommentedBy();
+    }
+
+    public boolean isMine(SystemUser su) {
+        return getInitialComment().isMine(su);
+    }
+
+    public List<SystemUser> listApprovers() {
+        return getType().approvers();
+    }
+
+    public List<SystemUser> listCommenters() {
+        return getType().commenters();
+    }
+
+    public final Set<SystemUser> listCommenters(SystemEntity forEntity) {
+        Set<SystemUser> set = listFor(forEntity, listCommenters());
+        set.addAll(listApprovers(forEntity));
+        return set;
+    }
+
+    public final Set<SystemUser> listApprovers(SystemEntity forEntity) {
+        return listFor(forEntity, listApprovers());
+    }
+
+    private Set<SystemUser> listFor(SystemEntity forEntity, List<SystemUser> users) {
+        HashSet<SystemUser> set = new HashSet<>();
+        users.stream().filter(u -> {
+            if(getType().getCrossEntity() || forEntity == null) {
+                return true;
+            }
+            if(set.contains(u)) {
+                return false;
+            }
+            return u.listEntities().contains(forEntity);
+        }).forEach(set::add);
+        return set;
+    }
+
+    public boolean canReopen(SystemUser su) {
+        return false;
+    }
+
+    public boolean canEscalate(SystemUser su) {
+        return false;
     }
 }

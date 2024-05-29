@@ -95,7 +95,7 @@ public class ItemGetField<I extends InventoryItem> extends ObjectGetField<I> imp
     protected ObjectBrowser<I> createSearcher() {
         ObjectBrowser<I> s = ObjectBrowser.create(getObjectClass(), ItemField.COLUMNS,
                 EditorAction.SEARCH | EditorAction.RELOAD | (isAllowAny() ? EditorAction.ALLOW_ANY : 0),
-                null);
+                null, null);
         s.setFixedFilter(filterProvider);
         return s;
     }
@@ -105,14 +105,7 @@ public class ItemGetField<I extends InventoryItem> extends ObjectGetField<I> imp
         @Override
         public String getFilterCondition() {
             final StringBuilder f = new StringBuilder("(T.Quantity).Quantity>0");
-            if(extraFilterProvider != null) {
-                f.append(" AND (").append(extraFilterProvider.getFilterCondition()).append(')');
-            }
-            if(locationField != null) {
-                f.append(" AND T.Location=").append(locationField.getObjectId());
-            } else if(storeField != null) {
-                f.append(" AND T.Store=").append(storeField.getObjectId());
-            }
+            ItemField.filterCondition(f, extraFilterProvider, locationField, storeField);
             return f.toString();
         }
     }

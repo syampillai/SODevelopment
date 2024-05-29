@@ -6,12 +6,12 @@
 
     <groupId>com.storedobject</groupId>
     <artifactId>so-development</artifactId>
-    <version>10.2.3</version>
+    <version>11.0.0</version>
 
     <properties>
-        <so-common-version>4.6.0</so-common-version>
+        <so-common-version>4.7.8</so-common-version>
         <so-components-version>11.1.17</so-components-version>
-        <so-charts-version>3.2.5</so-charts-version>
+        <so-charts-version>3.2.6</so-charts-version>
         <vaadin.version>23.2.16</vaadin.version>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
@@ -84,6 +84,14 @@
             <scope>runtime</scope>
         </dependency>
 
+        <!-- AI LLM models interface -->
+        <dependency>
+            <groupId>dev.langchain4j</groupId>
+            <artifactId>langchain4j-bom</artifactId>
+            <version>0.29.1</version>
+            <type>pom</type>
+        </dependency>
+
         <!-- Java mail -->
         <dependency>
             <groupId>com.sun.mail</groupId>
@@ -145,7 +153,7 @@
         <dependency>
             <groupId>org.apache.poi</groupId>
             <artifactId>poi-ooxml</artifactId>
-            <version>5.2.3</version>
+            <version>5.2.5</version>
         </dependency>
 
         <!-- MQTT for IOT -->

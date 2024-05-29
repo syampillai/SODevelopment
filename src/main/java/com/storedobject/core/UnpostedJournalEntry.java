@@ -13,7 +13,9 @@ public final class UnpostedJournalEntry extends StoredObject implements Detail {
     private int entrySerial;
     private Id typeId = Id.ZERO;
     private String particulars;
-    private final Date valueDate = DateUtility.today();
+    private Date valueDate;
+    boolean internal = false;
+    private String extraData;
 
     public UnpostedJournalEntry() {
     }
@@ -27,6 +29,7 @@ public final class UnpostedJournalEntry extends StoredObject implements Detail {
         columns.add("Type", "id");
         columns.add("Particulars", "text");
         columns.add("ValueDate", "date");
+        columns.add("ExtraData", "text");
     }
 
     public void setDisplayOrder(int displayOrder) {
@@ -156,13 +159,40 @@ public final class UnpostedJournalEntry extends StoredObject implements Detail {
         if (!loading()) {
             throw new Set_Not_Allowed("Value Date");
         }
-        this.valueDate.setTime(valueDate.getTime());
+        this.valueDate = valueDate == null ? null : new Date(valueDate.getTime());
     }
 
     @SetNotAllowed
     @Column(order = 800)
     public Date getValueDate() {
         return new Date(valueDate.getTime());
+    }
+
+    public void setExtraData(String extraData) {
+        this.extraData = extraData;
+    }
+
+    @Column(order = 900, required = false)
+    public String getExtraData() {
+        return extraData;
+    }
+
+    @Override
+    public void validateData(TransactionManager tm) throws Exception {
+        if(!deleted()) {
+            if (!internal) {
+                throw new Invalid_State("Illegal");
+            }
+            accountId = tm.checkTypeAny(this, accountId, Account.class, false);
+            typeId = tm.checkType(this, typeId, TransactionType.class, true);
+            if (StringUtility.isWhite(particulars)) {
+                throw new Invalid_Value("Particulars");
+            }
+            if (valueDate == null) {
+                throw new Invalid_Value("Value Date");
+            }
+        }
+        super.validateData(tm);
     }
 
     @Override

@@ -95,7 +95,7 @@ public final class TransactionManager {
     }
 
     public SystemEntity getEntity() {
-        return new Random().nextBoolean() ? new SystemEntity() : null;
+        return Math.random() > 0.5 ? new SystemEntity() : null;
     }
 
     public Currency getCurrency() {
@@ -249,5 +249,23 @@ public final class TransactionManager {
      * @param logger Place where logs should be shipped.
      */
     public void setLogger(Consumer<String> logger) {
+    }
+
+    /**
+     * Get the working date.
+     *
+     * @return The working date.
+     */
+    public java.sql.Date getWorkingDate() {
+        return DateUtility.today();
+    }
+
+    /**
+     * Sets the working date for the entity.
+     *
+     * @param workingDate the new working date to be set
+     * @throws Exception if an error occurs while setting the working date
+     */
+    public void setWorkingDate(java.sql.Date workingDate) throws Exception {
     }
 }

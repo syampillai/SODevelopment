@@ -449,12 +449,12 @@ public class TableDefinitionEditor extends ObjectEditor<TableDefinition> {
                         log("Deployed: " + count + "/" + totalCount + "/" + allCount + ", Errors: " + errors +
                                 ", Error deploying " + td.getClassName() + "\n" + e.getMessage());
                     }
-                    if (totalCount % 10 == 0) {
-                        if (count == 0 && errors == 0) {
+                    if (count < 3 || totalCount % (errors == 0 ? 10 : 30) == 0) {
+                        if(errors == 0) {
                             view.clear();
-                            view.blueMessage("Deployed: 0/" + totalCount + "/" + allCount + ", Errors: 0, Remaining: "
-                                    + tds.size());
                         }
+                        view.blueMessage("Deployed: " + count + "/" + totalCount + "/" + allCount + ", Errors: "
+                                + errors + ", Remaining: " + tds.size());
                         view.setProgressCaption(caption + round + " (Status: Deployed: " + count + "/" + totalCount
                                 + "/" + allCount + ", Errors: " + errors + ", Remaining: " + tds.size() + ") ");
                     }
@@ -852,25 +852,14 @@ public class TableDefinitionEditor extends ObjectEditor<TableDefinition> {
                 return unknown;
             }
             td = tds.next();
-            String s = td.getClassName();
-            int p = s.indexOf('.');
-            if(p < 0) {
-                return unknown;
-            }
-            s = s.substring(p + 1);
-            p = s.indexOf('.');
-            if(p < 0) {
-                return unknown;
-            }
-            s = s.substring(p + 1);
-            p = s.indexOf('.');
-            if(p < 0) {
-                return unknown;
-            }
-            return s.substring(0, p).toUpperCase();
+            return name(false);
         }
 
         private String module() {
+            return name(true);
+        }
+
+        private String name(boolean module) {
             String s = td.getClassName();
             int p = s.indexOf('.');
             if(p < 0) {
@@ -886,10 +875,12 @@ public class TableDefinitionEditor extends ObjectEditor<TableDefinition> {
             if(p < 0) {
                 return unknown;
             }
-            s = s.substring(p + 1);
-            p = s.lastIndexOf('.');
-            if(p < 0) {
-                return "None";
+            if(module) {
+                s = s.substring(p + 1);
+                p = s.lastIndexOf('.');
+                if (p < 0) {
+                    return "None";
+                }
             }
             return s.substring(0, p).toUpperCase();
         }
@@ -1278,6 +1269,7 @@ public class TableDefinitionEditor extends ObjectEditor<TableDefinition> {
             if(action == -1) {
                 return;
             }
+            JavaClassLoader.clearNoFoundCache();
             if(!JavaClassLoader.loaded(td.getClassName())) {
                 jc = JavaClass.create(td.getClassName());
                 if(jc.created()) {

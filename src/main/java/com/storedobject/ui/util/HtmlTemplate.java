@@ -471,4 +471,8 @@ public abstract class HtmlTemplate extends Component {
 
     private record TemplateDetails(String cacheKey, StreamSupplier streamSupplier, StyleSupplier styleSupplier) {
     }
+
+    public static void clearCache() {
+        parserCache.clear();
+    }
 }

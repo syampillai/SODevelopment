@@ -15,6 +15,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.Reader;
+import java.sql.Date;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -124,7 +125,15 @@ public class SystemLogViewer extends View implements Transactional, CloseableVie
     }
 
     private static String logServerFile() {
-        String date = new SimpleDateFormat("yyyy-MM-dd").format(DateUtility.today());
+        String file = logServerFile(DateUtility.today());
+        if(new File(file).exists()) {
+            return file;
+        }
+        return logServerFile(DateUtility.yesterday());
+    }
+
+    private static String logServerFile(Date logDate) {
+        String date = new SimpleDateFormat("yyyy-MM-dd").format(logDate);
         String file = ApplicationServer.getGlobalProperty("application.log.server", "/var/log/tomcat/catalina.$DATE.log");
         return file.replace("$DATE", date).replace("${DATE}", date);
     }
@@ -254,17 +263,18 @@ public class SystemLogViewer extends View implements Transactional, CloseableVie
         }
 
         @Override
+        public String getFixedColumnWidth(String columnName) {
+            return switch (columnName) {
+                case "level" -> "80px";
+                case "millis" -> "180px";
+                default -> "200px";
+            };
+        }
+
+        @Override
         public void customizeColumn(String columnName, Column<XMLNodeData> column) {
-            switch(columnName) {
-                case "message" -> column.setFlexGrow(1);
-                case "level" -> {
-                    column.setWidth("80px");
-                    column.setFlexGrow(0);
-                }
-                case "millis" -> {
-                    column.setWidth("180px");
-                    column.setFlexGrow(0);
-                }
+            if("message".equals(columnName)) {
+                column.setFlexGrow(1);
             }
         }
 
@@ -307,7 +317,7 @@ public class SystemLogViewer extends View implements Transactional, CloseableVie
         @Override
         public Object convertValue(Object value, XMLNodeData item, String columnName) {
             return switch(columnName) {
-                case "millis" -> new Timestamp(Long.parseLong(value.toString()));
+                case "millis" -> getTransactionManager().date(new Timestamp(Long.parseLong(value.toString())));
                 case "message" -> firstLine(value.toString());
                 case "level" -> StringUtility.makeLabel(value.toString().toLowerCase());
                 default -> super.convertValue(value, item, columnName);

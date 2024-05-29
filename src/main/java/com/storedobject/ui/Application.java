@@ -2,10 +2,10 @@ package com.storedobject.ui;
 
 import com.storedobject.common.*;
 import com.storedobject.core.*;
+import com.storedobject.core.DateUtility;
 import com.storedobject.core.SOException;
 import com.storedobject.core.StringUtility;
 import com.storedobject.sms.QuickSender;
-import com.storedobject.ui.common.MemoSystem;
 import com.storedobject.ui.util.*;
 import com.storedobject.ui.util.ApplicationFrame;
 import com.storedobject.ui.util.ContentGenerator;
@@ -107,7 +107,6 @@ public class Application extends com.storedobject.vaadin.Application implements 
     private Runnable loginForm;
     private IdentityCheck identityCheck;
     private final Notification waitMessage;
-    private MemoSystem memoSystem;
     private int closeReason = 0;
 
     public Application() {
@@ -354,19 +353,6 @@ public class Application extends com.storedobject.vaadin.Application implements 
     }
 
     private void executeMe(Logic logic) {
-        if(MemoSystem.class.getName().equals(logic.getClassName())) {
-            if(memoSystem == null) {
-                try {
-                    memoSystem = new MemoSystem(false);
-                } catch(Throwable e) {
-                    error(e);
-                    return;
-                }
-            }
-            memoSystem.setCaption(logic.getTitle());
-            memoSystem.executeAndLoad();
-            return;
-        }
         server.execute(logic);
         if(logic.getExecutable() != null) {
             synchronized(closeMe) {
@@ -1612,7 +1598,7 @@ public class Application extends com.storedobject.vaadin.Application implements 
 
         void setAlertHandler(Object alertHandler) {
             getComponent();
-            if(alertHandler instanceof StoredObject || alertHandler instanceof Id) {
+            if(!(alertHandler instanceof Logic) && (alertHandler instanceof StoredObject || alertHandler instanceof Id)) {
                 alertHandler = new ObjectViewer(Application.get());
             }
             if(alertHandler != null && !(alertHandler instanceof AlertHandler)) {
@@ -1680,22 +1666,9 @@ public class Application extends com.storedobject.vaadin.Application implements 
             if(logic != null) {
                 setAlertHandler(logic);
             }
-            StoredObject ref = message.listGeneratedBy().findFirst();
-            if(logic == null && ref != null) {
-                if(ref instanceof Memo) {
-                    MemoType memoType = ((Memo)ref).getType();
-                    MemoSystem ms;
-                    if(memoType.getSpecial()) {
-                        ms = new MemoSystem(memoType, false);
-                    } else {
-                        ms = Application.get().memoSystem;
-                        if(ms == null) {
-                            ms = new MemoSystem(false);
-                            Application.get().memoSystem = ms;
-                        }
-                    }
-                    setAlertHandler(ms);
-                } else {
+            StoredObject ref = message.getGeneratedBy();
+            if(ref != null) {
+                if(logic == null) {
                     setAlertHandler(ref);
                 }
                 reference = ref.getId();
@@ -1828,12 +1801,20 @@ public class Application extends com.storedobject.vaadin.Application implements 
         if(entities.size() < 2) {
             if(entities.size() == 1) {
                 getTransactionManager().setEntity(entities.get(0));
+                checkEOD();
             }
             setDate(server.getDate());
             startApp(welcomePassword, passwordExpired);
             return;
         }
         new EntitySelector(entities, su.getName(), welcomePassword, passwordExpired).execute();
+    }
+
+    private void checkEOD() {
+        Date wd = getTransactionManager().getEntity().getWorkingDate();
+        if(wd.before(DateUtility.today()) && StoredObject.exists(Account.class, null, true)) {
+            error("Please note that financial transactions for " + DateUtility.formatDate(wd)+ ", are still pending closure.");
+        }
     }
 
     private static class Menu implements com.storedobject.core.ApplicationMenu {
@@ -1985,6 +1966,7 @@ public class Application extends com.storedobject.vaadin.Application implements 
             SystemEntity se = entities.getValue();
             close();
             getTransactionManager().setEntity(se);
+            checkEOD();
             setDate(server.getDate());
             startApp(welcomePassword, passwordExpired);
             return true;

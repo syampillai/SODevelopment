@@ -1,4 +1,4 @@
-package com.storedobject.ui.account;
+package com.storedobject.ui.accounts;
 
 import com.storedobject.core.SystemEntity;
 import com.storedobject.ui.Application;

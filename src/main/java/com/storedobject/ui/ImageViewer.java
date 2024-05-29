@@ -391,8 +391,11 @@ public class ImageViewer extends View {
 
         private void add(Element e, int x, int y, boolean absolute) {
             Child c = get(e);
-            if(c != null && c.x == x && c.y == y) {
-                return;
+            if(c != null) {
+                if (c.x == x && c.y == y) {
+                    return;
+                }
+                remove(c);
             }
             add(new Child(e, x, y, absolute));
         }

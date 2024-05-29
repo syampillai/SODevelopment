@@ -337,6 +337,18 @@ public class ObjectField<T extends StoredObject> extends CustomField<Id>
     /**
      * Constructor.
      *
+     * @param label Label for the field.
+     * @param objectClass Class of the objects that are valid.
+     * @param list Values will be allowed for this list only.
+     * @param any Whether subclasses should be allowed or not.
+     */
+    public ObjectField(String label, Class<T> objectClass, List<T> list, boolean any) {
+        this(label, objectClass, any, new ObjectComboField<>(list));
+    }
+
+    /**
+     * Constructor.
+     *
      * @param field Object input field to be used internally.
      */
     public ObjectField(ObjectInput<T> field) {
@@ -411,7 +423,7 @@ public class ObjectField<T extends StoredObject> extends CustomField<Id>
         field.setLoadFilter(loadFilter, apply);
     }
 
-    private static <O extends StoredObject> List<O> list(Iterable<O> iterable) {
+    static <O extends StoredObject> List<O> list(Iterable<O> iterable) {
         ArrayList<O> list = new ArrayList<>();
         iterable.forEach(list::add);
         return list;
@@ -752,7 +764,6 @@ public class ObjectField<T extends StoredObject> extends CustomField<Id>
      */
     public void load(ObjectIterator<T> objects) {
         if(objects == null) {
-            //noinspection resource
             objects = ObjectIterator.create();
         }
         getField().load(objects);

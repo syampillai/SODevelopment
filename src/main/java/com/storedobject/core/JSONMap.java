@@ -1,6 +1,8 @@
 package com.storedobject.core;
 
+import com.storedobject.common.Address;
 import com.storedobject.common.ComputedValue;
+import com.storedobject.common.Fault;
 
 import javax.annotation.Nonnull;
 import java.io.Serializable;
@@ -12,6 +14,10 @@ import java.util.*;
 public class JSONMap implements Map<String, Object>, Serializable {
 
     private final HashMap<String, Object> map = new HashMap<>();
+
+    public JSONMap() {
+        put("errorCode", Integer.MAX_VALUE);
+    }
 
     @Override
     public int size() {
@@ -55,7 +61,6 @@ public class JSONMap implements Map<String, Object>, Serializable {
 
     @Override
     public void clear() {
-
     }
 
     @Nonnull
@@ -76,15 +81,38 @@ public class JSONMap implements Map<String, Object>, Serializable {
         return map.entrySet();
     }
 
-
     /**
      * Put an error message in the result.
      *
      * @param error Error message to be added.
      */
     public void error(String error) {
+        error(0, error);
+    }
+
+    /**
+     * Put an error message in the result with an error code.
+     *
+     * @param errorCode Error code.
+     * @param error Error message to be added.
+     */
+    public void error(int errorCode, String error) {
+        if(errorCode > 0) {
+            put("errorCode", errorCode);
+        }
         put("status", "ERROR");
         put("message", error);
+    }
+
+    /**
+     * Put an error message in the result with an error code.
+     *
+     * @param error Error (could be null).
+     */
+    public void error(Fault error) {
+        if(error != null) {
+            error(error.getCode(), error.getMessage());
+        }
     }
 
     private static Object value(Object value) {
@@ -100,6 +128,12 @@ public class JSONMap implements Map<String, Object>, Serializable {
             return new SimpleDateFormat(JSON.TIME_FORMAT).format(t);
         } else if(value instanceof java.util.Date d) {
             return new SimpleDateFormat(JSON.DATE_FORMAT).format(d);
+        } else if(value instanceof Address a) {
+            Map<String, Object> m = new HashMap<>();
+            m.put("country", a.getCountry().getShortName());
+            m.put("encoded", a.encode());
+            m.put("text", a.toString());
+            return m;
         } else if(value instanceof StoredObject so) {
             if (so instanceof FileData || so instanceof StreamData) { // Note: JSON service will handle it!
                 return so;

@@ -310,7 +310,7 @@ public class ItemField<I extends InventoryItem> extends ObjectGetField<I> implem
     protected ObjectBrowser<I> createSearcher() {
         ObjectBrowser<I> s = ObjectBrowser.create(getObjectClass(), COLUMNS,
                 EditorAction.SEARCH | EditorAction.RELOAD | (isAllowAny() ? EditorAction.ALLOW_ANY : 0),
-                null);
+                null, null);
         s.setFixedFilter(filterProvider);
         return s;
     }
@@ -416,16 +416,22 @@ public class ItemField<I extends InventoryItem> extends ObjectGetField<I> implem
                 apns.forEach(pn -> f.append(',').append(pn.getId()));
                 f.append(')');
             }
-            if(extraFilterProvider != null) {
-                f.append(" AND (").append(extraFilterProvider.getFilterCondition()).append(')');
-            }
-            if(locationField != null) {
-                f.append(" AND T.Location=").append(locationField.getObjectId());
-            } else if(storeField != null) {
-                f.append(" AND T.Store=").append(storeField.getObjectId());
-            }
-            f.append(" AND (T.Quantity).Quantity>0");
+            filterCondition(f, extraFilterProvider, locationField, storeField);
             return f.toString();
         }
+    }
+
+    static void filterCondition(StringBuilder f, FilterProvider extraFilterProvider,
+                                ObjectProvider<? extends InventoryLocation> locationField,
+                                ObjectProvider<? extends InventoryStore> storeField) {
+        if(extraFilterProvider != null) {
+            f.append(" AND (").append(extraFilterProvider.getFilterCondition()).append(')');
+        }
+        if(locationField != null) {
+            f.append(" AND T.Location=").append(locationField.getObjectId());
+        } else if(storeField != null) {
+            f.append(" AND T.Store=").append(storeField.getObjectId());
+        }
+        f.append(" AND (T.Quantity).Quantity>0");
     }
 }

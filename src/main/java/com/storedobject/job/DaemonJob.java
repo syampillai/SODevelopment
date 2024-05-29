@@ -2,7 +2,7 @@ package com.storedobject.job;
 
 /**
  * Daemon job is a special {@link Job} and its {@link #execute()} method will be invoked only once,
- * and it runs forever in the background. However, the {@link #execute()}  method may be invoked again if an error
+ * and it runs forever in the background. However, the {@link #execute()} method may be invoked again if an error
  * occurred during the previous run or the {@link #isActive()} method returns <code>false</code> when it is
  * due again.
  *
