@@ -114,9 +114,7 @@ public final class MessageGroup extends StoredObject implements RequiresApproval
         MessageTemplate mt = MessageTemplate.create(name, tm);
         try {
             MessageGroup finalMg = mg;
-            if(tm.transact(t -> {
-                finalMg.setTemplate(mt);
-            }) == 0) {
+            if(tm.transact(t -> finalMg.setTemplate(mt)) == 0) {
                 return finalMg;
             }
         } catch (Exception ignored) {
