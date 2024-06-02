@@ -20,6 +20,12 @@ import java.util.List;
 public interface HasContacts {
 
     /**
+     * Get the Id.
+     * @return Id
+     */
+    Id getId();
+
+    /**
      * Name of the contact. The default implementation returns <code>null</code>.
      *
      * @return Name of the contact.
@@ -141,6 +147,16 @@ public interface HasContacts {
     }
 
     /**
+     * Get the contact value for a specific type of contact.
+     *
+     * @param contactTypeId Id of the contact type.
+     * @return Contact or null if it doesn't exist.
+     */
+    default Contact getContactObject(Id contactTypeId) {
+        return getContactObject(StoredObject.get(ContactType.class, contactTypeId));
+    }
+
+    /**
      * Get the {@link Id} of the object that owns the contact. (It is possible that some other related object
      * may be owing the contact information).
      *
@@ -221,5 +237,69 @@ public interface HasContacts {
      */
     default Address getAddress(String addressTypeName) {
         return Address.create(getContactRaw(addressTypeName));
+    }
+
+    /**
+     * Get the email address. (It will look for an email address with type name "Email").
+     *
+     * @return Email address if available, otherwise <code>null</code>.
+     */
+    default String getEmail() {
+        return getEmail("Email");
+    }
+
+    /**
+     * Get the address.
+     *
+     * @param typeName Name of the email (as defined in the respective grouping).
+     * @return Email address if available, otherwise <code>null</code>.
+     */
+    default String getEmail(String typeName) {
+        String email = getContact(typeName);
+        return email == null || email.isBlank() ? null : email;
+    }
+
+    /**
+     * Get the phone number. (It will look for a phone number with type name "Phone").
+     *
+     * @return Phone number if available, otherwise <code>null</code>.
+     */
+    default long getPhone() {
+        return getPhone("Phone");
+    }
+
+    /**
+     * Get the address.
+     *
+     * @param typeName Name of the email (as defined in the respective grouping).
+     * @return Phone number if available, otherwise <code>null</code>.
+     */
+    default long getPhone(String typeName) {
+        return phoneToNumber(getContact(typeName));
+    }
+
+    static long phoneToNumber(String phone) {
+        return phone == null || phone.isBlank() ? 0 : Long.parseLong(phone.replace(" ", "")
+                .replace("-", "").replace("(", "")
+                .replace(")", ""));
+    }
+
+    /**
+     * Get the mobile number. (It will look for a phone number with type name "Mobile").
+     *
+     * @return Mobile number if available, otherwise <code>null</code>.
+     */
+    default long getMobile() {
+        return getPhone("Mobile");
+    }
+
+    /**
+     * Get the telegram contact.
+     *
+     * @return Telegram contact if available, otherwise <code>null</code>.
+     */
+    default String getTelegram() {
+        String s = getContact("Telegram");
+        return s == null || s.isBlank() || s.equals("Telegram") ? null : s;
     }
 }

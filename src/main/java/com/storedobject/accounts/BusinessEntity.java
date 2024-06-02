@@ -6,6 +6,13 @@ import com.storedobject.core.annotation.SetNotAllowed;
 
 import java.math.BigDecimal;
 
+/**
+ * Business entity - Used by {@link EntityAccount}.
+ *
+ * <p>Note: Contact grouping code ({@link #getContactGroupingCode()}) for this class is 10192.</p>
+ *
+ * @author Syam
+ */
 public class BusinessEntity extends AccountEntity<Entity> {
 
     private Id entityId;
@@ -57,5 +64,10 @@ public class BusinessEntity extends AccountEntity<Entity> {
     @Override
     public final String getName() {
         return getParty().getName();
+    }
+
+    @Override
+    public int getContactGroupingCode() {
+        return 10192;
     }
 }

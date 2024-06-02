@@ -140,35 +140,9 @@ public final class MessageTemplate extends StoredObject {
         return toCode(name).replace('-', '_');
     }
 
-    static String toString(Object parameter) {
-        if(parameter == null) {
-            return "";
-        }
-        if(parameter instanceof Date) {
-            return DateUtility.format((Date)parameter);
-        }
-        return parameter.toString();
-    }
-
     @Override
     public String toString() {
         return code;
-    }
-
-    public Contact getContact(Person person) {
-        Contact c = person.listLinks(Contact.class, "Type=" + contactTypeId).single(false);
-        if(c == null) {
-            try(ObjectIterator<PersonRole> roles
-                        = list(PersonRole.class, "Person=" + person.getId(), true)) {
-                for(PersonRole role: roles) {
-                    c = role.listLinks(Contact.class, "Type=" + contactTypeId).single(false);
-                    if(c != null) {
-                        break;
-                    }
-                }
-            }
-        }
-        return c;
     }
 
     public static MessageTemplate getFor(String code) {
@@ -193,13 +167,38 @@ public final class MessageTemplate extends StoredObject {
         return list(MessageTemplate.class, "lower(Code) LIKE '" + code + "%'");
     }
 
+    /**
+     * Creates a message by replacing placeholders in the template with the provided parameters.
+     * Placeholders should be specified in angle-brackets with an ordinal number of the parameter.
+     *
+     * @param parameters The parameters used to replace placeholders in the template.
+     * @return The generated message after replacing the placeholders with the parameters.
+     * @deprecated Please use {@link #createMessage(Person, Object...)} instead.
+     */
+    @Deprecated
     public String createMessage(Object... parameters) {
+        return createMessage(null, parameters);
+    }
+
+    /**
+     * Creates a message by replacing placeholders in the template with the provided parameters.
+     * Placeholders should be specified in angle-brackets with an ordinal number of the parameter.
+     * A special placeholder P in angle-brackets can be used to as the placeholder for the person's name.
+     *
+     * @param person The person to whom the message is addressed.
+     * @param parameters The parameters used to replace placeholders in the template.
+     * @return The generated message after replacing the placeholders with the parameters.
+     */
+    public String createMessage(Person person, Object... parameters) {
         String s = template, index;
+        if(person != null) {
+            s = s.replaceAll("<P>", person.getName());
+        }
         int i = 1;
         for(Object p: parameters) {
             index = "<" + i + ">";
             if(s.contains(index)) {
-                s = s.replace(index, toString(p));
+                s = s.replace(index, StringUtility.toString(p));
             }
             ++i;
         }
@@ -448,36 +447,25 @@ public final class MessageTemplate extends StoredObject {
                     return false;
                 }
             }
-            Contact contact = getContact(person);
+            Contact contact = person.getContactObject(contactTypeId);
             if(contact == null) {
                 return false;
             }
-            StringBuilder m = new StringBuilder();
-            for(Object p: messageParameters) {
-                if(!m.isEmpty()) {
-                    m.append('|');
-                }
-                m.append(MessageTemplate.toString(p));
-            }
-            MessageStore ms = new MessageStore();
-            ms.setPerson(person);
-            ms.setContact(contact);
-            ms.setCode(getCode());
-            ms.setMessage(m.toString());
-            ms.validateData(tc.getManager());
-            if(exists(tc.useTransaction(), MessageStore.class, ms.getUniqueCondition())) {
+            message.setMessage(createMessage(person, messageParameters));
+            if(exists(message.getClass(), "SentTo=" + person.getId() + " AND T_Family="
+                    + ClassAttribute.get(message).family
+                    + " AND CreatedAt>'"
+                    + Database.formatWithTime(DateUtility.addDay(DateUtility.now(), -1))
+                    + "' AND Message='" + message.getMessage().replace("'", "''") + "'")) {
                 return true;
             }
-            if(!tc.save(ms)) {
-                tc.rollback("Error creating Message Store - " + StringUtility.toString(tc.getError()));
-            }
-            message.setMessage(createMessage(messageParameters));
+            message.setSentTo(person);
             switch(delivery) {
                 case 0 -> { // SMS
                     long mobile = 0;
                     try {
                         mobile = Long.parseLong(contact.getContactValue().replace(" ", "").trim());
-                    } catch(Throwable error) {
+                    } catch (Throwable error) {
                         tc.rollback("Invalid mobile number '" + contact.getValue() +
                                 "' configured to send SMS for " + person.toDisplay());
                     }

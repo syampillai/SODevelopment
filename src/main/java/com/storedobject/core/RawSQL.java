@@ -18,6 +18,9 @@ public final class RawSQL implements ResourceOwner {
     RawSQL() {
     }
 
+    RawSQL(String statement) {
+    }
+
     @Override
     public AutoCloseable getResource() {
         return null;

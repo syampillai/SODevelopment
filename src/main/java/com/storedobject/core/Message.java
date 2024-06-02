@@ -1,5 +1,6 @@
 package com.storedobject.core;
 
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 
 import com.storedobject.core.annotation.Column;
@@ -11,6 +12,7 @@ public abstract class Message extends StoredObject {
     private String messageID;
     private Timestamp createdAt = DateUtility.now();
     private boolean sent;
+    private Id sentToId = Id.ZERO;
     private Timestamp sentAt = DateUtility.now();
     protected int error; // 0: No error, 1: Retry delivery, 2: Insufficient balance
                          // Greater than 2: Error conditions (delivery not possible)
@@ -29,10 +31,15 @@ public abstract class Message extends StoredObject {
         columns.add("Sent", "boolean");
         columns.add("SentAt", "timestamp");
         columns.add("Error", "int");
+        columns.add("SentTo", "id");
+    }
+
+    public static void indices(Indices indices) {
+        indices.add("SentTo,T_Family,CreatedAt");
     }
 
     public static String[] protectedColumns() {
-        return new String[] { "MessageID", };
+        return new String[] { "MessageID", "SentTo" };
     }
 
     public void setMessage(String message) {
@@ -116,6 +123,28 @@ public abstract class Message extends StoredObject {
     public int getError() {
         return error;
     }
+    
+    public void setSentTo(Id sentToId) {
+        this.sentToId = sentToId;
+    }
+
+    public void setSentTo(BigDecimal idValue) {
+        setSentTo(new Id(idValue));
+    }
+
+    public void setSentTo(StoredObject sentTo) {
+        setSentTo(sentTo == null ? null : sentTo.getId());
+    }
+
+    @Column(required = false, style = "(any)")
+    public Id getSentToId() {
+        return sentToId;
+    }
+
+    public StoredObject getSentTo() {
+        StoredObject so = get(sentToId);
+        return so instanceof HasContacts ? so : null;
+    }
 
     /**
      * Set is as sent with an associated error. (Use error = 0 for no error).
@@ -143,6 +172,13 @@ public abstract class Message extends StoredObject {
         } else if(error > 2) { // Error greater than 2 means delivery not possible
             sent = true;
         }
+        if(getReceiver() == null) {
+            throw new Invalid_Value("Receiver");
+        }
         super.validateData(tm);
+    }
+
+    public final HasContacts getReceiver() {
+        return getSentTo() instanceof HasContacts hc ? hc : null;
     }
 }

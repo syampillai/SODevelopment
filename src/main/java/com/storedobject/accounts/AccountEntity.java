@@ -161,4 +161,22 @@ public abstract class AccountEntity<T extends StoredObject> extends StoredObject
         }
         return s;
     }
+
+    @Override
+    public Address getAddress() {
+        Address a = HasContacts.super.getAddress();
+        return a == null ?getPrimaryAddressValue() : a;
+    }
+
+    @Override
+    public String getEmail() {
+        String s = HasContacts.super.getEmail();
+        return s != null && !s.isEmpty() ? s : (primaryEmail != null && !primaryEmail.isEmpty() ? primaryEmail : null);
+    }
+
+    @Override
+    public long getPhone() {
+        long s = HasContacts.super.getPhone();
+        return s == 0 ? s : HasContacts.phoneToNumber(primaryPhone);
+    }
 }
