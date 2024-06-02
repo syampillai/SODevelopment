@@ -76,4 +76,10 @@ public final class DBTransaction extends AbstractTransaction {
     public boolean isActive() {
         return false;
     }
+
+    public interface NoNotification {
+    }
+
+    public interface NoHistory extends NoNotification {
+    }
 }

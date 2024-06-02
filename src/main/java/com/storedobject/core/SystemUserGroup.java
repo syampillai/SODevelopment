@@ -1,6 +1,8 @@
 package com.storedobject.core;
 
-public final class SystemUserGroup extends StoredObject {
+import com.storedobject.job.MessageGroup;
+
+public final class SystemUserGroup extends StoredObject implements Notifye {
 
     /**
      * Constructs a System User Group
@@ -73,5 +75,29 @@ public final class SystemUserGroup extends StoredObject {
             return false;
         }
         return user.isMemberOf(this);
+    }
+
+    /**
+     * Create a new message group if it doesn't exist.
+     *
+     * @param tm Transaction manager.
+     * @param name Name of the group.
+     * @return Message group instance.
+     */
+    public static MessageGroup create(TransactionManager tm, String name) {
+        return Math.random() > 0.5 ? null : new MessageGroup();
+    }
+
+    /**
+     * Create and send a message to the members of this group.
+     * <p>Note: If the template doesn't exist, the default template is used.</p>
+     * @param templateName Name of the template to create the message.
+     * @param tm Transaction manager.
+     * @param messageParameters Parameters for creating message from the associated template.
+     * @return True the message is successfully created for delivery.
+     */
+    @Override
+    public boolean notify(String templateName, TransactionManager tm, Object... messageParameters) {
+        return MessageTemplate.notify(templateName, tm, listUsers().map(SystemUser::getPerson), messageParameters);
     }
 }

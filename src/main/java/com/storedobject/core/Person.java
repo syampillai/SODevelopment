@@ -4,7 +4,8 @@ import java.sql.Date;
 import java.util.Random;
 
 @SuppressWarnings("RedundantThrows")
-public final class Person extends StoredObject implements HasContacts, Comparable<Person>, HasName, HasShortName {
+public final class Person extends StoredObject implements HasContacts, Comparable<Person>, HasName, HasShortName,
+		Notifye {
 
 	public Person(String name) {
 	}
@@ -186,5 +187,18 @@ public final class Person extends StoredObject implements HasContacts, Comparabl
 
 	public static boolean isTransgenderAllowed(int title) {
 		return new Random().nextBoolean();
+	}
+
+	/**
+	 * Create and send a message to this person.
+	 * <p>Note: If the template doesn't exist, the default template is used.</p>
+	 * @param templateName Name of the template to create the message.
+	 * @param tm Transaction manager.
+	 * @param messageParameters Parameters for creating message from the associated template.
+	 * @return True the message is successfully created for delivery.
+	 */
+	@Override
+	public boolean notify(String templateName, TransactionManager tm, Object... messageParameters) {
+		return MessageTemplate.notify(templateName, tm, ObjectIterator.create(this), messageParameters);
 	}
 }

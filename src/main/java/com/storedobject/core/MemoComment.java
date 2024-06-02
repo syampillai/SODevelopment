@@ -386,7 +386,13 @@ public final class MemoComment extends StoredObject {
             throw new SOException("No one to escalate to");
         }
         preprocess(transaction);
-        forwardMemoInt(transaction, reason, nextUser, true);
+        String m = comment;
+        if(m.isBlank()) {
+            m = reason;
+        } else {
+            m += "\nReason for escalation: " + reason;
+        }
+        forwardMemoInt(transaction, m, nextUser, true);
     }
 
     public void approveMemo(Transaction transaction, String approvalText) throws Exception {

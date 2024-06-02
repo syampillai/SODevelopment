@@ -12,7 +12,7 @@ import java.util.*;
  * This class represents a person who is also a system user.
  */
 @SuppressWarnings("RedundantThrows")
-public final class SystemUser extends StoredObject implements HasName {
+public final class SystemUser extends StoredObject implements HasName, Notifye {
 
     public SystemUser(String login, Id personId) {
         this();
@@ -359,4 +359,16 @@ public final class SystemUser extends StoredObject implements HasName {
         return existsLinks(SystemUserGroup.class, "Id=" + group.getId());
     }
 
+    /**
+     * Create and send a message to this user.
+     * <p>Note: If the template doesn't exist, the default template is used.</p>
+     * @param templateName Name of the template to create the message.
+     * @param tm Transaction manager.
+     * @param messageParameters Parameters for creating message from the associated template.
+     * @return True the message is successfully created for delivery.
+     */
+    @Override
+    public boolean notify(String templateName, TransactionManager tm, Object... messageParameters) {
+        return MessageTemplate.notify(templateName, tm, ObjectIterator.create(getPerson()), messageParameters);
+    }
 }

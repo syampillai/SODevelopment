@@ -1,157 +1,529 @@
 package com.storedobject.mail;
 
-import com.storedobject.core.Columns;
-import com.storedobject.core.Id;
-import com.storedobject.core.StoredObject;
-import com.storedobject.core.TransactionManager;
+import com.storedobject.common.Email;
+import com.storedobject.core.*;
 import com.storedobject.core.annotation.Column;
+import jakarta.activation.DataHandler;
+import jakarta.mail.Message;
+import jakarta.mail.MessagingException;
+import jakarta.mail.Session;
+import jakarta.mail.Transport;
+import jakarta.mail.internet.InternetAddress;
+import jakarta.mail.internet.MimeBodyPart;
+import jakarta.mail.internet.MimeMessage;
+import jakarta.mail.internet.MimeMultipart;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
+import java.util.List;
 
 public abstract class Sender extends StoredObject implements Closeable {
+
+	private static final int BATCH_SIZE = 25;
+    private static final String[] statusValues = new String[] {
+        "Active",
+        "Inactive",
+        "Error",
+    };
+    private String name, fromAddressName, fromAddress, replyToAddressName, replyToAddress, subject, body, bodyType, footer, footerType;
+    private int status = 0;
+	private Id senderGroupId;
+    protected Session session;
+    protected Transport transport;
+    private SenderGroup group;
 
     public Sender() {
     }
 
     public static void columns(Columns columns) {
+        columns.add("Name", "text");
+        columns.add("FromAddressName", "text");
+        columns.add("FromAddress", "text");
+        columns.add("ReplyToAddressName", "text");
+        columns.add("ReplyToAddress", "text");
+        columns.add("Subject", "text");
+        columns.add("Body", "text");
+        columns.add("BodyType", "text");
+        columns.add("Footer", "text");
+        columns.add("FooterType", "text");
+        columns.add("Status", "int");
+		columns.add("SenderGroup", "Id");
     }
 
-    public void setName(String name) {
+    public static void indices(Indices indices) {
+        indices.add("lower(Name)", true);
     }
 
+    @Override
+	public String getUniqueCondition() {
+        return "lower(Name)='" + getName().trim().toLowerCase().replace("'", "''") + "'";
+    }
+    
+    public static int hints() {
+        return ObjectHint.SMALL_LIST;
+    }
+
+    public static String[] displayColumns() {
+        return new String[] { "Name", };
+    }
+
+	public static String[] browseColumns() {
+		return new String[] { "Name", "FromAddress", "ReplyToAddress", "Status", "SenderGroup.Name as Group" };
+	}
+
+	public void setName(String name) {
+        this.name = name;
+    }
+
+    @Column(order = 100)
     public String getName() {
-        return null;
+        return name;
     }
 
     public void setFromAddressName(String fromAddressName) {
+        this.fromAddressName = fromAddressName;
     }
 
-    @Column(required = false)
+    @Column(required = false, order = 200)
     public String getFromAddressName() {
-        return null;
+        return fromAddressName;
     }
 
     public void setFromAddress(String fromAddress) {
+        this.fromAddress = fromAddress;
     }
 
+	@Column(order = 300)
     public String getFromAddress() {
-		return null;
+        return fromAddress;
     }
 
     public void setReplyToAddressName(String replyToAddressName) {
+        this.replyToAddressName = replyToAddressName;
     }
 
-    @Column(required = false)
+    @Column(required = false, order = 400)
     public String getReplyToAddressName() {
-		return null;
+        return replyToAddressName;
     }
 
     public void setReplyToAddress(String replyToAddress) {
+        this.replyToAddress = replyToAddress;
     }
 
-    @Column(required = false)
+    @Column(required = false, order = 500)
     public String getReplyToAddress() {
-		return null;
+        return replyToAddress;
     }
 
     public void setSubject(String subject) {
+        this.subject = subject;
     }
 
-    @Column(required = false)
+    @Column(required = false, order = 600)
     public String getSubject() {
-		return null;
+        return subject;
     }
 
     public void setBody(String body) {
+        this.body = body;
     }
 
-    @Column(required = false, style = "(large)")
+    @Column(required = false, order = 700, style = "(large)")
     public String getBody() {
-		return null;
+        return body;
     }
 
     public void setBodyType(String bodyType) {
+        this.bodyType = bodyType;
     }
     
-    @Column(required = false)
+    @Column(required = false, order = 800)
     public String getBodyType() {
-		return null;
+        return bodyType;
     }
 
     public void setFooter(String footer) {
+        this.footer = footer;
     }
 
-    @Column(required = false, style = "(large)")
+    @Column(required = false, order = 900, style = "(large)")
     public String getFooter() {
-		return null;
+        return footer;
     }
 
     public void setFooterType(String footerType) {
+        this.footerType = footerType;
     }
 
-    @Column(required = false)
+    @Column(required = false, order = 1000)
     public String getFooterType() {
-		return null;
+        return footerType;
     }
 
     public void setStatus(int status) {
+        this.status = status;
     }
 
+    @Column(order = 1100)
     public int getStatus() {
-        return 0;
+        return status;
     }
 
     public static String[] getStatusValues() {
-		return null;
+        return statusValues;
     }
 
     public static String getStatusValue(int value) {
-		return null;
+        String[] s = getStatusValues();
+        return s[value % s.length];
     }
 
     public String getStatusValue() {
-		return null;
+        return getStatusValue(status);
     }
     
     public void setSenderGroup(Id senderGroupId) {
+        this.senderGroupId = senderGroupId;
+        group = null;
     }
 
     public void setSenderGroup(BigDecimal idValue) {
+        setSenderGroup(new Id(idValue));
     }
 
     public void setSenderGroup(SenderGroup senderGroup) {
+        setSenderGroup(senderGroup.getId());
     }
 
+    @Column(order = 1200)
     public Id getSenderGroupId() {
-		return null;
+        return senderGroupId;
     }
 
     public SenderGroup getSenderGroup() {
-		return null;
+    	if(group != null) {
+    		return group;
+    	}
+    	group = get(SenderGroup.class, senderGroupId);
+    	return group;
     }
 
-    public boolean canSend() {
-    	return false;
+    @Override
+	public void validateData(TransactionManager tm) throws Exception {
+        if(StringUtility.isWhite(name)) {
+            throw new Invalid_Value("Name");
+        }
+        Email.check(fromAddress);
+        Email.check(replyToAddress, true);
+        senderGroupId = tm.checkType(this, senderGroupId, SenderGroup.class, false);
+        super.validateData(tm);
     }
     
+    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
+	public boolean canSend() {
+    	return status == 0;
+    }
+    
+    @Override
+    public String toString() {
+    	return name;
+    }
+
+	public void sendTestMail(String to, String subject, String content) throws Exception {
+		try {
+			createTransport();
+			MimeMessage m = mimeMessage();
+			m.addRecipients(Message.RecipientType.TO, InternetAddress.parse(to));
+			m.setSubject(subject, "UTF-8");
+			MimeMultipart mp = new MimeMultipart();
+			MimeBodyPart bp = new MimeBodyPart();
+			bp.setContent(content, Mail.PLAIN_TEXT);
+			mp.addBodyPart(bp);
+			m.setContent(mp);
+			m.saveChanges();
+			transport.sendMessage(m, m.getAllRecipients());
+		} finally {
+			closeInternal();
+		}
+	}
+
+	private MimeMessage mimeMessage() throws MessagingException {
+		MimeMessage m = new MimeMessage(session);
+		InternetAddress a = new InternetAddress(getFromAddress());
+		String t = getFromAddressName();
+		if(t != null && !t.isEmpty()) {
+			try {
+				a.setPersonal(t);
+			} catch (UnsupportedEncodingException ignored) {
+			}
+		}
+		m.setFrom(a);
+		return m;
+	}
+    
+    protected abstract void createTransport() throws MessagingException;
+
+    private void sendMessage(Mail mail) throws MessagingException {
+    	MimeMessage m = mimeMessage();
+    	m.addRecipients(Message.RecipientType.TO, InternetAddress.parse(mail.getToAddress()));
+    	String t = mail.getCCAddress();
+    	if(!StringUtility.isWhite(t)) {
+    		m.addRecipients(Message.RecipientType.CC, InternetAddress.parse(t));
+    	}
+    	t = mail.getReplyToAddress();
+    	if(StringUtility.isWhite(t)) {
+    		t = getReplyToAddress();
+    	}
+		InternetAddress a;
+    	if(!StringUtility.isWhite(t)) {
+    		a = new InternetAddress(t);
+    		if(t.equals(getReplyToAddress())) {
+    			t = getReplyToAddressName();
+    			if(t != null && !t.isEmpty()) {
+    				try {
+    					a.setPersonal(t);
+    				} catch (UnsupportedEncodingException ignored) {
+    				}
+    			}
+    		}
+    		m.setReplyTo(new InternetAddress[] { a });
+    	}
+    	t = mail.getSubject();
+    	if(StringUtility.isWhite(t)) {
+    		t = getSubject();
+    	}
+    	m.setSubject(t, "UTF-8");
+    	MimeMultipart mp = new MimeMultipart();
+    	MimeBodyPart bp = new MimeBodyPart();
+    	t = mail.getMessage();
+    	String ct;
+    	if(StringUtility.isWhite(t)) {
+    		t = getBody();
+    		ct = getBodyType();
+    	} else {
+    		ct = mail.getMessageType();
+    	}
+    	if(StringUtility.isWhite(ct)) {
+    		ct = Mail.PLAIN_TEXT;
+    	}
+		if(!ct.contains(";")) {
+			ct += Mail.CHAR_SET_TAG;
+		}
+    	bp.setContent(t, ct);
+    	mp.addBodyPart(bp);
+    	t = getFooter();
+    	if(!StringUtility.isWhite(t)) {
+    		ct = getFooterType();
+    		if(StringUtility.isWhite(ct)) {
+    			ct = Mail.PLAIN_TEXT;
+    		}
+    		if(!ct.contains(";")) {
+    			ct += Mail.CHAR_SET_TAG;
+			}
+    		bp = new MimeBodyPart();
+    		bp.setContent(t, ct);
+    		mp.addBodyPart(bp);
+    	}
+    	for(Attachment ma: mail.listLinks(Attachment.class)) {
+    		bp = new MimeBodyPart();
+    		bp.setDataHandler(new DataHandler(ma));
+    		t = ma.getFileName();
+        	if(!StringUtility.isWhite(t)) {
+        		bp.setFileName(t);
+        	}
+    		mp.addBodyPart(bp);
+			bp.setHeader("Content-ID", "<" + ma.getContentID() + ">");
+    	}
+    	m.setContent(mp);
+    	m.saveChanges();
+    	transport.sendMessage(m, m.getAllRecipients());
+    }
+
     public Error send(Mail mail) {
-		return null;
+		mail.setSender(this);
+    	try {
+    		createTransport();
+    		if(transport == null) {
+    			throw new Exception("Unable to create mail transport");
+    		}
+    	} catch(Throwable e) {
+    		if(transport != null) {
+    			try {
+    				transport.close();
+    			} catch (MessagingException ignored) {
+    			}
+    		}
+    		transport = null;
+    		session = null;
+    		setStatus(2);
+    		return new Error(this, mail, e);
+    	}
+    	try {
+			sendMessage(mail);
+			mail.sent(0);
+			return null;
+		} catch (Throwable e) {
+			mail.sent(1);
+			return new Error(this, mail, e);
+		}
     }
 
 	@Override
 	public void close() throws IOException {
+		session = null;
+		if(transport != null) {
+			try {
+				transport.close();
+			} catch (MessagingException e) {
+				throw new IOException(e);
+			} finally {
+				transport = null;
+			}
+		}
+	}
+
+	private void closeInternal() {
+		try {
+			close();
+		} catch (IOException ignored) {
+		}
 	}
 
 	public static int sendMails(TransactionManager tm) {
-		return 0;
+		return sendMails(-1, tm);
 	}
 
 	public static int sendMails(int count, TransactionManager tm) {
-		return 0;
+		if(count == 0) {
+			return count;
+		}
+		if(count < 0) {
+			count = Integer.MAX_VALUE;
+		}
+		List<Sender> senders = list(Sender.class, "Status=0", true).toList();
+		if(senders.isEmpty()) {
+			return -1;
+		}
+		ObjectIterator<Mail> mails = list(Mail.class, "NOT Sent AND Error=0", "CreatedAt");
+		int c, sent = 0;
+		while(count > 0) {
+			if(senders.isEmpty()) {
+				if(sent == 0) {
+					sent = -1;
+				}
+				break;
+			}
+			if(!mails.hasNext()) {
+				break;
+			}
+			c = sendMailsInt(tm, mails, senders);
+			if(c >= 0) {
+				sent += c;
+				count -= c;
+				continue;
+			}
+			if(sent == 0) {
+				sent = -1;
+			}
+			break;
+		}
+		mails.close();
+		return sent;
+	}
+	
+	private static int sendMailsInt(TransactionManager tm, ObjectIterator<Mail> mails, List<Sender> senders) {
+		Transaction t = null;
+		Sender sender;
+		int senderIndex = -1, c = 0;
+		try {
+			t = tm.createTransaction();
+			Error error;
+			for(Mail mail: mails) {
+				if(senders.isEmpty()) {
+					try {
+						t.commit();
+					} catch(Throwable ignored) {
+					}
+					return c;
+				}
+				if(++senderIndex == senders.size()) {
+					senderIndex = 0;
+				}
+				sender = matchSender(senderIndex, senders, mail);
+				if(sender == null) {
+					continue;
+				}
+				error = sender.send(mail);
+				if(error != null) {
+					error.save(t);
+					if(sender.status == 2) {
+						sender.closeInternal();
+						sender.addLink(t, error);
+						sender.save(t);
+						senders.remove(sender);
+					} else {
+						mail.save(t);
+						mail.addLink(t, error);
+					}
+				} else {
+					mail.save(t);
+					mail.removeAllLinks(t, Error.class);
+				}
+				++c;
+				if(c == BATCH_SIZE) {
+					break;
+				}
+			}
+		} catch (Exception e) {
+			tm.log(e);
+		}
+		try {
+			if(t != null) {
+				t.commit();
+			}
+		} catch(Exception e) {
+			tm.log(e);
+			return 0;
+		} finally {
+			senders.forEach(Sender::closeInternal);
+		}
+		return c;
 	}
 
-    public void sendTestMail(String to, String subject, String content) throws Exception {
-    }
+	private static Sender matchSender(int senderIndex, List<Sender> senders, Mail mail) {
+		int i = senderIndex;
+		Sender s;
+		SenderGroup sgs, sgm = null;
+		while(true) {
+			s = senders.get(i);
+			if(++i == senders.size()) {
+				i = 0;
+			}
+			if(!s.canSend()) {
+				if(i == senderIndex) {
+					break;
+				}
+				continue;
+			}
+			if(s.getSenderGroupId().equals(mail.getSenderGroupId())) {
+				return s;
+			}
+			if(sgm == null) {
+				sgm = mail.getSenderGroup();
+			}
+			if(sgm.getAlert()) {
+				sgs = s.getSenderGroup();
+				if(sgs.getAlert()) {
+					return s;
+				}
+			}
+			if(i == senderIndex) {
+				break;
+			}
+		}
+		return null;
+	}
 }

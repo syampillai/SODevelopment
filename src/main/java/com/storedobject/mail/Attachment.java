@@ -5,60 +5,70 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.math.BigDecimal;
 
+import com.storedobject.core.*;
+import com.storedobject.core.annotation.Column;
 import jakarta.activation.DataSource;
 
-import com.storedobject.core.Columns;
-import com.storedobject.core.Detail;
-import com.storedobject.core.Id;
-import com.storedobject.core.StoredObject;
-import com.storedobject.core.StreamData;
-
 public class Attachment extends StoredObject implements Detail, DataSource {
+
+    private Id fileId;
+    private String fileName;
+    private StreamData file;
 
     public Attachment() {
     }
 
     public static void columns(Columns columns) {
+        columns.add("File", "id");
+        columns.add("FileName", "text");
     }
 
     public void setFile(Id fileId) {
+        this.fileId = fileId;
+        file = null;
     }
 
     public void setFile(BigDecimal idValue) {
+        setFile(new Id(idValue));
     }
 
     public void setFile(StreamData file) {
+        setFile(file.getId());
     }
 
     public Id getFileId() {
-        return null;
+        return fileId;
     }
 
     public StreamData getFile() {
-        return null;
-    }
-
-    public void setContentID(String contentID) {
+    	if(file == null) {
+    		file = get(StreamData.class, fileId);
+    	}
+    	return file;
     }
 
     public String getContentID() {
-        return null;
+        return fileId.toString();
     }
 
     public void setFileName(String fileName) {
+        this.fileName = fileName;
     }
 
+    @Column(required = false)
     public String getFileName() {
-        return null;
+        return fileName;
+    }
+
+    @Override
+	public void validateData(TransactionManager tm) throws Exception {
+        fileId = tm.checkType(this, fileId, StreamData.class, false);
+        super.validateData(tm);
     }
 
 	@Override
 	public Id getUniqueId() {
 		return getFileId();
-	}
-
-	@Override
-	public void copyValuesFrom(Detail detail) {
 	}
 
 	@Override
@@ -68,21 +78,21 @@ public class Attachment extends StoredObject implements Detail, DataSource {
 
 	@Override
 	public String getContentType() {
-        return null;
+		return getFile().getMimeType();
 	}
 
 	@Override
-	public InputStream getInputStream() throws IOException {
-        return null;
+	public InputStream getInputStream() {
+		return getFile().getContent();
 	}
 
 	@Override
 	public String getName() {
-        return null;
+		return fileName;
 	}
 
 	@Override
 	public OutputStream getOutputStream() throws IOException {
-		return null;
+		throw new IOException(new UnsupportedOperationException());
 	}
 }
