@@ -473,7 +473,7 @@ public final class MessageTemplate extends StoredObject {
             }
             message.setMessage(createMessage(person, messageParameters));
             if(exists(message.getClass(), "SentTo=" + person.getId() + " AND T_Family="
-                    + ClassAttribute.get(message).family
+                    + ClassAttribute.get(message).getFamily()
                     + " AND CreatedAt>'"
                     + Database.formatWithTime(DateUtility.addDay(DateUtility.now(), -1))
                     + "' AND Message='" + message.getMessage().replace("'", "''") + "'")) {
