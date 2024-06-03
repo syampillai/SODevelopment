@@ -77,9 +77,6 @@ public final class DBTransaction extends AbstractTransaction {
         return false;
     }
 
-    public interface NoNotification {
-    }
-
-    public interface NoHistory extends NoNotification {
+    public interface NoHistory {
     }
 }

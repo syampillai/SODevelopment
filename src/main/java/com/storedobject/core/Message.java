@@ -39,7 +39,7 @@ public abstract class Message extends StoredObject {
     }
 
     public static String[] protectedColumns() {
-        return new String[] { "MessageID", "SentTo" };
+        return new String[] { "MessageID" };
     }
 
     public void setMessage(String message) {
@@ -132,18 +132,16 @@ public abstract class Message extends StoredObject {
         setSentTo(new Id(idValue));
     }
 
-    public void setSentTo(StoredObject sentTo) {
+    public void setSentTo(Person sentTo) {
         setSentTo(sentTo == null ? null : sentTo.getId());
     }
 
-    @Column(required = false, style = "(any)")
     public Id getSentToId() {
         return sentToId;
     }
 
-    public StoredObject getSentTo() {
-        StoredObject so = get(sentToId);
-        return so instanceof HasContacts ? so : null;
+    public Person getSentTo() {
+        return get(Person.class, sentToId);
     }
 
     /**
@@ -162,23 +160,27 @@ public abstract class Message extends StoredObject {
     	return tc.save(this);
     }
 
-    @Override
-	public void validateData(TransactionManager tm) throws Exception {
-        if(StringUtility.isWhite(message)) {
-            throw new Invalid_Value("Message");
+    public void ready() {
+        if(error == 0 && sent) {
+            return;
         }
-        if(error == 1) { // Try sending again
-            sent = false;
-        } else if(error > 2) { // Error greater than 2 means delivery not possible
-            sent = true;
-        }
-        if(getReceiver() == null) {
-            throw new Invalid_Value("Receiver");
-        }
-        super.validateData(tm);
+        error = 0;
+        sent = false;
     }
 
-    public final HasContacts getReceiver() {
-        return getSentTo() instanceof HasContacts hc ? hc : null;
+    @Override
+	public void validateData(TransactionManager tm) throws Exception {
+        if(!deleted()) {
+            sentToId = tm.checkType(this, sentToId, Person.class, false);
+            if (StringUtility.isWhite(message)) {
+                throw new Invalid_Value("Message");
+            }
+            if (error == 1) { // Try sending again
+                sent = false;
+            } else if (error > 2) { // Error greater than 2 means delivery not possible
+                sent = true;
+            }
+        }
+        super.validateData(tm);
     }
 }

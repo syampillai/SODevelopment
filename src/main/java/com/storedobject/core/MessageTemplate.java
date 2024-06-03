@@ -2,6 +2,7 @@ package com.storedobject.core;
 
 import com.storedobject.common.Email;
 import com.storedobject.common.IO;
+import com.storedobject.common.SOException;
 import com.storedobject.core.annotation.Column;
 import com.storedobject.core.annotation.SetNotAllowed;
 import com.storedobject.job.MessageSender;
@@ -15,7 +16,6 @@ import java.util.*;
 
 public final class MessageTemplate extends StoredObject {
 
-    private static MessageTemplate defaultTemplate;
     private static final String[] deliveryValues = new String[] {
             "SMS",
             "Email",
@@ -183,7 +183,8 @@ public final class MessageTemplate extends StoredObject {
     /**
      * Creates a message by replacing placeholders in the template with the provided parameters.
      * Placeholders should be specified in angle-brackets with an ordinal number of the parameter.
-     * A special placeholder P in angle-brackets can be used to as the placeholder for the person's name.
+     * A special placeholder P in angle-brackets can be used for substituting the person's name and a
+     * placeholder TP in angle-brackets can be used for substituting person's name with salutation.
      *
      * @param person The person to whom the message is addressed.
      * @param parameters The parameters used to replace placeholders in the template.
@@ -193,6 +194,7 @@ public final class MessageTemplate extends StoredObject {
         String s = template, index;
         if(person != null) {
             s = s.replaceAll("<P>", person.getName());
+            s = s.replaceAll("<TP>", person.toDisplay());
         }
         int i = 1;
         for(Object p: parameters) {
@@ -330,6 +332,7 @@ public final class MessageTemplate extends StoredObject {
         templateName = name(templateName);
         List<MessageTemplate> templates = listAll(templateName);
         List<Message> toAttach = new ArrayList<>();
+        boolean sent;
         try {
             if(templates.isEmpty()) {
                 throw new SOException("No such template - " + templateName);
@@ -341,9 +344,11 @@ public final class MessageTemplate extends StoredObject {
                     if(template.delivery == 2) { // Application
                         m = mm.get(template.getId());
                         if(m == null) {
-                            m = LoginMessage.alert(tc.getTransaction(), template.createMessage(messageParameters),
+                            m = LoginMessage.alert(tc.getTransaction(),
+                                    template.createMessage(person, messageParameters),
                                     person, template.createProcessorLogic(messageParameters),
-                                    template.createGeneratedBy(messageParameters), 7);
+                                    template.createGeneratedBy(messageParameters),
+                                    template.createValidity(messageParameters));
                             mm.put(template.getId(), m);
                             mIds.add(m.getId());
                         } else {
@@ -352,7 +357,16 @@ public final class MessageTemplate extends StoredObject {
                         tc.commit();
                         any = true;
                     } else {
-                        if(template.sendOne(tc, person, toAttach, messageParameters)) {
+                        try {
+                            sent = template.sendOne(tc, person, toAttach, messageParameters);
+                        } catch (SOException e) {
+                            if(tc.isActive()) {
+                                tc.rollback(e);
+                            }
+                            tc.clear();
+                            sent = false;
+                        }
+                        if(sent) {
                             any = true;
                         } else {
                             if(!channels.isEmpty()) {
@@ -432,10 +446,16 @@ public final class MessageTemplate extends StoredObject {
             switch(delivery) {
                 case 0 -> // SMS
                     message = new SMSMessage();
-                case 1 -> // Email
-                    message = Mail.createAlert();
+                case 1 -> {// Email
+                    try {
+                        message = Mail.createAlert(tc.getManager());
+                    } catch (SOException e) {
+                        tc.rollback(e.getEndUserMessage());
+                        return false;
+                    }
+                }
                 case 2 -> { // Application
-                    LoginMessage.alert(tc.getTransaction(), createMessage(messageParameters), person,
+                    LoginMessage.alert(tc.getTransaction(), createMessage(person, messageParameters), person,
                             createProcessorLogic(messageParameters), createGeneratedBy(messageParameters),
                             createValidity(messageParameters));
                     return true;
@@ -462,12 +482,13 @@ public final class MessageTemplate extends StoredObject {
             message.setSentTo(person);
             switch(delivery) {
                 case 0 -> { // SMS
-                    long mobile = 0;
+                    long mobile;
                     try {
-                        mobile = Long.parseLong(contact.getContactValue().replace(" ", "").trim());
+                        mobile = HasContacts.phoneToNumber(contact.getContactValue());
                     } catch (Throwable error) {
                         tc.rollback("Invalid mobile number '" + contact.getValue() +
                                 "' configured to send SMS for " + person.toDisplay());
+                        return false;
                     }
                     //noinspection ConstantConditions
                     ((SMSMessage) message).setMobileNumber(mobile);
@@ -514,7 +535,7 @@ public final class MessageTemplate extends StoredObject {
 
     /**
      * Create and send messages to the given list of persons.
-     * <p>Note: If the template doesn't exist, the default template is used.</p>
+     * <p>Note: If the template doesn't exist, a new template is created.</p>
      * @param templateName Template name.
      * @param tm Transaction manager.
      * @param persons List of persons.
@@ -526,26 +547,15 @@ public final class MessageTemplate extends StoredObject {
         TransactionControl tc = new TransactionControl(tm);
         try {
             templateName = name(templateName);
-            MessageTemplate mt = MessageTemplate.getFor(templateName);
-            if(mt == null) {
-                templateName = createDefault(tm).code;
+            MessageTemplate mt = create(templateName, tm);
+            if(mt != null) {
+                templateName = mt.code;
             }
             send(templateName, tc, persons, messageParameters);
-        } catch (Throwable ignored) {
+        } catch (Throwable error) {
+            tm.log(error);
         }
         return tc.commit();
-    }
-
-    /**
-     * Create the default template if it doesn't exist.
-     * @param tm Transaction manager
-     * @return Default template.
-     */
-    public static MessageTemplate createDefault(TransactionManager tm) {
-        if(defaultTemplate == null) {
-            defaultTemplate = create("DEFAULT", tm);
-        }
-        return defaultTemplate;
     }
 
     /**
@@ -570,10 +580,5 @@ public final class MessageTemplate extends StoredObject {
         } catch (Exception e) {
             return null;
         }
-    }
-
-    @Override
-    void savedCore() throws Exception {
-        defaultTemplate = null;
     }
 }

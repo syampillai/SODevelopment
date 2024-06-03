@@ -246,10 +246,6 @@ public class Mail extends Message {
 		return toAddress + " \"" + getMessage() + "\" /" + getMessageID() + "(" + DateUtility.format(getCreatedAt())+ ")";
 	}
 
-	public void ready() {
-		setError(0);
-	}
-
 	@Override
 	public void validateData(TransactionManager tm) throws Exception {
 		if(Id.isNull(senderGroupId)) {
@@ -378,16 +374,32 @@ public class Mail extends Message {
 	}
 
 	public static Mail createAlert() throws SOException {
-    	Mail m = new Mail();
-    	m.ready();
+		return createAlert(null);
+	}
+
+	public static Mail createAlert(TransactionManager tm) throws SOException {
+		Mail m = new Mail();
+		if(tm == null) {
+			m.ready();
+		}
 		SenderGroup group = list(SenderGroup.class, "Alert").findFirst();
+		if(group == null && tm != null) {
+			group = new SenderGroup();
+			group.setName("ALERT");
+			group.setAlert(true);
+            try {
+                tm.transact(group::save);
+            } catch (Exception e) {
+				group = null;
+            }
+        }
 		if(group != null) {
 			m.senderGroupId = group.getId();
 		} else {
 			throw new SOException("No senders defined for mail alerts");
 		}
-    	return m;
-    }
+		return m;
+	}
 
 	public static void alert(Transaction transaction, String message, StoredObject person) throws Exception {
 		alert(transaction, message, ObjectIterator.create(person));

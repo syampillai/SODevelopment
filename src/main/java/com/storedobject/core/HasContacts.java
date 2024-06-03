@@ -281,7 +281,7 @@ public interface HasContacts {
     static long phoneToNumber(String phone) {
         return phone == null || phone.isBlank() ? 0 : Long.parseLong(phone.replace(" ", "")
                 .replace("-", "").replace("(", "")
-                .replace(")", ""));
+                .replace(")", "").strip());
     }
 
     /**

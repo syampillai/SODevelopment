@@ -46,48 +46,61 @@ public abstract class AbstractSendAndReceiveMaterial<T extends InventoryTransfer
 
     public AbstractSendAndReceiveMaterial(Class<T> transferClass, Class<L> itemClass, boolean receiveMode,
                                           InventoryLocation otherLocation) {
-        this(transferClass, itemClass, (String) null, receiveMode, otherLocation);
+        this(transferClass, itemClass, (String) null, receiveMode, otherLocation, null);
     }
 
     public AbstractSendAndReceiveMaterial(Class<T> transferClass, Class<L> itemClass, String fromOrTo,
                                           boolean receiveMode) {
+        this(transferClass, itemClass, fromOrTo, receiveMode, null);
+    }
+
+    public AbstractSendAndReceiveMaterial(Class<T> transferClass, Class<L> itemClass, String fromOrTo,
+                                          boolean receiveMode, String caption) {
         this(transferClass, itemClass, fromOrTo, receiveMode,
-                ParameterParser.location(1, fromOrTo, true, ALL_TYPES));
+                ParameterParser.location(1, fromOrTo, true, ALL_TYPES), caption);
     }
 
     private AbstractSendAndReceiveMaterial(Class<T> transferClass, Class<L> itemClass, String fromOrTo,
-                                           boolean receiveMode, InventoryLocation otherLocation) {
+                                           boolean receiveMode, InventoryLocation otherLocation, String caption) {
         this(transferClass, itemClass, fromOrToField(fromOrTo, receiveMode, transferClass),
-                receiveMode, otherLocation);
+                receiveMode, otherLocation, caption);
         this.itemClass = ParameterParser.itemClass(fromOrTo);
     }
 
     public AbstractSendAndReceiveMaterial(Class<T> transferClass, Class<L> itemClass, InventoryLocation fromOrTo,
                                           boolean receiveMode) {
-        this(transferClass, itemClass, LocationField.create(fromOrTo), receiveMode);
+        this(transferClass, itemClass, fromOrTo, receiveMode, (String) null);
+    }
+
+    public AbstractSendAndReceiveMaterial(Class<T> transferClass, Class<L> itemClass, InventoryLocation fromOrTo,
+                                          boolean receiveMode, String caption) {
+        this(transferClass, itemClass, LocationField.create(fromOrTo), receiveMode, caption);
     }
 
     public AbstractSendAndReceiveMaterial(Class<T> transferClass, Class<L> itemClass, InventoryLocation fromOrTo,
                                           boolean receiveMode, InventoryLocation otherLocation) {
-        this(transferClass, itemClass, LocationField.create(fromOrTo), receiveMode, otherLocation);
+        this(transferClass, itemClass, LocationField.create(fromOrTo), receiveMode, otherLocation, null);
     }
 
     private AbstractSendAndReceiveMaterial(Class<T> transferClass, Class<L> itemClass, LocationField fromOrToField,
-                                           boolean receiveMode) {
-        this(transferClass, itemClass, fromOrToField, receiveMode, null);
+                                           boolean receiveMode, String caption) {
+        this(transferClass, itemClass, fromOrToField, receiveMode, null, caption);
     }
 
     private AbstractSendAndReceiveMaterial(Class<T> transferClass, Class<L> itemClass, LocationField fromOrToField,
-                                           boolean receiveMode, InventoryLocation otherLocation) {
+                                           boolean receiveMode, InventoryLocation otherLocation, String caption) {
         super(transferClass,
                 receiveMode ?
                         StringList.create("Date", "Reference", "ReferenceNumber AS Other Reference",
-                                "FromLocation AS From", "Received") :
-                        StringList.create("Date", "Reference", "ReferenceNumber AS Other Reference",
+                                "FromLocation AS From", "Received") : (
+                        InventorySale.class.isAssignableFrom(transferClass) ?
+                                StringList.create("Date", "Reference", "Consignment",
+                                        "ToLocation AS Sold to", "Status")
+                                : StringList.create("Date", "Reference", "ReferenceNumber AS Other Reference",
                                 "Consignment",
                                 "ToLocation AS " + (transferClass == MaterialReturned.class ? "Return" :
                                         (transferClass == InventoryRO.class ? "Send" : "Transfer")) + " to",
-                                "Status"));
+                                "Status")));
         addConstructedListener(v -> created());
         this.transferItemClass = itemClass;
         this.receiveMode = receiveMode;
@@ -112,7 +125,8 @@ public abstract class AbstractSendAndReceiveMaterial<T extends InventoryTransfer
             this.fromField = new ObjectField<>("Sent from", lf);
             this.filterField = new ObjectField<>(this.fromField.getLabel(), ff);
         } else {
-            this.fromField = new ObjectField<>("Sent from", fromOrToField);
+            this.fromField = new ObjectField<>((InventorySale.class.isAssignableFrom(getDataClass()) ?
+                    "Sold" : "Sent") + " from", fromOrToField);
             if(transferClass == MaterialReturned.class) {
                 lf = this.otherLocation == null ? new LocationField(0).remove(this.fromOrTo) :
                         LocationField.create(this.otherLocation);
@@ -124,6 +138,9 @@ public abstract class AbstractSendAndReceiveMaterial<T extends InventoryTransfer
                     if(transferClass == InventoryRO.class) {
                         lf = new LocationField(3);
                         ff = new LocationField(3);
+                    } else if(InventorySale.class.isAssignableFrom(transferClass)) {
+                        lf = new LocationField(2);
+                        ff = new LocationField(2);
                     } else {
                         lf = new LocationField(ALL_TYPES).remove(this.fromOrTo);
                         ff = new LocationField(ALL_TYPES).remove(this.fromOrTo);
@@ -132,7 +149,8 @@ public abstract class AbstractSendAndReceiveMaterial<T extends InventoryTransfer
                     lf = LocationField.create(this.otherLocation);
                     ff = LocationField.create(this.otherLocation);
                 }
-                this.toField = new ObjectField<>((transferClass == InventoryRO.class ? "Sent" : "Transferred") +
+                this.toField = new ObjectField<>((transferClass == InventoryRO.class ? "Sent"
+                        : (InventorySale.class.isAssignableFrom(getDataClass()) ? "Sold" : "Transferred")) +
                         " to", lf);
             }
             this.filterField = new ObjectField<>(this.toField.getLabel(), ff);
@@ -166,22 +184,26 @@ public abstract class AbstractSendAndReceiveMaterial<T extends InventoryTransfer
         } else {
             grnButton = null;
         }
-        if(transferClass == InventoryRO.class) {
-            setCaption("Send Items for Repair");
+        if(caption == null) {
+            if (transferClass == InventoryRO.class) {
+                setCaption("Send Items for Repair");
+            } else {
+                String c = null;
+                if (receiveMode) {
+                    c = switch (getLocationFrom().getType()) {
+                        case 3 -> "Materials";
+                        case 18 -> "Tools";
+                        default -> null;
+                    };
+                }
+                if (c == null) {
+                    c = "Materials/Tools";
+                }
+                setCaption((receiveMode ? "Receive" : (transferClass == MaterialReturned.class ? "Return" : "Transfer"))
+                        + " " + c);
+            }
         } else {
-            String c = null;
-            if(receiveMode) {
-                c = switch(getLocationFrom().getType()) {
-                    case 3 -> "Materials";
-                    case 18 -> "Tools";
-                    default -> null;
-                };
-            }
-            if(c == null) {
-                c = "Materials/Tools";
-            }
-            setCaption((receiveMode ? "Receive" : (transferClass == MaterialReturned.class ? "Return" : "Transfer")) +
-                    " " + c);
+            setCaption(caption);
         }
         if(!receiveMode && print != null && print.definitions()
                 .noneMatch(d -> d.getPrintLogicClassName().equals(CreateConsignment.class.getName()))) {
@@ -270,6 +292,9 @@ public abstract class AbstractSendAndReceiveMaterial<T extends InventoryTransfer
         if(receiveMode) {
             return LocationField.create(null, fromOrTo, 0);
         }
+        if(InventorySale.class.isAssignableFrom(transferClass)) {
+            return LocationField.create(null, fromOrTo, 2);
+        }
         if(transferClass == MaterialReturned.class) {
             return LocationField.create(null, fromOrTo, 4, 5, 11);
         }
@@ -322,7 +347,9 @@ public abstract class AbstractSendAndReceiveMaterial<T extends InventoryTransfer
             add.setVisible(false);
             edit.setVisible(false);
         } else {
-            amend = new ConfirmButton("Amend", e -> amend());
+            if(!InventorySale.class.isAssignableFrom(getDataClass())) {
+                amend = new ConfirmButton("Amend", e -> amend());
+            }
         }
         buttonPanel.add(new Button("Search", e -> searchFilter()), approve, send, amend, receive, grnButton);
     }
@@ -546,6 +573,8 @@ public abstract class AbstractSendAndReceiveMaterial<T extends InventoryTransfer
             }
             if(getObjectClass() == InventoryRO.class) {
                 setCaption("Send Items for Repair");
+            } else {
+                setCaption(AbstractSendAndReceiveMaterial.this.getCaption());
             }
             setColumns(3);
             addField("Reference");
@@ -585,6 +614,11 @@ public abstract class AbstractSendAndReceiveMaterial<T extends InventoryTransfer
 
         @Override
         public boolean isFieldVisible(String fieldName) {
+            if(InventorySale.class.isAssignableFrom(getDataClass())) {
+                if("ReferenceNumber".equals(fieldName)) {
+                    return false;
+                }
+            }
             if("InvoiceNumber".equals(fieldName) || "InvoiceDate".equals(fieldName)) {
                 return requiresInvoiceDate();
             }

@@ -1,7 +1,7 @@
 package com.storedobject.ui;
 
-import com.storedobject.core.Account;
-import com.storedobject.core.TransactionManager;
+import com.storedobject.core.*;
+import com.storedobject.report.ObjectList;
 import com.storedobject.ui.accounts.AccountField;
 import com.storedobject.vaadin.DataForm;
 
@@ -18,10 +18,9 @@ public class Test extends DataForm implements Transactional {
     protected boolean process() {
         Account account = accountField.getAccount();
         if (account == null) {
-            String s = "Hello World";
-            message(s);
             TransactionManager tm = getTransactionManager();
-            tm.getUser().notify("DEFAULT", tm, s);
+            tm.getUser().notify("TEST", tm, "Hello World 5", StoredObject.get(FileData.class),
+                    new ObjectList<>(getApplication(), Person.class));
             return true;
         }
         return false;
