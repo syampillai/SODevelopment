@@ -185,6 +185,7 @@ public class ObjectTreeBrowser<T extends StoredObject> extends ObjectTree<T> {
         }
     }
 
+    @SuppressWarnings("DuplicatedCode")
     @Override
     final void protect() {
         if(add != null) {

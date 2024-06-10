@@ -6,6 +6,7 @@ import com.storedobject.core.ObjectSearchBuilder;
 import com.storedobject.core.StoredObject;
 import com.storedobject.ui.Application;
 import com.storedobject.ui.ObjectGridData;
+import com.storedobject.ui.SearchBuilder;
 import com.storedobject.vaadin.Button;
 import com.storedobject.vaadin.ThemeStyle;
 import com.vaadin.flow.component.Component;
@@ -18,7 +19,7 @@ public final class LoadFilterButtons<T extends StoredObject> {
     private final ObjectSearchBuilder<T> searchBuilder;
     private boolean loadPending, filterMode, canFilter;
 
-    public LoadFilterButtons(ObjectGridData<T, ?> grid, Iterable<String> filterColumns) {
+    public LoadFilterButtons(ObjectGridData<T, ?> grid, Iterable<String> filterColumns, SearchBuilder<T> customSearchBuilder) {
         this.grid = grid;
         grid.addDataLoadedListener(this::loaded);
         boolean smallList = filterColumns == null && ObjectHint.isSmallList(grid.getObjectClass(), grid.isAllowAny());
@@ -31,14 +32,11 @@ public final class LoadFilterButtons<T extends StoredObject> {
         }
         StringList filters = null;
         if(filterColumns != null) {
-            if(filterColumns instanceof StringList) {
-                filters = (StringList)filterColumns;
-            } else {
-                filters = StringList.create(filterColumns);
-            }
+            filters = StringList.create(filterColumns);
         }
-        ObjectSearchBuilder<T> sb = null;
-        if(!smallList && grid.canSearch()) {
+        ObjectSearchBuilder<T> sb = customSearchBuilder == null ? null :
+                customSearchBuilder.createSearchBuilder(grid.getObjectClass(), filters, x -> filterChanged());
+        if(sb == null && !smallList && grid.canSearch()) {
             sb = grid.createSearchBuilder(filters, x -> filterChanged());
         }
         if(sb != null && sb.getSearchFieldCount() == 0) {

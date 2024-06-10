@@ -34,7 +34,6 @@ public class SystemUtility extends View implements CloseableView, Transactional 
     private final Checkbox any;
     private final ClassNameField from;
     private final Button executeSQL;
-    private final Button clear;
     private final Button pdf;
     private final Button downloadExcelData;
     private final Button downloadData;
@@ -49,6 +48,7 @@ public class SystemUtility extends View implements CloseableView, Transactional 
     private final boolean isAdmin;
     private Class<? extends StoredObject> objectClass;
     private final IntegerField connectionAge;
+    private final LongField limit;
     private final TextArea speech;
 
     public SystemUtility() {
@@ -60,6 +60,7 @@ public class SystemUtility extends View implements CloseableView, Transactional 
         from.setWidth("60em");
         where = new TextField("WHERE");
         orderBy = new TextField("ORDER BY");
+        limit = new LongField("Limit (0 for no limit)");
         FormLayout form = new FormLayout();
         form.setColumns(1);
         form.add(label("Execute SQL"));
@@ -68,10 +69,11 @@ public class SystemUtility extends View implements CloseableView, Transactional 
         form.add(from);
         form.add(where);
         form.add(orderBy);
+        form.add(limit);
         ButtonLayout buttons = new ButtonLayout();
         form.add(buttons);
         buttons.add(executeSQL = new Button("OK", this));
-        buttons.add(clear = new Button("Clear", this));
+        buttons.add(new Button("Clear",  e -> clearFields()));
         buttons.add(pdf = new Button("PDF", this));
         buttons.add(downloadExcelData = new Button("Excel", this));
         buttons.add(downloadData = new Button("Download", this));
@@ -156,7 +158,15 @@ public class SystemUtility extends View implements CloseableView, Transactional 
         return super.getApplication();
     }
 
-    @SuppressWarnings({ "rawtypes", "unchecked", "resource" })
+    private void clearFields() {
+        select.clear();
+        where.clear();
+        orderBy.clear();
+        limit.clear();
+        from.focus();
+    }
+
+    @SuppressWarnings({"rawtypes", "unchecked", "resource", "DuplicatedCode"})
     @Override
     public void clicked(Component c) {
         clearAlerts();
@@ -175,13 +185,6 @@ public class SystemUtility extends View implements CloseableView, Transactional 
                 }
             };
             getApplication().view(cp);
-            return;
-        }
-        if(c == clear) {
-            select.setValue("");
-            where.setValue("");
-            orderBy.setValue("");
-            from.focus();
             return;
         }
         if(c == viewTranRaw) {
@@ -219,12 +222,14 @@ public class SystemUtility extends View implements CloseableView, Transactional 
             return;
         }
         if(c == downloadData) {
-            final Class<? extends StoredObject> clazz = objectClass;
             TextContentProducer cp = new TextContentProducer() {
                 @Override
                 public void generateContent() throws Exception {
                     Writer w = getWriter();
-                    for(StoredObject so: StoredObject.list(clazz, where.getValue().trim(), any.getValue())) {
+                    ObjectIterator<? extends StoredObject> objects;
+                    objects = StoredObject.list(objectClass, where.getValue().trim(), any.getValue());
+                    objects = objects(objects);
+                    for(StoredObject so: objects) {
                         so.save(w);
                     }
                 }
@@ -236,6 +241,7 @@ public class SystemUtility extends View implements CloseableView, Transactional 
             new Update().execute();
             return;
         }
+        long rowsRequired = limit.getValue();
         String cols = select.getValue().trim();
         if(c == executeSQL) {
             StringList columns;
@@ -244,14 +250,19 @@ public class SystemUtility extends View implements CloseableView, Transactional 
                 select.setValue(columns.toString(", "));
             } else {
                 if(cols.startsWith("/")) {
-                    new QueryGrid(StoredObject.query(objectClass, cols, where.getValue(), orderBy.getValue())).execute();
+                    Query q = StoredObject.query(objectClass, cols, where.getValue(), orderBy.getValue());
+                    if(rowsRequired > 0) {
+                        q = q.limit(rowsRequired);
+                    }
+                    new QueryGrid(q).execute();
                     return;
                 }
                 columns = StringList.create(cols);
             }
             Browser b = new Browser(objectClass, columns);
             b.execute();
-            b.load(where.getValue().trim(), orderBy.getValue().trim());
+            b.load(objects(StoredObject.list(objectClass, where.getValue().trim(), orderBy.getValue().trim(),
+                    any.getValue())));
             return;
         }
         if(c == pdf) {
@@ -266,6 +277,11 @@ public class SystemUtility extends View implements CloseableView, Transactional 
                 @Override
                 public String getExtraCondition() {
                     return where.getValue();
+                }
+
+                @Override
+                public ObjectIterator customizeList(ObjectIterator objectList) {
+                    return objects(objectList);
                 }
             }.execute();
             return;
@@ -283,8 +299,22 @@ public class SystemUtility extends View implements CloseableView, Transactional 
                 public String getExtraCondition() {
                     return where.getValue();
                 }
+
+                @Override
+                public ObjectIterator customizeList(ObjectIterator objectList) {
+                    return objects(objectList);
+                }
             }.execute();
         }
+    }
+
+    @SuppressWarnings("rawtypes")
+    private ObjectIterator objects(ObjectIterator objectList) {
+        long rowsRequired = limit.getValue();
+        if(rowsRequired > 0) {
+            return objectList.limit(rowsRequired);
+        }
+        return objectList;
     }
 
     private void loadRaw() {

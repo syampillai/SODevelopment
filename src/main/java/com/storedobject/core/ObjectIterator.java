@@ -593,6 +593,16 @@ public abstract class ObjectIterator<O extends StoredObject> implements Iterator
         return single;
     }
 
+    static <O extends StoredObject> ObjectIterator<O> create(Id maxTranId, Transaction transaction, Query sql,
+                                                             ClassAttribute<?> ca) {
+        return create();
+    }
+
+    static <O extends StoredObject> ObjectIterator<O> create(Id maxTranId, Transaction transaction, Query sql,
+                                                             Class<O> objectClass, boolean any) {
+        return create();
+    }
+
     /**
      * Create an empty iterator.
      *

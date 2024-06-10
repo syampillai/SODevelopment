@@ -381,6 +381,7 @@ public interface ObjectLoader<T extends StoredObject> extends FilterMethods<T> {
      * @param any Whether instanced of the subclasses to be retrieved or not.
      */
     default void load(Query query, boolean any) {
+        load(ObjectIterator.create(null, null, query, getObjectClass(), any));
     }
 
     /**
@@ -429,7 +430,8 @@ public interface ObjectLoader<T extends StoredObject> extends FilterMethods<T> {
 
     /**
      * Check whether the given object could be there in the objects loaded by this loader.
-     * @param object Object to  check.
+     * <p>Note: For customized loaders, this may not check the custom conditions.</p>
+     * @param object Object to check.
      * @return True/false.
      */
     default boolean canContain(T object) {

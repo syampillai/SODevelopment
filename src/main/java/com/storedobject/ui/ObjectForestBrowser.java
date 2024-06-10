@@ -7,7 +7,6 @@ import com.storedobject.vaadin.Button;
 import com.storedobject.vaadin.ButtonLayout;
 import com.storedobject.vaadin.ConfirmButton;
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 
 import java.lang.reflect.Constructor;
 
@@ -51,6 +50,16 @@ public class ObjectForestBrowser<T extends StoredObject> extends ObjectForest<T>
 
     ObjectForestBrowser(boolean large, boolean forViewing, Class<T> objectClass, Iterable<String> columns, int actions,
                         Iterable<String> filterColumns, String caption, String allowedActions) {
+        this(large, forViewing, objectClass, columns, actions, filterColumns, null, caption, allowedActions);
+    }
+
+    ObjectForestBrowser(boolean large, boolean forViewing, Class<T> objectClass, SearchBuilder<T> searchBuilder, int actions,
+                        Iterable<String> filterColumns, String caption, String allowedActions) {
+        this(large, forViewing, objectClass, null, actions, null, searchBuilder, caption, allowedActions);
+    }
+
+    private ObjectForestBrowser(boolean large, boolean forViewing, Class<T> objectClass, Iterable<String> columns, int actions,
+                        Iterable<String> filterColumns, SearchBuilder<T> searchBuilder, String caption, String allowedActions) {
         super(large, forViewing, objectClass, columns, (actions & ALLOW_ANY) == ALLOW_ANY);
         if(forViewing) {
             actions = EditorAction.RELOAD;
@@ -83,7 +92,7 @@ public class ObjectForestBrowser<T extends StoredObject> extends ObjectForest<T>
                 buttonPanel.add(delete);
             }
             if((actions & RELOAD) == RELOAD) {
-                loadFilterButtons = new LoadFilterButtons<>(this, filterColumns);
+                loadFilterButtons = new LoadFilterButtons<>(this, filterColumns, searchBuilder);
                 filter = loadFilterButtons.getFilterButton();
                 load = loadFilterButtons.getLoadButton();
                 loadFilterButtons.addTo(buttonPanel);
@@ -112,7 +121,8 @@ public class ObjectForestBrowser<T extends StoredObject> extends ObjectForest<T>
     public ObjectForestBrowser(String className) throws Exception {
         this(false, false, (Class<T>) JavaClassLoader.getLogic(ObjectEditor.sanitize(className)),
                 null, ObjectBrowser.actions(className, Application.get().getServer().isDeveloper()),
-                null, Application.get().getRunningLogic().getTitle(), ObjectEditor.allowedActions(className));
+                null, null,  Application.get().getRunningLogic().getTitle(),
+                ObjectEditor.allowedActions(className));
     }
 
     private void con() {
@@ -181,6 +191,7 @@ public class ObjectForestBrowser<T extends StoredObject> extends ObjectForest<T>
         return new ObjectForestBrowser<>(objectClass, columns, actions, title);
     }
 
+    @SuppressWarnings("DuplicatedCode")
     @Override
     final void protect() {
         if(add != null) {
@@ -199,22 +210,7 @@ public class ObjectForestBrowser<T extends StoredObject> extends ObjectForest<T>
 
     @Override
     public Component createHeader() {
-        ObjectSearchBuilder<?> sb;
-        if(loadFilterButtons == null || (sb = loadFilterButtons.getSearchBuilder()) == null) {
-            return buttonPanel;
-        }
-        VerticalLayout v = new VerticalLayout(buttonPanel);
-        Component f = null;
-        if(sb instanceof Component) {
-            f = (Component) sb;
-        }
-        if(f != null) {
-            v.add(f);
-        }
-        v.setPadding(false);
-        v.setMargin(false);
-        v.setSpacing(false);
-        return v;
+        return ObjectBrowser.header(buttonPanel, loadFilterButtons);
     }
 
     protected boolean isActionAllowed(String action) {

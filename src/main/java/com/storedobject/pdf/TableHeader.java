@@ -1,5 +1,6 @@
 package com.storedobject.pdf;
 
+import com.storedobject.core.*;
 import com.storedobject.office.Excel;
 import org.apache.poi.ss.usermodel.Cell;
 
@@ -21,7 +22,7 @@ public class TableHeader {
     private Function<PDFCell, PDFCell> cellCustomizer;
 
     /**
-     * Constructor. Default relative widths of all columns are set to 10. By default all headers will be centered.
+     * Constructor. Default relative widths of all columns are set to 10. By default, all headers will be centered.
      * @param cellHeaders Cell headers.
      */
     public TableHeader(String... cellHeaders) {
@@ -38,7 +39,7 @@ public class TableHeader {
     }
 
     /**
-     * Constructor. Default relative widths of all columns are set to 10. By default all headers will be centered.
+     * Constructor. Default relative widths of all columns are set to 10. By default, all headers will be centered.
      * @param cellHeaders Cell headers.
      */
     public TableHeader(Iterable<String> cellHeaders) {
@@ -121,26 +122,31 @@ public class TableHeader {
     }
 
     /**
-     * Set relative widths.
+     * Set relative widths. All non-positive values will be ignored as if that value was not present in the parameter.
      * @param widths Relative widths.
      */
     public void setWidths(int... widths) {
         if(widths != null) {
+            int c = 0;
             for(int i = 0; i < this.widths.length && i < widths.length; ++i) {
-                this.widths[i] = widths[i];
+                if(widths[i] > 0) {
+                    this.widths[c++] = widths[i];
+                }
             }
         }
     }
 
     /**
-     * Set relative widths.
+     * Set relative widths. All non-positive values will be ignored as if that value was not present in the parameter.
      * @param widths Relative widths.
      */
     public void setWidths(Iterable<Integer> widths) {
         if(widths != null) {
             int i = 0;
             for(Integer w: widths) {
-                this.widths[i++] = w;
+                if(w > 0) {
+                    this.widths[i++] = w;
+                }
             }
         }
     }
@@ -151,7 +157,9 @@ public class TableHeader {
      * @param width Relative width.
      */
     public void setWidth(int columnIndex, int width) {
-        widths[columnIndex] = width;
+        if(width > 0 && columnIndex >= 0 && columnIndex < widths.length) {
+            widths[columnIndex] = width;
+        }
     }
 
     /**
@@ -203,7 +211,7 @@ public class TableHeader {
         while(startingColumn >= cellHeaders.length) {
             startingColumn -= cellHeaders.length;
         }
-        if(cells == null || cells.length == 0) {
+        if(cells == null) {
             return startingColumn;
         }
         for(Object cell: cells) {
@@ -232,13 +240,13 @@ public class TableHeader {
      * Fill the header values into the {@link Excel} instance provided. Values will be filled from left to right,
      * starting from the current cell. Finally, cell position will be set to the next row of the starting cell.
      *
-     * @param excel Excel instance to which values to be filled.
+     * @param excel The Excel instance to which values to be filled.
      */
     public void fillHeaderCells(Excel excel) {
         int r = excel.getRowIndex(), c = excel.getCellIndex();
         for(int i = 0; i < cellHeaders.length; i++) {
             excel.goToCell(c + i, r);
-            excel.setCellValue(customCell(excel, i), cellHeaders[i]);
+            excel.setCellValue(customCell(excel, i, cellHeaders[i]), cellHeaders[i]);
         }
         excel.goToCell(c, r + 1);
     }
@@ -247,7 +255,7 @@ public class TableHeader {
      * Fill the cell values into the {@link Excel} instance provided. Values will be filled from left to right,
      * starting from the current cell. Finally, cell position will be set to the next row of the starting cell.
      *
-     * @param excel Excel instance to which values to be filled.
+     * @param excel The Excel instance to which values to be filled.
      * @param cellValues Cell values to fill.
      */
     public void fillRow(Excel excel, Object... cellValues) {
@@ -260,7 +268,7 @@ public class TableHeader {
      * Fill the cell values into the {@link Excel} instance provided. Values will be filled from left to right,
      * starting from the current cell. Finally, cell position will be set to the next cell on the right.
      *
-     * @param excel Excel instance to which values to be filled.
+     * @param excel The Excel instance to which values to be filled.
      * @param cellValues Cell values to fill.
      */
     public void fillCells(Excel excel, Object... cellValues) {
@@ -268,17 +276,22 @@ public class TableHeader {
             int r = excel.getRowIndex(), c = excel.getCellIndex();
             for(int i = 0; i < cellValues.length; i++) {
                 excel.goToCell(c + i, r);
-                excel.setCellValue(customCell(excel, i), cellValues[i]);
+                excel.setCellValue(customCell(excel, i, cellValues[i]), cellValues[i]);
             }
             excel.goToCell(c + 1, r);
         }
     }
 
-    private Cell customCell(Excel excel, int index) {
+    private Cell customCell(Excel excel, int index, Object cellValue) {
         Cell cell = excel.getCell();
         switch(horizontalAlignments[index]) {
             case PDFElement.ALIGN_CENTER, PDFElement.ALIGN_MIDDLE -> cell.setCellStyle(excel.getCenteredStyle());
             case PDFElement.ALIGN_RIGHT -> cell.setCellStyle(excel.getRightAlignedStyle());
+            case PDFElement.ALIGN_UNDEFINED -> {
+                if(Utility.isRightAligned(cellValue)) {
+                    cell.setCellStyle(excel.getRightAlignedStyle());
+                }
+            }
         }
         return cell;
     }

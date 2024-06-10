@@ -4,10 +4,8 @@ import com.storedobject.core.SQLConnector;
 import com.storedobject.core.StoredObject;
 import com.storedobject.mail.GMailSender;
 import com.storedobject.mail.MailSender;
+import com.storedobject.ui.*;
 import com.storedobject.ui.Application;
-import com.storedobject.ui.ELabel;
-import com.storedobject.ui.EmailField;
-import com.storedobject.ui.ObjectEditor;
 import com.storedobject.vaadin.*;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
@@ -19,7 +17,7 @@ import java.util.Optional;
 import java.util.Random;
 import java.util.stream.Stream;
 
-public class ManageMailSenders extends ObjectEditor<MailSender> {
+public class ManageMailSenders extends ObjectEditor<MailSender> implements Transactional {
 
     private Button gmailSenders;
     private ManageGMailSenders gmsEditor = null;

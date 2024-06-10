@@ -249,6 +249,7 @@ public class MemoryCache<T> implements List<T>, Filtered<T> {
             sorted = filtered = original;
             return;
         }
+        //noinspection DuplicatedCode
         if(filter == currentFilter) { // Filter not changed
             order(comparator);
             return;

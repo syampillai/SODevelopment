@@ -273,6 +273,20 @@ public class Mail extends Message {
 			Email.check(replyToAddress);
 		}
         senderGroupId = tm.checkType(this, senderGroupId, SenderGroup.class, false);
+		if(Id.isNull(sentToId)) {
+			Contact contact = get(Contact.class, "Contact='" + as[0].trim() + "'");
+			if(contact != null) {
+				Person person = contact.listMasters(Person.class).single(false);
+				if(person == null) {
+					PersonRole pr = contact.listMasters(PersonRole.class, true).single(false);
+					if(pr != null) {
+						sentToId = pr.getPersonId();
+					}
+				} else {
+					sentToId = person.getId();
+				}
+			}
+		}
 		super.validateData(tm);
 	}
 
@@ -481,5 +495,13 @@ public class Mail extends Message {
 			return so;
 		}
 		return null;
+	}
+
+	@Override
+	public void setSentTo(Person sentTo) {
+		super.setSentTo(sentTo);
+		if(toAddress == null || toAddress.isBlank()) {
+			setToAddress(sentTo);
+		}
 	}
 }

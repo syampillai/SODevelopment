@@ -12,7 +12,7 @@ public abstract class Message extends StoredObject {
     private String messageID;
     private Timestamp createdAt = DateUtility.now();
     private boolean sent;
-    private Id sentToId = Id.ZERO;
+    protected Id sentToId = Id.ZERO;
     private Timestamp sentAt = DateUtility.now();
     protected int error; // 0: No error, 1: Retry delivery, 2: Insufficient balance
                          // Greater than 2: Error conditions (delivery not possible)

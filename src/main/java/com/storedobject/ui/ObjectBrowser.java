@@ -1,6 +1,7 @@
 package com.storedobject.ui;
 
 import com.storedobject.core.*;
+import com.storedobject.ui.accounts.JournalVoucherBrowser;
 import com.storedobject.ui.inventory.POBrowser;
 import com.storedobject.ui.inventory.POItemBrowser;
 import com.storedobject.ui.util.LoadFilterButtons;
@@ -61,8 +62,16 @@ public class ObjectBrowser<T extends StoredObject> extends ObjectGrid<T>
         this(objectClass, browseColumns, ALL, filterColumns);
     }
 
+    public ObjectBrowser(Class<T> objectClass, Iterable<String> browseColumns, SearchBuilder<T> searchBuilder) {
+        this(objectClass, browseColumns, ALL, searchBuilder);
+    }
+
     public ObjectBrowser(Class<T> objectClass, int actions) {
-        this(objectClass, actions, null);
+        this(objectClass, actions, (String) null);
+    }
+
+    public ObjectBrowser(Class<T> objectClass, int actions, SearchBuilder<T> searchBuilder) {
+        this(objectClass, null, actions, searchBuilder, null);
     }
 
     public ObjectBrowser(Class<T> objectClass, int actions, String caption) {
@@ -70,15 +79,19 @@ public class ObjectBrowser<T extends StoredObject> extends ObjectGrid<T>
     }
 
     public ObjectBrowser(Class<T> objectClass, Iterable<String> browseColumns, int actions) {
-        this(objectClass, browseColumns, actions, null, null);
+        this(objectClass, browseColumns, actions, (Iterable<String>) null, null);
     }
 
     public ObjectBrowser(Class<T> objectClass, Iterable<String> browseColumns, int actions, Iterable<String> filterColumns) {
         this(objectClass, browseColumns, actions, filterColumns, null);
     }
 
+    public ObjectBrowser(Class<T> objectClass, Iterable<String> browseColumns, int actions, SearchBuilder<T> searchBuilder) {
+        this(objectClass, browseColumns, actions, searchBuilder, null);
+    }
+
     public ObjectBrowser(Class<T> objectClass, Iterable<String> browseColumns, int actions, String caption) {
-        this(objectClass, browseColumns, actions, null, caption);
+        this(objectClass, browseColumns, actions, (Iterable<String>) null, caption);
     }
 
     public ObjectBrowser(Class<T> objectClass, Iterable<String> browseColumns, int actions,
@@ -86,8 +99,23 @@ public class ObjectBrowser<T extends StoredObject> extends ObjectGrid<T>
         this(objectClass, browseColumns, actions, filterColumns, caption, null);
     }
 
+    public ObjectBrowser(Class<T> objectClass, Iterable<String> browseColumns, int actions,
+                         SearchBuilder<T> searchBuilder, String caption) {
+        this(objectClass, browseColumns, actions, searchBuilder, caption, null);
+    }
+
     protected ObjectBrowser(Class<T> objectClass, Iterable<String> browseColumns, int actions,
                             Iterable<String> filterColumns, String caption, String allowedActions) {
+        this(objectClass, browseColumns, actions, filterColumns, null, caption, allowedActions);
+    }
+
+    protected ObjectBrowser(Class<T> objectClass, Iterable<String> browseColumns, int actions,
+                            SearchBuilder<T> searchBuilder, String caption, String allowedActions) {
+        this(objectClass, browseColumns, actions, null, searchBuilder, caption, allowedActions);
+    }
+
+    private ObjectBrowser(Class<T> objectClass, Iterable<String> browseColumns, int actions,
+                            Iterable<String> filterColumns, SearchBuilder<T> searchBuilder, String caption, String allowedActions) {
         super(objectClass, browseColumns, (actions & ALLOW_ANY) == ALLOW_ANY);
         addItemDoubleClickListener(e -> {
             T item = e.getItem();
@@ -96,9 +124,10 @@ public class ObjectBrowser<T extends StoredObject> extends ObjectGrid<T>
             }
         });
         getDataProvider().setLoadCallBack(this::loadInt);
-        if( // Do not allow certain special classes to directly inherit this class with etitability
-                (InventoryPO.class.isAssignableFrom(getObjectClass()) && !(this instanceof POBrowser)) ||
-                        (InventoryPOItem.class.isAssignableFrom(getObjectClass()) && !(this instanceof POItemBrowser))
+        if( // Do not allow certain special editable classes to directly inherit this class
+                (InventoryPO.class.isAssignableFrom(getObjectClass()) && !(this instanceof POBrowser))
+                        || (InventoryPOItem.class.isAssignableFrom(getObjectClass()) && !(this instanceof POItemBrowser))
+                        || (JournalVoucher.class.isAssignableFrom(getObjectClass()) && !(this instanceof JournalVoucherBrowser))
         ) {
             boolean a = actions < 0;
             if(a) {
@@ -162,7 +191,7 @@ public class ObjectBrowser<T extends StoredObject> extends ObjectGrid<T>
                 buttonPanel.add(delete);
             }
             if((actions & RELOAD) == RELOAD) {
-                loadFilterButtons = new LoadFilterButtons<>(this, filterColumns);
+                loadFilterButtons = new LoadFilterButtons<>(this, filterColumns, searchBuilder);
                 filter = loadFilterButtons.getFilterButton();
                 load = loadFilterButtons.getLoadButton();
                 loadFilterButtons.addTo(buttonPanel);
@@ -198,7 +227,7 @@ public class ObjectBrowser<T extends StoredObject> extends ObjectGrid<T>
     @SuppressWarnings("unchecked")
     public ObjectBrowser(String className) throws Exception {
         this((Class<T>)JavaClassLoader.getLogic(ObjectEditor.sanitize(className)), null,
-                actions(className, Application.get().getServer().isDeveloper()), null,
+                actions(className, Application.get().getServer().isDeveloper()), null, null,
                 Application.get().getRunningLogic().getTitle(), ObjectEditor.allowedActions(className));
     }
 
@@ -213,6 +242,7 @@ public class ObjectBrowser<T extends StoredObject> extends ObjectGrid<T>
         }
     }
 
+    @SuppressWarnings("DuplicatedCode")
     final void protect() {
         if(add != null) {
             buttonPanel.remove(add);
@@ -352,16 +382,16 @@ public class ObjectBrowser<T extends StoredObject> extends ObjectGrid<T>
 
     @Override
     public Component createHeader() {
+        return header(buttonPanel, loadFilterButtons);
+    }
+
+    static Component header(ButtonLayout buttonPanel, LoadFilterButtons<?> loadFilterButtons) {
         ObjectSearchBuilder<?> sb;
         if(loadFilterButtons == null || (sb = loadFilterButtons.getSearchBuilder()) == null) {
             return buttonPanel;
         }
         VerticalLayout v = new VerticalLayout(buttonPanel);
-        Component f = null;
-        if(sb instanceof Component) {
-            f = (Component) sb;
-        }
-        if(f != null) {
+        if(sb instanceof Component f) {
             v.add(f);
         }
         v.setPadding(false);
@@ -664,15 +694,20 @@ public class ObjectBrowser<T extends StoredObject> extends ObjectGrid<T>
         if(getView(false) != null) {
             return;
         }
-        layout = new SplitLayout();
-        layout.setOrientation(SplitLayout.Orientation.HORIZONTAL);
-        layout.setSplitterPosition(50);
-        layout.addToPrimary(this);
+        layout = splitLayout(this);
         addItemSelectedListener((grid, item) -> itemSelected());
         if(view != null) {
             buttonPanel.remove(view);
             view = null;
         }
+    }
+
+    static SplitLayout splitLayout(Component me) {
+        SplitLayout layout = new SplitLayout();
+        layout.setOrientation(SplitLayout.Orientation.HORIZONTAL);
+        layout.setSplitterPosition(50);
+        layout.addToPrimary(me);
+        return layout;
     }
 
     private void itemSelected() {
@@ -687,6 +722,7 @@ public class ObjectBrowser<T extends StoredObject> extends ObjectGrid<T>
         editor.viewObject(getSelected());
     }
 
+    @SuppressWarnings("DuplicatedCode")
     public final ObjectEditor<T> getRowEditor() {
         if(editor == null) {
             constructEditor();
@@ -717,6 +753,7 @@ public class ObjectBrowser<T extends StoredObject> extends ObjectGrid<T>
         constructEditor();
     }
 
+    @SuppressWarnings("DuplicatedCode")
     public final ObjectEditor<T> getObjectEditor() {
         if(editor == null) {
             constructEditor();

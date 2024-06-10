@@ -383,7 +383,7 @@ public class ReportDefinition extends Name {
     }
 
     public static ReportDefinition create(Class<? extends StoredObject> dataClass, Iterable<String> columns) {
-        StringList cols = StringList.create(columns);
+        StringList cols = columns == null ? StringList.EMPTY : StringList.create(columns);
         ReportDefinition rd = new ReportDefinition() {
             @Override
             StringList columns() {
@@ -403,5 +403,26 @@ public class ReportDefinition extends Name {
 
     public void setCustomColumnSupplier(Supplier<StringList> customColumnSupplier) {
         this.customColumnSupplier = customColumnSupplier;
+    }
+
+    public <T extends StoredObject> ObjectIterator<T> listObjects() {
+        return listObjects(null, getOrderBy());
+    }
+
+    public <T extends StoredObject> ObjectIterator<T> listObjects(String extraCondition) {
+        return listObjects(extraCondition, getOrderBy());
+    }
+
+    public <T extends StoredObject> ObjectIterator<T> listObjects(String extraCondition, String orderBy) {
+        if(extraCondition == null || extraCondition.isBlank()) {
+            extraCondition = getCondition();
+        } else {
+            String c = getCondition();
+            if(c != null && !c.isBlank()) {
+                extraCondition = "(" + extraCondition + ") AND " + c;
+            }
+        }
+        //noinspection unchecked
+        return StoredObject.list((Class<T>)getClassForData(), extraCondition, orderBy, getIncludeSubclasses());
     }
 }

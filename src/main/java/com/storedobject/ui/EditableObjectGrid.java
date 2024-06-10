@@ -222,6 +222,7 @@ public class EditableObjectGrid<T extends StoredObject> extends AbstractEditable
         internalObjectChangedListener.set(editor);
     }
 
+    @SuppressWarnings("DuplicatedCode")
     public final ObjectEditor<T> getRowEditor() {
         if(editor == null) {
             constructEditor();
@@ -246,6 +247,7 @@ public class EditableObjectGrid<T extends StoredObject> extends AbstractEditable
         return null;
     }
 
+    @SuppressWarnings("DuplicatedCode")
     public final ObjectEditor<T> getObjectEditor() {
         if(editor == null) {
             constructEditor();

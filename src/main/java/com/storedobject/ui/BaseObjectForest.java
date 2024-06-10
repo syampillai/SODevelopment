@@ -190,10 +190,7 @@ public abstract class BaseObjectForest<T extends StoredObject> extends AbstractO
         if(getView(false) != null) {
             return;
         }
-        layout = new SplitLayout();
-        layout.setOrientation(SplitLayout.Orientation.HORIZONTAL);
-        layout.setSplitterPosition(50);
-        layout.addToPrimary(this);
+        layout = ObjectBrowser.splitLayout(this);
         addItemSelectedListener((forest, item) -> itemSelected());
     }
 
