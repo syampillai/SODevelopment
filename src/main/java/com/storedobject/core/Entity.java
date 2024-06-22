@@ -121,7 +121,7 @@ public final class Entity extends StoredObject implements HasContacts, HasName {
 
 	@Override
 	public String toDisplay() {
-		return name + (location.isEmpty() ? "" : (", " + location)) + ", " + country;
+		return name + (location.isEmpty() || name.contains(location) ? "" : (", " + location)) + ", " + country;
 	}
 	
 	@Override

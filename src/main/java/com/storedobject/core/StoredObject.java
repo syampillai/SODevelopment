@@ -339,6 +339,12 @@ public abstract class StoredObject implements Displayable, HasId, StringFiller {
         saved();
     }
 
+    /**
+     * For internal use only.
+     */
+    void loadedCore() {
+    }
+
     public void saved() throws Exception {
     }
 

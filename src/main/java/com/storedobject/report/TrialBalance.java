@@ -71,7 +71,9 @@ public class TrialBalance extends PDFReport implements JSONParameter {
         table.addCell(createCell(createTitleText("Credit Balance"), true));
         table.setHeaderRows(1);
         Money b, dTotal = new Money(entity.getCurrency()), cTotal = new Money(entity.getCurrency());
-        ObjectIterator<Account> list = Account.list(Account.class, "SystemEntity=" + entity.getId(), "T_Family", true);
+        ObjectIterator<Account> list =
+                Account.list(Account.class, "SystemEntity=" + entity.getId(), "T_Family", true)
+                        .filter(a -> !(a instanceof AccountTitle));
         int rows = 0;
         String as;
         int bracket;
@@ -83,8 +85,9 @@ public class TrialBalance extends PDFReport implements JSONParameter {
             b = a.getLocalCurrencyBalance(date);
             table.addCell(createCell(as));
             if(b.isDebit()) {
-                dTotal = dTotal.subtract(b);
-                table.addCell(createCell(b.negate().toString(false), true));
+                b = b.negate();
+                dTotal = dTotal.add(b);
+                table.addCell(createCell(b.toString(false), true));
                 table.addBlankCell();
             } else {
                 cTotal = cTotal.add(b);

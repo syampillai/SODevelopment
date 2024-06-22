@@ -9,7 +9,6 @@ import java.math.BigDecimal;
 import java.sql.Date;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Function;
 import java.util.stream.Stream;
 
 /**
@@ -25,18 +24,18 @@ import java.util.stream.Stream;
  *
  * @author Syam
  */
-public class JournalVoucher extends StoredObject implements OfEntity {
+public class JournalVoucher extends StoredObject implements OfEntity, HasReference {
 
-    static Function<JournalVoucher, String> tag, patternTag;
-    static final Map<String, String> serialPattern = new HashMap<>();
+    private static final ReferencePattern<JournalVoucher> ref = new ReferencePattern<>();
     private static final Map<String, Id> types = new HashMap<>();
-    private Id ownerId;
+    private Id ownerId = Id.ZERO;
     private StoredObject owner;
     private Date date;
     private int entrySerial = 0;
     private final List<Entry> entries = new ArrayList<>();
-    private Id systemEntityId, originId = Id.ZERO;
+    private Id systemEntityId, originId = Id.ZERO, ignoreFSId = Id.ZERO;
     int no = 0;
+    private String reference, foreignReference = "";
     private DecimalNumber ledgerTran = DecimalNumber.zero(0);
 
     /**
@@ -66,15 +65,17 @@ public class JournalVoucher extends StoredObject implements OfEntity {
         columns.add("Date", "date");
         columns.add("LedgerTran", "numeric(30,0)");
         columns.add("Origin", "id");
+        columns.add("ForeignReference", "text");
     }
 
     public static void indices(Indices indices) {
         indices.add("SystemEntity,No,T_Family", true);
         indices.add("SystemEntity,Date,No");
+        indices.add("ForeignReference,Origin", "ForeignReference != ''", true);
     }
 
     public static String[] protectedColumns() {
-        return new String[] { "No", "LedgerTran" };
+        return new String[] { "No", "LedgerTran", "Origin", "ForeignReference" };
     }
 
     public static String[] browseColumns() {
@@ -86,6 +87,10 @@ public class JournalVoucher extends StoredObject implements OfEntity {
         };
     }
 
+    /**
+     * Set the system entity of this JV.
+     * @param systemEntityId System entity Id.
+     */
     public void setSystemEntity(Id systemEntityId) {
         if(!loading()) {
             throw new Set_Not_Allowed("System Entity");
@@ -93,24 +98,47 @@ public class JournalVoucher extends StoredObject implements OfEntity {
         this.systemEntityId = systemEntityId;
     }
 
+    /**
+     * Set the system entity of this JV.
+     *
+     * @param idValue Id of the system entity.
+     */
     public void setSystemEntity(BigDecimal idValue) {
         setSystemEntity(new Id(idValue));
     }
 
+    /**
+     * Set the system entity of this JV.
+     *
+     * @param systemEntity System entity.
+     */
     public void setSystemEntity(SystemEntity systemEntity) {
         setSystemEntity(systemEntity == null ? null : systemEntity.getId());
     }
 
+    /**
+     * Get the system entity Id of this JV.
+     *
+     * @return System entity Id.
+     */
     @SetNotAllowed
     @Column(order = 10, caption = "Of")
     public Id getSystemEntityId() {
         return systemEntityId;
     }
 
+    /**
+     * Get the system entity of this JV.
+     * @return  System entity.
+     */
     public SystemEntity getSystemEntity() {
         return SystemEntity.getCached(systemEntityId);
     }
 
+    /**
+     * Set the serial number of this JV.
+     * @param no Serial number.
+     */
     public void setNo(int no) {
         if (!loading()) {
             throw new Set_Not_Allowed("No");
@@ -118,16 +146,45 @@ public class JournalVoucher extends StoredObject implements OfEntity {
         this.no = no;
     }
 
+    /**
+     * Get the serial number of this JV.
+     * @return Serial number.
+     */
+    @Override
     @SetNotAllowed
     @Column(style = "(serial)", order = 200)
     public int getNo() {
+        if (no == 0) {
+            Transaction t = getTransaction();
+            no = SerialGenerator.generate(t, SerialConfigurator.getFor(getClass()).getYearPrefix(t)
+                    + getTagPrefix() + ref.getTag(this)).intValue();
+        }
         return no;
     }
 
-    public final String getReference() {
-        return "";
+    @Override
+    public String getTagPrefix() {
+        return "JV-";
     }
 
+    /**
+     * Get the reference of this JV.
+     *
+     * @return Reference.
+     */
+    @Override
+    public final String getReference() {
+        if(reference == null) {
+            reference = ref.get(this);
+        }
+        return reference == null ? "" : reference;
+    }
+
+    /**
+     * Get the owner who generated this JV.
+     *
+     * @return Name of the owner of this JV.
+     */
     public String getGeneratedBy() {
         if(ownerId == null || ownerId.equals(getId())) {
             return "JV Creation";
@@ -135,11 +192,16 @@ public class JournalVoucher extends StoredObject implements OfEntity {
         return StringUtility.makeLabel(getOwner().getClass());
     }
 
+    /**
+     * Get the origin of this JV.
+     *
+     * @return Name the origin
+     */
     public String getOriginatedFrom() {
         if(Id.isNull(originId)) {
             return "Current System";
         }
-        return getOrigin().getName();
+        return getOrigin().getName() + (StringUtility.isWhite(foreignReference) ? "" : ( " - " + foreignReference));
     }
 
     /**
@@ -236,6 +298,10 @@ public class JournalVoucher extends StoredObject implements OfEntity {
         return ledgerTran;
     }
 
+    /**
+     * Set the origin of this JV.
+     * @param originId Id of the origin.
+     */
     public void setOrigin(Id originId) {
         if(!loading()) {
             throw new Set_Not_Allowed("Origin");
@@ -243,34 +309,71 @@ public class JournalVoucher extends StoredObject implements OfEntity {
         this.originId = originId;
     }
 
+    /**
+     * Set the origin of this JV.
+     * @param idValue Id of the origin.
+     */
     public void setOrigin(BigDecimal idValue) {
         setOrigin(new Id(idValue));
     }
 
+    /**
+     * Set the origin of this JV.
+     * @param foreignSystem Origin.
+     */
     public void setOrigin(ForeignFinancialSystem foreignSystem) {
-        setOrigin(foreignSystem == null ? null : foreignSystem.getId());
+        setOrigin(foreignSystem == null ? Id.ZERO : foreignSystem.getId());
     }
 
-    @Column(order = 200)
+    /**
+     * Get the origin Id of this JV.
+     * @return Origin Id.
+     */
+    @SetNotAllowed
+    @Column(order = 200, required = false)
     public Id getOriginId() {
         return originId;
     }
 
+    /**
+     * Get the origin of this JV.
+     * @return Origin.
+     */
     public ForeignFinancialSystem getOrigin() {
         return Id.isNull(originId) ? null : getRelated(ForeignFinancialSystem.class, originId);
     }
 
+    /**
+     * Ignore a foreign system so that this JV will not be sent to that system.
+     * @param ffs Foreign system to be ignored.
+     */
     public void ignoreForeignSystem(ForeignFinancialSystem ffs) {
+        ignoreFSId = ffs == null ? Id.ZERO : ffs.getId();
     }
 
+    /**
+     * Ignore a foreign system so that this JV will not be sent to that system.
+     * @param ffsId Id of the foreign system to be ignored.
+     */
     public void ignoreForeignSystem(Id ffsId) {
+        ignoreFSId = ffsId == null ? Id.ZERO : ffsId;
     }
 
+    /**
+     * Set the foreign reference of this JV (to be used by the foreign system).
+     *
+     * @param foreignReference Reference.
+     */
     public void setForeignReference(String foreignReference) {
+        this.foreignReference = foreignReference.toUpperCase().strip();
     }
 
+    /**
+     * Get the foreign reference of this JV (to be used by the foreign system).
+     * @return Reference.
+     */
     public String getForeignReference() {
-        return "";
+        return foreignReference;
     }
 
     /**
@@ -287,6 +390,91 @@ public class JournalVoucher extends StoredObject implements OfEntity {
             a = a.add(e.amount);
         }
         return a.negate();
+    }
+
+    @Override
+    public void validateData(TransactionManager tm) throws Exception {
+        SystemEntity se = tm.getEntity();
+        if(se == null) {
+            throw new Invalid_State("System not set up for any entity");
+        }
+        systemEntityId = check(tm, systemEntityId);
+        if(owner == null && ownerId != null) {
+            ownerId = tm.checkTypeAny(this, ownerId, StoredObject.class, false);
+        }
+        boolean dateSet = date != null;
+        if(date == null) {
+            date = se.getWorkingDate();
+        } else if(date.after(se.getWorkingDate())) {
+            throw new Invalid_State("Voucher date can't be greater than the working date - "
+                    + DateUtility.formatDate(se.getWorkingDate()));
+        }
+        if(!(dateSet && DateUtility.isSameDate(date, se.getWorkingDate()))) {
+            Date d = DateUtility.today();
+            int n = DateUtility.getPeriodInDays(date, d);
+            if (n > 0 && !GlobalProperty.getBoolean(se, "ALLOW-OLD-VOUCHERS")) {
+                throw new Invalid_State("Working date of '" + se.getName() + "' - "
+                        + DateUtility.formatDate(se.getWorkingDate()) + " - seems to be wrong. Today is "
+                        + DateUtility.formatDate(d) + " and the voucher date is " + DateUtility.formatDate(date) + ".");
+            }
+        }
+        originId = tm.checkType(this, originId, ForeignFinancialSystem.class, true);
+        super.validateData(tm);
+    }
+
+    @Override
+    public void validate() throws Exception {
+        super.validate();
+        if(inserted()) {
+            ledgerTran = new DecimalNumber(new BigDecimal(getTransactionId().get()));
+        }
+        if(deleted() || undeleted()) {
+            throw new SOException("Not allowed");
+        }
+        if(owner != null) {
+            ownerId = owner.getId();
+        }
+        if(ownerId == null) {
+            ownerId = getId();
+        }
+        if(ownerId == null) {
+            throw new Invalid_Value("Owner");
+        }
+    }
+
+    @Override
+    public void validateUpdate() throws Exception {
+        JournalVoucher jv = get(getClass(), getId());
+        if(!jv.date.equals(date)) {
+            throw new Invalid_State("Date can't be updated");
+        }
+        super.validateUpdate();
+    }
+
+    @Override
+    void savedCore() throws Exception {
+        super.savedCore();
+        if(!inserted()) {
+            return;
+        }
+        Transaction t = getTransaction();
+        boolean found = false;
+        for(ForeignFinancialSystem ffs: list(ForeignFinancialSystem.class, "Active")) {
+            if(ffs.getId().equals(originId)) {
+                found = ffs.getActive();
+                continue;
+            }
+            if(ffs.getId().equals(ignoreFSId)) {
+                continue;
+            }
+            JournalVoucherStage jvs = new JournalVoucherStage();
+            jvs.setVoucher(this);
+            jvs.setForeignSystem(ffs);
+            jvs.save(t);
+        }
+        if(!found && !Id.isNull(originId)) {
+            throw new Invalid_State("Origin is not active");
+        }
     }
 
     /**
@@ -856,6 +1044,7 @@ public class JournalVoucher extends StoredObject implements OfEntity {
      *
      * @return Date.
      */
+    @Override
     @SetNotAllowed
     @Column(order = 300)
     public Date getDate() {
@@ -944,6 +1133,12 @@ public class JournalVoucher extends StoredObject implements OfEntity {
             this.valueDate = valueDate == null ? new Date(Utility.BLANK_TIME) : valueDate;
         }
 
+        private Entry(JournalVoucher journalVoucher, Account account, Money amount, Money localCurrencyAmount,
+                      int entrySerial, Id type, String particulars, Date valueDate, String extraData) {
+            this(journalVoucher, account, amount, localCurrencyAmount, entrySerial, type, particulars, valueDate);
+            setExtraData(extraData);
+        }
+
         /**
          * Get the account of this entry.
          *
@@ -1016,6 +1211,24 @@ public class JournalVoucher extends StoredObject implements OfEntity {
         }
 
         /**
+         * Sets the extra data for this entry.
+         *
+         * @param extraData The extra data to be set.
+         */
+        public void setExtraData(String  extraData) {
+            this.extraData = extraData;
+        }
+
+        /**
+         * Returns the extra data associated with this entry.
+         *
+         * @return The extra data as an Object.
+         */
+        public String getExtraData() {
+            return extraData;
+        }
+
+        /**
          * Get the voucher associated with this entry.
          *
          * @return Associated journal voucher.
@@ -1031,24 +1244,6 @@ public class JournalVoucher extends StoredObject implements OfEntity {
          */
         public Date getValueDate() {
             return Utility.isEmpty(valueDate) ? null : valueDate;
-        }
-
-        /**
-         * Sets the extra data for this entry.
-         *
-         * @param extraData The extra data to be set.
-         */
-        public void setExtraData(String extraData) {
-            this.extraData = extraData;
-        }
-
-        /**
-         * Returns the extra data associated with this entry.
-         *
-         * @return The extra data as an Object.
-         */
-        public String getExtraData() {
-            return extraData;
         }
     }
 
@@ -1084,6 +1279,13 @@ public class JournalVoucher extends StoredObject implements OfEntity {
         return toDisplay();
     }
 
+    /**
+     * Save this JV as an unposted journal.
+     *
+     * @param tm Transaction manager.
+     * @return Instance of the {@link UnpostedJournal} created.
+     * @throws Exception If any error occurs.
+     */
     public UnpostedJournal saveAsUnposted(TransactionManager tm) throws Exception {
         if(Math.random() > 0.5) {
             throw new Exception();
@@ -1091,6 +1293,13 @@ public class JournalVoucher extends StoredObject implements OfEntity {
         return new UnpostedJournal();
     }
 
+    /**
+     * Create an instance of the {@link JournalVoucher} from the given {@link UnpostedJournal}.
+     *
+     * @param unpostedJournal Unposted journal.
+     * @return JV created.
+     * @throws Exception If any error occurs.
+     */
     public static JournalVoucher createFrom(UnpostedJournal unpostedJournal) throws Exception {
         JournalVoucher jv = (JournalVoucher) JavaClassLoader.getLogic(unpostedJournal.getJVClassName())
                 .getConstructor().newInstance();
@@ -1104,7 +1313,7 @@ public class JournalVoucher extends StoredObject implements OfEntity {
             amount = e.getAmount();
             lcAmount = e.getLocalCurrencyAmount();
             jv.entries.add(new Entry(jv, a, amount, lcAmount, e.getEntrySerial(), e.getTypeId(), e.getParticulars(),
-                    e.getValueDate()));
+                    e.getValueDate(), e.getExtraData()));
             jv.entrySerial = e.getEntrySerial();
             a.addBalance(amount);
             a.addLocalCurrencyBalance(lcAmount);

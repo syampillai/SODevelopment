@@ -26,6 +26,40 @@ public class SerialPattern extends StoredObject {
         return "lower(Name)='" + getName().trim().toLowerCase().replace("'", "''") + "'";
     }
 
+    static String getPatternFor(String name, String defaultPattern, Transaction transaction) {
+        String p = getPatternFor(name, defaultPattern, transaction == null);
+        if(p != null) {
+            return p;
+        }
+        p = getPatternFor(name, defaultPattern, true);
+        if(transaction != null) {
+            SerialPattern sp = new SerialPattern();
+            sp.name = name;
+            sp.description = "Auto-generated";
+            sp.pattern = p;
+            try {
+                transaction.getManager().transact(sp::save);
+            } catch(Exception ignored) {
+            }
+        }
+        return p;
+    }
+
+    private static String getPatternFor(String name, String defaultPattern, boolean recursive) {
+        SerialPattern p = get(SerialPattern.class, "lower(Name)='" + name.toLowerCase() + "'");
+        if(p != null) {
+            return p.pattern;
+        }
+        if(!recursive) {
+            return null;
+        }
+        int pos = name.lastIndexOf('-');
+        if(pos > 0) {
+            return getPatternFor(name.substring(0, pos), defaultPattern, true);
+        }
+        return defaultPattern;
+    }
+
     public static SerialPattern get(String name) {
         return StoredObjectUtility.get(SerialPattern.class, "Name", toCode(name), false);
     }
@@ -79,6 +113,11 @@ public class SerialPattern extends StoredObject {
         super.validateData(tm);
     }
 
+    @Override
+    void savedCore() throws Exception {
+        ReferencePattern.clearPatterns();
+    }
+
     /**
      * Get the number string appropriately stuffed as per the pattern.
      *
@@ -127,40 +166,40 @@ public class SerialPattern extends StoredObject {
      */
     public static String getNumber(SystemEntity systemEntity, long serial, Date date, String pattern) {
         if(pattern == null || pattern.isBlank()) {
-            return "" + serial;
+            return String.valueOf(serial);
         }
         if(pattern.contains("fy")) {
             int y1 = DateUtility.getYear(systemEntity.getStartOfFinancialYear(date)),
                     y2 = DateUtility.getYear(systemEntity.getEndOfFinancialYear(date));
             String s;
             if(y1 == y2) {
-                s = ("" + y2).substring(2);
+                s = (String.valueOf(y2)).substring(2);
                 pattern = stuff(pattern, "fy4", s);
-                pattern = stuff(pattern, "fy6", "" + y2);
-                pattern = stuff(pattern, "fy8", "" + y2);
-                pattern = stuff(pattern, "fyfy-fyfy", "" + y2);
-                pattern = stuff(pattern, "fyfy-fy", "" + y2);
-                pattern = stuff(pattern, "fyfy", "" + y2);
+                pattern = stuff(pattern, "fy6", String.valueOf(y2));
+                pattern = stuff(pattern, "fy8", String.valueOf(y2));
+                pattern = stuff(pattern, "fyfy-fyfy", String.valueOf(y2));
+                pattern = stuff(pattern, "fyfy-fy", String.valueOf(y2));
+                pattern = stuff(pattern, "fyfy", String.valueOf(y2));
             } else {
-                s = ("" + y1).substring(2) + ("" + y2).substring(2);
+                s = (String.valueOf(y1)).substring(2) + (String.valueOf(y2)).substring(2);
                 pattern = stuff(pattern, "fy4", s);
-                s = ("" + y1) + ("" + y2).substring(2);
+                s = y1 + (String.valueOf(y2)).substring(2);
                 pattern = stuff(pattern, "fy6", s);
-                s = ("" + y1) + ("" + y2);
+                s = (String.valueOf(y1)) + y2;
                 pattern = stuff(pattern, "fy8", s);
                 pattern = stuff(pattern, "fyfy-fyfy", y1 + "-" + y2);
-                pattern = stuff(pattern, "fyfy-fy", y1 + "-" + ("" + y2).substring(2));
+                pattern = stuff(pattern, "fyfy-fy", y1 + "-" + (String.valueOf(y2)).substring(2));
                 pattern = stuff(pattern, "fyfy", y1 + "-" + y2);
-                s = ("" + y1).substring(2) + "-" + ("" + y2).substring(2);
+                s = (String.valueOf(y1)).substring(2) + "-" + (String.valueOf(y2)).substring(2);
             }
             pattern = stuff(pattern, "fy-fy", s);
             pattern = stuff(pattern, "fy", s);
         }
-        pattern = stuff(pattern, "yyyy", "" + DateUtility.getYear(date));
-        pattern = stuff(pattern, "yy", ("" + DateUtility.getYear(date)).substring(2));
+        pattern = stuff(pattern, "yyyy", String.valueOf(DateUtility.getYear(date)));
+        pattern = stuff(pattern, "yy", (String.valueOf(DateUtility.getYear(date))).substring(2));
         pattern = stuff(pattern, "mm",
-                StringUtility.padLeft("" + DateUtility.getMonth(date), 2, '0'));
-        pattern = stuff(pattern, "m", "" + DateUtility.getMonth(date));
+                StringUtility.padLeft(String.valueOf(DateUtility.getMonth(date)), 2, '0'));
+        pattern = stuff(pattern, "m", String.valueOf(DateUtility.getMonth(date)));
         pattern = pattern.replace("serial", "n");
         pattern = pattern.replace("number", "n");
         pattern = pattern.replace("no", "n");
@@ -186,7 +225,7 @@ public class SerialPattern extends StoredObject {
     public static String getNumber(String patternName, TransactionManager tm, long serial, Date date) {
         SerialPattern sp = get(patternName);
         if(sp == null) {
-            return "" + serial;
+            return String.valueOf(serial);
         }
         return getNumber(tm, serial, date, sp.pattern);
     }
@@ -203,7 +242,7 @@ public class SerialPattern extends StoredObject {
     public static String getNumber(String patternName, SystemEntity systemEntity, long serial, Date date) {
         SerialPattern sp = get(patternName);
         if(sp == null) {
-            return "" + serial;
+            return String.valueOf(serial);
         }
         return getNumber(systemEntity, serial, date, sp.pattern);
     }
@@ -217,19 +256,19 @@ public class SerialPattern extends StoredObject {
      * @return Resultant string.
      */
     public static String stuff(String pattern, char c, long serial) {
-        String one = "" + c, two = one + one;
+        String one = String.valueOf(c), two = one + one;
         if(!pattern.contains(one)) {
             return pattern;
         }
         if(pattern.indexOf(c) == pattern.lastIndexOf(c)) { // Only one c
-            pattern = pattern.replace(one, "" + serial);
+            pattern = pattern.replace(one, String.valueOf(serial));
         } else {
             int count = StringUtility.getCharCount(pattern, c);
             while(pattern.contains(two)) {
                 pattern = pattern.replace(two, one);
             }
             if(pattern.indexOf(c) == pattern.lastIndexOf(c)) { // Occurrence of c is not scattered
-                pattern = pattern.replace(one, StringUtility.padLeft("" + serial, count, '0'));
+                pattern = pattern.replace(one, StringUtility.padLeft(String.valueOf(serial), count, '0'));
             }
         }
         return pattern;

@@ -1801,16 +1801,16 @@ public class Application extends com.storedobject.vaadin.Application implements 
         if(entities.size() < 2) {
             if(entities.size() == 1) {
                 getTransactionManager().setEntity(entities.get(0));
-                checkEOD();
+                checkDayEnd();
             }
             setDate(server.getDate());
             startApp(welcomePassword, passwordExpired);
             return;
         }
-        new EntitySelector(entities, su.getName(), welcomePassword, passwordExpired).execute();
+        new EntitySelector(entities, su, welcomePassword, passwordExpired).execute();
     }
 
-    private void checkEOD() {
+    public void checkDayEnd() {
         Date wd = getTransactionManager().getEntity().getWorkingDate();
         if(wd.before(DateUtility.today()) && StoredObject.exists(Account.class, null, true)) {
             error("Please note that financial transactions for " + DateUtility.formatDate(wd)+ ", are still pending closure.");
@@ -1929,17 +1929,14 @@ public class Application extends com.storedobject.vaadin.Application implements 
         return sb.withBox();
     }
 
-    private class EntitySelector extends DataForm implements HomeView {
+    private class EntitySelector extends ApplicationFrame.EntitySelector implements HomeView {
 
-        private final ObjectComboField<SystemEntity> entities;
         private final boolean welcomePassword, passwordExpired;
 
-        public EntitySelector(List<SystemEntity> entities, String name, boolean welcomePassword, boolean passwordExpired) {
-            super(name);
+        public EntitySelector(List<SystemEntity> entities, SystemUser user, boolean welcomePassword, boolean passwordExpired) {
+            super(user, entities);
             this.welcomePassword = welcomePassword;
             this.passwordExpired = passwordExpired;
-            this.entities = new ObjectComboField<>("Select Organization", SystemEntity.class, entities);
-            this.entities.setValue(entities.get(0));
             addConstructedListener(o -> fConstructed());
         }
 
@@ -1955,19 +1952,13 @@ public class Application extends com.storedobject.vaadin.Application implements 
 
         @Override
         protected void buildFields() {
-            addField(entities);
-            setRequired(entities);
+            super.buildFields();
             cancel.setText("Sign out");
-            ok.setText("Proceed");
         }
 
         @Override
         protected boolean process() {
-            SystemEntity se = entities.getValue();
-            close();
-            getTransactionManager().setEntity(se);
-            checkEOD();
-            setDate(server.getDate());
+            super.process();
             startApp(welcomePassword, passwordExpired);
             return true;
         }

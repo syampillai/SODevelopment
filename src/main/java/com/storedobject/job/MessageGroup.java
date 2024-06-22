@@ -36,6 +36,11 @@ public final class MessageGroup extends StoredObject implements RequiresApproval
         return "lower(Name)='" + getName().trim().toLowerCase().replace("'", "''") + "'";
     }
 
+    public static MessageGroup getFor(String name) {
+        MessageGroup mg = get(name);
+        return mg != null && mg.getName().equals(name(name)) ? mg : null;
+    }
+
     public static MessageGroup get(String name) {
         name = name(name);
         MessageGroup mg = StoredObjectUtility.get(MessageGroup.class, "Name", name, false);
@@ -98,24 +103,23 @@ public final class MessageGroup extends StoredObject implements RequiresApproval
     /**
      * Create a new message group if it doesn't exist.
      *
-     * @param tm Transaction manager.
      * @param name Name of the group.
+     * @param tm Transaction manager.
      * @return Message group instance.
      */
-    public static MessageGroup create(TransactionManager tm, String name) {
+    public static MessageGroup create(String name, TransactionManager tm) {
         name = name(name);
-        MessageGroup mg = get(MessageGroup.class, "lower(Name)='"
-                + name.replace("'", "''").toLowerCase() + "'");
+        MessageGroup mg = getFor(name);
         if(mg != null) {
             return mg;
         }
         mg = new MessageGroup();
         mg.setName(name);
         MessageTemplate mt = MessageTemplate.create(name, tm);
+        mg.setTemplate(mt);
         try {
-            MessageGroup finalMg = mg;
-            if(tm.transact(t -> finalMg.setTemplate(mt)) == 0) {
-                return finalMg;
+            if(tm.transact(mg::save) == 0) {
+                return mg;
             }
         } catch (Exception ignored) {
         }
@@ -388,7 +392,7 @@ public final class MessageGroup extends StoredObject implements RequiresApproval
      */
     public static boolean notify(String groupName, TransactionManager tm, Object... messageParameters) {
         try {
-            MessageGroup mg = create(tm, groupName);
+            MessageGroup mg = create(groupName, tm);
             if(mg != null) {
                 mg.send(tm, messageParameters);
                 return true;

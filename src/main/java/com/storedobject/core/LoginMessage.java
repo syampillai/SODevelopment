@@ -153,7 +153,8 @@ public class LoginMessage extends StoredObject {
     	Logic logic = listLinks(Logic.class).findFirst();
 		if(logic == null) {
 			if(getGeneratedBy() != null) {
-				ApplicationAlertHandler aah = get(ApplicationAlertHandler.class, "DataClassName='" + generatedBy.getClass().getName() + "'");
+				ApplicationAlertHandler aah = get(ApplicationAlertHandler.class, "DataClassName='"
+						+ generatedBy.getClass().getName() + "'");
 				if(aah != null) {
 					logic = new Logic(aah.getLogicClassName(), "Processor");
 					logic.makeVirtual();

@@ -1,138 +1,282 @@
 package com.storedobject.core;
 
+import com.storedobject.common.SORuntimeException;
+import com.storedobject.core.annotation.Column;
+import com.storedobject.core.annotation.SetNotAllowed;
+import com.storedobject.core.annotation.Table;
+
 import java.math.BigDecimal;
 import java.sql.Date;
 import java.util.Map;
-import java.util.Random;
 
-public class InventoryPO extends StoredObject implements HasChildren {
+/**
+ * Base class for creating Purchase Orders (POs). This class may be used as such, or it can be extended to add more
+ * fields if required. It may also be used for other type of orders such as "Loan Orders" etc. and in such cases,
+ * the appropriate GRN type ({@link #getGRNType()}) should be returned.
+ *
+ * @author Syam
+ */
+@Table(anchors = "Store")
+public class InventoryPO extends StoredObject implements HasChildren, HasReference {
+
+    private static final ReferencePattern<InventoryPO> ref = new ReferencePattern<>();
+    private final static String[] statusValues = {
+            "Initiated", "Ordered", "Partially Received", "Received", "Closed"
+    };
+    private final Date date = DateUtility.today();
+    private String referenceNumber = "";
+    private String reference;
+    Id storeId;
+    Id supplierId;
+    int status = 0;
+    int no = 0;
+    private boolean approvalRequired = true;
 
     public InventoryPO() {
     }
 
     public static void columns(Columns columns) {
+        columns.add("No", "int");
+        columns.add("Date", "date");
+        columns.add("ReferenceNumber", "text");
+        columns.add("Store", "id");
+        columns.add("Supplier", "id");
+        columns.add("Status", "int");
+        columns.add("ApprovalRequired", "boolean");
+    }
+
+    public static String[] protectedColumns() {
+        return new String[] {
+                "No",
+                "ReferenceNumber",
+                "Status",
+                "ApprovalRequired",
+        };
+    }
+
+    public static String[] browseColumns() {
+        return new String[] {
+                "Date",
+                "Reference",
+                "ReferenceNumber AS Other Reference",
+                "Supplier",
+                "Status",
+        };
+    }
+
+    public static void indices(Indices indices) {
+        indices.add("Store,Date");
+        indices.add("Store,No");
+        indices.add("Store", "Status<4");
+    }
+
+    public static String[] searchColumns() {
+        return new String[] { "Date", "No" };
+    }
+
+    public static String[] links() {
+        return new String[]{
+                "Items|com.storedobject.core.InventoryPOItem|||0",
+        };
     }
 
     public void setNo(int no) {
+        if (!loading()) {
+            throw new Set_Not_Allowed("No");
+        }
+        this.no = no;
     }
 
+    @Override
+    @SetNotAllowed
+    @Column(style = "(serial)", order = 10)
     public int getNo() {
-        return 0;
+        if (no == 0) {
+            Transaction t = getTransaction();
+            no = SerialGenerator.generate(t, SerialConfigurator.getFor(getClass()).getYearPrefix(t)
+                    + getTagPrefix() + ref.getTag(this)).intValue();
+        }
+        return no;
     }
 
-    protected String getSerialNoTag() {
-        return "PO";
+    @Override
+    public String getTagPrefix() {
+        return "PO-";
+    }
+
+    @Override
+    public SystemEntity getSystemEntity() {
+        return getStore().getSystemEntity();
+    }
+
+    @Override
+    public final String getReference() {
+        if (reference == null) {
+            reference = ref.get(this);
+        }
+        return reference == null ? "" : reference;
     }
 
     public void setDate(Date date) {
+        this.date.setTime(date.getTime());
     }
 
+    @Override
+    @Column(order = 100)
     public Date getDate() {
-        return new Date(0);
+        return new Date(date.getTime());
     }
 
-    public final String getReference() {
-        return "";
+    @Deprecated
+    public void setReferenceNumber(String referenceNumber) {
+        this.referenceNumber = toCode(referenceNumber);
+    }
+
+    @Deprecated
+    @Column(order = 200, required = false, caption = "Other Reference")
+    public String getReferenceNumber() {
+        return referenceNumber;
     }
 
     public void setStore(Id storeId) {
+        if(!loading()) {
+            throw new Set_Not_Allowed("Store");
+        }
+        this.storeId = storeId;
     }
 
     public void setStore(BigDecimal idValue) {
+        setStore(new Id(idValue));
     }
 
     public void setStore(InventoryStore store) {
+        setStore(store == null ? null : store.getId());
     }
 
+    @SetNotAllowed
+    @Column(style = "(any)", order = 300)
     public Id getStoreId() {
-        return new Id();
+        return storeId;
     }
 
     public InventoryStore getStore() {
-        return new InventoryStore();
+        return InventoryStore.getStore(storeId);
     }
 
     public void setSupplier(Id supplierId) {
+        this.supplierId = supplierId;
     }
 
     public void setSupplier(BigDecimal idValue) {
+        setSupplier(new Id(idValue));
     }
 
     public void setSupplier(Entity supplier) {
+        setSupplier(supplier == null ? null : supplier.getId());
     }
 
+    @Column(order = 400)
     public Id getSupplierId() {
-        return new Id();
+        return supplierId;
     }
 
     public Entity getSupplier() {
-        return new Entity();
+        return get(Entity.class, supplierId);
     }
 
     public static String[] getStatusValues() {
-        return new String[] {};
+        return statusValues;
     }
 
     public void setStatus(int status) {
+        if(!loading()) {
+            throw new Set_Not_Allowed("Status");
+        }
+        if(status < 0 || status >= statusValues.length) {
+            throw new SORuntimeException();
+        }
+        this.status = status;
     }
 
+    @SetNotAllowed
+    @Column(order = 500)
     public int getStatus() {
-        return 0;
+        return status;
     }
 
     public String getStatusValue() {
-        return "";
+        if(status == 0) {
+            return approvalRequired ? statusValues[0] : "Approved";
+        }
+        return getStatusValue(status);
     }
 
     public static String getStatusValue(int value) {
-        return "";
+        String[] s = getStatusValues();
+        return s[value % s.length];
     }
 
     public void setApprovalRequired(boolean approvalRequired) {
+        this.approvalRequired = approvalRequired;
     }
 
+    @Column(order = 800, required = false)
     public boolean getApprovalRequired() {
-        return Math.random() > 0.5;
+        return approvalRequired;
     }
 
     public boolean isClosed() {
-        return new Random().nextBoolean();
+        return status == 4;
     }
-
 
     /**
      * Amend this PO. This PO will be foreclosed and another PO will be created with the balance items to receive.
      *
      * @param transaction Transaction.
-     * @return Id of the newly created (and saved) PO with balance items to receive.
+     * @return The id of the newly created (and saved) PO with balance items to receive.
      * @throws Exception If any exception occurs while carrying out the transaction.
      */
     public Id amendOrder(Transaction transaction) throws Exception {
-        return new Id();
+        switch(status) {
+            case 1, 2 -> {
+                return Id.ZERO;
+            }
+            default -> throw new Invalid_State("Can't amend with Status = " + getStatusValue());
+        }
     }
 
     public void recallOrder(Transaction transaction) throws Exception {
+        if(status != 1) {
+            throw new Invalid_State("Can't proceed with Status = " + getStatusValue());
+        }
     }
 
     public void placeOrder(Transaction transaction) throws Exception {
+        if(status != 0) {
+            throw new Invalid_State("Can't proceed with Status = " + getStatusValue());
+        }
     }
 
     public void closeOrder(Transaction transaction) throws Exception {
+        InventoryGRN grn = listLinks(InventoryGRN.class).find(g -> !g.isClosed());
+        if(grn != null) {
+            throw new Invalid_State("Please process the GRN - " + grn.getReference() + " before closing this");
+        }
     }
 
     public boolean canClose() {
-        return new Random().nextBoolean();
+        return status == 3 && canForeclose();
     }
 
     public boolean canForeclose() {
-        return new Random().nextBoolean();
+        return status != 4 && listLinks(InventoryGRN.class).allMatch(InventoryGRN::isClosed);
     }
 
     /**
      * Create a GRN for this PO.
      *
      * @param transaction Current transaction.
-     * @param quantities Quantity values to process. The {@link Id} (key of the map) must the {@link Id} of the
+     * @param quantities Received quantity values to process. The {@link Id} (key of the map) must the {@link Id} of the
      *                   respective line item entry in the PO.
      * @param grn A GRN to which the entries to be added. If <code>null</code> is passed, a new GRN is created.
      * @param invoiceNumber Invoice number (of the supplier) if applicable. For existing GRNs, <code>null</code>
@@ -145,22 +289,65 @@ public class InventoryPO extends StoredObject implements HasChildren {
     public InventoryGRN createGRN(Transaction transaction, Map<Id, Quantity> quantities, InventoryGRN grn,
                                   String invoiceNumber, Date invoiceDate)
             throws Exception {
-        return new InventoryGRN();
+        switch(status) {
+            case 1, 2 -> {
+            }
+            default -> throw new Invalid_State("Can't proceed with Status = " + getStatusValue());
+        }
+        return grn;
     }
 
     public final ObjectIterator<InventoryPOItem> listItems() {
         return listLinks(getTransaction(), InventoryPOItem.class, true);
     }
 
+    /**
+     * Get the GRN type. One of the GRN type values: 0, 1 or 2.
+     *
+     * @return Type of GRN. Default is 0.
+     */
     public int getGRNType() {
         return 0;
     }
 
+    /**
+     * Is a specific type of landed cost is applicable to this PO?
+     *
+     * @param landedCostType Type of landed cost.
+     * @param grn Associated GRN.
+     * @return True/false.
+     */
     public boolean isApplicable(LandedCostType landedCostType, InventoryGRN grn) {
         return true;
     }
 
+    /**
+     * Get the type of purchase. Overridden classes may define this if required.
+     *
+     * @return Type.
+     */
     protected int getType() {
         return 0;
+    }
+
+    @Override
+    public String toDisplay() {
+        return getReference() + " dated " + DateUtility.format(date);
+    }
+
+    @Override
+    public final <O extends StoredObject> Amend<O> getAmend() {
+        //noinspection unchecked
+        return amendment(new Amend<>((O)this, 0));
+    }
+
+    private static <T extends  StoredObject> Amend<T> amendment(Amend<T> amend) {
+        @SuppressWarnings("unchecked")
+        T old = (T) amend.object().listLinks(amend.object().getClass(), "No="
+                + ((HasReference)amend.object()).getNo()).findFirst();
+        if(old == null) {
+            return amend;
+        }
+        return amendment(new Amend<>(old, amend.amendment() + 1));
     }
 }

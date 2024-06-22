@@ -369,11 +369,23 @@ public class MemoSystem extends ObjectGrid<MemoComment> implements CloseableView
         me.comments.set(mc);
     }
 
+    protected SystemUser getUser() {
+        return who;
+    }
+
+    protected <M extends Memo> MemoEditor<M> createMemoEditor(Class<M> memoClass) {
+        return null;
+    }
+
     @SuppressWarnings("unchecked")
     private <M extends Memo> MemoEditor<M> memoEditor(M memo) {
         clearAlerts();
         if(memoEditor == null || memoEditor.getObjectClass() != memo.getClass()) {
-            memoEditor = new MemoEditor<>(memo.getClass());
+            memoEditor = createMemoEditor(memo.getClass());
+            if(memoEditor == null) {
+                memoEditor = new MemoEditor<>(memo.getClass());
+            }
+            memoEditor.setMemoSystem(this);
         }
         return (MemoEditor<M>) memoEditor;
     }
@@ -446,6 +458,7 @@ public class MemoSystem extends ObjectGrid<MemoComment> implements CloseableView
         @Override
         protected void setSU(SystemUser su) {
             who = su;
+            memoEditor = null;
             whoButton.setText(whoName(who));
             loadMemos();
         }
@@ -537,12 +550,13 @@ public class MemoSystem extends ObjectGrid<MemoComment> implements CloseableView
         }
     }
 
-    private class MemoEditor<M extends Memo> extends ObjectEditor<M> {
+    protected static class MemoEditor<M extends Memo> extends ObjectEditor<M> {
 
-        private final Comments comments = new Comments(this);
-        private final CompoundField commentsField = new CompoundField(comments);
+        private MemoSystem memoSystem;
+        private Comments comments;
+        private CompoundField commentsField;
 
-        MemoEditor(Class<M> objectClass) {
+        protected MemoEditor(Class<M> objectClass) {
             super(objectClass);
             addField("Reference");
             addField("InitiatedBy", this::initBy);
@@ -559,9 +573,20 @@ public class MemoSystem extends ObjectGrid<MemoComment> implements CloseableView
             addObjectChangedListener(new ObjectChangedListener<>() {
                 @Override
                 public void saved(M object) {
-                    loadMemos();
+                    memoSystem.loadMemos();
                 }
             });
+        }
+
+        private void setMemoSystem(MemoSystem memoSystem) {
+            this.memoSystem = memoSystem;
+            comments = memoSystem.createComments(this);
+            commentsField = new CompoundField(comments);
+        }
+
+        @Override
+        public boolean isFieldEditable(String fieldName) {
+            return !"Type".equals(fieldName) && super.isFieldEditable(fieldName);
         }
 
         @Override
@@ -575,7 +600,7 @@ public class MemoSystem extends ObjectGrid<MemoComment> implements CloseableView
 
         private String initBy(Memo memo) {
             SystemUser u = memo.getInitiatedBy();
-            return u == null ? who.getName() : u.getName();
+            return u == null ? memoSystem.who.getName() : u.getName();
         }
 
         private String lastCommentBy(Memo memo) {
@@ -596,7 +621,7 @@ public class MemoSystem extends ObjectGrid<MemoComment> implements CloseableView
 
         @Override
         protected void saveObject(Transaction t, M object) throws Exception {
-            object.save(t, comment, who);
+            object.save(t, memoSystem.comment, memoSystem.who);
         }
 
         @Override
@@ -837,6 +862,10 @@ public class MemoSystem extends ObjectGrid<MemoComment> implements CloseableView
                 default -> "Save";
             });
         }
+    }
+
+    private Comments createComments(View view) {
+        return new Comments(view);
     }
 
     private class Comments extends VerticalLayout {

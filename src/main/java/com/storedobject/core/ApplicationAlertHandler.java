@@ -1,78 +1,46 @@
 package com.storedobject.core;
 
-import com.storedobject.core.annotation.*;
+/**
+ * You can insert an entry in this data class for handling application alerts.
+ *
+ * @author Syam
+ */
+public class ApplicationAlertHandler extends DataLogic {
 
-public class ApplicationAlertHandler extends StoredObject {
-
-    private String dataClassName;
-    private String logicClassName;
-
+    /**
+     * Constructor for the ApplicationAlertHandler class.
+     * Initializes a new instance of the class.
+     */
     public ApplicationAlertHandler() {
     }
 
+    /**
+     * Takes in a Columns object and performs some operation.
+     *
+     * @param columns the Columns object to perform the operation on
+     */
     public static void columns(Columns columns) {
-        columns.add("DataClassName", "text");
-        columns.add("LogicClassName", "text");
     }
 
+    /**
+     * Adds an index to the given Indices object.
+     *
+     * @param indices The Indices object to which the index will be added.
+     *                This object keeps track of all the indices.
+     */
     public static void indices(Indices indices) {
         indices.add("DataClassName", true);
     }
 
+    /**
+     * Returns the unique condition for the data class.
+     *
+     * @return the unique condition in the format "DataClassName='DataClassNameValue'"
+     */
+    @Override
     public String getUniqueCondition() {
         return "DataClassName='"
                 + getDataClassName().trim().replace("'", "''")
                 + "'";
-    }
-
-    public static int hints() {
-        return ObjectHint.SMALL_LIST;
-    }
-
-    public void setDataClassName(String dataClassName) {
-        this.dataClassName = dataClassName;
-    }
-
-    @Column(order = 100)
-    public String getDataClassName() {
-        return dataClassName;
-    }
-
-    public void setLogicClassName(String logicClassName) {
-        this.logicClassName = logicClassName;
-    }
-
-    @Column(order = 200)
-    public String getLogicClassName() {
-        return logicClassName;
-    }
-
-    @Override
-    public void validateData(TransactionManager tm) throws Exception {
-        if (StringUtility.isWhite(dataClassName) || getDataClass() == null) {
-            throw new Invalid_Value("Data Class Name");
-        }
-        if (StringUtility.isWhite(logicClassName) || getLogicClass() == null) {
-            throw new Invalid_Value("Logic Class Name");
-        }
-        super.validateData(tm);
-    }
-
-    public final Class<? extends StoredObject> getDataClass() {
-        try {
-            //noinspection unchecked
-            return (Class<? extends StoredObject>) JavaClassLoader.getLogic(dataClassName);
-        } catch(Throwable ignored) {
-        }
-        return null;
-    }
-
-    public final Class<?> getLogicClass() {
-        try {
-            //noinspection
-            return JavaClassLoader.getLogic(logicClassName);
-        } catch(Throwable ignored) {
-        }
-        return null;
     }
 }

@@ -13,8 +13,15 @@ public class JournalVoucherBrowser extends ObjectBrowser<JournalVoucher> {
     private JournalVoucherView viewer;
 
     public JournalVoucherBrowser() {
+        this(new Searcher());
+    }
+
+    private JournalVoucherBrowser(Searcher searcher) {
         super(JournalVoucher.class, EditorAction.NEW | EditorAction.VIEW | EditorAction.ALLOW_ANY
-                | EditorAction.RELOAD | EditorAction.SEARCH, new Searcher());
+                | EditorAction.RELOAD | EditorAction.SEARCH, searcher);
+        searcher.systemEntity.setValue(getTransactionManager().getEntity());
+        setFilter(searcher.getFilterText(), false);
+        setObjectEditor(new JournalVoucherEditor());
     }
 
     @Override
@@ -29,9 +36,14 @@ public class JournalVoucherBrowser extends ObjectBrowser<JournalVoucher> {
         viewer.execute();
     }
 
+    @Override
+    public void doLoad(String filter) {
+        setFilter(filter, true);
+    }
+
     static class Searcher extends ObjectSearchForm<JournalVoucher> {
 
-        private final ObjectField<SystemEntity> systemEntity = new ObjectField<>("Organization", SystemEntity.class);
+        final ObjectField<SystemEntity> systemEntity = new ObjectField<>("Organization", SystemEntity.class);
         private final DatePeriodField period = new DatePeriodField("Period", DatePeriod.create());
 
         Searcher() {

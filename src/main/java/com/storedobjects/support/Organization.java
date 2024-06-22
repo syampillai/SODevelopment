@@ -39,4 +39,8 @@ public class Organization extends EntityRole {
     public void saved() {
         Issue.approvers.clear();
     }
+
+    public ObjectIterator<SystemUser> listUsers() {
+        return list(SupportUser.class, "Organization=" + getId()).map(SupportUser::getSupportUser);
+    }
 }

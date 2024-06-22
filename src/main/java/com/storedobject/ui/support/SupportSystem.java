@@ -1,14 +1,13 @@
 package com.storedobject.ui.support;
 
 import com.storedobject.common.SORuntimeException;
-import com.storedobject.core.MemoType;
-import com.storedobject.core.StoredObject;
-import com.storedobject.core.SystemUser;
+import com.storedobject.core.*;
+import com.storedobject.ui.Application;
+import com.storedobject.ui.ObjectField;
 import com.storedobject.ui.common.MemoSystem;
 import com.storedobject.vaadin.View;
-import com.storedobjects.support.Organization;
-import com.storedobjects.support.SupportPerson;
-import com.storedobjects.support.SupportUser;
+import com.storedobjects.support.*;
+import com.vaadin.flow.component.HasValue;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,6 +16,7 @@ public class SupportSystem extends MemoSystem {
 
     private List<Organization> organizations;
     private boolean user = false;
+    private ObjectField<Product> productField;
 
     public SupportSystem() {
         this("SS");
@@ -90,6 +90,7 @@ public class SupportSystem extends MemoSystem {
             if(supportUser != null) {
                 organizations.add(supportUser.getOrganization());
                 user = true;
+                setProductField(productField);
             }
             if(!user) {
                 SupportPerson supportPerson = StoredObject.get(SupportPerson.class, "Person=" + su.getId());
@@ -104,6 +105,18 @@ public class SupportSystem extends MemoSystem {
             }
         }
         super.execute(lock);
+        Application.get().closeMenu();
+    }
+
+    private void setProductField(ObjectField<Product> field) {
+        if(field == null) {
+            return;
+        }
+        this.productField = field;
+        if(organizations != null && user) {
+            Organization organization = organizations.get(0);
+            productField.setLoadFilter(p -> organization.existsLinks(Product.class, "Id=" + p.getId()));
+        }
     }
 
     @Override
@@ -114,5 +127,54 @@ public class SupportSystem extends MemoSystem {
     @Override
     protected String getCreateLabel() {
         return "Log";
+    }
+
+    @Override
+    protected <M extends Memo> MemoEditor<M> createMemoEditor(Class<M> memoClass) {
+        if(Issue.class.isAssignableFrom(memoClass)) {
+            return createIssueEditor(memoClass);
+        }
+        return null;
+    }
+
+    @SuppressWarnings("unchecked")
+    private <M extends Memo, I extends Issue> MemoEditor<M> createIssueEditor(Class<M> memoClass) {
+        Class<I> issueClass = (Class<I>) memoClass;
+        return (MemoEditor<M>) new IssueEditor<>(issueClass);
+    }
+
+    private static boolean checkAlertHandler = true;
+
+    private class IssueEditor<I extends Issue> extends MemoEditor<I> {
+
+        protected IssueEditor(Class<I> objectClass) {
+            super(objectClass);
+            if(checkAlertHandler) {
+                checkAlertHandler = false;
+                if (!StoredObject.exists(ApplicationAlertHandler.class, "DataClassName='com.storedobjects.support.Issue")) {
+                    ApplicationAlertHandler aah = new ApplicationAlertHandler();
+                    aah.setDataClassName(Issue.class.getName());
+                    aah.setLogicClassName(SupportSystem.class.getName());
+                    try {
+                        getTransactionManager().transact(aah::save);
+                    } catch (Exception ignored) {
+                    }
+                }
+            }
+        }
+
+        @Override
+        public boolean isFieldVisible(String fieldName) {
+            return !"SystemEntity".equals(fieldName) && super.isFieldEditable(fieldName);
+        }
+
+        @Override
+        protected void customizeField(String fieldName, HasValue<?, ?> field) {
+            if("Product".equals(fieldName) && field instanceof ObjectField<?>) {
+                //noinspection unchecked
+                setProductField((ObjectField<Product>) field);
+            }
+            super.customizeField(fieldName, field);
+        }
     }
 }

@@ -1,15 +1,14 @@
 package com.storedobject.ui.util;
 
 import com.storedobject.core.*;
+import com.storedobject.ui.*;
 import com.storedobject.ui.Application;
 import com.storedobject.ui.ApplicationLayout;
 import com.storedobject.ui.Image;
-import com.storedobject.ui.ViewSelected;
+import com.storedobject.vaadin.*;
 import com.storedobject.vaadin.ApplicationMenu;
-import com.storedobject.vaadin.ButtonIcon;
-import com.storedobject.vaadin.SpeakerButton;
-import com.storedobject.vaadin.View;
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.HasSize;
 import com.vaadin.flow.component.HasText;
 import com.vaadin.flow.component.HtmlComponent;
 import com.vaadin.flow.component.combobox.ComboBox;
@@ -21,6 +20,7 @@ import com.vaadin.flow.data.provider.DataProvider;
 import com.vaadin.flow.data.provider.ListDataProvider;
 
 import java.util.Collection;
+import java.util.List;
 
 @CssImport("./so/shared-styles.css")
 @CssImport("./so/animation/animation.css")
@@ -28,6 +28,7 @@ public class ApplicationFrame extends com.storedobject.vaadin.ApplicationFrame i
 
     private final Div progressBars = new Div();
     private SearchMenu searchMenu;
+    private ES entitySelector;
 
     public ApplicationFrame() {
         new ContextMenu(this);
@@ -101,28 +102,12 @@ public class ApplicationFrame extends com.storedobject.vaadin.ApplicationFrame i
     public void loggedin(com.storedobject.vaadin.Application application) {
         if(!ApplicationServer.getGlobalBooleanProperty("application.config.toolbox.hide")) {
             Application a = (Application) application;
-            boolean landscape = a.getDeviceWidth() > a.getDeviceHeight();
             TransactionManager tm = ((Application) application).getTransactionManager();
             SystemUser su = tm.getUser();
             application.setLocale(su.getLocale());
             Person p = su.getPerson();
             application.speak("Welcome " + p);
-            StringBuilder sb = new StringBuilder();
-            sb.append(su.getLogin()).append(" (").append(p.getName()).append(')');
-            SystemEntity se = tm.getEntity();
-            if(se != null) {
-                Entity e = se.getEntity();
-                sb.append(", ").append(e.getName()).append(", ").append(e.getLocation());
-            }
-            HasText user = getUserNameComponent();
-            String s = sb.toString();
-            if(landscape) {
-                user.setText(s);
-                ((HtmlComponent) user).setTitle("ID:" + su.getId());
-            } else {
-                user.setText(su.getName());
-                ((HtmlComponent) user).setTitle(su.getId() + ":" + s);
-            }
+            setUserTitle(a);
             ButtonIcon logoutButton = new ButtonIcon("icons:exit-to-app", e -> a.logout());
             logoutButton.setStyle("color", "var(--lumo-error-color)");
             logoutButton.getElement().setAttribute("title", "Sign out");
@@ -133,6 +118,34 @@ public class ApplicationFrame extends com.storedobject.vaadin.ApplicationFrame i
         if(!ApplicationServer.getGlobalBooleanProperty("application.config.menu.hide")) {
             getDrawerToggle().setVisible(true);
         }
+    }
+
+    private void setUserTitle(Application a) {
+        boolean landscape = a.getDeviceWidth() > a.getDeviceHeight();
+        TransactionManager tm = a.getTransactionManager();
+        SystemUser su = tm.getUser();
+        Person p = su.getPerson();
+        StringBuilder sb = new StringBuilder();
+        sb.append(su.getLogin()).append(" (").append(p.getName()).append(')');
+        SystemEntity se = tm.getEntity();
+        if(se != null) {
+            sb.append(", ").append(se.toDisplay());
+        }
+        HasText user = getUserNameComponent();
+        user.setText(landscape ? sb.toString() : su.getName());
+        String title =  landscape ? ("ID:" + su.getId()) : (su.getId() + ":" + sb);
+        if(user instanceof HtmlComponent hc) {
+            hc.setTitle(title);
+        } else if(user instanceof Component c) {
+            c.getElement().setAttribute("title", title);
+        }
+    }
+
+    @Override
+    protected HasText createUserNameComponent() {
+        Button entityButton = new Button("", (String) null, e -> selectEntity()).asSmall();
+        entityButton.getStyle().set("color", "var(--so-header-color)");
+        return entityButton;
     }
 
     @Override
@@ -202,4 +215,71 @@ public class ApplicationFrame extends com.storedobject.vaadin.ApplicationFrame i
 
     private static class EmptyMenu extends Div implements ApplicationMenu {
     }
+
+    private void selectEntity() {
+        if(entitySelector == null) {
+            entitySelector = new ES();
+        }
+        if(entitySelector.count > 1) {
+            entitySelector.execute();
+        } else {
+            setUserTitle(Application.get());
+        }
+    }
+
+    private class ES extends EntitySelector {
+
+        ES() {
+            super(Application.get().getTransactionManager().getUser());
+        }
+
+        @Override
+        protected boolean process() {
+            super.process();
+            setUserTitle(Application.get());
+            return true;
+        }
+    }
+
+    public static class EntitySelector extends DataForm implements HomeView {
+
+        private final ObjectComboField<SystemEntity> entities;
+        protected final int count;
+
+        EntitySelector(SystemUser user) {
+            this(user, user.listEntities());
+        }
+
+        public EntitySelector(SystemUser user, List<SystemEntity> entities) {
+            super(user.getName());
+            count = entities.size();
+            this.entities = new ObjectComboField<>("Select Organization", SystemEntity.class, entities);
+            this.entities.setValue(entities.get(0));
+            addConstructedListener(o -> fConstructed());
+        }
+
+        private void fConstructed() {
+            setColumns(1);
+            ((HasSize)getContent()).setMinWidth((Application.get().getDeviceWidth() / 3) + "px");
+        }
+
+        @Override
+        protected void buildFields() {
+            addField(entities);
+            setRequired(entities);
+            ok.setText("Proceed");
+        }
+
+        @Override
+        protected boolean process() {
+            SystemEntity se = entities.getValue();
+            close();
+            Application a = Application.get();
+            a.getTransactionManager().setEntity(se);
+            a.checkDayEnd();
+            a.setDate(a.getServer().getDate());
+            return true;
+        }
+    }
+
 }
