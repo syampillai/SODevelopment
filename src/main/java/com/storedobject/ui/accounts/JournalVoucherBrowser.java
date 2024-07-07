@@ -20,8 +20,8 @@ public class JournalVoucherBrowser extends ObjectBrowser<JournalVoucher> {
         super(JournalVoucher.class, EditorAction.NEW | EditorAction.VIEW | EditorAction.ALLOW_ANY
                 | EditorAction.RELOAD | EditorAction.SEARCH, searcher);
         searcher.systemEntity.setValue(getTransactionManager().getEntity());
-        setFilter(searcher.getFilterText(), false);
         setObjectEditor(new JournalVoucherEditor());
+        setFilter(searcher.getFilterText());
     }
 
     @Override

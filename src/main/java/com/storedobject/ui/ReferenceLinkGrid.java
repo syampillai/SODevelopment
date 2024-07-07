@@ -269,7 +269,7 @@ public class ReferenceLinkGrid<T extends StoredObject> extends AbstractLinkGrid<
 
     @Override
     protected final boolean canChange(T item, int editorAction) {
-        return ((ObjectEditor<?>)getButtonPanel().getMasterView()).acceptValueChange(getField(), item, editorAction);
+        return ((ObjectEditor<?>)getButtonPanel().getMasterView()).acceptChange(getField(), item, editorAction);
     }
 
     private class RList extends EList implements LinkValue<T> {

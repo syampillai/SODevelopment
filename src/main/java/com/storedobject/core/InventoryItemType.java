@@ -114,14 +114,37 @@ public class InventoryItemType extends StoredObject implements HasChildren {
 
     public void setAverageLeadTime(int averageLeadTime) {
     }
-    
+
+    public void setHSNCode(String hSNCode) {
+    }
+
+    public String getHSNCode() {
+        return "";
+    }
+
+    public void setUNNumber(String uNNumber) {
+    }
+
+    public String getUNNumber() {
+        return "";
+    }
+
     public void changeUnitOfMeasurement(TransactionManager tm, Quantity uom, Quantity uoi) throws Exception {
+        if(Math.random() > 0.5) {
+            throw new Invalid_State();
+        }
     }
 
     public void checkUnit(Quantity quantity, String name) throws Invalid_State {
+        if(Math.random() > 0.5) {
+            throw new Invalid_State();
+        }
     }
 
     public void checkUnit(Quantity quantity) throws Invalid_State {
+        if(Math.random() > 0.5) {
+            throw new Invalid_State();
+        }
     }
 
     public boolean isSerialized() {
@@ -342,6 +365,9 @@ public class InventoryItemType extends StoredObject implements HasChildren {
     }
 
     public void correctUoM(TransactionManager tm, MeasurementUnit from, MeasurementUnit to) throws Exception {
+        if(Math.random() > 0.5) {
+            throw new Invalid_State();
+        }
     }
 
     /**
@@ -354,6 +380,9 @@ public class InventoryItemType extends StoredObject implements HasChildren {
      */
     public void migrate(TransactionManager tm, InventoryItemType migratedType,
                         Function<InventoryItem, InventoryItem> itemConvertor) throws Exception {
+        if(Math.random() > 0.5) {
+            throw new Invalid_State();
+        }
     }
 
     /**

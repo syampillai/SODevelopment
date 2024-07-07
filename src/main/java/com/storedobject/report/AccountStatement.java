@@ -13,11 +13,9 @@ import java.util.function.Function;
  */
 public class AccountStatement extends PDFReport implements JSONParameter {
 
-    private Ledger ledger;
     private DatePeriod datePeriod;
     private Account account;
     private Text title;
-    private String currency;
     private Boolean init = null;
 
     public AccountStatement(Device device) {
@@ -45,12 +43,10 @@ public class AccountStatement extends PDFReport implements JSONParameter {
         if(datePeriod.getFrom().after(datePeriod.getTo())) {
             datePeriod = new DatePeriod(datePeriod.getTo(), datePeriod.getTo());
         }
-        ledger = account.getLedger(datePeriod);
         title = new Text().append(14, PDFFont.BOLD).append(account.toDisplay())
                 .append(12, PDFFont.BOLD).newLine().newLine(true)
                 .append("Statement for the Period: ").append(datePeriod);
         title.update();
-        currency = account.getCurrency().getCurrencyCode();
         setEntity(account.getSystemEntity().getEntity());
         init = true;
         return true;
@@ -76,16 +72,21 @@ public class AccountStatement extends PDFReport implements JSONParameter {
         return cell;
     }
 
-    public Ledger getLedger() {
-        return ledger;
-    }
-
     @Override
 	public void generateContent() {
         if(!init()) {
             add("Invalid parameters!");
             return;
         }
+        generateStatement(this, account, datePeriod);
+    }
+
+    private static String b(Money m) {
+        return "Balance (" + (m.isDebit() ? "DB" : "CR") + ")";
+    }
+
+    public static void generateStatement(PDFReport report, Account account, DatePeriod datePeriod) {
+        Ledger ledger = account.getLedger(datePeriod);
         Function<PDFCell, PDFCell> grey = c -> {
             c.setGrayFill(0.9f);
             return c;
@@ -95,67 +96,64 @@ public class AccountStatement extends PDFReport implements JSONParameter {
             return c;
         };
         PDFTable table = createTable(13, 47, 20, 20);
-        table.addCell(createCell(createTitleText("Date")));
-        table.addCell(createCell(createTitleText("Particulars")));
-        table.addCell(createCell(createTitleText("Debit (" + currency + ")"), true));
-        table.addCell(createCell(createTitleText("Credit (" + currency + ")"), true));
+        table.addCell(report.createCell(report.createTitleText("Date")));
+        table.addCell(report.createCell(report.createTitleText("Particulars")));
+        String currency = account.getCurrency().getCurrencyCode();
+        table.addCell(report.createCell(report.createTitleText("Debit (" + currency + ")"), true));
+        table.addCell(report.createCell(report.createTitleText("Credit (" + currency + ")"), true));
         PDFCell cell;
         for(int i = 0; i < table.getNumberOfColumns(); i++) {
-            cell = createCell("");
+            cell = report.createCell("");
             cell.setBorder(PDFRectangle.TOP);
             table.addCell(cell);
         }
         table.setHeaderRows(2);
         table.setFooterRows(1);
-        table.addCell(createCell(ledger.getPeriod().getFrom()), grey);
+        table.addCell(report.createCell(ledger.getPeriod().getFrom()), grey);
         Money a = ledger.getOpeningBalance(), b = a;
-        table.addCell(createCell("Previous " + b(a), true, grey));
+        table.addCell(report.createCell("Previous " + b(a), true, grey));
         if(a.isDebit()) {
-            table.addCell(createCell(a.negate(), grey));
+            table.addCell(report.createCell(a.negate(), grey));
             table.addBlankCell(grey);
         } else {
             table.addBlankCell(grey);
-            table.addCell(createCell(a), grey);
+            table.addCell(report.createCell(a), grey);
         }
         Date d = null;
         for(LedgerEntry le: ledger) {
             if(d != null && !DateUtility.isSameDate(le.getDate(), d)) {
                 table.addBlankCell(grey);
-                table.addCell(createCell(b(b), true), grey);
+                table.addCell(report.createCell(b(b), true), grey);
                 if(b.isDebit()) {
-                    table.addCell(createCell(b.negate()), grey);
+                    table.addCell(report.createCell(b.negate()), grey);
                     table.addBlankCell(grey);
                 } else {
                     table.addBlankCell(grey);
-                    table.addCell(createCell(b), grey);
+                    table.addCell(report.createCell(b), grey);
                 }
             }
             a = le.getAmount();
             d = le.getDate();
-            table.addCell(createCell(d), hollow);
-            table.addCell(createCell(le.getParticulars(true)), hollow);
+            table.addCell(report.createCell(d), hollow);
+            table.addCell(report.createCell(le.getParticulars(true)), hollow);
             if(a.isDebit()) {
-                table.addCell(createCell(a.negate()), hollow);
+                table.addCell(report.createCell(a.negate()), hollow);
                 table.addBlankCell(hollow);
             } else {
                 table.addBlankCell(hollow);
-                table.addCell(createCell(a), hollow);
+                table.addCell(report.createCell(a), hollow);
             }
             b = le.getBalance();
         }
-        table.addCell(createCell(ledger.getPeriod().getTo(), grey));
-        table.addCell(createCell("Closing " + b(b), true), grey);
+        table.addCell(report.createCell(ledger.getPeriod().getTo(), grey));
+        table.addCell(report.createCell("Closing " + b(b), true), grey);
         if(b.isDebit()) {
-            table.addCell(createCell(b.negate()), grey);
+            table.addCell(report.createCell(b.negate()), grey);
             table.addBlankCell(grey);
         } else {
             table.addBlankCell(grey);
-            table.addCell(createCell(b), grey);
+            table.addCell(report.createCell(b), grey);
         }
-        add(table);
-    }
-
-    private String b(Money m) {
-        return "Balance (" + (m.isDebit() ? "DB" : "CR") + ")";
+        report.add(table);
     }
 }

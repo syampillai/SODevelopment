@@ -20,6 +20,16 @@ public interface HasReference {
      */
     String getTagPrefix();
 
+    /**
+     * Get the suffix of the tag to be used for generating the reference.
+     * <p>Note: This could be a dynamically generated string value based on the object instance.</p>
+     *
+     * @return A tag value (possibly a dynamic value) to be used as the suffix.
+     */
+    default String getTagSuffix() {
+        return null;
+    }
+
     default <O extends StoredObject> Amend<O> getAmend() {
         //noinspection unchecked
         return new Amend<>((O)this, 0);

@@ -52,9 +52,9 @@ public class BaseReceiveMaterialRequested<MR extends MaterialRequest, MRI extend
             }) {
                 return false;
             }
-            receive.setVisible(o.getStatus() != 1 && !o.getReserved());
-            request.setVisible(o.getStatus() != 1 && o.getReserved());
-            release.setVisible(o.getReserved());
+            receive.setVisible(o.getStatus() != 1 && !o.getReserved() && canReceiveMaterial());
+            request.setVisible(o.getStatus() != 1 && o.getReserved() && canRequestToIssue());
+            release.setVisible(o.getReserved() && canCancelReservation());
             return true;
         });
     }
@@ -134,6 +134,18 @@ public class BaseReceiveMaterialRequested<MR extends MaterialRequest, MRI extend
                 message("Reservation cancelled!");
             }
         }).execute();
+    }
+
+    protected boolean canReceiveMaterial() {
+        return actionAllowed("RECEIVE-MATERIALS");
+    }
+
+    protected boolean canRequestToIssue() {
+        return actionAllowed("REQUEST-TO-ISSUE");
+    }
+
+    protected boolean canCancelReservation() {
+        return actionAllowed("CANCEL-RESERVATION");
     }
 
     private void receive() {
@@ -381,5 +393,10 @@ public class BaseReceiveMaterialRequested<MR extends MaterialRequest, MRI extend
     protected String getReceiptReference(MaterialIssued mi, MaterialRequest mr) {
         return "Request " + mr.getReference() + "/" + DateUtility.formatDate(mr.getDate()) +
                 ", Issue " + mi.getReference() + "/" + DateUtility.formatDate(mi.getDate());
+    }
+
+    @Override
+    protected String getActionPrefix() {
+        return "RMR";
     }
 }

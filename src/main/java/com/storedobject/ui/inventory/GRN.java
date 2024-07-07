@@ -366,7 +366,7 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
     }
 
     @Override
-    protected final GRNEditor createObjectEditor() {
+    protected final ObjectEditor<InventoryGRN> createObjectEditor() {
         return editor;
     }
 
@@ -767,20 +767,7 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
                 if(list.stream()
                         .anyMatch(gi -> Id.isNull(gi.getItemId()) && !gi.getPartNumber().isSerialized())) {
                     list.removeIf(gi -> !Id.isNull(gi.getItemId()));
-                    String m = "The following item";
-                    if(list.size() > 1) {
-                        m += "s are";
-                    } else {
-                        m += "is";
-                    }
-                    m += " not inspected and binned. Th";
-                    if(list.size() > 1) {
-                        m += "ese";
-                    } else {
-                        m += "is";
-                    }
-                    m += " will be auto-created and auto-binned (if possible)!";
-                    new ConfirmGrid(list, m, () -> preProcessGRN(grn, true));
+                    new ConfirmGrid(list, inspectPrompt(list), () -> preProcessGRN(grn, true));
                     return;
                 }
             }
@@ -789,6 +776,10 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
                 processGRN(grn);
                 return;
             }
+            new ConfirmGrid(list, noBinPrompt(list), () -> processGRN(grn));
+        }
+
+        private static String noBinPrompt(List<InventoryGRNItem> list) {
             String m = "Bin location";
             if(list.size() == 1) {
                 m += " is";
@@ -806,7 +797,24 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
                 m += "s";
             }
             m += "!";
-            new ConfirmGrid(list, m, () -> processGRN(grn));
+            return m;
+        }
+
+        private static String inspectPrompt(List<InventoryGRNItem> list) {
+            String m = "The following item";
+            if(list.size() > 1) {
+                m += "s are";
+            } else {
+                m += "is";
+            }
+            m += " not inspected and binned. Th";
+            if(list.size() > 1) {
+                m += "ese";
+            } else {
+                m += "is";
+            }
+            m += " will be auto-created and auto-binned (if possible)!";
+            return m;
         }
 
         private boolean isAssemblyIncomplete(InventoryGRNItem grnItem) {
@@ -1091,6 +1099,11 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
                             snField.setValue(StoredObject.toCode(snField.getValue()));
                         }
                     });
+                    quantityField.addValueChangeListener(e -> {
+                        if(e.isFromClient()) {
+                            qtyChanged(e.getOldValue());
+                        }
+                    });
                     addField(itemField, snField, quantityField, ucField);
                 }
 
@@ -1113,6 +1126,15 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
                     quantityField.setValue(grnItem.getQuantity());
                     ucField.setValue(grnItem.getUnitCost());
                     super.execute(parent, doNotLock);
+                }
+
+                private void qtyChanged(Quantity oldValue) {
+                    Quantity qty = quantityField.getValue();
+                    if(qty.getUnit().equals(oldValue.getUnit())) {
+                        return;
+                    }
+                    UnitCost uc = new UnitCost(grnItem.getUnitCost(), grnItem.getQuantity().getUnit());
+                    ucField.setValue(uc.getUnitCost(qty.getUnit()).getCost());
                 }
 
                 @Override
@@ -1670,6 +1692,7 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
                     filter = "Period = " + period;
                     setLoadFilter(p -> period.inside(p.getDate()));
                 }
+                //noinspection DuplicatedCode
                 case 2 -> {
                     int no = noField.getValue();
                     if(no <= 0) {

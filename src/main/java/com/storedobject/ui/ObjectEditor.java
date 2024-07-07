@@ -781,32 +781,14 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
 
     void buttonsOff() {
         getComponent();
-        if(add != null) {
-            add.setVisible(false);
-        }
-        if(edit != null) {
-            edit.setVisible(false);
-        }
-        if(delete != null) {
-            delete.setVisible(false);
-        }
-        if(search != null) {
-            search.setVisible(false);
-        }
-        if(searcherField != null) {
-            searcherField.setVisible(false);
-        }
-        if(print != null) {
-            print.setVisible(false);
-        }
-        if(report != null) {
-            report.setVisible(false);
-        }
-        if(audit != null) {
-            audit.setVisible(false);
-        }
-        if(exit != null) {
-            exit.setVisible(false);
+        off(add, edit, delete, search, searcherField, print, report, audit, exit);
+    }
+
+    private void off(Component... components) {
+        for (Component component : components) {
+            if(component != null) {
+                component.setVisible(false);
+            }
         }
     }
 
@@ -945,20 +927,7 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
         if(!form.commit()) {
             return null;
         }
-        T object = getObject();
-        object.clearObjectLinks();
-        for(ObjectLinkField<?> linkField : linkFields) {
-            linkField.getValue().copy().attach();
-        }
-        if(streamAttachmentData != null) {
-            streamAttachmentData.copy().attach();
-        }
-        if(extraInfo != null) {
-            extraInfo.getValue().copy().attach();
-        }
-        if(contactData != null && contactData.ownedByMaster()) {
-            contactData.copy().attach();
-        }
+        T object = getObjectWithLinks();
         if(created != null) {
             created.set(object.created());
         }
@@ -2548,6 +2517,20 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
             //noinspection unchecked
             setObject((T) object);
         }
+    }
+
+    <L extends StoredObject> boolean acceptChange(ObjectLinkField<L> linkField, L item, int changeAction) {
+        switch(changeAction) {
+            case EditorAction.NEW, EditorAction.EDIT -> {
+                try {
+                    item.setMaster(linkField.getMaster(), linkField.getLink().getType());
+                } catch (Exception e) {
+                    warning(e);
+                    return false;
+                }
+            }
+        }
+        return acceptValueChange(linkField, item, changeAction);
     }
 
     /**

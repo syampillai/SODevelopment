@@ -242,7 +242,7 @@ public final class Consignment extends StoredObject implements HasReference {
     }
 
     public String getReference() {
-        if(reference != null) {
+        if(reference == null) {
             reference = ref.get(this);
         }
         return reference == null ? "" : reference;

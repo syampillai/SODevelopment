@@ -36,11 +36,19 @@ public class ReferencePattern<O extends StoredObject> {
     }
 
     public String  getTag(O so) {
-        return rp(so).getTag().apply(so);
+        return rp(so).getTag().apply(so) + suffix(so);
     }
 
     private Function<O, String> patternTag(StoredObject so) {
         return rp(so).getPatternTag();
+    }
+
+    private String suffix(StoredObject so) {
+        if(so instanceof HasReference hr) {
+            String s = hr.getTagSuffix();
+            return s == null ? "" : ("-" + s);
+        }
+        return "";
     }
 
     public String get(StoredObject so) {
@@ -53,7 +61,7 @@ public class ReferencePattern<O extends StoredObject> {
         }
         rp(so);
         @SuppressWarnings("unchecked") O o = (O) so;
-        String tag = hr.getTagPrefix() + patternTag(so).apply(o);
+        String tag = hr.getTagPrefix() + patternTag(so).apply(o) + suffix(o);
         String p = serialPattern.get(tag);
         Transaction t = so.getTransaction();
         if(p == null) {
@@ -93,7 +101,6 @@ public class ReferencePattern<O extends StoredObject> {
         RP(Class<T> objectClass, BiFunction<Class<T>, Boolean, Function<T, String>> tagCreator) {
             this.objectClass = objectClass;
             this.tagCreator = tagCreator;
-            System.err.println("RP for " + objectClass);
         }
 
         static void clear() {

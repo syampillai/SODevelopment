@@ -461,6 +461,7 @@ public abstract class AbstractRequestMaterial<MR extends MaterialRequest, MRI ex
                     filter = "Period = " + period;
                     setLoadFilter(p -> period.inside(p.getDate()));
                 }
+                //noinspection DuplicatedCode
                 case 2 -> {
                     int no = noField.getValue();
                     if(no <= 0) {

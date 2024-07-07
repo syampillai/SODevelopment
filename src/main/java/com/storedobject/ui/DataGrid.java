@@ -389,7 +389,7 @@ public class DataGrid<T> extends com.storedobject.vaadin.ListGrid<T>
      * any exception.
      *
      * @param object Item that is deleted.
-     * @throws Exception The exception should be a user-friendly one because it will be displayed on the screen.
+     * @throws Exception The exception should have a user-friendly message because it will be displayed on the screen.
      */
     protected void validateDelete(T object) throws Exception {
     }

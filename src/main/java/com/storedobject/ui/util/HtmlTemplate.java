@@ -7,6 +7,7 @@ import com.storedobject.ui.MediaCSS;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.template.Id;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.AnnotationReader;
@@ -139,7 +140,7 @@ public abstract class HtmlTemplate extends Component {
 
     private static TemplateDetails td(Supplier<String> contentSupplier) {
         HTMLSupplier hs = new HTMLSupplier(contentSupplier);
-        return new TemplateDetails(contentSupplier.getClass().getName(), hs, hs);
+        return new TemplateDetails(null, hs, hs);
     }
 
     public void setView(Object view) {
@@ -151,9 +152,6 @@ public abstract class HtmlTemplate extends Component {
     }
 
     private void populate(String cacheKey, StreamSupplier streamSupplier, StyleSupplier styleSupplier) {
-        if(cacheKey == null) {
-            cacheKey = getClass().getName();
-        }
         Document document = getTemplate(cacheKey, streamSupplier);
         Map<String, Element> idElementMap = new HashMap<>();
         Map<String, Component> idComponentMap = new HashMap<>();
@@ -172,12 +170,8 @@ public abstract class HtmlTemplate extends Component {
                     if(component == null) {
                         Element idElement = idElementMap.get(id);
                         if(idElement == null) {
-                            try {
-                                component = createComponentForId(id);
-                                component.setId(id);
-                            } catch(NO_COMPONENT no_component) {
-                                //throw new IllegalArgumentException("There is no element with id " + id + " to match " + field);
-                            }
+                            component = createComponentForId(id);
+                            component.setId(id);
                         } else {
                             component = Component.from(idElement, field.getType().asSubclass(Component.class));
                         }
@@ -246,15 +240,12 @@ public abstract class HtmlTemplate extends Component {
             Component c = null;
             String id = jsoupElement.attributes().get("id");
             if(!id.isEmpty()) {
-                try {
-                    c = createComponentForId(id);
-                    if(!c.getElement().getTag().equals(jsoupElement.tagName())) {
-                        throw new IllegalArgumentException("Incompatible component " + c.getClass().getName() +
-                                " for tag " + jsoupElement.tagName() + ", Id = " + id);
-                    }
-                    c.setId(id);
-                } catch(NO_COMPONENT ignored) {
+                c = createComponentForId(id);
+                if(!c.getElement().getTag().equals(jsoupElement.tagName())) {
+                    throw new IllegalArgumentException("Incompatible component " + c.getClass().getName() +
+                            " for tag " + jsoupElement.tagName() + ", Id = " + id);
                 }
+                c.setId(id);
             }
             if(c == null) {
                 c = createComponent(id, node.nodeName());
@@ -356,10 +347,7 @@ public abstract class HtmlTemplate extends Component {
                 return c;
             }
         }
-        throw new NO_COMPONENT();
-    }
-
-    private static class NO_COMPONENT extends RuntimeException {
+        return new Span("[Id = " + id + "]");
     }
 
     /**

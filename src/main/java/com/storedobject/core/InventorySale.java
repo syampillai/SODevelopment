@@ -26,4 +26,13 @@ public class InventorySale extends InventoryTransfer {
     public Entity getCustomerEntity() {
         return get(Entity.class, getToLocation().getEntityId());
     }
+
+    /**
+     * Get the type of sale. Overridden classes may define this if required.
+     *
+     * @return Type.
+     */
+    protected int getType() {
+        return 0;
+    }
 }

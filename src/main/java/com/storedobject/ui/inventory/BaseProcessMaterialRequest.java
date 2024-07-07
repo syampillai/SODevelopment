@@ -864,7 +864,7 @@ public class BaseProcessMaterialRequest<MR extends MaterialRequest, MRI extends 
 
             @Override
             public Stream<Object> fetchChildren(HierarchicalQuery<Object, String> query) {
-                Object parent = query.getParent();
+                @SuppressWarnings("DuplicatedCode") Object parent = query.getParent();
                 if(parent == null) {
                     return Utility.stream(mriList, query.getOffset(), query.getOffset() + query.getLimit())
                             .map(o -> o);
@@ -994,26 +994,18 @@ public class BaseProcessMaterialRequest<MR extends MaterialRequest, MRI extends 
             }
         }
 
-        private class FillAction implements Runnable {
-
-            private final String actionName;
-            private final Runnable action;
-
-            private FillAction(String actionName, Runnable action) {
-                this.actionName = actionName;
-                this.action = action;
-            }
+        private record FillAction(String actionName, Runnable action) implements Runnable {
 
             @Override
-            public void run() {
-                action.run();
-            }
+                    public void run() {
+                        action.run();
+                    }
 
-            @Override
-            public String toString() {
-                return actionName;
-            }
-        }
+                    @Override
+                    public String toString() {
+                        return actionName;
+                    }
+                }
 
         private class EditQuantity extends DataForm {
 

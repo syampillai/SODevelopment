@@ -209,7 +209,7 @@ public class DetailLinkGrid<T extends StoredObject> extends AbstractLinkGrid<T> 
 
     @Override
     protected final boolean canChange(T item, int editorAction) {
-        return ((ObjectEditor<?>)getButtonPanel().getMasterView()).acceptValueChange(getField(), item, editorAction);
+        return ((ObjectEditor<?>)getButtonPanel().getMasterView()).acceptChange(getField(), item, editorAction);
     }
 
     class DList extends EList implements LinkValue<T> {
