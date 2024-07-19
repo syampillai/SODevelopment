@@ -13,10 +13,7 @@ import com.storedobject.vaadin.*;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 
-import java.io.InputStream;
-import java.io.StringReader;
-import java.io.StringWriter;
-import java.io.Writer;
+import java.io.*;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -373,7 +370,7 @@ public class TableDefinitionEditor extends ObjectEditor<TableDefinition> {
 
     private class DeployAll extends DataForm {
 
-        private TextField filter;
+        private TextArea filter;
 
         public DeployAll() {
             super("Deploy All Data Classes");
@@ -381,7 +378,7 @@ public class TableDefinitionEditor extends ObjectEditor<TableDefinition> {
 
         @Override
         protected void buildFields() {
-            addField(filter = new TextField("Class Name Filter"));
+            addField(filter = new TextArea("Class Names Filter (One partial-name/name in each line)"));
             filter.setHelperText("Leave it empty for all");
             filter.setSpellCheck(false);
         }
@@ -396,6 +393,11 @@ public class TableDefinitionEditor extends ObjectEditor<TableDefinition> {
             deployAll(f);
             return true;
         }
+
+        @Override
+        public int getMinimumContentWidth() {
+            return 40;
+        }
     }
 
     private void deployAll(String classNameFilter) {
@@ -407,10 +409,17 @@ public class TableDefinitionEditor extends ObjectEditor<TableDefinition> {
         final String caption = "Deploying data classes (" + (classNameFilter == null ? "all" : classNameFilter) +
                 "). This may take a while... Round ";
         if (classNameFilter != null) {
-            if (!classNameFilter.contains("'")) {
-                classNameFilter = "LIKE '%" + classNameFilter + "%'";
-            }
-            classNameFilter = "lower(ClassName) " + classNameFilter;
+            StringBuilder sb = new StringBuilder();
+            new BufferedReader(new StringReader(classNameFilter)).lines().forEach(line -> {
+                line = line.trim();
+                if(!line.isEmpty()) {
+                    if(!sb.isEmpty()) {
+                        sb.append(" OR ");
+                    }
+                    sb.append("lower(ClassName) LIKE '%").append(line.toLowerCase()).append("%'");
+                }
+            });
+            classNameFilter = sb.isEmpty() ? null : sb.toString();
         }
         String cnf = classNameFilter;
         TextView view = new TextView("Deploying...");
