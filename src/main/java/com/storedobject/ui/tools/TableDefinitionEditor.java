@@ -234,7 +234,7 @@ public class TableDefinitionEditor extends ObjectEditor<TableDefinition> {
                         return;
                     }
                 }
-                td.generateJavaCode(sw);
+                td.generateJavaCode(sw, true,c != viewSource);
                 if(c == editSource) {
                     (new SourceCodeEditor(sw.toString(), title)).execute(this);
                 } else if(c == compileSource || c == deploy) {

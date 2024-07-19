@@ -7,7 +7,7 @@ public final class LandedCostType extends StoredObject {
 
     private String name;
     private int displayOrder;
-    private boolean deduct;
+    private boolean deduct, partOfInvoice;
 
     public LandedCostType() {
     }
@@ -16,6 +16,7 @@ public final class LandedCostType extends StoredObject {
         columns.add("Name", "text");
         columns.add("DisplayOrder", "int");
         columns.add("Deduct", "boolean");
+        columns.add("PartOfInvoice", "boolean");
     }
 
     public static void indices(Indices indices) {
@@ -72,6 +73,16 @@ public final class LandedCostType extends StoredObject {
     @Column(order = 300)
     public boolean getDeduct() {
         return deduct;
+    }
+
+    public void setPartOfInvoice(boolean partOfInvoice) {
+        this.partOfInvoice = partOfInvoice;
+    }
+
+    @SetNotAllowed
+    @Column(order = 400)
+    public boolean getPartOfInvoice() {
+        return partOfInvoice;
     }
 
     @Override

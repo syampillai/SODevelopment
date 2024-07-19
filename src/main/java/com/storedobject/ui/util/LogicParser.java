@@ -1,9 +1,12 @@
 package com.storedobject.ui.util;
 
+import com.storedobject.accounts.CustomerInvoice;
+import com.storedobject.accounts.SupplierInvoice;
 import com.storedobject.common.SORuntimeException;
 import com.storedobject.core.*;
 import com.storedobject.ui.ObjectBrowser;
 import com.storedobject.ui.ObjectEditor;
+import com.storedobject.ui.accounts.*;
 import com.storedobject.ui.common.EntityRoleEditor;
 import com.storedobject.ui.common.PersonRoleEditor;
 import com.storedobject.ui.inventory.*;
@@ -215,21 +218,46 @@ public class LogicParser {
         if(InventoryPOItem.class.isAssignableFrom(objectClass)) {
             return POItemBrowser.class.getName();
         }
+        if(CustomerInvoice.class == objectClass) {
+            return CustomerInvoiceBrowser.class.getName();
+        }
+        if(CustomerInvoice.class.isAssignableFrom(objectClass)) {
+            return BaseCustomerInvoiceBrowser.class.getName();
+        }
+        if(SupplierInvoice.class == objectClass) {
+            return SupplierInvoiceBrowser.class.getName();
+        }
+        if(SupplierInvoice.class.isAssignableFrom(objectClass)) {
+            return BaseSupplierInvoiceBrowser.class.getName();
+        }
         return ObjectBrowser.class.getName();
     }
 
+    @SuppressWarnings("rawtypes")
     private static <O extends StoredObject> ObjectBrowser<O> browser(Class<O> objectClass,
                                                                      int actions, String title) {
         if(PackingUnit.class == objectClass) {
             return (ObjectBrowser<O>) new PackingUnitBrowser();
         }
         if(InventoryPO.class.isAssignableFrom(objectClass)) {
-            //noinspection rawtypes
             return new POBrowser(objectClass, actions, title);
         }
         if(InventoryPOItem.class.isAssignableFrom(objectClass)) {
-            //noinspection rawtypes
             return new POItemBrowser(objectClass, actions, title);
+        }
+        if(CustomerInvoice.class == objectClass) {
+            return (ObjectBrowser<O>) new CustomerInvoiceBrowser(actions, title);
+        }
+        if(CustomerInvoice.class.isAssignableFrom(objectClass)) {
+            Class<? extends CustomerInvoice> ciClass = (Class<? extends CustomerInvoice>) objectClass;
+            return (ObjectBrowser<O>) new BaseCustomerInvoiceBrowser<>(ciClass, actions, title);
+        }
+        if(SupplierInvoice.class == objectClass) {
+            return (ObjectBrowser<O>) new SupplierInvoiceBrowser(actions, title);
+        }
+        if(SupplierInvoice.class.isAssignableFrom(objectClass)) {
+            Class<? extends SupplierInvoice> siClass = (Class<? extends SupplierInvoice>) objectClass;
+            return (ObjectBrowser<O>) new BaseSupplierInvoiceBrowser<>(siClass, actions, title);
         }
         return null;
     }
@@ -268,6 +296,18 @@ public class LogicParser {
         if(EntityRole.class.isAssignableFrom(objectClass)) {
             return EntityRoleEditor.class.getName();
         }
+        if(CustomerInvoice.class == objectClass) {
+            return CustomerInvoiceEditor.class.getName();
+        }
+        if(CustomerInvoice.class.isAssignableFrom(objectClass)) {
+            return BaseCustomerInvoiceEditor.class.getName();
+        }
+        if(SupplierInvoice.class == objectClass) {
+            return SupplierInvoiceEditor.class.getName();
+        }
+        if(SupplierInvoice.class.isAssignableFrom(objectClass)) {
+            return BaseSupplierInvoiceEditor.class.getName();
+        }
         return ObjectEditor.class.getName();
     }
 
@@ -291,6 +331,20 @@ public class LogicParser {
         if(PersonRole.class.isAssignableFrom(objectClass)) {
             //noinspection rawtypes
             return new PersonRoleEditor(objectClass, actions, title);
+        }
+        if(CustomerInvoice.class == objectClass) {
+            return (ObjectEditor<O>) new CustomerInvoiceEditor(actions, title);
+        }
+        if(CustomerInvoice.class.isAssignableFrom(objectClass)) {
+            Class<? extends CustomerInvoice> ciClass = (Class<? extends CustomerInvoice>) objectClass;
+            return (ObjectEditor<O>) new BaseCustomerInvoiceEditor<>(ciClass, actions, title);
+        }
+        if(SupplierInvoice.class == objectClass) {
+            return (ObjectEditor<O>) new SupplierInvoiceEditor(actions, title);
+        }
+        if(SupplierInvoice.class.isAssignableFrom(objectClass)) {
+            Class<? extends SupplierInvoice> siClass = (Class<? extends SupplierInvoice>) objectClass;
+            return (ObjectEditor<O>) new BaseSupplierInvoiceEditor<>(siClass, actions, title);
         }
         return null;
     }

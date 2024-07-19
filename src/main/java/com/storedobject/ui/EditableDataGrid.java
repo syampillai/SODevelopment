@@ -1,5 +1,6 @@
 package com.storedobject.ui;
 
+import com.storedobject.core.Financial;
 import com.vaadin.flow.component.HasValue;
 
 import java.util.stream.Stream;
@@ -46,5 +47,27 @@ public interface EditableDataGrid<T> {
      */
     default boolean canDelete(T item) {
         return true;
+    }
+
+    /**
+     * Check whether financial entries can be created for the item or not. (This control will be applied for user
+     * interaction).
+     *
+     * @param item Item for which financial entries to be created.
+     * @return True/false.
+     */
+    default boolean canPostLedger(T item) {
+        return item instanceof Financial;
+    }
+
+    /**
+     * Check whether financial entries of this item can be viewed or not. (This control will be applied for user
+     * interaction).
+     *
+     * @param item Item for which financial entries to be viewed.
+     * @return True/false.
+     */
+    default boolean canViewLedger(T item) {
+        return item instanceof Financial;
     }
 }

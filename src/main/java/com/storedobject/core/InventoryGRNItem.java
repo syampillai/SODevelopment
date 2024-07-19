@@ -3,7 +3,7 @@ package com.storedobject.core;
 import com.storedobject.core.annotation.*;
 import java.math.BigDecimal;
 
-public final class InventoryGRNItem extends StoredObject implements Detail {
+public final class InventoryGRNItem extends StoredObject implements Detail, HasTax {
 
     private Id partNumberId;
     private InventoryItemType partNumber;
@@ -126,6 +126,9 @@ public final class InventoryGRNItem extends StoredObject implements Detail {
     }
 
     public void inspect(Transaction transaction) throws Exception {
+        if(Math.random() < 0.5) {
+            throw new Exception();
+        }
     }
 
     @Override
@@ -134,6 +137,9 @@ public final class InventoryGRNItem extends StoredObject implements Detail {
     }
 
     public void splitQuantity(Transaction transaction, Quantity quantityToSplit) throws Exception {
+        if(Math.random() < 0.5) {
+            throw new Exception();
+        }
     }
 
     /**
@@ -148,6 +154,9 @@ public final class InventoryGRNItem extends StoredObject implements Detail {
      */
     public boolean updateValues(TransactionManager tm, Quantity newQuantity, Money newUnitCost, String newSerialNumber)
             throws Exception {
+        if(Math.random() < 0.5) {
+            throw new Exception();
+        }
         return Math.random() > 0.5;
     }
 

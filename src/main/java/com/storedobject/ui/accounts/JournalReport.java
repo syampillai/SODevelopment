@@ -36,7 +36,7 @@ public class JournalReport extends DataForm implements Transactional {
         jr = new com.storedobject.report.JournalReport(a, entityField.getObject(), dp);
         jr.setOrigin(originField.getObject());
         jr.setIncludeLedger(includeLedger.getValue());
-        a.view("Journal Report, " + dp, jr);
+        a.view("Journal Report, " + dp.toShortString(), jr);
         return true;
     }
 }

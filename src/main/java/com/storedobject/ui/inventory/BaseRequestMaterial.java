@@ -16,7 +16,7 @@ import java.util.List;
 public class BaseRequestMaterial<MR extends MaterialRequest, MRI extends MaterialRequestItem>
         extends AbstractRequestMaterial<MR, MRI> {
 
-    private Editor restrictedEditor;
+    private ObjectEditor<MR> restrictedEditor;
 
     public BaseRequestMaterial(Class<MR> materialRequestClass) {
         this(materialRequestClass, SelectLocation.get(0, 4, 5, 10, 11, 16));
@@ -158,7 +158,14 @@ public class BaseRequestMaterial<MR extends MaterialRequest, MRI extends Materia
         clearAlerts();
         if(mr.getStatus() == 1) { // Initiated
             if(restrictedEditor == null) {
-                restrictedEditor = new Editor();
+                restrictedEditor = createMREditor();
+                if(restrictedEditor == null) {
+                    restrictedEditor = new Editor();
+                }
+                restrictedEditor.addConstructedListener(f -> {
+                    restrictedEditor.removeSetNotAllowed("ToLocation");
+                    restrictedEditor.setFieldReadOnly("Items.l");
+                });
                 restrictedEditor.addObjectChangedListener(new ObjectChangedListener<>() {
                     @Override
                     public void updated(MR object) {
@@ -176,10 +183,6 @@ public class BaseRequestMaterial<MR extends MaterialRequest, MRI extends Materia
 
         public Editor() {
             super(BaseRequestMaterial.this.getObjectClass(), EditorAction.EDIT);
-            addConstructedListener(f -> {
-                removeSetNotAllowed("ToLocation");
-                setFieldReadOnly("Items.l");
-            });
         }
 
         @Override
@@ -235,5 +238,9 @@ public class BaseRequestMaterial<MR extends MaterialRequest, MRI extends Materia
     @Override
     protected void selectLocation() {
         new SelectLocation(0, 4, 5, 10, 11, 16).execute();
+    }
+
+    protected ObjectEditor<MR> createMREditor() {
+        return null;
     }
 }

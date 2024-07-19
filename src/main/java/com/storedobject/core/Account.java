@@ -346,59 +346,12 @@ public class Account extends StoredObject implements OfEntity, HasName {
         return m != null && !m.isZero();
     }
 
-    @Override
-    public void validateData(TransactionManager tm) throws Exception {
-        if(Id.isNull(systemEntityId) && inserted() && tm.getEntity() != null) {
-            systemEntityId = tm.getEntity().getId();
-        } else {
-            systemEntityId = tm.checkType(this, systemEntityId, SystemEntity.class);
-        }
-        if(inserted()) {
-            SystemEntity se = getSystemEntity();
-            balanceLC = openingBalanceLC = new Money(se.getCurrency());
-            if(openingBalance == null) {
-                openingBalance = Objects.requireNonNullElseGet(balance, () -> openingBalanceLC);
-            }
-            if(balance == null) {
-                balance = openingBalance;
-            }
-            if(openingBalance.getCurrency() != balance.getCurrency()) {
-                throw new Invalid_State("Currency mismatch - " + openingBalance.getCurrency().getCurrencyCode()
-                        + " <> " + balance.getCurrency().getCurrencyCode());
-            }
-            if(isNonZero(balance) || isNonZero(balanceLC) || isNonZero(openingBalance) || isNonZero(openingBalanceLC)) {
-                throw new Invalid_State("Balance must be zero");
-            }
-        }
-        name = getTitle();
-        if(StringUtility.isWhite(name)) {
-            throw new Invalid_Value("Name");
-        }
-        number = toCode(number).replace("/", "");
-        if(StringUtility.isWhite(number)) {
-            throw new Invalid_Value("Number");
-        }
-        Account a = get(Account.class, "Number='" + number + "' AND Id<>" + getId(), true);
-        if(a != null) {
-            throw new Invalid_State("Duplicate Number - " + number);
-        }
-        alternateNumber = toCode(alternateNumber);
-        if(!alternateNumber.isEmpty()) {
-            a = get(Account.class, "AlternateNumber='" + alternateNumber + "' AND Id<>" + getId(), true);
-            if(a != null) {
-                throw new Invalid_State("Duplicate Alternate Number - " + alternateNumber);
-            }
-        }
-        AccountChart ac = getChart();
-        if(ac == null) {
-            throw new Invalid_Value("Account Chart");
-        }
-        if(!ac.getAccountsAllowed()) {
-            throw new Invalid_State("Account Chart '" + ac.getName() + "' doesn't allow accounts");
-        }
-        validateChart();
-        accountStatus = ac.getStatus() | (accountStatus & 0x07);
-        super.validateData(tm);
+    /**
+     * Validate account status to make sure that every status bit value adheres to the type of account.
+     *
+     * @throws Exception if status is invalid.
+     */
+    protected void validateAccountStatus() throws Exception {
     }
 
     private void validateChart() throws Exception {

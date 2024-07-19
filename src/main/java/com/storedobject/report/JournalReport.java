@@ -99,7 +99,7 @@ public class JournalReport extends PDFReport implements JSONParameter {
         String foreignRef;
         ForeignFinancialSystem foreign;
         for(JournalVoucher jv: StoredObject.list(JournalVoucher.class, filter, "SystemEntity,Date,No",true)) {
-            table = createTable(70, 15, 15);
+            table = createTable(60, 20, 20);
             table.addCell(createCell(createTitleText(jv.getReference() + " dated " + DateUtility.format(jv.getDate()))));
             table.addCell(createCell(createTitleText("Debit"), true));
             table.addCell(createCell(createTitleText("Credit"), true));

@@ -6,6 +6,7 @@ import com.storedobject.ui.inventory.POBrowser;
 import com.storedobject.ui.inventory.POItemBrowser;
 import com.storedobject.ui.util.LoadFilterButtons;
 import com.storedobject.ui.util.LogicParser;
+import com.storedobject.vaadin.ActionForm;
 import com.storedobject.vaadin.Button;
 import com.storedobject.vaadin.ButtonLayout;
 import com.storedobject.vaadin.ConfirmButton;
@@ -13,6 +14,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasValue;
 import com.vaadin.flow.component.grid.editor.Editor;
 import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.splitlayout.SplitLayout;
 import com.vaadin.flow.shared.Registration;
@@ -32,7 +34,7 @@ public class ObjectBrowser<T extends StoredObject> extends ObjectGrid<T>
     private LoadFilterButtons<T> loadFilterButtons;
     protected final ButtonLayout buttonPanel = new ButtonLayout();
     protected PrintButton print;
-    protected Button add, edit, delete, search, filter, load, view, report, excel, audit, exit, save, cancel;
+    protected Button add, edit, delete, search, filter, load, view, report, excel, audit, exit, save, cancel, ledger;
     private final String allowedActions;
     ObjectEditor<T> editor;
     private T editingItem;
@@ -115,7 +117,7 @@ public class ObjectBrowser<T extends StoredObject> extends ObjectGrid<T>
     }
 
     private ObjectBrowser(Class<T> objectClass, Iterable<String> browseColumns, int actions,
-                            Iterable<String> filterColumns, SearchBuilder<T> searchBuilder, String caption, String allowedActions) {
+                          Iterable<String> filterColumns, SearchBuilder<T> searchBuilder, String caption, String allowedActions) {
         super(objectClass, browseColumns, (actions & ALLOW_ANY) == ALLOW_ANY);
         addItemDoubleClickListener(e -> {
             T item = e.getItem();
@@ -218,6 +220,11 @@ public class ObjectBrowser<T extends StoredObject> extends ObjectGrid<T>
                 audit = new Button("Audit", "user", this);
                 buttonPanel.add(audit);
             }
+            if(Financial.class.isAssignableFrom(getObjectClass())
+                    && nm && ((actions & LEDGER) == LEDGER) && actionAllowed("LEDGER")) {
+                ledger = new Button("View/Post Ledger", VaadinIcon.BOOK_DOLLAR, this);
+                buttonPanel.add(ledger);
+            }
         }
         if(!((actions & EditorAction.NO_EXIT) == EditorAction.NO_EXIT)) {
             exit = new Button(search == null ? "Exit" : "Quit", this);
@@ -255,6 +262,10 @@ public class ObjectBrowser<T extends StoredObject> extends ObjectGrid<T>
         if(delete != null) {
             buttonPanel.remove(delete);
             delete = null;
+        }
+        if(ledger != null) {
+            buttonPanel.remove(ledger);
+            ledger = null;
         }
     }
 
@@ -502,7 +513,7 @@ public class ObjectBrowser<T extends StoredObject> extends ObjectGrid<T>
             getObjectEditor().doReport();
             return;
         }
-        if(c == edit || c == delete || c == view || c == audit) {
+        if(c == edit || c == delete || c == view || c == audit || c == ledger) {
             T object = selected();
             if(object == null) {
                 return;
@@ -523,6 +534,10 @@ public class ObjectBrowser<T extends StoredObject> extends ObjectGrid<T>
             }
             if(c == audit) {
                 new ObjectHistoryGrid<>(object).executeAll();
+                return;
+            }
+            if(c == ledger) {
+                postLedger(object);
                 return;
             }
         }
@@ -676,6 +691,26 @@ public class ObjectBrowser<T extends StoredObject> extends ObjectGrid<T>
         boolean deleted = editor.getObject() == null;
         if(deleted) {
             Application.message("Deleted");
+        }
+    }
+
+    public void postLedger(T object) {
+        if(!(object instanceof Financial f)) {
+            clearAlerts();
+            warning("Not a financial entry");
+            return;
+        }
+        if(f.isLedgerPosted()) {
+            if(canViewLedger(object)) {
+                getObjectEditor().postLedger(object);
+            }
+        } else {
+            if(canPostLedger(object)) {
+                new ActionForm("Post Ledger", ObjectEditor.CONFIRM_LEDGER, () -> {
+                    getObjectEditor().postLedger(object);
+                    refresh(object);
+                }).execute();
+            }
         }
     }
 

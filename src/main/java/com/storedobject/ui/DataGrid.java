@@ -11,6 +11,8 @@ import com.vaadin.flow.component.grid.dataview.GridListDataView;
 import com.vaadin.flow.component.grid.editor.Editor;
 import com.vaadin.flow.data.provider.*;
 
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
@@ -24,6 +26,7 @@ public class DataGrid<T> extends com.storedobject.vaadin.ListGrid<T>
     static final String NOTHING_TO_SELECT = "No item available to select!";
     static final String ACTION_NOT_ALLOWED = "Your profile doesn't allow the requested action";
     private GridListDataView<T> dataView;
+    private String actionPrefix = null;
 
     public DataGrid(Class<T> objectClass) {
         this(objectClass, null);
@@ -504,10 +507,28 @@ public class DataGrid<T> extends com.storedobject.vaadin.ListGrid<T>
      * {@link #actionAllowed(String)}. For example, {@link com.storedobject.ui.inventory.POBrowser} returns the value
      * "PO" for this method.
      *
-     * @return Prefix string. Default implementation returns null. That means that all the actions are allowed.
+     * @return Prefix string. Default implementation returns null unless a static public method named
+     * "actionPrefixForUI" exists in the object class. If the method exists, its return value is returned. Returning
+     * a null means that all the actions are allowed.
      */
     protected String getActionPrefix() {
-        return null;
+        if(actionPrefix == null) {
+            Class<T> oc = getObjectClass();
+            try {
+                Method m = oc.getMethod("actionPrefixForUI");
+                if(m.getDeclaringClass() == oc) {
+                    int modifiers = m.getModifiers();
+                    if (Modifier.isStatic(modifiers) && Modifier.isPublic(modifiers) && m.getReturnType() == String.class) {
+                        actionPrefix = (String) m.invoke(null);
+                    }
+                }
+            } catch (Throwable ignored) {
+            }
+            if(actionPrefix == null) {
+                actionPrefix = "";
+            }
+        }
+        return actionPrefix.isBlank() ? null : actionPrefix;
     }
 
     /**

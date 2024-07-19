@@ -6,6 +6,10 @@ public interface HasReference {
 
     SystemEntity getSystemEntity();
 
+    default Id getSystemEntityId() {
+        return getSystemEntity().getId();
+    }
+
     int getNo();
 
     Date getDate();
@@ -36,5 +40,9 @@ public interface HasReference {
     }
 
     record Amend<T extends StoredObject>(T object, int amendment) {
+    }
+
+    default String serialTag(int index) {
+        return null;
     }
 }

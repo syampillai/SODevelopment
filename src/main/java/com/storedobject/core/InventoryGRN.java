@@ -14,7 +14,7 @@ import java.sql.Date;
  * @author Syam
  */
 @Table(anchors = "Store")
-public final class InventoryGRN extends StoredObject implements HasChildren, HasReference {
+public final class InventoryGRN extends StoredObject implements HasChildren, HasReference, TriggerChangeEvent, HasTax {
 
     private static final ReferencePattern<InventoryGRN> ref = new ReferencePattern<>();
     private final static String[] statusValues = new String[] {

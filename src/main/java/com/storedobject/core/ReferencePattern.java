@@ -9,11 +9,11 @@ import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
-public class ReferencePattern<O extends StoredObject> {
+public final class ReferencePattern<O extends StoredObject> {
 
     private static final Set<ReferencePattern<?>> patterns = new HashSet<>();
     private final Map<String, String> serialPattern = new HashMap<>();
-    private RP<O> rp;
+    private RP<O> rp; // Cache
 
     public ReferencePattern() {
         synchronized (patterns) {
@@ -27,7 +27,7 @@ public class ReferencePattern<O extends StoredObject> {
         }
         synchronized (patterns) {
             //noinspection unchecked
-            RP<O> rpo = (RP<O>) RP.get(so.getClass());
+            RP<O> rpo = (RP<O>) RP.get(so);
             if(rp == null) {
                 rp = rpo;
             }
@@ -107,10 +107,20 @@ public class ReferencePattern<O extends StoredObject> {
                 patterns.clear();
         }
 
-        public static <O extends StoredObject> RP<O> get(Class<O> objectClass) {
-            //noinspection unchecked
-            return (RP<O>) patterns.computeIfAbsent(objectClass,
-                    c -> new RP<>(objectClass, tagGenerator(objectClass)));
+        @SuppressWarnings("unchecked")
+        public static <O extends StoredObject> RP<O> get(O object) {
+            Class<O> objectClass = (Class<O>) object.getClass();
+            RP<O> rp = (RP<O>) patterns.get(objectClass);
+            if(rp != null) {
+                return rp;
+            }
+            if(object instanceof HasReference hr && hr.serialTag(0) != null) {
+                rp = new RP<>(objectClass, RP::tagSO);
+            } else {
+                rp = new RP<>(objectClass, tagGenerator(objectClass));
+            }
+            patterns.put(objectClass, rp);
+            return rp;
         }
 
         public Function<T, String> getTag() {
@@ -131,6 +141,7 @@ public class ReferencePattern<O extends StoredObject> {
         private static <O extends StoredObject,
                 PO extends InventoryPO,
                 IT extends InventoryTransfer,
+                IS extends InventorySale,
                 MR extends MaterialRequest,
                 JV extends JournalVoucher
                 >
@@ -141,6 +152,10 @@ public class ReferencePattern<O extends StoredObject> {
             if(InventoryPO.class.isAssignableFrom(objectClass)) {
                 Class<PO> poClass = (Class<PO>) objectClass;
                 return (clazz, pattern) -> (Function<O, String>) tagPO(poClass, pattern);
+            }
+            if(InventorySale.class.isAssignableFrom(objectClass)) {
+                Class<IS> isClass = (Class<IS>) objectClass;
+                return (clazz, pattern) -> (Function<O, String>) tagIS(isClass, pattern);
             }
             if(InventoryTransfer.class.isAssignableFrom(objectClass)) {
                 Class<IT> itClass = (Class<IT>) objectClass;
@@ -159,6 +174,9 @@ public class ReferencePattern<O extends StoredObject> {
             if(JournalVoucher.class.isAssignableFrom(objectClass)) {
                 Class<JV> jvClass = (Class<JV>) objectClass;
                 return (clazz, pattern) -> (Function<O, String>) tagJV(jvClass, pattern);
+            }
+            if (HasReference.class.isAssignableFrom(objectClass)) {
+                return (clazz, pattern) -> (Function<O, String>) tagSO(objectClass, pattern);
             }
             throw new SORuntimeException("Reference Pattern: " + objectClass.getName());
         }
@@ -179,11 +197,21 @@ public class ReferencePattern<O extends StoredObject> {
                 case 7 -> po -> po.storeId + "-" + po.getGRNType() + "-" + po.getType();
                 case 6 -> po -> po.storeId + "-" + po.getType();
                 case 5 -> po -> po.storeId + "-" + po.getGRNType();
-                case 4 -> po -> po.getStore().getSystemEntityId() + "-" + po.getGRNType() + "-" + po.getType();
-                case 3 -> po -> po.getStore().getSystemEntityId() + "-" + po.getType();
-                case 2 -> po -> po.getStore().getSystemEntityId() + "-" + po.getGRNType();
+                case 4 -> po -> po.getSystemEntityId() + "-" + po.getGRNType() + "-" + po.getType();
+                case 3 -> po -> po.getSystemEntityId() + "-" + po.getType();
+                case 2 -> po -> po.getSystemEntityId() + "-" + po.getGRNType();
                 case 1 -> po -> String.valueOf(po.storeId);
-                default -> po -> String.valueOf(po.getStore().getSystemEntityId());
+                default -> po -> String.valueOf(po.getSystemEntityId());
+            };
+        }
+
+        private static <IS extends InventorySale> Function<IS, String> tagIS(Class<IS> isClass, boolean pattern) {
+            SerialConfigurator sc = SerialConfigurator.getFor(isClass);
+            return switch(pattern ? sc.getPatternType() : sc.getType()) {
+                case 3 -> is -> is.fromLocationId + "-" + is.getType();
+                case 2 -> is -> String.valueOf(is.getType());
+                case 1 -> is -> String.valueOf(is.fromLocationId);
+                default -> is -> String.valueOf(is.systemEntityId);
             };
         }
 
@@ -243,6 +271,12 @@ public class ReferencePattern<O extends StoredObject> {
                 return o -> "0";
             }
             return o -> String.valueOf(o.getSystemEntityId());
+        }
+
+        private static <O extends StoredObject> Function<O, String> tagSO(Class<O> hrClass, boolean pattern) {
+            SerialConfigurator sc = SerialConfigurator.getFor(hrClass);
+            int index = pattern ? sc.getPatternType() : sc.getType();
+            return hr -> ((HasReference)hr).serialTag(index);
         }
     }
 }

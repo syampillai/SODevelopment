@@ -6,6 +6,7 @@ import com.storedobject.common.StringList;
 import com.storedobject.core.*;
 import com.storedobject.core.annotation.Table;
 import com.storedobject.report.ObjectList;
+import com.storedobject.ui.accounts.JournalVoucherView;
 import com.storedobject.ui.inventory.POEditor;
 import com.storedobject.ui.inventory.POItemEditor;
 import com.storedobject.ui.util.*;
@@ -16,6 +17,7 @@ import com.vaadin.flow.component.HasComponents;
 import com.vaadin.flow.component.HasValue;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.editor.Editor;
+import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.tabs.Tab;
 import com.vaadin.flow.shared.Registration;
 
@@ -46,6 +48,7 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
         implements Transactional, ObjectSetter<T>,
         ObjectChangedListener<T>, ObjectEditorListener, ObjectProvider<T>, AlertHandler, TransactionCreator {
 
+    static final String CONFIRM_LEDGER = "About to post financial entries to the ledger, this can not be undone!\nProceed?";
     /**
      * The layout where buttons are displayed.
      */
@@ -90,6 +93,10 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
      * Button - Cancel.
      */
     protected Button cancel;
+    /**
+     * Button - Post Ledger
+     */
+    protected Button ledger;
     ObjectSearcherField<T> searcherField;
     private int actions;
     private boolean closeOnSave, editing = false;
@@ -125,6 +132,7 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
     private String mainTabName;
     private FormLayout currentTab;
     private String fieldName = "";
+    private JournalVoucherView voucherView;
 
     /**
      * Constructor.
@@ -682,6 +690,10 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
         if(nm && ((actions & EditorAction.AUDIT) == EditorAction.AUDIT) && actionAllowed("AUDIT")) {
             audit = new Button("Audit", "user", this);
         }
+        if(Financial.class.isAssignableFrom(getObjectClass()) && nm
+                && ((actions & EditorAction.LEDGER) == EditorAction.LEDGER) && actionAllowed("LEDGER")) {
+            ledger = new LedgerButton(this);
+        }
         if(!((actions & EditorAction.NO_EXIT) == EditorAction.NO_EXIT)) {
             exit = new Button("Exit", this);
         }
@@ -821,6 +833,10 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
         if(audit != null && object != null) {
             buttonPanel.add(audit);
         }
+        if(object != null && ledger instanceof LedgerButton lb) {
+            lb.set(object);
+            buttonPanel.add(ledger);
+        }
         if(exit != null) {
             buttonPanel.add(exit);
         }
@@ -868,8 +884,70 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
         }
         if(c == audit) {
             doAudit();
+            return;
         }
         super.clicked(c);
+    }
+
+    /**
+     * Post ledger entries. This is equivalent to pressing the "Post Ledger" button.
+     */
+    public void postLedger() {
+        postLedger(getObject());
+    }
+
+    /**
+     * Post ledger entries. This is equivalent to pressing the "Post Ledger" button.
+     */
+    public void postLedger(T object) {
+        clearAlerts();
+        if(!(object instanceof Financial f)) {
+            warning("Not a financial entry");
+            return;
+        }
+        if(f.isLedgerPosted()) {
+            viewJV(object);
+            return;
+        }
+        if(object.created()) {
+            warning("Unable to create financial transactions, the entry is yet saved!");
+            return;
+        }
+        try {
+            f.postLedger(getTransactionManager());
+            if(object == getObject()) {
+                drawButtons();
+            }
+        } catch (Exception e) {
+            warning(e);
+            reload();
+        }
+    }
+
+    /**
+     * View the financial voucher for the ledger entries.
+     */
+    public void viewLedger() {
+        T o = getObject();
+        if(o instanceof Financial f && f.isLedgerPosted() && canViewLedger()) {
+            viewJV(o);
+        }
+    }
+
+    private void viewJV(StoredObject object) {
+        List<JournalVoucher> jv =
+                StoredObject.list(JournalVoucher.class, "Owner=" + object.getId(), "T.Id", true)
+                .toList();
+        if(jv.isEmpty()) {
+            warning("Financial voucher could not be found");
+            return;
+        }
+        if(voucherView == null) {
+            voucherView = new JournalVoucherView(jv);
+        } else {
+            voucherView.setVouchers(jv);
+        }
+        voucherView.execute();
     }
 
     /**
@@ -1472,6 +1550,24 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
     @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     public boolean canSearch() {
         return search != null && search.isEnabled();
+    }
+
+    /**
+     * Check whether ledger can be posted or not.
+     *
+     * @return True if allowed.
+     */
+    public boolean canPostLedger() {
+        return ledger != null && ledger.isEnabled() && Financial.class.isAssignableFrom(getObjectClass());
+    }
+
+    /**
+     * Check whether ledger can be viewed or not.
+     *
+     * @return True if allowed.
+     */
+    public boolean canViewLedger() {
+        return canPostLedger();
     }
 
     private void clearTran() {
@@ -2093,6 +2189,10 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
             if(attachment.isRequired()) {
                 setRequired(fieldName);
             }
+        }
+        ClassAttribute<?> ca = ClassAttribute.get(getObjectClass());
+        if(ca.getAttributes().contains(fieldName) && !ca.writeAllowed(fieldName)) {
+            setFieldReadOnly(fieldName);
         }
     }
 
@@ -2735,5 +2835,37 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
             return false;
         }
         return true;
+    }
+
+    private static class LedgerButton extends Button {
+
+        private static final String POST_LEDGER = "Post Ledger";
+        private static final String VIEW_VOUCHER = "View Voucher";
+        private final ObjectEditor<?> oe;
+
+        public LedgerButton(ObjectEditor<?> oe) {
+            super(POST_LEDGER, VaadinIcon.BOOK_DOLLAR, null);
+            this.oe = oe;
+            addClickHandler(e -> clicked());
+        }
+
+        private void clicked() {
+            if(oe.getObject() instanceof Financial f) {
+                if (f.isLedgerPosted()) {
+                    oe.viewLedger();
+                    return;
+                }
+                new ActionForm("Post Ledger", CONFIRM_LEDGER, oe::postLedger).execute();
+            }
+        }
+
+        private void set(StoredObject object) {
+            if(!(object instanceof Financial f)) {
+                setVisible(false);
+                return;
+            }
+            setVisible(true);
+            setText(f.isLedgerPosted() ? VIEW_VOUCHER : POST_LEDGER);
+        }
     }
 }

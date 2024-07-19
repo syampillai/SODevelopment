@@ -560,7 +560,15 @@ public class SystemTableDeployer extends View implements Transactional {
                 try {
                     if((alterTable = checkAlterTable(ca)) != null) {
                         alterTable.forEach(m::m);
-                        execCommands(alterTable, password);
+                        for(String at: alterTable) {
+                            if (Database.get().executeSQL(at, password)) {
+                                continue;
+                            }
+                            m.m(at, 2);
+                            if (!at.contains(" CONSTRAINT ")) {
+                                break;
+                            }
+                        }
                     }
                 } catch(Exception e) {
                     m.e(e.getMessage());
@@ -628,7 +636,11 @@ public class SystemTableDeployer extends View implements Transactional {
         }
 
         private void m(Object any) {
-            list.add(new M(any, 1));
+            m(any, 1);
+        }
+
+        private void m(Object any, int color) {
+            list.add(new M(any, color));
             render();
         }
 

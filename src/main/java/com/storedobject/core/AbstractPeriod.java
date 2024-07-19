@@ -1,5 +1,6 @@
 package com.storedobject.core;
 
+import com.storedobject.common.DateUtility;
 import com.storedobject.common.Range;
 
 import java.sql.Timestamp;
@@ -15,25 +16,33 @@ public abstract class AbstractPeriod<T extends java.util.Date> extends Range<T> 
     }
 
     public Calendar getCalendarFrom() {
-        return new GregorianCalendar();
+    	GregorianCalendar c = new GregorianCalendar();
+    	c.setTime(getFrom());
+        return c;
     }
 
     public Calendar getCalendarTo() {
-        return new GregorianCalendar();
+    	GregorianCalendar c = new GregorianCalendar();
+    	c.setTime(getTo());
+        return c;
     }
 
     @Override
 	protected long value(T date) {
-    	return 0;
+    	return date.getTime();
     }
     
     public int getPeriodInDays() {
-    	return 0;
+    	return DateUtility.getPeriodInDays(getFrom(), getTo());
     }
     
     public int getPeriodInMonths() {
-    	return 0;
+    	return DateUtility.getPeriodInMonths(getFrom(), getTo());
     }
+    
+	protected String toDBString(T date) {
+		return Database.format(date);
+	}
     
 	public int getMonth() {
 		return getMonthFrom();
@@ -58,27 +67,30 @@ public abstract class AbstractPeriod<T extends java.util.Date> extends Range<T> 
 	public int getYearTo() {
 		return DateUtility.getYear(getTo());
 	}
-    
-	protected String toDBString(T date) {
-        return "";
-	}
 
 	public String getDBCondition() {
-		return " BETWEEN '" + toDBString(getFrom()) + "' AND '" + toDBString(getTo()) + "' ";
+		return dbCond(toDBString(getFrom()), toDBString(getTo()));
 	}
 
 	public String getDBCondition(TransactionManager tm) {
-		return " BETWEEN '" + toDBString(tm.dateGMT(getFrom())) + "' AND '" + toDBString(tm.dateGMT(getTo())) + "' ";
+		return dbCond(toDBString(tm.dateGMT(getFrom())), toDBString(tm.dateGMT(getTo())));
 	}
 
 	public String getDBTimeCondition() {
-		Timestamp t1 = com.storedobject.common.DateUtility.startTime(getFrom()), t2 = com.storedobject.common.DateUtility.endTime(getTo());
-		return " BETWEEN '" + Database.format(t1) + "' AND '" + Database.format(t2) + "' ";
+		Timestamp t1 = DateUtility.startTime(getFrom()), t2 = DateUtility.endTime(getTo());
+		return dbCond(Database.format(t1), Database.format(t2));
 	}
 
 	public String getDBTimeCondition(TransactionManager tm) {
-		Timestamp t1 = tm.dateGMT(com.storedobject.common.DateUtility.startTime(getFrom())), t2 = tm.dateGMT(com.storedobject.common.DateUtility.endTime(getTo()));
-		return " BETWEEN '" + Database.format(t1) + "' AND '" + Database.format(t2) + "' ";
+		Timestamp t1 = tm.dateGMT(DateUtility.startTime(getFrom())), t2 = tm.dateGMT(DateUtility.endTime(getTo()));
+		return dbCond(Database.format(t1), Database.format(t2));
+	}
+
+	private String dbCond(String from, String to) {
+		if(from.equals(to)) {
+			return "='" + from + "'";
+		}
+		return " BETWEEN '" + from + "' AND '" + to + "'";
 	}
 
 	/**
@@ -101,4 +113,13 @@ public abstract class AbstractPeriod<T extends java.util.Date> extends Range<T> 
 	public boolean inside(Date date) {
 		return inside(date.getTime());
 	}
+
+	public String toShortString() {
+		String from = toString(getFrom()), to = toString(getTo());
+		if(from.equals(to)) {
+			return from;
+		}
+		return from + " - " + to;
+	}
 }
+
