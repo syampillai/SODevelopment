@@ -7,7 +7,6 @@ import java.math.BigDecimal;
 import java.sql.Date;
 import java.sql.ResultSet;
 import java.util.Currency;
-import java.util.Objects;
 import java.util.Random;
 
 /**
@@ -342,31 +341,12 @@ public class Account extends StoredObject implements OfEntity, HasName {
         return (accountStatus & 1) == 1;
     }
 
-    private boolean isNonZero(Money m) {
-        return m != null && !m.isZero();
-    }
-
     /**
      * Validate account status to make sure that every status bit value adheres to the type of account.
      *
      * @throws Exception if status is invalid.
      */
     protected void validateAccountStatus() throws Exception {
-    }
-
-    private void validateChart() throws Exception {
-        if(getClass() == Account.class) {
-            return;
-        }
-        try (Query q = query(AccountChartMap.class, "Chart", "lower(AccountClassName)='"
-                + getClass().getName().toLowerCase() + "' AND Chart=" + chartId)) {
-            if (q.hasNext()) {
-                return;
-            }
-        }
-        String m = getClass().getName();
-        throw new Invalid_State("Account Chart not Mapped for '"
-                + StringUtility.makeLabel(m.substring(m.lastIndexOf('.') + 1)) + "'");
     }
 
     public String getName() {
