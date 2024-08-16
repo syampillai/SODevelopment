@@ -1,11 +1,10 @@
 package com.storedobject.core;
 
-import com.storedobject.core.annotation.Column;
-import com.storedobject.core.annotation.SetNotAllowed;
-
-import java.math.BigDecimal;
+import com.storedobject.core.annotation.*;
 import java.sql.Date;
+import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.util.List;
 
 public class MaterialRequest extends StoredObject implements OfEntity, HasReference {
 
@@ -413,6 +412,11 @@ public class MaterialRequest extends StoredObject implements OfEntity, HasRefere
         throw new Invalid_State("Can't delete when status is '" + getStatusValue() + "'");
     }
 
+    private static boolean issued(MaterialIssued mi) {
+        MaterialIssuedItem mii = mi.listLinks(MaterialIssuedItem.class).findFirst();
+        return mii != null && !(mii.getItem().getLocation() instanceof InventoryReservedBin);
+    }
+
     /**
      * Release all reserved items.
      *
@@ -423,7 +427,50 @@ public class MaterialRequest extends StoredObject implements OfEntity, HasRefere
         if(!reserved || status == 4) {
             return;
         }
-        throw new Invalid_State("Can't release when status is '" + getStatusValue() + "'");
+        List<MaterialIssued> issuedList = list(MaterialIssued.class, "Request=" + getId()).toList();
+        boolean partial = issuedList.removeIf(MaterialRequest::issued);
+        if(status > 4) {
+            status = status == 5 ? 2 : 1;
+        } else {
+            status = partial ? 2 : 1;
+        }
+        reserved = false;
+        if(issuedList.isEmpty()) {
+            save(transaction);
+            return;
+        }
+        relReservation(transaction, issuedList);
+    }
+
+    private void relReservation(Transaction tran, List<MaterialIssued> issuedList) throws Exception {
+        String ref = "Released by " + no + "/" + DateUtility.formatDate(date);
+        if(!referenceNumber.isBlank()) {
+            ref += " Ref: " + referenceNumber;
+        }
+        InventoryTransaction iTran = new InventoryTransaction(tran.getManager(), null, ref);
+        List<MaterialIssuedItem> miis;
+        MaterialRequestItem mri;
+        InventoryItem item;
+        InventoryReservedBin rbin;
+        for(MaterialIssued mi: issuedList) {
+            miis = mi.listLinks(MaterialIssuedItem.class).toList();
+            for(MaterialIssuedItem mii: miis) {
+                item = mii.getItem();
+                mri = mii.getRequest();
+                rbin = (InventoryReservedBin)item.getLocation();
+                rbin.illegal = false;
+                iTran.moveTo(item, null, rbin.getBin());
+                mri.setIssued(mri.getIssued().subtract(mii.getQuantity()));
+                mri.save(tran);
+                rbin.setReservedBy(Id.ZERO);
+                rbin.illegal = false;
+                rbin.save(tran);
+            }
+            mi.setCloseStatus();
+            mi.save(tran);
+        }
+        save(tran);
+        iTran.save(tran);
     }
 
     public void request(Transaction transaction) throws Exception {
@@ -503,5 +550,30 @@ public class MaterialRequest extends StoredObject implements OfEntity, HasRefere
     public void reduceRequestedQuantity(Transaction transaction, InventoryItemType partNumber, Quantity reduceBy)
             throws Exception {
         checkStatus();
+        List<MaterialRequestItem> mris = listLinks(MaterialRequestItem.class,
+                "PartNumber=" + partNumber.getId(), true).filter(i -> i.getBalance().isPositive()).toList();
+        MaterialRequestItem mri = mris.stream().filter(i -> i.getBalance().equals(reduceBy))
+                .findAny().orElse(null);
+        if(mri != null) {
+            mri.reduceRequestedQuantity(transaction, reduceBy, false);
+            return;
+        }
+        mri = mris.stream().filter(i -> i.getBalance().isGreaterThan(reduceBy))
+                .findAny().orElse(null);
+        if(mri != null) {
+            mri.reduceRequestedQuantity(transaction, reduceBy, false);
+            return;
+        }
+        Quantity r = reduceBy, b;
+        while(r.isPositive() && !mris.isEmpty()) {
+            mri = mris.remove(0);
+            b = mri.getBalance();
+            r = r.subtract(b);
+            mri.reduceRequestedQuantity(transaction, b, false);
+        }
+        if(r.isPositive()) {
+            transaction.rollback();
+            throw new SOException("Unable to find " + partNumber.toDisplay() + " for quantity " + r);
+        }
     }
 }

@@ -1,14 +1,15 @@
-package com.storedobject.accounts;
+package com.storedobject.core;
 
-import com.storedobject.core.*;
 import com.storedobject.core.annotation.*;
 import java.math.BigDecimal;
 
-public final class Tax extends StoredObject implements Detail {
+public final class Tax extends StoredObject {
 
     private Id typeId;
     private Percentage rate = Quantity.create(Percentage.class);
     private Money tax = new Money();
+    int status = 0;
+    boolean internal = false;
 
     public Tax() {
     }
@@ -25,7 +26,7 @@ public final class Tax extends StoredObject implements Detail {
         }
         this.typeId = typeId;
         if(!Id.isNull(typeId)) {
-            rate = TaxRate.getRateFor(typeId);
+            rate = TaxRate.getRate(DateUtility.today(), typeId);
         }
     }
 
@@ -75,18 +76,23 @@ public final class Tax extends StoredObject implements Detail {
 
     @Override
     public void validateData(TransactionManager tm) throws Exception {
-        typeId = tm.checkType(this, typeId, TaxType.class, false);
+        if(getType() == null) {
+            throw new Invalid_Value("Tax Type");
+        }
         super.validateData(tm);
     }
 
     @Override
-    public boolean isDetailOf(Class<? extends StoredObject> masterClass) {
-        return HasTax.class.isAssignableFrom(masterClass);
+    public void validate() throws Exception {
+        if(!internal) {
+            throw new Invalid_State("Illegal access");
+        }
+        super.validate();
     }
 
     @Override
-    public Id getUniqueId() {
-        return typeId;
+    void savedCore() throws Exception {
+        internal = false;
     }
 
     @Override
@@ -96,5 +102,17 @@ public final class Tax extends StoredObject implements Detail {
 
     public String getLabel() {
         return getType().getName() + " @" + rate;
+    }
+
+    public TaxRegion getRegion() {
+        return getType().getRegion();
+    }
+
+    /**
+     * Status - 0: Normal / No change, 1: Newly computed, 2: Recomputed, 3: Region changed (to deleted), 4: No more applicable (to delete)
+     * @return Status value
+     */
+    public int getStatus() {
+        return status;
     }
 }

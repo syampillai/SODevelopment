@@ -224,6 +224,7 @@ public final class TaxAccountConfiguration extends StoredObject implements OfEnt
     @Override
     public void validateData(TransactionManager tm) throws Exception {
         systemEntityId = check(tm, systemEntityId);
+        typeId = tm.checkType(this, typeId, TaxType.class, false);
         Account a = getAccount();
         if(a == null) {
             throw new Invalid_Value("Account");

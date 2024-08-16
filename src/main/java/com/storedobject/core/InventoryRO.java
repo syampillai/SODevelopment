@@ -1,22 +1,67 @@
 package com.storedobject.core;
 
-public final class InventoryRO extends InventoryTransfer {
+import com.storedobject.core.annotation.Column;
+
+public final class InventoryRO extends InventoryTransfer implements TradeType {
+
+    private boolean approvalRequired = true;
 
     public InventoryRO() {
     }
 
     public static void columns(Columns columns) {
+        columns.add("ApprovalRequired", "boolean");
+    }
+
+    public static String[] protectedColumns() {
+        return new String[] {
+                "ApprovalRequired",
+        };
+    }
+
+    public static void indices(Indices indices) {
+        indices.add("FromLocation,Status", "Status IN (1,2)");
+    }
+
+    public static String[] links() {
+        return new String[]{
+                "Items|com.storedobject.core.InventoryROItem|||0",
+        };
     }
 
     @Override
+    public void setApprovalRequired(boolean approvalRequired) {
+        this.approvalRequired = approvalRequired;
+    }
+
+    @Column(order = 800, required = false)
+    @Override
     public boolean getApprovalRequired() {
-        return Math.random() > 0.5;
+        return approvalRequired;
     }
 
     public Entity getRepairEntity() {
-        return new Entity();
+        return get(Entity.class, getToLocation().getEntityId());
     }
 
+    @Override
+    public void validateData(TransactionManager tm) throws Exception {
+        super.validateData(tm);
+        InventoryLocation to = getToLocation();
+        if(to.getType() != 3) {
+            Entity ro = get(getTransaction(), Entity.class, to.getEntityId());
+            throw new Invalid_State("Not a repair/maintenance organization - " +
+                    (ro == null ? to.getEntityId() : ro.toDisplay()));
+        }
+    }
+
+    @Override
+    public String getStatusValue() {
+        if(getStatus() == 0) {
+            return approvalRequired ? getStatusValue(0) : "Approved";
+        }
+        return super.getStatusValue();
+    }
 
     /**
      * Close the RO (only if all the items are returned via some means).
@@ -39,7 +84,16 @@ public final class InventoryRO extends InventoryTransfer {
         if(ii != null) {
             throw new Invalid_State("Item '" + ii.toDisplay() + "' is still located at the repair location.");
         }
-        status = 3;
+        status = 4; // Closed
         save(transaction);
+    }
+
+    public static String actionPrefixForUI() {
+        return "RO";
+    }
+
+    @Override
+    public int getType() {
+        return 1001;
     }
 }

@@ -512,7 +512,13 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
         }
     }
 
-    static Collection<Entity> suppliers(int type) {
+    /**
+     * Create suppliers list for the given type of GRN.
+     *
+     * @param type Type of GRN.
+     * @return List of supplier entities.
+     */
+    public static List<Entity> suppliers(int type) {
         type = switch(type) {
             case 0 -> 1;
             case 1 -> 17;

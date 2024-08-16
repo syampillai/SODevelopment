@@ -78,31 +78,7 @@ public final class Money implements Storable, Comparable<Money> {
 	public Money zero() {
 		return new Money();
 	}
-	
-	public Rate getBuyingRate(Currency currency) {
-		return new Rate();
-	}
 
-	public Rate getSellingRate(Currency currency) {
-		return new Rate();
-	}
-	
-	public Rate getExchangeRate(Currency currency) {
-		return new Rate();
-	}
-	
-	public Rate getBuyingRate(Currency currency, SystemEntity systemEntity) {
-		return new Rate();
-	}
-	
-	public Rate getSellingRate(Currency currency, SystemEntity systemEntity) {
-		return new Rate();
-	}
-	
-	public Rate getExchangeRate(Currency currency, SystemEntity systemEntity) {
-		return new Rate();
-	}
-	
 	public Money convert(Currency currency) {
 		return new Money();
 	}
@@ -231,6 +207,135 @@ public final class Money implements Storable, Comparable<Money> {
 	 */
 	public Money toLocal(Date date, SystemEntity systemEntity) {
 		return new Money();
+	}
+
+
+	/**
+	 * Gets the selling rate.
+	 * @param currency Currency for which rate is required.
+	 * @return Rate
+	 */
+	public Rate getBuyingRate(Currency currency) {
+		return findRate(currency, null).getBuyingRate();
+	}
+
+	/**
+	 * Gets the selling rate.
+	 * @param currency Currency for which rate is required.
+	 * @return Rate
+	 */
+	public Rate getSellingRate(Currency currency) {
+		return findRate(currency, null).getSellingRate();
+	}
+
+	/**
+	 * Gets the exchange rate (average of selling rate and buying rate).
+	 * @param currency Currency for which rate is required.
+	 * @return Rate
+	 */
+	public Rate getExchangeRate(Currency currency) {
+		return findRate(currency, null).getRate();
+	}
+
+	/**
+	 * Gets the buying rate.
+	 * @param currency Currency for which rate is required.
+	 * @param systemEntity System Entity.
+	 * @return Rate
+	 */
+	public Rate getBuyingRate(Currency currency, SystemEntity systemEntity) {
+		return findRate(currency, systemEntity).getBuyingRate();
+	}
+
+	/**
+	 * Gets the selling rate.
+	 * @param currency Currency for which rate is required.
+	 * @param systemEntity System Entity.
+	 * @return Rate
+	 */
+	public Rate getSellingRate(Currency currency, SystemEntity systemEntity) {
+		return findRate(currency, systemEntity).getSellingRate();
+	}
+
+	/**
+	 * Gets the exchange rate (average of selling rate and buying rate).
+	 * @param currency Currency for which rate is required.
+	 * @param systemEntity System Entity.
+	 * @return Rate
+	 */
+	public Rate getExchangeRate(Currency currency, SystemEntity systemEntity) {
+		return findRate(currency, systemEntity).getRate();
+	}
+
+	/**
+	 * Gets the selling rate.
+	 * @param from Currency for which rate is required.
+	 * @param to Target currency to convert to.
+	 * @return Rate
+	 */
+	public static Rate getBuyingRate(Currency from, Currency to) {
+		return findRate(from, to, null).getBuyingRate();
+	}
+
+	/**
+	 * Gets the selling rate.
+	 * @param from Currency for which rate is required.
+	 * @param to Target currency to convert to.
+	 * @return Rate
+	 */
+	public static Rate getSellingRate(Currency from, Currency to) {
+		return findRate(from, to, null).getSellingRate();
+	}
+
+	/**
+	 * Gets the exchange rate (average of selling rate and buying rate).
+	 * @param from Currency for which rate is required.
+	 * @param to Target currency to convert to.
+	 * @return Rate
+	 */
+	public static Rate getExchangeRate(Currency from, Currency to) {
+		return findRate(from, to, null).getRate();
+	}
+
+	/**
+	 * Gets the buying rate.
+	 * @param from Currency for which rate is required.
+	 * @param to Target currency to convert to.
+	 * @param systemEntity System Entity.
+	 * @return Rate
+	 */
+	public static Rate getBuyingRate(Currency from, Currency to, SystemEntity systemEntity) {
+		return findRate(from, to, systemEntity).getBuyingRate();
+	}
+
+	/**
+	 * Gets the selling rate.
+	 * @param from Currency for which rate is required.
+	 * @param to Target currency to convert to.
+	 * @param systemEntity System Entity.
+	 * @return Rate
+	 */
+	public static Rate getSellingRate(Currency from, Currency to, SystemEntity systemEntity) {
+		return findRate(from, to, systemEntity).getSellingRate();
+	}
+
+	/**
+	 * Gets the exchange rate (average of selling rate and buying rate).
+	 * @param from Currency for which rate is required.
+	 * @param to Target currency to convert to.
+	 * @param systemEntity System Entity.
+	 * @return Rate
+	 */
+	public static Rate getExchangeRate(Currency from, Currency to, SystemEntity systemEntity) {
+		return findRate(from, to, systemEntity).getRate();
+	}
+
+	private CurrencyRateProvider findRate(Currency currency, SystemEntity systemEntity) {
+		return findRate(currency, currency, systemEntity);
+	}
+
+	private static CurrencyRateProvider findRate(Currency from, Currency to, SystemEntity systemEntity) {
+		return findRate(from, to, systemEntity);
 	}
 
 	public Money percentage(double percentage) {

@@ -1,6 +1,6 @@
 package com.storedobject.core;
 
-public class InventorySale extends InventoryTransfer {
+public class InventorySale extends InventoryTransfer implements TradeType {
 
     public InventorySale() {
     }
@@ -17,6 +17,9 @@ public class InventorySale extends InventoryTransfer {
     @Override
     public void validateData(TransactionManager tm) throws Exception {
         super.validateData(tm);
+        if(getType() >= 1000) {
+            throw new Invalid_State("Invalid type");
+        }
         var loc = getToLocation();
         if (loc == null || loc.getType() != 2) {
             throw new Invalid_Value("Customer");
@@ -25,14 +28,5 @@ public class InventorySale extends InventoryTransfer {
 
     public Entity getCustomerEntity() {
         return get(Entity.class, getToLocation().getEntityId());
-    }
-
-    /**
-     * Get the type of sale. Overridden classes may define this if required.
-     *
-     * @return Type.
-     */
-    protected int getType() {
-        return 0;
     }
 }

@@ -4,9 +4,10 @@ import com.storedobject.core.*;
 import com.storedobject.core.annotation.*;
 import java.math.BigDecimal;
 import java.sql.Date;
+import java.util.Currency;
 import java.util.concurrent.atomic.AtomicReference;
 
-public abstract class Invoice extends StoredObject implements OfEntity, Financial {
+public abstract class Invoice extends StoredObject implements OfEntity, Financial, TradeType {
 
     private static final String[] paymentStatusValues =
             new String[] {
@@ -16,12 +17,13 @@ public abstract class Invoice extends StoredObject implements OfEntity, Financia
     private int type;
     private final Date date = DateUtility.today();
     private Id partyId;
-    private Money total = new Money();
+    private Money amount = new Money(), total = new Money();
     private boolean posted;
     private Money payment = new Money();
     private String paymentDetail;
     private int paymentStatus = 0;
     private boolean fromInventory, internal = false;
+    private Rate exchangeRate = new Rate(6);
 
     public Invoice() {}
 
@@ -30,21 +32,23 @@ public abstract class Invoice extends StoredObject implements OfEntity, Financia
         columns.add("Type", "int");
         columns.add("Date", "date");
         columns.add("Party", "id");
+        columns.add("Amount", "money");
         columns.add("Total", "money");
         columns.add("Posted", "boolean");
         columns.add("Payment", "money");
         columns.add("PaymentDetail", "text");
         columns.add("PaymentStatus", "int");
         columns.add("FromInventory", "boolean");
+        columns.add("ExchangeRate", "numeric(14,6)");
     }
 
     public static String[] protectedColumns() {
-        return new String[] { "Type", "Payment", "PaymentDetail" };
+        return new String[] { "Type", "Payment" };
     }
 
     public static String[] browseColumns() {
         return new String[] {
-                "Date", "InvoiceNo", "Party", "Total", "Payment", "PaymentStatus", "Posted",
+                "Date", "InvoiceNo", "Party", "Amount", "Total", "Payment", "PaymentStatus", "Posted",
                 "FromInventory", "PaymentDetail",
         };
     }
@@ -52,6 +56,7 @@ public abstract class Invoice extends StoredObject implements OfEntity, Financia
     public static void readOnlyColumns(ColumnNames columnNames) {
         columnNames.add("SystemEntity");
         columnNames.add("Posted");
+        columnNames.add("Total");
         columnNames.add("PaymentStatus");
         columnNames.add("FromInventory");
     }
@@ -88,6 +93,12 @@ public abstract class Invoice extends StoredObject implements OfEntity, Financia
         this.type = type;
     }
 
+    /**
+     * Retrieves the type of the invoice.
+     * <p>Note: The type should match with the PO type for proper linkage.</p>
+     *
+     * @return The type of the invoice as an integer.
+     */
     @SetNotAllowed
     @Column(order = 150)
     public int getType() {
@@ -124,6 +135,19 @@ public abstract class Invoice extends StoredObject implements OfEntity, Financia
         return getRelated(EntityAccount.class, partyId, true);
     }
 
+    public void setAmount(Money amount) {
+        this.amount = amount;
+    }
+
+    public void setAmount(Object moneyValue) {
+        setAmount(Money.create(moneyValue));
+    }
+
+    @Column(order = 400)
+    public Money getAmount() {
+        return amount;
+    }
+
     public void setTotal(Money total) {
         this.total = total;
     }
@@ -132,7 +156,7 @@ public abstract class Invoice extends StoredObject implements OfEntity, Financia
         setTotal(Money.create(moneyValue));
     }
 
-    @Column(order = 400)
+    @Column(order = 500)
     public Money getTotal() {
         return total;
     }
@@ -145,7 +169,7 @@ public abstract class Invoice extends StoredObject implements OfEntity, Financia
     }
 
     @SetNotAllowed
-    @Column(order = 500)
+    @Column(order = 600)
     public boolean getPosted() {
         return posted;
     }
@@ -162,7 +186,7 @@ public abstract class Invoice extends StoredObject implements OfEntity, Financia
     }
 
     @SetNotAllowed
-    @Column(required = false, order = 600)
+    @Column(required = false, order = 700)
     public Money getPayment() {
         return payment;
     }
@@ -171,7 +195,7 @@ public abstract class Invoice extends StoredObject implements OfEntity, Financia
         this.paymentDetail = paymentDetail;
     }
 
-    @Column(required = false, order = 700)
+    @Column(required = false, order = 800)
     public String getPaymentDetail() {
         return paymentDetail;
     }
@@ -184,7 +208,7 @@ public abstract class Invoice extends StoredObject implements OfEntity, Financia
     }
 
     @SetNotAllowed
-    @Column(order = 800)
+    @Column(order = 900)
     public int getPaymentStatus() {
         return paymentStatus;
     }
@@ -203,12 +227,29 @@ public abstract class Invoice extends StoredObject implements OfEntity, Financia
     }
 
     public void setFromInventory(boolean fromInventory) {
+        if(!loading()) {
+            throw new Set_Not_Allowed("From Inventory");
+        }
         this.fromInventory = fromInventory;
     }
 
-    @Column(order = 900)
+    @SetNotAllowed
+    @Column(order = 1000)
     public boolean getFromInventory() {
         return fromInventory;
+    }
+
+    public void setExchangeRate(Rate exchangeRate) {
+        this.exchangeRate = new Rate(exchangeRate.getValue(), 6);
+    }
+
+    public void setExchangeRate(Object value) {
+        setExchangeRate(Rate.create(value, 6));
+    }
+
+    @Column(style = "(d:14,6)", order = 1100)
+    public Rate getExchangeRate() {
+        return exchangeRate;
     }
 
     @Override
@@ -218,6 +259,15 @@ public abstract class Invoice extends StoredObject implements OfEntity, Financia
             throw new Invalid_Value("Date");
         }
         partyId = tm.checkTypeAny(this, partyId, EntityAccount.class, false);
+        validateAccount();
+        if(total.getCurrency() == tm.getCurrency()) {
+            exchangeRate = Rate.ONE;
+        } else {
+            exchangeRate.checkLimit("Exchange Rate", 14);
+            if(exchangeRate.isZero()) {
+                throw new Invalid_Value("Exchange Rate");
+            }
+        }
         super.validateData(tm);
     }
 
@@ -242,33 +292,15 @@ public abstract class Invoice extends StoredObject implements OfEntity, Financia
         }
     }
 
-    public final AccountConfiguration getConfiguration() {
-        return AccountConfiguration.getFor(systemEntityId, this instanceof SupplierInvoice ? 0 : 1, type);
-    }
-
-    @Override
-    public final boolean isLedgerPosted() {
-        return posted;
-    }
-
-    @Override
-    public final void postLedger(TransactionManager transactionManager) throws Exception {
-        if(posted) {
-            throw new Invalid_State("Already posted");
-        }
-        if(created()) {
-            throw new Invalid_State("New invoice");
-        }
+    private EntityAccount validateAccount() throws Exception {
         AccountConfiguration ac = getConfiguration();
         if(ac == null) {
             throw new Invalid_State("Account configuration not created");
         }
-        Date wd = transactionManager.getWorkingDate();
-        if(date.after(wd)) {
-            throw new Invalid_State("Invoice date " + DateUtility.formatDate(date) + " > " + " working date "
-                    + DateUtility.formatDate(wd));
-        }
         EntityAccount ea = getParty();
+        if(!ea.getSystemEntityId().equals(systemEntityId)) {
+            throw new Invalid_Value("Party account doesn't belong to this organization");
+        }
         int allow = ac.getAllow();
         if(ea instanceof CashAccount && (allow & 2) != 2) {
             throw new Invalid_State("Can't accept cash payment");
@@ -294,6 +326,36 @@ public abstract class Invoice extends StoredObject implements OfEntity, Financia
                 throw new Invalid_State("Can't accept party accounts of type " + StringUtility.makeLabel(ea.getClass()));
             }
         }
+        return ea;
+    }
+
+    public final AccountConfiguration getConfiguration() {
+        return AccountConfiguration.getFor(systemEntityId, this instanceof SupplierInvoice ? 0 : 1, type);
+    }
+
+    @Override
+    public final boolean isLedgerPosted() {
+        return posted;
+    }
+
+    @Override
+    public final void postLedger(TransactionManager transactionManager) throws Exception {
+        if(posted) {
+            throw new Invalid_State("Already posted");
+        }
+        if(created()) {
+            throw new Invalid_State("New invoice");
+        }
+        Date wd = transactionManager.getWorkingDate();
+        if(date.after(wd)) {
+            throw new Invalid_State("Invoice date " + DateUtility.formatDate(date) + " > " + " working date "
+                    + DateUtility.formatDate(wd));
+        }
+        AccountConfiguration ac = getConfiguration();
+        if(ac == null) {
+            throw new Invalid_State("Account configuration not created");
+        }
+        EntityAccount ea = validateAccount();
         AtomicReference<JournalVoucher> jvr = new AtomicReference<>();
         transactionManager.transact(t -> jvr.set(postLedger(ac, ea, wd, t)));
         JournalVoucher jv = jvr.get();
@@ -307,6 +369,10 @@ public abstract class Invoice extends StoredObject implements OfEntity, Financia
             throws Exception {
         Account accountGL = ac.getAccount();
         Money m = total;
+        Currency lc = accountGL.getCurrency();
+        if(ea.getCurrency() != lc) {
+            m = m.convert(exchangeRate.reverse(), lc);
+        }
         if(this instanceof SupplierInvoice) {
             m = m.negate();
         }
@@ -315,7 +381,11 @@ public abstract class Invoice extends StoredObject implements OfEntity, Financia
         jv.setDate(wd);
         jv.setTransaction(transaction);
         jv.setOwner(this);
-        jv.debit(ea, m, null, particulars);
+        if(ea.getCurrency() == lc) {
+            jv.debit(ea, m, null, particulars);
+        } else {
+            jv.debit(ea, this instanceof SupplierInvoice ? total.negate() : total, m, null, particulars);
+        }
         setTransaction(transaction);
         postTax(jv);
         jv.credit(accountGL, jv.getOffsetAmount(), null, particulars);
@@ -326,6 +396,7 @@ public abstract class Invoice extends StoredObject implements OfEntity, Financia
             payment = total;
             paymentStatus = 2;
         }
+        jv.entries().forEach(e -> System.err.println(e.getAccount() + ": " + e.getAmount() + ", " + e.getLocalCurrencyAmount()));
         save(transaction);
         return jv;
     }

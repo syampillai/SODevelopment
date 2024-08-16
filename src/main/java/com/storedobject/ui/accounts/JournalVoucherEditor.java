@@ -5,11 +5,13 @@ import com.storedobject.core.*;
 import com.storedobject.helper.ID;
 import com.storedobject.ui.MoneyField;
 import com.storedobject.ui.ObjectEditor;
+import com.storedobject.ui.RateField;
 import com.storedobject.vaadin.*;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.grid.ColumnTextAlign;
 
 import java.util.ArrayList;
+import java.util.Currency;
 import java.util.List;
 import java.util.Objects;
 
@@ -50,7 +52,7 @@ public class JournalVoucherEditor extends ObjectEditor<JournalVoucher> {
     @Override
     protected void saveObject(Transaction t, JournalVoucher object) throws Exception {
         for(Entry e : entries) {
-            object.credit(e.account, e.amount, null, e.particulars);
+            object.credit(e.account, e.fcAmount, e.lcAmount,null, e.particulars);
         }
         super.saveObject(t, object);
     }
@@ -61,7 +63,8 @@ public class JournalVoucherEditor extends ObjectEditor<JournalVoucher> {
         private GridRow.Cell total;
 
         public Entries() {
-            super(Entry.class, StringList.create("Account", "Particulars", "Amount"));
+            super(Entry.class, StringList.create("Account", "Particulars", "FCAmount AS Amount", "LCAmount AS Amount in "
+                    + getTransactionManager().getCurrency().getCurrencyCode()));
             setWidthFull();
             setMinHeight("200px");
             setMaxHeight("60vh");
@@ -72,10 +75,10 @@ public class JournalVoucherEditor extends ObjectEditor<JournalVoucher> {
 
         @Override
         public ColumnTextAlign getTextAlign(String columnName) {
-            if("Amount".equals(columnName)) {
-                return ColumnTextAlign.END;
-            }
-            return super.getTextAlign(columnName);
+            return switch (columnName) {
+                case "LCAmount", "FCAmount" -> ColumnTextAlign.END;
+                default -> super.getTextAlign(columnName);
+            };
         }
 
         @Override
@@ -83,7 +86,7 @@ public class JournalVoucherEditor extends ObjectEditor<JournalVoucher> {
             return switch (columnName) {
                 case "Account" -> 35;
                 case "Particulars" -> 50;
-                case "Amount" -> 15;
+                case "LCAmount", "FCAmount" -> 15;
                 default -> 10;
             };
         }
@@ -96,18 +99,23 @@ public class JournalVoucherEditor extends ObjectEditor<JournalVoucher> {
         @Override
         public void createFooters() {
             GridRow gr = appendFooter();
-            total = gr.getCell("Amount");
+            total = gr.getCell("LCAmount");
             updateTotal();
         }
 
         private void doAdd() {
             entryForm.setEntry(null);
+            entryForm.account.clear();
             if(entries.isEmpty()) {
-                entryForm.amount.clear();
+                entryForm.fcAmount.clear();
+                entryForm.lcAmount.clear();
             } else {
                 Money m = getTotal().negate();
-                entryForm.amount.setValue(m.absolute());
                 entryForm.debitCredit.setValue(m.isDebit() ? 0 : 1);
+                m = m.absolute();
+                entryForm.fcAmount.setValue(m);
+                entryForm.lcAmount.setValue(m);
+                entryForm.rate.setValue(Rate.ONE);
             }
             entryForm.execute();
         }
@@ -150,7 +158,7 @@ public class JournalVoucherEditor extends ObjectEditor<JournalVoucher> {
         private Money getTotal() {
             Money m = new Money();
             for (Entry entry : this) {
-                m = m.add(entry.amount);
+                m = m.add(entry.lcAmount);
             }
             return m;
         }
@@ -161,12 +169,13 @@ public class JournalVoucherEditor extends ObjectEditor<JournalVoucher> {
         private final long id = ID.newID();
         private final Account account;
         private final String particulars;
-        private final Money amount;
+        private final Money lcAmount, fcAmount;
 
-        Entry(Account account, String particulars, Money amount) {
+        Entry(Account account, String particulars, Money lcAmount, Money fcAmount) {
             this.account = account;
             this.particulars = particulars;
-            this.amount = amount;
+            this.lcAmount = lcAmount;
+            this.fcAmount = fcAmount;
         }
 
         public Account getAccount() {
@@ -177,8 +186,12 @@ public class JournalVoucherEditor extends ObjectEditor<JournalVoucher> {
             return particulars;
         }
 
-        public Money getAmount() {
-            return amount;
+        public Money getLCAmount() {
+            return lcAmount;
+        }
+
+        public Money getFCAmount() {
+            return fcAmount;
         }
 
         @Override
@@ -194,18 +207,61 @@ public class JournalVoucherEditor extends ObjectEditor<JournalVoucher> {
 
     private class EntryForm extends DataForm {
 
+        private final Currency localCurrency;
         private final AccountField<Account> account = new AccountField<>("Account");
         private final TextArea particulars = new TextArea("Particulars");
         private final ChoiceField debitCredit = new ChoiceField("Debit/Credit", "Debit, Credit");
-        private final MoneyField amount = new MoneyField("Amount");
+        private final MoneyField fcAmount = new MoneyField("Amount");
+        private final RateField rate = new RateField("Exchange Rate");
+        private final MoneyField lcAmount = new MoneyField("Amount in Local Currency");
         private Entry entry;
 
         public EntryForm() {
             super("Journal Entry");
-            addField(account, particulars, debitCredit, amount);
+            localCurrency = getTransactionManager().getCurrency();
+            addField(account, particulars, debitCredit, fcAmount, rate, lcAmount);
             setRequired(account);
             setRequired(particulars);
-            setRequired(amount);
+            setRequired(rate);
+            setRequired(fcAmount);
+            setRequired(lcAmount);
+            lcAmount.setAllowedCurrencies(localCurrency);
+            fcAmount.addValueChangeListener(e -> {
+                if(e.isFromClient()) {
+                    computeLCA();
+                }
+            });
+            rate.addValueChangeListener(e -> {
+                if(e.isFromClient()) {
+                    computeLCA();
+                }
+            });
+            account.addValueChangeListener(e -> {
+                if(e.isFromClient()) {
+                    accountChanged();
+                }
+            });
+        }
+
+        private void accountChanged() {
+            Account a = account.getAccount();
+            if(a != null) {
+                fcAmount.setAllowedCurrencies(a.getCurrency());
+                if(a.getCurrency().equals(localCurrency)) {
+                    rate.setValue(Rate.ONE);
+                    setFieldVisible(false, rate, lcAmount);
+                    fcAmount.setValue(lcAmount.getValue());
+                } else {
+                    setFieldVisible(true, rate, lcAmount);
+                    Rate r = Money.getExchangeRate(localCurrency, a.getCurrency());
+                    rate.setValue(r);
+                    fcAmount.setValue(lcAmount.getValue().divide(r));
+                }
+            }
+        }
+
+        private void computeLCA() {
+            lcAmount.setValue(fcAmount.getValue().multiply(rate.getValue()));
         }
 
         @Override
@@ -230,11 +286,12 @@ public class JournalVoucherEditor extends ObjectEditor<JournalVoucher> {
         }
 
         private Entry entry() {
-            Money m = amount.getValue();
+            Money mFC = fcAmount.getValue(), mLC = lcAmount.getValue();
             if(debitCredit.getValue() == 0) {
-                m = m.negate();
+                mFC = mFC.negate();
+                mLC = mLC.negate();
             }
-            return new Entry(account.getAccount(), particulars.getValue(), m);
+            return new Entry(account.getAccount(), particulars.getValue(), mLC, mFC);
         }
 
         void setEntry(Entry entry) {
@@ -244,8 +301,13 @@ public class JournalVoucherEditor extends ObjectEditor<JournalVoucher> {
             }
             account.setValue(entry.account);
             particulars.setValue(entry.particulars);
-            debitCredit.setValue(entry.amount.isNegative() ? 0 : 1);
-            amount.setValue(entry.amount.absolute());
+            debitCredit.setValue(entry.lcAmount.isNegative() ? 0 : 1);
+            fcAmount.setAllowedCurrencies(entry.account.getCurrency());
+            fcAmount.setValue(entry.fcAmount.absolute());
+            lcAmount.setValue(entry.lcAmount.absolute());
+            if(!entry.fcAmount.isZero()) {
+                rate.setValue(new Rate(entry.lcAmount, entry.fcAmount));
+            }
         }
     }
 }

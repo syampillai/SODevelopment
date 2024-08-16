@@ -1,55 +1,132 @@
 package com.storedobject.core;
 
+import com.storedobject.core.annotation.*;
 import java.math.BigDecimal;
-import java.util.Random;
 
 public abstract class InventoryTransferItem extends StoredObject implements Detail, HasInventoryItem {
+
+    Id itemId;
+    private InventoryItem item;
+    private Quantity quantity = Quantity.create(Quantity.class);
+    private int amendment = 0;
+    boolean internal;
 
     public InventoryTransferItem() {
     }
 
     public static void columns(Columns columns) {
+        columns.add("Item", "id");
+        columns.add("Quantity", "quantity");
+        columns.add("Amendment", "int");
+    }
+
+    public static String[] protectedColumns() {
+        return new String[] { "Amendment" };
+    }
+
+    public static String[] browseColumns() {
+        return new String[] {
+                "Item.PartNumber.Name AS Item",
+                "Item.PartNumber.PartNumber AS Part Number",
+                "Item.SerialNumberDisplay AS Serial/Batch Number",
+                "Quantity",
+        };
     }
 
     public void setItem(Id itemId) {
+        this.itemId = itemId;
+        item = null;
     }
 
     public void setItem(BigDecimal idValue) {
+        setItem(new Id(idValue));
     }
 
     public void setItem(InventoryItem item) {
+        setItem(item == null ? null : item.getId());
     }
 
+    @Column(style = "(any)", order = 100)
     public Id getItemId() {
-        return new Id();
+        return itemId;
     }
 
     @Override
     public InventoryItem getItem() {
-        return new InventoryItem();
+        if(item == null) {
+            item = get(getTransaction(), InventoryItem.class, itemId, true);
+        }
+        return item;
     }
 
     public void setQuantity(Quantity quantity) {
+        this.quantity = quantity;
     }
 
     public void setQuantity(Object value) {
+        setQuantity(Quantity.create(value));
     }
 
     @Override
+    @Column(order = 200, required = false)
     public Quantity getQuantity() {
-        return Count.ONE;
+        return quantity;
+    }
+
+    public final void setAmendment(int amendment) {
+        if (!loading()) {
+            throw new Set_Not_Allowed("Amendment");
+        }
+        this.amendment = amendment;
+    }
+
+    @SetNotAllowed
+    @Column(order = 1000)
+    public final int getAmendment() {
+        return amendment;
+    }
+
+    @Override
+    public void validateData(TransactionManager tm) throws Exception {
+        itemId = tm.checkTypeAny(this, itemId, InventoryItem.class, false);
+        if(getItem().isSerialized()) {
+            quantity = Count.ONE;
+        } else if(quantity.isZero()) {
+            quantity = item.getQuantity();
+        }
+        if(quantity.isZero()) {
+            throw new Invalid_State("Quantity of the item can't be zero");
+        }
+        quantity.canConvert(item.getPartNumber().getUnitOfMeasurement());
+        if(quantity.isGreaterThan(item.getQuantity())) {
+            throw new Invalid_State("Can not transfer " + quantity + ", only " + item.getQuantity() + " is available");
+        }
+        super.validateData(tm);
+    }
+
+    @Override
+    public void validateDelete() throws Exception {
+        super.validateDelete();
+        InventoryTransfer mr = getMaster(InventoryTransfer.class, true);
+        if(mr != null && mr.getStatus() == 1) {
+            throw new Invalid_State("Item is already sent. Please ask someone at '" +
+                    mr.getToLocation().toDisplay() + "' to receive it first");
+        }
+    }
+
+    @Override
+    void savedCore() throws Exception {
+        internal = false;
+        super.savedCore();
+    }
+
+    boolean getNotSent() {
+        return true;
     }
 
     @Override
     public final Id getUniqueId() {
-        return new Id();
-    }
-
-    public final void setAmendment(int amendment) {
-    }
-
-    public final int getAmendment() {
-        return new Random().nextInt();
+        return itemId;
     }
 
     @Override

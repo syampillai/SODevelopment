@@ -168,11 +168,6 @@ public class POBrowser<T extends InventoryPO> extends ObjectBrowser<T> implement
     }
 
     @Override
-    protected String getActionPrefix() {
-        return "PO";
-    }
-
-    @Override
     public void loaded() {
         if(searching) {
             searching = false;
@@ -674,10 +669,13 @@ public class POBrowser<T extends InventoryPO> extends ObjectBrowser<T> implement
             List<InventoryGRN> addToGRNs = null;
             if(!createNew) {
                 addToGRNs = StoredObject.list(InventoryGRN.class,
-                        "Store=" + po.getStoreId() + " AND Supplier=" + po.getSupplierId() + " AND Status=0").
-                        toList();
+                        "Store=" + po.getStoreId() + " AND Supplier=" + po.getSupplierId() + " AND Status=0")
+                        .filter(g -> {
+                            InventoryPO p = g.listMasters(InventoryPO.class, true).findFirst();
+                            return p != null && p.getType() == po.getType();
+                        }).toList();
                 if(addToGRNs.isEmpty()) {
-                    warning("No open GRNs found for this supplier in this store!");
+                    warning("No open GRNs found for this supplier in this store for this type of PO!");
                     return;
                 }
             }

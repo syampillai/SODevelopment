@@ -9,6 +9,8 @@ import java.util.Random;
 
 public final class ClassAttribute<T extends StoredObject> {
 
+    String moduleName, tableName;
+
     private ClassAttribute() {
     }
 

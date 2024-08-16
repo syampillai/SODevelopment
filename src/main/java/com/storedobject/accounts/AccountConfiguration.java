@@ -29,6 +29,7 @@ public final class AccountConfiguration extends StoredObject implements OfEntity
     private String entityAccountClassName = EntityAccount.class.getName();
     private Class<? extends EntityAccount> entityAccountClass;
     private int allow = 0;
+    private String name;
 
     /**
      * This class represents an Account Configuration.
@@ -44,6 +45,7 @@ public final class AccountConfiguration extends StoredObject implements OfEntity
      */
     public static void columns(Columns columns) {
         columns.add("SystemEntity", "id");
+        columns.add("Name", "text");
         columns.add("Category", "int");
         columns.add("Type", "int");
         columns.add("Account", "id");
@@ -143,6 +145,25 @@ public final class AccountConfiguration extends StoredObject implements OfEntity
      */
     public SystemEntity getSystemEntity() {
         return getRelated(SystemEntity.class, systemEntityId);
+    }
+
+    /**
+     * Sets the name for this object.
+     *
+     * @param name The name to set.
+     */
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    /**
+     * Retrieves the name of the AccountConfiguration.
+     *
+     * @return The name of the AccountConfiguration as a string.
+     */
+    @Column(order = 150)
+    public String getName() {
+        return name;
     }
 
     /**
@@ -321,6 +342,9 @@ public final class AccountConfiguration extends StoredObject implements OfEntity
         if(!a.getSystemEntityId().equals(getSystemEntityId())) {
             throw new Invalid_State("Account does not belong to this organization");
         }
+        if(StringUtility.isWhite(name)) {
+            throw new Invalid_Value("Name");
+        }
         super.validateData(tm);
     }
 
@@ -398,5 +422,10 @@ public final class AccountConfiguration extends StoredObject implements OfEntity
             }
         }
         return ac;
+    }
+
+    @Override
+    public String toString() {
+        return name;
     }
 }

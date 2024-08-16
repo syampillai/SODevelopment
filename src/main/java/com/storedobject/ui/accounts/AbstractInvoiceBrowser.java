@@ -3,6 +3,8 @@ package com.storedobject.ui.accounts;
 import com.storedobject.accounts.Invoice;
 import com.storedobject.ui.ObjectBrowser;
 import com.storedobject.ui.SearchBuilder;
+import com.storedobject.vaadin.View;
+import com.vaadin.flow.component.checkbox.Checkbox;
 
 public abstract class AbstractInvoiceBrowser<I extends Invoice> extends ObjectBrowser<I> {
 
@@ -72,5 +74,37 @@ public abstract class AbstractInvoiceBrowser<I extends Invoice> extends ObjectBr
 
     public AbstractInvoiceBrowser(String className) throws Exception {
         super(className);
+    }
+
+    @Override
+    protected void addExtraButtons() {
+        super.addExtraButtons();
+        Checkbox h = new Checkbox("Include Posted");
+        h.addValueChangeListener(e -> setFixedFilter(filter(e.getValue())));
+        buttonPanel.add(h);
+    }
+
+    private String filter(boolean history) {
+        AbstractInvoiceEditor<I> editor = (AbstractInvoiceEditor<I>) getObjectEditor();
+        if(editor.configuration == null) {
+            return "false";
+        }
+        return "Type=" + editor.configuration.getType() + (history ? "" : " AND NOT Posted");
+    }
+
+    @Override
+    public void execute(View lock) {
+        config(() -> super.execute(lock));
+    }
+
+    private void config(Runnable runnable) {
+        AbstractInvoiceEditor<I> editor = (AbstractInvoiceEditor<I>) getObjectEditor();
+        if(editor.configuration != null) {
+            runnable.run();
+            return;
+        }
+        editor.selectConfiguration(runnable);
+        setOrderBy("Date DESC", false);
+        setFixedFilter(filter(false), false);
     }
 }

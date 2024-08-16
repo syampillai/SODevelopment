@@ -7,6 +7,7 @@ import com.storedobject.core.annotation.Table;
 
 import java.math.BigDecimal;
 import java.sql.Date;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -17,7 +18,7 @@ import java.util.Map;
  * @author Syam
  */
 @Table(anchors = "Store")
-public class InventoryPO extends StoredObject implements HasChildren, HasReference {
+public class InventoryPO extends StoredObject implements HasChildren, HasReference, TradeType {
 
     private static final ReferencePattern<InventoryPO> ref = new ReferencePattern<>();
     private final static String[] statusValues = {
@@ -31,6 +32,7 @@ public class InventoryPO extends StoredObject implements HasChildren, HasReferen
     int status = 0;
     int no = 0;
     private boolean approvalRequired = true;
+    private boolean internal = false;
 
     public InventoryPO() {
     }
@@ -229,6 +231,85 @@ public class InventoryPO extends StoredObject implements HasChildren, HasReferen
         return status == 4;
     }
 
+    @Override
+    public void validateData(TransactionManager tm) throws Exception {
+        if(getType() >= 1000) {
+            throw new Invalid_State("Invalid type");
+        }
+        storeId = tm.checkTypeAny(this, storeId, InventoryStore.class, false);
+        supplierId = tm.checkType(this, supplierId, Entity.class, false);
+        super.validateData(tm);
+    }
+
+    @Override
+    public void validate() throws Exception {
+        super.validate();
+        if(referenceNumber.isBlank()) {
+            SerialPattern pattern = SerialPattern.get("PO" + getGRNType() + "-" + getType());
+            if(pattern == null) {
+                referenceNumber = "PO/" + getNo();
+            } else {
+                referenceNumber = pattern.getNumber(tran.getManager(), getNo(), date);
+            }
+        }
+    }
+
+    @Override
+    public void validateDelete() throws Exception {
+        super.validateDelete();
+        if(status == 0 || status == 4) {
+            return;
+        }
+        throw new Invalid_State("Can't delete processed entry");
+    }
+
+    @Override
+    public void validateUpdate() throws Exception {
+        super.validateUpdate();
+        if(status > 0 && !internal) {
+            throw new Invalid_State("Can't update processed entry");
+        }
+    }
+
+    @Override
+    public void validateChildAttach(StoredObject child, int linkType) throws Exception {
+        super.validateChildAttach(child, linkType);
+        if(child instanceof InventoryPOItem item) {
+            if(internal || item.internal) {
+                return;
+            }
+            if(!getTransaction().isInvolved(child)) { // Not active in this transaction
+                return;
+            }
+            if(status > 0 && item.getType() == 0 && !item.getReceived().isZero()) {
+                throw new Invalid_State("Can't add more items to processed entry");
+            }
+        }
+    }
+
+    @Override
+    public void validateChildUpdate(StoredObject child, int linkType) throws Exception {
+        super.validateChildUpdate(child, linkType);
+        if(child instanceof InventoryPOItem poItem) {
+            if(internal || poItem.internal || status == 0 || poItem.getReceived().isZero()) {
+                return;
+            }
+            throw new Invalid_State("Can't update with status = '" + getStatusValue() + "'");
+        }
+    }
+
+    @Override
+    void savedCore() throws Exception {
+        super.savedCore();
+        getReference();
+        internal = false;
+    }
+
+    void setInternalStatusTo2() {
+        internal = true;
+        this.status = 2;
+    }
+
     /**
      * Amend this PO. This PO will be foreclosed and another PO will be created with the balance items to receive.
      *
@@ -239,22 +320,57 @@ public class InventoryPO extends StoredObject implements HasChildren, HasReferen
     public Id amendOrder(Transaction transaction) throws Exception {
         switch(status) {
             case 1, 2 -> {
-                return Id.ZERO;
+                return amend(transaction);
             }
             default -> throw new Invalid_State("Can't amend with Status = " + getStatusValue());
         }
+    }
+
+    private Id amend(Transaction transaction) throws Exception {
+        List<InventoryPOItem> items = listItems().filter(i -> i.getBalance().isPositive()).toList();
+        InventoryPO po = get(getClass(), getId());
+        closeOrder(transaction);
+        po.makeNew();
+        po.internal = true;
+        po.setDate(DateUtility.today());
+        po.status = 0;
+        po.save(transaction);
+        po.addLink(transaction, getId());
+        Quantity q;
+        for(InventoryPOItem item: items) {
+            item.makeNew();
+            item.internal = true;
+            q = item.getBalance();
+            item.received = q.zero();
+            item.setQuantity(q);
+            item.save(transaction);
+            po.addLink(transaction, item);
+        }
+        return po.getId();
     }
 
     public void recallOrder(Transaction transaction) throws Exception {
         if(status != 1) {
             throw new Invalid_State("Can't proceed with Status = " + getStatusValue());
         }
+        internal = true;
+        status = 0;
+        save(transaction);
     }
 
     public void placeOrder(Transaction transaction) throws Exception {
         if(status != 0) {
             throw new Invalid_State("Can't proceed with Status = " + getStatusValue());
         }
+        if(getApprovalRequired()) {
+            throw new Invalid_State("Approval required");
+        }
+        if(!existsLinks(InventoryPOItem.class, true)) {
+            throw new Invalid_State("Item list is empty");
+        }
+        internal = true;
+        status = 1;
+        save(transaction);
     }
 
     public void closeOrder(Transaction transaction) throws Exception {
@@ -262,6 +378,9 @@ public class InventoryPO extends StoredObject implements HasChildren, HasReferen
         if(grn != null) {
             throw new Invalid_State("Please process the GRN - " + grn.getReference() + " before closing this");
         }
+        internal = true;
+        status = 4;
+        save(transaction);
     }
 
     public boolean canClose() {
@@ -294,6 +413,127 @@ public class InventoryPO extends StoredObject implements HasChildren, HasReferen
             }
             default -> throw new Invalid_State("Can't proceed with Status = " + getStatusValue());
         }
+        if(grn != null) {
+            if(grn.getType() != getGRNType()) {
+                throw new Invalid_State(grn.getReference() + " is of different type");
+            }
+            if(!grn.getSupplierId().equals(supplierId)) {
+                throw new Invalid_State(grn.getReference() + " belongs to another supplier - "
+                        + grn.getSupplier().toDisplay());
+            }
+            if(!grn.getStoreId().equals(storeId)) {
+                throw new Invalid_State(grn.getReference() + " belongs to another store - "
+                        + grn.getStore().toDisplay());
+            }
+            if(grn.isClosed()) {
+                throw new Invalid_State(grn.getReference() + " is already closed");
+            }
+            boolean saveGRN = false;
+            if(invoiceNumber != null && !grn.getInvoiceNumber().equals(invoiceNumber)) {
+                grn.setInvoiceNumber(invoiceNumber);
+                saveGRN = true;
+            }
+            if(invoiceDate != null && DateUtility.isSameDate(grn.getInvoiceDate(), invoiceDate)) {
+                grn.setInvoiceDate(invoiceDate);
+                saveGRN = true;
+            }
+            if(saveGRN) {
+                grn.save(transaction);
+            }
+        }
+        Quantity b, q;
+        List<InventoryPOItem> items = listItems().toList();
+        boolean partial = false;
+        for(InventoryPOItem item: items) {
+            b = item.getBalance();
+            if(b.isZero()) {
+                continue;
+            }
+            q = quantities.get(item.getId());
+            if(q == null || q.isLessThan(b)) {
+                partial = true;
+                break;
+            }
+        }
+        items.removeIf(i -> quantities.get(i.getId()) == null);
+        if(items.size() != quantities.size()) {
+            throw new Invalid_State("Found extra items: " + (quantities.size() - items.size()));
+        }
+        int s = partial ? 2 : 3;
+        if(status != s) {
+            internal = true;
+            status = s;
+            save(transaction);
+        }
+        InventoryGRNItem grnItem;
+        if(grn == null) {
+            grn = new InventoryGRN();
+            grn.setType(getGRNType());
+            grn.setStore(storeId);
+            grn.setSupplier(supplierId);
+            if(invoiceDate != null) {
+                grn.setInvoiceDate(invoiceDate);
+            }
+            if(invoiceNumber != null) {
+                grn.setInvoiceNumber(invoiceNumber);
+            }
+            grn.save(transaction);
+        }
+        String sn;
+        int n, entries = 0;
+        for(InventoryPOItem item: items) {
+            q = quantities.get(item.getId());
+            if(!q.isPositive()) {
+                throw new Invalid_State("Invalid quantity for: " + item.toDisplay() + ", " + q);
+            }
+            item.internal = true;
+            b = item.getBalance();
+            if(b.isLessThan(q)) { // Excess
+                InventoryPOItem i = item.getClass().getConstructor().newInstance();
+                i.internal = true;
+                i.setPartNumber(item.getPartNumberId());
+                i.received = q.subtract(b);
+                i.setQuantity(i.received);
+                i.setUnitPrice(item.getUnitPrice());
+                i.setType(2);
+                i.save(transaction);
+                addLink(transaction, i);
+                item.received = item.getQuantity();
+            } else {
+                try {
+                    item.received = Quantity.sum(item.received, q);
+                } catch(SORuntimeException e) {
+                    throw new SORuntimeException(e.getMessage() + ", PO Item - " + item.toDisplay());
+                }
+            }
+            item.save(transaction);
+            sn = item.getSerialNumber();
+            if(item.getPartNumber().isSerialized()) {
+                n = q.getValue().intValue();
+                if(n > 1000) {
+                    throw new Invalid_State("Too many items specified: " + n);
+                }
+                q = Count.ONE;
+            } else {
+                n = 1;
+            }
+            while(n-- > 0) {
+                grnItem = new InventoryGRNItem();
+                ++entries;
+                grnItem.internal = true;
+                grnItem.setPartNumber(item.getPartNumberId());
+                grnItem.setSerialNumber(sn);
+                grnItem.setQuantity(q);
+                grnItem.setUnitCost(item.getUnitPrice());
+                grnItem.save(transaction);
+                grn.addLink(transaction, grnItem);
+                sn = "";
+            }
+        }
+        if(entries == 0) {
+            throw new Invalid_State("No items received");
+        }
+        addLink(transaction, grn);
         return grn;
     }
 
@@ -321,15 +561,6 @@ public class InventoryPO extends StoredObject implements HasChildren, HasReferen
         return true;
     }
 
-    /**
-     * Get the type of purchase. Overridden classes may define this if required.
-     *
-     * @return Type.
-     */
-    protected int getType() {
-        return 0;
-    }
-
     @Override
     public String toDisplay() {
         return getReference() + " dated " + DateUtility.format(date);
@@ -349,5 +580,9 @@ public class InventoryPO extends StoredObject implements HasChildren, HasReferen
             return amend;
         }
         return amendment(new Amend<>(old, amend.amendment() + 1));
+    }
+
+    public static String actionPrefixForUI() {
+        return "PO";
     }
 }

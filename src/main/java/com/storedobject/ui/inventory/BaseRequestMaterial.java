@@ -176,6 +176,7 @@ public class BaseRequestMaterial<MR extends MaterialRequest, MRI extends Materia
             restrictedEditor.editObject(mr, getView(), false);
             return;
         }
+        getObjectEditor().removeSetNotAllowed("ToLocation");
         super.doEdit(mr);
     }
 

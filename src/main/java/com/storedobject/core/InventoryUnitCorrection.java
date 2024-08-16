@@ -10,6 +10,7 @@ public class InventoryUnitCorrection extends StoredObject {
     private Id itemId;
     private Quantity previousUnit = Quantity.create(Quantity.class);
     private Quantity correctedUnit = Quantity.create(Quantity.class);
+    boolean internal;
 
     public InventoryUnitCorrection() {
     }
@@ -36,13 +37,13 @@ public class InventoryUnitCorrection extends StoredObject {
     }
 
     @SetNotAllowed
-    @Column(order = 100)
+    @Column(style = "(any)", order = 100)
     public Id getItemId() {
         return itemId;
     }
 
     public InventoryItemType getItem() {
-        return getRelated(InventoryItemType.class, itemId);
+        return getRelated(InventoryItemType.class, itemId, true);
     }
 
     public void setPreviousUnit(Quantity previousUnit) {
@@ -81,7 +82,16 @@ public class InventoryUnitCorrection extends StoredObject {
 
     @Override
     public void validateData(TransactionManager tm) throws Exception {
-        itemId = tm.checkType(this, itemId, InventoryItemType.class, false);
+        if(!internal) {
+            throw new SOException("Not internal");
+        }
+        itemId = tm.checkTypeAny(this, itemId, InventoryItemType.class, false);
         super.validateData(tm);
+    }
+
+    @Override
+    void savedCore() throws Exception {
+        super.savedCore();
+        internal = false;
     }
 }

@@ -3,6 +3,7 @@ package com.storedobject.ui.inventory;
 import com.storedobject.core.*;
 import com.storedobject.ui.ObjectEditorProvider;
 import com.storedobject.vaadin.Button;
+import com.storedobject.vaadin.ConfirmButton;
 import com.storedobject.vaadin.DataForm;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.icon.VaadinIcon;
@@ -25,19 +26,15 @@ public final class SendItemsForRepair extends AbstractSendAndReceiveMaterial<Inv
     }
 
     @Override
-    protected String getActionPrefix() {
-        return "RO";
-    }
-
-    @Override
     protected void addExtraButtons() {
         super.addExtraButtons();
         Button goToGRNs = actionAllowed("GO-TO-GRN") ? new Button("GRNs", VaadinIcon.STOCK, e -> toGRNs()) : null,
                 receiveItems = actionAllowed("GO-TO-RECEIVE-ITEMS") ?
-                        new Button("Receive", VaadinIcon.STORAGE, e -> receiveItems()) : null;
+                        new Button("Receive", VaadinIcon.STORAGE, e -> receiveItems()) : null,
+                closeButton = canClose() ? new ConfirmButton("Close", e -> closeRO()) : null;
         Checkbox h = new Checkbox("Include History");
         h.addValueChangeListener(e -> setFixedFilter(e.getValue() ? null : "Status<2"));
-        buttonPanel.add(receiveItems, h, goToGRNs);
+        buttonPanel.add(closeButton, receiveItems, h, goToGRNs);
         setFixedFilter("Status<2");
     }
 
@@ -52,8 +49,29 @@ public final class SendItemsForRepair extends AbstractSendAndReceiveMaterial<Inv
     }
 
     @Override
-    protected boolean allowAmendment() {
-        return true;
+    protected boolean canAmend() {
+        return actionAllowed("AMEND");
+    }
+
+    @Override
+    protected boolean canClose() {
+        return actionAllowed("CLOSE");
+    }
+
+    private void closeRO() {
+        InventoryRO ro = selected();
+        if(ro == null) {
+            return;
+        }
+        try {
+            clearAlerts();
+            ro.close(getTransactionManager());
+            refresh(ro);
+        } catch (Exception e) {
+            warning(e);
+        } catch (Throwable e) {
+            error(e);
+        }
     }
 
     public void setForGRNs() {

@@ -1314,10 +1314,10 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
         doEditInt(adding, null);
     }
 
-    private boolean doEditInt(boolean adding, Grid<T> grid) {
+    private int doEditInt(boolean adding, Grid<T> grid) {
         T object = getObject();
         if(object == null || (!adding && !canEdit())) {
-            return false;
+            return -1;
         }
         form.setReadOnly(false);
         if(doNotSave) {
@@ -1331,7 +1331,7 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
         }
         if(fields.allMatch(HasValue::isReadOnly)) {
             form.setReadOnly(true);
-            return false;
+            return 0;
         }
         buttonPanel.removeAll();
         buttonPanel.add(save);
@@ -1340,7 +1340,7 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
         setObject(object, true);
         editingStartedInternal();
         focus();
-        return true;
+        return 1;
     }
 
     /**
@@ -1427,7 +1427,7 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
             if(searchFilter != null) {
                 f.set(searchFilter);
             }
-            refreshMe((ObjectBrowser<T>) searcher);
+            refreshMe(b);
             searchFilter = f;
         }
     }
@@ -1891,7 +1891,7 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
         interruptEditing(object);
         execute(parent, doNotLock);
         closeOnSave = true;
-        if(!doEditInt(false, null)) {
+        if(doEditInt(false, null) == 0) {
             if(doSaveInt()) {
                 close();
             } else {
@@ -2563,7 +2563,7 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
             return false;
         }
         setObject(item, false);
-        if(!doEditInt(false, grid)) {
+        if(doEditInt(false, grid) < 1) {
             return false;
         }
         grid.getEditor().editItem(item);

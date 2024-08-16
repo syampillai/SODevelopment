@@ -1,6 +1,7 @@
 package com.storedobject.report;
 
 import com.storedobject.core.*;
+import com.storedobject.pdf.PDFCell;
 import com.storedobject.pdf.PDFReport;
 import com.storedobject.pdf.PDFTable;
 
@@ -132,11 +133,11 @@ public class JournalReport extends PDFReport implements JSONParameter {
                 }
                 finalTable.addCell(createCell(e.getAccount()));
                 if(e.getAmount().isDebit()) {
-                    finalTable.addCell(createCell(e.getAmount().negate()));
+                    finalTable.addCell(cell(e.getAmount(), e.getLocalCurrencyAmount()));
                     finalTable.addBlankCell();
                 } else {
                     finalTable.addBlankCell();
-                    finalTable.addCell(createCell(e.getAmount()));
+                    finalTable.addCell(cell(e.getAmount(), e.getLocalCurrencyAmount()));
                 }
             });
             add(table);
@@ -156,5 +157,12 @@ public class JournalReport extends PDFReport implements JSONParameter {
             AccountStatement.generateStatement(this, account, datePeriod);
             addGap(10);
         }
+    }
+
+    private PDFCell cell(Money fc, Money lc) {
+        if(lc.equals(fc)) {
+            return createCell(fc.absolute());
+        }
+        return createCell(fc.absolute() + "\n" + lc.absolute(), true);
     }
 }

@@ -9,6 +9,7 @@ import java.util.function.Consumer;
 @SuppressWarnings("RedundantThrows")
 public final class TransactionManager {
 
+    static boolean accounting = StoredObject.exists(Account.class, "True", true);
     private final Device device;
 
     public TransactionManager(Device device, String login) {
@@ -267,5 +268,12 @@ public final class TransactionManager {
      * @throws Exception if an error occurs while setting the working date
      */
     public void setWorkingDate(java.sql.Date workingDate) throws Exception {
+    }
+
+    public static boolean accounting() {
+        if(!accounting) {
+            accounting = StoredObject.exists(Account.class, "True", true);
+        }
+        return accounting;
     }
 }

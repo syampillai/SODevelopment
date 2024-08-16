@@ -379,7 +379,7 @@ public class Application extends com.storedobject.vaadin.Application implements 
     }
 
     /**
-     * The reason for closing the application. A negative number is returned if a redirection happened while closing.
+     * The reason for closing the application. A negative number is returned if a redirection had happened while closing.
      * <p>
      *     0: Not closed
      *     1, -1: Logged out by the user.
@@ -493,31 +493,39 @@ public class Application extends com.storedobject.vaadin.Application implements 
      *                    removed.
      */
     public void closeAllViews(boolean forShutdown) {
-        if(forShutdown) {
-            closeAlertTimer();
-            closeSessionTimer();
-        }
-        List<Dialog> dialogs = new ArrayList<>();
-        AtomicBoolean done = new AtomicBoolean(false);
-        int round = 0;
-        while(!done.get()) {
-            done.set(true);
-            getActiveViews().toList().forEach(v -> {
-                try {
-                    Component c = v.getComponent();
-                    v.abort();
-                    if(c instanceof Dialog d) {
-                        dialogs.add(d);
-                    }
-                } catch(Exception ignored) {
-                    done.set(false);
-                }
-            });
-            if(++round > 10) {
-                break;
+        try {
+            if (forShutdown) {
+                closeAlertTimer();
+                closeSessionTimer();
             }
+            List<Dialog> dialogs = new ArrayList<>();
+            AtomicBoolean done = new AtomicBoolean(false);
+            int round = 0;
+            while (!done.get()) {
+                done.set(true);
+                getActiveViews().toList().forEach(v -> {
+                    try {
+                        Component c = v.getComponent();
+                        v.abort();
+                        if (c instanceof Dialog d && !dialogs.contains(d)) {
+                            dialogs.add(d);
+                        }
+                    } catch (Exception ignored) {
+                        done.set(false);
+                    }
+                });
+                if (++round > 10) {
+                    break;
+                }
+            }
+            access(() -> dialogs.forEach(d -> {
+                try {
+                    d.close();
+                } catch (Exception ignored) {
+                }
+            }));
+        } catch (Throwable ignored) {
         }
-        access(() -> dialogs.forEach(Dialog::close));
     }
 
     public static Application get() {
@@ -2166,7 +2174,7 @@ public class Application extends com.storedobject.vaadin.Application implements 
         try {
             sessionTimeout = Long.parseLong(ApplicationServer.getGlobalProperty("application.session.timeout",
                     "0", true));
-        } catch(Throwable ignored) {
+        } catch(Throwable error) {
             sessionTimeout = 0;
         }
         if(sessionTimeout < 5) {
@@ -2186,6 +2194,7 @@ public class Application extends com.storedobject.vaadin.Application implements 
                 t.cancel();
             }
         }
+        sessionMonitor = null;
     }
 
     private class SessionTimer extends TimerTask {
@@ -2227,8 +2236,13 @@ public class Application extends com.storedobject.vaadin.Application implements 
 
         @Override
         protected void execute(View parent, boolean doNotLock) {
-            timer.countDown(30);
-            super.execute(parent, doNotLock);
+            try {
+                timer.countDown(30);
+                super.execute(parent, doNotLock);
+            } catch (Throwable browserClosedOrOtherReasons) {
+                sessionMonitor = null;
+                Application.this.close(8);
+            }
         }
 
         private void continueSession() {

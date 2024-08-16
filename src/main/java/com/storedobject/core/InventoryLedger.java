@@ -8,8 +8,12 @@ import java.util.Random;
 public final class InventoryLedger extends StoredObject {
 
     public static final Date dataPickupDate = DateUtility.create(2000, 1, 1);
+    boolean illegal;
 
     public InventoryLedger() {
+    }
+
+    InventoryLedger(InventoryItem item, InventoryLocation locationFrom,  Transaction transaction) throws Exception {
     }
 
     public static void columns(Columns columns) {
@@ -145,5 +149,8 @@ public final class InventoryLedger extends StoredObject {
 
     public static QuantityWithCost getClosingStock(InventoryItemType itemType, Date date, InventoryLocation location) {
         return new QuantityWithCost(Count.ZERO, new Money());
+    }
+
+    public void increaseCost(DBTransaction t, Money incUC, Quantity quantity) {
     }
 }

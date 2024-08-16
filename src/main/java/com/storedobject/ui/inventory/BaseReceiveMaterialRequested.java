@@ -95,7 +95,7 @@ public class BaseReceiveMaterialRequested<MR extends MaterialRequest, MRI extend
     @Override
     protected void addExtraButtons() {
         super.addExtraButtons();
-        buttonPanel.add(new Button("Receive Materials", VaadinIcon.TRUCK, e -> receive()));
+        buttonPanel.add(new Button("Receive Materials", VaadinIcon.TRUCK, e -> receive0()));
         Checkbox cb = new Checkbox("Include History");
         cb.addValueChangeListener(e -> {
             deselectAll();
@@ -148,14 +148,47 @@ public class BaseReceiveMaterialRequested<MR extends MaterialRequest, MRI extend
         return actionAllowed("CANCEL-RESERVATION");
     }
 
-    private void receive() {
+    private boolean can(boolean issue) {
+        if((issue && !canReceiveMaterial()) || (!issue && !canRequestToIssue())) {
+            clearAlerts();
+            warning("No permission!");
+            return false;
+        }
+        return true;
+    }
+
+    private MR mr() {
         MR mr = selected();
         if(mr == null) {
-            return;
+            return null;
         }
         if(mr.getReceived()) {
             message("Whatever sent earlier was already received");
+            return null;
         }
+        return mr;
+    }
+
+    private void receive0() {
+        MR mr = mr();
+        if(mr == null) {
+            return;
+        }
+        if((mr.getStatus() != 1 && !mr.getReserved() && can(false)) ||
+                (mr.getStatus() != 1 && mr.getReserved() && can(true))) {
+            receive(mr);
+        }
+    }
+
+    private void receive() {
+        MR mr = mr();
+        if(mr == null) {
+            return;
+        }
+        receive(mr);
+    }
+
+    private void receive(MR mr) {
         if(mr.getReserved() && mr.getStatus() == 1) {
             ELabel m = new ELabel("Items are not yet reserved.", Application.COLOR_ERROR);
             m.newLine().append("Do you want to request for issuance instead of reservation?").update();

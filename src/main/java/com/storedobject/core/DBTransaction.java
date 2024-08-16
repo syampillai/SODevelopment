@@ -20,6 +20,11 @@ public final class DBTransaction extends AbstractTransaction {
         this(null);
     }
 
+    // For internal use only.
+    int updateSQL(String sql) {
+        return -1;
+    }
+
     /**
      * Skip limit check for this transaction.
      */

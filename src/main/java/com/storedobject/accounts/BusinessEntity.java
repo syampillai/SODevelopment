@@ -143,7 +143,31 @@ public final class BusinessEntity extends AccountEntity<Entity> {
         return 10192;
     }
 
+    /**
+     * Retrieves the business entity for the given entity ID.
+     *
+     * @param entityId The ID of the entity.
+     * @return The business entity associated with the given entity ID.
+     */
     public static BusinessEntity getFor(Id entityId) {
         return get(BusinessEntity.class, "Entity=" + entityId);
+    }
+
+    /**
+     * Creates a BusinessEntity (if not already exists) for the specified entityId using the given TransactionManager.
+     *
+     * @param entityId The ID of the entity for which the BusinessEntity is created.
+     * @param tm The TransactionManager instance to be used for database transactions.
+     * @return The already existing or created BusinessEntity object.
+     * @throws Exception If an error occurs while creating or saving the BusinessEntity.
+     */
+    public static BusinessEntity createFor(TransactionManager tm, Id entityId) throws Exception {
+        BusinessEntity be = BusinessEntity.getFor(entityId);
+        if(be == null) {
+            be = new BusinessEntity();
+            be.setEntity(entityId);
+            tm.transact(be::save);
+        }
+        return be;
     }
 }

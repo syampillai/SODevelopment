@@ -11,7 +11,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@SuppressWarnings("resource")
 public class ComputeLandedCost extends DataForm implements Transactional {
 
     private final InventoryGRN grn;
@@ -34,6 +33,8 @@ public class ComputeLandedCost extends DataForm implements Transactional {
         List<LandedCost> costs = grn.listLinks(LandedCost.class).toList();
         List<LandedCostType> types = StoredObject.list(LandedCostType.class, null, "DisplayOrder")
                 .toList();
+        types.removeIf(t -> t.getInactive() && costs.stream().filter(c -> !c.getAmount().isZero())
+                .noneMatch(c -> c.getType().getId().equals(t.getId())));
         LandedCost cost;
         MoneyField mf;
         for(LandedCostType type: types) {
@@ -46,7 +47,7 @@ public class ComputeLandedCost extends DataForm implements Transactional {
                 cost.setType(type);
             }
             this.costs.add(cost);
-            mf = new MoneyField(type.getName());
+            mf = new MoneyField((type.getDeduct() ? '-' : '+') + ' ' + type.getName());
             mf.setValue(cost.getAmount());
             costFields.add(mf);
             addField(mf);

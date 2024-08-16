@@ -354,7 +354,11 @@ public abstract class AbstractSendAndReceiveMaterial<T extends InventoryTransfer
         buttonPanel.add(new Button("Search", e -> searchFilter()), approve, send, amend, receive, grnButton);
     }
 
-    protected boolean allowAmendment() {
+    protected boolean canAmend() {
+        return false;
+    }
+
+    protected boolean canClose() {
         return false;
     }
 
@@ -696,7 +700,7 @@ public abstract class AbstractSendAndReceiveMaterial<T extends InventoryTransfer
 
         public MTItemGrid(ObjectLinkField<L> linkField) {
             super(linkField);
-            if(allowAmendment()) {
+            if(canAmend()) {
                 createColumn("Status");
             }
         }

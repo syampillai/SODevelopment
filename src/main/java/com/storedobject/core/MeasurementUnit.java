@@ -6,6 +6,8 @@ import java.util.List;
 
 public class MeasurementUnit {
 
+	Id packingUnit = null;
+
 	@SuppressWarnings("unused")
 	private MeasurementUnit(int type, String unit, boolean hasDecimals, BigDecimal multiplier, String humanInput) {
 	}

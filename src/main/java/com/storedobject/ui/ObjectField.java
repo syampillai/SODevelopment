@@ -343,7 +343,7 @@ public class ObjectField<T extends StoredObject> extends CustomField<Id>
      * @param any Whether subclasses should be allowed or not.
      */
     public ObjectField(String label, Class<T> objectClass, List<T> list, boolean any) {
-        this(label, objectClass, any, new ObjectComboField<>(list));
+        this(label, objectClass, any, new ObjectComboField<>(objectClass, list));
     }
 
     /**

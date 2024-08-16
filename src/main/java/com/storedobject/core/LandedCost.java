@@ -9,7 +9,6 @@ public final class LandedCost extends StoredObject implements Detail {
 
     private Id typeId;
     private Money amount = new Money();
-    private LandedCostType type;
 
     public LandedCost() {
     }
@@ -41,10 +40,7 @@ public final class LandedCost extends StoredObject implements Detail {
     }
 
     public LandedCostType getType() {
-        if(type != null) {
-            type = getRelated(LandedCostType.class, typeId);
-        }
-        return type;
+        return LandedCostType.getFor(typeId);
     }
 
     public void setAmount(Money amount) {
@@ -58,6 +54,10 @@ public final class LandedCost extends StoredObject implements Detail {
     @Column(required = false, order = 200)
     public Money getAmount() {
         return amount;
+    }
+
+    public Money getEffectiveAmount() {
+        return getType().getDeduct() ? amount.negate() : amount;
     }
 
     @Override

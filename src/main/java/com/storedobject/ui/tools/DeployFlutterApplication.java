@@ -1,6 +1,7 @@
 package com.storedobject.ui.tools;
 
 import com.storedobject.common.IO;
+import com.storedobject.core.ApplicationServer;
 import com.storedobject.core.SQLConnector;
 import com.storedobject.ui.ZipUploadProcessorView;
 import com.storedobject.ui.util.SOServlet;
@@ -51,10 +52,25 @@ public class DeployFlutterApplication extends DataForm {
 
     @Override
     protected void execute(View parent, boolean doNotLock) {
-        folder = SOServlet.getFolder() + File.separator + "flutter" + File.separator + SQLConnector.getDatabaseName()
-                + File.separator;
+        folder = ApplicationServer.getGlobalProperty("application.flutter.path", "/home/tomcat/flutter/");
+        if(!folder.endsWith(File.separator)) {
+            folder += File.separator;
+        }
+        folder += SQLConnector.getDatabaseName() + File.separator;
         File file = new File(folder);
         if(!file.exists() || !file.isDirectory() || !file.canWrite()) {
+            StringBuilder s = new StringBuilder("Check flutter folder: ");
+            s.append(file.getAbsolutePath());
+            if(!file.exists()) {
+                s.append(" - Not exists");
+            }
+            if (!file.isDirectory()) {
+                s.append(" - Not a directory");
+            }
+            if(!file.canWrite()) {
+                s.append(" - Not writable");
+            }
+            log(s);
             warning("Flutter application support not configured");
             return;
         }
@@ -72,6 +88,7 @@ public class DeployFlutterApplication extends DataForm {
 
         public Deploy() {
             super(DeployFlutterApplication.this.getCaption());
+            getUploadComponent().setMaxFileSize(104857600);
         }
 
         @Override

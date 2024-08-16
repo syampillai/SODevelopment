@@ -214,6 +214,16 @@ public abstract class StoredObject implements Displayable, HasId, StringFiller {
         }
     }
 
+    void checkMigration(StoredObject migratedInstance) throws Exception {
+        if(created() || !migratedInstance.created()) {
+            throw new Exception("Not a suitable instance");
+        }
+    }
+
+    void doMigration(DBTransaction t, StoredObject migratedInstance, boolean delete) throws Exception {
+        checkMigration(migratedInstance);
+    }
+
     public final void checkTransaction() throws Exception {
         if(tran == null) {
             throw new Transaction_Error(null, "Not In Transaction");

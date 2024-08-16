@@ -22,6 +22,12 @@ public class CustomerInvoice extends Invoice implements HasReference {
         indices.add("Date,No", true);
     }
 
+    public static String[] searchColumns() {
+        return new String[] {
+                "Date", "No", "Party", "Total", "PaymentStatus", "FromInventory"
+        };
+    }
+
     public static String actionPrefixForUI() {
         return "CINV";
     }
@@ -42,6 +48,18 @@ public class CustomerInvoice extends Invoice implements HasReference {
                     + getTagPrefix() + ref.getTag(this)).intValue();
         }
         return no;
+    }
+
+    @Override
+    public void validateData(TransactionManager tm) throws Exception {
+        super.validateData(tm);
+        if(getSaleType() == null) {
+            throw new Invalid_Value("Sale type = " + getType() + " not identified");
+        }
+    }
+
+    public final SaleType getSaleType() {
+        return SaleType.get(getType());
     }
 
     @Override

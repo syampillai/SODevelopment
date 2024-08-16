@@ -70,17 +70,25 @@ public class JournalVoucherView extends ListGrid<JournalVoucher.Entry> implement
     }
 
     public String getDebit(JournalVoucher.Entry entry) {
-        Money a = entry.getAmount();
+        Money a = entry.getLocalCurrencyAmount();
         if(a.isDebit()) {
-            return a.negate().toString(false);
+            String s = a.negate().toString(false);
+            if(entry.getAccount().isForeignCurrency()) {
+                s = "(" + entry.getAmount().negate() + ") " + s;
+            }
+            return s;
         }
         return "";
     }
 
     public String getCredit(JournalVoucher.Entry entry) {
-        Money a = entry.getAmount();
+        Money a = entry.getLocalCurrencyAmount();
         if(a.isCredit()) {
-            return a.toString(false);
+            String s = a.toString(false);
+            if(entry.getAccount().isForeignCurrency()) {
+                s = "(" + entry.getAmount() + ") " + s;
+            }
+            return s;
         }
         return "";
     }

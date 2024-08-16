@@ -1,10 +1,10 @@
 package com.storedobject.ui.accounts;
 
 import com.storedobject.accounts.SupplierInvoice;
-import com.storedobject.ui.ObjectBrowser;
 import com.storedobject.ui.SearchBuilder;
+import com.storedobject.vaadin.Button;
 
-public class BaseSupplierInvoiceBrowser<I extends SupplierInvoice> extends ObjectBrowser<I> {
+public class BaseSupplierInvoiceBrowser<I extends SupplierInvoice> extends AbstractInvoiceBrowser<I> {
 
     public BaseSupplierInvoiceBrowser(Class<I> objectClass) {
         super(objectClass);
@@ -72,5 +72,19 @@ public class BaseSupplierInvoiceBrowser<I extends SupplierInvoice> extends Objec
 
     public BaseSupplierInvoiceBrowser(String className) throws Exception {
         super(className);
+    }
+
+    @Override
+    protected void addExtraButtons() {
+        super.addExtraButtons();
+        buttonPanel.add(new Button("View GRN", e -> viewGRN()));
+    }
+
+    private void viewGRN() {
+        clearAlerts();
+        SupplierInvoice si = selected();
+        if(si != null) {
+            ((BaseSupplierInvoiceEditor<I>)getObjectEditor()).viewGRN(si);
+        }
     }
 }

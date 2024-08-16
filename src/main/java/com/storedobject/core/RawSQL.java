@@ -14,6 +14,7 @@ public final class RawSQL implements ResourceOwner {
     public static int EOQ = 0;
     public static int COMPILE = 0;
     public static int CLOSED = 0;
+    ResultSet rs;
 
     RawSQL() {
     }
@@ -56,8 +57,8 @@ public final class RawSQL implements ResourceOwner {
         return false;
     }
 
-    public java.sql.ResultSet getResult() {
-        return null;
+    public ResultSet getResult() {
+        return rs;
     }
 
     public String getSQL() {

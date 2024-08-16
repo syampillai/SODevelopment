@@ -21,6 +21,7 @@ public interface HasContacts {
 
     /**
      * Get the Id.
+     *
      * @return Id
      */
     Id getId();
@@ -50,7 +51,7 @@ public interface HasContacts {
      */
     default ObjectIterator<Contact> listContacts() {
         Id id = getContactOwnerId();
-        if(id == null) {
+        if (id == null) {
             return ObjectIterator.create();
         }
         return id.listLinks(Contact.class, "Type.GroupingCode=" + getContactGroupingCode(), "Type.DisplayOrder");
@@ -108,23 +109,23 @@ public interface HasContacts {
      */
     default Contact getContactObject(String contactType) {
         Id id = getContactOwnerId();
-        if(id == null || contactType == null) {
+        if (id == null || contactType == null) {
             return null;
         }
         contactType = contactType.toLowerCase().replace("'", "''");
         String c = "lower(Type.Name)='" + contactType + "' AND Type.GroupingCode=" + getContactGroupingCode();
         Contact contact = getContactOwnerId().listLinks(Contact.class, c).limit(1).findFirst();
-        if(contact != null) {
+        if (contact != null) {
             return contact;
         }
-        int type = switch(contactType.toLowerCase()) {
+        int type = switch (contactType.toLowerCase()) {
             case "phone" -> 0;
             case "email" -> 1;
             case "address" -> 2;
             case "other" -> 3;
             default -> -1;
         };
-        if(type == -1) {
+        if (type == -1) {
             return null;
         }
         c = "Type.Type=" + type + " AND Type.GroupingCode=" + getContactGroupingCode();
@@ -139,7 +140,7 @@ public interface HasContacts {
      */
     default Contact getContactObject(ContactType contactType) {
         Id id = getContactOwnerId();
-        if(id == null || contactType == null || contactType.getGroupingCode() != getContactGroupingCode()) {
+        if (id == null || contactType == null || contactType.getGroupingCode() != getContactGroupingCode()) {
             return null;
         }
         String c = "Type=" + contactType.getId();
@@ -164,7 +165,7 @@ public interface HasContacts {
      * {@link StoredObject#getId()}.
      */
     default Id getContactOwnerId() {
-        return ((StoredObject)this).getId();
+        return ((StoredObject) this).getId();
     }
 
     /**
@@ -179,13 +180,28 @@ public interface HasContacts {
     /**
      * Set a contact value for this instance.
      *
-     * @param transaction Transaction.
+     * @param transaction  Transaction.
+     * @param contactType  Type of contact.
+     * @param contactValue Value of the contact (must be raw value). If <code>null</code> is passed, existing value
+     *                     if any, will be deleted.
+     * @throws Exception If contact information is invalid or any error occurs while saving to the database.
+     * @deprecated User the {@link #setContact(TransactionManager, String, String)} instead.
+     */
+    @Deprecated
+    default void setContact(Transaction transaction, String contactType, String contactValue) throws Exception {
+        setContact(transaction.getManager(), contactType, contactValue);
+    }
+
+    /**
+     * Set a contact value for this instance.
+     *
+     * @param tm Transaction manager.
      * @param contactType Type of contact.
      * @param contactValue Value of the contact (must be raw value). If <code>null</code> is passed, existing value
      *                     if any, will be deleted.
      * @throws Exception If contact information is invalid or any error occurs while saving to the database.
      */
-    default void setContact(Transaction transaction, String contactType, String contactValue) throws Exception {
+    default void setContact(TransactionManager tm, String contactType, String contactValue) throws Exception {
         ContactType ct = StoredObject.get(ContactType.class, "lower(Name)='" +
                 contactType.toLowerCase().replace("'", "''") + "' AND GroupingCode=" +
                 getContactGroupingCode());
@@ -206,18 +222,20 @@ public interface HasContacts {
         } else {
             c = cs.get(0);
             if(contactValue == null || contactValue.isBlank()) {
-                ((StoredObject)this).removeLink(transaction, c);
+                tm.transact(t -> ((StoredObject) this).removeLink(t, c));
                 return;
             }
-            if(c.getContactValue().equals(contactType)) {
+            if(c.getContactValue().equals(contactValue)) {
                 return;
             }
         }
         c.setContact(contactValue);
-        c.save(transaction);
-        if(cs.isEmpty()) {
-            ((StoredObject)this).addLink(transaction, c);
-        }
+        tm.transact(t  -> {
+            c.save(t);
+            if(cs.isEmpty()) {
+                ((StoredObject)this).addLink(t, c);
+            }
+        });
     }
 
     /**

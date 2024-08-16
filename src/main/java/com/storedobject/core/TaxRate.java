@@ -1,9 +1,9 @@
-package com.storedobject.accounts;
+package com.storedobject.core;
 
-import com.storedobject.core.*;
 import com.storedobject.core.annotation.*;
 import java.math.BigDecimal;
 import java.sql.Date;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
@@ -121,19 +121,28 @@ public final class TaxRate extends StoredObject {
 
     @Override
     public String toString() {
-        return getType().getName() + " @" + rate;
+        return getType().getName() + " @" + rate.toString();
     }
 
-    public static Percentage getRateFor(Id typeId) {
-        TaxRate tr = latestTaxRates.get(typeId);
-        if(tr != null) {
-            return tr.rate;
+    public static Percentage getRate(Date date, TaxType type) {
+        return getRate(date, type.getId());
+    }
+
+    public static Percentage getRate(Date date, Id typeId) {
+        TaxRate cached = latestTaxRates.get(typeId);
+        if(cached != null && !date.before(cached.effectiveFrom)) {
+            return cached.rate;
         }
+        TaxRate tr;
         try (Query q = query(TaxRate.class, "Id", "Type=" + typeId, "EffectiveDate DESC")) {
-            if (!q.eoq()) {
-                tr = getFor(new Id(q.getResultSet().getBigDecimal(1)));
-                latestTaxRates.put(typeId, tr);
-                return tr.rate;
+            for(ResultSet rs : q) {
+                tr = getFor(new Id(rs.getBigDecimal(1)));
+                if(!date.before(tr.effectiveFrom)) {
+                    if(cached == null || cached.effectiveFrom.before(tr.effectiveFrom)) {
+                        latestTaxRates.put(typeId, tr);
+                    }
+                    return tr.rate;
+                }
             }
         } catch (SQLException ignored) {
         }

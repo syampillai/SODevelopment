@@ -3,11 +3,15 @@ package com.storedobject.core;
 import com.storedobject.core.annotation.Column;
 import com.storedobject.core.annotation.SetNotAllowed;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public final class LandedCostType extends StoredObject {
 
+    private static final Map<Id, LandedCostType> cache = new HashMap<>();
     private String name;
     private int displayOrder;
-    private boolean deduct, partOfInvoice;
+    private boolean deduct, partOfInvoice, tax, inactive;
 
     public LandedCostType() {
     }
@@ -17,6 +21,8 @@ public final class LandedCostType extends StoredObject {
         columns.add("DisplayOrder", "int");
         columns.add("Deduct", "boolean");
         columns.add("PartOfInvoice", "boolean");
+        columns.add("Tax", "boolean");
+        columns.add("Inactive", "boolean");
     }
 
     public static void indices(Indices indices) {
@@ -85,11 +91,48 @@ public final class LandedCostType extends StoredObject {
         return partOfInvoice;
     }
 
+    public void setTax(boolean tax) {
+        this.tax = tax;
+    }
+
+    @Column(order = 500)
+    public boolean getTax() {
+        return tax;
+    }
+
+    public void setInactive(boolean inactive) {
+        this.inactive = inactive;
+    }
+
+    @Column(order = 600)
+    public boolean getInactive() {
+        return inactive;
+    }
+
     @Override
     public void validateData(TransactionManager tm) throws Exception {
         if (StringUtility.isWhite(name)) {
             throw new Invalid_Value("Name");
         }
+        if(tax) {
+            partOfInvoice = true;
+        }
         super.validateData(tm);
+    }
+
+    @Override
+    void savedCore() throws Exception {
+        cache.remove(getId());
+    }
+
+    public static LandedCostType getFor(Id typeId) {
+        LandedCostType lct = cache.get(typeId);
+        if(lct == null) {
+            lct = get(LandedCostType.class, typeId);
+            if(lct != null) {
+                cache.put(typeId, lct);
+            }
+        }
+        return lct;
     }
 }
