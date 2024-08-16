@@ -335,7 +335,7 @@ public final class Money implements Storable, Comparable<Money> {
 	}
 
 	private static CurrencyRateProvider findRate(Currency from, Currency to, SystemEntity systemEntity) {
-		return findRate(from, to, systemEntity);
+		return new ExchangeRate();
 	}
 
 	public Money percentage(double percentage) {
