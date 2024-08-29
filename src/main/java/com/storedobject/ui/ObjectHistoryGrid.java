@@ -239,7 +239,7 @@ public class ObjectHistoryGrid<T extends StoredObject> extends DataGrid<T> imple
                 .newLine()
                 .append("IP Address: ").append(auditTrail.getIPAddress()).newLine()
                 .append("Connected from: " + auditTrail.getApplicationClient()).newLine()
-                .append("Logged in at: " + DateUtility.formatWithTimeHHMM(auditTrail.getLoginTime()) + tz)
+                .append("Logged in at: " + DateUtility.formatWithTimeHHMM(tm.date(auditTrail.getLoginTime())) + tz)
                 .update();
         return tv;
     }

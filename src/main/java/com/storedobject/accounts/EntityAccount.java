@@ -134,7 +134,7 @@ public class EntityAccount extends Account {
      * @return The Tax Region Id.
      */
     @SetNotAllowed
-    @Column(style = "(any)", order = 100)
+    @Column(order = 100)
     public Id getTaxRegionId() {
         return taxRegionId;
     }

@@ -17,10 +17,7 @@ import com.vaadin.flow.data.provider.hierarchy.AbstractHierarchicalDataProvider;
 import com.vaadin.flow.data.provider.hierarchy.HierarchicalQuery;
 
 import java.sql.Date;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Stream;
 
 public class BaseReceiveMaterialRequested<MR extends MaterialRequest, MRI extends MaterialRequestItem>
@@ -113,7 +110,12 @@ public class BaseReceiveMaterialRequested<MR extends MaterialRequest, MRI extend
 
     private void request() {
         close();
-        new RequestMaterial(getFromOrTo()).execute();
+        InventoryLocation from = getFromOrTo();
+        Objects.requireNonNullElseGet(getRequestLogic(from), () -> new RequestMaterial(from)).execute();
+    }
+
+    protected BaseRequestMaterial<MR, MRI> getRequestLogic(InventoryLocation from) {
+        return null;
     }
 
     private void releaseReservation(MR mr) {

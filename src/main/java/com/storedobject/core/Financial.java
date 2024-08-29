@@ -72,4 +72,23 @@ public interface Financial {
     static boolean isLiability(Account account) {
         return getCategory(account) == 1 && getBalanceType(account) == 1;
     }
+
+    /**
+     * Is financial system active for this entity?
+     *
+     * @return True/false.
+     */
+    static boolean isActive(SystemEntity systemEntity) {
+        return StoredObject.exists(Account.class, systemEntity == null ? null : ("SystemEntity=" + systemEntity.getId()),
+                true);
+    }
+
+    /**
+     * Is financial system active for this transaction manager?
+     *
+     * @return True/false.
+     */
+    static boolean isActive(TransactionManager tm) {
+        return isActive(tm == null ? null : tm.getEntity());
+    }
 }

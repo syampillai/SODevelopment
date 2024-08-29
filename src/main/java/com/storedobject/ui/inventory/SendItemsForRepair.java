@@ -65,7 +65,7 @@ public final class SendItemsForRepair extends AbstractSendAndReceiveMaterial<Inv
         }
         try {
             clearAlerts();
-            ro.close(getTransactionManager());
+            ro.close(getTransactionManager(), true);
             refresh(ro);
         } catch (Exception e) {
             warning(e);
