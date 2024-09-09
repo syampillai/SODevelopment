@@ -312,7 +312,7 @@ public class MemoSystem extends ObjectGrid<MemoComment> implements CloseableView
             return;
         }
         try {
-            Memo memo = mt.getMemoClass().getDeclaredConstructor().newInstance();
+            @SuppressWarnings("DataFlowIssue") Memo memo = mt.getMemoClass().getDeclaredConstructor().newInstance();
             if(memoType != null && !memoType.getSpecial()) {
                 memo.setSubject(memoType.getName());
             }
