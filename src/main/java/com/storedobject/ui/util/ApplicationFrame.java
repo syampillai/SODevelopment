@@ -8,7 +8,6 @@ import com.storedobject.ui.Image;
 import com.storedobject.vaadin.*;
 import com.storedobject.vaadin.ApplicationMenu;
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.HasSize;
 import com.vaadin.flow.component.HasText;
 import com.vaadin.flow.component.HtmlComponent;
 import com.vaadin.flow.component.combobox.ComboBox;

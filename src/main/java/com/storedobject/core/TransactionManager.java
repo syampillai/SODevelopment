@@ -96,7 +96,7 @@ public final class TransactionManager {
     }
 
     public SystemEntity getEntity() {
-        return new SystemEntity();
+        return Math.random() > 0.5 ? new SystemEntity() : null;
     }
 
     public Currency getCurrency() {

@@ -11,7 +11,6 @@ import com.storedobject.ui.util.ApplicationFrame;
 import com.storedobject.ui.util.ContentGenerator;
 import com.storedobject.vaadin.ApplicationMenu;
 import com.storedobject.vaadin.*;
-import com.vaadin.flow.component.HasSize;
 import com.vaadin.flow.component.*;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.dialog.Dialog;

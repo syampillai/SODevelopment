@@ -1,8 +1,6 @@
 package com.storedobject.ui;
 
 import com.storedobject.core.*;
-import com.storedobject.report.ObjectList;
-import com.storedobject.ui.accounts.AccountField;
 import com.storedobject.vaadin.DataForm;
 
 public class Test extends DataForm implements Transactional {
