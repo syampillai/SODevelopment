@@ -4,7 +4,7 @@ import com.storedobject.core.*;
 import com.storedobject.core.annotation.*;
 import java.math.BigDecimal;
 
-public class SupportPerson extends StoredObject {
+public final class SupportPerson extends StoredObject {
 
     private Id personId;
 
@@ -68,5 +68,9 @@ public class SupportPerson extends StoredObject {
     @Override
     public void saved() {
         Issue.approvers.clear();
+    }
+
+    public static SupportPerson getFor(SystemUser systemUser) {
+        return get(SupportPerson.class, "Person=" + systemUser.getId());
     }
 }

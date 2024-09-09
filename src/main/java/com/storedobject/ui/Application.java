@@ -950,8 +950,7 @@ public class Application extends com.storedobject.vaadin.Application implements 
                 if(at.equals(getQueryParameter("login"))) {
                     removeQueryParameter("login");
                     String autoLogin = ApplicationServer.getGlobalProperty("application.autologin.user." + at,
-                            ApplicationServer.getGlobalProperty("application.autologin.user", null, false),
-                            false);
+                            null, false);
                     if(autoLogin == null || autoLogin.isBlank()) {
                         continue;
                     }
@@ -1938,7 +1937,7 @@ public class Application extends com.storedobject.vaadin.Application implements 
         return sb.withBox();
     }
 
-    private class EntitySelector extends ApplicationFrame.EntitySelector implements HomeView {
+    private class EntitySelector extends ApplicationFrame.EntitySelector {
 
         private final boolean welcomePassword, passwordExpired;
 
@@ -1946,12 +1945,6 @@ public class Application extends com.storedobject.vaadin.Application implements 
             super(user, entities);
             this.welcomePassword = welcomePassword;
             this.passwordExpired = passwordExpired;
-            addConstructedListener(o -> fConstructed());
-        }
-
-        private void fConstructed() {
-            setColumns(1);
-            ((HasSize)getContent()).setMinWidth((getDeviceWidth() / 3) + "px");
         }
 
         @Override

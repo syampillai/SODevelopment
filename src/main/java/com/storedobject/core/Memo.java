@@ -364,6 +364,15 @@ public class Memo extends StoredObject implements OfEntity {
     protected void reopening() {
     }
 
+    /**
+     * This is invoked just before the memo is returned. You may set/change attributes of the memo at this stage. The
+     * memo will be saved after this call.
+     *
+     * @param comment Comment entry for the receiver of the memo.
+     */
+    protected void returning(MemoComment comment) {
+    }
+
     public final String getContent() {
         MemoComment mc = getInitialComment();
         return mc == null ? "" : mc.getComment();
@@ -440,11 +449,34 @@ public class Memo extends StoredObject implements OfEntity {
         return set;
     }
 
+    public boolean canReturnToInitiator(MemoComment latestComment) {
+        if(lastComment == 0 || latestComment == null || latestComment.commentCount != lastComment) {
+            return false;
+        }
+        if(latestComment.commentedById.equals(getInitialComment().commentedById)) {
+            return false;
+        }
+        return switch (status) {
+            case 1, 2 -> true;
+            default -> false;
+        };
+    }
+
     public boolean canReopen(SystemUser su) {
         return false;
     }
 
     public boolean canEscalate(SystemUser su) {
         return false;
+    }
+
+    public String whyNoTakers() {
+        if(!listApprovers().isEmpty()) {
+            return null;
+        }
+        if(listCommenters().isEmpty()) {
+            return "Problem: No commenters/approvers";
+        }
+        return null;
     }
 }

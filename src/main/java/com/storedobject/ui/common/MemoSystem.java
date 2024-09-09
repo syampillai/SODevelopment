@@ -73,6 +73,8 @@ public class MemoSystem extends ObjectGrid<MemoComment> implements CloseableView
                 contextMenu.addItem("Recall", e -> e.getItem().ifPresent(this::recallMemo));
         GridMenuItem<MemoComment> returnMemo =
                 contextMenu.addItem("Return", e -> e.getItem().ifPresent(mc -> memoAction(mc, 1)));
+        GridMenuItem<MemoComment> returnMemoToInitiator =
+                contextMenu.addItem("Return to Initiator", e -> e.getItem().ifPresent(mc -> memoAction(mc, 5)));
         GridMenuItem<MemoComment> forwardMemo =
                 contextMenu.addItem("Forward", e -> e.getItem().ifPresent(mc -> memoAction(mc, 2)));
         GridMenuItem<MemoComment> approveMemo =
@@ -97,6 +99,7 @@ public class MemoSystem extends ObjectGrid<MemoComment> implements CloseableView
                 recallMemo.setVisible(mc != null && canRecall(mc));
                 forwardMemo.setVisible(false);
                 returnMemo.setVisible(false);
+                returnMemoToInitiator.setVisible(false);
                 rejectMemo.setVisible(false);
                 approveMemo.setVisible(false);
                 assignAssistant.setVisible(false);
@@ -112,8 +115,18 @@ public class MemoSystem extends ObjectGrid<MemoComment> implements CloseableView
             editComment.setVisible(canComment);
             closeMemo.setVisible(mine() && canCloseMemo(mc));
             recallMemo.setVisible(mine() && canRecall(mc));
-            forwardMemo.setVisible(mine() && canForward(mc));
-            returnMemo.setVisible(mine() && canReturn(mc));
+            boolean canForward = mine() && canForward(mc);
+            forwardMemo.setVisible(canForward);
+            boolean canReturn = mine() && canReturn(mc);
+            returnMemo.setVisible(canReturn);
+            if(!canForward && !canReturn && mine()) {
+                String why = mc.getMemo().whyNoTakers();
+                if(why != null) {
+                    clearAlerts();
+                    error(why);
+                }
+            }
+            returnMemoToInitiator.setVisible(mine() && !canReturn && mc.canReturnToInitiator(who));
             approveMemo.setVisible(mine() && canApprove(mc));
             reopenMemo.setVisible(mine() && canReopen(mc));
             escalateMemo.setVisible(mine() && canEscalate(mc));
@@ -813,6 +826,7 @@ public class MemoSystem extends ObjectGrid<MemoComment> implements CloseableView
                 case 2 -> object.forwardMemo(t, object.getComment(), su);
                 case 3 -> object.approveMemo(t, object.getComment(), suField.isVisible() ? su : null);
                 case 4 -> object.rejectMemo(t, object.getComment());
+                case 5 -> object.returnMemoToInitiator(t, object.getComment());
                 default -> object.commentMemo(t, object.getComment());
             }
         }
@@ -839,28 +853,33 @@ public class MemoSystem extends ObjectGrid<MemoComment> implements CloseableView
                 suField.load(ObjectIterator.create(commenters(mc)).filter(u -> !u.getId().equals(who.getId())));
             } else if(action == 3) {
                 int a = mc.getMemo().getApprovalsRequired();
-                if(a > 1) {
+                if (a > 1) {
                     int approvals = StoredObject.count(MemoComment.class,
                             "Memo=" + mc.getMemoId() + " AND Status=3") + 1;
-                    if(approvals >= a) {
+                    if (approvals >= a) {
                         a = 1;
                     }
                 }
                 setFieldVisible(a > 1, suField);
-                if(a > 1) {
+                if (a > 1) {
                     suField.load(ObjectIterator.create(approvers(mc)).filter(u -> !u.getId().equals(who.getId())));
                 }
+            } else if(action == 5) { // Return to initiator
+                su = mc.getFirst().getCommentedBy();
+                suField.load(ObjectIterator.create(su));
+                suField.setValue(su);
             } else {
                 setFieldHidden(suField);
             }
             super.execute(parent, doNotLock);
             save.setText(switch(action) {
-                case 1 -> "Return";
+                case 1, 5 -> "Return";
                 case 2 -> "Forward";
                 case 3 -> getApproveLabel();
                 case 4 -> "Reject";
                 default -> "Save";
             });
+            setFirstFocus(action == 5 ? commentField : null);
         }
     }
 

@@ -4,7 +4,7 @@ import com.storedobject.core.*;
 import com.storedobject.core.annotation.*;
 import java.math.BigDecimal;
 
-public class SupportUser extends StoredObject {
+public final class SupportUser extends StoredObject {
 
     private Id supportUserId;
     private Id organizationId;

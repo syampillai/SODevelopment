@@ -9,7 +9,7 @@
     <version>12.0.3</version>
 
     <properties>
-        <so-common-version>4.7.11</so-common-version>
+        <so-common-version>4.8.1</so-common-version>
         <so-components-version>11.1.21</so-components-version>
         <so-charts-version>3.2.6</so-charts-version>
         <vaadin.version>23.2.16</vaadin.version>

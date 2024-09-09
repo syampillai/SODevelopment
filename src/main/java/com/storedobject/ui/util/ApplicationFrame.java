@@ -255,12 +255,12 @@ public class ApplicationFrame extends com.storedobject.vaadin.ApplicationFrame i
             count = entities.size();
             this.entities = new ObjectComboField<>("Select Organization", SystemEntity.class, entities);
             this.entities.setValue(entities.get(0));
-            addConstructedListener(o -> fConstructed());
+            addConstructedListener(o -> setColumns(1));
         }
 
-        private void fConstructed() {
-            setColumns(1);
-            ((HasSize)getContent()).setMinWidth((Application.get().getDeviceWidth() / 3) + "px");
+        @Override
+        public int getMinimumContentWidth() {
+            return 40;
         }
 
         @Override

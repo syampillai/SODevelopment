@@ -145,8 +145,32 @@ public class Issue extends Memo {
     }
 
     @Override
+    protected void returning(MemoComment comment) {
+        if(level == 0) {
+            return;
+        }
+        SupportPerson sp = SupportPerson.getFor(comment.getCommentedBy());
+        if(sp == null) {
+            level = 0;
+            return;
+        }
+        List<ProductSkill> skills = sp.listLinks(ProductSkill.class, "Product=" + productId).toList();
+        for(ProductSkill skill : skills) {
+            if(skill.getSkillLevel() < level) {
+                level = skill.getSkillLevel();
+                return;
+            }
+        }
+    }
+
+    @Override
     protected void reopening() {
         level = 0;
+    }
+
+    @Override
+    public boolean canReturnToInitiator(MemoComment latestComment) {
+        return level == 0 && super.canReturnToInitiator(latestComment);
     }
 
     private List<SystemUser> listApprovers(int level) {
@@ -156,13 +180,16 @@ public class Issue extends Memo {
             approvers = new ArrayList<>();
             List<SystemUser> finalApprovers = approvers;
             list(SupportPerson.class)
-                    .filter(sp -> sp.existsLinks(ProductSkill.class, "Product=" + productId
-                            + " AND SkillLevel=" + level))
+                    .filter(sp -> sp.existsLinks(ProductSkill.class, skillMatch()))
                     .filter(sp -> sp.existsLinks(Organization.class, "Id=" + organizationId))
                     .forEach(sp -> finalApprovers.add(sp.getPerson()));
             Issue.approvers.put(key, approvers);
         }
         return approvers;
+    }
+
+    private String skillMatch() {
+        return "Product=" + productId + " AND SkillLevel=" + level;
     }
 
     @Override
@@ -173,6 +200,26 @@ public class Issue extends Memo {
     @Override
     public List<SystemUser> listCommenters() {
         return listApprovers();
+    }
+
+    @Override
+    public String whyNoTakers() {
+        if(listApprovers().isEmpty()) {
+            StringBuilder sb = new StringBuilder("Product: ");
+            sb.append(getProduct().toDisplay()).append(", Organization: ")
+                    .append(get(Organization.class, getOrganizationId()).getEntity().getName())
+                    .append("\nSkill Level: ")
+                    .append(level + 1)
+                    .append(", Problem: No one found to ");
+            if(list(SupportPerson.class)
+                    .filter(sp -> sp.existsLinks(ProductSkill.class, skillMatch())).findFirst() == null) {
+                sb.append("handle this skill level");
+            } else {
+                sb.append("support this organization");
+            }
+            return sb.toString();
+        }
+        return null;
     }
 
     @Override

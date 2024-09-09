@@ -82,6 +82,12 @@ public final class MemoComment extends StoredObject {
         return memo;
     }
 
+    @Override
+    void savedCore() throws Exception {
+        super.savedCore();
+        memo = null;
+    }
+
     public void setCommentCount(int commentCount) {
         if(commentCount < 0) {
             throw new Set_Not_Allowed("Comment Count");
@@ -273,23 +279,35 @@ public final class MemoComment extends StoredObject {
         saveInt(transaction);
     }
 
+    public void returnMemoToInitiator(Transaction transaction, String reason) throws Exception {
+        if(!canReturnToInitiator(transaction.getManager().getUser())) {
+            throw new SOException("Can't return to the initiator");
+        }
+        returnMemo(transaction, reason, true);
+    }
+
     public void returnMemo(Transaction transaction, String reason) throws Exception {
         if(status == 2) { // Was returned to me
             throw new SOException(Memo.ILLEGAL);
         }
+        returnMemo(transaction, reason, false);
+    }
+
+    private void returnMemo(Transaction transaction, String reason, boolean toInitiator) throws Exception {
         preprocess(transaction);
         if(reason.isBlank()) {
             throw new SOException("Empty reason");
         }
         Memo m = getMemo();
         m.lastComment = commentCount + 1;
-        MemoComment pre = pre();
+        MemoComment pre = toInitiator ? getFirst() : pre();
         if(pre == null) {
             throw new SOException(Memo.ILLEGAL);
         }
         if(pre.getCommentedBy().getStatus() != 0) {
             throw new SOException("Can't return to " + pre.getCommentedBy().getPerson().getName());
         }
+        m.returning(pre);
         m.status = 2; // Returned
         m.internal = true;
         m.save(transaction);
@@ -613,6 +631,14 @@ public final class MemoComment extends StoredObject {
             case 0, 1 -> true;
             default -> false;
         } && isMine(su);
+    }
+
+    public boolean canReturnToInitiator(SystemUser su) {
+        Memo m = getMemo();
+        if(commentCount != m.getLastComment() || su.getId().equals(getFirst().commentedById)) {
+            return false;
+        }
+        return m.canReturnToInitiator(this);
     }
 
     public boolean canRecall(SystemUser su) {
