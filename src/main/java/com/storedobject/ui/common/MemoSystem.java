@@ -442,7 +442,7 @@ public class MemoSystem extends ObjectGrid<MemoComment> implements CloseableView
         @Override
         protected final boolean process() {
             SystemUser su = suField.getObject();
-            Id eid = getTransactionManager().getEntity().getId();
+            @SuppressWarnings("DataFlowIssue") Id eid = getTransactionManager().getEntity().getId();
             if(su.listEntities().stream().noneMatch(e -> e.getId().equals(eid))) {
                 warning(su.getName() + " doesn't belong to " + getTransactionManager().getEntity().getName());
                 return false;
