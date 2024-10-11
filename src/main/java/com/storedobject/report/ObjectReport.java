@@ -17,13 +17,26 @@ public class ObjectReport {
     }
 
     public ObjectReport(Device device, PrintLogicDefinition printLogicDefinition, StoredObject object, boolean execute) {
-        executable = create(device, printLogicDefinition, object);
-        if(execute && executable != null) {
-            executable.run();
+        this(device, printLogicDefinition, null, object, execute);
+    }
+
+    public ObjectReport(Device device, PrintLogicDefinition printLogicDefinition, Object objectSource, StoredObject object) {
+        this(device, printLogicDefinition, objectSource, object, true);
+    }
+
+    public ObjectReport(Device device, PrintLogicDefinition printLogicDefinition, Object objectSource, StoredObject object,
+                        boolean execute) {
+        if(object == null) {
+            executable = () -> {};
+        } else {
+            executable = create(device, printLogicDefinition, object, objectSource);
+            if (execute && executable != null) {
+                executable.run();
+            }
         }
     }
 
-    private Runnable create(Device device, PrintLogicDefinition printLogicDefinition, StoredObject object) {
+    private Runnable create(Device device, PrintLogicDefinition printLogicDefinition, StoredObject object, Object source) {
         var cpClass = printLogicDefinition.getLogicClass();
         if(cpClass == null) {
             device.log("Unable to create " + printLogicDefinition.getPrintLogicClassName());
@@ -32,10 +45,25 @@ public class ObjectReport {
         Constructor<?> constructor;
         Class<?> dClass = device.getClass();
         Class<?> oClass;
+        boolean sourceAvailable = false;
         while(dClass != null) {
             constructor = null;
             oClass = object.getClass();
             while(StoredObject.class.isAssignableFrom(oClass)) {
+                if(source != null) {
+                    sourceAvailable = true;
+                    try {
+                        constructor = cpClass.getConstructor(dClass, Object.class, oClass);
+                        break;
+                    } catch(NoSuchMethodException ignored) {
+                    }
+                    try {
+                        constructor = cpClass.getConstructor(Device.class, Object.class, oClass);
+                        break;
+                    } catch(NoSuchMethodException ignored) {
+                    }
+                }
+                sourceAvailable = false;
                 try {
                     constructor = cpClass.getConstructor(dClass, oClass);
                     break;
@@ -50,7 +78,8 @@ public class ObjectReport {
             }
             if(constructor != null) {
                 try {
-                    Runnable ex = ((Runnable)constructor.newInstance(device, object));
+                    Runnable ex = (Runnable) (sourceAvailable ? constructor.newInstance(device, source,  object)
+                            : constructor.newInstance(device, object));
                     if(!Id.isNull(printLogicDefinition.getODTFormatId()) &&
                             ODTReport.class.isAssignableFrom(cpClass)) {
                         ((ODTReport)ex).setTemplate(printLogicDefinition.getODTFormatId());

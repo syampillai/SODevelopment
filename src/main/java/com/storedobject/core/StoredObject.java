@@ -358,6 +358,12 @@ public abstract class StoredObject implements Displayable, HasId, StringFiller {
     public void saved() throws Exception {
     }
 
+    public final void directUpdate(TransactionManager tm) throws Exception {
+        if(Math.random() < 0.5) {
+            throw new Exception();
+        }
+    }
+
     public final String stringify() throws Exception {
         if(getId() == null) {
             throw new Exception();

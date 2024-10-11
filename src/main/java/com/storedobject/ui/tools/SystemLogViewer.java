@@ -6,6 +6,7 @@ import com.storedobject.common.SystemProcess;
 import com.storedobject.common.XML;
 import com.storedobject.core.*;
 import com.storedobject.ui.*;
+import com.storedobject.ui.DataGrid;
 import com.storedobject.vaadin.*;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.textfield.TextArea;
@@ -26,23 +27,31 @@ public class SystemLogViewer extends View implements Transactional, CloseableVie
     private final ObjectField<SystemUser> loginField = new ObjectField<>("User", SystemUser.class);
     private final TextArea logDump = new TextArea("Log");
     private final Button view = new Button("View", this);
-    private final ChoiceField type = new ChoiceField("Type", new String[] { "User Logs", "Server Logs" });
-    private final BooleanField all = new BooleanField("Include Generic Information");
+    private final ChoiceField type = new ChoiceField("Type", new String[] { "User Logs", "Server Logs", "System Logs" });
+    private final BooleanField includeGenericInfo = new BooleanField("Include Generic Information");
+    private final TextField systemLogName = new TextField("System Log Name");
     private final SystemProcess process = new SystemProcess();
     private final LogGrid logGrid = new LogGrid();
+    private final SystemLogGrid systemLogGrid = new SystemLogGrid();
+    private final TimestampPeriodField systemLogPeriod = new TimestampPeriodField("System Log Period");
     private String login, tag;
 
     public SystemLogViewer() {
         super("System Log");
-        FormLayout form = new FormLayout(lines, loginField, new ButtonLayout(view), type, all,
-                new ButtonLayout(new Button("Exit", e -> close())),
-                logGrid, logDump);
+        systemLogName.uppercase();
+        FormLayout form = new FormLayout(type, lines, new ButtonLayout(view), loginField, includeGenericInfo,
+                systemLogName, systemLogPeriod, new ButtonLayout(new Button("Exit", e -> close())),
+                logGrid, logDump, systemLogGrid);
+        systemLogName.setVisible(false);
+        systemLogPeriod.setValue(new TimestampPeriod(DateUtility.startOfToday(), getTransactionManager().date(DateUtility.now())));
+        systemLogPeriod.setVisible(false);
         trackValueChange(type);
-        trackValueChange(all);
+        trackValueChange(includeGenericInfo);
         form.setColumns(3);
         lines.setValue(50);
         form.setColumnSpan(logGrid, form.getColumns());
         form.setColumnSpan(logDump, form.getColumns());
+        form.setColumnSpan(systemLogGrid, form.getColumns());
         setComponent(form);
         hideLogs();
     }
@@ -50,6 +59,7 @@ public class SystemLogViewer extends View implements Transactional, CloseableVie
     private void hideLogs() {
         logGrid.setVisible(false);
         logDump.setVisible(false);
+        systemLogGrid.setVisible(false);
     }
 
     @Override
@@ -61,7 +71,7 @@ public class SystemLogViewer extends View implements Transactional, CloseableVie
         tag = null;
         switch(type.getValue()) {
             case 0 -> login = loginField.getObject().getLogin();
-            case 1 -> login = "*";
+            case 1, 2 -> login = "*";
         }
         if(login == null) {
             SystemUser su = SystemUser.get(ApplicationServer.getGlobalProperty(tag + ".user", "*"));
@@ -76,26 +86,40 @@ public class SystemLogViewer extends View implements Transactional, CloseableVie
             lines.setValue(50);
         }
         if(c == view) {
-            if(type.getValue() == 1) {
-                logGrid.setVisible(false);
-                loadServerLog();
-                logDump.setVisible(true);
-            } else {
-                logDump.setVisible(false);
-                loadUserLog();
-                logGrid.setVisible(true);
+            switch (type.getValue()) {
+                case 0 -> {
+                    logDump.setVisible(false);
+                    systemLogGrid.setVisible(false);
+                    loadUserLog();
+                    logGrid.setVisible(true);
+                }
+                case 1 -> {
+                    logGrid.setVisible(false);
+                    systemLogGrid.setVisible(false);
+                    loadServerLog();
+                    logDump.setVisible(true);
+                }
+                case 2 -> {
+                    logDump.setVisible(false);
+                    logGrid.setVisible(false);
+                    loadSystemLog();
+                    systemLogGrid.setVisible(true);
+                }
             }
         }
     }
 
     @Override
     public void valueChanged(ChangedValues changedValues) {
-        if(changedValues.getChanged() == all) {
+        if(changedValues.getChanged() == includeGenericInfo) {
             clicked(view);
             return;
         }
         if(changedValues.getChanged() == type) {
-            all.setVisible(type.getValue() != 1);
+            loginField.setVisible(type.getValue() == 0);
+            includeGenericInfo.setVisible(type.getValue() == 0);
+            systemLogName.setVisible(type.getValue() == 2);
+            systemLogPeriod.setVisible(type.getValue() == 2);
             clicked(view);
         }
     }
@@ -154,6 +178,20 @@ public class SystemLogViewer extends View implements Transactional, CloseableVie
             error(e);
             hideLogs();
         }
+    }
+
+    private void loadSystemLog() {
+        String name = systemLogName.getValue();
+        if(name.isBlank()) {
+            systemLogName.focus();
+            return;
+        }
+        TimestampPeriod period = systemLogPeriod.getValue();
+        if(!period.isValid()) {
+            systemLogPeriod.focus();
+            return;
+        }
+        systemLogGrid.load(SystemLog.list(name, getTransactionManager().periodGMT(period), lines.getValue()));
     }
 
     private static class TagClosedReader extends Reader {
@@ -286,7 +324,7 @@ public class SystemLogViewer extends View implements Transactional, CloseableVie
                 app += "-" + tag.toUpperCase();
             }
             app += ")/";
-            all = SystemLogViewer.this.all.getValue();
+            all = SystemLogViewer.this.includeGenericInfo.getValue();
             super.setXML(xml);
         }
 
@@ -353,6 +391,37 @@ public class SystemLogViewer extends View implements Transactional, CloseableVie
                 return "Time";
             }
             return super.getColumnCaption(columnName);
+        }
+    }
+
+    @SuppressWarnings("unused")
+    private static class SystemLogGrid extends DataGrid<SystemLog> {
+
+        public SystemLogGrid() {
+            super(SystemLog.class, StringList.create("Message", "LoggedAt"));
+            setAllRowsVisible(true);
+            setDetailsVisibleOnClick(true);
+            setItemDetailsRenderer(new ComponentRenderer<>(systemLog -> new ELabel(systemLog.getMessage())));
+        }
+
+        @Override
+        public int getRelativeColumnWidth(String columnName) {
+            return columnName.equals("LoggedAt") ? 15 : 80;
+        }
+
+        public String getColumnCaption(String columnName) {
+            return columnName.equals("LoggedAt") ? ("Time (" + getTransactionManager().getEntity().getTimeZone() + ")")
+                    : super.getColumnCaption(columnName);
+        }
+
+        public String getLoggedAt(SystemLog systemLog) {
+            return DateUtility.formatWithTime(getTransactionManager().date(systemLog.getLoggedAt()));
+        }
+
+        public String getMessage(SystemLog systemLog) {
+            String m = systemLog.getMessage();
+            int p = m.indexOf('\n');
+            return p < 0 ? m : m.substring(0, p);
         }
     }
 }

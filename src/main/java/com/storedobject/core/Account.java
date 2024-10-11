@@ -341,6 +341,13 @@ public class Account extends StoredObject implements OfEntity, HasName {
         return (accountStatus & 1) == 1;
     }
 
+    public final String getStatusDescription() {
+        return getStatusDescription(accountStatus);
+    }
+
+    public static String getStatusDescription(int accountStatus) {
+        return "";
+    }
     /**
      * Validate account status to make sure that every status bit value adheres to the type of account.
      *

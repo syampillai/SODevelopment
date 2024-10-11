@@ -133,6 +133,7 @@ public class MemoSystem extends ObjectGrid<MemoComment> implements CloseableView
             rejectMemo.setVisible(canReject() && mine() && canApprove(mc));
             assignAssistant.setVisible(canAssignAssistant() && mine() && mc.getMemo().getStatus() < 4);
             createNew.setVisible(memoType == null && !mc.getMemo().getType().getSpecial());
+            assignAssistant.setVisible(false);
             return true;
         });
         if(load) {
@@ -312,7 +313,7 @@ public class MemoSystem extends ObjectGrid<MemoComment> implements CloseableView
             return;
         }
         try {
-            @SuppressWarnings("DataFlowIssue") Memo memo = mt.getMemoClass().getDeclaredConstructor().newInstance();
+            Memo memo = mt.getMemoClass().getDeclaredConstructor().newInstance();
             if(memoType != null && !memoType.getSpecial()) {
                 memo.setSubject(memoType.getName());
             }
@@ -442,7 +443,7 @@ public class MemoSystem extends ObjectGrid<MemoComment> implements CloseableView
         @Override
         protected final boolean process() {
             SystemUser su = suField.getObject();
-            @SuppressWarnings("DataFlowIssue") Id eid = getTransactionManager().getEntity().getId();
+            Id eid = getTransactionManager().getEntity().getId();
             if(su.listEntities().stream().noneMatch(e -> e.getId().equals(eid))) {
                 warning(su.getName() + " doesn't belong to " + getTransactionManager().getEntity().getName());
                 return false;

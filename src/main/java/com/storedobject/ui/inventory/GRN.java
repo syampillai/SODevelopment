@@ -733,6 +733,22 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
         private void preProcessGRN(InventoryGRN grn, boolean skipInspection) {
             clearAlert();
             List<InventoryGRNItem> list = grn.listLinks(InventoryGRNItem.class).toList();
+            for(InventoryGRNItem gi1 : list) {
+                InventoryItemType iit = gi1.getPartNumber();
+                if(!iit.isSerialized()) {
+                    continue;
+                }
+                String s1 = StoredObject.toCode(gi1.getSerialNumber());
+                for(InventoryGRNItem gi2 : list) {
+                    if(gi1 == gi2 || !gi1.getPartNumberId().equals(gi2.getPartNumberId())) {
+                        continue;
+                    }
+                    if(s1.equals(StoredObject.toCode(gi2.getSerialNumber()))) {
+                        warn("Duplicate S/N " + s1 + " for " + iit.toDisplay());
+                        return;
+                    }
+                }
+            }
             if(skipInspection) {
                 InventoryItem item;
                 Transaction transaction = null;

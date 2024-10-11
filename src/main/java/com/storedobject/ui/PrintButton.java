@@ -43,11 +43,13 @@ import java.util.stream.Stream;
 public final class PrintButton extends Composite<Button> {
 
     private final Supplier<StoredObject> objectSupplier;
+    private final Object objectSource;
     private final Button button;
     private final Map<String, PButton> buttons = new HashMap<>();
 
-    private PrintButton(Supplier<StoredObject> objectSupplier, List<PrintLogicDefinition> logics, List<Component> extras) {
+    private PrintButton(Object objectSource, Supplier<StoredObject> objectSupplier, List<PrintLogicDefinition> logics, List<Component> extras) {
         this.objectSupplier = objectSupplier;
+        this.objectSource = objectSource;
         if(logics.size() == 1 && extras == null) {
             button = new PButton(logics.get(0));
         } else {
@@ -71,7 +73,7 @@ public final class PrintButton extends Composite<Button> {
      * @return Print button.
      */
     public static PrintButton create(ObjectEditor<?> objectEditor) {
-        return create(objectEditor.getObjectClass(), objectEditor::getObject, objectEditor.getClass().getName());
+        return create(objectEditor.getObjectClass(), objectEditor, objectEditor::getObject, objectEditor.getClass().getName());
     }
 
     /**
@@ -81,7 +83,7 @@ public final class PrintButton extends Composite<Button> {
      * @return Print button.
      */
     public static PrintButton create(ObjectGrid<?> objectGrid) {
-        return create(objectGrid.getObjectClass(), objectGrid::selected, objectGrid.getClass().getName());
+        return create(objectGrid.getObjectClass(), objectGrid, objectGrid::selected, objectGrid.getClass().getName());
     }
 
     /**
@@ -92,10 +94,10 @@ public final class PrintButton extends Composite<Button> {
      * @return Print button.
      */
     public static PrintButton create(Class<? extends StoredObject> objectClass, Supplier<StoredObject> objectSupplier) {
-        return create(objectClass, objectSupplier, null);
+        return create(objectClass, null, objectSupplier, null);
     }
 
-    private static PrintButton create(Class<? extends StoredObject> objectClass, Supplier<StoredObject> objectSupplier,
+    private static PrintButton create(Class<? extends StoredObject> objectClass, Object objectSource, Supplier<StoredObject> objectSupplier,
                                       String dataLogicName) {
         List<Component> extras = objectSupplier instanceof ObjectBrowser<?> b ? b.listMoreButtons() : null;
         if(extras != null && extras.isEmpty()) {
@@ -105,7 +107,7 @@ public final class PrintButton extends Composite<Button> {
         if(list.isEmpty() && extras == null) {
             return null;
         }
-        return new PrintButton(objectSupplier, list, extras);
+        return new PrintButton(objectSource, objectSupplier, list, extras);
     }
 
     private static String iconName(PrintLogicDefinition printLogicDefinition) {
@@ -116,11 +118,8 @@ public final class PrintButton extends Composite<Button> {
     private void clicked(PrintLogicDefinition printLogicDefinition) {
         Application a = Application.get();
         if(a != null) {
-            StoredObject so = objectSupplier.get();
-            if(so != null) {
-                if(new ObjectReport(a, printLogicDefinition, so).getRunnable() == null) {
-                    Application.error("An error has occurred, please contact the Technical Support");
-                }
+            if(new ObjectReport(a, printLogicDefinition, objectSource, objectSupplier.get()).getRunnable() == null) {
+                Application.error("An error has occurred, please contact the Technical Support");
             }
         }
     }

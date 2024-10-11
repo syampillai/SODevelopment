@@ -5,17 +5,18 @@ import java.sql.ResultSet;
 public final class AccountChart extends StoredObject implements HasParents, HasChildren {
 
 	private static final String[] categoryValues = new String[] {
-		"Balance Sheet", "Profit & Loss", "Stock", "Contingent"
+			"Balance Sheet", "Profit & Loss", "Stock", "Contingent"
 	};
 	private static final String[] balanceTypeValues = new String[] {
-		"Debit", "Credit"
+			"Debit", "Credit"
 	};
 	private static final String[] transactionTypeValues = new String[] {
-		"All Types Allowed", "Generally Debited", "Generally Credited", "Temporarily Frozen"
+			"All Types Allowed", "Generally Debited", "Generally Credited", "Temporarily Frozen"
 	};
 	private String name;
 	private int category, balanceType, transactionType;
 	private boolean strictBalanceControl, deepFrozen, limitCheck, accountsAllowed = true;
+	private int status = -1;
 
 	public AccountChart() {
 	}
@@ -30,15 +31,15 @@ public final class AccountChart extends StoredObject implements HasParents, HasC
 		columns.add("LimitCheck", "boolean");
 		columns.add("AccountsAllowed", "boolean");
 	}
-		
+
 	public static void indices(Indices indices) {
 		indices.add("lower(name)", true);
 	}
-	
+
 	public static String[] displayColumns() {
 		return new String[] { "Name" };
 	}
-	
+
 	public static String[] browseColumns() {
 		return new String[] { "Name", "Category", "BalanceType", "LimitCheck", "AccountsAllowed" };
 	}
@@ -50,7 +51,7 @@ public final class AccountChart extends StoredObject implements HasParents, HasC
 	public static String[] links() {
 		return new String[] { "Children" };
 	}
-	
+
 	public int getBalanceType() {
 		return balanceType;
 	}
@@ -98,11 +99,11 @@ public final class AccountChart extends StoredObject implements HasParents, HasC
 	public String getName() {
 		return name;
 	}
-	
+
 	public int getStatus(int accountStatus) {
 		return 0;
 	}
-	
+
 	public static String[] getCategoryValues() {
 		return categoryValues;
 	}
@@ -114,11 +115,11 @@ public final class AccountChart extends StoredObject implements HasParents, HasC
 	public int getCategory() {
 		return category;
 	}
-	
+
 	public String getCategoryValue() {
 		return categoryValues[category];
 	}
-	
+
 	public static String getCategoryValue(int category) {
 		return categoryValues[category % categoryValues.length];
 	}
@@ -146,11 +147,11 @@ public final class AccountChart extends StoredObject implements HasParents, HasC
 	public static String getTransactionTypeValue(int transactionType) {
 		return transactionTypeValues[transactionType % transactionTypeValues.length];
 	}
-	
+
 	public String toString() {
 		return name;
 	}
-	
+
 	@Override
 	public void validateData(TransactionManager tm) throws Exception {
 		super.validateData(tm);
@@ -193,7 +194,7 @@ public final class AccountChart extends StoredObject implements HasParents, HasC
 			}
 		}
 	}
-	
+
 	@Override
 	public void validateParentAttach(StoredObject parent, int type) throws Exception {
 		if(type != 0) {
@@ -205,11 +206,35 @@ public final class AccountChart extends StoredObject implements HasParents, HasC
 			}
 		}
 	}
-	
+
 	public int getStatus() {
-		return 0;
+		return status;
 	}
-	
+
+	public String getStatusDescription() {
+		return Account.getStatusDescription(status);
+	}
+
+	private void status() {
+		status = transactionType;
+		status <<= 1;
+		status |= (limitCheck ? 1 : 0);
+		status <<= 1;
+		status |= (deepFrozen ? 1 : 0);
+		status <<= 2;
+		status |= category;
+		status <<= 1;
+		status |= balanceType;
+		status <<= 1;
+		status |= (strictBalanceControl ? 1 : 0);
+		status <<= 3;
+	}
+
+	@Override
+	public void loaded() {
+		status();
+	}
+
 	public void setAccountsAllowed(boolean accountsAllowed) {
 		this.accountsAllowed = accountsAllowed;
 	}
