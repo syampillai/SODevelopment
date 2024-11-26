@@ -5,7 +5,6 @@ import com.storedobject.core.*;
 import com.storedobject.core.DateUtility;
 import com.storedobject.core.SOException;
 import com.storedobject.core.StringUtility;
-import com.storedobject.sms.QuickSender;
 import com.storedobject.ui.util.*;
 import com.storedobject.ui.util.ApplicationFrame;
 import com.storedobject.ui.util.ContentGenerator;
