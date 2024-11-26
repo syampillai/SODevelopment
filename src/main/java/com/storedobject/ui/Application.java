@@ -945,9 +945,10 @@ public class Application extends com.storedobject.vaadin.Application implements 
         }
         autoToken = ApplicationServer.getGlobalProperty("application.autologin.token", null, false);
         if(autoToken != null) {
+            String token = getQueryParameter("login");
+            removeQueryParameter("login");
             for(String at: StringList.create(autoToken)) {
-                if(at.equals(getQueryParameter("login"))) {
-                    removeQueryParameter("login");
+                if(at.equals(token)) {
                     String autoLogin = ApplicationServer.getGlobalProperty("application.autologin.user." + at,
                             null, false);
                     if(autoLogin == null || autoLogin.isBlank()) {
@@ -2054,15 +2055,24 @@ public class Application extends com.storedobject.vaadin.Application implements 
 
     public com.storedobject.sms.QuickSender getSMSSender() {
         if(smsSender == null) {
-            smsSender = (QuickSender) createInstance("application.quick.sms", true, false);
+            try {
+                smsSender = com.storedobject.sms.QuickSender.create();
+            } catch (SOException e) {
+                log(e);
+                warning(e);
+            }
         }
         return smsSender;
     }
 
     public com.storedobject.mail.QuickSender getMailSender() {
         if(mailSender == null) {
-            mailSender = (com.storedobject.mail.QuickSender)
-                    createInstance("application.quick.mail", true, false);
+            try {
+                mailSender = com.storedobject.mail.QuickSender.create();
+            } catch (SOException e) {
+                log(e);
+                warning(e);
+            }
         }
         return mailSender;
     }

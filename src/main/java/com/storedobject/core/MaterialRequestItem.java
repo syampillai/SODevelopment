@@ -3,7 +3,7 @@ package com.storedobject.core;
 import com.storedobject.core.annotation.*;
 import java.math.BigDecimal;
 
-public class MaterialRequestItem extends StoredObject implements Detail {
+public class MaterialRequestItem extends StoredObject implements Detail, HasInventoryItemType {
 
     private Id partNumberId;
     private InventoryItemType partNumber;
@@ -166,5 +166,10 @@ public class MaterialRequestItem extends StoredObject implements Detail {
         } else {
             save(transaction);
         }
+    }
+
+    @Override
+    public final InventoryItemType getInventoryItemType() {
+        return getPartNumber();
     }
 }

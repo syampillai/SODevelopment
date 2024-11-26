@@ -82,6 +82,7 @@ public class ReceiveAndBin extends ListGrid<InventoryItem> implements Transactio
         if(process.isVisible()) {
             process.setText("Receive");
         }
+        new ItemContextMenu<>(this);
     }
 
     public ReceiveAndBin(List<InventoryItem> itemList) {

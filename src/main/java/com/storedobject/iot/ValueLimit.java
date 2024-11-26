@@ -50,6 +50,10 @@ public final class ValueLimit extends ValueDefinition<Double> {
         return unitOfMeasurement.zero();
     }
 
+    public String getUnitSuffix() {
+        return unitOfMeasurement instanceof FractionalCount ? "" : (" " + unitOfMeasurement.getUnit().getUnit());
+    }
+
     public void setDecimals(int decimals) {
         this.decimals = decimals;
     }
@@ -167,5 +171,19 @@ public final class ValueLimit extends ValueDefinition<Double> {
     public void loaded() {
         super.loaded();
         minMax();
+    }
+
+    @Override
+    protected Double convertValue(Object value) {
+        if(value instanceof Double d) {
+            return d;
+        }
+        if(value instanceof Number n) {
+            return n.doubleValue();
+        }
+        if(value instanceof HasValue hv) {
+            return hv.getValue();
+        }
+        return null;
     }
 }

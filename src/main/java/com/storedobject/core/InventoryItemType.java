@@ -19,7 +19,7 @@ import java.util.function.Predicate;
  * @author Syam
  */
 @SuppressWarnings("resource")
-public class InventoryItemType extends StoredObject implements HasChildren {
+public class InventoryItemType extends StoredObject implements HasChildren, HasInventoryItemType {
 
     static final WeakHashMap<Id, List<InventoryItemType>> apns = new WeakHashMap<>();
     private String name;
@@ -1176,5 +1176,10 @@ public class InventoryItemType extends StoredObject implements HasChildren {
      */
     public int getTaxCategory(TaxRegion taxRegion) {
         return 0;
+    }
+
+    @Override
+    public InventoryItemType getInventoryItemType() {
+        return this;
     }
 }

@@ -178,9 +178,11 @@ public final class UnitDefinition extends StoredObject implements HasChildren {
 
     private void check(ValueLimit valueLimit) throws Invalid_State {
         Method m = m(valueLimit.getName());
-        Class<?> type = m == null ? null : m.getReturnType();
-        if(m != null && type == double.class || type == int.class || type == long.class) {
-            return;
+        if(m != null) {
+            Class<?> type = m.getReturnType();
+            if (type == double.class || type == int.class || type == long.class || HasValue.class.isAssignableFrom(type)) {
+                return;
+            }
         }
         throw new Invalid_State("Invalid Limit Field - " + valueLimit.getName());
     }
@@ -292,7 +294,7 @@ public final class UnitDefinition extends StoredObject implements HasChildren {
                         }
                     } else {
                         Class<?> type = m.getReturnType();
-                        if(type == double.class || type == int.class || type == long.class) {
+                        if(type == double.class || type == int.class || type == long.class || HasValue.class.isAssignableFrom(type)) {
                             valueLimit = null;
                             if(!added) {
                                 String finalField = field;

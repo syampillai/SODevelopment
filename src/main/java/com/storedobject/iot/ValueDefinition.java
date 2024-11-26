@@ -3,7 +3,6 @@ package com.storedobject.iot;
 import com.storedobject.core.*;
 import com.storedobject.core.annotation.*;
 
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
@@ -235,7 +234,7 @@ public abstract class ValueDefinition<VT> extends StoredObject implements Detail
     }
 
     public Method getValueMethodForSet() {
-        if(svm == null) {
+        if(gvm == null) {
             m();
         }
         return svm;
@@ -252,7 +251,7 @@ public abstract class ValueDefinition<VT> extends StoredObject implements Detail
         return (IOT)Data.getLatest(getMaster(UnitDefinition.class).getDataClass(), unitId);
     }
 
-    public final VT getValue(Id unitId) {
+    public final Object getValueObject(Id unitId) {
         Data data = null;
         if(this.data != null) {
             if(this.data.getUnitId().equals(unitId)) {
@@ -271,11 +270,25 @@ public abstract class ValueDefinition<VT> extends StoredObject implements Detail
             data = getLatestData(unitId);
         }
         try {
-            //noinspection unchecked
-            return data == null ? null : (VT)getValueMethodForGet().invoke(data);
-        } catch (IllegalAccessException | InvocationTargetException ignored) {
+            return getValueMethodForGet().invoke(data);
+        } catch (Throwable e) {
+            SystemLog.log("IOT", "Error obtaining " + name
+                    + " (Unit: " + this.data.getUnit().getName() + ")");
         }
         return null;
+    }
+
+    public final VT getValue(Id unitId) {
+        Object value = getValueObject(unitId);
+        if(value == null) {
+            return null;
+        }
+        return convertValue(value);
+    }
+
+    protected VT convertValue(Object value) {
+        //noinspection unchecked
+        return (VT)value;
     }
 
     @Override

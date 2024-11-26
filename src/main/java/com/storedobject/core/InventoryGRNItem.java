@@ -11,7 +11,7 @@ import java.util.List;
  *
  * @author Syam
  */
-public final class InventoryGRNItem extends StoredObject implements Detail {
+public final class InventoryGRNItem extends StoredObject implements Detail, HasInventoryItem {
 
     private Id partNumberId;
     private InventoryItemType partNumber;

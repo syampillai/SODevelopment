@@ -1,5 +1,7 @@
 package com.storedobject.core;
 
+import java.util.Random;
+
 /**
  * Interface to identify a {@link SystemUser}. This is typically used for carrying out a secured action.
  *
@@ -172,5 +174,39 @@ public interface IdentityCheck {
      */
     default void doAction(Runnable action) {
         action.run();
+    }
+
+    /**
+     * Generate a prefix with a specific format.
+     * The prefix consists of three random uppercase letters followed by a colon.
+     * Certain inappropriate prefixes like "ASS", "FUK", etc., are avoided and regenerated.
+     *
+     * @return A randomly generated prefix in the format "XXX:" where XXX are uppercase letters.
+     */
+    static String generatePrefix() {
+        Random random = new Random();
+        char[] p = new char[3];
+        for(int i = 0; i < 3; i++) {
+            p[i] = (char) ('A' + random.nextInt(26));
+        }
+        String s = new String(p);
+        return switch(s) {
+            case "ASS", "FUK", "FUC", "PIG", "OTP", "TIT" -> generatePrefix();
+            default -> s + ":";
+        };
+    }
+
+    /**
+     * Generates a 6-digit One-Time Password (OTP).
+     *
+     * @return A randomly generated 6-digit OTP.
+     */
+    static int generateOTP() {
+        Random random = new Random();
+        int o = 0;
+        while(!(o > 100000 && o < 1000000)) {
+            o = random.nextInt();
+        }
+        return o;
     }
 }

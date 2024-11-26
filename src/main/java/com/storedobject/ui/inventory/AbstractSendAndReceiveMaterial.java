@@ -547,12 +547,12 @@ public abstract class AbstractSendAndReceiveMaterial<T extends InventoryTransfer
         if(grn != null) {
             grnEditor.setObject(grn);
         }
-        boolean allowPNSNChange = switch(getLocationFrom().getType()) {
-            case 3, 11 -> true;
+        boolean allowPNChange = switch(getLocationFrom().getType()) {
+            case 3, 11 -> true; // Repair organization or internal repair location
             default -> false;
         };
         new ReceiveAndBin(mt.getDate(), "Receipt " + mt.getReference(), items, mt::receive,
-                () -> refresh(mt), gEd, allowPNSNChange, allowPNSNChange).execute(getView());
+                () -> refresh(mt), gEd, allowPNChange, false).execute(getView());
     }
 
     private int amendment() {
@@ -703,6 +703,7 @@ public abstract class AbstractSendAndReceiveMaterial<T extends InventoryTransfer
             if(canAmend()) {
                 createColumn("Status");
             }
+            new ItemContextMenu<>(this);
         }
 
         @Override

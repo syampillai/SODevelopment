@@ -474,6 +474,10 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
         }
         if(viewer == null) {
             viewer = ObjectEditor.create(InventoryGRN.class);
+            viewer.getContainer();
+            @SuppressWarnings("unchecked") DetailLinkGrid<InventoryGRNItem> itemGrid =
+                    (DetailLinkGrid<InventoryGRNItem>) viewer.getLinkField("Items").getGrid();
+            new ItemContextMenu<>(itemGrid).setHideGRNDetails(true);
         }
         viewer.setCaption("GRN: " + object.getReference());
         viewer.viewObject(object);
@@ -1020,7 +1024,8 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
                 super(grnItemsField);
                 setObjectEditor(new GRNItemEditor());
                 getButtonPanel().add(editItem, splitQty, inspect, bin, assemble, hint);
-                GridContextMenu<InventoryGRNItem> contextMenu = new GridContextMenu<>(this);
+                ItemContextMenu<InventoryGRNItem> contextMenu = new ItemContextMenu<>(this);
+                contextMenu.setHideGRNDetails(true);
                 GridMenuItem<InventoryGRNItem> split = contextMenu.addItem("Split Quantity",
                         e -> e.getItem().ifPresent(x -> splitQuantity()));
                 GridMenuItem<InventoryGRNItem> inspectRC = contextMenu.addItem("Inspect",
@@ -1032,7 +1037,6 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
                 GridMenuItem<InventoryGRNItem> editGRNItem = contextMenu.addItem("Edit",
                         e -> e.getItem().ifPresent(x -> editGRNItem()));
                 contextMenu.setDynamicContentHandler(r -> {
-                    deselectAll();
                     if(r == null) {
                         return false;
                     }

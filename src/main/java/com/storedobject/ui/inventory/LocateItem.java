@@ -8,12 +8,6 @@ import com.storedobject.ui.*;
 import com.storedobject.vaadin.*;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.grid.contextmenu.GridContextMenu;
-import com.vaadin.flow.component.grid.contextmenu.GridMenuItem;
-
-import java.sql.Date;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * For locating stocks of a given "Part Number" and its APNs. The result includes all locations, including items
@@ -38,12 +32,9 @@ public class LocateItem extends DataGrid<InventoryItem> implements CloseableView
     private final Class<? extends InventoryItem> itemClass;
     private final ObjectField<? extends InventoryItemType> pnField;
     private final TextField snField;
-    @SuppressWarnings("rawtypes")
-    private ObjectEditor editor;
     private InventoryStore store;
-    private boolean allowBreaking, allowEditCost;
+    private final ItemContextMenu<InventoryItem> contextMenu;
     private final ELabel help = new ELabel("Right-click on the row to see more options", Application.COLOR_SUCCESS);
-    private GRNEditor grnEditor;
 
     /**
      * Constructor.
@@ -155,7 +146,6 @@ public class LocateItem extends DataGrid<InventoryItem> implements CloseableView
     private LocateItem(String caption, InventoryItemType partNumber, Class<? extends InventoryItem> itemClass,
                        Class<? extends InventoryItemType> itemTypeClass, boolean canInspect, String originalCaption) {
         super(InventoryItem.class, ItemField.COLUMNS);
-        allowEditCost = canInspect;
         setCaption(caption == null || caption.isEmpty() ? "Items" : caption);
         if(originalCaption != null && originalCaption.contains("|")) {
             caption = originalCaption.substring(originalCaption.indexOf('|') + 1).
@@ -195,52 +185,8 @@ public class LocateItem extends DataGrid<InventoryItem> implements CloseableView
         }
         servFilter.addValueChangeListener(e -> loadItems());
         locFilter.addValueChangeListener(e -> loadItems());
-        GridContextMenu<InventoryItem> cm = new GridContextMenu<>(this);
-        cm.addItem("Item Details", e -> e.getItem().ifPresent(this::view));
-        GridMenuItem<InventoryItem> itemAssembly =
-                cm.addItem("Item Assembly", e -> e.getItem().ifPresent(ii -> new ViewAssembly<>(ii).execute()));
-        GridMenuItem<InventoryItem> parentAssembly =
-                cm.addItem("Parent Assembly", e -> e.getItem().ifPresent(
-                        ii -> new ViewAssembly<>(((InventoryFitmentPosition)ii.getLocation()).getItem()).execute()));
-        GridMenuItem<InventoryItem> viewFitment =
-                cm.addItem("Fitment Details", e -> e.getItem().ifPresent(this::viewFitment));
-        GridMenuItem<InventoryItem> viewFitmentLocations =
-                cm.addItem("Fitment Locations", e -> e.getItem().ifPresent(FitmentLocations::new));
-        GridMenuItem<InventoryItem> inspect =
-                cm.addItem("Inspect & Bin", e -> e.getItem().ifPresent(this::inspect));
-        GridMenuItem<InventoryItem> split =
-                cm.addItem("Split Quantity", e -> e.getItem().ifPresent(this::split));
-        GridMenuItem<InventoryItem> breakAssembly =
-                cm.addItem("Break from Assembly", e -> e.getItem().ifPresent(this::breakAssembly));
-        GridMenuItem<InventoryItem> movementDetail = cm.addItem("Movement Details",
-                e -> e.getItem().ifPresent(i -> new ItemMovementView(i).execute()));
-        cm.addItem("GRN Details", e -> e.getItem().ifPresent(this::viewGRN));
-        cm.addItem("Cost Details", e -> e.getItem().ifPresent(item -> new EditCost(item, true).execute()));
-        GridMenuItem<InventoryItem> editCost = cm.addItem("Edit Cost",
-                e -> e.getItem().ifPresent(item -> {
-                    close();
-                    new EditCost(item, false, this::loadItems).execute();
-                }));
-        cm.setDynamicContentHandler(ii -> {
-            deselectAll();
-            if(ii == null) {
-                return false;
-            }
-            select(ii);
-            InventoryLocation loc = ii.getLocation();
-            itemAssembly.setVisible(ii.getPartNumber().isAssembly());
-            parentAssembly.setVisible(loc instanceof InventoryFitmentPosition);
-            inspect.setVisible(canInspect || allowBreaking);
-            split.setVisible(canInspect && !ii.isSerialized() && ii.getQuantity().isPositive()
-                    && !ii.getQuantity().equals(Count.ONE));
-            editCost.setVisible(allowEditCost);
-            viewFitment.setVisible(loc instanceof InventoryFitmentPosition);
-            viewFitmentLocations.setVisible(loc instanceof InventoryFitmentPosition);
-            breakAssembly.setVisible((canInspect || allowBreaking) &&
-                    loc instanceof InventoryFitmentPosition);
-            movementDetail.setVisible(ii.isSerialized());
-            return true;
-        });
+        contextMenu = new ItemContextMenu<>(this, canInspect, false, false, this::loadItems);
+        contextMenu.setHideViewStock(true);
     }
 
     private static String caption(String caption) {
@@ -342,32 +288,7 @@ public class LocateItem extends DataGrid<InventoryItem> implements CloseableView
     }
 
     public String getLocationDisplay(InventoryItem item) {
-        return locationDisplay(item);
-    }
-
-    static String locationDisplay(InventoryItem item) {
-        InventoryLocation loc = item.getLocation();
-        if(!(loc instanceof InventoryFitmentPosition)) {
-            return item.getLocationDisplay();
-        }
-        InventoryLocation location;
-        String s;
-        StringBuilder sb = new StringBuilder();
-        while(item != null) {
-            location = item.getLocation();
-            s = location instanceof InventoryFitmentPosition ?
-                    ((InventoryFitmentPosition) location).toDisplay(false) :
-                    item.getLocationDisplay();
-            if(!sb.isEmpty()) {
-                sb.append('\n');
-            }
-            sb.append(s);
-            if(!(location instanceof InventoryFitmentPosition)) {
-                break;
-            }
-            item = item.getParentItem();
-        }
-        return sb.toString();
+        return ItemContext.locationDisplay(item);
     }
 
     private void loadItems() {
@@ -457,45 +378,6 @@ public class LocateItem extends DataGrid<InventoryItem> implements CloseableView
         help.setVisible(!isEmpty());
     }
 
-    private void inspect(InventoryItem ii) {
-        close();
-        List<InventoryItem> list = new ArrayList<>();
-        list.add(ii);
-        new ReceiveAndBin(list).execute();
-    }
-
-    private void split(InventoryItem ii) {
-        close();
-        new SplitQuantity(ii).execute();
-    }
-
-    private void breakAssembly(InventoryItem ii) {
-        ELabel m = new ELabel(ii.toDisplay(), Application.COLOR_SUCCESS);
-        m.newLine().append("Do you really want to take out this item?", Application.COLOR_ERROR).newLine();
-        m.append("Fitment location:").newLine();
-        m.append(getLocationDisplay(ii));
-        deselectAll();
-        new ActionForm(m.update(), () -> new DetachFromAssembly(ii).execute()).execute();
-    }
-
-    private void view(InventoryItem item) {
-        if(item != null) {
-            //noinspection unchecked
-            editor(item).viewObject(item);
-        }
-    }
-
-    @SuppressWarnings("rawtypes")
-    private ObjectEditor editor(InventoryItem item) {
-        if(editor != null && editor.getObjectClass() != item.getClass()) {
-            editor = null;
-        }
-        if(editor == null) {
-            editor = ObjectEditor.create(item.getClass());
-        }
-        return editor;
-    }
-
     /**
      * Set a store so that the search is limited to the specified store.
      *
@@ -512,7 +394,7 @@ public class LocateItem extends DataGrid<InventoryItem> implements CloseableView
      * @param allowBreaking True/false.
      */
     public void setAllowBreaking(boolean allowBreaking) {
-        this.allowBreaking = allowBreaking;
+        contextMenu.setAllowBreaking(allowBreaking);
     }
 
     /**
@@ -521,151 +403,15 @@ public class LocateItem extends DataGrid<InventoryItem> implements CloseableView
      * @param allowEditCost True/false.
      */
     public void setAllowEditCost(boolean allowEditCost) {
-        this.allowEditCost = allowEditCost;
+        contextMenu.setAllowEditCost(allowEditCost);
     }
 
-    private class DetachFromAssembly extends DataForm implements Transactional {
-
-        private final InventoryItem item;
-        private final DateField dateField = new DateField("Date");
-        private final TextField referenceField = new TextField("Reference");
-        private final InventoryLocation location;
-
-        public DetachFromAssembly(InventoryItem item) {
-            super("Detach from Assembly");
-            this.item = item;
-            location = item.getRealLocation();
-            addField(new ELabelField("Item", item.toDisplay(), Application.COLOR_SUCCESS),
-                    new ELabelField("Current location", getLocationDisplay(item), Application.COLOR_SUCCESS),
-                    new ELabelField("After removal, it will be available at", location.toDisplay(), Application.COLOR_SUCCESS),
-                    dateField, referenceField);
-            setRequired(referenceField);
-        }
-
-        @Override
-        protected boolean process() {
-            Date d = dateField.getValue();
-            if(!d.before(DateUtility.tomorrow())) {
-                warning("Invalid date!");
-                dateField.focus();
-                return false;
-            }
-            String ref = referenceField.getValue().trim();
-            if(ref.isEmpty()) {
-                referenceField.setValue("");
-                referenceField.focus();
-                return false;
-            }
-            close();
-            InventoryTransaction it = new InventoryTransaction(getTransactionManager(), dateField.getValue());
-            it.moveTo(item, ref, location);
-            if(transact(it::save)) {
-                message("Item '" + item.toDisplay() +
-                        "' is removed from the assembly and is available at '" + location + "' now!");
-                loadItems();
-            }
-            LocateItem.this.select(item);
-            return true;
-        }
-    }
-
-    private void viewFitment(InventoryItem item) {
-        if(!(item.getLocation() instanceof InventoryFitmentPosition loc)) {
-            return;
-        }
-        InventoryAssembly ia = loc.getAssembly();
-        TextView tv = new TextView("Fitment Details");
-        tv.append("Assembly Configuration: ").append(ia.toDisplay(), Application.COLOR_SUCCESS).newLine()
-                .append("Fitted Item: ").append(item.toDisplay(), Application.COLOR_SUCCESS);
-        if(!ia.getItemTypeId().equals(item.getPartNumberId())) {
-            tv.append(" (APN)", Application.COLOR_INFO);
-        }
-        tv.newLine().append("Fitted on: ").append(loc.getItem().toDisplay(), Application.COLOR_SUCCESS);
-        tv.popup();
-    }
-
-    private void viewGRN(InventoryItem item) {
-        clearAlerts();
-        InventoryGRN grn = item.getGRN();
-        if(grn == null) {
-            message("No associated GRN found for " + item.toDisplay());
-            return;
-        }
-        if(grnEditor == null) {
-            grnEditor = new GRNEditor();
-        }
-        grnEditor.viewObject(grn);
-    }
-
-    private static class FitmentLocations extends ObjectGrid<InventoryFitmentPosition> implements CloseableView {
-
-        private final InventoryItem item;
-
-        public FitmentLocations(InventoryItem item) {
-            super(InventoryFitmentPosition.class);
-            this.item = item;
-            setCaption("Fitment Locations");
-            load(item.listImmediateFitmentPositions());
-            execute();
-        }
-
-        @Override
-        public boolean includeColumn(String columnName) {
-            return !"Item".equals(columnName);
-        }
-
-        @Override
-        public Component createHeader() {
-            return new ButtonLayout(new ELabel("Fitment Locations under ").append(item.toDisplay()).update(),
-                    new Button("Exit", e -> close()).asSmall());
-        }
-    }
-
-    private static class SplitQuantity extends DataForm implements Transactional {
-
-        private final InventoryItem item;
-        private final QuantityField splitQuantityField;
-        private final Quantity quantity;
-
-        public SplitQuantity(InventoryItem item) {
-            super("Split Quantity");
-            addField(new ELabelField("Item", item.toDisplay(), Application.COLOR_SUCCESS));
-            this.item = item;
-            quantity = item.getQuantity();
-            QuantityField quantityField = new QuantityField("Current Quantity");
-            quantityField.setValue(quantity);
-            splitQuantityField = new QuantityField("Quantity to Split");
-            splitQuantityField.setValue(quantity.zero());
-            addField(quantityField, splitQuantityField);
-            setFieldReadOnly(quantityField);
-            setRequired(splitQuantityField);
-            setFirstFocus(splitQuantityField);
-        }
-
-        @Override
-        protected boolean process() {
-            clearAlerts();
-            Quantity q = splitQuantityField.getValue();
-            try {
-                if(!quantity.canConvert(q)) {
-                    return false;
-                }
-            } catch(Invalid_State e) {
-                warning(e);
-                return false;
-            }
-            if(q.isGreaterThanOrEqual(quantity)) {
-                warning("Invalid quantity specified");
-                return false;
-            }
-            close();
-            String reference = "Split";
-            InventoryTransaction it = new InventoryTransaction(getTransactionManager(), DateUtility.today(), reference);
-            it.splitQuantity(item, q, reference);
-            if(transact(it::save)) {
-                message("Quantity split successfully");
-            }
-            return true;
-        }
+    /**
+     * Sets whether inspection is allowed or not.
+     *
+     * @param allowInspection A boolean flag indicating whether inspection is allowed. (By default, it is not allowed).
+     */
+    public void setAllowInspection(boolean allowInspection) {
+        contextMenu.setAllowInspection(allowInspection);
     }
 }

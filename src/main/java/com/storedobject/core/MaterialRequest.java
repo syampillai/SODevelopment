@@ -576,4 +576,8 @@ public class MaterialRequest extends StoredObject implements OfEntity, HasRefere
             throw new SOException("Unable to find " + partNumber.toDisplay() + " for quantity " + r);
         }
     }
+
+    public int getType() {
+        return 0;
+    }
 }

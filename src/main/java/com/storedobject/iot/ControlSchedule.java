@@ -156,8 +156,7 @@ public final class ControlSchedule extends Name {
     public String getControlValue() {
         ValueDefinition<?> vd = getControl();
         if(vd instanceof ValueLimit vl) {
-            return StringUtility.format(value, vl.getDecimals(), false) + " "
-                    + vl.getUnitOfMeasurement().getUnit();
+            return StringUtility.format(value, vl.getDecimals(), false) + vl.getUnitSuffix();
         }
         return offOn ? "On" : "Off";
     }

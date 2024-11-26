@@ -354,7 +354,7 @@ public final class Person extends StoredObject implements HasContacts, Comparabl
     /**
      * Set the gender of the person. Side effect: Title value may change as per the gender value.
      *
-     * @param gender 0 for Male, 1 for Female
+     * @param gender 0 for Male, 1 for Female, 2 for Transgender
      * @exception Invalid_Value If the value is out-of-range
      */
     public void setGender(int gender) throws Invalid_Value {
@@ -367,7 +367,7 @@ public final class Person extends StoredObject implements HasContacts, Comparabl
                 return;
             }
         }
-        title = gender == 0 ? 0 : (gender == 1 ? 3 : 21);
+        title = gender == 0 ? 0 : (gender == 1 ? 3 : 6);
     }
 
     /**

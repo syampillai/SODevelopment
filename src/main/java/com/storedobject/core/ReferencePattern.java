@@ -241,6 +241,21 @@ public final class ReferencePattern<O extends StoredObject> {
                 case 4 -> {
                     return o -> o.fromLocationId + "-" + o.family();
                 }
+                case 5 -> {
+                    return o -> o.systemEntityId + "-" + o.getType();
+                }
+                case 6 -> {
+                    return o -> o.fromLocationId + "-" + o.getType();
+                }
+                case 7 -> {
+                    return o -> o.family() + "-" + o.getType();
+                }
+                case 8 -> {
+                    return o -> o.systemEntityId + "-" + o.family() + "-" + o.getType();
+                }
+                case 9 -> {
+                    return o -> o.fromLocationId + "-" + o.family() + "-" + o.getType();
+                }
                 default -> {
                     return null;
                 }

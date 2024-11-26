@@ -1,6 +1,7 @@
 package com.storedobject.ui;
 
 import com.storedobject.common.SORuntimeException;
+import com.storedobject.core.IdentityCheck;
 import com.storedobject.core.MessageTemplate;
 import com.storedobject.vaadin.*;
 import com.vaadin.flow.component.Component;
@@ -369,27 +370,21 @@ public class VerifyOTP extends View implements CloseableView {
         }
 
         private synchronized void smsStatus() {
-            if(status == 1 || status == 2) {
-                return;
-            }
-            if(smsSender.status() == 1) {
-                status = 1;
-            } else {
-                status = mailSender.status();
-            }
-            if(status == 1 || status == 2) {
-                otp.sendStatusChanged();
-            }
+            senderStatus(mailSender);
         }
 
         private synchronized void emailStatus() {
+            senderStatus(smsSender);
+        }
+
+        private synchronized void senderStatus(Sender sender) {
             if(status == 1 || status == 2) {
                 return;
             }
-            if(mailSender.status() == 1) {
+            if(sender.status() == 1) {
                 status = 1;
             } else {
-                status = smsSender.status();
+                status = sender.status();
             }
             if(status == 1 || status == 2) {
                 otp.sendStatusChanged();
@@ -469,8 +464,8 @@ public class VerifyOTP extends View implements CloseableView {
 
         void sendOTP() {
             otpField.setEnabled(false);
-            prefix = genPrefix();
-            otp = genOTP();
+            prefix = IdentityCheck.generatePrefix();
+            otp = IdentityCheck.generateOTP();
             prefixLabel.clearContent().append(prefix,"font-family:monospace").update();
             ++stage;
             sender.send(this);
@@ -559,31 +554,6 @@ public class VerifyOTP extends View implements CloseableView {
         private void shake() {
             animation[animationIndex % animation.length].animate(otpField);
             animationIndex++;
-        }
-
-        private String genPrefix() {
-            char[] p = new char[4];
-            synchronized(random) {
-                for(int i = 0; i < 3; i++) {
-                    p[i] = (char) ('A' + random.nextInt(26));
-                }
-            }
-            p[3] = ':';
-            String s = new String(p);
-            return switch(s) {
-                case "ASS", "FUK", "FUC", "PIG", "OTP", "TIT" -> genPrefix();
-                default -> s;
-            };
-        }
-
-        private int genOTP() {
-            int o = 0;
-            synchronized(random) {
-                while(!(o > 100000 && o < 1000000)) {
-                    o = random.nextInt();
-                }
-            }
-            return o;
         }
 
         void abort() {

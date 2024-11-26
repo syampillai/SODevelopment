@@ -17,7 +17,7 @@ import java.util.function.Predicate;
  * @author Syam
  */
 @SuppressWarnings({"resource", "UnusedReturnValue"})
-public class InventoryItem extends StoredObject {
+public class InventoryItem extends StoredObject implements HasInventoryItem {
 
     private static final Map<Id, Entity> owners = new HashMap<>();
     private Id partNumberId;
@@ -270,6 +270,12 @@ public class InventoryItem extends StoredObject {
         setQuantity(Quantity.create(value));
     }
 
+    @Override
+    public InventoryItem getItem() {
+        return this;
+    }
+
+    @Override
     @SetNotAllowed
     public Quantity getQuantity() {
         return quantity;

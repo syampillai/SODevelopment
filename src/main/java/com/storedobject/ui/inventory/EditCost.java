@@ -26,7 +26,7 @@ public class EditCost extends DataForm implements Transactional {
         this.item = item;
         setButtonsAtTop(!viewMode);
         addField(new ELabelField("Item", item.toDisplay()));
-        addField(new ELabelField("Location", LocateItem.locationDisplay(item)));
+        addField(new ELabelField("Location", ItemContext.locationDisplay(item)));
         addField(new ELabelField("GRN Details", grn()));
         poro();
         addField(new ELabelField("Owned by", item.getOwner().toDisplay()));
