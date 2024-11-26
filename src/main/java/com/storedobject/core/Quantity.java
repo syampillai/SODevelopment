@@ -36,7 +36,7 @@ public class Quantity implements Storable, Comparable<Quantity> {
 	}
 
 	public static Quantity create(double quantity, MeasurementUnit unit) {
-		return null;
+		return Count.ONE;
 	}
 
 	public static <Q extends Quantity> Q create(Class<Q> qClass) {

@@ -51,6 +51,14 @@ public class JavaClassLoader extends ClassLoader {
         }
     }
 
+    public static Object createInstance(String logicName) throws SOException {
+        try {
+            return getLogic(logicName).getDeclaredConstructor().newInstance();
+        } catch(Throwable e) {
+            throw new SOException("Can't create logic instance associated with " + logicName, e);
+        }
+    }
+
     public static void clearNoFoundCache() {
     }
 }
