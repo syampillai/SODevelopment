@@ -200,6 +200,10 @@ public class UIFieldMetadata extends StoredObject implements Detail {
 		return false;
 	}
 
+	public boolean isNegativeAllowed() {
+		return false;
+	}
+
 	public String getStyle() {
 		return null;
 	}

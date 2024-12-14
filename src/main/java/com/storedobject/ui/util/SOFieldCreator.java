@@ -778,11 +778,17 @@ public class SOFieldCreator<T> implements ObjectFieldCreator<T> {
             DoubleField field = new DoubleField(label, 0.0, md.getIntParameter(-1, 0),
                     md.getIntParameter(6, 1));
             field.setPlaceholder(md.getParameter(2));
+            if(md.isNegativeAllowed()) {
+                field.setAllowNegative(true);
+            }
             return field;
         }
         if(long.class == type) {
             LongField field = new LongField(label, 0L, md.getIntParameter(-1, 0));
             field.setPlaceholder(md.getParameter(1));
+            if(md.isNegativeAllowed()) {
+                field.setAllowNegative(true);
+            }
             return field;
         }
         if(int.class == type) {
@@ -829,8 +835,16 @@ public class SOFieldCreator<T> implements ObjectFieldCreator<T> {
                     } else if(w == 0) {
                         w = -1;
                     }
-                    f = new IntegerField(label, 0, w, false, negative);
-                    ((IntegerField) f).setPlaceholder(md.getParameter(1));
+                    IntegerField field = new IntegerField(label, 0, w, false, negative);
+                    f = field;
+                    String p = md.getParameter(1);
+                    if(p != null && "-".equals(p.trim())) {
+                        p = md.getParameter(2);
+                    }
+                    field.setPlaceholder(p);
+                    if(md.isNegativeAllowed()) {
+                        field.setAllowNegative(true);
+                    }
                 }
             }
             if(f instanceof MinutesField mf) {

@@ -67,7 +67,7 @@ public final class ValueLimit extends ValueDefinition<Double> {
         this.lowest = lowest;
     }
 
-    @Column(required = false, order = 500)
+    @Column(required = false, order = 500, style = "(-)")
     public double getLowest() {
         return lowest;
     }
@@ -76,7 +76,7 @@ public final class ValueLimit extends ValueDefinition<Double> {
         this.lower = lower;
     }
 
-    @Column(required = false, order = 600)
+    @Column(required = false, order = 600, style = "(-)")
     public double getLower() {
         return lower;
     }
@@ -85,7 +85,7 @@ public final class ValueLimit extends ValueDefinition<Double> {
         this.low = low;
     }
 
-    @Column(required = false, order = 700)
+    @Column(required = false, order = 700, style = "(-)")
     public double getLow() {
         return low;
     }
@@ -94,7 +94,7 @@ public final class ValueLimit extends ValueDefinition<Double> {
         this.high = high;
     }
 
-    @Column(required = false, order = 800)
+    @Column(required = false, order = 800, style = "(-)")
     public double getHigh() {
         return high;
     }
@@ -103,7 +103,7 @@ public final class ValueLimit extends ValueDefinition<Double> {
         this.higher = higher;
     }
 
-    @Column(required = false, order = 900)
+    @Column(required = false, order = 900, style = "(-)")
     public double getHigher() {
         return higher;
     }
@@ -112,7 +112,7 @@ public final class ValueLimit extends ValueDefinition<Double> {
         this.highest = highest;
     }
 
-    @Column(required = false, order = 1000)
+    @Column(required = false, order = 1000, style = "(-)")
     public double getHighest() {
         return highest;
     }
@@ -121,7 +121,7 @@ public final class ValueLimit extends ValueDefinition<Double> {
         this.minimum = minimum;
     }
 
-    @Column(order = 1200, caption = "Min. Possible Value", required = false)
+    @Column(order = 1200, caption = "Min. Possible Value", required = false, style = "(-)")
     public double getMinimum() {
         return minimum;
     }
@@ -130,7 +130,7 @@ public final class ValueLimit extends ValueDefinition<Double> {
         this.maximum = maximum;
     }
 
-    @Column(order = 1300, caption = "Max. Possible Value", required = false)
+    @Column(order = 1300, caption = "Max. Possible Value", required = false, style = "(-)")
     public double getMaximum() {
         return maximum;
     }

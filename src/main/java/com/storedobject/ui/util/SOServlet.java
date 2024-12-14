@@ -30,6 +30,7 @@ public class SOServlet extends VaadinServlet {
     private static final long CACHE_TIME_IN_MILLIS = TimeUnit.MILLISECONDS.convert(365, TimeUnit.DAYS);
     private static final long CACHE_TIME_IN_SECONDS = CACHE_TIME_IN_MILLIS / 1000;
     private static final List<String> CORS = new ArrayList<>();
+    private static String headerKey = null, headerValue = null;
 
     @Override
     public void init() throws ServletException {
@@ -43,6 +44,12 @@ public class SOServlet extends VaadinServlet {
             link = null;
         }
         ApplicationServer.initialize(null, link);
+        if(headerKey == null) {
+            headerKey = ApplicationServer.getGlobalProperty("application.request.header.key", "");
+        }
+        if(headerValue == null) {
+            headerValue = ApplicationServer.getGlobalProperty("application.request.header.value", "");
+        }
     }
 
     private boolean isAllowedRequestOrigin(String origin) {
@@ -71,6 +78,16 @@ public class SOServlet extends VaadinServlet {
     @Override
     protected void service(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+
+        // Match header key/value if configured
+        if(!headerKey.isEmpty()) {
+            String hv = request.getHeader(headerKey);
+            if(!headerValue.equals(hv)) {
+                ApplicationServer.log("Illegal request header specified - " + headerKey + " = " + hv);
+                response.sendError(HttpServletResponse.SC_FORBIDDEN);
+                return;
+            }
+        }
 
         // Capture url from the first request that came in
         if(url == null) {

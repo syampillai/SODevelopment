@@ -89,6 +89,11 @@ public class Mail extends Message {
     	return get(SenderGroup.class, senderGroupId);
     }
 
+	public String getFromAddress() {
+		Sender sender = getSender();
+		return sender == null ? "" : getSender().getFromAddress();
+	}
+
 	/**
 	 * Set "to address". Comma delimited email addresses.
 	 *
@@ -238,7 +243,7 @@ public class Mail extends Message {
 	}
 
 	public Sender getSender() {
-		return get(Sender.class, senderId);
+		return get(Sender.class, senderId, true);
 	}
 
 	@Override

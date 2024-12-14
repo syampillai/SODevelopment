@@ -397,32 +397,25 @@ public abstract class Sender extends StoredObject implements Closeable {
 	}
 
 	public static int sendMails(int count, TransactionManager tm) {
-		if(count == 0) {
-			return count;
-		}
-		if(count < 0) {
-			count = Integer.MAX_VALUE;
-		}
 		List<Sender> senders = list(Sender.class, "Status=0", true).toList();
 		if(senders.isEmpty()) {
 			return -1;
 		}
 		ObjectIterator<Mail> mails = list(Mail.class, "NOT Sent AND Error=0", "CreatedAt");
+		if(count > 0) {
+			mails = mails.limit(count);
+		}
 		int c, sent = 0;
-		while(count > 0) {
+		while(mails.hasNext()) {
 			if(senders.isEmpty()) {
 				if(sent == 0) {
 					sent = -1;
 				}
 				break;
 			}
-			if(!mails.hasNext()) {
-				break;
-			}
 			c = sendMailsInt(tm, mails, senders);
 			if(c >= 0) {
 				sent += c;
-				count -= c;
 				continue;
 			}
 			if(sent == 0) {
@@ -479,6 +472,10 @@ public abstract class Sender extends StoredObject implements Closeable {
 			}
 		} catch (Exception e) {
 			tm.log(e);
+			if(t != null) {
+				t.rollback();
+				t = null;
+			}
 		}
 		try {
 			if(t != null) {

@@ -17,7 +17,7 @@ import com.vaadin.flow.component.Component;
  */
 public class LocateItem extends DataGrid<InventoryItem> implements CloseableView {
 
-    private static final String INSPECT = "INSPECT";
+    private static final String INSPECT = "INSPECT", EDIT_COST = "EDIT_COST";
     private final ChoiceField servFilter = new ChoiceField(new String[] {
             "Serviceable",
             "Unserviceable",
@@ -46,11 +46,12 @@ public class LocateItem extends DataGrid<InventoryItem> implements CloseableView
     /**
      * Constructor.
      *
-     * @param caption This could be "Caption", "Caption|Class Name", "Caption|INSPECT" or "Caption|Class Name|INSPECT".
+     * @param caption This could be "Caption", "Caption|Class Name", "Caption|INSPECT", "Caption|Class Name|INSPECT",
+     *                "Caption|INSPECT,EDIT_COST", "Caption|Class Name|INSPECT,EDIT_COST", "Caption|EDIT_COST",
+     *                "Caption|Class Name|EDIT_COST".
      */
     public LocateItem(String caption) {
-        this(caption(caption), null, itemClass(caption), itemTypeClass(caption),
-                caption != null && caption.contains(INSPECT), caption);
+        this(caption(caption), null, itemClass(caption), itemTypeClass(caption), false, caption);
     }
 
     /**
@@ -147,9 +148,13 @@ public class LocateItem extends DataGrid<InventoryItem> implements CloseableView
                        Class<? extends InventoryItemType> itemTypeClass, boolean canInspect, String originalCaption) {
         super(InventoryItem.class, ItemField.COLUMNS);
         setCaption(caption == null || caption.isEmpty() ? "Items" : caption);
+        if(!canInspect && originalCaption.contains(INSPECT)) {
+            canInspect = true;
+        }
         if(originalCaption != null && originalCaption.contains("|")) {
             caption = originalCaption.substring(originalCaption.indexOf('|') + 1).
-                    replace(INSPECT, "").replace("|", "");
+                    replace(INSPECT, "").replace(EDIT_COST, "").replace(",", "")
+                    .replace("|", "");
             if(!caption.isEmpty() && itemClass == null && itemTypeClass == null) {
                 throw new SORuntimeException("Unable to determine item or item type class from '" +
                         originalCaption + "'");
@@ -185,7 +190,8 @@ public class LocateItem extends DataGrid<InventoryItem> implements CloseableView
         }
         servFilter.addValueChangeListener(e -> loadItems());
         locFilter.addValueChangeListener(e -> loadItems());
-        contextMenu = new ItemContextMenu<>(this, canInspect, false, false, this::loadItems);
+        contextMenu = new ItemContextMenu<>(this, canInspect, false,
+                originalCaption != null && originalCaption.contains(EDIT_COST), this::loadItems);
         contextMenu.setHideViewStock(true);
     }
 
@@ -193,7 +199,8 @@ public class LocateItem extends DataGrid<InventoryItem> implements CloseableView
         if(caption == null) {
             return null;
         }
-        caption = caption.replace(INSPECT, "").replace("||", "|").
+        caption = caption.replace(INSPECT, "").replace(EDIT_COST, "")
+                .replace(",", "").replace("||", "|").
                 replace("_", "");
         caption = caption.trim();
         int p = caption.indexOf('|');
@@ -216,7 +223,8 @@ public class LocateItem extends DataGrid<InventoryItem> implements CloseableView
         if(caption == null) {
             return null;
         }
-        caption = caption.replace(INSPECT, "").replace("||", "|");
+        caption = caption.replace(INSPECT, "").replace(EDIT_COST, "")
+                .replace(",", "").replace("||", "|");
         if(caption.endsWith("|")) {
             caption = caption.substring(0, caption.length() - 1);
         }

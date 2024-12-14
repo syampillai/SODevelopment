@@ -9,6 +9,7 @@ import com.storedobject.pdf.PDFReport;
 import com.storedobject.pdf.PDFTable;
 import com.storedobject.ui.DatePeriodField;
 import com.storedobject.ui.Transactional;
+import com.storedobject.vaadin.BooleanField;
 import com.storedobject.vaadin.ChoiceField;
 import com.storedobject.vaadin.DataForm;
 
@@ -16,6 +17,7 @@ public class MailLog extends DataForm implements Transactional {
 
     private DatePeriodField periodField;
     private ChoiceField statusField;
+    private final BooleanField showMailContent = new BooleanField("Show Mail Content");
 
     public MailLog() {
         super("Mail Log");
@@ -27,6 +29,7 @@ public class MailLog extends DataForm implements Transactional {
         addField(periodField);
         statusField = new ChoiceField("Delivery Status", new String[] { "All", "Sent", "Not sent" });
         addField(statusField);
+        addField(showMailContent);
     }
 
     @Override
@@ -63,8 +66,10 @@ public class MailLog extends DataForm implements Transactional {
 
         @Override
         public void generateContent() {
+            boolean showContent = showMailContent.getValue();
             TransactionManager tm = getTransactionManager();
             PDFTable table = createTable(80, 10, 10);
+            table.setSplitRows(true);
             addTitle(table, "Message");
             addTitle(table, "Sent at");
             addTitle(table, "Status");
@@ -93,10 +98,11 @@ public class MailLog extends DataForm implements Transactional {
                 }
                 addToTable(table, "Created at " + DateUtility.formatWithTimeHHMM(tm.date(mail.getCreatedAt())) +
                         "\nFrom: " +
-                        (sender == null ? (senderGroup == null ? "" : senderGroup.getName()) : sender.getFromAddress()) +
+                        (sender == null ? (senderGroup == null ? "" : senderGroup.getName()) :
+                                (sender.getFromAddress()) + " <" + sender.getName() + ">") +
                         "\nTo: " + mail.getToAddress() +
                                 (person == null ? "" : (" <" + person.getName() + ">")) +
-                        "\nSubject: " + mail.getSubject() + "\n" + mail.getMessage());
+                        "\nSubject: " + mail.getSubject() + (showContent ? ("\n" + mail.getMessage()) : ""));
                 addToTable(table, mail.getSent() ? DateUtility.formatWithTimeHHMM(tm.date(mail.getSentAt())) : "Not sent");
                 addToTable(table, mail.getSent() ? "Sent" : mail.getErrorValue());
             }

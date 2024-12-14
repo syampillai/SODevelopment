@@ -72,9 +72,13 @@ public class InventoryPOItem extends StoredObject implements Detail {
 
     public InventoryItemType getPartNumber() {
         if(partNumber == null) {
-            partNumber = get(InventoryItemType.class, partNumberId, true);
+            partNumber = loadPartNumber();
         }
         return partNumber;
+    }
+
+    protected InventoryItemType loadPartNumber() {
+        return get(InventoryItemType.class, partNumberId, true);
     }
 
     public void setSerialNumber(String serialNumber) {
