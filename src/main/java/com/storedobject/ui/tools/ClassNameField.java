@@ -6,6 +6,8 @@ import com.storedobject.vaadin.util.HasTextValue;
 
 public class ClassNameField extends CustomTextField<String> {
 
+    private Class<? extends StoredObject> objectClass;
+
     public ClassNameField() {
         this(null);
     }
@@ -45,11 +47,16 @@ public class ClassNameField extends CustomTextField<String> {
         if(isInvalid()) {
             return null;
         }
-        return getObjectClass(getValue());
+        String className = getValue();
+        if(objectClass != null && objectClass.getName().equals(className)) {
+            return objectClass;
+        }
+        objectClass = getObjectClass(className);
+        return objectClass;
     }
 
     @SuppressWarnings("unchecked")
-    private Class<? extends StoredObject> getObjectClass(String className) {
+    private static Class<? extends StoredObject> getObjectClass(String className) {
         if(className == null || className.isEmpty()) {
             return null;
         }
@@ -63,12 +70,12 @@ public class ClassNameField extends CustomTextField<String> {
         return null;
     }
 
-    public int getObjectFamily(String className) {
+    public static int getObjectFamily(String className) {
         Class<? extends StoredObject> c = getObjectClass(className);
         return c == null ? 0 : StoredObjectUtility.family(c);
     }
 
-    public String getObjectClassName(int family) {
+    public static String getObjectClassName(int family) {
         ClassAttribute<?> ca = StoredObjectUtility.classAttribute(family);
         return ca == null ? "" : ca.getObjectClass().getName();
     }

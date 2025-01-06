@@ -22,7 +22,9 @@ public class RDLister<T extends StoredObject> {
             captions[i] = lister.getColumnCaption(columns.get(i).getAttribute(), i);
         }
         tableHeader = new TableHeader(captions);
-        ObjectIterator<T> objects = reportDefinition.listObjects(lister.getExtraCondition(), lister.getOrderBy());
+        QueryBuilder<T> queryBuilder = reportDefinition.getQueryBuilder(lister.getExtraCondition(), lister.getOrderBy());
+        queryBuilder = lister.customizeQueryBuilder(queryBuilder);
+        ObjectIterator<T> objects = queryBuilder.list();
         Predicate<T> filter = lister.getLoadFilter();
         if(filter != null) {
             objects = objects.filter(filter);

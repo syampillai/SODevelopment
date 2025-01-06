@@ -414,6 +414,19 @@ public class ReportDefinition extends Name {
     }
 
     public <T extends StoredObject> ObjectIterator<T> listObjects(String extraCondition, String orderBy) {
+        //noinspection unchecked
+        return (ObjectIterator<T>) getQueryBuilder().list();
+    }
+
+    public <T extends StoredObject> QueryBuilder<T> getQueryBuilder() {
+        return getQueryBuilder(null, getOrderBy());
+    }
+
+    public <T extends StoredObject> QueryBuilder<T> getQueryBuilder(String extraCondition) {
+        return getQueryBuilder(extraCondition, getOrderBy());
+    }
+
+    public <T extends StoredObject> QueryBuilder<T> getQueryBuilder(String extraCondition, String orderBy) {
         if(extraCondition == null || extraCondition.isBlank()) {
             extraCondition = getCondition();
         } else {
@@ -423,6 +436,7 @@ public class ReportDefinition extends Name {
             }
         }
         //noinspection unchecked
-        return StoredObject.list((Class<T>)getClassForData(), extraCondition, orderBy, getIncludeSubclasses());
+        return QueryBuilder.from((Class<T>)getClassForData()).where(extraCondition).orderBy(orderBy)
+                .any(getIncludeSubclasses());
     }
 }

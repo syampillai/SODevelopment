@@ -414,19 +414,13 @@ public final class StoredObjectUtility {
         return false;
     }
 
-    /**
-     * Create a SQL execution string. (Can be used for debugging purposes only).
-     *
-     * @param ca Class attribute.
-     * @param columns Columns.
-     * @param condition Condition.
-     * @param order Order by clause.
-     * @param only Whether to use inherited instances or not.
-     * @param header Header to be used or not.
-     * @return SQL string.
-     */
     public static String createSQL(ClassAttribute<?> ca, String columns, String condition, String order,
                                    boolean only, boolean header) {
+        return columns;
+    }
+
+    public static String createSQL(ClassAttribute<?> ca, String columns, String condition, String order,
+                                   boolean only, boolean header, int skip, int limit, int[] distinct) {
         return columns;
     }
 }

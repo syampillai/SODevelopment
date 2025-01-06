@@ -5,7 +5,6 @@ import java.lang.reflect.Modifier;
 
 public final class CustomMessageLogic extends StoredObject implements RequiresApproval {
 
-    private String messageKey;
     private String logicName;
     private boolean active;
     private Class<CustomMessageProcessor> processorClass;
@@ -15,27 +14,17 @@ public final class CustomMessageLogic extends StoredObject implements RequiresAp
     }
 
     public static void columns(Columns columns) {
-        columns.add("MessageKey", "text");
         columns.add("LogicName", "text");
         columns.add("Active", "boolean");
     }
 
     public static void indices(Indices indices) {
-        indices.add("lower(MessageKey)", true);
+        indices.add("LogicName", true);
     }
 
     @Override
     public String getUniqueCondition() {
-        return "lower(MessageKey)='" + getMessageKey().trim().toLowerCase().
-                replace("'", "''") + "'";
-    }
-
-    public void setMessageKey(String messageKey) {
-        this.messageKey = messageKey;
-    }
-
-    public String getMessageKey() {
-        return messageKey;
+        return "LogicName='" + getLogicName().trim().replace("'", "''") + "'";
     }
 
     public void setLogicName(String logicName) {
@@ -56,20 +45,15 @@ public final class CustomMessageLogic extends StoredObject implements RequiresAp
 
     @Override
     public void validateData(TransactionManager tm) throws Exception {
-        messageKey = messageKey == null ? "" : messageKey.strip();
-        if(StringUtility.isWhite(messageKey)) {
-            throw new Invalid_Value("Connector Command");
-        }
         if(StringUtility.isWhite(logicName)) {
             throw new Invalid_Value("Logic Name");
         }
         logicName = logicName.strip();
+        if(getProcessorClass() == null) {
+            throw new Invalid_Value("Logic Name");
+        }
+        checkForDuplicate("LogicName");
         super.validateData(tm);
-    }
-
-    public static CustomMessageLogic get(String messageKey) {
-        return get(CustomMessageLogic.class, "lower(MessageKey)='"
-                + messageKey.toLowerCase().replace("'", "''") + "'");
     }
 
     public Class<CustomMessageProcessor> getProcessorClass() {
@@ -87,5 +71,11 @@ public final class CustomMessageLogic extends StoredObject implements RequiresAp
         } catch(Throwable error) {
             return null;
         }
+    }
+
+    @Override
+    public void saved() throws Exception {
+        super.saved();
+        processorClass = null;
     }
 }

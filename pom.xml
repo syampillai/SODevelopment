@@ -6,7 +6,7 @@
 
     <groupId>com.storedobject</groupId>
     <artifactId>so-development</artifactId>
-    <version>12.2.1</version>
+    <version>12.2.2</version>
 
     <properties>
         <so-common-version>4.8.1</so-common-version>
@@ -170,6 +170,11 @@
         </dependency>
 
         <!-- MQTT for IOT -->
+        <dependency>
+            <groupId>org.geckoprojects.messaging</groupId>
+            <artifactId>org.eclipse.paho.mqttv5.client</artifactId>
+            <version>1.2.7</version>
+        </dependency>
         <dependency>
             <groupId>org.eclipse.paho</groupId>
             <artifactId>org.eclipse.paho.client.mqttv3</artifactId>

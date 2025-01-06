@@ -2,34 +2,40 @@ package com.storedobject.core;
 
 import java.math.BigDecimal;
 
-public class WeightOrVolume extends com.storedobject.core.Quantity {
+public class WeightOrVolume extends Quantity {
 
-    public static com.storedobject.core.MeasurementUnit defaultUnit;
+	static String AIRCRAFT = "✈";
+	private final static String unit_galUS = "gal(US) ✈", unit_galUK = "gal(UK) ✈",
+		unit_kg = "kg ✈", unit_lbs = "lb ✈", unit_l = "L ✈";
+	private final static BigDecimal BD_GAL_US = new BigDecimal("2.9904739"), BD_GAL_UK = new BigDecimal("3.5914111"),
+		BD_LBS = new BigDecimal("0.45359233"), BD_L = new BigDecimal("0.79");
+	public static MeasurementUnit defaultUnit = MeasurementUnit.create(9, unit_kg, BigDecimal.ONE, "|kg");
+	static {
+		MeasurementUnit.create(9, unit_galUS, BD_GAL_US, "|GallonUS", "|GUS", "|USG", "|USGallon", "|GalUS");
+		MeasurementUnit.create(9, unit_galUK, BD_GAL_UK, "|GallonUK", "|GUK", "|UKG", "|UKGallon", "|GalUK");
+		MeasurementUnit.create(9, unit_lbs, BD_LBS, "|lbs");
+		MeasurementUnit.create(9, unit_l, BD_L, "|lt", "|lit");
+	}
+	
+	public WeightOrVolume() {
+		this(BigDecimal.ZERO, defaultUnit);
+	}
 
-    public WeightOrVolume() {
-        super(null, null);
-    }
+	public WeightOrVolume(double value, String unit) {
+		this(BigDecimal.valueOf(value), unit);
+	}
 
-    public WeightOrVolume(double p1, java.lang.String p2) {
-        this();
-    }
+	public WeightOrVolume(double value, MeasurementUnit unit) {
+		this(BigDecimal.valueOf(value), unit);
+	}
 
-    public WeightOrVolume(double p1, com.storedobject.core.MeasurementUnit p2) {
-        this();
-    }
+	public WeightOrVolume(BigDecimal value, String unit) {
+		this(value, MeasurementUnit.get(unit, WeightOrVolume.class));
+	}
 
-    public WeightOrVolume(java.math.BigDecimal p1, java.lang.String p2) {
-        this();
-    }
-
-    public WeightOrVolume(java.math.BigDecimal p1, com.storedobject.core.MeasurementUnit p2) {
-        this();
-    }
-
-    @Override
-	public com.storedobject.core.Quantity convert(com.storedobject.core.MeasurementUnit p1) {
-        return null;
-    }
+	public WeightOrVolume(BigDecimal value, MeasurementUnit unit) {
+		super(value, unit);
+	}
 	
 	/**
 	 * Create a quantity of this type with zero value.
@@ -37,7 +43,7 @@ public class WeightOrVolume extends com.storedobject.core.Quantity {
 	 */
 	@Override
 	public WeightOrVolume zero() {
-		return null;
+		return (WeightOrVolume)super.zero();
 	}
 
 	/**
@@ -48,7 +54,7 @@ public class WeightOrVolume extends com.storedobject.core.Quantity {
 	 */
 	@Override
 	public WeightOrVolume add(String quantity) {
-		return null;
+        return (WeightOrVolume)super.add(quantity);
 	}
 
 	/**
@@ -59,7 +65,7 @@ public class WeightOrVolume extends com.storedobject.core.Quantity {
 	 */
 	@Override
 	public WeightOrVolume add(BigDecimal quantity) {
-		return null;
+        return (WeightOrVolume)super.add(quantity);
 	}
 
 	/**
@@ -70,7 +76,7 @@ public class WeightOrVolume extends com.storedobject.core.Quantity {
 	 */
 	@Override
 	public WeightOrVolume add(Quantity quantity) {
-		return null;
+        return (WeightOrVolume)super.add(quantity);
 	}
 	
 	/**
@@ -81,7 +87,7 @@ public class WeightOrVolume extends com.storedobject.core.Quantity {
 	 */
 	@Override
 	public WeightOrVolume subtract(String quantity) {
-		return null;
+        return (WeightOrVolume)super.subtract(quantity);
 	}
 
 	/**
@@ -92,7 +98,7 @@ public class WeightOrVolume extends com.storedobject.core.Quantity {
 	 */
 	@Override
 	public WeightOrVolume subtract(BigDecimal quantity) {
-		return null;
+        return (WeightOrVolume)super.subtract(quantity);
 	}
 
 	/**
@@ -103,27 +109,27 @@ public class WeightOrVolume extends com.storedobject.core.Quantity {
 	 */
 	@Override
 	public WeightOrVolume subtract(Quantity quantity) {
-		return null;
+        return (WeightOrVolume)super.subtract(quantity);
 	}
 
 	/**
 	 * Multiply
-	 * @param multiplicand Multiplicand
+	 * @param multiplicand Multiplicand 
 	 * @return Result
 	 */
 	@Override
 	public WeightOrVolume multiply(BigDecimal multiplicand) {
-		return null;
+        return (WeightOrVolume)super.multiply(multiplicand);
 	}
 
 	/**
 	 * Multiply
-	 * @param multiplicand Multiplicand
+	 * @param multiplicand Multiplicand 
 	 * @return Result
 	 */
 	@Override
 	public WeightOrVolume multiply(double multiplicand) {
-		return null;
+        return (WeightOrVolume)super.multiply(multiplicand);
 	}
 
 	/**
@@ -133,7 +139,7 @@ public class WeightOrVolume extends com.storedobject.core.Quantity {
 	 */
 	@Override
 	public WeightOrVolume divide(double divisor) {
-		return null;
+        return (WeightOrVolume)super.divide(divisor);
 	}
 
 	/**
@@ -143,7 +149,7 @@ public class WeightOrVolume extends com.storedobject.core.Quantity {
 	 */
 	@Override
 	public WeightOrVolume divide(BigDecimal divisor) {
-		return null;
+        return (WeightOrVolume)super.divide(divisor);
 	}
 
 	/**
@@ -152,7 +158,7 @@ public class WeightOrVolume extends com.storedobject.core.Quantity {
 	 */
 	@Override
 	public WeightOrVolume negate() {
-		return null;
+        return (WeightOrVolume)super.negate();
 	}
 	
 	/**
@@ -162,6 +168,18 @@ public class WeightOrVolume extends com.storedobject.core.Quantity {
 	 */
 	@Override
 	public WeightOrVolume absolute() {
-		return null;
+        return (WeightOrVolume)super.absolute();
+	}
+
+	/**
+	 * Determines whether the current unit represents a weight type.
+	 *
+	 * @return true if the unit is either "kg" or "lbs", or false otherwise
+	 */
+	public boolean isWeightType() {
+		return switch (getUnit().getUnit()) {
+			case unit_kg, unit_lbs -> true;
+			default -> false;
+		};
 	}
 }

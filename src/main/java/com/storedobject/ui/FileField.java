@@ -98,7 +98,6 @@ public class FileField extends AbstractObjectField<StreamData> {
             captureAudio = new ImageButton("Record audio", VaadinIcon.MICROPHONE, clicked).withBox(BUTTON_SIZE);
         }
         remove = new ImageButton("Remove", VaadinIcon.CLOSE, clicked).withBox(BUTTON_SIZE);
-        remove.setVisible(false);
         uploadCancel = new ImageButton("Cancel", VaadinIcon.CLOSE, clicked).withBox(BUTTON_SIZE);
         if(onlyPlusOne(ObjectField.Type.IMAGE, ObjectField.Type.STILL_CAMERA)) {
             mimes().add("image/*");
@@ -355,7 +354,7 @@ public class FileField extends AbstractObjectField<StreamData> {
         }
         if(active) {
             buttonBox.add(upload, captureImage, captureVideo, captureAudio, link);
-            if(!isRequired()) {
+            if(!isRequired() && value != null) {
                 buttonBox.add(remove);
             }
             added = true;
@@ -763,8 +762,7 @@ public class FileField extends AbstractObjectField<StreamData> {
                     try {
                         file = File.createTempFile("socamera", fileExt, new File(JavaTool.getSourceDirectory()));
                         file.deleteOnExit();
-                    } catch (IOException e) {
-                        file = null;
+                    } catch (IOException ignored) {
                     }
                 }
                 if(file != null && out == null) {

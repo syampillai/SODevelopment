@@ -48,8 +48,9 @@ public class SystemUtility extends View implements CloseableView, Transactional 
     private final boolean isAdmin;
     private Class<? extends StoredObject> objectClass;
     private final IntegerField connectionAge;
-    private final LongField limit;
+    private final IntegerField limit;
     private final TextArea speech;
+    private QueryBuilder<?> queryBuilder;
 
     public SystemUtility() {
         super("Utilities");
@@ -60,7 +61,7 @@ public class SystemUtility extends View implements CloseableView, Transactional 
         from.setWidth("60em");
         where = new TextField("WHERE");
         orderBy = new TextField("ORDER BY");
-        limit = new LongField("Limit (0 for no limit)");
+        limit = new IntegerField("Limit (0 for no limit)");
         FormLayout form = new FormLayout();
         form.setColumns(1);
         form.add(label("Execute SQL"));
@@ -221,13 +222,17 @@ public class SystemUtility extends View implements CloseableView, Transactional 
             new ObjectEditor(objectClass).execute();
             return;
         }
+        if(queryBuilder() == null) {
+            warning("Unable to build query");
+            return;
+        }
         if(c == downloadData) {
             TextContentProducer cp = new TextContentProducer() {
                 @Override
                 public void generateContent() throws Exception {
                     Writer w = getWriter();
                     ObjectIterator<? extends StoredObject> objects;
-                    objects = StoredObject.list(objectClass, where.getValue().trim(), any.getValue());
+                    objects = queryBuilder.list();
                     objects = objects(objects);
                     for(StoredObject so: objects) {
                         so.save(w);
@@ -245,24 +250,18 @@ public class SystemUtility extends View implements CloseableView, Transactional 
         String cols = select.getValue().trim();
         if(c == executeSQL) {
             StringList columns;
-            if(cols.isEmpty()) {
-                columns = StoredObjectUtility.browseColumns(objectClass);
-                select.setValue(columns.toString(", "));
-            } else {
-                if(cols.startsWith("/")) {
-                    Query q = StoredObject.query(objectClass, cols, where.getValue(), orderBy.getValue());
-                    if(rowsRequired > 0) {
-                        q = q.limit(rowsRequired);
-                    }
-                    new QueryGrid(q).execute();
-                    return;
+            if(cols.startsWith("/")) {
+                Query q = StoredObject.query(objectClass, cols, where.getValue(), orderBy.getValue());
+                if(rowsRequired > 0) {
+                    q = q.limit(rowsRequired);
                 }
-                columns = StringList.create(cols);
+                new QueryGrid(q).execute();
+                return;
             }
+            columns = StringList.create(cols);
             Browser b = new Browser(objectClass, columns);
             b.execute();
-            b.load(objects(StoredObject.list(objectClass, where.getValue().trim(), orderBy.getValue().trim(),
-                    any.getValue())));
+            b.load(objects(queryBuilder.list()));
             return;
         }
         if(c == pdf) {
@@ -277,6 +276,11 @@ public class SystemUtility extends View implements CloseableView, Transactional 
                 @Override
                 public String getExtraCondition() {
                     return where.getValue();
+                }
+
+                @Override
+                public QueryBuilder customizeQueryBuilder(QueryBuilder queryBuilder) {
+                    return queryBuilder.limit(limit.getValue());
                 }
 
                 @Override
@@ -298,6 +302,11 @@ public class SystemUtility extends View implements CloseableView, Transactional 
                 @Override
                 public String getExtraCondition() {
                     return where.getValue();
+                }
+
+                @Override
+                public QueryBuilder customizeQueryBuilder(QueryBuilder queryBuilder) {
+                    return queryBuilder.limit(limit.getValue());
                 }
 
                 @Override
@@ -349,12 +358,16 @@ public class SystemUtility extends View implements CloseableView, Transactional 
             warning("Class not found: " + from.getValue());
             return null;
         }
+        clearAlerts();
         return objectClass;
     }
 
-    private void viewSQL() {
+    private QueryBuilder<?> queryBuilder() {
         if(objectClass() == null) {
-            return;
+            return null;
+        }
+        if(queryBuilder == null || queryBuilder.getObjectClass() != objectClass) {
+            queryBuilder = QueryBuilder.from(objectClass);
         }
         String cols = select.getValue().trim();
         if(cols.isEmpty()) {
@@ -363,12 +376,19 @@ public class SystemUtility extends View implements CloseableView, Transactional 
         } else {
             if(!cols.startsWith("/")) {
                 cols = StringList.create(cols).toString(", ");
+                select.setValue(cols);
             }
         }
+        return queryBuilder.columns(cols).where(where.getValue().trim()).orderBy(orderBy.getValue().trim())
+                .any(any.getValue()).limit(limit.getValue());
+    }
+
+    private void viewSQL() {
+        if(queryBuilder() == null) {
+            return;
+        }
         TextView tv = new TextView("SQL");
-        tv.append(StoredObjectUtility.createSQL(ClassAttribute.get(objectClass), cols, where.getValue().trim(),
-                orderBy.getValue().trim(), !any.getValue(), false));
-        tv.update();
+        tv.append(queryBuilder.querySQL()).update();
         tv.execute();
     }
 
@@ -613,8 +633,7 @@ public class SystemUtility extends View implements CloseableView, Transactional 
             boolean batch = this.batch.getValue() == 0;
             int count = 0;
             Transaction t = null;
-            try (ObjectIterator<? extends StoredObject> list = StoredObject.list(objectClass, where.getValue().trim(),
-                    orderBy.getValue().trim(), any.getValue())) {
+            try (ObjectIterator<?> list = queryBuilder.list()) {
                 if (batch) {
                     t = getTransactionManager().createTransaction();
                 }

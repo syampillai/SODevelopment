@@ -527,6 +527,14 @@ public class Id {
         return new Query();
 	}
 
+	static int count(Query q) {
+		try(q) {
+			return q.getResultSet().getInt(1);
+		} catch(Exception e) {
+			return -1;
+		}
+	}
+
 	public final int countLinks(Class<? extends StoredObject> objectClass) {
         return new Random().nextInt();
 	}

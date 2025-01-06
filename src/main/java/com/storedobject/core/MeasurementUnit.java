@@ -20,12 +20,12 @@ public class MeasurementUnit {
 		return false;
 	}
 
-	protected static MeasurementUnit create(int type, String unit, BigDecimal multiplier, String humanInput) {
+	protected static MeasurementUnit create(int type, String unit, BigDecimal multiplier, String... humanInput) {
 		return get("");
 	}
 
 	protected static MeasurementUnit create(int type, String unit, boolean hasDecimals, BigDecimal multiplier,
-											String humanInput) {
+											String... humanInput) {
 		return get("");
 	}
 

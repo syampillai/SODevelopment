@@ -27,6 +27,10 @@ public interface ObjectLister<T extends StoredObject> {
         return getReportDefinition().getColumns().get(columnIndex).getCaption();
     }
 
+    default QueryBuilder<T> customizeQueryBuilder(QueryBuilder<T> queryBuilder) {
+        return queryBuilder;
+    }
+
     default ObjectIterator<T> customizeList(ObjectIterator<T> objectList) {
         return objectList;
     }

@@ -19,6 +19,8 @@ import java.util.logging.Logger;
 @SuppressWarnings({"ResultOfMethodCallIgnored", "unchecked"})
 public abstract class StoredObject implements Displayable, HasId, StringFiller {
 
+    static final String COUNT_STAR = "Count(*)";
+    static final String TYPE_EQUALS = "Type=";
     public static final Logger logger = Logger.getLogger("stored");
     private Id id, tranId;
     private static int r = new Random().nextInt();
@@ -45,7 +47,7 @@ public abstract class StoredObject implements Displayable, HasId, StringFiller {
      * not be participating any active transaction, otherwise, a {@link SORuntimeException} is raised.
      */
     public void makeNew() {
-        if(transacting() || (tran != null && tran.isActive())) {
+        if (transacting() || (tran != null && tran.isActive())) {
             throw new SORuntimeException("In active transaction");
         }
         tran = null;
@@ -74,10 +76,10 @@ public abstract class StoredObject implements Displayable, HasId, StringFiller {
      * @return True/false
      */
     public final boolean isModified() {
-        if(created()) {
+        if (created()) {
             return true;
         }
-        if(isVirtual()) {
+        if (isVirtual()) {
             makeNew();
             return true;
         }
@@ -93,7 +95,7 @@ public abstract class StoredObject implements Displayable, HasId, StringFiller {
     }
 
     public void setTransaction(Transaction transaction) throws Exception {
-        if(transaction == null) {
+        if (transaction == null) {
             throw new Exception();
         }
     }
@@ -104,20 +106,20 @@ public abstract class StoredObject implements Displayable, HasId, StringFiller {
 
     @Override
     public final boolean equals(Object another) {
-        if(another == null) {
+        if (another == null) {
             return false;
         }
-        if(another == this) {
+        if (another == this) {
             return true;
         }
-        if(!(another instanceof StoredObject) && !(another instanceof Id)) {
+        if (!(another instanceof StoredObject) && !(another instanceof Id)) {
             return false;
         }
-        if(another instanceof Id) {
+        if (another instanceof Id) {
             return id != null && id.equals(another);
         }
-        StoredObject so = (StoredObject)another;
-        if(so.id == null || id == null) {
+        StoredObject so = (StoredObject) another;
+        if (so.id == null || id == null) {
             return false;
         }
         return id.equals(so.id) && Objects.equals(tranId, so.tranId);
@@ -204,18 +206,18 @@ public abstract class StoredObject implements Displayable, HasId, StringFiller {
      * Migrate this instance to another class instance. Please note that there is no error checking or validations when
      * this is invoked. This is used very rarely, and it may be useful for building low-level utilities.
      *
-     * @param tm Transaction Manager.
+     * @param tm               Transaction Manager.
      * @param migratedInstance Migrated instance. Make sure that all the attribute values are properly set.
      * @throws Exception thrown for errors.
      */
     public void migrate(TransactionManager tm, StoredObject migratedInstance) throws Exception {
-        if(tm == null) {
+        if (tm == null) {
             throw new Exception();
         }
     }
 
     void checkMigration(StoredObject migratedInstance) throws Exception {
-        if(created() || !migratedInstance.created()) {
+        if (created() || !migratedInstance.created()) {
             throw new Exception("Not a suitable instance");
         }
     }
@@ -225,50 +227,50 @@ public abstract class StoredObject implements Displayable, HasId, StringFiller {
     }
 
     public final void checkTransaction() throws Exception {
-        if(tran == null) {
+        if (tran == null) {
             throw new Transaction_Error(null, "Not In Transaction");
         }
     }
 
     public void validateInsert() throws Exception {
-        if(getId() == null) {
+        if (getId() == null) {
             throw new Exception();
         }
-        if(transacting()) {
-                throw new Design_Error(tran, this);
+        if (transacting()) {
+            throw new Design_Error(tran, this);
         }
     }
 
     public void validateUpdate() throws Exception {
-        if(getId() == null) {
+        if (getId() == null) {
             throw new Exception();
         }
-        if(transacting()) {
-                throw new Design_Error(tran, this);
+        if (transacting()) {
+            throw new Design_Error(tran, this);
         }
     }
 
     public void validateDelete() throws Exception {
-        if(getId() == null) {
+        if (getId() == null) {
             throw new Exception();
         }
-        if(transacting()) {
-                throw new Design_Error(tran, this);
+        if (transacting()) {
+            throw new Design_Error(tran, this);
         }
     }
 
     public void validateUndelete() throws Exception {
-        if(getId() == null) {
+        if (getId() == null) {
             throw new Exception();
         }
-        if(transacting()) {
-                throw new Design_Error(tran, this);
+        if (transacting()) {
+            throw new Design_Error(tran, this);
         }
     }
 
     public void validate() throws Exception {
-        if(transacting()) {
-                throw new Design_Error(tran, this);
+        if (transacting()) {
+            throw new Design_Error(tran, this);
         }
     }
 
@@ -276,13 +278,13 @@ public abstract class StoredObject implements Displayable, HasId, StringFiller {
     }
 
     public void validateChildDetach(StoredObject child, int linkType) throws Exception {
-        if(getId() == null) {
+        if (getId() == null) {
             throw new Exception();
         }
     }
 
     public void validateChildUpdate(StoredObject child, int linkType) throws Exception {
-        if(getId() == null) {
+        if (getId() == null) {
             throw new Exception();
         }
     }
@@ -291,13 +293,13 @@ public abstract class StoredObject implements Displayable, HasId, StringFiller {
     }
 
     public void validateParentDetach(StoredObject parent, int linkType) throws Exception {
-        if(getId() == null) {
+        if (getId() == null) {
             throw new Exception();
         }
     }
 
     public void validateParentUpdate(StoredObject parent, int linkType) throws Exception {
-        if(getId() == null) {
+        if (getId() == null) {
             throw new Exception();
         }
     }
@@ -359,13 +361,13 @@ public abstract class StoredObject implements Displayable, HasId, StringFiller {
     }
 
     public final void directUpdate(TransactionManager tm) throws Exception {
-        if(Math.random() < 0.5) {
+        if (Math.random() < 0.5) {
             throw new Exception();
         }
     }
 
     public final String stringify() throws Exception {
-        if(getId() == null) {
+        if (getId() == null) {
             throw new Exception();
         }
         return getClass().getName() + "?";
@@ -425,7 +427,7 @@ public abstract class StoredObject implements Displayable, HasId, StringFiller {
     }
 
     public void setRawValue(String attributeName, Object rawValue) throws Exception {
-        if(getId() == null) {
+        if (getId() == null) {
             throw new Exception();
         }
     }
@@ -438,7 +440,7 @@ public abstract class StoredObject implements Displayable, HasId, StringFiller {
      * @throws Exception If any error occurs because the map contains incompatible values.
      */
     public final void load(Map<String, Object> map) throws Exception {
-        if(map.get("id") == null) {
+        if (map.get("id") == null) {
             throw new Exception();
         }
     }
@@ -453,7 +455,7 @@ public abstract class StoredObject implements Displayable, HasId, StringFiller {
     public static int load(TransactionManager tm, InputStream data, Comparator<CharSequence> objectComparator) throws Exception {
         return r;
     }
-    
+
     public static int load(TransactionManager tm, Reader data, Comparator<CharSequence> objectComparator) throws Exception {
         return r;
     }
@@ -472,7 +474,7 @@ public abstract class StoredObject implements Displayable, HasId, StringFiller {
     }
 
     public final void checkForDuplicate(String... attributes) throws Invalid_State {
-        if(attributes == null || attributes.length == 0) {
+        if (attributes == null || attributes.length == 0) {
             return;
         }
         throw new Invalid_State();
@@ -558,22 +560,22 @@ public abstract class StoredObject implements Displayable, HasId, StringFiller {
     }
 
     public final void removeLink(Transaction transaction, Id id, String linkType) throws Exception {
-        if(getId() == null) {
+        if (getId() == null) {
             throw new Exception();
         }
         loading();
     }
 
     public final void removeAllLinks() throws Exception {
-        removeAllLinks((Transaction)null);
+        removeAllLinks((Transaction) null);
     }
 
     public final void removeAllLinks(Transaction transaction) throws Exception {
-        removeAllLinks(transaction, (String)null);
+        removeAllLinks(transaction, (String) null);
     }
 
     public final void removeAllLinks(int linkType) throws Exception {
-        removeAllLinks((Transaction)null, linkType);
+        removeAllLinks((Transaction) null, linkType);
     }
 
     public final void removeAllLinks(Transaction transaction, int linkType) throws Exception {
@@ -581,11 +583,11 @@ public abstract class StoredObject implements Displayable, HasId, StringFiller {
     }
 
     public final void removeAllLinks(String linkType) throws Exception {
-        removeAllLinks((Transaction)null, linkType);
+        removeAllLinks((Transaction) null, linkType);
     }
 
     public final void removeAllLinks(Transaction transaction, String linkType) throws Exception {
-        if(getId() == null) {
+        if (getId() == null) {
             throw new Exception();
         }
         loading();
@@ -605,7 +607,7 @@ public abstract class StoredObject implements Displayable, HasId, StringFiller {
 
     public final void removeAllLinks(Transaction transaction, Class<? extends StoredObject> objectClass, int linkType)
             throws Exception {
-        if(getId() == null) {
+        if (getId() == null) {
             throw new Exception();
         }
         loading();
@@ -616,7 +618,7 @@ public abstract class StoredObject implements Displayable, HasId, StringFiller {
     }
 
     public final void removeAllLinks(Transaction transaction, Class<? extends StoredObject> objectClass, String linkType) throws Exception {
-        if(getId() == null) {
+        if (getId() == null) {
             throw new Exception();
         }
         loading();
@@ -627,7 +629,7 @@ public abstract class StoredObject implements Displayable, HasId, StringFiller {
     }
 
     public final void removeReverseLinks(Transaction transaction) throws Exception {
-        if(getId() == null) {
+        if (getId() == null) {
             throw new Exception();
         }
         loading();
@@ -636,7 +638,7 @@ public abstract class StoredObject implements Displayable, HasId, StringFiller {
     public static String checkTimeZone(String timeZone) throws Invalid_Value {
         try {
             return ZoneId.of(timeZone).getId();
-        } catch(Throwable ignored) {
+        } catch (Throwable ignored) {
         }
         throw new Invalid_Value("Time Zone = " + timeZone);
     }
@@ -648,13 +650,13 @@ public abstract class StoredObject implements Displayable, HasId, StringFiller {
     public static String checkCurrency(String currencyCode, boolean includeMetals) throws Invalid_Value {
         try {
             return Currency.getInstance(currencyCode.toUpperCase()).getCurrencyCode().toUpperCase();
-        } catch(Exception ignored) {
+        } catch (Exception ignored) {
         }
         throw new Invalid_Value("Currency = " + currencyCode);
     }
 
     public final <T extends StoredObject> T getParent() {
-        return get((Class<T>)getClass(), getParentId());
+        return get((Class<T>) getClass(), getParentId());
     }
 
     public final Id getParentId() {
@@ -678,7 +680,7 @@ public abstract class StoredObject implements Displayable, HasId, StringFiller {
     }
 
     public final <T extends StoredObject> ObjectIterator<T> getChildren() {
-        return listLinks((Class<T>)getClass());
+        return listLinks((Class<T>) getClass());
     }
 
     public final StoredObject reload() {
@@ -686,7 +688,7 @@ public abstract class StoredObject implements Displayable, HasId, StringFiller {
     }
 
     public final StoredObject reload(Transaction fromTransaction) {
-        if(id == null) {
+        if (id == null) {
             reloaded();
         }
         return this;
@@ -717,7 +719,7 @@ public abstract class StoredObject implements Displayable, HasId, StringFiller {
     }
 
     public static <H extends StoredObject> H getHistorical(Class<H> objectClass, Id id) {
-        if(id == null) {
+        if (id == null) {
             return null;
         }
         return get(objectClass, id);
@@ -729,16 +731,16 @@ public abstract class StoredObject implements Displayable, HasId, StringFiller {
     }
 
     public static StoredObject get(Id id) {
-        return get((Transaction)null, id);
+        return get((Transaction) null, id);
     }
 
     public static StoredObject get(Transaction transaction, Id id) {
-        if(Id.isNull(id)) {
+        if (Id.isNull(id)) {
             return null;
         }
-        if(transaction != null) {
+        if (transaction != null) {
             StoredObject so = transaction.get(id);
-            if(so != null) {
+            if (so != null) {
                 so.tran = transaction;
                 return so;
             }
@@ -751,13 +753,13 @@ public abstract class StoredObject implements Displayable, HasId, StringFiller {
     }
 
     public static <T extends StoredObject> T get(Transaction transaction, Class<T> objectClass, Id id) {
-        if(Id.isNull(id)) {
+        if (Id.isNull(id)) {
             return null;
         }
-        if(id instanceof ObjectId) {
+        if (id instanceof ObjectId) {
             StoredObject so = id.getObject();
-            if(so.getClass() == objectClass) {
-                return (T)so;
+            if (so.getClass() == objectClass) {
+                return (T) so;
             }
         }
         return null;
@@ -780,7 +782,7 @@ public abstract class StoredObject implements Displayable, HasId, StringFiller {
     }
 
     public static <T extends StoredObject> T get(Transaction transaction, Class<T> objectClass, String condition, String order) {
-        return r < 1 ? null : (T)new Person();
+        return r < 1 ? null : (T) new Person();
     }
 
     public static <T extends StoredObject> T get(ObjectIterator<T> iterator) {
@@ -788,7 +790,7 @@ public abstract class StoredObject implements Displayable, HasId, StringFiller {
     }
 
     public static <T extends StoredObject> T get(ObjectIterator<T> list, boolean validateOne) {
-        return r == 0 ? null : (T)new Person();
+        return r == 0 ? null : (T) new Person();
     }
 
     /**
@@ -804,9 +806,9 @@ public abstract class StoredObject implements Displayable, HasId, StringFiller {
     /**
      * Get the deleted instance. (If the instance was not deleted, null is returned).
      *
-     * @param <T> Type of object class.
+     * @param <T>         Type of object class.
      * @param objectClass Type of instance to be retrieved.
-     * @param id Id of the instance needs to be retrieved.
+     * @param id          Id of the instance needs to be retrieved.
      * @return The instance retrieved.
      */
     public static <T extends StoredObject> T getDeleted(Class<T> objectClass, Id id) {
@@ -814,20 +816,20 @@ public abstract class StoredObject implements Displayable, HasId, StringFiller {
     }
 
     public final <T extends StoredObject> T getRelated(Class<T> objectClass, Id id) {
-        return (T)nextVersion();
+        return (T) nextVersion();
     }
 
     public final <T extends StoredObject> T getRelated(Class<T> objectClass, Id id, boolean any) {
-        return (T)nextVersion();
+        return (T) nextVersion();
     }
 
     /**
      * Create an "exists condition" that can be used for retrieving or querying {@link StoredObject} instances.
      *
-     * @param objectClass The object class against which the existence should be checked.
+     * @param objectClass   The object class against which the existence should be checked.
      * @param attributeName Attribute name that matches the {@link Id} of the object that is going to be
      *                      retrieved or queried.
-     * @param <T> Type of this object class.
+     * @param <T>           Type of this object class.
      * @return Condition string suitable for retrieving or querying another type of {@link StoredObject} instances
      * where this object is related.
      */
@@ -838,12 +840,12 @@ public abstract class StoredObject implements Displayable, HasId, StringFiller {
     /**
      * Create an "exists condition" that can be used for retrieving or querying {@link StoredObject} instances.
      *
-     * @param objectClass The object class against which the existence should be checked.
+     * @param objectClass   The object class against which the existence should be checked.
      * @param attributeName Attribute name that matches the {@link Id} of the object that is going to be
      *                      retrieved or queried.
-     * @param condition Condition to be applied to this object class. Null should be passed if no condition needs
-     *                  to be applied.
-     * @param <T> Type of this object class.
+     * @param condition     Condition to be applied to this object class. Null should be passed if no condition needs
+     *                      to be applied.
+     * @param <T>           Type of this object class.
      * @return Condition string suitable for retrieving or querying another type of {@link StoredObject} instances
      * where this object is related.
      */
@@ -855,10 +857,10 @@ public abstract class StoredObject implements Displayable, HasId, StringFiller {
     /**
      * Create a "not exists condition" that can be used for retrieving or querying {@link StoredObject} instances.
      *
-     * @param objectClass The object class against which the existence should be checked.
+     * @param objectClass   The object class against which the existence should be checked.
      * @param attributeName Attribute name that matches the {@link Id} of the object that is going to be
      *                      retrieved or queried.
-     * @param <T> Type of this object class.
+     * @param <T>           Type of this object class.
      * @return Condition string suitable for retrieving or querying another type of {@link StoredObject} instances
      * where this object is related.
      */
@@ -869,12 +871,12 @@ public abstract class StoredObject implements Displayable, HasId, StringFiller {
     /**
      * Create a "not exists condition" that can be used for retrieving or querying {@link StoredObject} instances.
      *
-     * @param objectClass The object class against which the existence should be checked.
+     * @param objectClass   The object class against which the existence should be checked.
      * @param attributeName Attribute name that matches the {@link Id} of the object that is going to be
      *                      retrieved or queried.
-     * @param condition Condition to be applied to this object class. Null should be passed if no condition needs
-     *                  to be applied.
-     * @param <T> Type of this object class.
+     * @param condition     Condition to be applied to this object class. Null should be passed if no condition needs
+     *                      to be applied.
+     * @param <T>           Type of this object class.
      * @return Condition string suitable for retrieving or querying another type of {@link StoredObject} instances
      * where this object is related.
      */
@@ -900,7 +902,7 @@ public abstract class StoredObject implements Displayable, HasId, StringFiller {
     }
 
     public StoredObject previousVersion(StoredObject parent) {
-        if(parent == null || parent.tranId == null) {
+        if (parent == null || parent.tranId == null) {
             return this;
         }
         return new Person();
@@ -911,14 +913,14 @@ public abstract class StoredObject implements Displayable, HasId, StringFiller {
     }
 
     public static <T extends StoredObject, C extends T> C get(Transaction transaction, Class<T> objectClass, Id id, boolean any) {
-        if(Id.isNull(id)) {
+        if (Id.isNull(id)) {
             return null;
         }
-        if(id instanceof ObjectId) {
+        if (id instanceof ObjectId) {
             StoredObject so = id.getObject();
-            if(objectClass.isAssignableFrom(so.getClass())) {
+            if (objectClass.isAssignableFrom(so.getClass())) {
                 //noinspection unchecked
-                return (C)so;
+                return (C) so;
             }
         }
         return null;
@@ -994,6 +996,12 @@ public abstract class StoredObject implements Displayable, HasId, StringFiller {
 
     public static <T extends StoredObject> ObjectIterator<T> list(Transaction transaction, Class<T> objectClass,
                                                                   String condition, String order, boolean any) {
+        return list(transaction, StoredObjectUtility.classAttribute(objectClass), condition, order, any);
+    }
+
+    public static <T extends StoredObject> ObjectIterator<T> list(Transaction transaction, Class<T> objectClass,
+                                                                  String condition, String order, boolean any,
+                                                                  int skip, int limit, int[] columns) {
         return list(transaction, StoredObjectUtility.classAttribute(objectClass), condition, order, any);
     }
 
@@ -1080,10 +1088,15 @@ public abstract class StoredObject implements Displayable, HasId, StringFiller {
 
     public static Query query(Transaction transaction, Class<? extends StoredObject> objectClass, String columns,
                               String condition, String order, boolean any) {
-        if(!any) {
+        if (!any) {
             return query(transaction, objectClass, columns, condition, order);
         }
         return new Query();
+    }
+
+    public static Query query(Transaction transaction, Class<? extends StoredObject> objectClass, String columns,
+                              String condition, String order, boolean any, int skip, int limit, int[] distinct) {
+        return query(transaction, objectClass, columns, condition, order, any);
     }
 
     public static int count(Class<? extends StoredObject> objectClass) {
@@ -1111,7 +1124,7 @@ public abstract class StoredObject implements Displayable, HasId, StringFiller {
     }
 
     public final <T extends StoredObject> ObjectIterator<T> listLinks(Class<T> objectClass) {
-        return listLinks((Transaction)null, objectClass, null, null);
+        return listLinks((Transaction) null, objectClass, null, null);
     }
 
     public final <T extends StoredObject> ObjectIterator<T> listLinks(Transaction transaction, Class<T> objectClass) {
@@ -1119,7 +1132,7 @@ public abstract class StoredObject implements Displayable, HasId, StringFiller {
     }
 
     public final <T extends StoredObject> ObjectIterator<T> listLinks(Class<T> objectClass, String condition) {
-        return listLinks((Transaction)null, objectClass, condition, null);
+        return listLinks((Transaction) null, objectClass, condition, null);
     }
 
     public final <T extends StoredObject> ObjectIterator<T> listLinks(Transaction transaction, Class<T> objectClass,
@@ -1128,7 +1141,7 @@ public abstract class StoredObject implements Displayable, HasId, StringFiller {
     }
 
     public final <T extends StoredObject> ObjectIterator<T> listLinks(Class<T> objectClass, String condition, String order) {
-        return listLinks((Transaction)null, objectClass, condition, order);
+        return listLinks((Transaction) null, objectClass, condition, order);
     }
 
     public final <T extends StoredObject> ObjectIterator<T> listLinks(Transaction transaction, Class<T> objectClass,
@@ -1185,7 +1198,7 @@ public abstract class StoredObject implements Displayable, HasId, StringFiller {
     }
 
     public final <T extends StoredObject> ObjectIterator<T> listLinks(Class<T> objectClass, boolean any) {
-        return listLinks((Transaction)null, objectClass, null, null, any);
+        return listLinks((Transaction) null, objectClass, null, null, any);
     }
 
     public final <T extends StoredObject> ObjectIterator<T> listLinks(Transaction transaction, Class<T> objectClass, boolean any) {
@@ -1193,7 +1206,7 @@ public abstract class StoredObject implements Displayable, HasId, StringFiller {
     }
 
     public final <T extends StoredObject> ObjectIterator<T> listLinks(Class<T> objectClass, String condition, boolean any) {
-        return listLinks((Transaction)null, objectClass, condition, null, any);
+        return listLinks((Transaction) null, objectClass, condition, null, any);
     }
 
     public final <T extends StoredObject> ObjectIterator<T> listLinks(Transaction transaction, Class<T> objectClass, String condition, boolean any) {
@@ -1201,7 +1214,7 @@ public abstract class StoredObject implements Displayable, HasId, StringFiller {
     }
 
     public final <T extends StoredObject> ObjectIterator<T> listLinks(Class<T> objectClass, String condition, String order, boolean any) {
-        return listLinks((Transaction)null, objectClass, condition, order, any);
+        return listLinks((Transaction) null, objectClass, condition, order, any);
     }
 
     public final <T extends StoredObject> ObjectIterator<T> listLinks(Transaction transaction, Class<T> objectClass, String condition, String order, boolean any) {
@@ -1253,7 +1266,15 @@ public abstract class StoredObject implements Displayable, HasId, StringFiller {
     }
 
     public final <T extends StoredObject> ObjectIterator<T> listLinks(Transaction transaction, String linkType,
-                                                                      Class<T> objectClass, String condition, String order, boolean any) {
+                                                                      Class<T> objectClass, String condition,
+                                                                      String order, boolean any) {
+        return ObjectIterator.create();
+    }
+
+    public final <T extends StoredObject> ObjectIterator<T> listLinks(Transaction transaction, String linkType,
+                                                                      Class<T> objectClass, String condition,
+                                                                      String order, boolean any,
+                                                                      int skip, int limit, int[] distinct) {
         return ObjectIterator.create();
     }
 
@@ -1394,7 +1415,7 @@ public abstract class StoredObject implements Displayable, HasId, StringFiller {
     }
 
     public final Query queryLinks(Class<? extends StoredObject> objectClass, String columns) {
-        return queryLinks((Transaction)null, objectClass, columns, null, null);
+        return queryLinks((Transaction) null, objectClass, columns, null, null);
     }
 
     public final Query queryLinks(Transaction transaction, Class<? extends StoredObject> objectClass, String columns) {
@@ -1402,7 +1423,7 @@ public abstract class StoredObject implements Displayable, HasId, StringFiller {
     }
 
     public final Query queryLinks(Class<? extends StoredObject> objectClass, String columns, String condition) {
-        return queryLinks((Transaction)null, objectClass, columns, condition, null);
+        return queryLinks((Transaction) null, objectClass, columns, condition, null);
     }
 
     public final Query queryLinks(Transaction transaction, Class<? extends StoredObject> objectClass, String columns, String condition) {
@@ -1410,7 +1431,7 @@ public abstract class StoredObject implements Displayable, HasId, StringFiller {
     }
 
     public final Query queryLinks(Class<? extends StoredObject> objectClass, String columns, String condition, String order) {
-        return queryLinks((Transaction)null, objectClass, columns, condition, order);
+        return queryLinks((Transaction) null, objectClass, columns, condition, order);
     }
 
     public final Query queryLinks(Transaction transaction, Class<? extends StoredObject> objectClass, String columns, String condition, String order) {
@@ -1473,7 +1494,7 @@ public abstract class StoredObject implements Displayable, HasId, StringFiller {
     }
 
     public final Query queryLinks(Class<? extends StoredObject> objectClass, String columns, boolean any) {
-        return queryLinks((Transaction)null, objectClass, columns, null, null, any);
+        return queryLinks((Transaction) null, objectClass, columns, null, null, any);
     }
 
     public final Query queryLinks(Transaction transaction, Class<? extends StoredObject> objectClass, String columns, boolean any) {
@@ -1481,7 +1502,7 @@ public abstract class StoredObject implements Displayable, HasId, StringFiller {
     }
 
     public final Query queryLinks(Class<? extends StoredObject> objectClass, String columns, String condition, boolean any) {
-        return queryLinks((Transaction)null, objectClass, columns, condition, null, any);
+        return queryLinks((Transaction) null, objectClass, columns, condition, null, any);
     }
 
     public final Query queryLinks(Transaction transaction, Class<? extends StoredObject> objectClass, String columns,
@@ -1491,12 +1512,18 @@ public abstract class StoredObject implements Displayable, HasId, StringFiller {
 
     public final Query queryLinks(Class<? extends StoredObject> objectClass, String columns, String condition, String order,
                                   boolean any) {
-        return queryLinks((Transaction)null, objectClass, columns, condition, order, any);
+        return queryLinks((Transaction) null, objectClass, columns, condition, order, any);
     }
 
     public final Query queryLinks(Transaction transaction, Class<? extends StoredObject> objectClass, String columns,
                                   String condition, String order, boolean any) {
         return queryLinks(transaction, null, objectClass, columns, condition, order, any);
+    }
+
+    public final Query queryLinks(Transaction transaction, String linkType, Class<? extends StoredObject> objectClass,
+                                  String columns, String condition, String order, boolean any,
+                                  int skip, int limit, int[] distinct) {
+        return queryLinks(transaction, linkType, objectClass, columns, condition, order, any);
     }
 
     public final Query queryLinks(int linkType, Class<? extends StoredObject> objectClass, String columns, boolean any) {
@@ -1558,7 +1585,7 @@ public abstract class StoredObject implements Displayable, HasId, StringFiller {
     }
 
     public final int countLinks(Class<? extends StoredObject> objectClass) {
-        return countLinks((Transaction)null, objectClass, null);
+        return countLinks((Transaction) null, objectClass, null);
     }
 
     public final int countLinks(Transaction transaction, Class<? extends StoredObject> objectClass) {
@@ -1566,7 +1593,7 @@ public abstract class StoredObject implements Displayable, HasId, StringFiller {
     }
 
     public final int countLinks(Class<? extends StoredObject> objectClass, String condition) {
-        return countLinks((Transaction)null, objectClass, condition);
+        return countLinks((Transaction) null, objectClass, condition);
     }
 
     public final int countLinks(Transaction transaction, Class<? extends StoredObject> objectClass, String condition) {
@@ -1607,7 +1634,7 @@ public abstract class StoredObject implements Displayable, HasId, StringFiller {
     }
 
     public final int countLinks(Class<? extends StoredObject> objectClass, boolean any) {
-        return countLinks((Transaction)null, objectClass, null, any);
+        return countLinks((Transaction) null, objectClass, null, any);
     }
 
     public final int countLinks(Transaction transaction, Class<? extends StoredObject> objectClass, boolean any) {
@@ -1615,7 +1642,7 @@ public abstract class StoredObject implements Displayable, HasId, StringFiller {
     }
 
     public final int countLinks(Class<? extends StoredObject> objectClass, String condition, boolean any) {
-        return countLinks((Transaction)null, objectClass, condition, any);
+        return countLinks((Transaction) null, objectClass, condition, any);
     }
 
     public final int countLinks(Transaction transaction, Class<? extends StoredObject> objectClass, String condition, boolean any) {
@@ -1657,7 +1684,7 @@ public abstract class StoredObject implements Displayable, HasId, StringFiller {
     }
 
     public final <T extends StoredObject> ObjectIterator<T> listMasters(Class<T> objectClass) {
-        return listMasters((Transaction)null, objectClass, null, null);
+        return listMasters((Transaction) null, objectClass, null, null);
     }
 
     public final <T extends StoredObject> ObjectIterator<T> listMasters(Transaction transaction, Class<T> objectClass) {
@@ -1665,7 +1692,7 @@ public abstract class StoredObject implements Displayable, HasId, StringFiller {
     }
 
     public final <T extends StoredObject> ObjectIterator<T> listMasters(Class<T> objectClass, String condition) {
-        return listMasters((Transaction)null, objectClass, condition, null);
+        return listMasters((Transaction) null, objectClass, condition, null);
     }
 
     public final <T extends StoredObject> ObjectIterator<T> listMasters(Transaction transaction, Class<T> objectClass,
@@ -1674,7 +1701,7 @@ public abstract class StoredObject implements Displayable, HasId, StringFiller {
     }
 
     public final <T extends StoredObject> ObjectIterator<T> listMasters(Class<T> objectClass, String condition, String order) {
-        return listMasters((Transaction)null, objectClass, condition, order);
+        return listMasters((Transaction) null, objectClass, condition, order);
     }
 
     public final <T extends StoredObject> ObjectIterator<T> listMasters(Transaction transaction, Class<T> objectClass,
@@ -1738,7 +1765,7 @@ public abstract class StoredObject implements Displayable, HasId, StringFiller {
     }
 
     public final <T extends StoredObject> ObjectIterator<T> listMasters(Class<T> objectClass, boolean any) {
-        return listMasters((Transaction)null, objectClass, null, null, any);
+        return listMasters((Transaction) null, objectClass, null, null, any);
     }
 
     public final <T extends StoredObject> ObjectIterator<T> listMasters(Transaction transaction, Class<T> objectClass, boolean any) {
@@ -1746,7 +1773,7 @@ public abstract class StoredObject implements Displayable, HasId, StringFiller {
     }
 
     public final <T extends StoredObject> ObjectIterator<T> listMasters(Class<T> objectClass, String condition, boolean any) {
-        return listMasters((Transaction)null, objectClass, condition, null, any);
+        return listMasters((Transaction) null, objectClass, condition, null, any);
     }
 
     public final <T extends StoredObject> ObjectIterator<T> listMasters(Transaction transaction, Class<T> objectClass,
@@ -1756,7 +1783,7 @@ public abstract class StoredObject implements Displayable, HasId, StringFiller {
 
     public final <T extends StoredObject> ObjectIterator<T> listMasters(Class<T> objectClass, String condition, String order,
                                                                         boolean any) {
-        return listMasters((Transaction)null, objectClass, condition, order, any);
+        return listMasters((Transaction) null, objectClass, condition, order, any);
     }
 
     public final <T extends StoredObject> ObjectIterator<T> listMasters(Transaction transaction, Class<T> objectClass,
@@ -1812,13 +1839,21 @@ public abstract class StoredObject implements Displayable, HasId, StringFiller {
         return listMasters(transaction, linkType, objectClass, condition, null, any);
     }
 
-    public final <T extends StoredObject> ObjectIterator<T> listMasters(String linkType, Class<T> objectClass, String condition,
-                                                                        String order, boolean any) {
+    public final <T extends StoredObject> ObjectIterator<T> listMasters(String linkType, Class<T> objectClass,
+                                                                        String condition, String order, boolean any) {
         return listMasters(null, linkType, objectClass, condition, order, any);
     }
 
     public final <T extends StoredObject> ObjectIterator<T> listMasters(Transaction transaction, String linkType,
-                                                                        Class<T> objectClass, String condition, String order, boolean any) {
+                                                                        Class<T> objectClass, String condition,
+                                                                        String order, boolean any) {
+        return ObjectIterator.create();
+    }
+
+    public final <T extends StoredObject> ObjectIterator<T> listMasters(Transaction transaction, String linkType,
+                                                                        Class<T> objectClass, String condition,
+                                                                        String order, boolean any,
+                                                                        int skip, int limit, int[] distinct) {
         return ObjectIterator.create();
     }
 
@@ -1826,7 +1861,7 @@ public abstract class StoredObject implements Displayable, HasId, StringFiller {
     }
 
     public final <T extends StoredObject> T getMaster(Class<T> objectClass) {
-        return getMaster((Transaction)null, objectClass, null);
+        return getMaster((Transaction) null, objectClass, null);
     }
 
     public final <T extends StoredObject> T getMaster(Transaction transaction, Class<T> objectClass) {
@@ -1834,7 +1869,7 @@ public abstract class StoredObject implements Displayable, HasId, StringFiller {
     }
 
     public final <T extends StoredObject> T getMaster(Class<T> objectClass, String condition) {
-        return getMaster((Transaction)null, objectClass, condition);
+        return getMaster((Transaction) null, objectClass, condition);
     }
 
     public final <T extends StoredObject> T getMaster(Transaction transaction, Class<T> objectClass, String condition) {
@@ -1875,7 +1910,7 @@ public abstract class StoredObject implements Displayable, HasId, StringFiller {
     }
 
     public final <T extends StoredObject> T getMaster(Class<T> objectClass, boolean any) {
-        return getMaster((Transaction)null, objectClass, null, any);
+        return getMaster((Transaction) null, objectClass, null, any);
     }
 
     public final <T extends StoredObject> T getMaster(Transaction transaction, Class<T> objectClass, boolean any) {
@@ -1883,7 +1918,7 @@ public abstract class StoredObject implements Displayable, HasId, StringFiller {
     }
 
     public final <T extends StoredObject> T getMaster(Class<T> objectClass, String condition, boolean any) {
-        return getMaster((Transaction)null, objectClass, condition, any);
+        return getMaster((Transaction) null, objectClass, condition, any);
     }
 
     public final <T extends StoredObject> T getMaster(Transaction transaction, Class<T> objectClass, String condition, boolean any) {
@@ -1985,7 +2020,7 @@ public abstract class StoredObject implements Displayable, HasId, StringFiller {
     }
 
     public final Query queryMasters(Class<? extends StoredObject> objectClass, String columns) {
-        return queryMasters((Transaction)null, objectClass, columns, null, null);
+        return queryMasters((Transaction) null, objectClass, columns, null, null);
     }
 
     public final Query queryMasters(Transaction transaction, Class<? extends StoredObject> objectClass, String columns) {
@@ -1993,7 +2028,7 @@ public abstract class StoredObject implements Displayable, HasId, StringFiller {
     }
 
     public final Query queryMasters(Class<? extends StoredObject> objectClass, String columns, String condition) {
-        return queryMasters((Transaction)null, objectClass, columns, condition, null);
+        return queryMasters((Transaction) null, objectClass, columns, condition, null);
     }
 
     public final Query queryMasters(Transaction transaction, Class<? extends StoredObject> objectClass, String columns,
@@ -2002,7 +2037,7 @@ public abstract class StoredObject implements Displayable, HasId, StringFiller {
     }
 
     public final Query queryMasters(Class<? extends StoredObject> objectClass, String columns, String condition, String order) {
-        return queryMasters((Transaction)null, objectClass, columns, condition, order);
+        return queryMasters((Transaction) null, objectClass, columns, condition, order);
     }
 
     public final Query queryMasters(Transaction transaction, Class<? extends StoredObject> objectClass, String columns,
@@ -2066,7 +2101,7 @@ public abstract class StoredObject implements Displayable, HasId, StringFiller {
     }
 
     public final Query queryMasters(Class<? extends StoredObject> objectClass, String columns, boolean any) {
-        return queryMasters((Transaction)null, objectClass, columns, null, null, any);
+        return queryMasters((Transaction) null, objectClass, columns, null, null, any);
     }
 
     public final Query queryMasters(Transaction transaction, Class<? extends StoredObject> objectClass, String columns, boolean any) {
@@ -2074,7 +2109,7 @@ public abstract class StoredObject implements Displayable, HasId, StringFiller {
     }
 
     public final Query queryMasters(Class<? extends StoredObject> objectClass, String columns, String condition, boolean any) {
-        return queryMasters((Transaction)null, objectClass, columns, condition, null, any);
+        return queryMasters((Transaction) null, objectClass, columns, condition, null, any);
     }
 
     public final Query queryMasters(Transaction transaction, Class<? extends StoredObject> objectClass, String columns,
@@ -2083,7 +2118,7 @@ public abstract class StoredObject implements Displayable, HasId, StringFiller {
     }
 
     public final Query queryMasters(Class<? extends StoredObject> objectClass, String columns, String condition, String order, boolean any) {
-        return queryMasters((Transaction)null, objectClass, columns, condition, order, any);
+        return queryMasters((Transaction) null, objectClass, columns, condition, order, any);
     }
 
     public final Query queryMasters(Transaction transaction, Class<? extends StoredObject> objectClass, String columns, String condition, String order, boolean any) {
@@ -2135,12 +2170,19 @@ public abstract class StoredObject implements Displayable, HasId, StringFiller {
         return queryMasters(null, linkType, objectClass, columns, condition, order, any);
     }
 
-    public final Query queryMasters(Transaction transaction, String linkType, Class<? extends StoredObject> objectClass, String columns, String condition, String order, boolean any) {
+    public final Query queryMasters(Transaction transaction, String linkType, Class<? extends StoredObject> objectClass,
+                                    String columns, String condition, String order, boolean any) {
+        return queryLinksOrMasters(transaction, linkType, objectClass, columns, condition, order, any, false);
+    }
+
+    public final Query queryMasters(Transaction transaction, String linkType, Class<? extends StoredObject> objectClass,
+                                    String columns, String condition, String order, boolean any,
+                                    int skip, int limit, int[] distinct) {
         return queryLinksOrMasters(transaction, linkType, objectClass, columns, condition, order, any, false);
     }
 
     public final int countMasters(Class<? extends StoredObject> objectClass) {
-        return countMasters((Transaction)null, objectClass, null);
+        return countMasters((Transaction) null, objectClass, null);
     }
 
     public final int countMasters(Transaction transaction, Class<? extends StoredObject> objectClass) {
@@ -2148,7 +2190,7 @@ public abstract class StoredObject implements Displayable, HasId, StringFiller {
     }
 
     public final int countMasters(Class<? extends StoredObject> objectClass, String condition) {
-        return countMasters((Transaction)null, objectClass, condition);
+        return countMasters((Transaction) null, objectClass, condition);
     }
 
     public final int countMasters(Transaction transaction, Class<? extends StoredObject> objectClass, String condition) {
@@ -2189,7 +2231,7 @@ public abstract class StoredObject implements Displayable, HasId, StringFiller {
     }
 
     public final int countMasters(Class<? extends StoredObject> objectClass, boolean any) {
-        return countMasters((Transaction)null, objectClass, null, any);
+        return countMasters((Transaction) null, objectClass, null, any);
     }
 
     public final int countMasters(Transaction transaction, Class<? extends StoredObject> objectClass, boolean any) {
@@ -2197,7 +2239,7 @@ public abstract class StoredObject implements Displayable, HasId, StringFiller {
     }
 
     public final int countMasters(Class<? extends StoredObject> objectClass, String condition, boolean any) {
-        return countMasters((Transaction)null, objectClass, condition, any);
+        return countMasters((Transaction) null, objectClass, condition, any);
     }
 
     public final int countMasters(Transaction transaction, Class<? extends StoredObject> objectClass, String condition, boolean any) {
@@ -2279,11 +2321,11 @@ public abstract class StoredObject implements Displayable, HasId, StringFiller {
 
     public final StoredObjectLink<?> objectLink(String name, boolean create) {
         List<StoredObjectLink<?>> links = objectLinks(create);
-        if(links == null) {
+        if (links == null) {
             return null;
         }
         StoredObjectLink<?> link = links.stream().filter(l -> l.getName().equals(name)).findAny().orElse(null);
-        if(link != null || !create) {
+        if (link != null || !create) {
             return link;
         }
         return null;
@@ -2299,5 +2341,10 @@ public abstract class StoredObject implements Displayable, HasId, StringFiller {
 
     public static String toCode(String code) {
         return code;
+    }
+
+    static String createSQL(ClassAttribute<?> ca, String columns, String condition, String order, boolean only,
+                            boolean header, int skip, int limit, int[] distinct) {
+        return "";
     }
 }

@@ -204,9 +204,13 @@ public class AbstractQuantityField<T extends Quantity> extends CustomTextField<T
             return false;
         }
         if(value1.equals(value2)) {
-            return value1.isZero() || value1.getUnit().equals(value2.getUnit());
+            return (value1.isZero() && valueEqualsForZero(value1, value2)) || value1.getUnit().equals(value2.getUnit());
         }
         return false;
+    }
+
+    protected boolean valueEqualsForZero(T value1, T value2) {
+        return true;
     }
 
     public void setAllowedUnits(Collection<MeasurementUnit> allowedUnits) {
