@@ -34,6 +34,14 @@ public abstract class Unit extends AbstractUnit {
             "14th",
             "15th",
             "16th",
+            "17th",
+            "18th",
+            "19th",
+            "20th",
+            "21st",
+            "22nd",
+            "23rd",
+            "24th",
     };
     private Id blockId;
     private Block block;
@@ -135,6 +143,10 @@ public abstract class Unit extends AbstractUnit {
 
     public static String[] getOrdinalityValues() {
         return ordinalityValues;
+    }
+
+    public int getLayoutStyle() {
+        return getBlock().getLayoutStyle();
     }
 
     @Override
@@ -594,5 +606,20 @@ public abstract class Unit extends AbstractUnit {
         weeklyStatistics = null;
         monthlyStatistics = null;
         yearlyStatistics = null;
+    }
+
+    @Override
+    public String toDisplay() {
+        return super.toDisplay() + " (" + code + ")";
+    }
+
+    /**
+     * Determines whether the unit consumes a specified resource.
+     *
+     * @param resource The resource identifier to check for consumption.
+     * @return {@code true} if the unit consumes the specified resource; {@code false} otherwise.
+     */
+    public boolean consumes(int resource) {
+        return getConsumptionCalculator(resource) != null;
     }
 }

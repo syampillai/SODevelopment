@@ -6,7 +6,8 @@ import com.storedobject.core.annotation.Column;
 public final class ValueImagePosition extends StoredObject implements Detail {
 
     private static final String[] ordinalityValues = Unit.getOrdinalityValues();
-    private int ordinality, imageX, imageY;
+    private static final String[] layoutStyleValues = Unit.getOrdinalityValues();
+    private int ordinality, imageX, imageY, layoutStyle = 0;
     private String label, tooltip;
 
     public ValueImagePosition() {
@@ -18,6 +19,7 @@ public final class ValueImagePosition extends StoredObject implements Detail {
         columns.add("Ordinality", "int");
         columns.add("ImageX", "int");
         columns.add("ImageY", "int");
+        columns.add("LayoutStyle", "int");
     }
 
     public void setOrdinality(int ordinality) {
@@ -77,10 +79,38 @@ public final class ValueImagePosition extends StoredObject implements Detail {
         return imageY;
     }
 
+
+    public void setLayoutStyle(int layoutStyle) {
+        this.layoutStyle = layoutStyle;
+    }
+
+    @Column(order = 600)
+    public int getLayoutStyle() {
+        return layoutStyle;
+    }
+
+    public String getLayoutStyleValue() {
+        return getLayoutStyleValue(layoutStyle);
+    }
+
+    public static String getLayoutStyleValue(int layoutStyle) {
+        return layoutStyleValues[layoutStyle % layoutStyleValues.length];
+    }
+
+    public static String[] getLayoutStyleValues() {
+        return layoutStyleValues;
+    }
+
     @Override
     public void validateData(TransactionManager tm) throws Exception {
-        if (ordinality < 1 || ordinality >= ordinalityValues.length) {
+        if (ordinality < 0 || ordinality >= ordinalityValues.length) {
             throw new Invalid_Value("Ordinality");
+        }
+        if (layoutStyle < 0 || layoutStyle >= layoutStyleValues.length) {
+            throw new Invalid_Value("Layout Style");
+        }
+        if(ordinality == 0 && layoutStyle != 0) {
+            throw new Invalid_Value("Ordinality / Layout Style");
         }
         super.validateData(tm);
     }
@@ -92,6 +122,6 @@ public final class ValueImagePosition extends StoredObject implements Detail {
 
     @Override
     public Object getUniqueValue() {
-        return ordinality;
+        return ordinality + "/" + layoutStyle;
     }
 }

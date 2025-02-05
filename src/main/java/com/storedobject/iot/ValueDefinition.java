@@ -18,7 +18,7 @@ public abstract class ValueDefinition<VT> extends StoredObject implements Detail
     private int imageX, imageY;
     private String imagePrefix = "";
     Data data;
-    private Map<Integer, Position> positions;
+    private Map<String, Position> positions;
 
     public ValueDefinition() {
     }
@@ -268,12 +268,15 @@ public abstract class ValueDefinition<VT> extends StoredObject implements Detail
         }
         if(data == null) {
             data = getLatestData(unitId);
+            if(data == null) {
+                return null;
+            }
         }
         try {
             return getValueMethodForGet().invoke(data);
         } catch (Throwable e) {
             SystemLog.log("IOT", "Error obtaining " + name
-                    + " (Unit: " + this.data.getUnit().getName() + ")");
+                    + " (Unit: " + StoredObject.get(Unit.class, unitId, true).getName() + ")");
         }
         return null;
     }
@@ -306,53 +309,77 @@ public abstract class ValueDefinition<VT> extends StoredObject implements Detail
         return StringUtility.makeLabel(name);
     }
 
-    public int getImageX(int ordinality) {
-        if(ordinality < 1) {
+    public int getImageX(Unit unit) {
+        return getImageX(unit.getOrdinality(), unit.getLayoutStyle());
+    }
+
+    public int getImageX(int ordinality, int layoutStyle) {
+        if(ordinality < 1 && layoutStyle < 1) {
             return imageX;
         }
-        return getPosition(ordinality).x;
+        return getPosition(ordinality, layoutStyle).x;
     }
 
-    public int getImageY(int ordinality) {
-        if(ordinality < 1) {
+    public int getImageY(Unit unit) {
+        return getImageY(unit.getOrdinality(), unit.getLayoutStyle());
+    }
+
+    public int getImageY(int ordinality, int layoutStyle) {
+        if(ordinality < 1 && layoutStyle < 1) {
             return imageY;
         }
-        return getPosition(ordinality).y;
+        return getPosition(ordinality, layoutStyle).y;
     }
 
-    public String getLabel(int ordinality) {
-        if(ordinality < 1) {
-            return tagged(getLabel(), ordinality);
+    public String getLabel(Unit unit) {
+        return getPosition(unit.getOrdinality(), unit.getLayoutStyle()).label;
+    }
+
+    public String getLabel(int ordinality, int layoutStyle) {
+        if(ordinality < 1 && layoutStyle < 1) {
+            return tagged(getLabel(), ordinality, layoutStyle);
         }
-        return tagged(getPosition(ordinality).label, ordinality);
+        return tagged(getPosition(ordinality, layoutStyle).label, ordinality, layoutStyle);
     }
 
-    public String getTooltip(int ordinality) {
-        if(ordinality < 1) {
-            return tagged(getTooltip(), ordinality);
+    public String getTooltip(Unit unit) {
+        return getTooltip(unit.getOrdinality(), unit.getLayoutStyle());
+    }
+
+    public String getTooltip(int ordinality, int layoutStyle) {
+        if(ordinality < 1 && layoutStyle < 1) {
+            return tagged(getTooltip(), ordinality, layoutStyle);
         }
-        return tagged(getPosition(ordinality).tooltip, ordinality);
+        return tagged(getPosition(ordinality, layoutStyle).tooltip, ordinality, layoutStyle);
     }
 
-    public String getCaption(int ordinality) {
-        return tagged(getCaption(), ordinality);
+    public String getCaption(Unit unit) {
+        return getCaption(unit.getOrdinality(), unit.getLayoutStyle());
     }
 
-    private String tagged(String label, int ordinality) {
+    public String getCaption(int ordinality, int layoutStyle) {
+        return tagged(getCaption(), ordinality, layoutStyle);
+    }
+
+    private String tagged(String label, int ordinality, int layoutStyle) {
         if(label.contains("{#}")) {
-            return label.replace("{#}", String.valueOf(ordinality + 1));
+            label = label.replace("{#}", String.valueOf(ordinality + 1));
+        }
+        if(label.contains("{~}")) {
+            label = label.replace("{~}", String.valueOf(layoutStyle));
         }
         return label;
     }
 
-    private Position getPosition(int ordinality) {
+    private Position getPosition(int ordinality, int layoutStyle) {
         if(positions == null) {
             positions = new HashMap<>();
-            listLinks(ValueImagePosition.class).forEach(vip -> positions.put(vip.getOrdinality(),
+            listLinks(ValueImagePosition.class).forEach(vip ->
+                    positions.put(vip.getOrdinality() + "/" + vip.getLayoutStyle(),
                     new Position(vip.getImageX(), vip.getImageY(), nonWhite(vip.getLabel(), getLabel()),
                             nonWhite(vip.getTooltip(), getTooltip()))));
         }
-        Position position = positions.get(ordinality);
+        Position position = positions.get(ordinality + "/" + layoutStyle);
         return position == null ? new Position(imageX, imageY, getLabel(), getTooltip()) : position;
     }
 
@@ -369,11 +396,13 @@ public abstract class ValueDefinition<VT> extends StoredObject implements Detail
             save(t);
             return;
         }
-        ValueImagePosition vip = listLinks(ValueImagePosition.class, "Ordinality=" + unit.getOrdinality())
+        ValueImagePosition vip = listLinks(ValueImagePosition.class,
+                "Ordinality=" + unit.getOrdinality() + " AND LayoutStyle=" + unit.getLayoutStyle())
                 .findFirst();
         if(vip == null) {
             vip = new ValueImagePosition();
             vip.setOrdinality(unit.getOrdinality());
+            vip.setLayoutStyle(unit.getLayoutStyle());
         }
         vip.setImageX(imageX);
         vip.setImageY(imageY);

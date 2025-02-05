@@ -15,7 +15,8 @@ import java.util.stream.Collectors;
 public final class Block extends AbstractUnit {
 
     private static final String DEFAULT_STYLE = "font-weight:bold\nfont-size:xx-large";
-    private int code;
+    private static final String[] layoutStyleValues = Unit.getOrdinalityValues();
+    private int code, layoutStyle = 0;
     private String imageName;
     private int captionX, captionY;
     private String captionStyle;
@@ -33,11 +34,16 @@ public final class Block extends AbstractUnit {
         columns.add("CaptionY", "int");
         columns.add("CaptionStyle", "text");
         columns.add("MessageGroup", "id");
+        columns.add("LayoutStyle", "int");
     }
 
     public static void indices(Indices indices) {
         indices.add("Code", true);
         indices.add("Site");
+    }
+
+    public static String[] searchColumns() {
+        return new String[] { "Name", "Active", "Code", "LayoutStyle" };
     }
 
     public static Block get(String name) {
@@ -58,7 +64,7 @@ public final class Block extends AbstractUnit {
     public void saved() throws Exception {
         super.saved();
         site = null;
-        Controller.restart();
+        getTransaction().addCommitListener(t -> Controller.restart());
     }
 
     public static int hints() {
@@ -160,6 +166,27 @@ public final class Block extends AbstractUnit {
     public MessageGroup getMessageGroup() {
         MessageGroup mg = getRelated(MessageGroup.class, messageGroupId);
         return mg == null ? getSite().getMessageGroup() : mg;
+    }
+    
+    public void setLayoutStyle(int layoutStyle) {
+        this.layoutStyle = layoutStyle;
+    }
+
+    @Column(order = 1400)
+    public int getLayoutStyle() {
+        return layoutStyle;
+    }
+
+    public String getLayoutStyleValue() {
+        return getLayoutStyleValue(layoutStyle);
+    }
+
+    public static String getLayoutStyleValue(int layoutStyle) {
+        return layoutStyleValues[layoutStyle % layoutStyleValues.length];
+    }
+
+    public static String[] getLayoutStyleValues() {
+        return layoutStyleValues;
     }
 
     @Override

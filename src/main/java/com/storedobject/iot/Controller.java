@@ -17,12 +17,18 @@ public class Controller extends DaemonJob {
 
     public Controller(Schedule schedule) {
         super(schedule);
+        if(controller != null) {
+            log("Controller is already running - clearing");
+            controller.cancel();
+        }
         controller = this;
     }
 
     @Override
     public void execute() {
-        load();
+        synchronized (controls) {
+            load();
+        }
     }
 
     @Override
@@ -36,39 +42,54 @@ public class Controller extends DaemonJob {
         if(controller == null) {
             return;
         }
-        controller.controls.clear();
-        controller.load();
+        controller.cancel();
+        synchronized (controller.controls) {
+            controller.load();
+        }
     }
 
     private void load() {
+        String cv;
+        Date at;
         List<ControlSchedule> css = StoredObject.list(ControlSchedule.class, "Active").toList();
         for(Site site: StoredObject.list(Site.class, "Active")) {
-            for(Block block: StoredObject.list(Block.class, "Site=" + site.getId() + " AND Active", true)) {
-                if(!block.getActive()) {
-                    continue;
-                }
+            for(Block block: StoredObject.list(Block.class, "Site=" + site.getId() + " AND Active")) {
                 for(Unit unit: StoredObject.list(Unit.class, "Block=" + block.getId() + " AND Active",true)) {
                     for(ControlSchedule cs: css) {
-                        if(unit.existsLink(cs) || block.existsLink(cs)) {
+                        if(unit.getOrdinality() != cs.getOrdinality() || unit.existsLink(cs) || block.existsLink(cs)) {
                             continue;
                         }
                         ValueDefinition<?> vd = cs.getControl();
+                        if(vd == null) {
+                            continue;
+                        }
+                        UnitDefinition ud = vd.getMaster(UnitDefinition.class);
+                        if(ud == null) {
+                            continue;
+                        }
+                        UnitType ut = ud.getUnitType();
+                        if(ut == null || !ut.getUnitClassName().equals(unit.getClass().getName())) {
+                            continue;
+                        }
                         int timeDiff = site.getTimeDifference();
-                        long firstFire = DateUtility.startOfToday().getTime() + (cs.getSendAt() * 60000L);
+                        long firstFire = DateUtility.startOfToday().getTime() + (cs.getSendAt() * 60000L) - timeDiff;
                         if(firstFire < System.currentTimeMillis()) {
                             firstFire += ONE_DAY;
                         }
-                        firstFire += timeDiff;
                         Timer timer = new Timer();
-                        Control control = new Control(timer, unit.getId(), vd.getId(), cs.getDays(), cs.controlValue(),
-                                timeDiff);
+                        cv = cs.controlValue();
+                        Control control = new Control(timer, unit.getId(), vd.getId(), cs.getDays(), cv, timeDiff);
                         controls.add(control);
+                        at = new Date(firstFire);
+                        log(vd.getName() + " = " + cv + " will be sent to " + unit.toDisplay() + " at "
+                                + DateUtility.formatWithTimeHHMM(at) + " UTC ("
+                                + DateUtility.formatWithTime(site.date(at)) + " " + site.getTimeZone() + ")");
                         timer.scheduleAtFixedRate(new TimerTask() {
                             @Override
                             public void run() {
                                 send(control);
                             }
-                        }, new Date(firstFire), ONE_DAY);
+                        }, at, ONE_DAY);
                     }
                 }
             }
@@ -76,8 +97,11 @@ public class Controller extends DaemonJob {
     }
 
     private void cancel() {
-        controls.forEach(c -> c.timer.cancel());
-        controls.clear();
+        synchronized (controls) {
+            controls.forEach(c -> c.timer.cancel());
+            controls.clear();
+        }
+        log("All controls cleared");
     }
 
     private void send(Control control) {
