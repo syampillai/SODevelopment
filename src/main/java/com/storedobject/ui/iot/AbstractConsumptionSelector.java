@@ -2,7 +2,6 @@ package com.storedobject.ui.iot;
 
 import com.storedobject.iot.*;
 import com.storedobject.ui.ObjectComboField;
-import com.storedobject.vaadin.*;
 
 public abstract class AbstractConsumptionSelector extends BlockSelector {
 
