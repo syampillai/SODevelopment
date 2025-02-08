@@ -3,7 +3,6 @@ package com.storedobject.ui.iot;
 import com.storedobject.core.DateUtility;
 import com.storedobject.iot.*;
 import com.storedobject.ui.ELabel;
-import com.storedobject.ui.ObjectComboField;
 import com.storedobject.vaadin.*;
 
 public class ViewConsumption extends AbstractConsumptionSelector {
