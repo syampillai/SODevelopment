@@ -145,6 +145,8 @@ public class DataSet {
                 return true;
             }).forEach(r -> {
                 if(r instanceof UnitData ud) {
+                    ud.unit.resetConsumption();
+                    ud.unit.getBlock().resetConsumption();
                     ud.unit.resetStatistics();
                 }
                 resetStatistics(r.children(), site);
@@ -218,72 +220,217 @@ public class DataSet {
             this.valueDefinition = valueDefinition;
         }
 
+        /**
+         * Retrieves the unit associated with the current data status.
+         *
+         * @return the unit of measurement as a {@link Unit} object.
+         */
         public final Unit getUnit() {
             return unit;
         }
 
+        /**
+         * Retrieves the value definition associated with the current data status.
+         *
+         * @return the {@link ValueDefinition} object representing the value definition.
+         */
         public ValueDefinition<V> getValueDefinition() {
             return valueDefinition;
         }
 
+        /**
+         * Sets the necessary values or configuration associated with the current data status.
+         * This method is intended to be implemented by subclasses to define specific logic for setting
+         * data or attributes related to the data status. (For internal use only).
+         */
         abstract void set();
 
+        /**
+         * Retrieves the significance level associated with the current data status.
+         *
+         * @return an integer representing the significance value defined in the associated {@link ValueDefinition}.
+         */
         public final int significance() {
             return valueDefinition.getSignificance();
         }
 
+        /**
+         * Get the alarm level associated with the current data status.
+         * This method is intended to be implemented by subclasses to provide
+         * the specific logic for handling alarm conditions.
+         *
+         * @return an integer representing the alarm level or code, which is
+         *         defined and interpreted by the implementing class.
+         */
         public abstract int alarm();
 
+        /**
+         * Determines whether the current data status condition should trigger an alert.
+         * The alert condition depends on the alert flag from the value definition
+         * and whether the alarm level is non-zero.
+         *
+         * @return true if the alert flag is enabled in the value definition and
+         *         the alarm level is non-zero, otherwise false.
+         */
         public final boolean alert() {
             return valueDefinition.getAlert() && alarm() != 0;
         }
 
+        /**
+         * Retrieves the status label associated with the current data status.
+         * This method is intended to provide a human-readable representation
+         * or description of the status, typically implemented by subclasses.
+         *
+         * @return a string representing the status label of the data status.
+         */
         public abstract String statusLabel();
 
+        /**
+         * Retrieves the caption associated with the current data status.
+         * The caption is determined based on the unit and value definition.
+         *
+         * @return a string representing the caption of the data status.
+         */
         public final String caption() {
             return valueDefinition.getCaption(unit);
         }
 
+        /**
+         * Retrieves the label associated with the current data status.
+         * The label is determined based on the unit and its corresponding value definition.
+         *
+         * @return a string representing the label of the data status.
+         */
         public final String label() {
             return valueDefinition.getLabel(unit);
         }
 
+        /**
+         * Retrieves the tooltip information associated with the current data status.
+         * The tooltip is derived based on the unit and its corresponding value definition.
+         *
+         * @return a string representing the tooltip of the data status.
+         */
         public final String tooltip() {
             return valueDefinition.getTooltip(unit);
         }
 
+        /**
+         * Retrieves the string representation of the value associated with the current data status.
+         * This method is intended to be implemented by subclasses to provide specific value formatting or logic.
+         *
+         * @return a string representing the value of the data status.
+         */
         public abstract String value();
 
+        /**
+         * Retrieves the string representation of the value associated with the specified attribute
+         * for the current data status.
+         *
+         * @param attribute the attribute for which the value needs to be retrieved
+         * @return a string representing the value of the specified attribute
+         */
         public String value(String attribute) {
             return value();
         }
 
+        /**
+         * Retrieves the string representation of the specified value, optionally including the unit.
+         *
+         * @param value the numerical value to be converted to a string representation
+         * @param showUnit a boolean flag indicating whether the unit should be included in the output
+         * @return a string representing the value, with or without the unit depending on the showUnit parameter
+         */
         public String value(double value, boolean showUnit) {
             return "?";
         }
 
+        /**
+         * Retrieves the hourly statistics associated with the current data status.
+         *
+         * @return the {@link HourlyStatistics} object representing data specific to hourly intervals,
+         *         obtained using the name from the value definition.
+         */
         public HourlyStatistics hourlyStatistics() {
             return unit.getHourlyStatistics(valueDefinition.getName());
         }
 
+        /**
+         * Retrieves the daily statistics associated with the current data status.
+         * The daily statistics object is obtained based on the name from the value definition.
+         *
+         * @return the {@link DailyStatistics} object representing daily statistics
+         *         for the associated unit and value definition.
+         */
         public DailyStatistics dailyStatistics() {
             return unit.getDailyStatistics(valueDefinition.getName());
         }
 
+        /**
+         * Retrieves the weekly statistics associated with the current data status.
+         * This method fetches the {@link WeeklyStatistics} object using the name
+         * from the associated value definition of the unit.
+         *
+         * @return the {@link WeeklyStatistics} object representing data specific
+         *         to weekly intervals for the corresponding unit and value definition.
+         */
         public WeeklyStatistics weeklyStatistics() {
             return unit.getWeeklyStatistics(valueDefinition.getName());
         }
 
+        /**
+         * Retrieves the monthly statistics associated with the current data status.
+         * The statistics are determined based on the name from the value definition and
+         * are specific to monthly intervals.
+         *
+         * @return the {@link MonthlyStatistics} object representing data for monthly
+         *         intervals, obtained using the name from the value definition and
+         *         associated logic in the unit.
+         */
         public MonthlyStatistics monthlyStatistics() {
             return unit.getMonthlyStatistics(valueDefinition.getName());
         }
 
+        /**
+         * Retrieves the yearly statistics associated with the current data status.
+         * The yearly statistics object is determined using the name from the associated value definition
+         * and fetched through the unit's logic.
+         *
+         * @return the {@link YearlyStatistics} object representing data specific to yearly intervals
+         *         for the corresponding unit and value definition.
+         */
         public YearlyStatistics yearlyStatistics() {
             return unit.getYearlyStatistics(valueDefinition.getName());
         }
 
+        /**
+         * Retrieves the value associated with the current data status.
+         *
+         * @return the value of type V as defined by the subclass implementation.
+         */
         public abstract V getValue();
 
+        /**
+         * Generates a formatted string that represents the current data status. The output
+         * string combines the alarm level symbol, the associated caption, and the value
+         * for the data status.
+         * <br/>
+         *     <pre>
+         * The alarm level determines the symbol to be displayed:
+         * - 3 -> ⇈
+         * - 2 -> ↟
+         * - 1 -> ↑
+         * - -1 -> ↓
+         * - -2 -> ↡
+         * - -3 -> ⇊
+         * - default -> "-"
+         * </pre>
+         * The caption is derived from the associated value definition and the unit.
+         * The value is obtained from the implementation provided by the subclass.
+         *
+         * @return a string representation of the data status formatted as
+         *         "[Alarm Symbol] [Caption]: [Value]".
+         */
         public String display() {
             return switch (alarm()) {
                 case 3 -> "⇈";
@@ -317,10 +464,21 @@ public class DataSet {
             return Objects.hash(id);
         }
 
+        /**
+         * Retrieves the unique identifier associated with the current data status.
+         *
+         * @return a long value representing the unique identifier.
+         */
         public final long getId() {
             return id;
         }
 
+        /**
+         * Retrieves the ordinality of the current data status.
+         * The ordinality is determined by the associated unit's ordinality value.
+         *
+         * @return an integer representing the ordinality as defined by the associated {@link Unit}.
+         */
         public int ordinality() {
             return unit.getOrdinality();
         }
@@ -334,6 +492,11 @@ public class DataSet {
             super(unit, valueLimit);
         }
 
+        /**
+         * Updates the value field by retrieving the value associated with the current unit's ID.
+         * This method fetches the value from the value definition based on the unit's identifier
+         * and assigns it to the value field. Any exceptions that occur during this process are ignored.
+         */
         @Override
         void set() {
             try {
@@ -343,16 +506,50 @@ public class DataSet {
             }
         }
 
+        /**
+         * Retrieves the value definition associated with the current limit status.
+         *
+         * @return the {@link ValueLimit} object representing the value definition specific to limit status.
+         */
         @Override
         public ValueLimit getValueDefinition() {
             return (ValueLimit) super.getValueDefinition();
         }
 
+        /**
+         * Retrieves the value associated with this instance.
+         *
+         * @return the value as a Double
+         */
         @Override
         public Double getValue() {
             return value;
         }
 
+        /**
+         * Evaluates the current value against predefined limits and returns an alarm status based on the value range.
+         * <p>
+         * The method first checks whether the value is considered "unlimited". If so, it returns 0 to indicate no alarm.
+         * Otherwise, it compares the current value to specific threshold values provided by {@link ValueLimit}, determining
+         * the severity of the alarm as follows:
+         * <pre>
+         * - Returns 3 if the value exceeds or equals the highest or higher thresholds.
+         * - Returns 1 if the value exceeds or equals the high threshold.
+         * - Returns 0 if the value lies between the high and low thresholds.
+         * - Returns -1 if the value is below the low threshold but above the lower threshold.
+         * - Returns -2 if the value is below the lower threshold but above the lowest threshold.
+         * - Returns -3 if the value is below the lowest threshold.
+         *</pre>
+         * @return An integer representing the alarm level:
+         * <pre>
+         *         0: No alarm for unlimited or normal range values,
+         *         3: Severe high-level alarm,
+         *         1: Low-level high alarm,
+         *         -1: Low-level low alarm,
+         *         -2: Moderate low-level alarm,
+         *         -3: Critical low-level alarm.
+         * </pre>
+         */
         @Override
         public int alarm() {
             ValueLimit valueLimit = getValueDefinition();
@@ -380,6 +577,12 @@ public class DataSet {
             return -3;
         }
 
+        /**
+         * Provides a textual representation of the current status based on the alarm level.
+         *
+         * @return A string representing the status label. Possible values are:
+         *         "highest", "higher", "high", "normal", "low", "lower", or "lowest".
+         */
         @Override
         public String statusLabel() {
             return switch (alarm()) {
@@ -393,11 +596,31 @@ public class DataSet {
             };
         }
 
+        /**
+         * Provides the current value as a formatted string. This method internally calls
+         * the {@link #value(double, boolean)} method with the instance's default value and
+         * a flag to indicate whether the unit should be shown.
+         *
+         * @return A string representation of the current value, potentially including the unit
+         *         based on the internal configuration.
+         */
         @Override
         public String value() {
             return value(value, true);
         }
 
+        /**
+         * Formats a given numeric value into a string representation. If the input value
+         * is not a finite number (e.g., infinity, NaN, or extreme double limits), it returns "N/A".
+         * Otherwise, the value is formatted based on the number of decimals defined in the
+         * associated {@link ValueLimit} and optionally includes a unit suffix.
+         *
+         * @param value     The numeric value to be formatted.
+         * @param showUnit  A boolean flag indicating whether the unit suffix should be included
+         *                  in the formatted string.
+         * @return A string representation of the value, formatted to the specified number of
+         *         decimals and optionally including the unit suffix. Returns "N/A" for invalid values.
+         */
         @Override
         public String value(double value, boolean showUnit) {
             if(value == Double.POSITIVE_INFINITY || value == Double.NEGATIVE_INFINITY || Double.isNaN(value)
@@ -412,6 +635,17 @@ public class DataSet {
             return v;
         }
 
+        /**
+         * Retrieves the formatted value of the specified attribute for the current status.
+         * If the attribute is null or empty, it falls back to the default value method.
+         * The method dynamically resolves and applies appropriate display logic for the attribute
+         * if not available in the cached custom functions.
+         *
+         * @param attribute the name of the attribute whose value is to be retrieved. It can be null or empty,
+         *                  in which case the default value is returned.
+         * @return a string representing the formatted value of the specified attribute, or "None" if
+         *         the corresponding value object is unavailable.
+         */
         @Override
         public String value(String attribute) {
             if(attribute == null || attribute.isEmpty()) {
@@ -431,6 +665,9 @@ public class DataSet {
             return func.apply(o);
         }
 
+        /**
+         *
+         */
         public String unit() {
             return getValueDefinition().getUnitSuffix();
         }
@@ -445,6 +682,11 @@ public class DataSet {
             value = alarmSwitch.getAlarmWhen() == 0;
         }
 
+        /**
+         * Sets the value of the `value` field by retrieving it from the value definition
+         * associated with the unit's ID. The method attempts to execute this operation
+         * and suppresses any exceptions that occur during the process.
+         */
         @Override
         void set() {
             try {
@@ -454,16 +696,36 @@ public class DataSet {
             }
         }
 
+        /**
+         * Retrieves the associated {@link AlarmSwitch} value definition for the current data status.
+         *
+         * @return the {@link AlarmSwitch} object representing the value definition.
+         */
         @Override
         public AlarmSwitch getValueDefinition() {
             return (AlarmSwitch) super.getValueDefinition();
         }
 
+        /**
+         * Returns the current boolean value of the alarm status.
+         *
+         * @return the current value of the alarm status, represented as a Boolean.
+         */
         @Override
         public Boolean getValue() {
             return value;
         }
 
+        /**
+         * Determines the alarm status based on the current value and the defined alarm condition.
+         *
+         * @return an integer representing the alarm status:
+         * <pre>
+         *         - Returns 0 if the alarm condition is not met.
+         *         - Returns -3 if the alarm should trigger but the condition is false.
+         *         - Returns 3 if the alarm should trigger and the condition is true.
+         * </pre>
+         */
         @Override
         public int alarm() {
             if (getValueDefinition().getAlarmWhen() == 0) {
@@ -472,11 +734,21 @@ public class DataSet {
             return value ? 3 : 0;
         }
 
+        /**
+         * Returns the status label based on the alarm's state.
+         *
+         * @return "Off" if the alarm state is 0, otherwise "On".
+         */
         @Override
         public String statusLabel() {
             return alarm() == 0 ? "Off" : "On";
         }
 
+        /**
+         * Returns the string representation of the alarm's current value.
+         *
+         * @return "On" if the alarm value is true, otherwise "Off".
+         */
         @Override
         public String value() {
             return value ? "On" : "Off";

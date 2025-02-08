@@ -1,12 +1,17 @@
 package com.storedobject.ui.util;
 
+import com.storedobject.chart.SOChart;
 import com.storedobject.common.IO;
 import com.storedobject.common.SORuntimeException;
 import com.storedobject.core.TextContent;
+import com.storedobject.ui.Image;
 import com.storedobject.ui.MediaCSS;
+import com.storedobject.vaadin.Button;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.template.Id;
 import com.vaadin.flow.dom.Element;
@@ -38,7 +43,7 @@ import java.util.function.Supplier;
  * element with the corresponding id attribute value is identified, upgraded to
  * a component of the type defined by the field and the component instance is
  * set as the field value. However, it is possible to custom-create the component instance by
- * overriding the {@link #createComponentForId(String)} method.
+ * overriding the {@link #createComponentForId(String)} or {@link #createComponentForId(String, String)} method.
  *
  * @author Leif Åstrand (Vaadin Ltd.). Modified by Syam.
  */
@@ -49,6 +54,7 @@ public abstract class HtmlTemplate extends Component {
     private TemplateDetails templateDetails;
     private Object view;
     private ComponentCreator componentCreator;
+    private boolean created = false;
 
     /**
      * Creates a new HTML template based on the content of the {@link TextContent} that has the same name of
@@ -129,8 +135,13 @@ public abstract class HtmlTemplate extends Component {
     public void build() {
         if(templateDetails != null) {
             populate(templateDetails.cacheKey, templateDetails.streamSupplier, templateDetails.styleSupplier);
+            created = true;
             templateDetails = null;
         }
+    }
+
+    public boolean isCreated() {
+        return created;
     }
 
     private static TemplateDetails td(TextContent tc) {
@@ -171,6 +182,9 @@ public abstract class HtmlTemplate extends Component {
                         Element idElement = idElementMap.get(id);
                         if(idElement == null) {
                             component = createComponentForId(id);
+                            if(component == null) {
+                                component = new Span("[Id=" + id + "]");
+                            }
                             component.setId(id);
                         } else {
                             component = Component.from(idElement, field.getType().asSubclass(Component.class));
@@ -240,7 +254,7 @@ public abstract class HtmlTemplate extends Component {
             Component c = null;
             String id = jsoupElement.attributes().get("id");
             if(!id.isEmpty()) {
-                c = createComponentForId(id);
+                c = createComponentForId(id, jsoupElement.tagName());
                 if(!c.getElement().getTag().equals(jsoupElement.tagName())) {
                     throw new IllegalArgumentException("Incompatible component " + c.getClass().getName() +
                             " for tag " + jsoupElement.tagName() + ", Id = " + id);
@@ -294,11 +308,13 @@ public abstract class HtmlTemplate extends Component {
     }
 
     private Component createComponent(String id, String tag) {
-        if(!tag.startsWith("so-")) {
-            return null;
+        Component c;
+        if(tag.startsWith("so-")) {
+            tag = tag.substring(2);
+            c = createComponent(tag);
+        } else {
+            c = createHTMLComponent(tag);
         }
-        tag = tag.substring(2);
-        Component c = createComponent(tag);
         if(!id.isEmpty() && c != null) {
             c.setId(id);
         }
@@ -316,15 +332,29 @@ public abstract class HtmlTemplate extends Component {
         return pre + cName(name);
     }
 
-    private Component createComponent(String name) {
-        name = cName(name);
+    private Component createHTMLComponent(String tag) {
+        return switch (tag) {
+            case "div" -> new Div();
+            case "span" -> new Span();
+            case "p" -> new Paragraph();
+            case "img" -> new Image();
+            case "button" -> new Button("", null);
+            default -> null;
+        };
+    }
+
+    private Component createComponent(String tag) { // Tag is starting with "so-"
+        if("so-chart".equals(tag)) {
+            return new SOChart();
+        }
+        tag = cName(tag);
         Component component;
         Class<?> c;
         try {
-            c = Class.forName("com.storedobject.ui." + name);
+            c = Class.forName("com.storedobject.ui." + tag);
         } catch(Throwable ignored) {
             try {
-                c = Class.forName("com.storedobject.vaadin." + name);
+                c = Class.forName("com.storedobject.vaadin." + tag);
             } catch(Throwable ignore) {
                 c = null;
             }
@@ -342,12 +372,24 @@ public abstract class HtmlTemplate extends Component {
 
     protected Component createComponentForId(String id) {
         if(componentCreator != null) {
-            Component c = componentCreator.createComponentForId(id);
+            return componentCreator.createComponentForId(id);
+        }
+        return new Span("[Id = " + id + "]");
+    }
+
+    protected Component createComponentForId(String id, String tag) {
+        Component c;
+        if(componentCreator != null) {
+            c = componentCreator.createComponentForId(id, tag);
             if(c != null) {
                 return c;
             }
         }
-        return new Span("[Id = " + id + "]");
+        c = createComponentForId(id);
+        if(c == null) {
+            c = createHTMLComponent(tag);
+        }
+        return c == null ? new Span("[Tag = " + tag + ", Id = " + id + "]") : c;
     }
 
     /**
@@ -373,7 +415,12 @@ public abstract class HtmlTemplate extends Component {
 
     @FunctionalInterface
     public interface ComponentCreator {
+
         Component createComponentForId(String id);
+
+        default Component createComponentForId(String id, String tag) {
+            return createComponentForId(id);
+        }
     }
 
     private static TextContent tc(String textContentName) {

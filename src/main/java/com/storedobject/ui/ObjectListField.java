@@ -99,7 +99,7 @@ public class ObjectListField<T extends StoredObject> extends ListField<T>
         setSpellCheck(false);
     }
 
-    private static <O extends StoredObject> Class<O> checkClass(Class<O> objectClass, List<O> list) {
+    static <O extends StoredObject> Class<O> checkClass(Class<O> objectClass, List<O> list) {
         if(objectClass == null) {
             if(list != null && !list.isEmpty()) {
                 //noinspection unchecked

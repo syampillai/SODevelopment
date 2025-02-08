@@ -15,6 +15,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Represents a unit with various attributes and methods for handling its statistics,
+ * ordinality, block association, and other operations. A unit is a fundamental entity
+ * that is associated with a site, block, and statistical data used for resource
+ * consumption analysis and monitoring over different time periods.
+ * <br/>
+ * This class extends {@code AbstractUnit} and provides specific implementations and
+ * utilities for managing unit-related tasks in a structured and efficient manner.
+ */
 public abstract class Unit extends AbstractUnit {
 
     private static final String[] ordinalityValues = new String[] {
@@ -611,15 +620,5 @@ public abstract class Unit extends AbstractUnit {
     @Override
     public String toDisplay() {
         return super.toDisplay() + " (" + code + ")";
-    }
-
-    /**
-     * Determines whether the unit consumes a specified resource.
-     *
-     * @param resource The resource identifier to check for consumption.
-     * @return {@code true} if the unit consumes the specified resource; {@code false} otherwise.
-     */
-    public boolean consumes(int resource) {
-        return getConsumptionCalculator(resource) != null;
     }
 }

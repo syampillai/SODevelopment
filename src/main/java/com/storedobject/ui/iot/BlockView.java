@@ -2,11 +2,14 @@ package com.storedobject.ui.iot;
 
 import com.storedobject.core.DateUtility;
 import com.storedobject.core.Id;
+import com.storedobject.core.StoredObject;
 import com.storedobject.iot.*;
 import com.storedobject.ui.Application;
 import com.storedobject.ui.TemplateView;
 import com.storedobject.ui.Transactional;
+import com.storedobject.vaadin.CloseableView;
 import com.storedobject.vaadin.View;
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.shared.Registration;
 
 import java.util.ArrayList;
@@ -14,14 +17,17 @@ import java.util.Date;
 import java.util.List;
 import java.util.function.Consumer;
 
-public class BlockView extends TemplateView implements Transactional {
+public class BlockView extends TemplateView implements Transactional, CloseableView {
 
     private Consumer<Id> refresher;
     private final Registration size;
     private final Application application;
     private final List<Unit> units = new ArrayList<>();
     private Block block;
-    protected String lastUpdateTime = "UNKNOWN";
+    private Date lastUpdateTime;
+
+    @com.vaadin.flow.component.template.Id("block")
+    private BlockComboField blockField;
 
     public BlockView() {
         super();
@@ -47,13 +53,12 @@ public class BlockView extends TemplateView implements Transactional {
     public void execute(View lock) {
         if(refresher == null) {
             updateTime();
-            loadBlockData();
             application.setPollInterval(this, 30000);
             refresher = this::refreshStatus;
             DataSet.register(refresher);
         }
         if(block == null) {
-            loadBlocks();
+            findBlock();
         }
         super.execute(lock);
     }
@@ -69,7 +74,25 @@ public class BlockView extends TemplateView implements Transactional {
         this.block = block;
         units.clear();
         block.listUnits().collectAll(units);
+        if(isCreated()) {
+            paint(block);
+        }
         reload();
+    }
+
+    public void setSite(Site site) {
+        if(blockField == null || site == null || (this.block != null && this.block.getSiteId().equals(site.getId()))) {
+            return;
+        }
+        blockField.setSite(site);
+        reload();
+    }
+
+    public Site getSite() {
+        if(block != null) {
+            return block.getSite();
+        }
+        return blockField == null ? null : blockField.getSite();
     }
 
     public void reload() {
@@ -79,10 +102,42 @@ public class BlockView extends TemplateView implements Transactional {
         }
     }
 
-    private void loadBlocks() {
+    private void updateTime() {
+        lastUpdateTime = application.getTransactionManager().date(new Date());
     }
 
-    private void loadBlockData() {
+    public Date getLastUpdateTime() {
+        return lastUpdateTime;
+    }
+
+    public String getLastUpdate() {
+        if(lastUpdateTime == null) {
+            return "UNKNOWN";
+        }
+        return DateUtility.formatWithTimeHHMM(lastUpdateTime);
+    }
+
+    private void findBlock() {
+        Block block = this.block;
+        if(block != null) {
+            setBlock(block);
+            return;
+        }
+        if(blockField != null) {
+            block = blockField.getBlock();
+        }
+        if(block != null) {
+            setBlock(block);
+            return;
+        }
+        block = StoredObject.get(Block.class, "Active");
+        if(block != null) {
+            if(blockField != null) {
+                blockField.setValue(block);
+            } else {
+                setBlock(block);
+            }
+        }
     }
 
     private void refreshStatus(Id blockId) {
@@ -90,12 +145,6 @@ public class BlockView extends TemplateView implements Transactional {
             return;
         }
         reload();
-    }
-
-    private void updateTime() {
-        Date date = new Date();
-        date.setTime(DataSet.getTime());
-        lastUpdateTime = DateUtility.formatWithTimeHHMM(application.getTransactionManager().date(date));
     }
 
     private void buildTree() {
@@ -117,6 +166,9 @@ public class BlockView extends TemplateView implements Transactional {
     }
 
     private void process(DataSet.DataStatus<?> ds, List<Unit> unprocessed) {
+        if(!isCreated()) {
+            return;
+        }
         Unit unit = ds.getUnit();
         if(unprocessed.contains(unit)) {
             unprocessed.remove(unit);
@@ -129,6 +181,9 @@ public class BlockView extends TemplateView implements Transactional {
         }
     }
 
+    protected void paint(Block block) {
+    }
+
     protected void paint(Unit unit) {
     }
 
@@ -136,5 +191,15 @@ public class BlockView extends TemplateView implements Transactional {
     }
 
     protected void paint(DataSet.AlarmStatus alarmStatus) {
+    }
+
+    @Override
+    protected Component createComponentForId(String id) {
+        if("block".equals(id)) {
+            BlockComboField blockField = new BlockComboField();
+            blockField.addValueChangeListener(e -> setBlock(e.getValue()));
+            return blockField;
+        }
+        return super.createComponentForId(id);
     }
 }

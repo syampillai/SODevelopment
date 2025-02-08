@@ -2,7 +2,6 @@ package com.storedobject.ui;
 
 import com.storedobject.common.ResourceDisposal;
 import com.storedobject.common.ResourceOwner;
-import com.storedobject.common.SORuntimeException;
 import com.storedobject.core.ObjectList;
 import com.storedobject.core.*;
 import com.storedobject.ui.util.ObjectAdder;
@@ -127,7 +126,7 @@ public class ObjectComboField<T extends StoredObject> extends ComboField<T>
     }
 
     public ObjectComboField(String label, Class<T> objectClass, List<T> list, boolean allowAdd) {
-        this(label, new ObjectMemoryList<>(checkClass(objectClass, list), true), allowAdd);
+        this(label, new ObjectMemoryList<>(ObjectListField.checkClass(objectClass, list), true), allowAdd);
         objectProvider.load(list);
     }
 
@@ -144,19 +143,6 @@ public class ObjectComboField<T extends StoredObject> extends ComboField<T>
         }
         ResourceDisposal.register(this);
         setSpellCheck(false);
-    }
-
-    private static <O extends StoredObject> Class<O> checkClass(Class<O> objectClass, List<O> list) {
-        if(objectClass == null) {
-            if(list != null && !list.isEmpty()) {
-                //noinspection unchecked
-                objectClass = (Class<O>) list.get(0).getClass();
-            }
-        }
-        if(objectClass == null) {
-            throw new SORuntimeException("Can't determine Object's class!");
-        }
-        return objectClass;
     }
 
     private void addNew() {
