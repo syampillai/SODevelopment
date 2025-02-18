@@ -52,9 +52,15 @@ public class Controller extends DaemonJob {
         String cv;
         Date at;
         List<ControlSchedule> css = StoredObject.list(ControlSchedule.class, "Active").toList();
-        for(Site site: StoredObject.list(Site.class, "Active")) {
-            for(Block block: StoredObject.list(Block.class, "Site=" + site.getId() + " AND Active")) {
-                for(Unit unit: StoredObject.list(Unit.class, "Block=" + block.getId() + " AND Active",true)) {
+        List<Site> sites = StoredObject.list(Site.class, "Active").toList();
+        List<Block> blocks;
+        List<Unit> units;
+        for(Site site: sites) {
+            blocks = StoredObject.list(Block.class, "Site=" + site.getId() + " AND Active").toList();
+            for(Block block: blocks) {
+                units = StoredObject.list(Unit.class, "Block=" + block.getId() + " AND Active", true)
+                        .toList();
+                for(Unit unit: units) {
                     for(ControlSchedule cs: css) {
                         if(unit.getOrdinality() != cs.getOrdinality() || unit.existsLink(cs) || block.existsLink(cs)) {
                             continue;

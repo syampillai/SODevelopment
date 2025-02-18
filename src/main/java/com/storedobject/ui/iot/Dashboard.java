@@ -34,15 +34,17 @@ public class Dashboard extends View implements SingletonLogic, CloseableView {
     private Application application;
     private Consumer<Id> refresher;
     private volatile boolean updating = false;
+    private final GUI gui;
 
     public Dashboard(GUI gui) {
         super("Dashboard");
+        this.gui = gui;
         application = Application.get();
         ButtonLayout b = new ButtonLayout(
                 lastUpdate,
-                new Button("Chart", e -> gui.chart()),
-                new Button("Status", VaadinIcon.GRID, e -> gui.statusGrid()),
-                new Button("Site View", VaadinIcon.FACTORY, e -> gui.siteView()),
+                new Button("Chart", e -> gui.showChart()),
+                new Button("Status", VaadinIcon.GRID, e -> gui.showStatusGrid()),
+                new Button("Site View", VaadinIcon.FACTORY, e -> gui.showSiteView()),
                 new Button("Send Control Command", VaadinIcon.PAPERPLANE_O, e -> gui.sendCommand()),
                 gui.consumptionButton(),
                 gui.dataButton(),
@@ -330,8 +332,8 @@ public class Dashboard extends View implements SingletonLogic, CloseableView {
     private void buildTree() {
         updating = true;
         Stream<DataSet.SiteData> sites = DataSet.getSites().stream();
-        if(GUI.isFixedSite()) {
-            sites = sites.filter(s -> s.getSite().getId().equals(GUI.site().getId()));
+        if(gui.isFixedSite()) {
+            sites = sites.filter(s -> s.getSite().getId().equals(gui.siteId()));
         }
         sites.forEach(s -> {
             BreadcrumbsTree.Node root = tree.add(s.getName(), nodeComponent());

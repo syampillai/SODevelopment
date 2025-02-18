@@ -104,6 +104,16 @@ public class QueryBuilder<T extends StoredObject> {
     /**
      * Sets the "any" condition for the query, a boolean value indicating whether to retrieve all subclasses or not.
      *
+     * @param any A value of true means all subclasses to be included. If any is null, it is considered as false.
+     * @return the updated QueryBuilder instance.
+     */
+    public QueryBuilder<T> any(Boolean any) {
+        return any(any != null && any);
+    }
+
+    /**
+     * Sets the "any" condition for the query, a boolean value indicating whether to retrieve all subclasses or not.
+     *
      * @param any A value of true means all subclasses to be included.
      * @return the updated QueryBuilder instance.
      */
@@ -149,6 +159,117 @@ public class QueryBuilder<T extends StoredObject> {
     }
 
     /**
+     * Get an object instance. The first item is retrieved.
+     *
+     * @return An object instance or null.
+     */
+    public T get() {
+        int limit = this.limit;
+        this.limit = 1;
+        try {
+            return list().findFirst();
+        } finally {
+            this.limit = limit;
+        }
+    }
+
+    /**
+     * Get the first master object.
+     *
+     * @param link Link object.
+     * @return A master instance or null.
+     */
+    public T getMaster(StoredObject link) {
+        return getMaster(link.getId());
+    }
+
+    /**
+     * Get the first master object.
+     *
+     * @param link Link object.
+     * @param linkType Link type.
+     * @return A master instance or null.
+     */
+    public T getMaster(StoredObject link, int linkType) {
+        return getMaster(link.getId(), linkType);
+    }
+
+    /**
+     * Get the first master object.
+     *
+     * @param linkId Link Id.
+     * @return A master instance or null.
+     */
+    public T getMaster(Id linkId) {
+        return getMaster(linkId, 0);
+    }
+
+    /**
+     * Get the first master object.
+     *
+     * @param linkId Link Id.
+     * @param linkType Link type.
+     * @return A master instance or null.
+     */
+    public T getMaster(Id linkId, int linkType) {
+        int limit = this.limit;
+        this.limit = 1;
+        try {
+            return listMasters(linkId, linkType).findFirst();
+        } finally {
+            this.limit = limit;
+        }
+    }
+
+    /**
+     * Get the first link object.
+     *
+     * @param master Master object.
+     * @return A master instance or null.
+     */
+    public T getLink(StoredObject master) {
+        return getLink(master.getId());
+    }
+
+    /**
+     * Get the first link object.
+     *
+     * @param master Master object.
+     * @param linkType Link type.
+     * @return A master instance or null.
+     */
+    public T getLink(StoredObject master, int linkType) {
+        return getLink(master.getId(), linkType);
+    }
+
+    /**
+     * Get the first link object.
+     *
+     * @param masterId Master Id.
+     * @return A master instance or null.
+     */
+    public T getLink(Id masterId) {
+        return getLink(masterId, 0);
+    }
+
+    /**
+     * Get the first link object.
+     *
+     * @param masterId Master Id.
+     * @param linkType Link type.
+     * @return A master instance or null.
+     */
+    public T getLink(Id masterId, int linkType) {
+        int limit = this.limit;
+        this.limit = 1;
+        try {
+            return listLinks(masterId, linkType).findFirst();
+        } finally {
+            this.limit = limit;
+        }
+    }
+
+    /**
      * Counts the number of records that match the specified query.
      *
      * @param query The {@code Query} object representing the query criteria used to filter
@@ -163,6 +284,15 @@ public class QueryBuilder<T extends StoredObject> {
         } finally {
             this.columns = columns;
         }
+    }
+
+    /**
+     * Check whether any entry exists or not.
+     *
+     * @return True/false
+     */
+    public boolean exists() {
+        return StoredObject.exists(transaction, objectClass, where, any);
     }
 
     /**
@@ -204,7 +334,17 @@ public class QueryBuilder<T extends StoredObject> {
      * @return A {@code Query} object representing the links associated with the given parent object.
      */
     public Query queryLinks(StoredObject parent) {
-        return queryLinks(parent, 0);
+        return queryLinks(parent.getId());
+    }
+
+    /**
+     * Constructs a query to retrieve the links associated with the specified parent object.
+     *
+     * @param parentId The parent object Id for which linked objects are to be queried.
+     * @return A {@code Query} object representing the links associated with the given parent object.
+     */
+    public Query queryLinks(Id parentId) {
+        return queryLinks(parentId, 0);
     }
 
     /**
@@ -216,8 +356,64 @@ public class QueryBuilder<T extends StoredObject> {
      * @return A {@code Query} object representing the links of the given type associated with the specified parent object.
      */
     public Query queryLinks(StoredObject parent, int linkType) {
-        return parent.queryLinks(transaction, StoredObject.TYPE_EQUALS + linkType, objectClass, columns, where,
+        return queryLinks(parent.getId(), linkType);
+    }
+
+    /**
+     * Constructs a query to retrieve the links associated with the specified parent object
+     * and of a specific link type.
+     *
+     * @param parentId The parent object Id for which linked objects of the specified link type are to be queried.
+     * @param linkType The type of links to filter the query results.
+     * @return A {@code Query} object representing the links of the given type associated with the specified parent object.
+     */
+    public Query queryLinks(Id parentId, int linkType) {
+        return parentId.queryLinks(transaction, StoredObject.TYPE_EQUALS + linkType, objectClass, columns, where,
                 orderBy, any, skip, limit, distinctColumns);
+    }
+
+    /**
+     * Check whether link objects exists associated with the specified parent object.
+     *
+     * @param parent The parent object for which linked objects are to be queried.
+     * @return True/false.
+     */
+    public boolean existsLinks(StoredObject parent) {
+        return existsLinks(parent.getId());
+    }
+
+    /**
+     * Check whether link objects exists associated with the specified parent object.
+     *
+     * @param parentId The parent object Id for which linked objects are to be queried.
+     * @return True/false.
+     */
+    public boolean existsLinks(Id parentId) {
+        return existsLinks(parentId, 0);
+    }
+
+    /**
+     * Check whether link objects exists  associated with the specified parent object
+     * and of a specific link type.
+     *
+     * @param parent The parent object for which linked objects of the specified link type are to be queried.
+     * @param linkType The type of links to filter the query results.
+     * @return True/false.
+     */
+    public boolean existsLinks(StoredObject parent, int linkType) {
+        return StoredObject.exists(queryLinks(parent, linkType));
+    }
+
+    /**
+     * Check whether link objects exists  associated with the specified parent object
+     * and of a specific link type.
+     *
+     * @param parentId The parent object Id for which linked objects of the specified link type are to be queried.
+     * @param linkType The type of links to filter the query results.
+     * @return True/false.
+     */
+    public boolean existsLinks(Id parentId, int linkType) {
+        return StoredObject.exists(queryLinks(parentId, linkType));
     }
 
     /**
@@ -227,7 +423,17 @@ public class QueryBuilder<T extends StoredObject> {
      * @return an iterator over the linked objects of the specified parent
      */
     public ObjectIterator<T> listLinks(StoredObject parent) {
-        return listLinks(parent, 0);
+        return listLinks(parent.getId());
+    }
+
+    /**
+     * Returns an iterator over the linked objects of the specified parent object.
+     *
+     * @param parentId the parent object Id whose linked objects are to be listed
+     * @return an iterator over the linked objects of the specified parent
+     */
+    public ObjectIterator<T> listLinks(Id parentId) {
+        return listLinks(parentId, 0);
     }
 
     /**
@@ -238,14 +444,25 @@ public class QueryBuilder<T extends StoredObject> {
      * @return an iterator over the linked objects of the specified type
      */
     public ObjectIterator<T> listLinks(StoredObject parent, int linkType) {
-        return parent.listLinks(transaction, StoredObject.TYPE_EQUALS + linkType, objectClass, where, orderBy,
+        return listLinks(parent.getId(), linkType);
+    }
+
+    /**
+     * Retrieves an iterator over objects that are linked to the given parent object with the specified link type.
+     *
+     * @param parentId the parent object Id whose links are to be listed
+     * @param linkType the type of links to filter the results
+     * @return an iterator over the linked objects of the specified type
+     */
+    public ObjectIterator<T> listLinks(Id parentId, int linkType) {
+        return parentId.listLinks(transaction, StoredObject.TYPE_EQUALS + linkType, objectClass, where, orderBy,
                 any, skip, limit, distinctColumns);
     }
 
     /**
      * Counts the number of links associated with the given parent object.
      *
-     * @param parent the parent StoredObject for which the links are to be counted
+     * @param parent the parent object for which the links are to be counted
      * @return the total number of links associated with the specified parent
      */
     public int countLinks(StoredObject parent) {
@@ -253,14 +470,77 @@ public class QueryBuilder<T extends StoredObject> {
     }
 
     /**
+     * Counts the number of links associated with the given parent object.
+     *
+     * @param parentId the parent object Id for which the links are to be counted
+     * @return the total number of links associated with the specified parent
+     */
+    public int countLinks(Id parentId) {
+        return countLinks(parentId, 0);
+    }
+
+    /**
      * Counts the number of links of a specified type for a given parent object.
      *
      * @param parent    the parent object whose links are to be counted
-     * @param linktType the type of links to be counted
+     * @param linkType the type of links to be counted
      * @return the count of links of the specified type for the given parent object
      */
-    public int countLinks(StoredObject parent, int linktType) {
-        return count(queryLinks(parent, linktType));
+    public int countLinks(StoredObject parent, int linkType) {
+        return countLinks(parent.getId(), linkType);
+    }
+
+    /**
+     * Counts the number of links of a specified type for a given parent object.
+     *
+     * @param parentId the parent object Id whose links are to be counted
+     * @param linkType the type of links to be counted
+     * @return the count of links of the specified type for the given parent object
+     */
+    public int countLinks(Id parentId, int linkType) {
+        return count(queryLinks(parentId, linkType));
+    }
+
+    /**
+     * Check whether master objects exists related to the given stored object link.
+     *
+     * @param link the StoredObject that serves as a reference for querying master objects
+     * @return True/false.
+     */
+    public boolean existsMasters(StoredObject link) {
+        return existsMasters(link.getId());
+    }
+
+    /**
+     * Check whether master objects exists related to the given stored object link.
+     *
+     * @param linkId the link object that serves as a reference for querying master objects
+     * @return True/false.
+     */
+    public boolean existsMasters(Id linkId) {
+        return existsMasters(linkId, 0);
+    }
+
+    /**
+     * Check whether master objects exists associated with a given stored object link and link type.
+     *
+     * @param link      the stored object link to query masters for
+     * @param linkType  the type of link defining the relationship between the object and its masters
+     * @return True/false.
+     */
+    public boolean existsMasters(StoredObject link, int linkType) {
+        return StoredObject.exists(queryMasters(link, linkType));
+    }
+
+    /**
+     * Check whether master objects exists associated with a given stored object link and link type.
+     *
+     * @param link      the stored object link to query masters for
+     * @param linkType  the type of link defining the relationship between the object and its masters
+     * @return True/false.
+     */
+    public boolean existsMasters(Id link, int linkType) {
+        return StoredObject.exists(queryMasters(link, linkType));
     }
 
     /**
@@ -270,18 +550,39 @@ public class QueryBuilder<T extends StoredObject> {
      * @return a Query object containing the result set of master objects matching the criteria
      */
     public Query queryMasters(StoredObject link) {
-        return queryMasters(link, 0);
+        return queryMasters(link.getId());
+    }
+
+    /**
+     * Queries and retrieves master objects related to the given stored object link.
+     *
+     * @param linkId the object Id that serves as a reference for querying master objects
+     * @return a Query object containing the result set of master objects matching the criteria
+     */
+    public Query queryMasters(Id linkId) {
+        return queryMasters(linkId, 0);
     }
 
     /**
      * Queries the master objects associated with a given stored object link and link type.
      *
-     * @param link      the stored object link to query masters for
-     * @param linkType  the type of link defining the relationship between the object and its masters
+     * @param link the stored object link to query masters for
+     * @param linkType the type of link defining the relationship between the object and its masters
      * @return a Query object containing the results of the master objects query
      */
     public Query queryMasters(StoredObject link, int linkType) {
-        return link.queryMasters(transaction, StoredObject.TYPE_EQUALS + linkType, objectClass, columns, where,
+        return queryMasters(link.getId(), linkType);
+    }
+
+    /**
+     * Queries the master objects associated with a given stored object link and link type.
+     *
+     * @param linkId the stored object link Id to query masters for
+     * @param linkType  the type of link defining the relationship between the object and its masters
+     * @return a Query object containing the results of the master objects query
+     */
+    public Query queryMasters(Id linkId, int linkType) {
+        return linkId.queryMasters(transaction, StoredObject.TYPE_EQUALS + linkType, objectClass, columns, where,
                 orderBy, any, skip, limit, distinctColumns);
     }
 
@@ -292,7 +593,17 @@ public class QueryBuilder<T extends StoredObject> {
      * @return an iterator over the master objects associated with the given stored object
      */
     public ObjectIterator<T> listMasters(StoredObject link) {
-        return listMasters(link, 0);
+        return listMasters(link.getId());
+    }
+
+    /**
+     * Retrieves an iterator over master objects linked to the specified stored object.
+     *
+     * @param linkId the link object Id for which the master objects are to be listed
+     * @return an iterator over the master objects associated with the given stored object
+     */
+    public ObjectIterator<T> listMasters(Id linkId) {
+        return listMasters(linkId, 0);
     }
 
     /**
@@ -303,18 +614,19 @@ public class QueryBuilder<T extends StoredObject> {
      * @return An iterator over the master objects linked to the specified stored object.
      */
     public ObjectIterator<T> listMasters(StoredObject link, int linkType) {
-        return link.listMasters(transaction, StoredObject.TYPE_EQUALS + linkType, objectClass, where, orderBy,
-                any, skip, limit, distinctColumns);
+        return listMasters(link.getId(), linkType);
     }
 
     /**
-     * Counts the number of master objects associated with the given link.
+     * Retrieves an iterator over the master objects linked to the specified stored object.
      *
-     * @param link The StoredObject instance representing the link for which the count of masters is required.
-     * @return The count of master objects associated with the provided link.
+     * @param linkId The link object Id for which to list the master objects.
+     * @param linkType The type of the link used to filter the master objects.
+     * @return An iterator over the master objects linked to the specified stored object.
      */
-    public int countMasters(StoredObject link) {
-        return countMasters(link, 0);
+    public ObjectIterator<T> listMasters(Id linkId, int linkType) {
+        return linkId.listMasters(transaction, StoredObject.TYPE_EQUALS + linkType, objectClass, where, orderBy,
+                any, skip, limit, distinctColumns);
     }
 
     /**
@@ -330,14 +642,45 @@ public class QueryBuilder<T extends StoredObject> {
     }
 
     /**
+     * Counts the number of master objects associated with the given link.
+     *
+     * @param link The link object representing the link for which the count of masters is required.
+     * @return The count of master objects associated with the provided link.
+     */
+    public int countMasters(StoredObject link) {
+        return countMasters(link.getId());
+    }
+
+    /**
+     * Counts the number of master objects associated with the given link.
+     *
+     * @param link The link object Id representing the link for which the count of masters is required.
+     * @return The count of master objects associated with the provided link.
+     */
+    public int countMasters(Id link) {
+        return countMasters(link, 0);
+    }
+
+    /**
      * Counts the number of master objects associated with a given link and link type.
      *
-     * @param link the StoredObject instance representing the link.
+     * @param link the link object representing the link.
      * @param linkType an integer representing the type of link.
      * @return the count of master objects associated with the specified link and link type.
      */
     public int countMasters(StoredObject link, int linkType) {
         return count(queryMasters(link, linkType));
+    }
+
+    /**
+     * Counts the number of master objects associated with a given link and link type.
+     *
+     * @param linkId the link object Id representing the link.
+     * @param linkType an integer representing the type of link.
+     * @return the count of master objects associated with the specified link and link type.
+     */
+    public int countMasters(Id linkId, int linkType) {
+        return count(queryMasters(linkId, linkType));
     }
 
     /**

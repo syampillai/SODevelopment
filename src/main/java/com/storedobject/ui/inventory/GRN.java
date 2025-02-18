@@ -749,6 +749,10 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
                     }
                     if(s1.equals(StoredObject.toCode(gi2.getSerialNumber()))) {
                         warn("Duplicate S/N " + s1 + " for " + iit.toDisplay());
+                        gi2.setItem((InventoryItem) null);
+                        transact(gi2::save);
+                        reload();
+                        message("One of them marked as 'Not Inspected' now");
                         return;
                     }
                 }

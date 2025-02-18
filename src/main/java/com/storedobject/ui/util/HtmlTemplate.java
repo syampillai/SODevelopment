@@ -38,7 +38,7 @@ import java.util.function.Supplier;
 
 /**
  * Abstract base class for a component that is initialized based on the contents
- * of a HTML template. The HTML content is read to create a
+ * of an HTML template. The HTML content is read to create a
  * server-side Element tree. For instance fields marked with @{@link Id}, an
  * element with the corresponding id attribute value is identified, upgraded to
  * a component of the type defined by the field and the component instance is
@@ -374,7 +374,14 @@ public abstract class HtmlTemplate extends Component {
         if(componentCreator != null) {
             return componentCreator.createComponentForId(id);
         }
-        return new Span("[Id = " + id + "]");
+        return new ISpan("[Id = " + id + "]");
+    }
+
+    private static class ISpan extends Span {
+
+        private ISpan(String text) {
+            super(text);
+        }
     }
 
     protected Component createComponentForId(String id, String tag) {
@@ -386,7 +393,7 @@ public abstract class HtmlTemplate extends Component {
             }
         }
         c = createComponentForId(id);
-        if(c == null) {
+        if(c == null || c instanceof ISpan) {
             c = createHTMLComponent(tag);
         }
         return c == null ? new Span("[Tag = " + tag + ", Id = " + id + "]") : c;

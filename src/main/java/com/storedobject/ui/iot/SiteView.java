@@ -1,5 +1,6 @@
 package com.storedobject.ui.iot;
 
+import com.storedobject.common.IO;
 import com.storedobject.common.StringFiller;
 import com.storedobject.core.*;
 import com.storedobject.helper.ID;
@@ -21,6 +22,7 @@ import com.vaadin.flow.shared.Registration;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -31,16 +33,17 @@ public class SiteView extends ImageViewer implements Transactional, CloseableVie
     private final GUI gui;
     private final ELabel lastUpdate = new ELabel();
     private Consumer<Id> refresher;
-    private Block block;
     private final ObjectComboField<Site> sitesField = new ObjectComboField<>(Site.class, "Active", true);
     private final ButtonLayout buttons;
     private record Dim(int w, int h) {}
     private final Map<Id, Dim> dims = new HashMap<>();
     private final Registration size;
     private double scale;
+    private final boolean devMode;
 
     public SiteView(GUI gui, boolean devMode) {
         super("Site View");
+        this.devMode = devMode;
         this.gui = gui;
         gui.application.closeMenu();
         if(devMode) {
@@ -51,11 +54,13 @@ public class SiteView extends ImageViewer implements Transactional, CloseableVie
         sitesField.addValueChangeListener(e -> {
             Site site = sitesField.getObject();
             if(site != null) {
-                GUI.setSite(site);
+                gui.setSite(site);
             }
             imageNames.clear();
             components.clear();
-            loadSite();
+            if(site != null) {
+                loadSite(true);
+            }
         });
         buttons = new ButtonLayout(
                 devMode ? new ELabel("[Development Mode] ", "font-weight:bold") : null,
@@ -63,16 +68,22 @@ public class SiteView extends ImageViewer implements Transactional, CloseableVie
                 sitesField,
                 new Button("Switch Block", VaadinIcon.CHART_3D, e -> loadBlocks()),
                 lastUpdate,
-                new Button("Dashboard", VaadinIcon.DASHBOARD, e -> gui.dashboard()),
-                new Button("Value Charts", "chart", e -> gui.chart()),
-                new Button("Status", VaadinIcon.GRID, e -> gui.statusGrid()),
+                new Button("Dashboard", VaadinIcon.DASHBOARD, e -> gui.showDashboard()),
+                new Button("Value Charts", "chart", e -> gui.showChart()),
+                new Button("Status", VaadinIcon.GRID, e -> gui.showStatusGrid()),
                 new Button("Send Control Command", VaadinIcon.PAPERPLANE_O, e -> gui.sendCommand()),
                 gui.consumptionButton(),
                 gui.dataButton(),
                 new Button("Exit", e -> close())
         );
-        sitesField.setValue(GUI.site() == null ? StoredObject.get(Site.class, "Active") : GUI.site());
-        if(GUI.isFixedSite()) {
+        Site site = gui.getSite();
+        if(site == null) {
+            site = StoredObject.get(Site.class, "Active");
+        }
+        if(site != null) {
+            sitesField.setValue(site);
+        }
+        if(gui.isFixedSite()) {
             sitesField.setReadOnly(true);
         }
         Application a = Application.get();
@@ -82,7 +93,7 @@ public class SiteView extends ImageViewer implements Transactional, CloseableVie
 
     private void refreshStatus(Id blockId) {
         gui.application.access(() -> {
-            if(block != null && block.getId().equals(blockId)) {
+            if(blockId.equals(gui.blockId())) {
                 loadBlockData();
             }
             gui.lastUpdate(lastUpdate);
@@ -91,14 +102,15 @@ public class SiteView extends ImageViewer implements Transactional, CloseableVie
 
     @Override
     protected void execute(View parent, boolean doNotLock) {
-        if(block == null) {
-            block = StoredObject.get(Block.class, "Active");
-            if(block == null) {
-                warning("No active block found");
-                return;
-            }
+        Block block = gui.getBlock();
+        if(block == null && !devMode) {
+            warning("No active block found");
+            return;
         }
         super.execute(parent, doNotLock);
+        if(devMode && block == null) {
+            return;
+        }
         if(refresher == null) {
             loadBlockData();
             gui.lastUpdate(lastUpdate);
@@ -120,50 +132,52 @@ public class SiteView extends ImageViewer implements Transactional, CloseableVie
     }
 
     private void reload() {
+        Block block = gui.getBlock();
         if(block != null) {
             loadBlock(block);
             return;
         }
-        loadSite();
+        loadSite(false);
     }
 
-    private void loadSite() {
-        block = null;
-        gui.units.clear();
+    private void loadSite(boolean loadBlocks) {
         removeAll();
-        if(GUI.site() == null) {
+        Site site = gui.getSite();
+        if(site == null) {
             warning("Select a site");
             return;
         }
         MediaFile mf = null;
-        String in = GUI.site().getImageName();
+        String in = site.getImageName();
         if(!in.isBlank()) {
             mf = getMedia(in);
         }
         setBackgroundSource(mf);
-        loadBlocks();
+        if(loadBlocks) {
+            loadBlocks();
+        }
     }
 
     private void loadBlocks() {
         if(!executing()) {
             return;
         }
-        gui.units.clear();
-        block = null;
         gui.selectBlock(this::loadBlock);
     }
 
     private void loadBlock(Block block) {
-        this.block = block;
         if(block != null) {
             loadBlock();
         }
     }
 
     private void loadBlock() {
-        gui.units.clear();
-        StoredObject.list(Unit.class, "Block=" + block.getId() + " AND Active", true).collectAll(gui.units);
-        if(gui.units.isEmpty()) {
+        Block block = gui.getBlock();
+        if(block == null) {
+            warning("No block selected");
+            return;
+        }
+        if(gui.isEmpty()) {
             warning("No units defined/active for - " + block.getName());
             return;
         }
@@ -190,11 +204,17 @@ public class SiteView extends ImageViewer implements Transactional, CloseableVie
     private Dim dim(MediaFile mf) {
         Dim dim = dims.get(mf.getId());
         if (dim == null) {
+            InputStream in = null;
             try {
-                BufferedImage bi = ImageIO.read(mf.getFile().getContent());
+                in = mf.getFile().getContent();
+                BufferedImage bi = ImageIO.read(in);
                 dim = new Dim(bi.getWidth(), bi.getHeight());
             } catch (IOException e) {
                 return null;
+            } finally {
+                if(in != null) {
+                    IO.close(in);
+                }
             }
             dims.put(mf.getId(), dim);
         }
@@ -235,6 +255,7 @@ public class SiteView extends ImageViewer implements Transactional, CloseableVie
                 bi.setWidth(null);
                 bi.setHeight(null);
             }
+            Block block = gui.getBlock();
             setParentImage(bi, offsetX, offsetY);
             Div div = div(block.getName(), block.getCaptionStyle());
             if(scale > 0) {
@@ -258,7 +279,7 @@ public class SiteView extends ImageViewer implements Transactional, CloseableVie
     }
 
     private void loadBlockData() {
-        if(GUI.site() != null && block != null) {
+        if(gui.getSite() != null && gui.getBlock() != null) {
             buildTree(false);
         }
     }
@@ -266,19 +287,19 @@ public class SiteView extends ImageViewer implements Transactional, CloseableVie
     private void buildTree(boolean init) {
         if(init) {
             blockContents.clear();
-            Block b = gui.block();
+            Block b = gui.getBlock();
             if(b != null) {
                 BlockDisplayContent.list(b).forEach(BlockContent::new);
             }
         }
-        DataSet.getSites().stream().filter(s -> s.getSite().getId().equals(GUI.site().getId()))
+        DataSet.getSites().stream().filter(s -> s.getSite().getId().equals(gui.siteId()))
                 .forEach(s -> buildBranches(init, s));
     }
 
     private void buildBranches(boolean init, DataSet.AbstractData parent) {
         parent.children().forEach(row -> {
             if(row instanceof DataSet.UnitData ud) {
-                if(gui.units.contains(ud.getUnit())) {
+                if(gui.contains(ud.getUnit())) {
                     ud.getDataStatus().forEach(ds -> add(ds, init));
                 }
             }
@@ -341,7 +362,7 @@ public class SiteView extends ImageViewer implements Transactional, CloseableVie
         if(component == null) {
             ValueDefinition<?> vd = ds.getValueDefinition();
             if(new ImageName(vd).isEmpty()) {
-                component = new ValueDiv(vd.getLabel(ds.getUnit()) + ' ');
+                component = new ValueDiv (vd.getLabel(ds.getUnit()) + ' ');
             } else {
                 component = new ValueImage();
             }
@@ -357,7 +378,7 @@ public class SiteView extends ImageViewer implements Transactional, CloseableVie
     private final Map<String, ImageName> imageNames = new HashMap<>();
 
     ImageName imageName(ValueDefinition<?> vd) {
-        ImageName in = imageNames.get(vd.getId() + "/" + block.getId());
+        ImageName in = imageNames.get(vd.getId() + "/" + gui.blockId());
         if(in == null) {
             in = new ImageName(vd);
         }
@@ -367,6 +388,7 @@ public class SiteView extends ImageViewer implements Transactional, CloseableVie
     private class ImageName extends ArrayList<String> {
 
         private ImageName(ValueDefinition<?> vd) {
+            Block block = gui.getBlock();
             try {
                 String p = vd.getImagePrefix() + "-";
                 String u = block.getImageName() + "-";
@@ -789,7 +811,7 @@ public class SiteView extends ImageViewer implements Transactional, CloseableVie
 
         private DataSet.DataStatus<?> searchTree(String name, int ordinality, String unitName) {
             DataSet.SiteData siteData =
-            DataSet.getSites().stream().filter(s -> s.getSite().getId().equals(GUI.site().getId())).findAny()
+            DataSet.getSites().stream().filter(s -> s.getSite().getId().equals(gui.siteId())).findAny()
                     .orElse(null);
             return siteData == null ? null : searchBranches(name, ordinality, unitName, siteData);
         }
@@ -798,7 +820,7 @@ public class SiteView extends ImageViewer implements Transactional, CloseableVie
                                                      DataSet.AbstractData parent) {
             for(DataSet.AbstractData row: parent.children()) {
                 if(row instanceof DataSet.UnitData ud) {
-                    if(gui.units.contains(ud.getUnit())) {
+                    if(gui.contains(ud.getUnit())) {
                         for(DataSet.DataStatus<?> ds: ud.getDataStatus()) {
                             if(ds.ordinality() == ordinality && ds.getValueDefinition().getName().equals(name)) {
                                 if(unitName != null) {

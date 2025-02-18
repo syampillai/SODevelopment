@@ -189,7 +189,9 @@ public abstract class Unit extends AbstractUnit {
         Double c = computeConsumption(resource, from, to);
         double value = 0;
         boolean foundAny = false;
-        for(UnitItem item: list(UnitItem.class, "Unit=" + getId() + " AND Active AND NOT Independent", true)) {
+        List<UnitItem> items = list(UnitItem.class, "Unit=" + getId() + " AND Active AND NOT Independent",
+                true).toList();
+        for(UnitItem item: items) {
             Double v = item.computeConsumption(resource, from, to);
             if(v == null) {
                 continue;

@@ -800,6 +800,14 @@ public class Id {
         return ObjectIterator.create();
 	}
 
+
+	public final <T extends StoredObject> ObjectIterator<T> listMasters(Transaction transaction, String linkType,
+																		Class<T> objectClass, String condition,
+																		String order, boolean any, int skip, int limit,
+																		int[] distinct) {
+		return ObjectIterator.create();
+	}
+
 	public final <T extends StoredObject> T getMaster(Class<T> objectClass) {
         return (T)(isNull() ? new Person() : new Entity());
 	}
@@ -1178,6 +1186,12 @@ public class Id {
 	public final Query queryMasters(Transaction transaction, String linkType, Class<? extends StoredObject> objectClass,
 			String columns, String condition, String order, boolean any) {
         return new Query();
+	}
+
+	public final Query queryMasters(Transaction transaction, String linkType, Class<? extends StoredObject> objectClass,
+									String columns, String condition, String order, boolean any, int skip, int limit,
+									int[] distinct) {
+		return new Query();
 	}
 
 	public final int countMasters(Class<? extends StoredObject> objectClass) {

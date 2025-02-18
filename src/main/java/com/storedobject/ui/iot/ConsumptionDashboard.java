@@ -38,10 +38,10 @@ public class ConsumptionDashboard extends View implements CloseableView {
                 periodicityField,
                 new ELabel("View:"),
                 viewField,
-                new Button("Dashboard", VaadinIcon.DASHBOARD, e -> gui.dashboard()),
-                new Button("Value Charts", "chart", e -> gui.chart()),
-                new Button("Status", VaadinIcon.GRID, e -> gui.statusGrid()),
-                new Button("Site View", VaadinIcon.FACTORY, e -> gui.siteView()),
+                new Button("Dashboard", VaadinIcon.DASHBOARD, e -> gui.showDashboard()),
+                new Button("Value Charts", "chart", e -> gui.showChart()),
+                new Button("Status", VaadinIcon.GRID, e -> gui.showStatusGrid()),
+                new Button("Site View", VaadinIcon.FACTORY, e -> gui.showSiteView()),
                 new Button("Consumption Data", VaadinIcon.TABLE, e -> new ViewConsumption(resource, block).execute()),
                 new Button("Exit", e -> close())
         );

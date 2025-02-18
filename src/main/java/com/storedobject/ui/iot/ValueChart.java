@@ -51,7 +51,7 @@ public class ValueChart extends View implements CloseableView, Transactional {
         timeStepField.addValueChangeListener(e -> changeTimeStep());
         chartType.addValueChangeListener(e -> plotAgain());
         period = new TimestampPeriod(
-                DateUtility.createTimestamp(DateUtility.startOfToday().getTime() - GUI.site().getTimeDifference()),
+                DateUtility.createTimestamp(DateUtility.startOfToday().getTime() - gui.getSite().getTimeDifference()),
                 new Timestamp(time));
         layout = new VerticalLayout(
                 new ButtonLayout(
@@ -61,9 +61,9 @@ public class ValueChart extends View implements CloseableView, Transactional {
                         chartType,
                         new ELabel("Time Slice"),
                         timeStepField,
-                        new Button("Dashboard", VaadinIcon.DASHBOARD, e -> gui.dashboard()),
-                        new Button("Status", VaadinIcon.GRID, e -> gui.statusGrid()),
-                        new Button("Site View", VaadinIcon.FACTORY, e -> gui.siteView()),
+                        new Button("Dashboard", VaadinIcon.DASHBOARD, e -> gui.showDashboard()),
+                        new Button("Status", VaadinIcon.GRID, e -> gui.showStatusGrid()),
+                        new Button("Site View", VaadinIcon.FACTORY, e -> gui.showSiteView()),
                         new Button("Send Control Command", VaadinIcon.PAPERPLANE_O, e -> gui.sendCommand()),
                         gui.consumptionButton(),
                         gui.dataButton(),
@@ -94,7 +94,7 @@ public class ValueChart extends View implements CloseableView, Transactional {
         protected boolean process() {
             close();
             period = periodField.getValue();
-            int diff = GUI.site().getTimeDifference();
+            int diff = gui.getSite().getTimeDifference();
             Timestamp from = DateUtility.createTimestamp(period.getFrom().getTime() - diff),
                     to = DateUtility.createTimestamp(period.getTo().getTime() - diff);
             period = new TimestampPeriod(from, to);
@@ -106,7 +106,7 @@ public class ValueChart extends View implements CloseableView, Transactional {
 
         @Override
         protected void execute(View parent, boolean doNotLock) {
-            int diff = GUI.site().getTimeDifference();
+            int diff = gui.getSite().getTimeDifference();
             Timestamp from = DateUtility.createTimestamp(period.getFrom().getTime() + diff),
                     to = DateUtility.createTimestamp(period.getTo().getTime() + diff);
             periodField.setValue(new TimestampPeriod(from, to));
@@ -247,22 +247,22 @@ public class ValueChart extends View implements CloseableView, Transactional {
 
     @Override
     protected void execute(View parent, boolean doNotLock) {
-        if(GUI.site() == null) {
+        if(gui.getSite() == null) {
             close();
             warning("No site selected");
             return;
-        } else if(!GUI.site().getActive()) {
-            warning("Not an active site - " + GUI.site().getName());
+        } else if(!gui.getSite().getActive()) {
+            warning("Not an active site - " + gui.getSite().getName());
             close();
             return;
         }
-        if(gui.units.isEmpty()) {
+        if(gui.isEmpty()) {
             warning("Please select");
             close();
-            gui.siteView();
+            gui.showSiteView();
             return;
         }
-        if(GUI.site() == site) {
+        if(gui.getSite() == site) {
             super.execute(parent, doNotLock);
             return;
         }
@@ -275,7 +275,7 @@ public class ValueChart extends View implements CloseableView, Transactional {
     private boolean loadSite() {
         clear();
         if(checkTree()) {
-            site = GUI.site();
+            site = gui.getSite();
             return true;
         }
         warning("No attributes configured for the chart");
@@ -285,7 +285,7 @@ public class ValueChart extends View implements CloseableView, Transactional {
     }
 
     private boolean checkTree() {
-        return DataSet.getSites().stream().filter(s -> s.getSite().getId().equals(GUI.site().getId()))
+        return DataSet.getSites().stream().filter(s -> s.getSite().getId().equals(gui.getSite().getId()))
                 .anyMatch(this::checkBranches);
     }
 
@@ -308,14 +308,14 @@ public class ValueChart extends View implements CloseableView, Transactional {
     }
 
     private void buildTree(List<DataValue> values) {
-        DataSet.getSites().stream().filter(s -> s.getSite().getId().equals(GUI.site().getId()))
+        DataSet.getSites().stream().filter(s -> s.getSite().getId().equals(gui.getSite().getId()))
                 .forEach(s -> buildBranches(values, s));
     }
 
     private void buildBranches(List<DataValue> values, DataSet.AbstractData parent) {
         parent.children().forEach(row -> {
             if(row instanceof DataSet.UnitData ud) {
-                if(gui.units.contains(ud.getUnit())) {
+                if(gui.contains(ud.getUnit())) {
                     ud.getDataStatus().stream()
                             .filter(ds -> ds.getValueDefinition().getShowChart())
                             .forEach(ds -> values.add(new DataValue(ud, ds)));
@@ -386,7 +386,7 @@ public class ValueChart extends View implements CloseableView, Transactional {
 
         @Override
         public Stream<LocalDateTime> stream() {
-            return stream(timeStep, GUI.site().getTimeDifference());
+            return stream(timeStep, gui.getSite().getTimeDifference());
         }
 
         @Override

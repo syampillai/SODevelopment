@@ -19,21 +19,20 @@ import java.util.function.Consumer;
 @SuppressWarnings("rawtypes")
 public class SendCommand extends DataForm {
 
-    private final ObjectField<Unit> unitField = new ObjectField<>("Unit", Unit.class, true);
+    private final ObjectField<Unit> unitField;
     private final ObjectComboField<ValueDefinition> commandField = new ObjectComboField<>("Command",
             ValueDefinition.class, "Command AND Active", true);
     private ValueDefinition valueDefinition;
     private Unit unit;
     private final Consumer<Command> sendAction;
     private final boolean direct;
-    private Block block;
 
     public SendCommand() {
         this(null, null);
     }
 
-    public SendCommand(GUI gui) {
-        this(null, gui);
+    public SendCommand(Block block) {
+        this(null, block);
     }
 
 
@@ -41,18 +40,11 @@ public class SendCommand extends DataForm {
         this(sendAction, null);
     }
 
-    private SendCommand(Consumer<Command> sendAction, GUI gui) {
+    private SendCommand(Consumer<Command> sendAction, Block block) {
         super("Select Unit & Command");
         direct = false;
         this.sendAction = sendAction == null ? defaultAction() : sendAction;
-        if(gui != null) {
-            Block block = gui.block();
-            if(block != null) {
-                this.block = block;
-                unitField.setFilter("Block=" + block.getId(), false);
-            }
-        }
-        unitField.setLoadFilter(SendCommand::checkUnit);
+        unitField = createUnitField(block);
         addField(unitField, commandField);
         unitField.addValueChangeListener(l -> {
             List<ValueDefinition> commands = new ArrayList<>();
@@ -72,26 +64,23 @@ public class SendCommand extends DataForm {
 
     public SendCommand(Consumer<Command> sendAction, Unit unit, ValueDefinition valueDefinition) {
         super("");
+        unitField = null;
         direct = true;
         this.sendAction = sendAction == null ? defaultAction() : sendAction;
         this.unit = unit;
         this.valueDefinition = valueDefinition;
     }
 
-    public void setBlock(Block block) {
+    private static ObjectField<Unit> createUnitField(Block block) {
+        ObjectField<Unit> uf;
         if(block == null) {
-            if(this.block == null) {
-                return;
-            }
-            unitField.setFilter((String) null, true);
-            this.block = null;
-            return;
+            uf = new ObjectField<>("Unit", Unit.class, true);
+        } else {
+            uf = new ObjectField<>("Unit", Unit.class, true, ObjectField.Type.CHOICE);
+            uf.setFilter("Block=" + block.getId(), false);
         }
-        if(this.block != null && this.block.getId().equals(block.getId())) {
-            return;
-        }
-        unitField.setFilter("Block=" + block.getId(), true);
-        this.block = block;
+        uf.setLoadFilter(SendCommand::checkUnit);
+        return uf;
     }
 
     private Consumer<Command> defaultAction() {

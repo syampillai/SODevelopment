@@ -18,6 +18,10 @@ public abstract class BlockSelector extends DataForm implements Transactional {
     }
 
     public BlockSelector(String caption, Block block) {
+        this(caption, block, null);
+    }
+
+    public BlockSelector(String caption, Block block, Site site) {
         super(caption);
         siteField.setLoadFilter(Site::getActive);
         addField(siteField, blockField);
@@ -33,11 +37,11 @@ public abstract class BlockSelector extends DataForm implements Transactional {
             }
             blockChanged(this.block);
         });
-        if(GUI.isFixedSite()) {
-            setFieldReadOnly(siteField);
+        if(site == null && block != null) {
+            site = block.getSite();
         }
-        if(GUI.site() != null) {
-            siteField.setValue(GUI.site());
+        if(site != null) {
+            siteField.setValue(site);
             setFirstFocus(blockField);
         }
         if(block != null) {

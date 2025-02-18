@@ -46,8 +46,12 @@ public class StatusGrid extends DataGrid<DataSet.DataStatus> {
         commandsOnly.addValueChangeListener(e -> loadStatus());
         addConstructedListener(l -> {
             addComponentColumn(this::send).setFlexGrow(0).setWidth("120px");
-            sitesField.setValue(GUI.site() == null ? StoredObject.get(Site.class, "Active") : GUI.site());
-            if(GUI.isFixedSite()) {
+            Site site = gui.getSite();
+            if(site != null) {
+                site = StoredObject.get(Site.class, "Active");
+            }
+            sitesField.setValue(site);
+            if(gui.isFixedSite()) {
                 sitesField.setReadOnly(true);
             }
         });
@@ -67,6 +71,10 @@ public class StatusGrid extends DataGrid<DataSet.DataStatus> {
         return ds.getUnit().getBlock().getName();
     }
 
+    public String getUnit(DataSet.DataStatus ds) {
+        return ds.getUnit().getName();
+    }
+
     @Override
     public Component createHeader() {
         sitesField.setItemLabelGenerator(Site::getName);
@@ -80,9 +88,9 @@ public class StatusGrid extends DataGrid<DataSet.DataStatus> {
                 new ELabel("Site:"),
                 sitesField,
                 lastUpdate,
-                new Button("Dashboard", VaadinIcon.DASHBOARD, e -> gui.dashboard()),
-                new Button("Value Charts", "chart", e -> gui.chart()),
-                new Button("Site View", VaadinIcon.FACTORY, e -> gui.siteView()),
+                new Button("Dashboard", VaadinIcon.DASHBOARD, e -> gui.showDashboard()),
+                new Button("Value Charts", "chart", e -> gui.showChart()),
+                new Button("Site View", VaadinIcon.FACTORY, e -> gui.showSiteView()),
                 new Button("Send Control Command", VaadinIcon.PAPERPLANE_O, e -> gui.sendCommand()),
                 gui.consumptionButton(),
                 gui.dataButton(),
@@ -135,10 +143,10 @@ public class StatusGrid extends DataGrid<DataSet.DataStatus> {
             message("Please select a site");
             return;
         }
-        GUI.setSite(site);
+        gui.setSite(site);
         Id blockId = allBlocks.getValue() ? null : Id.ZERO;
         if(Id.ZERO.equals(blockId)) {
-            Block block = gui.block();
+            Block block = gui.getBlock();
             if(block != null) {
                 blockId = block.getId();
             }

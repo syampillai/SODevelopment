@@ -155,6 +155,9 @@ public final class InventoryGRNItem extends StoredObject implements Detail, HasI
     }
 
     public void setItem(Id itemId) {
+        if(itemId == null) {
+            inspected = false;
+        }
         if(item != null && (Id.isNull(itemId) || !itemId.equals(this.itemId))) {
             item = null;
         }
