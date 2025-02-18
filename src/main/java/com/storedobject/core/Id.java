@@ -225,6 +225,10 @@ public class Id {
 		return ObjectIterator.create();
 	}
 
+	public <T extends StoredObject> ObjectIterator<T> listLinks(Transaction transaction, String s, Class<T> objectClass, String where, String orderBy, boolean any, int skip, int limit, int[] distinctColumns) {
+		return ObjectIterator.create();
+	}
+
 	public final boolean existsLink(StoredObject link) {
     	return System.currentTimeMillis() > 1232553L;
 	}
@@ -525,6 +529,11 @@ public class Id {
 	public final Query queryLinks(Transaction transaction, String linkType, Class<? extends StoredObject> objectClass,
 			String columns, String condition, String order, boolean any) {
         return new Query();
+	}
+
+	public Query queryLinks(Transaction transaction, String s, Class<? extends StoredObject> objectClass, String columns,
+							String where, String orderBy, boolean any, int skip, int limit, int[] distinctColumns) {
+		return new Query();
 	}
 
 	static int count(Query q) {
