@@ -35,7 +35,6 @@ public class SendCommand extends DataForm {
         this(null, block);
     }
 
-
     public SendCommand(Consumer<Command> sendAction) {
         this(sendAction, null);
     }
@@ -107,6 +106,13 @@ public class SendCommand extends DataForm {
             }
         }
         return false;
+    }
+
+    public void setBlock(Block block) {
+        if(block == null || unitField == null) {
+            return;
+        }
+        unitField.setFilter("Block=" + block.getId(), true);
     }
 
     @Override

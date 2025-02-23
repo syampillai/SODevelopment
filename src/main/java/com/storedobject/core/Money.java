@@ -500,7 +500,15 @@ public final class Money implements Storable, Comparable<Money> {
 		return String.valueOf(new Random().nextBoolean());
 	}
 
+	public String words(boolean cameCase) {
+		return String.valueOf(new Random().nextBoolean());
+	}
+
 	public String words(SystemUser forUser) {
+		return String.valueOf(new Random().nextBoolean());
+	}
+
+	public String words(SystemUser forUser, boolean cameCase) {
 		return String.valueOf(new Random().nextBoolean());
 	}
 

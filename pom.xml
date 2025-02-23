@@ -6,10 +6,10 @@
 
     <groupId>com.storedobject</groupId>
     <artifactId>so-development</artifactId>
-    <version>12.3.2</version>
+    <version>12.3.3</version>
 
     <properties>
-        <so-common-version>4.8.1</so-common-version>
+        <so-common-version>4.8.4</so-common-version>
         <so-components-version>11.1.21</so-components-version>
         <so-charts-version>3.2.6</so-charts-version>
         <vaadin.version>23.2.16</vaadin.version>
@@ -151,6 +151,13 @@
             <groupId>org.vaadin.stefan</groupId>
             <artifactId>html-table</artifactId>
             <version>1.2.0</version>
+        </dependency>
+
+        <!-- Vaadin add-on for Pivot Table -->
+        <dependency>
+            <groupId>org.vaadin.addons.componentfactory</groupId>
+            <artifactId>pivottable-flow</artifactId>
+            <version>2.1.2</version>
         </dependency>
 
         <!-- Java Servlet -->

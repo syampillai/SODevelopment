@@ -45,7 +45,6 @@ public class SiteView extends ImageViewer implements Transactional, CloseableVie
         super("Site View");
         this.devMode = devMode;
         this.gui = gui;
-        gui.application.closeMenu();
         if(devMode) {
             HtmlTemplate.clearCache();
             allowMovement();
@@ -108,6 +107,7 @@ public class SiteView extends ImageViewer implements Transactional, CloseableVie
             return;
         }
         super.execute(parent, doNotLock);
+        gui.application.closeMenu();
         if(devMode && block == null) {
             return;
         }

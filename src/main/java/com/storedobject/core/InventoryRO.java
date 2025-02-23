@@ -85,7 +85,7 @@ public final class InventoryRO extends InventoryTransfer implements TradeType {
      * Close the RO (only if all the items are returned via some means).
      *
      * @param tm Transaction manager.
-     * @param manual Manual or not (Status will be set to "Returned" or "Closed" accordingly.
+     * @param manual Manual or not (Status will be set to "Returned" or "Closed" accordingly).
      */
     public void close(TransactionManager tm, boolean manual) throws Exception {
         tm.transact(t -> close(t, manual));
@@ -95,7 +95,7 @@ public final class InventoryRO extends InventoryTransfer implements TradeType {
      * Close the RO (only if all the items are returned via some means).
      *
      * @param transaction Transaction.
-     * @param manual Manual or not (Status will be set to "Returned" or "Closed" accordingly.
+     * @param manual Manual or not (Status will be set to "Returned" or "Closed" accordingly).
      */
     public void close(Transaction transaction, boolean manual) throws Exception {
         InventoryItem ii = listLinks(InventoryROItem.class)

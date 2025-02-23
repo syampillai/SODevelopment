@@ -1,14 +1,14 @@
 package com.storedobject.ui.iot;
 
+import com.storedobject.common.StringList;
 import com.storedobject.core.DateUtility;
 import com.storedobject.core.StoredObject;
+import com.storedobject.core.StoredObjectUtility;
 import com.storedobject.core.StringUtility;
 import com.storedobject.office.ExcelReport;
 import com.storedobject.ui.Application;
 
-import java.sql.ResultSet;
 import java.sql.Timestamp;
-import java.util.Collection;
 
 public class DataDownload extends ExcelReport {
 
@@ -23,26 +23,26 @@ public class DataDownload extends ExcelReport {
 
     @Override
     public void generateContent() throws Exception {
-        Collection<String> a = data4Unit.attributes();
+        StringList a = StringList.create(data4Unit.attributes());
+        StoredObjectUtility.MethodList[] mls = StoredObjectUtility.createMethodLists(data4Unit.dataClass(), a);
         int row = 0;
         goToCell(0, row++);
         setCellValue("Site: " + data4Unit.unit().getSite().getName());
         goToCell(0, row++);
         setCellValue("Unit: " + data4Unit.unit().getName());
         goToCell(0, row++);
-        a.forEach(s -> {
-            setCellValue(s.substring(s.indexOf(" AS ") + 4));
+        for(String h: a) {
+            setCellValue(h.substring(h.indexOf(" AS ") + 4));
             moveRight();
-        });
-        for(ResultSet rs: StoredObject.query(data4Unit.dataClass(), String.join(",", a), data4Unit.condition(),
-                data4Unit.orderBy(), true)) {
+        }
+        for(StoredObject so: StoredObject.list(data4Unit.dataClass(), data4Unit.condition())) {
             goToCell(0, row++);
-            setCellValue(new Timestamp(rs.getLong(1) + timeDifference));
+            setCellValue(new Timestamp((long)mls[0].invoke(so, true) + timeDifference));
             getCell().setCellStyle(getDateTimeStyle());
             Object v;
-            for(int i = 2; i <= a.size(); i++) {
+            for(int i = 1; i < mls.length; i++) {
                 moveRight();
-                v = rs.getObject(i);
+                v = mls[i].invoke(so, true);
                 if(v instanceof Boolean b) {
                     setCellValue(b ? 1 : 0);
                 } else {

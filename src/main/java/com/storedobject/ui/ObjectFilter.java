@@ -71,9 +71,11 @@ public class ObjectFilter<T extends StoredObject> extends Form implements Object
         if(columns == null || columns.isEmpty()) {
             columns = StoredObjectUtility.searchColumns(objectClass);
         }
-        this.columns = removeContacts(columns);
+        this.columns = columns.array();
         buildFields();
-        getContent().getElement().getStyle().set("max-width", "90vw");
+        if(getSearchFieldCount() > 0) {
+            getContent().getElement().getStyle().set("max-width", "90vw");
+        }
     }
 
     @Override
@@ -103,28 +105,6 @@ public class ObjectFilter<T extends StoredObject> extends Form implements Object
         return fields.length;
     }
 
-    private static String[] removeContacts(StringList cols) {
-        String contact = "Contact.";
-        int count = 0;
-        for(String s: cols) {
-            if(s.contains(contact)) {
-                ++count;
-            }
-        }
-        if(count == 0) {
-            return cols.array();
-        }
-        String[] c = new String[cols.size() - count];
-        int i = 0;
-        for(String s: cols) {
-            if(s.contains(contact)) {
-                continue;
-            }
-            c[i++] = s;
-        }
-        return c;
-    }
-
     @Override
     protected void attachField(String fieldName, HasValue<?, ?> field) {
     }
@@ -139,40 +119,13 @@ public class ObjectFilter<T extends StoredObject> extends Form implements Object
         ArrayList<Function<T, ?>> functions = new ArrayList<>();
         StoredObjectUtility.MethodList[] columnMethods = StoredObjectUtility
                 .createMethodLists(objectClass, StringList.create(columns));
-        n = 0;
-        Class<?> c;
-        for(i = 0; i < columnMethods.length; i++) {
-            if(columnMethods[i] == null || (c = columnMethods[i].getReturnType()).getComponentType() != null) {
-                continue;
-            }
-            if(StoredObject.class.isAssignableFrom(c)) {
-                if(StreamData.class.isAssignableFrom(c)) {
-                    columnMethods[i] = null;
-                    continue;
-                }
-                try {
-                    StoredObjectUtility.createMethodList(objectClass, columns[i] + "Id");
-                } catch(Throwable e) {
-                    columnMethods[i] = null;
-                    continue;
-                }
-            }
-            if(Money.class == c || Date.class == c || String.class == c || byte.class == c || int.class == c
-                    || long.class == c || short.class == c || double.class == c || float.class == c
-                    || boolean.class == c || Boolean.class == c || Number.class.isAssignableFrom(c)
-                    || Quantity.class.isAssignableFrom(c) || StoredObject.class.isAssignableFrom(c)
-                    || c == ComputedDate.class || c == ComputedMinute.class || c == ComputedInteger.class
-                    || c == ComputedLong.class || c == ComputedDouble.class) {
-                ++n;
-            } else {
-                columnMethods[i] = null;
-            }
-        }
+        n = columnMethods.length;
         captions = new Caption[n];
         checks = new Checkbox[n];
         combos = new ChoiceField[n];
         fields = new HasValue[n];
         n = 0;
+        Class<?> c;
         HorizontalLayout span;
         for(i = 0; i < columnMethods.length; i++) {
             if(columnMethods[i] == null) {
