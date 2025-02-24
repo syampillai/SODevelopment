@@ -1,6 +1,7 @@
 package com.storedobject.core;
 
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 public interface ObjectList<T extends StoredObject> extends List<T>, ObjectLoader<T>, Filtered<T> {
@@ -38,4 +39,6 @@ public interface ObjectList<T extends StoredObject> extends List<T>, ObjectLoade
     default Stream<Id> idStreamAll(int startingIndex, int endingIndex) {
         return streamAll(startingIndex, endingIndex).map(StoredObject::getId);
     }
+
+    void setProcessor(Consumer<T> processor);
 }

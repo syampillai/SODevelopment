@@ -2,6 +2,7 @@ package com.storedobject.core;
 
 import javax.annotation.Nonnull;
 import java.util.*;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
@@ -10,7 +11,7 @@ public class ObjectCacheList<T extends StoredObject> implements ObjectList<T>, A
     private ObjectCache<T> original, sorted, filtered;
     private Predicate<? super T> currentFilter;
     private Comparator<? super T> currentComparator;
-    private final ObjectLoadFilter<T> filter = new ObjectLoadFilter<>();
+    private Consumer<T> processor;
 
     public ObjectCacheList(Class<T> objectClass) {
         this(objectClass, false);
@@ -71,13 +72,13 @@ public class ObjectCacheList<T extends StoredObject> implements ObjectList<T>, A
 
     @Override
     public void applyFilterPredicate() {
-        filter(filter.getViewFilter());
+        filter(original.getLoadFilter().getViewFilter());
     }
 
     @Nonnull
     @Override
     public ObjectLoadFilter<T> getLoadFilter() {
-        return filter;
+        return original.getLoadFilter();
     }
 
     @Override
@@ -160,35 +161,22 @@ public class ObjectCacheList<T extends StoredObject> implements ObjectList<T>, A
     }
 
     @Override
+    @Nonnull
     public Iterator<T> iterator() {
         return sorted.loop();
     }
 
     @Override
+    @Nonnull
     public Object[] toArray() {
-        Object[] a = new Object[size()];
-        int i = 0;
-        for(T object: sorted) {
-            a[i++] = object;
-        }
-        return a;
+        return Utility.copyTo(sorted, new Object[size()], o -> o);
     }
 
     @Override
-    public <O> O[] toArray(O[] a) {
-        int size = size();
-        if (a.length < size) {
-            //noinspection unchecked
-            return (O[]) Arrays.copyOf(toArray(), size, a.getClass());
-        }
-        for(int i = 0; i < a.length; i++) {
-            //noinspection unchecked
-            a[i] = (O)get(i);
-        }
-        if (a.length > size) {
-            a[size] = null;
-        }
-        return a;
+    @Nonnull
+    public <O> O[] toArray(@Nonnull O[] a) {
+        //noinspection unchecked
+        return Utility.copyTo(this, a, o -> (O)o);
     }
 
     @Override
@@ -208,6 +196,7 @@ public class ObjectCacheList<T extends StoredObject> implements ObjectList<T>, A
             c.load(ids);
             original.close();
             original = c;
+            original.setProcessor(processor);
             rebuild();
             return true;
         }
@@ -230,6 +219,7 @@ public class ObjectCacheList<T extends StoredObject> implements ObjectList<T>, A
                 if(c != original) {
                     original.close();
                     original = c;
+                    original.setProcessor(processor);
                     rebuild();
                     return true;
                 }
@@ -260,6 +250,7 @@ public class ObjectCacheList<T extends StoredObject> implements ObjectList<T>, A
         c.load(ids);
         original.close();
         original = c;
+        original.setProcessor(processor);
         rebuild();
         return true;
     }
@@ -280,6 +271,7 @@ public class ObjectCacheList<T extends StoredObject> implements ObjectList<T>, A
         c.load(ids);
         original.close();
         original = c;
+        original.setProcessor(processor);
         rebuild();
         return true;
     }
@@ -293,6 +285,7 @@ public class ObjectCacheList<T extends StoredObject> implements ObjectList<T>, A
         if(c != original) {
             original.close();
             original = c;
+            original.setProcessor(processor);
             rebuild();
             return true;
         }
@@ -300,11 +293,12 @@ public class ObjectCacheList<T extends StoredObject> implements ObjectList<T>, A
     }
 
     @Override
-    public boolean removeIf(Predicate<? super T> filter) {
+    public boolean removeIf(@SuppressWarnings("NullableProblems") Predicate<? super T> filter) {
         ObjectCache<T> c = original.filter(filter);
         if(c != original) {
             original.close();
             original = c;
+            original.setProcessor(processor);
             rebuild();
             return true;
         }
@@ -317,11 +311,12 @@ public class ObjectCacheList<T extends StoredObject> implements ObjectList<T>, A
             clear();
             return true;
         }
-        boolean all = containsAll(collection);
+        @SuppressWarnings("SlowListContainsAll") boolean all = containsAll(collection);
         ObjectCache<T> c = original.filter(collection::contains);
         if(c != original) {
             original.close();
             original = c;
+            original.setProcessor(processor);
             rebuild();
         }
         return all;
@@ -350,6 +345,7 @@ public class ObjectCacheList<T extends StoredObject> implements ObjectList<T>, A
         c.load(ids);
         original.close();
         original = c;
+        original.setProcessor(processor);
         rebuild();
         return set;
     }
@@ -388,16 +384,19 @@ public class ObjectCacheList<T extends StoredObject> implements ObjectList<T>, A
     }
 
     @Override
+    @Nonnull
     public ListIterator<T> listIterator() {
         return sorted.loop();
     }
 
     @Override
+    @Nonnull
     public ListIterator<T> listIterator(int index) {
         return sorted.loop(index);
     }
 
     @Override
+    @Nonnull
     public List<T> subList(int fromIndex, int toIndex) {
         return sorted.list(fromIndex, toIndex);
     }
@@ -431,6 +430,7 @@ public class ObjectCacheList<T extends StoredObject> implements ObjectList<T>, A
         }
         original.close();
         original = c;
+        original.setProcessor(processor);
         rebuild();
     }
 
@@ -492,6 +492,7 @@ public class ObjectCacheList<T extends StoredObject> implements ObjectList<T>, A
             sorted = filtered = original;
             return;
         }
+        //noinspection DuplicatedCode
         if(filter == currentFilter) { // Filter not changed
             order(comparator);
             return;
@@ -549,5 +550,11 @@ public class ObjectCacheList<T extends StoredObject> implements ObjectList<T>, A
     @Override
     public int getCacheLevel() {
         return original.getCacheLevel();
+    }
+
+    @Override
+    public void setProcessor(Consumer<T> processor) {
+        this.processor = processor;
+        original.setProcessor(processor);
     }
 }

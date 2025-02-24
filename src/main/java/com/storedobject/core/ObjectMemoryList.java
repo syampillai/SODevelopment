@@ -2,8 +2,10 @@ package com.storedobject.core;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
@@ -13,6 +15,7 @@ public class ObjectMemoryList<T extends StoredObject> extends MemoryCache<T> imp
     private final Class<T> objectClass;
     private Function<Id, T> loader;
     private final ObjectLoadFilter<T> filter = new ObjectLoadFilter<>();
+    private Consumer<T> processor;
 
     public ObjectMemoryList(Class<T> objectClass) {
         this(objectClass, false);
@@ -80,6 +83,7 @@ public class ObjectMemoryList<T extends StoredObject> extends MemoryCache<T> imp
     @Override
     public void load(Query query, boolean any) {
         this.filter.setAny(any);
+        load(ObjectIterator.create(null, null, query, objectClass, any));
     }
 
     @Override
@@ -90,6 +94,9 @@ public class ObjectMemoryList<T extends StoredObject> extends MemoryCache<T> imp
             T so = load(id);
             if(so != null) {
                 if(loadFilter == null || loadFilter.test(so)) {
+                    if(processor != null) {
+                        processor.accept(so);
+                    }
                     original.add(so);
                 }
             }
@@ -99,6 +106,7 @@ public class ObjectMemoryList<T extends StoredObject> extends MemoryCache<T> imp
 
     @Override
     public void load(ObjectIterator<T> objects) {
+        objects = objects.filter(Objects::nonNull);
         original.clear();
         Predicate<T> loadFilter = filter.getLoadingPredicate();
         if(loadFilter != null) {
@@ -108,6 +116,9 @@ public class ObjectMemoryList<T extends StoredObject> extends MemoryCache<T> imp
             objects = objects.filter(o -> o.getClass() == objectClass);
         }
         for(T object : objects) {
+            if(processor != null) {
+                processor.accept(object);
+            }
             original.add(object);
         }
         rebuild();
@@ -115,6 +126,7 @@ public class ObjectMemoryList<T extends StoredObject> extends MemoryCache<T> imp
 
     @Override
     public void load(Stream<T> objects) {
+        objects = objects.filter(Objects::nonNull);
         original.clear();
         Predicate<T> loadFilter = filter.getLoadingPredicate();
         if(loadFilter != null) {
@@ -123,7 +135,12 @@ public class ObjectMemoryList<T extends StoredObject> extends MemoryCache<T> imp
         if(!filter.isAny()) {
             objects = objects.filter(o -> o.getClass() == objectClass);
         }
-        objects.forEach(original::add);
+        objects.forEach(o -> {
+            if(processor != null) {
+                processor.accept(o);
+            }
+            original.add(o);
+        });
         rebuild();
     }
 
@@ -182,7 +199,7 @@ public class ObjectMemoryList<T extends StoredObject> extends MemoryCache<T> imp
         }
         T so = original.get(index);
         so = load(so.getId());
-        original.set(index, load(so.getId()));
+        original.set(index, so);
         rebuild();
         return so;
     }
@@ -205,8 +222,18 @@ public class ObjectMemoryList<T extends StoredObject> extends MemoryCache<T> imp
     }
 
     private T load(Id id) {
-        T item = loader == null ? null : loader.apply(id);
-        return item == null ? StoredObject.get(objectClass, id, filter.isAny()) : item;
+        T item = null;
+        try {
+            item = loader == null ? null : loader.apply(id);
+            if (id.isDummy()) {
+                return null;
+            }
+            return item == null ? StoredObject.get(objectClass, id, filter.isAny()) : item;
+        } finally {
+            if(item != null && processor != null) {
+                processor.accept(item);
+            }
+        }
     }
 
     public void setLoader(Function<Id, T> loader) {
@@ -215,5 +242,42 @@ public class ObjectMemoryList<T extends StoredObject> extends MemoryCache<T> imp
 
     public Function<Id, T> getLoader() {
         return loader;
+    }
+
+    @Override
+    public boolean add(T object) {
+        if(processor != null) {
+            processor.accept(object);
+        }
+        return super.add(object);
+    }
+
+    @Override
+    public void add(int index, T element) {
+        if(processor != null) {
+            processor.accept(element);
+        }
+        super.add(index, element);
+    }
+
+    @Override
+    public boolean addAll(@Nonnull Collection<? extends T> collection) {
+        if(processor != null) {
+            collection.forEach(processor);
+        }
+        return super.addAll(collection);
+    }
+
+    @Override
+    public boolean addAll(int index, @Nonnull Collection<? extends T> collection) {
+        if(processor != null) {
+            collection.forEach(processor);
+        }
+        return super.addAll(index, collection);
+    }
+
+    @Override
+    public void setProcessor(Consumer<T> processor) {
+        this.processor = processor;
     }
 }

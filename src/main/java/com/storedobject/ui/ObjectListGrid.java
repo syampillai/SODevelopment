@@ -9,6 +9,7 @@ import com.vaadin.flow.shared.Registration;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 /**
@@ -44,6 +45,23 @@ public class ObjectListGrid<T extends StoredObject> extends DataGrid<T> implemen
     public ObjectListGrid(ObjectList<T> objectList, Iterable<String> columns) {
         super(objectList.getObjectClass(), objectList, columns);
         getDelegatedLoader().addDataLoadedListener(this::loaded);
+    }
+
+    /**
+     * Set a processor to process the object loaded into this grid.
+     * <p>Objects will be passed to this processor before loading into the grid so that you can do your logic-specific
+     * computation.</p>
+     * <p>Note: In cached grids, all objects may not get loaded at once. Also, in large grids, objects may get unloaded
+     * when scrolling takes place. However, the processor will be invoked again when the unloaded objects are
+     * loaded again. Your logic should not depend on any specific ordering of the objects.</p>
+     * <p>Warning: Typically, such processors should not create transactions or do inter-dependent processing.</p>
+     *
+     * @param processor Processor.
+     */
+    public void setProcessor(Consumer<T> processor) {
+        if(getData() instanceof ObjectList<T> list) {
+            list.setProcessor(processor);
+        }
     }
 
     @Override

@@ -8,7 +8,8 @@ import java.util.stream.Stream;
 @SuppressWarnings("NullableProblems")
 public class MemoryCache<T> implements List<T>, Filtered<T> {
 
-    ArrayList<T> original = new ArrayList<>(), sorted, filtered;
+    ArrayList<T> original = new ArrayList<>(), sorted;
+    private ArrayList<T> filtered;
     private Predicate<? super T> currentFilter;
     private Comparator<? super T> currentComparator;
 

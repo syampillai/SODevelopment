@@ -7,6 +7,7 @@ import javax.annotation.Nonnull;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
@@ -230,5 +231,8 @@ public class ObjectCache<T extends StoredObject> implements Iterable<T>, ObjectL
 
 	public Stream<Id> idStream(int startingIndex, int endingIndex) {
 		return Stream.empty();
+	}
+
+	public void setProcessor(Consumer<T> processor) {
 	}
 }
