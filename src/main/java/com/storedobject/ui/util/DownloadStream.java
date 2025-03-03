@@ -4,7 +4,7 @@ import com.storedobject.common.IO;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -17,14 +17,14 @@ import java.util.Map;
 public class DownloadStream implements Serializable {
 
     public static final String CONTENT_DISPOSITION = "Content-Disposition";
-    public static final long DEFAULT_CACHETIME = 1000 * 60 * 60 * 24;
+    public static final long DEFAULT_CACHE_TIME = 1000 * 60 * 60 * 24;
     public static final int DEFAULT_BUFFER_SIZE = 32 * 1024;
     private static final int MAX_BUFFER_SIZE = 64 * 1024;
     private InputStream stream;
     private String contentType;
     private String fileName;
     private Map<String, String> params;
-    private long cacheTime = DEFAULT_CACHETIME;
+    private long cacheTime = DEFAULT_CACHE_TIME;
     private int bufferSize = 0;
 
     /**
@@ -143,7 +143,7 @@ public class DownloadStream implements Serializable {
      * Gets length of cache expiration time. This gives the adapter the
      * possibility cache streams sent to the client. The caching may be made in
      * adapter or at the client if the client supports caching. Default is
-     * <code>DEFAULT_CACHETIME</code>.
+     * <code>DEFAULT_CACHE_TIME</code>.
      *
      * @return Cache time in milliseconds
      */
@@ -154,7 +154,7 @@ public class DownloadStream implements Serializable {
     /**
      * Sets length of cache expiration time. This gives the adapter the
      * possibility cache streams sent to the client. The caching may be made in
-     * adapter or at the client if the client supports caching. Zero or negavive
+     * adapter or at the client if the client supports caching. Zero or negative
      * value disables the caching of this stream.
      *
      * @param cacheTime the cache time in milliseconds.

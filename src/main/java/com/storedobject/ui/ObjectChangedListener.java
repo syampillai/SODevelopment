@@ -5,6 +5,8 @@ import com.storedobject.core.StoredObject;
 /**
  * "Object Changed" listener to track changes to the object.
  *
+ * @param <T> Type of object.
+ *
  * @author Syam
  */
 public interface ObjectChangedListener<T extends StoredObject> {

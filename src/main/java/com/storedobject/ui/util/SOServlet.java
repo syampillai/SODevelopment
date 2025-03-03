@@ -2,28 +2,33 @@ package com.storedobject.ui.util;
 
 import com.storedobject.common.IO;
 import com.storedobject.common.JSON;
+import com.storedobject.common.StringList;
 import com.storedobject.core.*;
+import com.storedobject.oauth.OAuth;
 import com.storedobject.ui.Application;
 import com.storedobject.ui.MediaCSS;
 import com.vaadin.flow.server.VaadinServlet;
 
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-import javax.servlet.annotation.MultipartConfig;
-import javax.servlet.annotation.WebInitParam;
-import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.MultipartConfig;
+import jakarta.servlet.annotation.WebInitParam;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+
 import java.io.*;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
-@WebServlet(urlPatterns = "/*", name = "SOServlet", asyncSupported = true, loadOnStartup = 0, initParams = {
+@WebServlet(urlPatterns = "/*", name = "SO Application", asyncSupported = true, loadOnStartup = 0, initParams = {
     @WebInitParam(name = "closeIdleSessions", value = "true")
 })
 @MultipartConfig(maxFileSize = Integer.MAX_VALUE, maxRequestSize = Integer.MAX_VALUE)
 public class SOServlet extends VaadinServlet {
 
+    private static final StringList oauthProviders = StringList.create("google", "facebook", "github");
+    private static OAuth oAuth = null;
     private static String url, folder;
     private static final WeakHashMap<String, MediaFile> mediaCache = new WeakHashMap<>();
     private static final WeakHashMap<String, TextContent> tcCache = new WeakHashMap<>();
@@ -31,6 +36,15 @@ public class SOServlet extends VaadinServlet {
     private static final long CACHE_TIME_IN_SECONDS = CACHE_TIME_IN_MILLIS / 1000;
     private static final List<String> CORS = new ArrayList<>();
     private static String headerKey = null, headerValue = null;
+    private static final Map<String, Resource> specialResources = new HashMap<>();
+    private static final StringList resourcesToIgnore = StringList.create(
+            "/404.html",
+            "/VAADIN/themes/styles.css"
+    );
+    static {
+        specialResources.put("/so/dnd/dndConnector.js",
+                new Resource("", "text/javascript", SOServlet.class));
+    }
 
     @Override
     public void init() throws ServletException {
@@ -93,10 +107,30 @@ public class SOServlet extends VaadinServlet {
         if(url == null) {
             url = request.getRequestURL().toString().replace("//" , "\n");
             int p = url.indexOf('/');
+            boolean link = false;
             if(p > 0) {
+                link = url.substring(p).startsWith("/" + SQLConnector.getDatabaseName());
                 url = url.substring(0, p);
             }
             url = url.replace("\n", "//");
+            String oauthServer = ApplicationServer.getGlobalProperty("oauth.server", "");
+            if(!oauthServer.isEmpty()) {
+                String u = url;
+                if(link) {
+                    u += "/" + SQLConnector.getDatabaseName();
+                }
+                String secret = ApplicationServer.getGlobalProperty("oauth.secret", "|");
+                p = secret.indexOf('|');
+                if(p >= 0) {
+                    oAuth = new OAuth(u, oauthServer, secret.substring(p + 1));
+                    if (oAuth.isError()) {
+                        ApplicationServer.log(oAuth.getSecret());
+                        oAuth = null;
+                    } else {
+                        Thread.startVirtualThread(this::setOAuthCredentials);
+                    }
+                }
+            }
         }
 
         // Check for CORS requests
@@ -142,12 +176,28 @@ public class SOServlet extends VaadinServlet {
 
         // Over to logic handlers
         super.service(request, response);
+        if(response.getStatus() == HttpServletResponse.SC_NOT_FOUND) {
+            String what = what(request);
+            if(!resourcesToIgnore.contains(what)) {
+                ApplicationServer.log("Resource Not Found: " + what(request));
+            }
+        }
+    }
+
+    private static String what(HttpServletRequest request) {
+        return request.getPathInfo() == null ? request.getServletPath()
+                : request.getServletPath() + request.getPathInfo();
     }
 
     private boolean isMedia(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        String what = request.getPathInfo() == null ? request.getServletPath() : request.getServletPath() + request.getPathInfo();
+        String what = what(request);
         if(what.equals("/manifest.webmanifest")) {
             serveWebManifest(response);
+            return true;
+        }
+        Resource resource = specialResources.get(what);
+        if(resource != null) {
+            sendResource(what, resource, response);
             return true;
         }
         if(!what.startsWith("/media/")) {
@@ -196,6 +246,12 @@ public class SOServlet extends VaadinServlet {
         mf = new JSON(mfMap);
         respond(response, null, new StringReader(mf.toPrettyString()),
                 "application/manifest+json", false, null);
+    }
+
+    private void sendResource(String what, Resource resource, HttpServletResponse response) throws IOException {
+        respond(response, null,
+                IO.getReader(resource.resourceClass.getResourceAsStream(resource.prefix + what)), resource.mimeType,
+                false, null);
     }
 
     private void respond(HttpServletResponse response, InputStream dataStream, Reader dataReader,
@@ -469,5 +525,37 @@ public class SOServlet extends VaadinServlet {
 
     public static void reloadCORS() {
         CORS.clear();
+    }
+
+    public static OAuth getOAuth() {
+        return oAuth;
+    }
+
+    public static StringList getOAuthProviders() {
+        return oauthProviders;
+    }
+
+    private record Resource(String prefix, String mimeType, Class<?> resourceClass) {}
+
+    private void setOAuthCredentials() {
+        String result;
+        for(String provider: oauthProviders) {
+            String clientID = ApplicationServer.getGlobalProperty("oauth." + provider + ".clientId");
+            String clientSecret = ApplicationServer.getGlobalProperty("oauth." + provider + ".clientSecret");
+            if(clientID == null || clientID.isBlank() || clientSecret == null || clientSecret.isBlank()) {
+                continue;
+            }
+            result = oAuth.addProvider(provider, clientID, clientSecret,
+                    ApplicationServer.getGlobalProperty("oauth." + provider + ".AuthUrl"),
+                    ApplicationServer.getGlobalProperty("oauth." + provider + ".TokenUrl"),
+                    ApplicationServer.getGlobalProperty("oauth." + provider + ".UserInfoUrl"),
+                    ApplicationServer.getGlobalProperty("oauth." + provider + ".scope"));
+            if(result != null) {
+                ApplicationServer.log("Can't add OAuth provider - " + provider
+                        + " (" + result + ")");
+            } else {
+                ApplicationServer.log("Added OAuth provider - " + provider);
+            }
+        }
     }
 }

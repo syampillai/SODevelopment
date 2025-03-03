@@ -71,6 +71,14 @@ public class GeolocationField extends CustomTextField<Geolocation> {
         mapView.execute();
     }
 
+    private static class MapView extends View {
+
+        private MapView() {
+            setComponent(new Div());
+        }
+    }
+
+    /*
     private class MapView extends View {
 
         private static final String clickMessage = "Click on the anchor to set new location";
@@ -113,4 +121,6 @@ public class GeolocationField extends CustomTextField<Geolocation> {
             marker.setLocation(GeolocationField.this.getValue());
         }
     }
+
+     */
 }

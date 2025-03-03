@@ -463,7 +463,10 @@ public class SystemUtility extends View implements CloseableView, Transactional 
             }
             view.setValues(o1, o2);
             while(view.getDecision() < 0) {
-                Thread.yield();
+                try {
+                    view.wait();
+                } catch (InterruptedException ignored) {
+                }
             }
             return view.getDecision();
         }
@@ -505,6 +508,7 @@ public class SystemUtility extends View implements CloseableView, Transactional 
             }
             no.setEnabled(false);
             yes.setEnabled(false);
+            this.notifyAll();
         }
 
         protected void setValues(CharSequence o1, CharSequence o2) {

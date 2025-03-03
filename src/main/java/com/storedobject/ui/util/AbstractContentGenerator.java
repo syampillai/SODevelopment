@@ -11,7 +11,7 @@ import java.io.InputStream;
 import java.util.Objects;
 import java.util.function.Consumer;
 
-public abstract class AbstractContentGenerator extends Thread {
+public abstract class AbstractContentGenerator implements Runnable {
 
     long fileId;
     final ContentProducer producer;
@@ -21,6 +21,7 @@ public abstract class AbstractContentGenerator extends Thread {
     private final Consumer<Long> timeTracker;
     private long startedAt = 0;
     private InputStream in;
+    private Thread thread;
 
     protected AbstractContentGenerator(Application application, ContentProducer producer,
                                        Consumer<AbstractContentGenerator> inform, Consumer<Long> timeTracker,
@@ -34,8 +35,11 @@ public abstract class AbstractContentGenerator extends Thread {
         }
     }
 
-    @Override
-    public long getId() {
+    void start() {
+        thread = Thread.startVirtualThread(this);
+    }
+
+    public final long getId() {
         return fileId;
     }
 
@@ -84,9 +88,9 @@ public abstract class AbstractContentGenerator extends Thread {
         try {
             int time = 180;
             while ((in = producer.getContent()) == null && time-- > 0) {
-                if(isAlive()) {
+                if(thread.isAlive()) {
                     try {
-                        sleep(1000);
+                        Thread.sleep(1000);
                     } catch (InterruptedException ignored) {
                     }
                 }

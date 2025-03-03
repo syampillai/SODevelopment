@@ -1,6 +1,7 @@
 package com.storedobject.ui;
 
 import com.storedobject.core.*;
+import com.storedobject.oauth.OAuth;
 import com.storedobject.ui.tools.BiometricButton;
 import com.storedobject.ui.tools.LoginNameField;
 import com.storedobject.ui.util.SOServlet;
@@ -12,6 +13,9 @@ import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.template.Id;
 import com.vaadin.flow.shared.Registration;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * This is a template-based login screen and its template can be defined in the {@link TextContent} named
@@ -44,6 +48,93 @@ import com.vaadin.flow.shared.Registration;
  */
 public class LoginForm extends TemplateView implements HomeView, FullScreen {
 
+    private static final Map<String, String> codeSVGs = new HashMap<>();
+    static {
+        codeSVGs.put("google",
+                """
+                        <?xml version="1.0" ?><svg id="Capa_1" style="enable-background:new 0 0 150 150;" version="1.1" \
+                        viewBox="0 0 150 150" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" \
+                        xmlns:xlink="http://www.w3.org/1999/xlink"><style type="text/css">
+                        \t.st0{fill:#1A73E8;}
+                        \t.st1{fill:#EA4335;}
+                        \t.st2{fill:#4285F4;}
+                        \t.st3{fill:#FBBC04;}
+                        \t.st4{fill:#34A853;}
+                        \t.st5{fill:#4CAF50;}
+                        \t.st6{fill:#1E88E5;}
+                        \t.st7{fill:#E53935;}
+                        \t.st8{fill:#C62828;}
+                        \t.st9{fill:#FBC02D;}
+                        \t.st10{fill:#1565C0;}
+                        \t.st11{fill:#2E7D32;}
+                        \t.st12{fill:#F6B704;}
+                        \t.st13{fill:#E54335;}
+                        \t.st14{fill:#4280EF;}
+                        \t.st15{fill:#34A353;}
+                        \t.st16{clip-path:url(#SVGID_2_);}
+                        \t.st17{fill:#188038;}
+                        \t.st18{opacity:0.2;fill:#FFFFFF;enable-background:new    ;}
+                        \t.st19{opacity:0.3;fill:#0D652D;enable-background:new    ;}
+                        \t.st20{clip-path:url(#SVGID_4_);}
+                        \t.st21{opacity:0.3;fill:url(#_45_shadow_1_);enable-background:new    ;}
+                        \t.st22{clip-path:url(#SVGID_6_);}
+                        \t.st23{fill:#FA7B17;}
+                        \t.st24{opacity:0.3;fill:#174EA6;enable-background:new    ;}
+                        \t.st25{opacity:0.3;fill:#A50E0E;enable-background:new    ;}
+                        \t.st26{opacity:0.3;fill:#E37400;enable-background:new    ;}
+                        \t.st27{fill:url(#Finish_mask_1_);}
+                        \t.st28{fill:#FFFFFF;}
+                        \t.st29{fill:#0C9D58;}
+                        \t.st30{opacity:0.2;fill:#004D40;enable-background:new    ;}
+                        \t.st31{opacity:0.2;fill:#3E2723;enable-background:new    ;}
+                        \t.st32{fill:#FFC107;}
+                        \t.st33{opacity:0.2;fill:#1A237E;enable-background:new    ;}
+                        \t.st34{opacity:0.2;}
+                        \t.st35{fill:#1A237E;}
+                        \t.st36{fill:url(#SVGID_7_);}
+                        \t.st37{fill:#FBBC05;}
+                        \t.st38{clip-path:url(#SVGID_9_);fill:#E53935;}
+                        \t.st39{clip-path:url(#SVGID_11_);fill:#FBC02D;}
+                        \t.st40{clip-path:url(#SVGID_13_);fill:#E53935;}
+                        \t.st41{clip-path:url(#SVGID_15_);fill:#FBC02D;}
+                        </style><g><path class="st5" d="M121.1,57.9L99.1,74.3v35.8h15.4c3.6,0,6.6-2.9,6.6-6.6V57.9z"/>\
+                        <path class="st6" d="M28.9,57.9l21.9,16.5v35.8H35.5c-3.6,0-6.6-2.9-6.6-6.6V57.9z"/>\
+                        <polygon class="st7" points="99.1,46.9 75,65 50.9,46.9 50.9,74.3 75,92.4 99.1,74.3  "/>\
+                        <path class="st8" d="M28.9,49.3v8.6l21.9,16.5V46.9L44,41.8c-1.6-1.2-3.6-1.9-5.7-1.9l0,0C33.1,39.9,28.9,44.1,28.9,49.3z"/>\
+                        <path class="st9" d="M121.1,49.3v8.6L99.1,74.3V46.9l6.9-5.1c1.6-1.2,3.6-1.9,5.7-1.9l0,0C116.9,39.9,121.1,44.1,121.1,49.3z"/>\
+                        </g></svg>""");
+        codeSVGs.put("facebook",
+                "<?xml version=\"1.0\" ?><!DOCTYPE svg  PUBLIC '-//W3C//DTD SVG 1.1//EN'  " +
+                        "'http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd'><svg height=\"100%\" " +
+                        "style=\"fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;\" version=\"1.1\" " +
+                        "viewBox=\"0 0 512 512\" width=\"100%\" xml:space=\"preserve\" " +
+                        "xmlns=\"http://www.w3.org/2000/svg\" xmlns:serif=\"http://www.serif.com/\" " +
+                        "xmlns:xlink=\"http://www.w3.org/1999/xlink\"><g><path d=\"M512,256c0,-141.385 -114.615," +
+                        "-256 -256,-256c-141.385,0 -256,114.615 -256,256c0,127.777 93.616,233.685 216,252.89l0," +
+                        "-178.89l-65,0l0,-74l65,0l0,-56.4c0,-64.16 38.219,-99.6 96.695,-99.6c28.009,0 57.305,5 57.305," +
+                        "5l0,63l-32.281,0c-31.801,0 -41.719,19.733 -41.719,39.978l0,48.022l71,0l-11.35,74l-59.65,0l0," +
+                        "178.89c122.385,-19.205 216,-125.113 216,-252.89Z\" style=\"fill:#1877f2;fill-rule:nonzero;\"/>" +
+                        "<path d=\"M355.65,330l11.35,-74l-71,0l0,-48.022c0,-20.245 9.917,-39.978 41.719,-39.978l32.281," +
+                        "0l0,-63c0,0 -29.297,-5 -57.305,-5c-58.476,0 -96.695,35.44 -96.695,99.6l0,56.4l-65,0l0,74l65," +
+                        "0l0,178.89c13.033,2.045 26.392,3.11 40,3.11c13.608,0 26.966,-1.065 40,-3.11l0,-178.89l59.65,0Z\" " +
+                        "style=\"fill:#fff;fill-rule:nonzero;\"/></g></svg>");
+        codeSVGs.put("github",
+                "<?xml version=\"1.0\" ?><!DOCTYPE svg  PUBLIC '-//W3C//DTD SVG 1.1//EN'  " +
+                        "'http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd'><svg enable-background=\"new 0 0 512 512\" " +
+                        "height=\"512px\" id=\"Layer_1\" version=\"1.1\" viewBox=\"0 0 512 512\" width=\"512px\" " +
+                        "xml:space=\"preserve\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\">" +
+                        "<g><path clip-rule=\"evenodd\" d=\"M296.133,354.174c49.885-5.891,102.942-24.029,102.942-110.192   " +
+                        "c0-24.49-8.624-44.448-22.67-59.869c2.266-5.89,9.515-28.114-2.734-58.947c0,0-18.139-5.898-60.759,22.669   " +
+                        "c-18.139-4.983-38.09-8.163-56.682-8.163c-19.053,0-39.011,3.18-56.697,8.163c-43.082-28.567-61.22-22.669-61.22-22.669   " +
+                        "c-12.241,30.833-4.983,53.057-2.718,58.947c-14.061,15.42-22.677,35.379-22.677,59.869c0,86.163,53.057,104.301,102.942,110.192   " +
+                        "c-6.344,5.452-12.241,15.873-14.507,30.387c-12.702,5.438-45.808,15.873-65.758-18.592c0,0-11.795-21.31-34.012-22.669   " +
+                        "c0,0-22.224-0.453-1.813,13.592c0,0,14.96,6.812,24.943,32.653c0,0,13.6,43.089,76.179,29.48v38.543   " +
+                        "c0,5.906-4.53,12.702-15.865,10.89C96.139,438.977,32.2,354.626,32.2,255.77c0-123.807,100.216-224.022,224.03-224.022   " +
+                        "c123.347,0,224.023,100.216,223.57,224.022c0,98.856-63.946,182.754-152.828,212.688c-11.342,2.266-15.873-4.53-15.873-10.89   " +
+                        "V395.45C311.1,374.577,304.288,360.985,296.133,354.174L296.133,354.174z M512,256.23C512,114.73,397.263,0,256.23,0   " +
+                        "C114.73,0,0,114.73,0,256.23C0,397.263,114.73,512,256.23,512C397.263,512,512,397.263,512,256.23L512,256.23z\" " +
+                        "fill=\"#0D2636\" fill-rule=\"evenodd\"/></g></svg>");
+    }
     private final Animation[] animation = { Animation.SHAKE, Animation.FLASH };
     private int animationIndex = 0;
 
@@ -87,6 +178,15 @@ public class LoginForm extends TemplateView implements HomeView, FullScreen {
 
     @Id
     private Span year;
+
+    @Id
+    private SVGImage google;
+
+    @Id
+    private SVGImage facebook;
+
+    @Id
+    private SVGImage github;
 
     private SystemUser user;
     private boolean init;
@@ -333,6 +433,15 @@ public class LoginForm extends TemplateView implements HomeView, FullScreen {
             case "cancel" -> new Button(null, (String) null, e -> getA().close(5));
             case "forgot" -> new Button(null, (String) null, e -> process(true));
             case "forgotLink" -> new AnchorButton("", e -> process(true));
+            case "google", "facebook", "github" -> {
+                SVGImage image = new SVGImage(codeSVGs.get(id));
+                image.getElement().setAttribute("title", "Use " + id + " account to sign in");
+                image.getStyle().set("cursor", "pointer").set("margin-left", "10px");
+                image.setWidth("48px");
+                image.setHeight("48px");
+                new Clickable<>(image, e -> oauthLogin(id));
+                yield image;
+            }
             default -> super.createComponentForId(id);
         };
     }
@@ -341,6 +450,22 @@ public class LoginForm extends TemplateView implements HomeView, FullScreen {
         Button ok = new Button(null, (String) null, e -> process(false));
         ok.setDisableOnClick(true);
         return ok;
+    }
+
+    private void oauthLogin(String id) {
+        try {
+            OAuth oa = SOServlet.getOAuth();
+            if(oa != null) {
+                String redirect = oa.getURL(id);
+                if(redirect != null) {
+                    Application.get().close(redirect, 101);
+                } else {
+                    warning("Unable to contact " + id);
+                }
+            }
+        } catch (Exception e) {
+            warning(e);
+        }
     }
 
     private int authCode() {
@@ -405,6 +530,9 @@ public class LoginForm extends TemplateView implements HomeView, FullScreen {
         protected void buildButtons() {
             super.buildButtons();
             buttonPanel.add(biometricButton = (BiometricButton) createComponentForId("biometric"));
+            for(String oauthProvider: SOServlet.getOAuthProviders()) {
+                buttonPanel.add(social(oauthProvider));
+            }
             ok.setText("Sign-in");
             ok.setIcon("ok");
             ok.setDisableOnClick(true);
@@ -415,6 +543,16 @@ public class LoginForm extends TemplateView implements HomeView, FullScreen {
             forgot.setIcon(VaadinIcon.QUESTION_CIRCLE_O);
             LoginForm.this.ok = ok;
             LoginForm.this.cancel = cancel;
+        }
+
+        private boolean checkKey(String name, String key) {
+            return SOServlet.getOAuth() != null &&
+                    ApplicationServer.getGlobalProperty("oauth." + name + "." + key) != null;
+        }
+
+        private Component social(String name) {
+            return checkKey(name, "clientId") && checkKey(name, "clientSecret") ? createComponentForId(name)
+                    : null;
         }
 
         @Override

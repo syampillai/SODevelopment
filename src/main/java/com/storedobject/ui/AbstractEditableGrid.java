@@ -34,6 +34,7 @@ public abstract class AbstractEditableGrid<T> extends DataGrid<T> {
      * Constructor that will generate columns from the Bean's properties.
      *
      * @param objectClass Bean type
+     * @param list List
      */
     public AbstractEditableGrid(Class<T> objectClass, Filtered<T> list) {
         this(objectClass, list, null);
@@ -43,6 +44,7 @@ public abstract class AbstractEditableGrid<T> extends DataGrid<T> {
      * Constructor that will generate columns from the column names passed.
      *
      * @param objectClass Bean type
+     * @param list List
      * @param columns Column names
      */
     @SuppressWarnings("unchecked")
@@ -50,7 +52,7 @@ public abstract class AbstractEditableGrid<T> extends DataGrid<T> {
         super(objectClass, list, columns);
         //noinspection unchecked
         createColumn(EDITED_MARK, this::editMark);
-        setClassNameGenerator(this::styleName);
+        setPartNameGenerator(this::styleName);
         setSelectionMode(SelectionMode.SINGLE);
         getElement().getClassList().remove("so-grid");
         getElement().getClassList().add("so-editable-grid");
@@ -238,7 +240,7 @@ public abstract class AbstractEditableGrid<T> extends DataGrid<T> {
             itemInserted(item);
             return true;
         }
-        return super.add(item);
+        return super.add(null);
     }
 
     public void delete(T item) {

@@ -1,13 +1,13 @@
 package com.storedobject.ui;
 
 import com.storedobject.common.*;
-import com.storedobject.core.*;
 import com.storedobject.core.DateUtility;
 import com.storedobject.core.SOException;
 import com.storedobject.core.StringUtility;
-import com.storedobject.ui.util.*;
+import com.storedobject.core.*;
 import com.storedobject.ui.util.ApplicationFrame;
 import com.storedobject.ui.util.ContentGenerator;
+import com.storedobject.ui.util.*;
 import com.storedobject.vaadin.ApplicationMenu;
 import com.storedobject.vaadin.*;
 import com.vaadin.flow.component.*;
@@ -30,8 +30,8 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.lang.ref.WeakReference;
 import java.sql.Date;
-import java.util.*;
 import java.util.ArrayList;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
@@ -153,8 +153,7 @@ public class Application extends com.storedobject.vaadin.Application implements 
         super.init(request);
         String auth = request.getHeader("Authorization");
         if(auth != null && auth.startsWith("Bearer ")) {
-            auth = auth.substring(7).trim();
-            if(!auth.isEmpty()) {
+            if(auth.length() > 7) {
                 setData(String.class, auth);
             }
         }
@@ -391,6 +390,7 @@ public class Application extends com.storedobject.vaadin.Application implements 
      *     9, -9: Closed while switching to another server/DB.
      *     10, -10: MFA not verified.
      *     100, -100: Programmatic close from unknown code.
+     *     101, -101: Programmatic redirection for authentication.
      * </p>
      * @return Reason code.
      */
@@ -778,7 +778,7 @@ public class Application extends com.storedobject.vaadin.Application implements 
                 if(contentProducers.isEmpty()) {
                     stopPolling(contentProducers);
                 } else {
-                    CP cp = contentProducers.get(0);
+                    CP cp = contentProducers.getFirst();
                     new ContentGenerator(this, cp.producer, cp.caption, this::remove, cp.timeTracker,
                             waitMessage::open, cp.windowMode, cp.extraHeaderButtons).kick();
                 }
@@ -790,12 +790,6 @@ public class Application extends com.storedobject.vaadin.Application implements 
     public void download(ContentProducer producer, Consumer<Long> informMe) {
         new ContentGenerator(this, producer, true, null, this::remove, informMe,
                 waitMessage::open, false).kick();
-    }
-
-    public String addResource(ContentProducer producer) {
-        @SuppressWarnings("InstantiatingAThreadWithDefaultRunMethod") MultiContentGenerator mcg = new MultiContentGenerator(this, producer, this::remove, null,
-                waitMessage::open);
-        return "so" + mcg.getId() + "." + producer.getFileExtension();
     }
 
     /**
@@ -915,6 +909,12 @@ public class Application extends com.storedobject.vaadin.Application implements 
 
     private Runnable paramLogin() {
         String autoToken = getData(String.class); // Authorization - Bearer token
+        if(autoToken != null && autoToken.startsWith("Bearer ")) {
+            autoToken = autoToken.substring(7);
+            if(autoToken.isBlank()) {
+                autoToken = null;
+            }
+        }
         if(autoToken == null) {
             autoToken = getQueryParameter("token");
             removeQueryParameter("token");
@@ -931,6 +931,16 @@ public class Application extends com.storedobject.vaadin.Application implements 
                     }
                 };
             }
+        }
+        autoToken = getQueryParameter("oauth");
+        if(autoToken != null) {
+            removeQueryParameter("oauth");
+            String key = autoToken;
+            return () -> {
+                if(!login.login(SOServlet.getOAuth(), key)) {
+                    screenLogin();
+                }
+            };
         }
         autoToken = getQueryParameter("loginBlock");
         if(autoToken != null && !autoToken.isBlank()) {
@@ -1585,17 +1595,19 @@ public class Application extends com.storedobject.vaadin.Application implements 
         void handleAlert(Id reference) {
             alert.delete();
             close();
-            if(alertHandler == null) {
-                return;
-            }
-            if(alertHandler instanceof AlertHandler ah) {
-                if(reference != null) {
-                    ah.handleAlert(reference);
+            switch (alertHandler) {
+                case null -> {
+                    return;
                 }
-                return;
-            }
-            if(reference != null && alertHandler instanceof ObjectSetter<?> os) {
-                os.setObject(reference);
+                case AlertHandler ah -> {
+                    if (reference != null) {
+                        ah.handleAlert(reference);
+                    }
+                    return;
+                }
+                case ObjectSetter<?> os when reference != null -> os.setObject(reference);
+                default -> {
+                }
             }
             if(alertHandler instanceof Runnable r) {
                 r.run();
@@ -1806,7 +1818,7 @@ public class Application extends com.storedobject.vaadin.Application implements 
         }
         if(entities.size() < 2) {
             if(entities.size() == 1) {
-                getTransactionManager().setEntity(entities.get(0));
+                getTransactionManager().setEntity(entities.getFirst());
                 checkDayEnd();
             }
             setDate(server.getDate());

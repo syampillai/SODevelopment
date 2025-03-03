@@ -9,6 +9,8 @@ import com.storedobject.vaadin.TranslatedField;
 /**
  * Create a field to accept a specific measurement {@link Quantity}.
  *
+ * @param <T> Type of quantity.
+ *
  * @author Syam
  */
 public class MeasurementField<T extends Quantity> extends TranslatedField<T, T> {

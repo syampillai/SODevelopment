@@ -4,6 +4,7 @@ import com.storedobject.core.MediaFile;
 import com.storedobject.vaadin.Image;
 import com.storedobject.vaadin.*;
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dnd.*;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.icon.VaadinIcon;
@@ -70,6 +71,7 @@ public class ImageViewer extends View {
      */
     public ImageViewer(String caption, Image backgroundImage) {
         super(caption);
+        UI.getCurrent().getPage().addJavaScript("./so/dnd/dndConnector.js");
         parent.setSizeFull();
         parent.getStyle().set("overflow", "hidden");
         this.backgroundImage = backgroundImage == null ? new Image((String)null) : backgroundImage;

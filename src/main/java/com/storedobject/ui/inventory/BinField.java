@@ -120,7 +120,7 @@ public class BinField extends ObjectGetField<InventoryBin> {
     public void setItemType(ObjectProvider<? extends InventoryItemType> itemTypeField, boolean apply) {
         getter.itemTypeProvider = itemTypeField;
         if(itemTypeField == null) {
-            Thread.dumpStack();
+            throw new RuntimeException("Item Type Field cannot be null!");
         }
         if(apply) {
             applyFilter();

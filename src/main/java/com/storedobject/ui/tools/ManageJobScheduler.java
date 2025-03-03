@@ -56,7 +56,7 @@ public class ManageJobScheduler extends DataForm {
         buttonPanel.setEnabled(false);
         timer.setVisible(true);
         timer.countDown(10);
-        new Thread(Scheduler::restart).start();
+        Thread.startVirtualThread(Scheduler::restart);
         return false;
     }
 }

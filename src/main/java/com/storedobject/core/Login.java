@@ -1,5 +1,7 @@
 package com.storedobject.core;
 
+import com.storedobject.oauth.OAuth;
+
 import java.util.Random;
 
 public final class Login {
@@ -29,6 +31,10 @@ public final class Login {
 
     public boolean login(WebBiometric biometric, String biometricID, String type, String authenticatorData,
                          String clientDataJSON, String signature, String userHandle, boolean lockIfFailed) {
+        return false;
+    }
+
+    public boolean login(OAuth oAuth, String key) {
         return false;
     }
 

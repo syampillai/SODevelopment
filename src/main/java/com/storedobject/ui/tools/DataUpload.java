@@ -78,8 +78,8 @@ public class DataUpload extends DataForm {
                 super.process(content, mimeType);
                 return;
             }
-            new Thread(this::output).start();
-            new Thread(this::error).start();
+            Thread.startVirtualThread(this::output);
+            Thread.startVirtualThread(this::error);
             try {
                 IO.copy(IO.getReader(content), restore.outputWriter());
                 restore.waitFor();

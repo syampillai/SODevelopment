@@ -19,23 +19,17 @@ public class SVGResource extends StreamResource {
         return PaintedImageResource.createBaseFileName() + ".svg";
     }
 
-    private static class SVGWriter implements StreamResourceWriter {
-
-        private final SVG svg;
-
-        private SVGWriter(SVG svg) {
-            this.svg = svg;
-        }
+    private record SVGWriter(SVG svg) implements StreamResourceWriter {
 
         @Override
-        public void accept(OutputStream outputStream, VaadinSession vaadinSession) throws IOException {
-            try {
-                Writer w = IO.getWriter(outputStream);
-                svg.generateContent(w);
-                w.close();
-            } catch (Exception e) {
-                throw new IOException(e);
+            public void accept(OutputStream outputStream, VaadinSession vaadinSession) throws IOException {
+                try {
+                    Writer w = IO.getWriter(outputStream);
+                    svg.generateContent(w);
+                    w.close();
+                } catch (Exception e) {
+                    throw new IOException(e);
+                }
             }
         }
-    }
 }

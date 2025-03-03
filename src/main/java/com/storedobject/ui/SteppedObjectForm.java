@@ -15,6 +15,7 @@ import java.util.ArrayList;
 /**
  * A Form for editing an object that has multiple steps of content views.
  *
+ * @param <T> Type of object.
  * @author Syam
  */
 public class SteppedObjectForm<T extends StoredObject> extends SteppedView implements ObjectSetter<T> {
@@ -107,7 +108,7 @@ public class SteppedObjectForm<T extends StoredObject> extends SteppedView imple
 
     /**
      * Return the "include field checker" for the step. If this method returns a <code>non-null</code> value, that will be
-     * used to filter out field names of the object in this step, othherwise, {@link #getFields(int)} will be used to identify the fields.
+     * used to filter out field names of the object in this step, otherwise, {@link #getFields(int)} will be used to identify the fields.
      *
      * @param step Step
      * @return Default implementation returns <code>null</code>.

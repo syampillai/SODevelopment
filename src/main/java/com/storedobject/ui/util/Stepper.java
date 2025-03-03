@@ -9,7 +9,6 @@ import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.template.Id;
@@ -325,7 +324,7 @@ public class Stepper extends LitComponent implements HasSize, HasStyle {
             numberWrapper.addClassName("number-wrapper");
             add(numberWrapper);
             if(title != null) {
-                Label caption = new Label(title);
+                Span caption = new Span(title);
                 caption.addClassName("step-title");
                 add(numberWrapper, caption);
             }
@@ -365,7 +364,7 @@ public class Stepper extends LitComponent implements HasSize, HasStyle {
             this.content = content;
         }
 
-        public StepHeader getHeader() {
+        public Div getHeader() {
             return header;
         }
 

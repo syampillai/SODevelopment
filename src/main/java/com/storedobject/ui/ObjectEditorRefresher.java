@@ -1,15 +1,18 @@
 package com.storedobject.ui;
 
-import com.storedobject.core.ObjectChangeListener;
 import com.storedobject.core.StoredObject;
 
 /**
  * An implementation of ObjectChangedListener that refreshes the editor
  * whenever changes are saved.
+ *
+ * @param <T> Type of object.
+ *
+ * @author Syam
  */
 public class ObjectEditorRefresher<T extends StoredObject> implements ObjectChangedListener<T> {
 
-    private ObjectEditor<?> editor;
+    private final ObjectEditor<?> editor;
 
     /**
      * Constructor.

@@ -16,6 +16,7 @@ import com.vaadin.flow.component.upload.Upload;
 
 import java.io.*;
 import java.net.HttpURLConnection;
+import java.net.URI;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -574,10 +575,7 @@ public class FileField extends AbstractObjectField<StreamData> {
         if(saver == null) {
             return;
         }
-        try {
-            saver.join();
-        } catch (InterruptedException ignored) {
-        }
+        saver.join();
         if(saver.isCancelled()) {
             Application.message("Upload cancelled");
         } else {
@@ -625,19 +623,27 @@ public class FileField extends AbstractObjectField<StreamData> {
         this.mediaPreview = preview;
     }
 
-    private class StreamSaver extends Thread implements StreamDataProvider {
+    private class StreamSaver implements Runnable, StreamDataProvider {
 
         private final StreamData sd;
         private final PipedOutputStream outPipe;
         private final PipedInputStream inPipe;
         private boolean cancelled = false, saved = false;
+        private final Thread thread;
 
         protected StreamSaver(StreamData sd) throws Exception {
             this.sd = sd;
             sd.setStreamDataProvider(this);
             outPipe = new PipedOutputStream();
             inPipe = new PipedInputStream(outPipe);
-            start();
+            thread = Thread.startVirtualThread(this);
+        }
+
+        protected void join() {
+            try {
+                thread.join();
+            } catch (InterruptedException ignored) {
+            }
         }
 
         public OutputStream getOutputPipe() {
@@ -1067,7 +1073,7 @@ public class FileField extends AbstractObjectField<StreamData> {
                     }
                     ct = sd.getMimeType();
                 } else {
-                    URL url = new URL(a);
+                    URL url = URI.create(a).toURL();
                     HttpURLConnection conn = (HttpURLConnection) url.openConnection();
                     conn.setRequestProperty("Connection", "close");
                     conn.setRequestProperty("charset", "utf-8");

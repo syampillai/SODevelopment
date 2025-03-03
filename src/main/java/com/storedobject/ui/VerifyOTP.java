@@ -276,7 +276,7 @@ public class VerifyOTP extends View implements CloseableView {
         @Override
         public void send(OTP otp) {
             this.otp = otp;
-            new Thread(this).start();
+            Thread.startVirtualThread(this);
         }
 
         @Override
@@ -315,7 +315,7 @@ public class VerifyOTP extends View implements CloseableView {
         @Override
         public void send(OTP otp) {
             this.otp = otp;
-            new Thread(this).start();
+            Thread.startVirtualThread(this);
         }
 
         @Override
@@ -361,7 +361,7 @@ public class VerifyOTP extends View implements CloseableView {
         @Override
         public void send(OTP otp) {
             this.otp = otp;
-            new Thread(this).start();
+            Thread.startVirtualThread(this);
         }
 
         @Override

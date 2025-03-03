@@ -1,6 +1,6 @@
 package com.storedobject.job;
 
-import javax.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServlet;
 
 /**
  * Servlet class for handling SO Scheduler Service

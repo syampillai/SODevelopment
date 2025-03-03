@@ -6,17 +6,28 @@
 
     <groupId>com.storedobject</groupId>
     <artifactId>so-development</artifactId>
-    <version>12.3.4</version>
+    <version>13.0.0</version>
 
     <properties>
-        <so-common-version>4.8.4</so-common-version>
-        <so-components-version>11.1.21</so-components-version>
-        <so-charts-version>3.2.6</so-charts-version>
-        <vaadin.version>23.2.16</vaadin.version>
-        <maven.compiler.source>17</maven.compiler.source>
-        <maven.compiler.target>17</maven.compiler.target>
+        <vaadin.version>24.6.5</vaadin.version>
+        <so-common-version>5.0.4</so-common-version>
+        <so-components-version>12.0.5</so-components-version>
+        <so-charts-version>4.0.0</so-charts-version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <java-version>21</java-version>
+        <maven.compiler.release>21</maven.compiler.release>
+        <maven-compiler-plugin-version>3.14.0</maven-compiler-plugin-version>
+        <maven-jar-plugin-version>3.4.2</maven-jar-plugin-version>
+        <maven-war-plugin-version>3.4.0</maven-war-plugin-version>
+        <maven-resources-plugin-version>3.3.1</maven-resources-plugin-version>
+        <maven-javadoc-plugin-version>3.11.2</maven-javadoc-plugin-version>
+        <maven-source-plugin-version>3.3.1</maven-source-plugin-version>
+        <maven-assembly-plugin-version>3.7.1</maven-assembly-plugin-version>
+        <guava-version>33.3.0-jre</guava-version>
+        <failOnMissingWebXml>false</failOnMissingWebXml>
+        <drivers.downloader.phase>pre-integration-test</drivers.downloader.phase>
+
     </properties>
 
     <name>${project.groupId}:${project.artifactId}</name>
@@ -26,7 +37,7 @@
     <licenses>
         <license>
             <name>Apache License, Version 2.0</name>
-            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
             <distribution>repo</distribution>
         </license>
     </licenses>
@@ -64,6 +75,14 @@
     </dependencyManagement>
 
     <dependencies>
+
+        <!-- Java Servlet -->
+        <dependency>
+            <groupId>jakarta.servlet</groupId>
+            <artifactId>jakarta.servlet-api</artifactId>
+            <version>6.1.0</version>
+            <scope>provided</scope>
+        </dependency>
 
         <!-- JWT Support -->
         <dependency>
@@ -119,6 +138,18 @@
             <version>${so-common-version}</version>
         </dependency>
 
+        <!-- Vaadin -->
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>vaadin-core</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.vaadin</groupId>
+                    <artifactId>hilla-dev</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
         <!-- Open Source SO Components -->
         <dependency>
             <groupId>com.storedobject.vaadin</groupId>
@@ -133,17 +164,11 @@
             <version>${so-charts-version}</version>
         </dependency>
 
-        <!-- Vaadin -->
-        <dependency>
-            <groupId>com.vaadin</groupId>
-            <artifactId>vaadin</artifactId>
-        </dependency>
-
         <!-- Vaadin add-on for Full Calendar -->
         <dependency>
             <groupId>org.vaadin.stefan</groupId>
             <artifactId>fullcalendar2</artifactId>
-            <version>4.1.6</version>
+            <version>6.2.2</version>
         </dependency>
 
         <!-- Vaadin add-on for HTML Table -->
@@ -153,21 +178,7 @@
             <version>1.2.0</version>
         </dependency>
 
-        <!-- Vaadin add-on for Pivot Table -->
-        <dependency>
-            <groupId>org.vaadin.addons.componentfactory</groupId>
-            <artifactId>pivottable-flow</artifactId>
-            <version>2.1.2</version>
-        </dependency>
-
         <!-- Java Servlet -->
-        <dependency>
-            <groupId>javax.servlet</groupId>
-            <artifactId>javax.servlet-api</artifactId>
-            <!--suppress MavenPackageUpdate -->
-            <version>3.1.0</version>
-            <scope>provided</scope>
-        </dependency>
 
         <!-- POI APIs for Excel interface -->
         <dependency>
@@ -212,16 +223,15 @@
     </distributionManagement>
 
     <build>
-
         <plugins>
+
             <!-- Compile -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.11.0</version>
+                <version>${maven-compiler-plugin-version}</version>
                 <configuration>
-                    <source>17</source>
-                    <target>17</target>
+                    <release>${java-version}</release>
                 </configuration>
             </plugin>
 
@@ -229,7 +239,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
-                <version>3.3.0</version>
+                <version>${maven-jar-plugin-version}</version>
                 <configuration>
                     <archive>
                         <manifest>
@@ -244,7 +254,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-resources-plugin</artifactId>
-                <version>3.3.1</version>
+                <version>${maven-resources-plugin-version}</version>
             </plugin>
 
         </plugins>

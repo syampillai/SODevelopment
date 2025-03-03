@@ -5,6 +5,7 @@ import com.storedobject.ui.ObjectProvider;
 import com.storedobject.vaadin.HasElement;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasLabel;
+import com.vaadin.flow.component.HasPlaceholder;
 import com.vaadin.flow.component.ItemLabelGenerator;
 
 import java.util.function.Consumer;
@@ -16,7 +17,8 @@ import java.util.function.Consumer;
  * @author Syam
  */
 public interface AbstractObjectInput<T extends StoredObject>
-        extends ObjectProvider<T>, ObjectSetter<T>, ObjectGetter<T>, HasElement, HasLabel, FilterMethods<T> {
+        extends ObjectProvider<T>, ObjectSetter<T>, ObjectGetter<T>, HasElement, HasLabel, HasPlaceholder,
+        FilterMethods<T> {
 
     /**
      * Class of the object supported in this input field.
@@ -193,14 +195,6 @@ public interface AbstractObjectInput<T extends StoredObject>
      * @param enabled True for enabling.
      */
     void setEnabled(boolean enabled);
-
-    /**
-     * Set a placeholder value for the field when it is empty.
-     *
-     * @param placeholder Placeholder to set.
-     */
-    default void setPlaceholder(String placeholder) {
-    }
 
     /**
      * Set an "item label generator" that returns the string value of the object value of this field. (It is mainly

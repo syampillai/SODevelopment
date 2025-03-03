@@ -92,7 +92,7 @@ public class ExcelDataUpload extends UploadProcessorView implements Transactiona
         cancel.setVisible(false);
         message("");
         message("Processing...");
-        new Thread(() -> {
+        Thread.startVirtualThread(() -> {
             try {
                 if(getClass() == ExcelDataUpload.class) {
                     processSOData();
@@ -104,12 +104,12 @@ public class ExcelDataUpload extends UploadProcessorView implements Transactiona
             }
             message("Processing completed.");
             getApplication().access(() -> {
-                        cancel.setText("Close");
-                        cancel.setVisible(true);
-                    });
+                cancel.setText("Close");
+                cancel.setVisible(true);
+            });
             message("");
             getApplication().stopPolling(this);
-        }).start();
+        });
     }
 
     /**
@@ -420,7 +420,7 @@ public class ExcelDataUpload extends UploadProcessorView implements Transactiona
      */
     public void fillBlankData(int index, String value) {
         testAfter();
-        if(data.size() == 0) {
+        if(data.isEmpty()) {
             return;
         }
         convertData(index, String.class);
@@ -518,7 +518,7 @@ public class ExcelDataUpload extends UploadProcessorView implements Transactiona
 
     private void convertData(int index, Converter c, boolean allowNulls, boolean mainRowsOnly) throws SOException {
         testAfter();
-        if(data.size() == 0) {
+        if(data.isEmpty()) {
             return;
         }
         Object o;
@@ -563,7 +563,7 @@ public class ExcelDataUpload extends UploadProcessorView implements Transactiona
      */
     public void convertDataToChoice(int index, Class<? extends StoredObject> objectClass, String choiceFieldName, boolean mainRowsOnly) {
         testAfter();
-        if(data.size() == 0) {
+        if(data.isEmpty()) {
             return;
         }
         Method m;
@@ -719,22 +719,15 @@ public class ExcelDataUpload extends UploadProcessorView implements Transactiona
 
         @Override
         public Object convert(Object v) throws Exception {
-            if(v == null) {
-                throw new Exception();
-            }
-            if(v instanceof Boolean) {
-                return v;
-            }
-            if(v instanceof String) {
-                return switch(((String) v).trim().toLowerCase()) {
+            return switch (v) {
+                case Boolean b -> b;
+                case String s -> switch (s.trim().toLowerCase()) {
                     case "true", "yes", "ok", "1" -> true;
                     default -> false;
                 };
-            }
-            if(v instanceof Number) {
-                return ((Number)v).intValue() > 0;
-            }
-            throw new Exception();
+                case Number number -> number.intValue() > 0;
+                default -> throw new Exception();
+            };
         }
 
         @Override
@@ -951,18 +944,20 @@ public class ExcelDataUpload extends UploadProcessorView implements Transactiona
         @Override
         public Object convert(Object v) throws Exception {
             int i = -1;
-            if(v instanceof Number) {
-                i = ((Number)v).intValue();
-            } else if(v == null) {
-                throw new Exception();
-            } else if(v instanceof String) {
-                String s = v.toString().trim().toLowerCase();
-                if(s.isEmpty()) {
-                    throw new Exception();
+            switch (v) {
+                case Number number -> i = number.intValue();
+                case null -> throw new Exception();
+                case String string -> {
+                    String s = string.trim().toLowerCase();
+                    if (s.isEmpty()) {
+                        throw new Exception();
+                    }
+                    i = choices.indexOf(e -> e.equalsIgnoreCase(s), false);
+                    if (i < 0) {
+                        i = choices.indexOf(e -> e.toLowerCase().startsWith(s), true);
+                    }
                 }
-                i = choices.indexOf(e -> e.equalsIgnoreCase(s), false);
-                if(i < 0) {
-                    i = choices.indexOf(e -> e.toLowerCase().startsWith(s), true);
+                default -> {
                 }
             }
             if(i >= 0 && i < choices.size()) {

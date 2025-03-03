@@ -79,7 +79,6 @@ public class BarcodeScanner extends DataForm {
         video.preview();
         video.getElement().setAttribute("controls", false);
         capture = new Capture();
-        capture.start();
     }
 
     @Override
@@ -97,11 +96,15 @@ public class BarcodeScanner extends DataForm {
         return false;
     }
 
-    private class Capture extends Thread {
+    private class Capture implements Runnable {
 
         private Decode decode = null;
         private boolean done = false;
         private final InputOutputStream inout = new InputOutputStream();
+
+        private Capture() {
+            Thread.startVirtualThread(this);
+        }
 
         @Override
         public void run() {
@@ -119,10 +122,10 @@ public class BarcodeScanner extends DataForm {
         }
     }
 
-    private class DataReader extends Thread {
+    private class DataReader implements Runnable {
 
         private DataReader() {
-            start();
+            Thread.startVirtualThread(this);
         }
 
         @Override

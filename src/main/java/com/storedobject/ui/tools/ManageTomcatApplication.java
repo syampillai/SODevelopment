@@ -79,8 +79,12 @@ public class ManageTomcatApplication extends DataForm implements Transactional {
             }
             manager += "://localhost:8";
             manager += (sc != null ? "443" : "080") + "/manager/text/" + action.getValue().toLowerCase() + "?path=/" + a;
-            HttpRequest request = HttpRequest.newBuilder(URI.create(manager)).header("Host", SOServlet.getServer())
-                    .timeout(Duration.ofSeconds(20)).GET().build();
+            HttpRequest request = HttpRequest.newBuilder(URI.create(manager))
+                    //.header("Host", SOServlet.getServer())
+                    .header("Accept", "text/plain")
+                    .timeout(Duration.ofSeconds(20))
+                    .GET()
+                    .build();
             String user = ApplicationServer.getGlobalProperty("application.manager.user", "soengine");
             String password = ApplicationServer.getGlobalProperty("application.manager.password",
                     "testme!always");
@@ -105,32 +109,32 @@ public class ManageTomcatApplication extends DataForm implements Transactional {
 
     private static class TrustAllX509TrustManager extends X509ExtendedTrustManager {
 
-        public void checkClientTrusted(X509Certificate[] x509Certificates, String s) {
+        @Override
+        public void checkClientTrusted(X509Certificate[] chain, String authType) {
         }
 
         @Override
-        public void checkServerTrusted(X509Certificate[] x509Certificates, String s) {
+        public void checkServerTrusted(X509Certificate[] chain, String authType) {
+        }
+
+        @Override
+        public void checkClientTrusted(X509Certificate[] chain, String authType, Socket socket) {
+        }
+
+        @Override
+        public void checkServerTrusted(X509Certificate[] chain, String authType, Socket socket) {
+        }
+        @Override
+        public void checkClientTrusted(X509Certificate[] chain, String authType, SSLEngine engine) {
+        }
+
+        @Override
+        public void checkServerTrusted(X509Certificate[] chain, String authType, SSLEngine engine) {
         }
 
         @Override
         public X509Certificate[] getAcceptedIssuers() {
             return new X509Certificate[0];
-        }
-
-        @Override
-        public void checkClientTrusted(X509Certificate[] x509Certificates, String s, Socket socket) {
-        }
-
-        @Override
-        public void checkServerTrusted(X509Certificate[] x509Certificates, String s, Socket socket) {
-        }
-
-        @Override
-        public void checkClientTrusted(X509Certificate[] x509Certificates, String s, SSLEngine sslEngine) {
-        }
-
-        @Override
-        public void checkServerTrusted(X509Certificate[] x509Certificates, String s, SSLEngine sslEngine) {
         }
     }
 }

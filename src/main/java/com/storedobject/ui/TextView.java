@@ -89,7 +89,7 @@ public class TextView extends View implements CloseableView, Transactional, Styl
     }
 
     protected void startProcess() {
-        new Thread(() -> {
+        Thread.startVirtualThread(() -> {
             getProgress();
             readyForProcessing();
             try {
@@ -102,7 +102,7 @@ public class TextView extends View implements CloseableView, Transactional, Styl
                 getApplication().stopPolling(this);
                 closeProgress();
             });
-        }).start();
+        });
     }
 
     protected void readyForProcessing() {
