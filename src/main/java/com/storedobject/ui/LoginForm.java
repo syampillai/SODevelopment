@@ -52,57 +52,66 @@ public class LoginForm extends TemplateView implements HomeView, FullScreen {
     static {
         codeSVGs.put("google",
                 """
-                        <?xml version="1.0" ?><svg id="Capa_1" style="enable-background:new 0 0 150 150;" version="1.1" \
-                        viewBox="0 0 150 150" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" \
-                        xmlns:xlink="http://www.w3.org/1999/xlink"><style type="text/css">
-                        \t.st0{fill:#1A73E8;}
-                        \t.st1{fill:#EA4335;}
-                        \t.st2{fill:#4285F4;}
-                        \t.st3{fill:#FBBC04;}
-                        \t.st4{fill:#34A853;}
-                        \t.st5{fill:#4CAF50;}
-                        \t.st6{fill:#1E88E5;}
-                        \t.st7{fill:#E53935;}
-                        \t.st8{fill:#C62828;}
-                        \t.st9{fill:#FBC02D;}
-                        \t.st10{fill:#1565C0;}
-                        \t.st11{fill:#2E7D32;}
-                        \t.st12{fill:#F6B704;}
-                        \t.st13{fill:#E54335;}
-                        \t.st14{fill:#4280EF;}
-                        \t.st15{fill:#34A353;}
-                        \t.st16{clip-path:url(#SVGID_2_);}
-                        \t.st17{fill:#188038;}
-                        \t.st18{opacity:0.2;fill:#FFFFFF;enable-background:new    ;}
-                        \t.st19{opacity:0.3;fill:#0D652D;enable-background:new    ;}
-                        \t.st20{clip-path:url(#SVGID_4_);}
-                        \t.st21{opacity:0.3;fill:url(#_45_shadow_1_);enable-background:new    ;}
-                        \t.st22{clip-path:url(#SVGID_6_);}
-                        \t.st23{fill:#FA7B17;}
-                        \t.st24{opacity:0.3;fill:#174EA6;enable-background:new    ;}
-                        \t.st25{opacity:0.3;fill:#A50E0E;enable-background:new    ;}
-                        \t.st26{opacity:0.3;fill:#E37400;enable-background:new    ;}
-                        \t.st27{fill:url(#Finish_mask_1_);}
-                        \t.st28{fill:#FFFFFF;}
-                        \t.st29{fill:#0C9D58;}
-                        \t.st30{opacity:0.2;fill:#004D40;enable-background:new    ;}
-                        \t.st31{opacity:0.2;fill:#3E2723;enable-background:new    ;}
-                        \t.st32{fill:#FFC107;}
-                        \t.st33{opacity:0.2;fill:#1A237E;enable-background:new    ;}
-                        \t.st34{opacity:0.2;}
-                        \t.st35{fill:#1A237E;}
-                        \t.st36{fill:url(#SVGID_7_);}
-                        \t.st37{fill:#FBBC05;}
-                        \t.st38{clip-path:url(#SVGID_9_);fill:#E53935;}
-                        \t.st39{clip-path:url(#SVGID_11_);fill:#FBC02D;}
-                        \t.st40{clip-path:url(#SVGID_13_);fill:#E53935;}
-                        \t.st41{clip-path:url(#SVGID_15_);fill:#FBC02D;}
-                        </style><g><path class="st5" d="M121.1,57.9L99.1,74.3v35.8h15.4c3.6,0,6.6-2.9,6.6-6.6V57.9z"/>\
-                        <path class="st6" d="M28.9,57.9l21.9,16.5v35.8H35.5c-3.6,0-6.6-2.9-6.6-6.6V57.9z"/>\
-                        <polygon class="st7" points="99.1,46.9 75,65 50.9,46.9 50.9,74.3 75,92.4 99.1,74.3  "/>\
-                        <path class="st8" d="M28.9,49.3v8.6l21.9,16.5V46.9L44,41.8c-1.6-1.2-3.6-1.9-5.7-1.9l0,0C33.1,39.9,28.9,44.1,28.9,49.3z"/>\
-                        <path class="st9" d="M121.1,49.3v8.6L99.1,74.3V46.9l6.9-5.1c1.6-1.2,3.6-1.9,5.7-1.9l0,0C116.9,39.9,121.1,44.1,121.1,49.3z"/>\
-                        </g></svg>""");
+                <?xml version="1.0" ?>
+                <svg id="Capa_1" style="enable-background:new 0 0 150 150;" version="1.1"\s
+                    viewBox="0 0 150 150" xml:space="preserve" xmlns="http://www.w3.org/2000/svg"\s
+                    xmlns:xlink="http://www.w3.org/1999/xlink">
+                    <style type="text/css">
+                        .st0{fill:#1A73E8;}
+                        .st1{fill:#EA4335;}
+                        .st2{fill:#4285F4;}
+                        .st3{fill:#FBBC04;}
+                        .st4{fill:#34A853;}
+                        .st5{fill:#4CAF50;}
+                        .st6{fill:#1E88E5;}
+                        .st7{fill:#E53935;}
+                        .st8{fill:#C62828;}
+                        .st9{fill:#FBC02D;}
+                        .st10{fill:#1565C0;}
+                        .st11{fill:#2E7D32;}
+                        .st12{fill:#F6B704;}
+                        .st13{fill:#E54335;}
+                        .st14{fill:#4280EF;}
+                        .st15{fill:#34A353;}
+                        .st16{clip-path:url(#SVGID_2_);}
+                        .st17{fill:#188038;}
+                        .st18{opacity:0.2;fill:#FFFFFF;enable-background:new    ;}
+                        .st19{opacity:0.3;fill:#0D652D;enable-background:new    ;}
+                        .st20{clip-path:url(#SVGID_4_);}
+                        .st21{opacity:0.3;fill:url(#_45_shadow_1_);enable-background:new    ;}
+                        .st22{clip-path:url(#SVGID_6_);}
+                        .st23{fill:#FA7B17;}
+                        .st24{opacity:0.3;fill:#174EA6;enable-background:new    ;}
+                        .st25{opacity:0.3;fill:#A50E0E;enable-background:new    ;}
+                        .st26{opacity:0.3;fill:#E37400;enable-background:new    ;}
+                        .st27{fill:url(#Finish_mask_1_);}
+                        .st28{fill:#FFFFFF;}
+                        .st29{fill:#0C9D58;}
+                        .st30{opacity:0.2;fill:#004D40;enable-background:new    ;}
+                        .st31{opacity:0.2;fill:#3E2723;enable-background:new    ;}
+                        .st32{fill:#FFC107;}
+                        .st33{opacity:0.2;fill:#1A237E;enable-background:new    ;}
+                        .st34{opacity:0.2;}
+                        .st35{fill:#1A237E;}
+                        .st36{fill:url(#SVGID_7_);}
+                        .st37{fill:#FBBC05;}
+                        .st38{clip-path:url(#SVGID_9_);fill:#E53935;}
+                        .st39{clip-path:url(#SVGID_11_);fill:#FBC02D;}
+                        .st40{clip-path:url(#SVGID_13_);fill:#E53935;}
+                        .st41{clip-path:url(#SVGID_15_);fill:#FBC02D;}
+                    </style>
+                    <g>
+                        <path class="st5" d="M121.1,57.9L99.1,74.3v35.8h15.4c3.6,0,6.6-2.9,6.6-6.6V57.9z"/>
+                        <path class="st6" d="M28.9,57.9l21.9,16.5v35.8H35.5c-3.6,0-6.6-2.9-6.6-6.6V57.9z"/>
+                        <polygon class="st7" points="99.1,46.9 75,65 50.9,46.9 50.9,74.3 75,92.4 99.1,74.3  "/>
+                        <path class="st8" d="M28.9,49.3v8.6l21.9,16.5V46.9L44,41.8c-1.6-1.2-3.6-1.9-5.7-1.9l0,0C33.1,39.9,28.9,44.1,28.9,49.3z"/>
+                        <path class="st9" d="M121.1,49.3v8.6L99.1,74.3V46.9l6.9-5.1c1.6-1.2,3.6-1.9,5.7-1.9l0,0C116.9,39.9,121.1,44.1,121.1,49.3z"/>
+                       \s
+                        <!-- Added Circle -->
+                        <circle cx="75" cy="75" r="70" stroke="#0000FF" stroke-width="6" fill="none"/>
+                    </g>
+                </svg>
+                """);
         codeSVGs.put("facebook",
                 "<?xml version=\"1.0\" ?><!DOCTYPE svg  PUBLIC '-//W3C//DTD SVG 1.1//EN'  " +
                         "'http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd'><svg height=\"100%\" " +

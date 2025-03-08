@@ -6,12 +6,11 @@ import com.storedobject.core.*;
 import com.storedobject.helper.ID;
 import com.storedobject.iot.*;
 import com.storedobject.ui.*;
+import com.storedobject.ui.Application;
+import com.storedobject.ui.Image;
 import com.storedobject.ui.util.HtmlTemplate;
 import com.storedobject.ui.util.SOServlet;
-import com.storedobject.vaadin.Button;
-import com.storedobject.vaadin.ButtonLayout;
-import com.storedobject.vaadin.CloseableView;
-import com.storedobject.vaadin.View;
+import com.storedobject.vaadin.*;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Span;
@@ -67,7 +66,7 @@ public class SiteView extends ImageViewer implements Transactional, CloseableVie
                 sitesField,
                 new Button("Switch Block", VaadinIcon.CHART_3D, e -> loadBlocks()),
                 lastUpdate,
-                new Button("Dashboard", VaadinIcon.DASHBOARD, e -> gui.showDashboard()),
+                //new Button("Dashboard", VaadinIcon.DASHBOARD, e -> gui.showDashboard()),
                 new Button("Value Charts", "chart", e -> gui.showChart()),
                 new Button("Status", VaadinIcon.GRID, e -> gui.showStatusGrid()),
                 new Button("Send Control Command", VaadinIcon.PAPERPLANE_O, e -> gui.sendCommand()),
@@ -370,7 +369,11 @@ public class SiteView extends ImageViewer implements Transactional, CloseableVie
             if(tooltip.length() > 1) {
                 component.getElement().setAttribute("title", tooltip);
             }
+            component.getElement().getStyle().set("cursor", "pointer");
             components.put(ds.getId(), component);
+            if(!devMode) {
+                new Clickable<>(component, c -> itemClicked(ds));
+            }
         }
         return component;
     }
@@ -841,6 +844,17 @@ public class SiteView extends ImageViewer implements Transactional, CloseableVie
                 }
             }
             return null;
+        }
+    }
+
+    private void itemClicked(DataSet.DataStatus<?> ds) {
+        if(gui.blockView == null) {
+            return;
+        }
+        if(ds instanceof DataSet.AlarmStatus as) {
+            gui.blockView.clicked(as);
+        } else {
+            gui.blockView.clicked((DataSet.LimitStatus)ds);
         }
     }
 }

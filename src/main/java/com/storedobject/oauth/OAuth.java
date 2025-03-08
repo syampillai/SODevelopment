@@ -27,35 +27,15 @@ public class OAuth {
         random = sr;
     }
     private final HttpClient httpClient = HttpClient.newHttpClient();
-    private final String ourUrl;
+    private final String ourUrl, link;
     private final URI serverUrl;
     private final Cipher aesCipher;
     private SecretKey secretKey;
     private final int state;
 
-    public OAuth(String ourUrl, String secretKey) {
-        this(ourUrl, null, secretKey);
-    }
-
-    public OAuth(String ourUrl, String serverUrl, String secretKey) {
-        if(serverUrl == null) {
-            serverUrl = ourUrl;
-        } else if(!serverUrl.endsWith("/oauth/callback")) {
-            if(!serverUrl.endsWith("/")) {
-                serverUrl += "/";
-            }
-            if(!serverUrl.endsWith("oauth/")) {
-                serverUrl += "oauth/";
-            }
-            serverUrl += "callback";
-        }
-        if(!ourUrl.startsWith("https://")) {
-            ourUrl = "https://" + ourUrl;
-        }
+    public OAuth(String ourUrl, String link, String serverUrl, String secretKey) {
         this.ourUrl = ourUrl;
-        if(!serverUrl.startsWith("https://")) {
-            serverUrl = "https://" + serverUrl;
-        }
+        this.link = link;
         Cipher aesCipher;
         try {
             aesCipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
@@ -103,7 +83,8 @@ public class OAuth {
         if(isError()) {
             return null;
         }
-        data = ourUrl + "|" + encrypt(data);
+        String link = this.link == null ? "" : ("|" + this.link);
+        data = ourUrl + link + "|" + encrypt(data);
         try {
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(serverUrl)

@@ -107,22 +107,23 @@ public class SOServlet extends VaadinServlet {
         if(url == null) {
             url = request.getRequestURL().toString().replace("//" , "\n");
             int p = url.indexOf('/');
-            boolean link = false;
+            boolean hasLink = false;
             if(p > 0) {
-                link = url.substring(p).startsWith("/" + SQLConnector.getDatabaseName());
+                hasLink = url.substring(p).startsWith("/" + SQLConnector.getDatabaseName());
                 url = url.substring(0, p);
             }
             url = url.replace("\n", "//");
             String oauthServer = ApplicationServer.getGlobalProperty("oauth.server", "");
             if(!oauthServer.isEmpty()) {
                 String u = url;
-                if(link) {
-                    u += "/" + SQLConnector.getDatabaseName();
+                if(hasLink) {
+                    u += "/${link}";
                 }
                 String secret = ApplicationServer.getGlobalProperty("oauth.secret", "|");
                 p = secret.indexOf('|');
                 if(p >= 0) {
-                    oAuth = new OAuth(u, oauthServer, secret.substring(p + 1));
+                    oAuth = new OAuth(u, hasLink ? SQLConnector.getDatabaseName() : null, oauthServer,
+                            secret.substring(p + 1));
                     if (oAuth.isError()) {
                         ApplicationServer.log(oAuth.getSecret());
                         oAuth = null;

@@ -61,9 +61,9 @@ public class ValueChart extends View implements CloseableView, Transactional {
                         chartType,
                         new ELabel("Time Slice"),
                         timeStepField,
-                        new Button("Dashboard", VaadinIcon.DASHBOARD, e -> gui.showDashboard()),
+                        //new Button("Dashboard", VaadinIcon.DASHBOARD, e -> gui.showDashboard()),
                         new Button("Status", VaadinIcon.GRID, e -> gui.showStatusGrid()),
-                        new Button("Site View", VaadinIcon.FACTORY, e -> gui.showSiteView()),
+                        new Button(gui.getSiteViewLabel(), VaadinIcon.FACTORY, e -> gui.showSiteView()),
                         new Button("Send Control Command", VaadinIcon.PAPERPLANE_O, e -> gui.sendCommand()),
                         gui.consumptionButton(),
                         gui.dataButton(),
@@ -452,7 +452,7 @@ public class ValueChart extends View implements CloseableView, Transactional {
             setName(getName() + "\n" + label.replace("\n", ", "));
             Axis.Label axisLabel = getLabel(true);
             axisLabel.setGap(axisLabel.getGap() + 15);
-            if(this == axes.get(0)) {
+            if(this == axes.getFirst()) {
                 return;
             }
             slot += 15;

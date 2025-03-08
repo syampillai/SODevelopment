@@ -38,7 +38,7 @@ public class ConsumptionDashboard extends View implements CloseableView {
                 periodicityField,
                 new ELabel("View:"),
                 viewField,
-                new Button("Dashboard", VaadinIcon.DASHBOARD, e -> gui.showDashboard()),
+                //new Button("Dashboard", VaadinIcon.DASHBOARD, e -> gui.showDashboard()),
                 new Button("Value Charts", "chart", e -> gui.showChart()),
                 new Button("Status", VaadinIcon.GRID, e -> gui.showStatusGrid()),
                 new Button("Site View", VaadinIcon.FACTORY, e -> gui.showSiteView()),
@@ -292,7 +292,7 @@ public class ConsumptionDashboard extends View implements CloseableView {
         }
         layout.add(label(cl.getDescription()));
         SOChart chart = soChart();
-        double[] v = cl.get(0).consumption();
+        double[] v = cl.getFirst().consumption();
         int i = v.length - 1;
         TreeChart tc = new TreeChart();
         tc.setName("Hierarchy");

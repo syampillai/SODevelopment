@@ -11,6 +11,7 @@ public abstract class ValueDefinition<VT> extends StoredObject implements Detail
 
     private String name = "";
     private String caption = "", label = "", tooltip = "";
+    String alertMessage;
     private int significance;
     private boolean active = true, alert, command;
     private Method gvm, svm;
@@ -28,6 +29,7 @@ public abstract class ValueDefinition<VT> extends StoredObject implements Detail
         columns.add("Caption", "text");
         columns.add("Label", "text");
         columns.add("Tooltip", "text");
+        columns.add("AlertMessage", "text");
         columns.add("Significance", "int");
         columns.add("Alert", "boolean");
         columns.add("Active", "boolean");
@@ -49,15 +51,6 @@ public abstract class ValueDefinition<VT> extends StoredObject implements Detail
         return new String[] {
                 "Image Positions|com.storedobject.iot.ValueImagePosition",
         };
-    }
-
-    public static ValueDefinition<?> get(String name) {
-        return StoredObjectUtility.get(ValueDefinition.class, "Name", name, true);
-    }
-
-    public static ObjectIterator<ValueDefinition<?>> list(String name) {
-        return StoredObjectUtility.list(ValueDefinition.class, "Name", name, true)
-                .map(o -> (ValueDefinition<?>) o);
     }
 
     public void setName(String name) {
@@ -94,6 +87,15 @@ public abstract class ValueDefinition<VT> extends StoredObject implements Detail
     @Column(required = false, order = 260)
     public String getTooltip() {
         return tooltip.isEmpty() ? getCaption() : tooltip;
+    }
+
+    public void setAlertMessage(String alertMessage) {
+        this.alertMessage = alertMessage;
+    }
+
+    @Column(required = false, order = 270)
+    public String getAlertMessage() {
+        return alertMessage;
     }
 
     public void setSignificance(int significance) {
@@ -410,4 +412,12 @@ public abstract class ValueDefinition<VT> extends StoredObject implements Detail
         addLink(t, vip);
         DataSet.scheduleRefresh();
     }
+
+    /**
+     * Get alert message for the value alarm level
+     *
+     * @param alarmLevel Level. 0 = Normal, -1 = Low, -2 = Lower, -3 = Lowest, 1 = High, 2 = Higher, 3 = Highest
+     * @return Alert message.
+     */
+    public abstract String getAlertMessage(int alarmLevel);
 }

@@ -7,7 +7,6 @@ import com.storedobject.iot.*;
 import com.storedobject.ui.DataGrid;
 import com.storedobject.ui.ELabel;
 import com.storedobject.ui.HTMLText;
-import com.storedobject.ui.ObjectComboField;
 import com.storedobject.vaadin.Button;
 import com.storedobject.vaadin.ButtonLayout;
 import com.storedobject.vaadin.HTMLGenerator;
@@ -24,7 +23,7 @@ public class StatusGrid extends DataGrid<DataSet.DataStatus> {
 
     private final ELabel lastUpdate = new ELabel();
     private Consumer<Id> refresher;
-    private final ObjectComboField<Site> sitesField = new ObjectComboField<>(Site.class, "Active", true);
+    private final BlockComboField blockField = new BlockComboField();
     private final Checkbox allBlocks = new Checkbox("All Blocks"),
             allAttributes = new Checkbox("All Attributes"),
             commandsOnly = new Checkbox("Controls Only");
@@ -32,15 +31,10 @@ public class StatusGrid extends DataGrid<DataSet.DataStatus> {
     private volatile boolean updating = false;
 
     public StatusGrid(GUI gui) {
-        super(DataSet.DataStatus.class, StringList.create("Block", "Unit", "Attribute", "Value", "Status"));
+        super(DataSet.DataStatus.class, StringList.create("Block", "Unit", "Attribute", "Value", "Status", "Message"));
         this.gui = gui;
         setCaption("Status");
-        sitesField.addValueChangeListener(e -> {
-            Site site = sitesField.getValue();
-            if(site != null) {
-                loadStatus();
-            }
-        });
+        blockField.addValueChangeListener(e -> loadStatus());
         allBlocks.addValueChangeListener(e -> loadStatus());
         allAttributes.addValueChangeListener(e -> loadStatus());
         commandsOnly.addValueChangeListener(e -> loadStatus());
@@ -49,11 +43,10 @@ public class StatusGrid extends DataGrid<DataSet.DataStatus> {
             Site site = gui.getSite();
             if(site != null) {
                 site = StoredObject.get(Site.class, "Active");
+                gui.setSite(site);
             }
-            sitesField.setValue(site);
-            if(gui.isFixedSite()) {
-                sitesField.setReadOnly(true);
-            }
+            blockField.setSite(site);
+            loadStatus();
         });
     }
 
@@ -75,9 +68,12 @@ public class StatusGrid extends DataGrid<DataSet.DataStatus> {
         return ds.getUnit().getName();
     }
 
+    public String getMessage(DataSet.DataStatus ds) {
+        return ds.getValueDefinition().getAlertMessage(ds.alarm());
+    }
+
     @Override
     public Component createHeader() {
-        sitesField.setItemLabelGenerator(Site::getName);
         return new ButtonLayout(
                 allBlocks,
                 new ELabel("|", "green"),
@@ -85,12 +81,12 @@ public class StatusGrid extends DataGrid<DataSet.DataStatus> {
                 new ELabel("|", "green"),
                 commandsOnly,
                 new ELabel("|", "green"),
-                new ELabel("Site:"),
-                sitesField,
+                new ELabel("Block:"),
+                blockField,
                 lastUpdate,
-                new Button("Dashboard", VaadinIcon.DASHBOARD, e -> gui.showDashboard()),
+                //new Button("Dashboard", VaadinIcon.DASHBOARD, e -> gui.showDashboard()),
                 new Button("Value Charts", "chart", e -> gui.showChart()),
-                new Button("Site View", VaadinIcon.FACTORY, e -> gui.showSiteView()),
+                new Button(gui.getSiteViewLabel(), VaadinIcon.FACTORY, e -> gui.showSiteView()),
                 new Button("Send Control Command", VaadinIcon.PAPERPLANE_O, e -> gui.sendCommand()),
                 gui.consumptionButton(),
                 gui.dataButton(),
@@ -134,16 +130,17 @@ public class StatusGrid extends DataGrid<DataSet.DataStatus> {
         updating = true;
         clear();
         buildTree();
+        getColumn("Block").setVisible(allBlocks.getValue());
         updating = false;
     }
 
     private void buildTree() {
-        Site site = sitesField.getValue();
-        if(site == null) {
-            message("Please select a site");
+        Block b = blockField.getValue();
+        if(b == null) {
             return;
         }
-        gui.setSite(site);
+        gui.setBlock(b);
+        Site site = b.getSite();
         Id blockId = allBlocks.getValue() ? null : Id.ZERO;
         if(Id.ZERO.equals(blockId)) {
             Block block = gui.getBlock();
@@ -220,5 +217,9 @@ public class StatusGrid extends DataGrid<DataSet.DataStatus> {
                     .execute());
         }
         return new Span();
+    }
+
+    public void setBlock(Block block) {
+        blockField.setValue(block);
     }
 }

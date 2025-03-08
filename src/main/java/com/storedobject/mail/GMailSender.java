@@ -8,10 +8,7 @@ import jakarta.mail.MessagingException;
 import jakarta.mail.Session;
 
 import java.io.IOException;
-import java.io.OutputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.net.URLEncoder;
+import java.net.*;
 import java.nio.charset.StandardCharsets;
 import java.security.Provider;
 import java.security.Security;
@@ -99,8 +96,9 @@ public class GMailSender extends Sender {
 			throw new Invalid_Value("Refresh Token");
 		}
 		applicationURI = StringUtility.pack(applicationURI);
-		if(!applicationURI.startsWith("https://") || applicationURI.startsWith("https://.") || applicationURI.endsWith(".") ||
-				StringUtility.getCharCount(applicationURI, '.') > 2 || applicationURI.contains("..") ||
+		if(!applicationURI.startsWith("https://") || applicationURI.startsWith("https://.")
+				|| applicationURI.endsWith(".") || StringUtility.getCharCount(applicationURI, '.') > 2
+				|| applicationURI.contains("..") ||
 				!StringUtility.isLetterOrDigit(applicationURI.substring(8).replace(".", ""))) {
 			throw new Invalid_Value("Application URI");
 		}
@@ -150,21 +148,8 @@ public class GMailSender extends Sender {
 	    transport.connect("smtp.gmail.com", 587, getFromAddress(), "");
 	}
 
-	private static JSON getJson(StringBuilder u) throws IOException, SOException {
-		byte[] ub = u.toString().getBytes(StandardCharsets.UTF_8);
-		HttpURLConnection uc = (HttpURLConnection) (new URL("https://accounts.google.com/o/oauth2/token").openConnection());
-		uc.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
-		uc.setRequestProperty("Content-Length", String.valueOf(ub.length));
-		uc.setDoInput(true);
-		uc.setDoOutput(true);
-		uc.setRequestMethod("POST");
-		OutputStream out = uc.getOutputStream();
-		out.write(ub);
-		out.flush();
-		if(uc.getResponseCode() != HttpURLConnection.HTTP_OK) {
-			throw new SOException(uc.getResponseMessage());
-		}
-        return new JSON(uc.getInputStream());
+	private static JSON getJson(StringBuilder u) throws IOException, SOException, URISyntaxException {
+		return GMailRegistrationService.getJson(u.toString());
 	}
 
 	private static final class OAuth2Provider extends Provider {

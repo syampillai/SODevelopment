@@ -18,6 +18,14 @@ public final class AlarmSwitch extends ValueDefinition<Boolean> {
         columns.add("AlarmWhen", "int");
     }
 
+    public static AlarmSwitch get(String name) {
+        return StoredObjectUtility.get(AlarmSwitch.class, "Name", name, true);
+    }
+
+    public static ObjectIterator<AlarmSwitch> list(String name) {
+        return StoredObjectUtility.list(AlarmSwitch.class, "Name", name, true);
+    }
+
     public void setAlarmWhen(int alarmWhen) {
         this.alarmWhen = alarmWhen;
     }
@@ -43,5 +51,13 @@ public final class AlarmSwitch extends ValueDefinition<Boolean> {
     @Override
     public String toString() {
         return getCaption() + " (On/Off)";
+    }
+
+    @Override
+    public String getAlertMessage(int alarmLevel) {
+        if(alarmWhen == 1) {
+            return alarmLevel == 0 ? "" : alertMessage;
+        }
+        return alarmLevel == 0 ? alertMessage : "";
     }
 }

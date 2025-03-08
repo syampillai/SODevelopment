@@ -38,6 +38,8 @@ public class GUI implements Executable {
     private Site site;
     private List<Resource> resources;
     final Application application;
+    private String siteViewLabel = "Site View";
+    BlockView blockView;
 
     /**
      * Default constructor for the GUI class.
@@ -160,7 +162,7 @@ public class GUI implements Executable {
         } else {
             loadUnits();
         }
-        unit = units.isEmpty() ? null : units.get(0);
+        unit = units.isEmpty() ? null : units.getFirst();
     }
 
     /**
@@ -249,10 +251,24 @@ public class GUI implements Executable {
      * interface for monitoring or interacting with the current system status.
      */
     public void showStatusGrid() {
+        Block block = anyBlock();
+        if(block == null) {
+            return;
+        }
         if(statusGrid == null) {
             statusGrid = new StatusGrid(this);
         }
         statusGrid.execute();
+        statusGrid.setBlock(block);
+    }
+
+    private Block anyBlock() {
+        Block block = getBlock();
+        if(block == null) {
+            Application.warning("No block selected or set");
+            return null;
+        }
+        return block;
     }
 
     /**
@@ -262,9 +278,8 @@ public class GUI implements Executable {
      * Otherwise, a new command execution is initiated for the selected block.
      */
     public void sendCommand() {
-        Block block = getBlock();
+        Block block = anyBlock();
         if(block == null) {
-            Application.warning("No block selected or set");
             return;
         }
         if(sendCommand == null) {
@@ -338,7 +353,7 @@ public class GUI implements Executable {
         }
         this.block = block;
         loadUnits();
-        unit = units.isEmpty() ? null : units.get(0);
+        unit = units.isEmpty() ? null : units.getFirst();
         site = block.getSite();
     }
 
@@ -350,7 +365,7 @@ public class GUI implements Executable {
      */
     public Block getBlock() {
         if(block == null && !units.isEmpty()) {
-            block = units.get(0).getBlock();
+            block = units.getFirst().getBlock();
         }
         return block;
     }
@@ -386,7 +401,7 @@ public class GUI implements Executable {
             return null;
         }
         if(resources.size() == 1) {
-            Resource r = resources.get(0);
+            Resource r = resources.getFirst();
             return new Button(r.getName() + " Consumption", VaadinIcon.CONTROLLER, e -> resource(r));
         }
         PopupButton popupButton = new PopupButton("Consumption", VaadinIcon.CONTROLLER);
@@ -446,6 +461,33 @@ public class GUI implements Executable {
      */
     public void selectBlock(Consumer<Block> blockConsumer) {
         new BS(blockConsumer, this).execute();
+    }
+
+    /**
+     * Sets the label for the site view.
+     *
+     * @param siteViewLabel the label to assign to the site view
+     */
+    public void setSiteViewLabel(String siteViewLabel) {
+        this.siteViewLabel = siteViewLabel;
+    }
+
+    /**
+     * Retrieves the label associated with the site view.
+     *
+     * @return the site view label as a String
+     */
+    public String getSiteViewLabel() {
+        return siteViewLabel;
+    }
+
+    /**
+     * Sets the active block view instance.
+     *
+     * @param blockView The BlockView instance to be set.
+     */
+    public void setBlockView(BlockView blockView) {
+        this.blockView = blockView;
     }
 
     private static class BS extends BlockSelector {

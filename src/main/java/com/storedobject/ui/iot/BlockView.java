@@ -309,6 +309,23 @@ public class BlockView extends TemplateView implements Transactional, CloseableV
     protected void paint(DataSet.AlarmStatus alarmStatus) {
     }
 
+
+    /**
+     * This method is invoked when a {@link SiteView} is active and someone clicked on an item that is an alarm switch.
+     *
+     * @param alarmStatus The respective alarm status.
+     */
+    protected void clicked(DataSet.AlarmStatus alarmStatus) {
+    }
+
+    /**
+     * This method is invoked when a {@link SiteView} is active and someone clicked on an item that is a limit value.
+     *
+     * @param limitStatus The respective limit status.
+     */
+    protected void clicked(DataSet.LimitStatus limitStatus) {
+    }
+
     /**
      * Creates and returns a component based on the specified id. If the id equals "block",
      * a {@link BlockComboField} is created and configured with a value change listener

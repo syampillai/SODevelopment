@@ -19,6 +19,9 @@ public class BlockComboField extends ObjectComboField<Block> {
     }
 
     public void setSite(Site site) {
+        if(site == null || (filter.site != site && site.equals(filter.site))) {
+            return;
+        }
         filter.site = site;
         applyFilter();
     }

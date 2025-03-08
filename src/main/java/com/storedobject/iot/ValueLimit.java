@@ -3,6 +3,9 @@ package com.storedobject.iot;
 import com.storedobject.core.*;
 import com.storedobject.core.annotation.*;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public final class ValueLimit extends ValueDefinition<Double> {
 
     private Quantity unitOfMeasurement = Count.ZERO;
@@ -15,6 +18,7 @@ public final class ValueLimit extends ValueDefinition<Double> {
     private double minimum, maximum;
     private int decimals = 2;
     private boolean unlimited;
+    private Map<Integer, String> alertMessages = null;
 
     public ValueLimit() {
     }
@@ -31,6 +35,14 @@ public final class ValueLimit extends ValueDefinition<Double> {
         columns.add("Minimum", "double precision");
         columns.add("Maximum", "double precision");
         columns.add("Unlimited", "boolean");
+    }
+
+    public static ValueLimit get(String name) {
+        return StoredObjectUtility.get(ValueLimit.class, "Name", name, true);
+    }
+
+    public static ObjectIterator<ValueLimit> list(String name) {
+        return StoredObjectUtility.list(ValueLimit.class, "Name", name, true);
     }
 
     public void setUnitOfMeasurement(MeasurementUnit unitOfMeasurement) {
@@ -185,5 +197,58 @@ public final class ValueLimit extends ValueDefinition<Double> {
             return hv.getValue();
         }
         return null;
+    }
+
+    @Override
+    public String getAlertMessage(int alarmLevel) {
+        if(alarmLevel == 0) {
+            return "";
+        }
+        if(alarmLevel < -3) {
+            alarmLevel = -3;
+        }
+        if(alarmLevel > 3) {
+            alarmLevel = 3;
+        }
+        if(alarmLevel < 0) {
+            alarmLevel += 3;
+        } else {
+            alarmLevel += 2;
+        }
+        if(alertMessages == null) {
+            loadLimitMessages();
+        }
+        if(alertMessages.isEmpty()) {
+            return alertMessage;
+        }
+        String m = alertMessages.get(alarmLevel);
+        if (m != null) {
+            return m;
+        }
+        return switch (alarmLevel) {
+            case 0 -> am(0, 1, 2);
+            case 1 -> am(1, 2, 0);
+            case 2 -> am(2, 1, 0);
+            case 3 -> am(3, 4, 5);
+            case 4 -> am(4, 5, 3);
+            case 5 -> am(5, 3, 4);
+            default -> alertMessage;
+        };
+    }
+
+    private String am(int... levels) {
+        for(int level: levels) {
+            String m = alertMessages.get(level);
+            if(m != null) {
+                return m;
+            }
+        }
+        return alertMessage;
+    }
+
+    private void loadLimitMessages() {
+        alertMessages = new HashMap<>();
+        list(LimitMessage.class, "ValueName=" + getId(), "Condition")
+                .forEach(m -> alertMessages.put(m.getCondition(), m.getMessage()));
     }
 }

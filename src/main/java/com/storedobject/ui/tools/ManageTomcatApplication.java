@@ -1,5 +1,6 @@
 package com.storedobject.ui.tools;
 
+import com.storedobject.common.HTTP2;
 import com.storedobject.common.SORuntimeException;
 import com.storedobject.core.ApplicationServer;
 import com.storedobject.core.Secret;
@@ -16,14 +17,8 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLEngine;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509ExtendedTrustManager;
-import java.net.HttpURLConnection;
 import java.net.Socket;
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
 import java.security.cert.X509Certificate;
-import java.time.Duration;
 
 public class ManageTomcatApplication extends DataForm implements Transactional {
 
@@ -79,26 +74,14 @@ public class ManageTomcatApplication extends DataForm implements Transactional {
             }
             manager += "://localhost:8";
             manager += (sc != null ? "443" : "080") + "/manager/text/" + action.getValue().toLowerCase() + "?path=/" + a;
-            HttpRequest request = HttpRequest.newBuilder(URI.create(manager))
-                    //.header("Host", SOServlet.getServer())
-                    .header("Accept", "text/plain")
-                    .timeout(Duration.ofSeconds(20))
-                    .GET()
-                    .build();
             String user = ApplicationServer.getGlobalProperty("application.manager.user", "soengine");
             String password = ApplicationServer.getGlobalProperty("application.manager.password",
                     "testme!always");
-            HttpClient.Builder builder = HttpClient.newBuilder().authenticator(Secret.authenticator(user, password))
-                    .connectTimeout(Duration.ofSeconds(20));
-            if(sc != null) {
-                builder.sslContext(sc);
-            }
-            HttpResponse<String> response = builder.build().send(request, HttpResponse.BodyHandlers.ofString());
-            String result = null;
-            if(response.statusCode() == HttpURLConnection.HTTP_OK) {
-                result = response.body();
-            }
-            warning.setValue(result);
+            warning.setValue(HTTP2.builder(manager).accept("text/plain")
+                    .authenticator(Secret.authenticator(user, password))
+                    .sslContext(sc)
+                    .string()
+            );
         } catch (Exception e) {
             error(e);
             warning.setValue("Error executing the requested action");
