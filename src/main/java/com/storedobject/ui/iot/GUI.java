@@ -24,7 +24,6 @@ import java.util.function.Consumer;
  */
 public class GUI implements Executable {
 
-    private Dashboard dashboard;
     private final Map<Id, ConsumptionDashboard> dashboardMap = new HashMap<>();
     private SendCommand sendCommand;
     private ValueChart valueChart;
@@ -196,11 +195,11 @@ public class GUI implements Executable {
      * been commented out.
      */
     public void showDashboard() {
-        if(dashboard == null) {
-            dashboard = new Dashboard(this);
+        if(blockView != null) {
+            blockView.execute();
+            return;
         }
-        //dashboard.execute();
-        Application.message("Dashboard display is undergoing development changes.");
+        Application.message("Dashboard is not available or configured yet.");
     }
 
     /**
@@ -469,7 +468,9 @@ public class GUI implements Executable {
      * @param siteViewLabel the label to assign to the site view
      */
     public void setSiteViewLabel(String siteViewLabel) {
-        this.siteViewLabel = siteViewLabel;
+        if(siteViewLabel != null && !siteViewLabel.trim().isEmpty()) {
+            this.siteViewLabel = siteViewLabel;
+        }
     }
 
     /**

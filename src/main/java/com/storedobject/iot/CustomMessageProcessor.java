@@ -8,8 +8,16 @@ public interface CustomMessageProcessor {
         return null;
     }
 
+    default JSON process(String module, String topic, byte[] payload) {
+        return process(module, payload);
+    }
+
     default JSON process(String module, String payload) {
         return null;
+    }
+
+    default JSON process(String module, String topic, String payload) {
+        return process(module, payload);
     }
 
     default JSON process(String module, JSON payload) {

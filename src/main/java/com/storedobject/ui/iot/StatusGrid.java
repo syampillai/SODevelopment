@@ -84,7 +84,7 @@ public class StatusGrid extends DataGrid<DataSet.DataStatus> {
                 new ELabel("Block:"),
                 blockField,
                 lastUpdate,
-                //new Button("Dashboard", VaadinIcon.DASHBOARD, e -> gui.showDashboard()),
+                gui.blockView == null ? null : new Button("Dashboard", VaadinIcon.DASHBOARD, e -> gui.showDashboard()),
                 new Button("Value Charts", "chart", e -> gui.showChart()),
                 new Button(gui.getSiteViewLabel(), VaadinIcon.FACTORY, e -> gui.showSiteView()),
                 new Button("Send Control Command", VaadinIcon.PAPERPLANE_O, e -> gui.sendCommand()),

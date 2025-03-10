@@ -61,7 +61,7 @@ public class ValueChart extends View implements CloseableView, Transactional {
                         chartType,
                         new ELabel("Time Slice"),
                         timeStepField,
-                        //new Button("Dashboard", VaadinIcon.DASHBOARD, e -> gui.showDashboard()),
+                        gui.blockView == null ? null : new Button("Dashboard", VaadinIcon.DASHBOARD, e -> gui.showDashboard()),
                         new Button("Status", VaadinIcon.GRID, e -> gui.showStatusGrid()),
                         new Button(gui.getSiteViewLabel(), VaadinIcon.FACTORY, e -> gui.showSiteView()),
                         new Button("Send Control Command", VaadinIcon.PAPERPLANE_O, e -> gui.sendCommand()),

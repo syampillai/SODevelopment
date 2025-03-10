@@ -41,7 +41,7 @@ public class SiteView extends ImageViewer implements Transactional, CloseableVie
     private final boolean devMode;
 
     public SiteView(GUI gui, boolean devMode) {
-        super("Site View");
+        super(gui.getSiteViewLabel());
         this.devMode = devMode;
         this.gui = gui;
         if(devMode) {
@@ -66,7 +66,7 @@ public class SiteView extends ImageViewer implements Transactional, CloseableVie
                 sitesField,
                 new Button("Switch Block", VaadinIcon.CHART_3D, e -> loadBlocks()),
                 lastUpdate,
-                //new Button("Dashboard", VaadinIcon.DASHBOARD, e -> gui.showDashboard()),
+                gui.blockView == null ? null : new Button("Dashboard", VaadinIcon.DASHBOARD, e -> gui.showDashboard()),
                 new Button("Value Charts", "chart", e -> gui.showChart()),
                 new Button("Status", VaadinIcon.GRID, e -> gui.showStatusGrid()),
                 new Button("Send Control Command", VaadinIcon.PAPERPLANE_O, e -> gui.sendCommand()),
@@ -851,10 +851,12 @@ public class SiteView extends ImageViewer implements Transactional, CloseableVie
         if(gui.blockView == null) {
             return;
         }
-        if(ds instanceof DataSet.AlarmStatus as) {
-            gui.blockView.clicked(as);
-        } else {
-            gui.blockView.clicked((DataSet.LimitStatus)ds);
-        }
+        getApplication().access(() -> {
+            if(ds instanceof DataSet.AlarmStatus as) {
+                gui.blockView.clicked(as);
+            } else {
+                gui.blockView.clicked((DataSet.LimitStatus)ds);
+            }
+        });
     }
 }
