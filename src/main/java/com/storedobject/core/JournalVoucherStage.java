@@ -11,14 +11,28 @@ import java.math.BigDecimal;
 public final class JournalVoucherStage extends StoredObject {
 
     private Id voucherId, foreignSystemId;
+    private boolean posted;
+    private JournalVoucher voucher;
 
     public static void columns(Columns columns) {
         columns.add("Voucher", "id");
         columns.add("ForeignSystem", "id");
+        columns.add("Posted", "boolean");
     }
 
     public static void indices(Indices indices) {
         indices.add("ForeignSystem,Voucher", true);
+    }
+
+    public static String[] browseColumns() {
+        return new String[] {
+                "Voucher.Reference AS Voucher",
+                "Voucher.Date AS Date",
+                "Voucher.OriginatedFrom AS Origin",
+                "Voucher.GeneratedBy AS Created by",
+                "ForeignSystem.Name AS External System",
+                "Posted"
+        };
     }
 
     public void setVoucher(Id voucherId) {
@@ -42,7 +56,10 @@ public final class JournalVoucherStage extends StoredObject {
     }
 
     public JournalVoucher getVoucher() {
-        return getRelated(JournalVoucher.class, voucherId, true);
+        if(voucher == null) {
+            voucher = getRelated(JournalVoucher.class, voucherId, true);
+        }
+        return voucher;
     }
 
     public void setForeignSystem(Id foreignSystemId) {
@@ -67,6 +84,15 @@ public final class JournalVoucherStage extends StoredObject {
 
     public ForeignFinancialSystem getForeignSystem() {
         return getRelated(ForeignFinancialSystem.class, foreignSystemId);
+    }
+
+    public void setPosted(boolean posted) {
+        this.posted = posted;
+    }
+
+    @Column(order = 300)
+    public boolean getPosted() {
+        return posted;
     }
 
     @Override
