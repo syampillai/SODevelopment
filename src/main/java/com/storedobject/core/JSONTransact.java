@@ -8,7 +8,6 @@ import java.sql.Date;
 public class JSONTransact implements JSONService {
 
     private final JournalVoucher jv = new JournalVoucher();
-    private Id origin;
     private boolean error = false;
 
     @Override
@@ -83,7 +82,7 @@ public class JSONTransact implements JSONService {
                         }
                         if(origin(json, result, false)) {
                             try {
-                                Fault fault = commit(device, jv);
+                                Fault fault = commit(device, jv, json, result);
                                 if(fault == null) {
                                     result.put("reference", jv.getForeignReference());
                                 } else {
@@ -115,7 +114,7 @@ public class JSONTransact implements JSONService {
     }
 
     private boolean origin(JSON json, JSONMap result, boolean check) {
-        origin = json.getId("origin");
+        Id origin = json.getId("origin");
         if(origin == null) {
             String o = json.getString("origin");
             if (o == null) {
@@ -134,6 +133,7 @@ public class JSONTransact implements JSONService {
                 return false;
             }
         }
+        jv.setOrigin(origin);
         String ref = json.getString("reference");
         if(ref != null) {
             ref = ref.toUpperCase().strip();
@@ -163,13 +163,9 @@ public class JSONTransact implements JSONService {
         return true;
     }
 
-    protected Fault commit(Device device, JournalVoucher jv) throws Exception {
+    protected Fault commit(Device device, JournalVoucher jv, JSON json, JSONMap result) throws Exception {
         device.getServer().getTransactionManager().transact(jv::save);
         return null;
-    }
-
-    protected Id getOrigin() {
-        return origin;
     }
 
     private Account getAccount(Device device, String account) {
