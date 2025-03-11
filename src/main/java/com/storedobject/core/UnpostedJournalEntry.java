@@ -4,7 +4,7 @@ import com.storedobject.core.annotation.*;
 import java.math.BigDecimal;
 import java.sql.Date;
 
-public final class UnpostedJournalEntry extends StoredObject implements Detail {
+public final class UnpostedJournalEntry extends StoredObject implements Detail, DBTransaction.NoHistory {
 
     private int displayOrder;
     private Id accountId;

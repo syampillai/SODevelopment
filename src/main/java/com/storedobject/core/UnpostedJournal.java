@@ -1,16 +1,18 @@
 package com.storedobject.core;
 
 import com.storedobject.core.annotation.*;
+
 import java.math.BigDecimal;
 import java.sql.Date;
 
-public final class UnpostedJournal extends StoredObject implements OfEntity {
+public final class UnpostedJournal extends StoredObject implements OfEntity, DBTransaction.NoHistory {
 
     private Id systemEntityId;
     private Id ownerId;
     private final Date date = DateUtility.today();
     private String jVClassName;
-    private String extraInformation;
+    private String extraInformation = "", foreignReference = "";
+    boolean internal = false;
 
     public UnpostedJournal() {
     }
@@ -21,10 +23,12 @@ public final class UnpostedJournal extends StoredObject implements OfEntity {
         columns.add("Date", "date");
         columns.add("JVClassName", "text");
         columns.add("ExtraInformation", "text");
+        columns.add("ForeignReference", "text");
     }
 
     public static void indices(Indices indices) {
-        indices.add("SystemEntity,Date,No");
+        indices.add("SystemEntity,Date");
+        indices.add("ForeignReference", "ForeignReference != ''");
     }
 
     public static int hints() {
@@ -78,7 +82,7 @@ public final class UnpostedJournal extends StoredObject implements OfEntity {
     }
 
     @SetNotAllowed
-    @Column(order = 300)
+    @Column(style = "(any)", order = 300)
     public Id getOwnerId() {
         return ownerId;
     }
@@ -113,6 +117,15 @@ public final class UnpostedJournal extends StoredObject implements OfEntity {
         return jVClassName;
     }
 
+    public void setForeignReference(String foreignReference) {
+        this.foreignReference = foreignReference;
+    }
+
+    @Column(order = 600)
+    public String getForeignReference() {
+        return foreignReference;
+    }
+
     public void setExtraInformation(String extraInformation) {
         if (!loading()) {
             throw new Set_Not_Allowed("Extra Information");
@@ -121,8 +134,36 @@ public final class UnpostedJournal extends StoredObject implements OfEntity {
     }
 
     @SetNotAllowed
-    @Column(required = false, order = 600)
+    @Column(required = false, order = 700, style = "(large)")
     public String getExtraInformation() {
         return extraInformation;
+    }
+
+    @Override
+    public void validateData(TransactionManager tm) throws Exception {
+        if(!deleted()) {
+            if (!internal) {
+                throw new Invalid_State("Illegal");
+            }
+            systemEntityId = check(tm, systemEntityId);
+            if (Utility.isEmpty(date)) {
+                throw new Invalid_Value("Date");
+            }
+            if (StringUtility.isWhite(jVClassName)) {
+                throw new Invalid_Value("JV Class Name");
+            }
+        }
+        super.validateData(tm);
+    }
+
+    @Override
+    public void validate() throws Exception {
+        super.validate();
+        if(ownerId == null) {
+            ownerId = getId();
+        }
+        if(ownerId == null) {
+            throw new Invalid_Value("Owner");
+        }
     }
 }
