@@ -66,4 +66,37 @@ public final class AccountTitle extends Account {
         return list(AccountTitle.class, (systemEntity == null ? "" : ("SystemEntity=" + systemEntity.getId()
                 + " AND ")) + "lower(Name) LIKE '" + name.toLowerCase().replace("'", "''") + "%'");
     }
+
+    static <A extends Account> ObjectIterator<A> list(SystemEntity systemEntity, String name,
+                                                                           Class<A> accountClass, boolean any) {
+        //noinspection unchecked
+        return (ObjectIterator<A>) list(systemEntity, name).map(AccountTitle::getAccount)
+                .filter(a -> any ? accountClass.isAssignableFrom(a.getClass()) : accountClass == a.getClass());
+    }
+
+    @Override
+    public void validateData(TransactionManager tm) throws Exception {
+        accountId = tm.checkTypeAny(this, accountId, Account.class, false);
+        Account a = getAccount();
+        if(a instanceof AccountTitle) {
+            throw new Invalid_State("Not a real account - " + a.toDisplay());
+        }
+        int i = 0;
+        while (true) {
+            number = a.getNumber() + "-ALT" + (i == 0 ? "" : ("-" + i));
+            if(!exists(Account.class, "lower(Number)='" + number.toLowerCase() + "'", true)) {
+                break;
+            }
+            ++i;
+        }
+        setSystemEntity(a.getSystemEntityId());
+        setChart(a.getChartId());
+        setCurrency(a.getCurrency());
+        super.validateData(tm);
+        if(getName().equals(a.getName()) ||
+                exists(AccountTitle.class, "Account=" + accountId + " AND Name='"
+                        + getName().replace("'", "''") + "'")) {
+            throw new Invalid_State("Duplicate title");
+        }
+    }
 }
