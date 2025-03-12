@@ -107,9 +107,9 @@ public class LogicParser {
             s.add("");
         }
         if(s.get(0).indexOf('.') < 0 || s.get(0).indexOf('.') == s.get(0).lastIndexOf('.')) {
-            String className = ApplicationServer.guessClass(s.get(0));
+            String className = ApplicationServer.guessClass(s.getFirst());
             if(className == null) {
-                throw new SOException("Unknown class: " + s.get(0));
+                throw new SOException("Unknown class: " + s.getFirst());
             }
             s.set(0, className);
         }
@@ -133,21 +133,21 @@ public class LogicParser {
         if(t.isEmpty()) {
             cn += t;
         }
-        cn += "|" + s.get(0);
+        cn += "|" + s.getFirst();
         logic.setClassName(cn);
     }
 
     private static void fillLogic(List<String> s, String logic1, String logic2) {
         String t = s.get(1);
         if(t != null && t.isEmpty()) {
-            s.set(1, createLogicName(s.get(0), logic1, null));
+            s.set(1, createLogicName(s.getFirst(), logic1, null));
             if(logic2 == null) {
                 return;
             }
         }
         t = s.get(2);
         if(t != null && t.isEmpty()) {
-            s.set(2, createLogicName(s.get(0), logic2, null));
+            s.set(2, createLogicName(s.getFirst(), logic2, null));
         }
     }
 
@@ -284,12 +284,6 @@ public class LogicParser {
         }
         if(InventoryPOItem.class.isAssignableFrom(objectClass)) {
             return POItemEditor.class.getName();
-        }
-        if(EntityRole.class.isAssignableFrom(objectClass)) {
-            return EntityRoleEditor.class.getName();
-        }
-        if(PersonRole.class.isAssignableFrom(objectClass)) {
-            return PersonRoleEditor.class.getName();
         }
         if(InventoryItemType.class.isAssignableFrom(objectClass)) {
             return ItemTypeEditor.class.getName();

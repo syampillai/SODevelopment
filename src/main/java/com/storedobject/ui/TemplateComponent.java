@@ -2,8 +2,6 @@ package com.storedobject.ui;
 
 import com.storedobject.helper.ID;
 
-import java.util.function.Supplier;
-
 /**
  * A {@link com.vaadin.flow.component.Component} based on a template. The template can contain HTML tags (and thus,
  * Vaadin component tags too) and if any image resources are referenced, respective
