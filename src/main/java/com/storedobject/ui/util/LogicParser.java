@@ -18,6 +18,7 @@ import java.util.stream.Collectors;
 public class LogicParser {
 
     private static final String SO_DOT = "com.storedobject.";
+    private static final String SOS_DOT = "com.storedobjects.";
 
     public static String createLogicName(Class<?> objectClass, String tag) {
         return createLogicName(objectClass.getName(), tag, objectClass);
@@ -173,6 +174,9 @@ public class LogicParser {
             if(kclass != null) {
                 return kclass;
             }
+        }
+        if(name.startsWith(SOS_DOT) || name.startsWith(SO_DOT)) {
+            return null;
         }
         ++dot;
         String prefix = name.substring(0, dot);

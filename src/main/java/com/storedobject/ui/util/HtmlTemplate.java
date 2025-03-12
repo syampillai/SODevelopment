@@ -9,6 +9,7 @@ import com.storedobject.ui.MediaCSS;
 import com.storedobject.vaadin.Button;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.Html;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Paragraph;
@@ -45,7 +46,7 @@ import java.util.function.Supplier;
  * set as the field value. However, it is possible to custom-create the component instance by
  * overriding the {@link #createComponentForId(String)} or {@link #createComponentForId(String, String)} method.
  *
- * @author Leif Åstrand (Vaadin Ltd.). Modified by Syam.
+ * @author Leif Åstrand (Vaadin Ltd.). Enhanced by Syam.
  */
 @Tag("div")
 public abstract class HtmlTemplate extends Component {
@@ -250,60 +251,66 @@ public abstract class HtmlTemplate extends Component {
 
     private Element jsoupToFlow(Node node, BiConsumer<String, Element> idElementConsumer,
                                 BiConsumer<String, Component> idComponentConsumer) {
-        if (node instanceof org.jsoup.nodes.Element jsoupElement) {
-            Component c = null;
-            String id = jsoupElement.attributes().get("id");
-            if(!id.isEmpty()) {
-                c = createComponentForId(id, jsoupElement.tagName());
-                if(!c.getElement().getTag().equals(jsoupElement.tagName())) {
-                    throw new IllegalArgumentException("Incompatible component " + c.getClass().getName() +
-                            " for tag " + jsoupElement.tagName() + ", Id = " + id);
-                }
-                c.setId(id);
-            }
-            if(c == null) {
-                c = createComponent(id, node.nodeName());
-            }
-            Component component = c;
-            Element flowElement = component == null ? new Element(jsoupElement.tagName()) : component.getElement();
-            jsoupElement.attributes().forEach(attr -> {
-                String value = attr.getValue();
-                String key = attr.getKey();
-                if (key.startsWith("!")) {
-                    String propertyName = SharedUtil.dashSeparatedToCamelCase(key.substring(1));
-                    boolean valueBoolean = value.isEmpty() || value.equalsIgnoreCase("true")
-                            || value.contentEquals("1");
-                    flowElement.setProperty(propertyName, valueBoolean);
-                } else if (key.startsWith(".")) {
-                    String propertyName = SharedUtil.dashSeparatedToCamelCase(key.substring(1));
-                    flowElement.setProperty(propertyName, value);
-                } else if (key.startsWith("%")) {
-                    String propertyName = SharedUtil.dashSeparatedToCamelCase(key.substring(1));
-                    try {
-                        flowElement.setProperty(propertyName, Double.parseDouble(value));
-                    } catch (NumberFormatException e) {
-                        throw new RuntimeException("Cannot parse value for numeric property: " + propertyName);
+        switch (node) {
+            case org.jsoup.nodes.Element jsoupElement -> {
+                Component c = null;
+                String id = jsoupElement.attributes().get("id");
+                if (!id.isEmpty()) {
+                    c = createComponentForId(id, jsoupElement.tagName());
+                    if (!c.getElement().getTag().equals(jsoupElement.tagName())) {
+                        throw new IllegalArgumentException("Incompatible component " + c.getClass().getName() +
+                                " for tag " + jsoupElement.tagName() + ", Id = " + id);
                     }
-                } else if (value.isEmpty()) {
-                    flowElement.setAttribute(key, true);
-                } else {
-                    flowElement.setAttribute(key, value);
-                    if ("id".equals(key)) {
-                        idElementConsumer.accept(value, flowElement);
-                        if(component != null) {
-                            idComponentConsumer.accept(value, component);
+                    c.setId(id);
+                }
+                if (c == null) {
+                    c = createComponent(id, node.nodeName());
+                }
+                Component component = c;
+                Element flowElement = component == null ? new Element(jsoupElement.tagName()) : component.getElement();
+                jsoupElement.attributes().forEach(attr -> {
+                    String value = attr.getValue();
+                    String key = attr.getKey();
+                    if (key.startsWith("!")) {
+                        String propertyName = SharedUtil.dashSeparatedToCamelCase(key.substring(1));
+                        boolean valueBoolean = value.isEmpty() || value.equalsIgnoreCase("true")
+                                || value.contentEquals("1");
+                        flowElement.setProperty(propertyName, valueBoolean);
+                    } else if (key.startsWith(".")) {
+                        String propertyName = SharedUtil.dashSeparatedToCamelCase(key.substring(1));
+                        flowElement.setProperty(propertyName, value);
+                    } else if (key.startsWith("%")) {
+                        String propertyName = SharedUtil.dashSeparatedToCamelCase(key.substring(1));
+                        try {
+                            flowElement.setProperty(propertyName, Double.parseDouble(value));
+                        } catch (NumberFormatException e) {
+                            throw new RuntimeException("Cannot parse value for numeric property: " + propertyName);
+                        }
+                    } else if (value.isEmpty()) {
+                        flowElement.setAttribute(key, true);
+                    } else {
+                        flowElement.setAttribute(key, value);
+                        if ("id".equals(key)) {
+                            idElementConsumer.accept(value, flowElement);
+                            if (component != null) {
+                                idComponentConsumer.accept(value, component);
+                            }
                         }
                     }
-                }
-            });
-            convertAndAppend(jsoupElement, flowElement, idElementConsumer, idComponentConsumer, null);
-            return flowElement;
-        } else if (node instanceof TextNode textNode) {
-            return Element.createText(textNode.text());
-        } else if (node instanceof Comment) {
-            return null;
-        } else {
-            throw new IllegalArgumentException("Unsupported tag: " + node.nodeName());
+                });
+                convertAndAppend(jsoupElement, flowElement, idElementConsumer, idComponentConsumer, null);
+                return flowElement;
+            }
+            case TextNode textNode -> {
+                return Element.createText(textNode.text());
+            }
+            case Comment ignored -> {
+                return null;
+            }
+            case null -> {
+                return null;
+            }
+            default -> throw new IllegalArgumentException("Unsupported tag: " + node.nodeName());
         }
     }
 
@@ -396,7 +403,11 @@ public abstract class HtmlTemplate extends Component {
         if(c == null || c instanceof ISpan) {
             c = createHTMLComponent(tag);
         }
-        return c == null ? new Span("[Tag = " + tag + ", Id = " + id + "]") : c;
+        if(c != null) {
+            return c;
+        }
+        //return new Span("[Tag = " + tag + ", Id = " + id + "]");
+        return new Html("<" + tag + " id=\"" + id + "\"></" + tag + ">");
     }
 
     /**
@@ -466,16 +477,26 @@ public abstract class HtmlTemplate extends Component {
         private void parse() {
             htmlcss = new String[2];
             String c = contentSupplier.get().strip();
+            int p1 = c.indexOf("<style"), p2 = c.indexOf("</style>");
+            if(p1 >= 0 && p2 >= 0) {
+                p2 += 8;
+                htmlcss[1] = MediaCSS.parse(c.substring(p1, p2));
+                htmlcss[0] = c.substring(0, p1) + c.substring(p2);
+            } else {
+                htmlcss[0] = c;
+            }
+            /*
             if(c.startsWith("<style")) {
                 int p = c.indexOf("</style>");
                 if(p > 0) {
                     htmlcss[1] = MediaCSS.parse(c.substring(c.indexOf('>') + 1, p));
                     htmlcss[0] = c.substring(p + 8);
                 }
-            }
-            if(htmlcss[0] == null) {
+            } else {
                 htmlcss[0] = c;
             }
+
+             */
         }
     }
 
