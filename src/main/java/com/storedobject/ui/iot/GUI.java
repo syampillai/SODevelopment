@@ -39,6 +39,8 @@ public class GUI implements Executable {
     final Application application;
     private String siteViewLabel = "Site View";
     BlockView blockView;
+    boolean allowCommand = true;
+    boolean allowDownload = true;
 
     /**
      * Default constructor for the GUI class.
@@ -264,7 +266,7 @@ public class GUI implements Executable {
     private Block anyBlock() {
         Block block = getBlock();
         if(block == null) {
-            Application.warning("No block selected or set");
+            Application.message("No block selected or set");
             return null;
         }
         return block;
@@ -277,6 +279,10 @@ public class GUI implements Executable {
      * Otherwise, a new command execution is initiated for the selected block.
      */
     public void sendCommand() {
+        if(!allowCommand) {
+            Application.warning("Not allowed");
+            return;
+        }
         Block block = anyBlock();
         if(block == null) {
             return;
@@ -298,6 +304,10 @@ public class GUI implements Executable {
      * This method provides a high-level entry point for initiating data download operations.
      */
     public void downloadData() {
+        if(!allowDownload) {
+            Application.message("Not allowed");
+            return;
+        }
         new DownloadData(getBlock()).execute();
     }
 
@@ -310,7 +320,7 @@ public class GUI implements Executable {
      * initiates data processing and viewing within the associated framework.
      */
     public void viewData() {
-        new ViewData(getBlock()).execute();
+        new ViewData(getBlock(), allowDownload).execute();
     }
 
     /**
@@ -417,10 +427,69 @@ public class GUI implements Executable {
      * @return A {@link Button} object that provides a popup menu for accessing data-related actions.
      */
     Button dataButton() {
+        if(!allowDownload) {
+            return null;
+        }
         PopupButton popupButton = new PopupButton("Data", VaadinIcon.TABLE);
         popupButton.add(new Button("View", e -> viewData()));
         popupButton.add(new Button("Download", e -> downloadData()));
         return popupButton;
+    }
+
+    /**
+     * Creates and returns a Button component that, when triggered, executes a command action.
+     * The button is labeled "Send Control Command" and uses a controller icon.
+     * If the command action is not allowed, this method returns null.
+     *
+     * @return a Button for sending a control command, or null if the command action is not allowed.
+     */
+    Button commandButton() {
+        if(!allowCommand) {
+            return null;
+        }
+        return new Button("Send Control Command", VaadinIcon.CONTROLLER, e -> sendCommand());
+    }
+
+    /**
+     * Creates and returns a dashboard button. The button is labeled "Dashboard"
+     * and uses the Vaadin DASHBOARD icon. When clicked, it triggers the
+     * {@code showDashboard()} method.
+     *
+     * @return A button configured to display the dashboard if the {@code blockView}
+     *         is not null; otherwise, returns null.
+     */
+    Button dashboardButton() {
+        return blockView == null ? null
+                : new Button("Dashboard", VaadinIcon.DASHBOARD, e -> showDashboard());
+    }
+
+    /**
+     * Creates and returns a Button component configured for navigating to the site view.
+     *
+     * @return a Button with the site view label, icon, and a click listener that triggers the site view display.
+     */
+    Button siteViewButton() {
+        return new Button(getSiteViewLabel(), VaadinIcon.FACTORY, e -> showSiteView());
+    }
+
+    /**
+     * Creates and returns a button labeled "Status" with a dashboard icon.
+     * When clicked, it triggers the display of the status grid.
+     *
+     * @return a Button instance configured with a label, icon, and click listener
+     */
+    Button statusGridButton() {
+        return new Button("Status", VaadinIcon.DASHBOARD, e -> showStatusGrid());
+    }
+
+    /**
+     * Creates and returns a button configured for displaying charts.
+     * The button is labeled "Value Charts", uses a chart icon, and is set with an event listener that triggers the chart display action.
+     *
+     * @return a Button instance configured for showing charts
+     */
+    Button chartButton() {
+        return new Button("Value Charts", VaadinIcon.CHART, e -> showChart());
     }
 
     private void resource(Resource resource) {
@@ -489,6 +558,24 @@ public class GUI implements Executable {
      */
     public void setBlockView(BlockView blockView) {
         this.blockView = blockView;
+    }
+
+    /**
+     * Set whether commands are allowed or not.
+     *
+     * @param allowCommand True/false.
+     */
+    public void setAllowCommand(boolean allowCommand) {
+        this.allowCommand = allowCommand;
+    }
+
+    /**
+     * Set whether data download is allowed or not.
+     *
+     * @param allowDownload True/false.
+     */
+    public void setAllowDownload(boolean allowDownload) {
+        this.allowDownload = allowDownload;
     }
 
     private static class BS extends BlockSelector {

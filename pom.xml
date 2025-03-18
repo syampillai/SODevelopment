@@ -6,7 +6,7 @@
 
     <groupId>com.storedobject</groupId>
     <artifactId>so-development</artifactId>
-    <version>13.1.0</version>
+    <version>13.1.1</version>
 
     <properties>
         <vaadin.version>24.6.6</vaadin.version>

@@ -66,10 +66,9 @@ public class SiteView extends ImageViewer implements Transactional, CloseableVie
                 sitesField,
                 new Button("Switch Block", VaadinIcon.CHART_3D, e -> loadBlocks()),
                 lastUpdate,
-                gui.blockView == null ? null : new Button("Dashboard", VaadinIcon.DASHBOARD, e -> gui.showDashboard()),
-                new Button("Value Charts", "chart", e -> gui.showChart()),
-                new Button("Status", VaadinIcon.GRID, e -> gui.showStatusGrid()),
-                new Button("Send Control Command", VaadinIcon.PAPERPLANE_O, e -> gui.sendCommand()),
+                gui.dashboardButton(),
+                gui.chartButton(),
+                gui.commandButton(),
                 gui.consumptionButton(),
                 gui.dataButton(),
                 new Button("Exit", e -> close())

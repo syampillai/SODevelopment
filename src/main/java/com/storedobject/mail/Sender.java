@@ -13,11 +13,10 @@ import jakarta.mail.internet.MimeBodyPart;
 import jakarta.mail.internet.MimeMessage;
 import jakarta.mail.internet.MimeMultipart;
 
-import java.io.Closeable;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Properties;
 
 public abstract class Sender extends StoredObject implements Closeable {
 
@@ -233,8 +232,16 @@ public abstract class Sender extends StoredObject implements Closeable {
     }
 
 	public void sendTestMail(String to, String subject, String content) throws Exception {
+		sendTestMail(to, subject, content, null);
+	}
+
+	public void sendTestMail(String to, String subject, String content, Device device) throws Exception {
+		Debugger debugger = device == null ? null : new Debugger();
 		try {
-			createTransport();
+			createTransport(device == null ? null : debugger);
+			if(transport == null) {
+				throw new Exception("Unable to create mail transport");
+			}
 			MimeMessage m = mimeMessage();
 			m.addRecipients(Message.RecipientType.TO, InternetAddress.parse(to));
 			m.setSubject(subject, "UTF-8");
@@ -246,6 +253,9 @@ public abstract class Sender extends StoredObject implements Closeable {
 			m.saveChanges();
 			transport.sendMessage(m, m.getAllRecipients());
 		} finally {
+			if(debugger != null && !debugger.isEmpty()) {
+				ApplicationServer.log(device, "Mail Sender Trace:\n" + debugger.getTrace());
+			}
 			closeInternal();
 		}
 	}
@@ -264,7 +274,7 @@ public abstract class Sender extends StoredObject implements Closeable {
 		return m;
 	}
     
-    protected abstract void createTransport() throws MessagingException;
+    protected abstract void createTransport(Debugger debugger) throws MessagingException;
 
     private void sendMessage(Mail mail) throws MessagingException {
     	MimeMessage m = mimeMessage();
@@ -345,7 +355,7 @@ public abstract class Sender extends StoredObject implements Closeable {
     public Error send(Mail mail) {
 		mail.setSender(this);
     	try {
-    		createTransport();
+    		createTransport(null);
     		if(transport == null) {
     			throw new Exception("Unable to create mail transport");
     		}
@@ -522,5 +532,71 @@ public abstract class Sender extends StoredObject implements Closeable {
 			}
 		}
 		return null;
+	}
+
+	protected static void setEncryptionProperties(Properties p, int encryptionType) {
+		if(encryptionType == 0) {
+			return;
+		}
+		p.put("mail.smtp.ssl.protocols", "TLSv1.2 TLSv1.3");
+		if(encryptionType == 1 || encryptionType == 3) {
+			p.put("mail.smtp.starttls.enable", "true");
+			p.put("mail.smtp.starttls.required", "false");
+		}
+		if(encryptionType == 2 || encryptionType == 3) {
+			p.put("mail.smtp.ssl.enable", "true");
+		}
+	}
+
+	protected static class Debugger extends PrintStream {
+
+		private final StringBuilder trace;
+		private Exception exception;
+
+		Debugger() {
+			this(new StringBuilder());
+		}
+
+		Debugger(StringBuilder sb) {
+			this(new OutputStream() {
+				@Override
+				public void write(int b) {
+					sb.append((char) b);
+				}
+			}, sb);
+		}
+
+		private Debugger(OutputStream out, StringBuilder trace) {
+			super(out, true);
+			this.trace = trace;
+		}
+
+		public StringBuilder getTrace() {
+			return trace;
+		}
+
+		public Exception getException() {
+			return exception;
+		}
+
+		public void setException(Exception exception) {
+			this.exception = exception;
+		}
+
+		public boolean isEmpty() {
+			return trace.isEmpty();
+		}
+
+		public void debug(Session session, Properties properties) {
+			trace.append("Properties:\n");
+			int count = 0;
+			for(String key: properties.stringPropertyNames()) {
+				++count;
+				trace.append('(').append(count).append(") ").append(key).append(" = ")
+						.append(properties.getProperty(key)).append("\n");
+			}
+			session.setDebugOut(this);
+			session.setDebug(true);
+		}
 	}
 }

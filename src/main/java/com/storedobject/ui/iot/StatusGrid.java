@@ -14,7 +14,6 @@ import com.storedobject.vaadin.View;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.html.Span;
-import com.vaadin.flow.component.icon.VaadinIcon;
 
 import java.util.function.Consumer;
 
@@ -39,7 +38,9 @@ public class StatusGrid extends DataGrid<DataSet.DataStatus> {
         allAttributes.addValueChangeListener(e -> loadStatus());
         commandsOnly.addValueChangeListener(e -> loadStatus());
         addConstructedListener(l -> {
-            addComponentColumn(this::send).setFlexGrow(0).setWidth("120px");
+            if(gui.allowCommand) {
+                addComponentColumn(this::send).setFlexGrow(0).setWidth("120px");
+            }
             Site site = gui.getSite();
             if(site != null) {
                 site = StoredObject.get(Site.class, "Active");
@@ -84,10 +85,10 @@ public class StatusGrid extends DataGrid<DataSet.DataStatus> {
                 new ELabel("Block:"),
                 blockField,
                 lastUpdate,
-                gui.blockView == null ? null : new Button("Dashboard", VaadinIcon.DASHBOARD, e -> gui.showDashboard()),
-                new Button("Value Charts", "chart", e -> gui.showChart()),
-                new Button(gui.getSiteViewLabel(), VaadinIcon.FACTORY, e -> gui.showSiteView()),
-                new Button("Send Control Command", VaadinIcon.PAPERPLANE_O, e -> gui.sendCommand()),
+                gui.dashboardButton(),
+                gui.chartButton(),
+                gui.siteViewButton(),
+                gui.commandButton(),
                 gui.consumptionButton(),
                 gui.dataButton(),
                 new Button("Exit", e -> close())

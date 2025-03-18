@@ -15,10 +15,12 @@ public class DataView<D extends Data> extends ObjectGrid<D> {
 
     private final Data4Unit data4Unit;
     private final Site site;
+    private final boolean canDownload;
 
-    public DataView(Data4Unit data4Unit) {
+    public DataView(Data4Unit data4Unit, boolean canDownload) {
         //noinspection unchecked
         super((Class<D>) data4Unit.dataClass(), data4Unit.attributes());
+        this.canDownload = canDownload;
         this.data4Unit = data4Unit;
         Unit unit = data4Unit.unit();
         this.site = unit.getSite();
@@ -36,7 +38,7 @@ public class DataView<D extends Data> extends ObjectGrid<D> {
     public Component createHeader() {
         //noinspection resource
         return new ButtonLayout(new ELabel("Unit: " + data4Unit.unit().getName()),
-                new Button("Download", e -> new DataDownload(data4Unit).execute()),
+                canDownload ? new Button("Download", e -> new DataDownload(data4Unit).execute()) : null,
                 new Button("Exit", e -> close()));
     }
 }

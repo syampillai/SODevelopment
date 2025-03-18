@@ -57,7 +57,7 @@ public class SOServlet extends VaadinServlet {
         } else {
             link = null;
         }
-        ApplicationServer.initialize(null, link);
+        ApplicationServer.initialize(getServletConfig().getInitParameter("application.properties"), link);
         if(headerKey == null) {
             headerKey = ApplicationServer.getGlobalProperty("application.request.header.key", "");
         }

@@ -111,7 +111,7 @@ public class GMailSender extends Sender {
 	}
 
 	@Override
-	protected void createTransport() throws MessagingException {
+	protected void createTransport(Debugger debugger) throws MessagingException {
 		if(System.currentTimeMillis() > tokenExpiry || token == null) {
 			if(transport != null) {
 				try {
@@ -138,12 +138,13 @@ public class GMailSender extends Sender {
 			return;
 		}
 		Properties props = new Properties();
-	    props.put("mail.smtp.starttls.enable", "true");
-	    props.put("mail.smtp.starttls.required", "true");
-	    props.put("mail.smtp.sasl.enable", "true");
+		setEncryptionProperties(props, 3);
 	    props.put("mail.smtp.sasl.mechanisms", "XOAUTH2");
 	    props.put(OAuth2SaslClientFactory.OAUTH_TOKEN_PROP, token);
 	    Session session = Session.getInstance(props);
+		if(debugger != null) {
+			debugger.debug(session, props);
+		}
 	    transport = session.getTransport("smtp");
 	    transport.connect("smtp.gmail.com", 587, getFromAddress(), "");
 	}

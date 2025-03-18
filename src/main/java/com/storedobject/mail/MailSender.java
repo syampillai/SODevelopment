@@ -11,11 +11,14 @@ import jakarta.mail.Session;
 
 public class MailSender extends Sender {
 
+    private static final String[] encryptionTypeValues = new String[] {
+            "None", "STARTTLS", "SSL/TLS", "STARTTLS & SSL/TLS"
+    };
     private String smtpServer;
     private int port;
-    private boolean useTLS;
     private String userName;
     private String password;
+    private int encryptionType;
 
     public MailSender() {
     }
@@ -23,7 +26,7 @@ public class MailSender extends Sender {
     public static void columns(Columns columns) {
         columns.add("SMTPServer", "text");
         columns.add("Port", "int");
-        columns.add("UseTLS", "boolean");
+        columns.add("EncryptionType", "int");
         columns.add("UserName", "text");
         columns.add("Password", "text");
     }
@@ -60,13 +63,25 @@ public class MailSender extends Sender {
         return port;
     }
 
-    public void setUseTLS(boolean useTLS) {
-        this.useTLS = useTLS;
+    public void setEncryptionType(int encryptionType) {
+        this.encryptionType = encryptionType;
     }
 
     @Column(order = 1400)
-    public boolean getUseTLS() {
-        return useTLS;
+    public int getEncryptionType() {
+        return encryptionType;
+    }
+
+    public String  getEncryptionTypeValue() {
+        return getEncryptionTypeValue(encryptionType);
+    }
+
+    public static String  getEncryptionTypeValue(int encryptionType) {
+        return encryptionTypeValues[encryptionType % encryptionTypeValues.length];
+    }
+
+    public static String[] getEncryptionTypeValues() {
+        return encryptionTypeValues;
     }
 
     public void setUserName(String userName) {
@@ -94,13 +109,13 @@ public class MailSender extends Sender {
         }
         super.validateData(tm);
     }
-    
-    protected void createTransport() throws MessagingException {
+
+    @Override
+    protected void createTransport(Debugger debugger) throws MessagingException {
     	if(transport != null) {
     		return;
     	}
 		Properties p = new Properties();
-		p.putAll(System.getProperties());
 		p.put("mail.mime.charset", "UTF-8");
 		p.put("mail.smtp.host", smtpServer);
 		if(port > 0) {
@@ -116,18 +131,18 @@ public class MailSender extends Sender {
 				}
 			};
 		}
-		if(useTLS || authenticator != null) {
+        setEncryptionProperties(p, encryptionType);
+		if(authenticator != null) {
 			p.put("mail.smtp.auth", "true");
-			if(useTLS) {
-                p.put("mail.smtp.ssl.enable", "true");
-                p.put("mail.smtp.starttls.enable", "true");
-			}
 			session = Session.getInstance(p, authenticator);
 		} else {
 			session = Session.getInstance(p);
 		}
+        if(debugger != null) {
+            debugger.debug(session, p);
+        }
 		transport = session.getTransport("smtp");
-		if(useTLS) {
+		if(authenticator != null) {
 			if(port > 0) {
 				transport.connect(smtpServer, port, un, pw);
 			} else {

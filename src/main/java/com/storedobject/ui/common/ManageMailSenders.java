@@ -35,7 +35,7 @@ public class ManageMailSenders extends ObjectEditor<MailSender> implements Trans
                 "Port",
                 "FromAddress",
                 "ReplyToAddress",
-                "UseTLS",
+                "EncryptionType",
                 "UserName",
                 "Password",
                 "Status",
@@ -270,7 +270,7 @@ public class ManageMailSenders extends ObjectEditor<MailSender> implements Trans
         @Override
         protected boolean process() {
             try {
-                getObject().sendTestMail(to.getValue(), subject.getValue(), content.getValue());
+                getObject().sendTestMail(to.getValue(), subject.getValue(), content.getValue(), getApplication());
                 message("Mail sent successfully");
             } catch(Exception e) {
                 String m = e.getMessage();

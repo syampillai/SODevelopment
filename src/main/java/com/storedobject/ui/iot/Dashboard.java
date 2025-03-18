@@ -12,7 +12,6 @@ import com.storedobject.ui.ELabel;
 import com.storedobject.ui.StyledString;
 import com.storedobject.vaadin.*;
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 
 import java.util.Date;
@@ -42,10 +41,10 @@ public class Dashboard extends View implements SingletonLogic, CloseableView {
         application = Application.get();
         ButtonLayout b = new ButtonLayout(
                 lastUpdate,
-                new Button("Chart", e -> gui.showChart()),
-                new Button("Status", VaadinIcon.GRID, e -> gui.showStatusGrid()),
-                new Button("Site View", VaadinIcon.FACTORY, e -> gui.showSiteView()),
-                new Button("Send Control Command", VaadinIcon.PAPERPLANE_O, e -> gui.sendCommand()),
+                gui.chartButton(),
+                gui.statusGridButton(),
+                gui.siteViewButton(),
+                gui.commandButton(),
                 gui.consumptionButton(),
                 gui.dataButton(),
                 new Button("Exit", e -> close())

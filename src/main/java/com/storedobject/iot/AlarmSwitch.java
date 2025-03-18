@@ -55,9 +55,6 @@ public final class AlarmSwitch extends ValueDefinition<Boolean> {
 
     @Override
     public String getAlertMessage(int alarmLevel) {
-        if(alarmWhen == 1) {
-            return alarmLevel == 0 ? "" : alertMessage;
-        }
-        return alarmLevel == 0 ? alertMessage : "";
+        return alarmLevel == 0 ? "" : alertMessage;
     }
 }
