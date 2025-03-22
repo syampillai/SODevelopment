@@ -10,7 +10,6 @@ import com.storedobject.ui.Transactional;
 import com.storedobject.vaadin.CloseableView;
 import com.storedobject.vaadin.View;
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.shared.Registration;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -29,12 +28,13 @@ import java.util.function.Consumer;
  */
 public class BlockView extends TemplateView implements Transactional, CloseableView {
 
+    private final Object lock = new Object();
     private Consumer<Id> refresher;
-    private final Registration size;
     private final Application application;
     private final List<Unit> units = new ArrayList<>();
     private Block block;
     private Date lastUpdateTime;
+    private boolean repainting = false;
 
     @com.vaadin.flow.component.template.Id("block")
     private BlockComboField blockField;
@@ -57,8 +57,6 @@ public class BlockView extends TemplateView implements Transactional, CloseableV
         setCaption("Block View");
         Application.get().closeMenu();
         application = Application.get();
-        application.getContentWidth();
-        size = application.addContentResizedListener((w, h) -> reload());
     }
 
     /**
@@ -66,10 +64,10 @@ public class BlockView extends TemplateView implements Transactional, CloseableV
      * This method removes the associated size attribute, unregisters any linked data refresher,
      * stops polling from the associated application, and invokes the superclasses clean method.
      * If a refresher is currently active, it will be unregistered before being set to null.
+     * <p>Note: Do not call this method anywhere from your logic.</p>
      */
     @Override
     public void clean() {
-        size.remove();
         if(refresher != null) {
             DataSet.unregister(refresher);
             refresher = null;
@@ -126,9 +124,9 @@ public class BlockView extends TemplateView implements Transactional, CloseableV
         units.clear();
         block.listUnits().collectAll(units);
         if(isCreated()) {
-            paint(block);
+            application.access(() -> paint(block));
         }
-        reload();
+        repaint();
     }
 
     /**
@@ -144,7 +142,7 @@ public class BlockView extends TemplateView implements Transactional, CloseableV
             return;
         }
         blockField.setSite(site);
-        reload();
+        application.access(this::repaint);
     }
 
     /**
@@ -172,18 +170,32 @@ public class BlockView extends TemplateView implements Transactional, CloseableV
      *    If valid, it invokes {@link #buildTree()} to construct the tree representation
      *    based on the block and associated data.
      */
-    public void reload() {
-        updateTime();
+    public final void reload() {
+        application.access(() -> {
+            reloading();
+            repaint();
+        });
+    }
+
+    /**
+     * Performs the operation necessary for updating or refreshing internal
+     * states related to the BlockView instance.
+     * <p>
+     * The method is designed for subclass usage or internal logic flow,
+     * ensuring that specific elements or data related to the view can be
+     * re-initialized or recalculated. Its exact behavior is expected to be
+     * defined or overridden in subclasses or through internal calls in the
+     * containing class.</p>
+     */
+    protected void reloading() {
+    }
+
+    private void repaint() {
         if(block != null) {
             buildTree();
         }
     }
 
-    /**
-     * Updates the last update time for the block view.
-     * This method sets the `lastUpdateTime` field to the current date
-     * provided by the transaction manager of the application.
-     */
     private void updateTime() {
         lastUpdateTime = application.getTransactionManager().date(new Date());
     }
@@ -237,14 +249,26 @@ public class BlockView extends TemplateView implements Transactional, CloseableV
         if(block == null || blockId == null || !blockId.equals(this.block.getId())) {
             return;
         }
-        reload();
+        updateTime();
+        repaint();
     }
 
     private void buildTree() {
-        Id siteId = block.getSiteId();
-        List<Unit> unprocessed = new ArrayList<>(units);
-        DataSet.getSites().stream().filter(s -> s.getSite().getId().equals(siteId))
-                .forEach(s -> buildBranches(s, unprocessed));
+        if(repainting) {
+            return;
+        }
+        synchronized (lock) {
+            if(repainting) {
+                return;
+            }
+            repainting = true;
+            repaint();
+            Id siteId = block.getSiteId();
+            List<Unit> unprocessed = new ArrayList<>(units);
+            DataSet.getSites().stream().filter(s -> s.getSite().getId().equals(siteId))
+                    .forEach(s -> buildBranches(s, unprocessed));
+            repainting = false;
+        }
     }
 
     private void buildBranches(DataSet.AbstractData parent, List<Unit> unprocessed) {
@@ -265,12 +289,12 @@ public class BlockView extends TemplateView implements Transactional, CloseableV
         Unit unit = ds.getUnit();
         if(unprocessed.contains(unit)) {
             unprocessed.remove(unit);
-            paint(unit);
+            application.access(() -> paint(unit));
         }
         if(ds instanceof DataSet.LimitStatus ls) {
-            paint(ls);
+            application.access(() -> paint(ls));
         } else if(ds instanceof DataSet.AlarmStatus as) {
-            paint(as);
+            application.access(() -> paint(as));
         }
     }
 
@@ -339,6 +363,7 @@ public class BlockView extends TemplateView implements Transactional, CloseableV
     protected Component createComponentForId(String id) {
         if("block".equals(id)) {
             BlockComboField blockField = new BlockComboField();
+            blockField.setMinWidth("400px");
             blockField.addValueChangeListener(e -> setBlock(e.getValue()));
             return blockField;
         }

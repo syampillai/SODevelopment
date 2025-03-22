@@ -747,9 +747,55 @@ public class QueryBuilder<T extends StoredObject> {
 
     private static <O extends StoredObject> String condition(String not, Class<O> objectClass, String attributeName,
                                                              String condition) {
-        return (char)2 + Base64.getEncoder().encodeToString(("T.Id" + not + " IN ("
+        return encode(("T.Id" + not + " IN ("
                 + StoredObject.createSQL(ClassAttribute.get(objectClass),
-                "T." + attributeName, condition, null, true, false, 0, 0, null) + ")")
-                .getBytes(StandardCharsets.UTF_8)) + (char)3;
+                "T." + attributeName, condition, null, true, false, 0, 0, null) + ")"));
+    }
+
+    private static String encode(String s) {
+        return (char)2 + Base64.getEncoder().encodeToString(s.getBytes(StandardCharsets.UTF_8)) + (char)3;
+    }
+
+    private static <O extends StoredObject> String condition(String attributeName, String not, Class<O> objectClass,
+                                                             String condition, boolean any) {
+        return encode(("T." + attributeName + not + " IN ("
+                + StoredObject.createSQL(ClassAttribute.get(objectClass),
+                "T.Id", condition, null, !any, false, 0, 0, null) + ")"));
+    }
+
+    public static <O extends StoredObject> String getInCondition(String attributeName, Class<O> objectClass) {
+        return getInCondition(attributeName, objectClass, false);
+    }
+
+    public static <O extends StoredObject> String getInCondition(String attributeName, Class<O> objectClass, boolean any) {
+        return getInCondition(attributeName, objectClass, null, any);
+    }
+
+    public static <O extends StoredObject> String getInCondition(String attributeName, Class<O> objectClass,
+                                                                 String condition) {
+        return getInCondition(attributeName, objectClass, condition, false);
+    }
+
+    public static <O extends StoredObject> String getInCondition(String attributeName, Class<O> objectClass,
+                                                                 String condition, boolean any) {
+        return condition(attributeName, "", objectClass, condition, any);
+    }
+
+    public static <O extends StoredObject> String getNotInCondition(String attributeName, Class<O> objectClass) {
+        return getNotInCondition(attributeName, objectClass, false);
+    }
+
+    public static <O extends StoredObject> String getNotInCondition(String attributeName, Class<O> objectClass, boolean any) {
+        return getNotInCondition(attributeName, objectClass, null, any);
+    }
+
+    public static <O extends StoredObject> String getNotInCondition(String attributeName, Class<O> objectClass,
+                                                                    String condition) {
+        return getNotInCondition(attributeName, objectClass, condition, false);
+    }
+
+    public static <O extends StoredObject> String getNotInCondition(String attributeName, Class<O> objectClass,
+                                                                    String condition, boolean any) {
+        return condition(attributeName, " NOT", objectClass, condition, any);
     }
 }

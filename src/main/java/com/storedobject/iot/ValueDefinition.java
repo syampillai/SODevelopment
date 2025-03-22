@@ -18,7 +18,7 @@ public abstract class ValueDefinition<VT> extends StoredObject implements Detail
     private boolean showImage, showChart;
     private int imageX, imageY;
     private String imagePrefix = "";
-    Data data;
+    private Data data;
     private Map<String, Position> positions;
 
     public ValueDefinition() {
@@ -410,7 +410,7 @@ public abstract class ValueDefinition<VT> extends StoredObject implements Detail
         vip.setImageY(imageY);
         vip.save(t);
         addLink(t, vip);
-        DataSet.scheduleRefresh();
+        DataSet.refresh();
     }
 
     /**

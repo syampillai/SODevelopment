@@ -9,8 +9,8 @@ import com.storedobject.vaadin.View;
 
 public abstract class BlockSelector extends DataForm implements Transactional {
 
+    private final ObjectComboField<Site> siteField = new ObjectComboField<>("Site", Site.class, "Active");
     private final BlockComboField blockField = new BlockComboField("Building/Block");
-    private final ObjectComboField<Site> siteField = new ObjectComboField<>("Site", Site.class);
     private Block block;
 
     public BlockSelector(String caption) {
@@ -23,7 +23,6 @@ public abstract class BlockSelector extends DataForm implements Transactional {
 
     public BlockSelector(String caption, Block block, Site site) {
         super(caption);
-        siteField.setLoadFilter(Site::getActive);
         addField(siteField, blockField);
         siteField.addValueChangeListener(e -> {
             Site s = e.getValue();

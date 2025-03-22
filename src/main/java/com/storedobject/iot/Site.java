@@ -296,7 +296,7 @@ public final class Site extends StoredObject {
     @Override
     public void saved() throws Exception {
         super.saved();
-        DataSet.scheduleRefresh();
+        DataSet.refresh();
     }
 
     /**

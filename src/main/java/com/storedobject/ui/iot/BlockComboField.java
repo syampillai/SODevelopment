@@ -15,6 +15,7 @@ public class BlockComboField extends ObjectComboField<Block> {
 
     public BlockComboField(String label) {
         super(label, Block.class);
+        setClearButtonVisible(true);
         setFixedFilter(filter, true);
     }
 

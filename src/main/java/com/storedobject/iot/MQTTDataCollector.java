@@ -17,6 +17,9 @@ public class MQTTDataCollector extends DaemonJob {
 
     public MQTTDataCollector(Schedule schedule, MQTT mqtt) {
         super(schedule);
+        if(instance != null) {
+            instance.shutdown();
+        }
         this.mqtt = mqtt;
         instance = this;
     }

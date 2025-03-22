@@ -35,7 +35,7 @@ public final class UnitType extends StoredObject {
     @Override
     public void saved() throws Exception {
         super.saved();
-        DataSet.scheduleRefresh();
+        DataSet.refresh();
     }
 
     public void setUnitClassName(String unitClassName) {

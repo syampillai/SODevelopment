@@ -85,7 +85,7 @@ public abstract class Unit extends AbstractUnit {
     @Override
     public void saved() throws Exception {
         super.saved();
-        DataSet.scheduleRefresh();
+        DataSet.refresh();
     }
 
     public static Unit get(String name) {

@@ -68,6 +68,7 @@ public class SiteView extends ImageViewer implements Transactional, CloseableVie
                 lastUpdate,
                 gui.dashboardButton(),
                 gui.chartButton(),
+                gui.statusGridButton(),
                 gui.commandButton(),
                 gui.consumptionButton(),
                 gui.dataButton(),

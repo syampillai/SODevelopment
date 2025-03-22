@@ -141,7 +141,7 @@ public final class UnitDefinition extends StoredObject implements HasChildren {
     public void saved() throws Exception {
         super.saved();
         unitType = null;
-        DataSet.scheduleRefresh();
+        DataSet.refresh();
     }
 
     public Class<? extends Data> getDataClass() {
