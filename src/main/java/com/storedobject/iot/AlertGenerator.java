@@ -63,7 +63,7 @@ public class AlertGenerator {
         scanTree();
     }
 
-    private static void scanTree() {
+    private synchronized static void scanTree() {
         DataSet.getSites().stream().filter(sd -> sd.getSite().getActive()).forEach(AlertGenerator::scanBranches);
     }
 

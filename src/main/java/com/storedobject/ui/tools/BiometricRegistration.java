@@ -1,9 +1,6 @@
 package com.storedobject.ui.tools;
 
-import com.storedobject.core.SQLConnector;
-import com.storedobject.core.StoredObject;
-import com.storedobject.core.SystemUser;
-import com.storedobject.core.WebBiometric;
+import com.storedobject.core.*;
 import com.storedobject.ui.Application;
 import com.storedobject.ui.util.SOServlet;
 import com.storedobject.vaadin.InvisibleComponent;
@@ -26,6 +23,10 @@ public class BiometricRegistration extends Component implements InvisibleCompone
     private final Consumer<Boolean> consumer;
     private final WebBiometric biometric;
     private boolean available = false;
+
+    public BiometricRegistration() {
+        throw new LogicRedirected(new ManageBiometric(Application.get()));
+    }
 
     public BiometricRegistration(SystemUser user, Consumer<Boolean> consumer) {
         this.consumer = consumer;

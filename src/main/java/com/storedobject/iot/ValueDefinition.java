@@ -263,8 +263,9 @@ public abstract class ValueDefinition<VT> extends StoredObject implements Detail
             }
         }
         if(data == null) {
-            if (MQTTDataCollector.instance != null && MQTTDataCollector.instance.mqtt != null) {
-                data = MQTTDataCollector.instance.mqtt.getData(this, unitId);
+            MQTT mqtt = MQTT.get();
+            if (mqtt != null) {
+                data = mqtt.getData(this, unitId);
                 this.data = data;
             }
         }

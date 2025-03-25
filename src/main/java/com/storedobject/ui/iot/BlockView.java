@@ -10,6 +10,7 @@ import com.storedobject.ui.Transactional;
 import com.storedobject.vaadin.CloseableView;
 import com.storedobject.vaadin.View;
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.html.Span;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -36,6 +37,8 @@ public class BlockView extends TemplateView implements Transactional, CloseableV
     private Date lastUpdateTime;
     private boolean repainting = false;
 
+    @com.vaadin.flow.component.template.Id
+    private Span lastUpdate;
     @com.vaadin.flow.component.template.Id("block")
     private BlockComboField blockField;
 
@@ -88,7 +91,7 @@ public class BlockView extends TemplateView implements Transactional, CloseableV
     @Override
     public void execute(View lock) {
         if(refresher == null) {
-            updateTime();
+            lastUpdateTime = null;
             application.setPollInterval(this, 30000);
             refresher = this::refreshStatus;
             DataSet.register(refresher);
@@ -126,7 +129,6 @@ public class BlockView extends TemplateView implements Transactional, CloseableV
         if(isCreated()) {
             application.access(() -> paint(block));
         }
-        repaint();
     }
 
     /**
@@ -142,7 +144,6 @@ public class BlockView extends TemplateView implements Transactional, CloseableV
             return;
         }
         blockField.setSite(site);
-        application.access(this::repaint);
     }
 
     /**
@@ -161,20 +162,13 @@ public class BlockView extends TemplateView implements Transactional, CloseableV
     }
 
     /**
-     * Reloads the view by updating the last update time and rebuilding the tree structure
-     * if the associated block is not null.
-     * <br/>
-     * This method performs the following operations:
-     * 1. Updates the last update time by invoking {@link #updateTime()}.
-     * 2. Checks if the current block is not null.
-     *    If valid, it invokes {@link #buildTree()} to construct the tree representation
-     *    based on the block and associated data.
+     * Reloads the view. This is a manual call and "last update" time is not updated.
+     * <p>Note: The {@link #reloading()} method will not be invoked.</p>
      */
     public final void reload() {
-        application.access(() -> {
-            reloading();
-            repaint();
-        });
+        if(block != null) {
+            buildTree();
+        }
     }
 
     /**
@@ -188,16 +182,6 @@ public class BlockView extends TemplateView implements Transactional, CloseableV
      * containing class.</p>
      */
     protected void reloading() {
-    }
-
-    private void repaint() {
-        if(block != null) {
-            buildTree();
-        }
-    }
-
-    private void updateTime() {
-        lastUpdateTime = application.getTransactionManager().date(new Date());
     }
 
     /**
@@ -246,11 +230,14 @@ public class BlockView extends TemplateView implements Transactional, CloseableV
     }
 
     private void refreshStatus(Id blockId) {
-        if(block == null || blockId == null || !blockId.equals(this.block.getId())) {
+        lastUpdateTime = application.getTransactionManager().date(new Date());
+        if(lastUpdate != null) {
+            application.access(() -> lastUpdate.setText(getLastUpdate()));
+        }
+        if(block == null || !blockId.equals(this.block.getId())) {
             return;
         }
-        updateTime();
-        repaint();
+        reload();
     }
 
     private void buildTree() {
@@ -262,7 +249,7 @@ public class BlockView extends TemplateView implements Transactional, CloseableV
                 return;
             }
             repainting = true;
-            repaint();
+            application.access(this::reloading);
             Id siteId = block.getSiteId();
             List<Unit> unprocessed = new ArrayList<>(units);
             DataSet.getSites().stream().filter(s -> s.getSite().getId().equals(siteId))
@@ -361,12 +348,15 @@ public class BlockView extends TemplateView implements Transactional, CloseableV
      */
     @Override
     protected Component createComponentForId(String id) {
-        if("block".equals(id)) {
-            BlockComboField blockField = new BlockComboField();
-            blockField.setMinWidth("400px");
-            blockField.addValueChangeListener(e -> setBlock(e.getValue()));
-            return blockField;
-        }
-        return super.createComponentForId(id);
+        return switch (id) {
+            case "lastUpdate" -> new Span();
+            case "block" -> {
+                BlockComboField blockField = new BlockComboField();
+                blockField.setMinWidth("400px");
+                blockField.addValueChangeListener(e -> setBlock(e.getValue()));
+                yield blockField;
+            }
+            default -> super.createComponentForId(id);
+        };
     }
 }

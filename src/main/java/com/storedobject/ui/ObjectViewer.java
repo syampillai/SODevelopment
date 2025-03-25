@@ -51,12 +51,13 @@ public class ObjectViewer extends Executor implements ObjectSetter<StoredObject>
                 viewer = null;
             }
         }
+        if(caption == null || caption.isEmpty() || "_".equals(caption)) {
+            caption = StringUtility.makeLabel(object.getClass());
+        }
         if(viewer == null) {
-            viewer = ObjectEditor.create(object.getClass(), EditorAction.VIEW, caption == null ? "_" : caption);
+            viewer = ObjectEditor.create(object.getClass(), EditorAction.VIEW, caption);
         } else {
-            if(caption != null) {
-                viewer.setCaption("_".equals(caption) ? StringUtility.makeLabel(object.getClass()) : caption);
-            }
+            viewer.setCaption(caption);
         }
         viewer.viewObject(object, actionName, action);
     }

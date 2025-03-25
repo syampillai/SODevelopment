@@ -16,10 +16,7 @@ import com.storedobject.ui.iot.GUI;
 import com.storedobject.vaadin.Button;
 import com.storedobject.vaadin.View;
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.html.ListItem;
-import com.vaadin.flow.component.html.Paragraph;
-import com.vaadin.flow.component.html.UnorderedList;
+import com.vaadin.flow.component.html.*;
 import com.vaadin.flow.component.template.Id;
 
 import java.util.List;

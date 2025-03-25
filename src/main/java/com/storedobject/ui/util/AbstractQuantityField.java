@@ -9,7 +9,7 @@ import com.storedobject.vaadin.RequiredField;
 import com.storedobject.vaadin.util.HasTextValue;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.html.Span;
-import com.vaadin.flow.component.textfield.HasPrefixAndSuffix;
+import com.vaadin.flow.component.shared.HasPrefix;
 import com.vaadin.flow.component.textfield.TextField;
 
 import java.math.BigDecimal;
@@ -56,7 +56,7 @@ public class AbstractQuantityField<T extends Quantity> extends CustomTextField<T
             this.unit = new Span();
             this.unit.getStyle().set("background", "var(--lumo-error-color-10pct)").set("margin-right", "3px");
         }
-        ((HasPrefixAndSuffix)textField).setPrefixComponent(this.unit);
+        ((HasPrefix)textField).setPrefixComponent(this.unit);
     }
 
     @Override

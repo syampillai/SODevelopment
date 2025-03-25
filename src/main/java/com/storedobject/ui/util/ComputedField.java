@@ -8,7 +8,7 @@ import com.vaadin.flow.component.Focusable;
 import com.vaadin.flow.component.HasValue;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.customfield.CustomField;
-import com.vaadin.flow.component.textfield.HasPrefixAndSuffix;
+import com.vaadin.flow.component.shared.HasPrefix;
 
 import java.util.Objects;
 
@@ -20,8 +20,8 @@ public class ComputedField<T extends ComputedValue<P>, P> extends CustomField<T>
     protected ComputedField(HasValue<?, P> field, String label, T defaultValue, T initialValue) {
         super(defaultValue);
         this.field = field;
-        if(field instanceof HasPrefixAndSuffix) {
-            ((HasPrefixAndSuffix)field).setPrefixComponent(this.check);
+        if(field instanceof HasPrefix) {
+            ((HasPrefix)field).setPrefixComponent(this.check);
             add((Component)field);
         } else {
             ButtonLayout h = new ButtonLayout(check, (Component) field);

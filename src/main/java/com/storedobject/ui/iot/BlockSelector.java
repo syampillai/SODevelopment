@@ -39,6 +39,9 @@ public abstract class BlockSelector extends DataForm implements Transactional {
         if(site == null && block != null) {
             site = block.getSite();
         }
+        if(site == null) {
+            site = Site.list(Site.class).single(false);
+        }
         if(site != null) {
             siteField.setValue(site);
             setFirstFocus(blockField);
