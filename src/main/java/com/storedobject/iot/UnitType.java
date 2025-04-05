@@ -62,6 +62,10 @@ public final class UnitType extends StoredObject {
 
     @Override
     public void validateData(TransactionManager tm) throws Exception {
+        if(deleted()) {
+            super.validateData(tm);
+            return;
+        }
         unitClassName = StringUtility.pack(unitClassName);
         Class<? extends Unit> unitClass = getUnitClass();
         if(unitClass == null) {

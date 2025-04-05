@@ -5,8 +5,8 @@ import com.storedobject.common.StringList;
 import com.storedobject.common.SystemProcess;
 import com.storedobject.common.XML;
 import com.storedobject.core.*;
-import com.storedobject.ui.*;
 import com.storedobject.ui.DataGrid;
+import com.storedobject.ui.*;
 import com.storedobject.vaadin.*;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.textfield.TextArea;
@@ -16,9 +16,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.Reader;
-import java.sql.Date;
 import java.sql.Timestamp;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 
 public class SystemLogViewer extends View implements Transactional, CloseableView {
@@ -126,16 +124,12 @@ public class SystemLogViewer extends View implements Transactional, CloseableVie
 
     private void loadServerLog() {
         try {
-            String tail = "/usr/bin/tail -" + lines.getValue() + " ";
-            process.setCommand(tail);
-            process.addCommand(logServerFile());
+            process.setCommand("/usr/bin/tail");
+            process.addCommand("-" + lines.getValue());
+            process.addCommand(ApplicationServer.getGlobalProperty("application.log",
+                    "/home/" + System.getProperty("user.name") + "/soengine/hosts/soengine.log"));
             process.execute();
             String error = process.getError();
-            if(error != null && !error.isEmpty()) {
-                process.setCommand(tail);
-                process.addCommand("/var/log/tomcat/catalina.out");
-                process.execute();
-            }
             if(process.getExitValue() != 0) {
                 warning(error);
                 hideLogs();
@@ -146,20 +140,6 @@ public class SystemLogViewer extends View implements Transactional, CloseableVie
             return;
         }
         logDump.setValue(process.getOutput());
-    }
-
-    private static String logServerFile() {
-        String file = logServerFile(DateUtility.today());
-        if(new File(file).exists()) {
-            return file;
-        }
-        return logServerFile(DateUtility.yesterday());
-    }
-
-    private static String logServerFile(Date logDate) {
-        String date = new SimpleDateFormat("yyyy-MM-dd").format(logDate);
-        String file = ApplicationServer.getGlobalProperty("application.log.server", "/var/log/tomcat/catalina.$DATE.log");
-        return file.replace("$DATE", date).replace("${DATE}", date);
     }
 
     private void loadUserLog() {
@@ -332,7 +312,7 @@ public class SystemLogViewer extends View implements Transactional, CloseableVie
         public void acceptNodeData(ArrayList<XMLNodeData> nodeData) {
             int count = lines.getValue();
             while (nodeData.size() > count) {
-                nodeData.remove(0);
+                nodeData.removeFirst();
             }
             if(nodeData.size() > 450) {
                 int ps = (nodeData.size() + 50) / 10;

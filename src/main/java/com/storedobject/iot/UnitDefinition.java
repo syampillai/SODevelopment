@@ -121,6 +121,10 @@ public final class UnitDefinition extends StoredObject implements HasChildren {
 
     @Override
     public void validateData(TransactionManager tm) throws Exception {
+        if(deleted()) {
+            super.validateData(tm);
+            return;
+        }
         if(StringUtility.isWhite(caption)) {
             throw new Invalid_Value("Caption");
         }
@@ -222,6 +226,9 @@ public final class UnitDefinition extends StoredObject implements HasChildren {
     }
 
     public static void generateLimitsAndAlarms(TransactionManager tm) throws Exception {
+        for(SuperUnit su: list(SuperUnit.class, true)) {
+            UnitType.create(tm, su.getClass()); // Make sure that respective Unit Types are created for all super units
+        }
         List<? extends Class<Data>> iotClasses = ClassAttribute.get(Data.class).listChildClasses(true);
         Class<? extends Unit> uClass;
         int methodAttr;
@@ -241,7 +248,8 @@ public final class UnitDefinition extends StoredObject implements HasChildren {
                     continue;
                 }
                 uClass = Data.getUnitClass(iotClass);
-                if(uClass == null) {
+                if(uClass == null || SuperUnit.class.isAssignableFrom(uClass)) {
+                    // No data and unit definitions for Super Units.
                     continue;
                 }
                 UnitType.create(tm, uClass); // Make sure that the Unit Type is created

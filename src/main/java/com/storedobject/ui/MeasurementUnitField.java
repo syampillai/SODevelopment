@@ -70,7 +70,7 @@ public class MeasurementUnitField extends CustomField<MeasurementUnit> {
                 classes.focus();
             } else {
                 units.setItems(us);
-                units.setValue(us.get(0));
+                units.setValue(us.getFirst());
             }
         });
         if(label != null) {

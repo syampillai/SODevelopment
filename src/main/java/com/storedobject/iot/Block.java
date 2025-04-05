@@ -611,6 +611,7 @@ public final class Block extends AbstractUnit {
         Date siteDate = dataPeriod.siteDate();
         List<Consumption> consumptionList = new ArrayList<>();
         List<AbstractUnit> units = list(Unit.class, "Block=" + getId() + " AND Active", true)
+                .filter(u -> !(u instanceof SuperUnit)) // Super-units are skipped first
                 .toList(u -> u);
         if(units.isEmpty()) {
             return 0;
@@ -620,6 +621,8 @@ public final class Block extends AbstractUnit {
             list(UnitItem.class, "Unit=" + units.get(i).getId() + " AND Active", true)
                     .forEach(units::add);
         }
+        list(SuperUnit.class, "Block=" + getId() + " AND Active", true)
+                .forEach(units::add); // Super-units are added at the bottom of the list
         Id id = getId();
         HourlyConsumption hc, hcB = resource.createHourlyConsumption(id, siteDate);
         DailyConsumption dc, dcB = resource.createDailyConsumption(id, siteDate);
@@ -629,7 +632,26 @@ public final class Block extends AbstractUnit {
         Double consumption;
         double addC;
         for(AbstractUnit unit: units) {
-            consumption = unit.consumption(resource.getCode(), dataPeriod.from(), dataPeriod.to());
+            if(unit instanceof SuperUnit su) {
+                List<Unit> children = su.childrenAll();
+                if (children.isEmpty()) {
+                    continue;
+                }
+                consumption = null;
+                for (Unit child: children) {
+                    for (Consumption c: consumptionList) {
+                        if(c.getItemId().equals(child.getId())) {
+                            if(consumption == null) {
+                                consumption = c.getConsumption();
+                            } else {
+                                consumption += c.getConsumption();
+                            }
+                        }
+                    }
+                }
+            } else {
+                consumption = unit.consumption(resource.getCode(), dataPeriod.from(), dataPeriod.to());
+            }
             if(consumption == null) {
                 continue;
             }
@@ -650,7 +672,10 @@ public final class Block extends AbstractUnit {
             yc = resource.createYearlyConsumption(id, siteDate);
             yc.addConsumption(addC);
             consumptionList.add(yc);
-            if(unit instanceof UnitItem ui && !ui.getIndependent()) {
+            if(unit instanceof UnitItem ui && !ui.getIndependent()) { // Dependent unit-type skipped for the block
+                continue;
+            }
+            if(unit instanceof SuperUnit) { // Super-unit consumption should not be added to the block consumption
                 continue;
             }
             hcB.addConsumption(addC);

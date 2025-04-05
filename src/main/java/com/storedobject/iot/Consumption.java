@@ -221,8 +221,13 @@ public abstract class Consumption extends StoredObject implements DBTransaction.
      */
     @Override
     public void validateData(TransactionManager tm) throws Exception {
-        itemId = tm.checkTypeAny(this, itemId, AbstractUnit.class, false);
-        resourceId = tm.checkType(this, resourceId, Resource.class, false);
+        if(!deleted()) {
+            itemId = tm.checkTypeAny(this, itemId, AbstractUnit.class, false);
+            if (getItem() instanceof SuperUnit) {
+                throw new Invalid_State("Item can not be a super-unit");
+            }
+            resourceId = tm.checkType(this, resourceId, Resource.class, false);
+        }
         super.validateData(tm);
     }
 

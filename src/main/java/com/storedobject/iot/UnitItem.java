@@ -51,6 +51,7 @@ public abstract class UnitItem extends AbstractUnit {
         this.independent = independent;
     }
 
+    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     @Column(order = 250)
     public boolean getIndependent() {
         return independent;

@@ -352,10 +352,18 @@ public abstract class Unit extends AbstractUnit {
     }
 
     private <T extends Statistics> ObjectIterator<T> statistics(String name, Class<T> cClass, String condition) {
-        return list(cClass, condition + " AND Unit=" + getId() + " AND Name='" + name + "'");
+        Id id = unitId4Statistics(name);
+        if(Id.isNull(id)) {
+            return ObjectIterator.create();
+        }
+        return list(cClass, condition + " AND Unit=" + id + " AND Name='" + name + "'");
     }
 
-    public List<YearlyStatistics> listYearlyStatistics(String name, int yearFrom, int yearTo) {
+    Id unitId4Statistics(String name) {
+        return getId();
+    }
+
+    public final List<YearlyStatistics> listYearlyStatistics(String name, int yearFrom, int yearTo) {
         String c;
         if(yearFrom == yearTo) {
             c = "Year=" + yearFrom;
@@ -365,11 +373,11 @@ public abstract class Unit extends AbstractUnit {
         return listStatistics(name, YearlyStatistics.class, c);
     }
 
-    public YearlyStatistics getYearlyStatistics(String name, int year) {
+    public final YearlyStatistics getYearlyStatistics(String name, int year) {
         return getStatistics(name, YearlyStatistics.class, "Year=" + year);
     }
 
-    public <D extends java.util.Date> YearlyStatistics getYearlyStatistics(String name, D date) {
+    public final <D extends java.util.Date> YearlyStatistics getYearlyStatistics(String name, D date) {
         return getYearlyStatistics(name, DateUtility.getYear(date));
     }
 
@@ -386,7 +394,7 @@ public abstract class Unit extends AbstractUnit {
         return c;
     }
 
-    public List<MonthlyStatistics> listMonthlyStatistics(String name, int year, int monthFrom, int monthTo) {
+    public final List<MonthlyStatistics> listMonthlyStatistics(String name, int year, int monthFrom, int monthTo) {
         if(monthFrom == monthTo) {
             return listStatistics(name, MonthlyStatistics.class, "Year=" + year + " AND Month=" + monthFrom);
         }
@@ -399,11 +407,11 @@ public abstract class Unit extends AbstractUnit {
         return con;
     }
 
-    public MonthlyStatistics getMonthlyStatistics(String name, int year, int month) {
+    public final MonthlyStatistics getMonthlyStatistics(String name, int year, int month) {
         return getStatistics(name, MonthlyStatistics.class, "Year=" + year + " AND Month=" + month);
     }
 
-    public <D extends java.util.Date> MonthlyStatistics getMonthlyStatistics(String name, D date) {
+    public final <D extends java.util.Date> MonthlyStatistics getMonthlyStatistics(String name, D date) {
         return getMonthlyStatistics(name, DateUtility.getYear(date), DateUtility.getMonth(date));
     }
 
@@ -421,7 +429,7 @@ public abstract class Unit extends AbstractUnit {
         return c;
     }
 
-    public List<WeeklyStatistics> listWeeklyStatistics(String name, int year, int weekFrom, int weekTo) {
+    public final List<WeeklyStatistics> listWeeklyStatistics(String name, int year, int weekFrom, int weekTo) {
         if(weekFrom == weekTo) {
             return listStatistics(name, WeeklyStatistics.class, "Year=" + year + " AND Week=" + weekFrom);
         }
@@ -434,11 +442,11 @@ public abstract class Unit extends AbstractUnit {
         return con;
     }
 
-    public WeeklyStatistics getWeeklyStatistics(String name, int year, int week) {
+    public final WeeklyStatistics getWeeklyStatistics(String name, int year, int week) {
         return getStatistics(name, WeeklyStatistics.class, "Year=" + year + " AND Week=" + week);
     }
 
-    public <D extends java.util.Date> WeeklyStatistics getWeeklyStatistics(String name, D date) {
+    public final <D extends java.util.Date> WeeklyStatistics getWeeklyStatistics(String name, D date) {
         return getWeeklyStatistics(name, DateUtility.getYear(date), DateUtility.getWeekOfYear(date));
     }
 
@@ -456,7 +464,7 @@ public abstract class Unit extends AbstractUnit {
         return c;
     }
 
-    public List<HourlyStatistics> listHourlyStatistics(String name, int year, int hourFrom, int hourTo) {
+    public final List<HourlyStatistics> listHourlyStatistics(String name, int year, int hourFrom, int hourTo) {
         if(hourFrom == hourTo) {
             return listStatistics(name, HourlyStatistics.class, "Year=" + year + " AND Hour=" + hourFrom);
         }
@@ -469,11 +477,11 @@ public abstract class Unit extends AbstractUnit {
         return con;
     }
 
-    public HourlyStatistics getHourlyStatistics(String name, int year, int hour) {
+    public final HourlyStatistics getHourlyStatistics(String name, int year, int hour) {
         return getStatistics(name, HourlyStatistics.class, "Year=" + year + " AND Hour=" + hour);
     }
 
-    public <D extends java.util.Date> HourlyStatistics getHourlyStatistics(String name, D date) {
+    public final <D extends java.util.Date> HourlyStatistics getHourlyStatistics(String name, D date) {
         return getHourlyStatistics(name, DateUtility.getYear(date), DateUtility.getHourOfYear(date));
     }
 
@@ -491,7 +499,7 @@ public abstract class Unit extends AbstractUnit {
         return c;
     }
 
-    public List<DailyStatistics> listDailyStatistics(String name, int year, int dayFrom, int dayTo) {
+    public final List<DailyStatistics> listDailyStatistics(String name, int year, int dayFrom, int dayTo) {
         if(dayFrom == dayTo) {
             return listStatistics(name, DailyStatistics.class, "Year=" + year + " AND Day=" + dayFrom);
         }
@@ -504,11 +512,11 @@ public abstract class Unit extends AbstractUnit {
         return con;
     }
 
-    public DailyStatistics getDailyStatistics(String name, int year, int day) {
+    public final DailyStatistics getDailyStatistics(String name, int year, int day) {
         return getStatistics(name, DailyStatistics.class, "Year=" + year + " AND Day=" + day);
     }
 
-    public <D extends java.util.Date> DailyStatistics getDailyStatistics(String name, D date) {
+    public final <D extends java.util.Date> DailyStatistics getDailyStatistics(String name, D date) {
         return getDailyStatistics(name, DateUtility.getYear(date), DateUtility.getDayOfYear(date));
     }
 
@@ -526,7 +534,7 @@ public abstract class Unit extends AbstractUnit {
         return c;
     }
 
-    public HourlyStatistics getHourlyStatistics(String name) {
+    public final HourlyStatistics getHourlyStatistics(String name) {
         Timestamp date = getSite().date(DateUtility.now());
         if(hourlyStatistics == null) {
             hourlyStatistics = new HashMap<>();
@@ -543,7 +551,7 @@ public abstract class Unit extends AbstractUnit {
         return hs;
     }
 
-    public DailyStatistics getDailyStatistics(String name) {
+    public final DailyStatistics getDailyStatistics(String name) {
         Timestamp date = getSite().date(DateUtility.now());
         if(dailyStatistics == null) {
             dailyStatistics = new HashMap<>();
@@ -560,7 +568,7 @@ public abstract class Unit extends AbstractUnit {
         return ds;
     }
 
-    public WeeklyStatistics getWeeklyStatistics(String name) {
+    public final WeeklyStatistics getWeeklyStatistics(String name) {
         Timestamp date = getSite().date(DateUtility.now());
         if(weeklyStatistics == null) {
             weeklyStatistics = new HashMap<>();
@@ -577,7 +585,7 @@ public abstract class Unit extends AbstractUnit {
         return ws;
     }
 
-    public MonthlyStatistics getMonthlyStatistics(String name) {
+    public final MonthlyStatistics getMonthlyStatistics(String name) {
         Timestamp date = getSite().date(DateUtility.now());
         if(monthlyStatistics == null) {
             monthlyStatistics = new HashMap<>();
@@ -594,7 +602,7 @@ public abstract class Unit extends AbstractUnit {
         return ms;
     }
 
-    public YearlyStatistics getYearlyStatistics(String name) {
+    public final YearlyStatistics getYearlyStatistics(String name) {
         Timestamp date = getSite().date(DateUtility.now());
         if(yearlyStatistics == null) {
             yearlyStatistics = new HashMap<>();
@@ -611,7 +619,7 @@ public abstract class Unit extends AbstractUnit {
         return ys;
     }
 
-    void resetStatistics() {
+    final void resetStatistics() {
         hourlyStatistics = null;
         dailyStatistics = null;
         weeklyStatistics = null;

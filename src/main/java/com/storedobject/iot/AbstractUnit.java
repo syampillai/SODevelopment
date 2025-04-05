@@ -184,7 +184,7 @@ public abstract class AbstractUnit extends Name {
      * @param yearTo the ending year of the range (inclusive)
      * @return a list of {@code YearlyConsumption} objects representing the yearly consumption data for the specified resource
      */
-    public List<YearlyConsumption> listYearlyConsumption(Resource resource, int yearFrom, int yearTo) {
+    public final List<YearlyConsumption> listYearlyConsumption(Resource resource, int yearFrom, int yearTo) {
         return resource.listYearlyConsumption(getId(), yearFrom, yearTo);
     }
 
@@ -196,7 +196,7 @@ public abstract class AbstractUnit extends Name {
      * @param year the year for which the consumption is to be calculated
      * @return the {@code YearlyConsumption} object representing the aggregated consumption for the specified resource and year
      */
-    public YearlyConsumption getYearlyConsumption(Resource resource, int year) {
+    public final YearlyConsumption getYearlyConsumption(Resource resource, int year) {
         return getConsumption(resource, YearlyConsumption.class, "Year=" + year);
     }
 
@@ -208,7 +208,7 @@ public abstract class AbstractUnit extends Name {
      * @param date The date used to determine the year for retrieving the yearly consumption.
      * @return A {@link YearlyConsumption} object representing the resource's consumption for the determined year.
      */
-    public <D extends java.util.Date> YearlyConsumption getYearlyConsumption(Resource resource, D date) {
+    public final <D extends java.util.Date> YearlyConsumption getYearlyConsumption(Resource resource, D date) {
         return getYearlyConsumption(resource, DateUtility.getYear(date));
     }
 
@@ -243,7 +243,7 @@ public abstract class AbstractUnit extends Name {
      * @param monthTo the ending month of the time range (inclusive)
      * @return a list of {@code MonthlyConsumption} objects corresponding to the specified resource and time range
      */
-    public List<MonthlyConsumption> listMonthlyConsumption(Resource resource, int year, int monthFrom, int monthTo) {
+    public final List<MonthlyConsumption> listMonthlyConsumption(Resource resource, int year, int monthFrom, int monthTo) {
         return resource.listMonthlyConsumption(getId(), year, monthFrom, monthTo);
     }
 
@@ -256,7 +256,7 @@ public abstract class AbstractUnit extends Name {
      * @return a {@code MonthlyConsumption} object representing the consumption for the specified resource,
      *         year, and month, or {@code null} if no data is available
      */
-    public MonthlyConsumption getMonthlyConsumption(Resource resource, int year, int month) {
+    public final MonthlyConsumption getMonthlyConsumption(Resource resource, int year, int month) {
         return getConsumption(resource, MonthlyConsumption.class, "Year=" + year + " AND Month=" + month);
     }
 
@@ -268,7 +268,7 @@ public abstract class AbstractUnit extends Name {
      * @param <D> a type that extends {@link java.util.Date}, representing the date parameter
      * @return the {@code MonthlyConsumption} object for the specified resource and date
      */
-    public <D extends java.util.Date> MonthlyConsumption getMonthlyConsumption(Resource resource, D date) {
+    public final <D extends java.util.Date> MonthlyConsumption getMonthlyConsumption(Resource resource, D date) {
         return getMonthlyConsumption(resource, DateUtility.getYear(date), DateUtility.getMonth(date));
     }
 
@@ -306,7 +306,7 @@ public abstract class AbstractUnit extends Name {
      * @return a list of WeeklyConsumption objects representing the consumption data for the given resource
      *         within the specified year and week range
      */
-    public List<WeeklyConsumption> listWeeklyConsumption(Resource resource, int year, int weekFrom, int weekTo) {
+    public final List<WeeklyConsumption> listWeeklyConsumption(Resource resource, int year, int weekFrom, int weekTo) {
         return resource.listWeeklyConsumption(getId(), year, weekFrom, weekTo);
     }
 
@@ -318,7 +318,7 @@ public abstract class AbstractUnit extends Name {
      * @param week the week of the specified year for which the consumption is calculated
      * @return the {@code WeeklyConsumption} object containing the data for the specified resource, year, and week
      */
-    public WeeklyConsumption getWeeklyConsumption(Resource resource, int year, int week) {
+    public final WeeklyConsumption getWeeklyConsumption(Resource resource, int year, int week) {
         return getConsumption(resource, WeeklyConsumption.class, "Year=" + year + " AND Week=" + week);
     }
 
@@ -333,7 +333,7 @@ public abstract class AbstractUnit extends Name {
      * @param <D>      a generic type extending {@link java.util.Date}, representing the date parameter type
      * @return the {@link WeeklyConsumption} object containing the resource's weekly consumption data
      */
-    public <D extends java.util.Date> WeeklyConsumption getWeeklyConsumption(Resource resource, D date) {
+    public final <D extends java.util.Date> WeeklyConsumption getWeeklyConsumption(Resource resource, D date) {
         return getWeeklyConsumption(resource, DateUtility.getYear(date), DateUtility.getWeekOfYear(date));
     }
 
@@ -369,7 +369,7 @@ public abstract class AbstractUnit extends Name {
      * @param hourTo the ending hour (inclusive) of the time interval within the year
      * @return a list of {@code HourlyConsumption} objects representing the consumption data for the specified resource and time range
      */
-    public List<HourlyConsumption> listHourlyConsumption(Resource resource, int year, int hourFrom, int hourTo) {
+    public final List<HourlyConsumption> listHourlyConsumption(Resource resource, int year, int hourFrom, int hourTo) {
         return resource.listHourlyConsumption(getId(), year, hourFrom, hourTo);
     }
 
@@ -381,7 +381,7 @@ public abstract class AbstractUnit extends Name {
      * @param hour the specific hour within the year for which the consumption is retrieved
      * @return the {@code HourlyConsumption} object containing the consumption data for the specified parameters
      */
-    public HourlyConsumption getHourlyConsumption(Resource resource, int year, int hour) {
+    public final HourlyConsumption getHourlyConsumption(Resource resource, int year, int hour) {
         return getConsumption(resource, HourlyConsumption.class, "Year=" + year + " AND Hour=" + hour);
     }
 
@@ -395,7 +395,7 @@ public abstract class AbstractUnit extends Name {
      * @param <D> a subclass of {@link java.util.Date} representing the date type
      * @return an instance of {@link HourlyConsumption} representing the hourly consumption for the specified resource and date
      */
-    public <D extends java.util.Date> HourlyConsumption getHourlyConsumption(Resource resource, D date) {
+    public final <D extends java.util.Date> HourlyConsumption getHourlyConsumption(Resource resource, D date) {
         return getHourlyConsumption(resource, DateUtility.getYear(date), DateUtility.getHourOfYear(date));
     }
 
@@ -431,7 +431,7 @@ public abstract class AbstractUnit extends Name {
      * @param dayTo the ending day (inclusive) of the time range, as a day-of-year value
      * @return a list of {@code DailyConsumption} objects representing the daily consumption for the specified resource and time range
      */
-    public List<DailyConsumption> listDailyConsumption(Resource resource, int year, int dayFrom, int dayTo) {
+    public final List<DailyConsumption> listDailyConsumption(Resource resource, int year, int dayFrom, int dayTo) {
         return resource.listDailyConsumption(getId(), year, dayFrom, dayTo);
     }
 
@@ -444,7 +444,7 @@ public abstract class AbstractUnit extends Name {
      * @return a {@code DailyConsumption} object representing the consumption data for the specified resource
      *         on the given day, or {@code null} if no data is available
      */
-    public DailyConsumption getDailyConsumption(Resource resource, int year, int day) {
+    public final DailyConsumption getDailyConsumption(Resource resource, int year, int day) {
         return getConsumption(resource, DailyConsumption.class, "Year=" + year + " AND Day=" + day);
     }
 
@@ -458,7 +458,7 @@ public abstract class AbstractUnit extends Name {
      * @param <D> the date type, which must be a subclass of {@link java.util.Date}
      * @return the {@link DailyConsumption} object representing the consumption data for the given resource and date
      */
-    public <D extends java.util.Date> DailyConsumption getDailyConsumption(Resource resource, D date) {
+    public final <D extends java.util.Date> DailyConsumption getDailyConsumption(Resource resource, D date) {
         return getDailyConsumption(resource, DateUtility.getYear(date), DateUtility.getDayOfYear(date));
     }
 
@@ -497,7 +497,7 @@ public abstract class AbstractUnit extends Name {
      * @return the {@code HourlyConsumption} object representing the resource's consumption
      *         for the hour, either fetched or newly created
      */
-    public HourlyConsumption getHourlyConsumption(Resource resource) {
+    public final HourlyConsumption getHourlyConsumption(Resource resource) {
         Timestamp date = getSite().date(DateUtility.now());
         if(hourlyConsumption == null) {
             hourlyConsumption = new HashMap<>();
@@ -521,7 +521,7 @@ public abstract class AbstractUnit extends Name {
      * @param resource the resource for which the daily consumption information is to be retrieved.
      * @return the {@code DailyConsumption} instance associated with the specified resource.
      */
-    public DailyConsumption getDailyConsumption(Resource resource) {
+    public final DailyConsumption getDailyConsumption(Resource resource) {
         Timestamp date = getSite().date(DateUtility.now());
         if(dailyConsumption == null) {
             dailyConsumption = new HashMap<>();
@@ -548,7 +548,7 @@ public abstract class AbstractUnit extends Name {
      * @return the {@link WeeklyConsumption} instance representing the weekly consumption
      *         for the specified resource
      */
-    public WeeklyConsumption getWeeklyConsumption(Resource resource) {
+    public final WeeklyConsumption getWeeklyConsumption(Resource resource) {
         Timestamp date = getSite().date(DateUtility.now());
         if(weeklyConsumption == null) {
             weeklyConsumption = new HashMap<>();
@@ -573,7 +573,7 @@ public abstract class AbstractUnit extends Name {
      * @param resource the resource for which monthly consumption data is to be retrieved.
      * @return a {@code MonthlyConsumption} object representing the consumption details of the resource.
      */
-    public MonthlyConsumption getMonthlyConsumption(Resource resource) {
+    public final MonthlyConsumption getMonthlyConsumption(Resource resource) {
         Timestamp date = getSite().date(DateUtility.now());
         if(monthlyConsumption == null) {
             monthlyConsumption = new HashMap<>();
@@ -598,7 +598,7 @@ public abstract class AbstractUnit extends Name {
      * @param resource the resource for which to retrieve the yearly consumption data
      * @return the {@link YearlyConsumption} object representing the consumption details of the resource for the relevant year
      */
-    public YearlyConsumption getYearlyConsumption(Resource resource) {
+    public final YearlyConsumption getYearlyConsumption(Resource resource) {
         Timestamp date = getSite().date(DateUtility.now());
         if(yearlyConsumption == null) {
             yearlyConsumption = new HashMap<>();

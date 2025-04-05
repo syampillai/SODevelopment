@@ -8,7 +8,6 @@ import com.storedobject.oauth.OAuth;
 import com.storedobject.ui.Application;
 import com.storedobject.ui.MediaCSS;
 import com.vaadin.flow.server.VaadinServlet;
-
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.MultipartConfig;
@@ -20,6 +19,8 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.*;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 @WebServlet(urlPatterns = "/*", name = "SO Application", asyncSupported = true, loadOnStartup = 0, initParams = {
     @WebInitParam(name = "closeIdleSessions", value = "true")
@@ -49,6 +50,7 @@ public class SOServlet extends VaadinServlet {
     @Override
     public void init() throws ServletException {
         super.init();
+        Logger.getLogger("org.atmosphere").setLevel(Level.WARNING);
         ServletContext context = getServletContext();
         folder = context.getRealPath("/");
         String link = context.getContextPath();
@@ -57,7 +59,7 @@ public class SOServlet extends VaadinServlet {
         } else {
             link = null;
         }
-        ApplicationServer.initialize(getServletConfig().getInitParameter("application.properties"), link);
+        ApplicationServer.initialize(getServletContext().getInitParameter("application.properties"), link);
         if(headerKey == null) {
             headerKey = ApplicationServer.getGlobalProperty("application.request.header.key", "");
         }

@@ -259,6 +259,9 @@ public abstract class Statistics extends StoredObject implements DBTransaction.N
             throw new Invalid_Value("Name");
         }
         unitId = tm.checkTypeAny(this, unitId, AbstractUnit.class, false);
+        if(!deleted() && getUnit() instanceof SuperUnit) {
+            throw new Invalid_State("Unit can not be a super-unit");
+        }
         super.validateData(tm);
     }
 

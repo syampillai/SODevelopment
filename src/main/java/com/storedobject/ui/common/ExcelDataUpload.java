@@ -215,7 +215,7 @@ public class ExcelDataUpload extends UploadProcessorView implements Transactiona
 
     /**
      * Get the Excel row number for the given data row.
-     * (Used for locating the some specific cell for debugging/displaying).
+     * (Used for locating some specific cell for debugging/displaying).
      *
      * @param dataRow Data row index.
      * @return Excel's row number.
@@ -226,7 +226,7 @@ public class ExcelDataUpload extends UploadProcessorView implements Transactiona
 
     /**
      * Get the column name of the Excel cell address for the given data row.
-     * (Used for locating the some specific cell for debugging/displaying).
+     * (Used for locating some specific cell for debugging/displaying).
      *
      * @param columnIndex Data column index.
      * @return Column name of the Excel cell address.
@@ -238,8 +238,8 @@ public class ExcelDataUpload extends UploadProcessorView implements Transactiona
     }
 
     /**
-     * Get the name of the excel cell address for the given data row.
-     * (Used for locating the some specific cell for debugging/displaying).
+     * Get the name of the Excel cell address for the given data row.
+     * (Used for locating some specific cell for debugging/displaying).
      *
      * @param dataRow Data row index.
      * @param columnIndex Data column index.
@@ -252,7 +252,7 @@ public class ExcelDataUpload extends UploadProcessorView implements Transactiona
     }
 
     /**
-     * Check whether the given row is a main data row or not. By default every data row is considered as
+     * Check whether the given row is a main data row or not. By default, every data row is considered as
      * main data row. However, an extended class can override this.
      *
      * @param row Row number.
