@@ -95,8 +95,16 @@ public abstract class SuperUnit extends Unit implements HasChildren {
         return allChildren;
     }
 
+    public int getTotalChildCount() {
+        return listImmediateChildren().size();
+    }
+
     public List<Unit> listImmediateChildren() {
         return listLinks(Unit.class, true).toList();
+    }
+
+    public int getImmediateChildCount() {
+        return listImmediateChildren().size();
     }
 
     @Override

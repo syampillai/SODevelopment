@@ -172,6 +172,12 @@ public class SerialPattern extends StoredObject {
             int y1 = DateUtility.getYear(systemEntity.getStartOfFinancialYear(date)),
                     y2 = DateUtility.getYear(systemEntity.getEndOfFinancialYear(date));
             String s;
+            pattern = stuff(pattern, "sfy4", String.valueOf(y1));
+            pattern = stuff(pattern, "sfy2", String.valueOf(y1).substring(2));
+            pattern = stuff(pattern, "sfy", String.valueOf(y1).substring(2));
+            pattern = stuff(pattern, "efy4", String.valueOf(y2));
+            pattern = stuff(pattern, "efy2", String.valueOf(y2).substring(2));
+            pattern = stuff(pattern, "efy", String.valueOf(y2).substring(2));
             if(y1 == y2) {
                 s = (String.valueOf(y2)).substring(2);
                 pattern = stuff(pattern, "fy4", s);

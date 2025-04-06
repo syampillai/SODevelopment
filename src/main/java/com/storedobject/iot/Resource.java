@@ -4,12 +4,16 @@ import com.storedobject.core.*;
 import com.storedobject.core.annotation.*;
 
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public final class Resource extends Name {
 
+    private static final Map<Id, Resource> resources = new HashMap<>();
     private int code; // 1: Electricity, 2: Water
     private String measurementUnit;
+    private boolean utilization;
 
     public Resource() {
     }
@@ -17,6 +21,7 @@ public final class Resource extends Name {
     public static void columns(Columns columns) {
         columns.add("Code", "int");
         columns.add("MeasurementUnit", "text");
+        columns.add("Utilization", "boolean");
     }
 
     public static void indices(Indices indices) {
@@ -59,6 +64,15 @@ public final class Resource extends Name {
     @Column(order = 300)
     public String getMeasurementUnit() {
         return measurementUnit;
+    }
+
+    public void setUtilization(boolean utilization) {
+        this.utilization = utilization;
+    }
+
+    @Column(order = 400)
+    public boolean getUtilization() {
+        return utilization;
     }
 
     @Override
@@ -251,5 +265,21 @@ public final class Resource extends Name {
             c.makeVirtual();
         }
         return c;
+    }
+
+    @Override
+    public void saved() throws Exception {
+        resources.remove(getId());
+    }
+
+    public static Resource getFor(Id id) {
+        Resource r = resources.get(id);
+        if(r == null) {
+            r = get(Resource.class, id);
+            if(r != null) {
+                resources.put(id, r);
+            }
+        }
+        return r;
     }
 }

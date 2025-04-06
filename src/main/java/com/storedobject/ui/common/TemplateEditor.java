@@ -1,13 +1,11 @@
 package com.storedobject.ui.common;
 
 import com.storedobject.core.StringUtility;
-import com.storedobject.ui.TemplateComponent;
 import com.storedobject.ui.TemplateView;
 import com.storedobject.ui.UploadProcessorView;
 import com.storedobject.vaadin.Button;
 import com.storedobject.vaadin.CloseableView;
 import com.storedobject.vaadin.TextArea;
-import com.storedobject.vaadin.View;
 import com.vaadin.flow.component.HasValue;
 
 import java.io.InputStream;
@@ -17,21 +15,20 @@ public class TemplateEditor extends TextContentEditor {
 
     private final Button loadHTML = new Button("Paste HTML File", "", e -> loadHTML()),
             loadCSS = new Button("Paste CSS File", "", e -> loadHCSS()),
-            runAsView = new Button("Test as View", "", e -> runAsView()),
-            runAsComponent = new Button("Test as Component", "", e -> runAsComponent());
+            testView = new Button("Test", "", e -> test());
     private TextArea content;
 
     @Override
     protected void addExtraButtons() {
         if(getObject() != null) {
-            buttonPanel.add(runAsView, runAsComponent);
+            buttonPanel.add(testView);
         }
     }
 
     @Override
     protected void addExtraEditingButtons() {
         if(content != null) {
-            buttonPanel.add(loadHTML, loadCSS, runAsView, runAsComponent);
+            buttonPanel.add(loadHTML, loadCSS, testView);
         }
     }
 
@@ -43,12 +40,8 @@ public class TemplateEditor extends TextContentEditor {
         super.customizeField(fieldName, field);
     }
 
-    private void runAsView() {
-        new RunAsView(content.getValue()).execute(this);
-    }
-
-    private void runAsComponent() {
-        new RunAsComponent(content.getValue()).execute(this);
+    private void test() {
+        new Test(content.getValue()).execute(this);
     }
 
     private void loadHTML() {
@@ -112,19 +105,11 @@ public class TemplateEditor extends TextContentEditor {
         }
     }
 
-    private static class RunAsView extends TemplateView implements CloseableView {
+    private static class Test extends TemplateView implements CloseableView {
 
-        RunAsView(String content) {
+        Test(String content) {
             super(() -> content);
-            setCaption("Test as View");
-        }
-    }
-
-    private static class RunAsComponent extends View implements CloseableView {
-
-        public RunAsComponent(String content) {
-            super("Test as Component");
-            setComponent(new TemplateComponent(content));
+            setCaption("Template Test");
         }
     }
 }
