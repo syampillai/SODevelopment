@@ -426,38 +426,18 @@ public final class Block extends AbstractUnit {
         super.validateData(tm);
     }
 
-    /**
-     * Retrieves the default image name based on the associated site and its blocks.
-     * If a block with a non-blank image name is found, that value is returned immediately.
-     * Otherwise, it attempts to find a unit associated with the block and derives the name
-     * from the class name of the unit as a fallback. Returns an empty string if no valid
-     * name is determined.
-     *
-     * @return The default image name, derived either from a block's imageName property or
-     *         a unit's class name. Returns an empty string if no suitable name is found.
-     */
     private String defaultImageName() {
         Site site = getSite();
         if(site == null) {
             return "";
         }
-        String name = "";
-        try (ObjectIterator<Block> blocks = list(Block.class, "Site=" + site.getId())) {
-            for(Block block: blocks) {
-                if (block.imageName != null && !block.imageName.isBlank()) {
-                    return block.imageName;
-                }
-                if (!name.isEmpty()) {
-                    continue;
-                }
-                Unit unit = list(Unit.class, "Block=" + getId()).findFirst();
-                if (unit != null) {
-                    name = unit.getClass().getName();
-                    name = name.substring(name.lastIndexOf('.') + 1);
-                }
-            }
+        Block block = list(Block.class, "Site=" + site.getId() + " AND Active")
+                .filter(b -> !b.imageName.isBlank()).findFirst();
+        if(block == null) {
+            block = list(Block.class, "Site=" + site.getId())
+                    .filter(b -> !b.imageName.isBlank()).findFirst();
         }
-        return name;
+        return block == null ? site.getImageName() : block.imageName;
     }
 
     /**

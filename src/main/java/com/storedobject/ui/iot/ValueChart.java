@@ -37,6 +37,7 @@ public class ValueChart extends View implements CloseableView, Transactional {
     private int timeStep = 15 * 60000;
     private final GUI gui;
     private Site site;
+    private Block block;
 
     public ValueChart(GUI gui) {
         super("Montrolive Charts");
@@ -274,8 +275,13 @@ public class ValueChart extends View implements CloseableView, Transactional {
 
     private boolean loadSite() {
         clear();
+        site = gui.getSite();
+        block = gui.getBlock();
+        if(site == null) {
+            warning("No site selected");
+            return false;
+        }
         if(checkTree()) {
-            site = gui.getSite();
             return true;
         }
         warning("No attributes configured for the chart");
@@ -295,7 +301,7 @@ public class ValueChart extends View implements CloseableView, Transactional {
             return false;
         }
         for(var row: children) {
-            if(row instanceof DataSet.UnitData ud) {
+            if(row instanceof DataSet.UnitData ud && ud.getUnit().getBlockId().equals(block.getId())) {
                 if(ud.getDataStatus().stream().anyMatch(ds -> ds.getValueDefinition().getShowChart())) {
                     return true;
                 }
@@ -314,12 +320,10 @@ public class ValueChart extends View implements CloseableView, Transactional {
 
     private void buildBranches(List<DataValue> values, DataSet.AbstractData parent) {
         parent.children().forEach(row -> {
-            if(row instanceof DataSet.UnitData ud) {
-                if(gui.contains(ud.getUnit())) {
-                    ud.getDataStatus().stream()
-                            .filter(ds -> ds.getValueDefinition().getShowChart())
-                            .forEach(ds -> values.add(new DataValue(ud, ds)));
-                }
+            if(row instanceof DataSet.UnitData ud && ud.getUnit().getBlockId().equals(block.getId())) {
+                ud.getDataStatus().stream()
+                        .filter(ds -> ds.getValueDefinition().getShowChart())
+                        .forEach(ds -> values.add(new DataValue(ud, ds)));
             }
             buildBranches(values, row);
         });

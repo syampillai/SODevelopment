@@ -180,8 +180,14 @@ public class SiteView extends ImageViewer implements Transactional, CloseableVie
             warning("No units defined/active for - " + block.getName());
             return;
         }
-        MediaFile mf = getMedia(block.getImageName());
+        String in = block.getImageName();
+        if(in.isBlank()) {
+            warning("No image specified for block - " + block.getName() + ". You may set an image name for the site at least.");
+            return;
+        }
+        MediaFile mf = getMedia(in);
         if(mf == null) {
+            warning("No image found for - " + block.getName() + ", Image name - " + in);
             return;
         }
         removeAll();
@@ -340,6 +346,9 @@ public class SiteView extends ImageViewer implements Transactional, CloseableVie
     }
 
     private MediaFile getMedia(boolean warn, String... imageNames) {
+        if(imageNames == null || imageNames.length == 0) {
+            return null;
+        }
         MediaFile mf = SOServlet.getImage(imageNames);
         if(warn && mf == null) {
             StringBuilder s = new StringBuilder();
@@ -349,7 +358,9 @@ public class SiteView extends ImageViewer implements Transactional, CloseableVie
                 }
                 s.append(in);
             }
-            warning("No image found: " + s);
+            if(!s.isEmpty()) {
+                warning("No image found: " + s);
+            }
         }
         return mf;
     }

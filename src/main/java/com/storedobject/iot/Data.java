@@ -210,7 +210,7 @@ public abstract class Data extends StoredObject implements DBTransaction.NoHisto
         Double data = null;
         long ts = timeSpan == null ? 0 : timeSpan.toMillis(), at, pat = 0;
         try (Query list = query(dataClass, "CollectedAt," + variable, "Unit=" + unitId
-                + " AND CollectedAt BETWEEN " + (collectedAt - ts) + " AND " + (collectedAt + ts))) {
+                + " AND CollectedAt BETWEEN " + (collectedAt - ts) + " AND " + (collectedAt + ts), "CollectedAt")) {
             for(ResultSet d: list) {
                 try {
                     at = d.getLong(1);
@@ -251,6 +251,47 @@ public abstract class Data extends StoredObject implements DBTransaction.NoHisto
             return null;
         }
         return (v2.value - v1.value) * (to - from) / (v2.time - v1.time);
+    }
+
+    /**
+     * Determines the number of state changes for a specified variable of a given data class
+     * for a specific unit within a specified time range. A state change is counted when
+     * the variable transitions to the specified target state.
+     *
+     * @param <D>       Type of the data class that extends {@code Data}.
+     * @param dataClass The data class in which the state changes are being queried.
+     * @param unitId    The identifier of the unit for which the state changes are being tracked.
+     * @param variable  The variable name to monitor for state changes.
+     * @param from      The starting time (exclusive) of the time range in milliseconds.
+     * @param to        The ending time (inclusive) of the time range in milliseconds.
+     * @param toTrue    Target state to track changes towards. If {@code true}, counts transitions
+     *                  to {@code true}. If {@code false}, counts transitions to {@code false}.
+     * @return The number of state changes to the target state between the specified time range,
+     *         or {@code null} if an error occurs during computation.
+     */
+    public static <D extends Data> Integer getStateChanged(Class<D> dataClass, Id unitId, String variable,
+                                                             long from, long to, boolean toTrue) {
+        int changed = -1;
+        boolean previous = toTrue, current;
+        // Note: If the state was changed exactly at "from", it will be ignored because it was counted previously.
+        try (Query list = query(dataClass, variable, "Unit=" + unitId
+                + " AND CollectedAt BETWEEN " + (from + 1) + " AND " + to, "CollectedAt")) {
+            for(ResultSet d: list) {
+                try {
+                    current = d.getBoolean(1);
+                    if(current != previous && current == toTrue) {
+                        changed++;
+                    }
+                    previous = current;
+                } catch (Exception e) {
+                    return null;
+                }
+            }
+        }
+        if(changed < 0) {
+            return null;
+        }
+        return ++changed;
     }
 
     /**
