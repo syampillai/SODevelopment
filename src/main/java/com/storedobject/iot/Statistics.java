@@ -15,9 +15,10 @@ import java.math.BigDecimal;
  * Concrete subclasses must define the specific period-related methods and data fields.
  * </p>
  *
+ * @param <P> Period type
  * @author Syam
  */
-public abstract class Statistics extends StoredObject implements DBTransaction.NoHistory {
+public abstract class Statistics<P extends PeriodType> extends StoredObject implements DBTransaction.NoHistory {
 
     private String name;
     private Id unitId;
@@ -363,7 +364,7 @@ public abstract class Statistics extends StoredObject implements DBTransaction.N
      *                null or has no data (count is 0), the method returns
      *                without making any changes.
      */
-    public void add(Statistics another) {
+    public void add(Statistics<?> another) {
         if(another == null || another.count == 0) {
             return;
         }
@@ -402,14 +403,14 @@ public abstract class Statistics extends StoredObject implements DBTransaction.N
      *
      * @return A statistics object representing the previous instance in the sequence.
      * */
-    public abstract Statistics previous();
+    public abstract Statistics<P> previous();
 
     /**
      * Retrieves the next instance of statistics in a sequence or ordered collection.
      *
      * @return A statistics object representing the next instance in the sequence.
      */
-    public abstract Statistics next();
+    public abstract Statistics<P> next();
 
     /**
      * Constructs a query condition string incorporating the name and unit ID.
@@ -423,4 +424,13 @@ public abstract class Statistics extends StoredObject implements DBTransaction.N
     String cond() {
         return " AND Name='" + name + "' AND Unit=" + unitId;
     }
+
+    /**
+     * Retrieves the period type associated with the statistics instance.
+     * The period type provides an abstraction for the categorization or granularity
+     * of the period this statistics object refers to.
+     *
+     * @return The {@code PeriodType} representing the type of period associated with the statistics.
+     */
+    public abstract PeriodType getPeriodType();
 }

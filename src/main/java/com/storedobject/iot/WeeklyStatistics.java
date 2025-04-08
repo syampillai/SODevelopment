@@ -13,7 +13,7 @@ import com.storedobject.core.annotation.*;
  *
  * @author Syam
  */
-public final class WeeklyStatistics extends Statistics {
+public final class WeeklyStatistics extends Statistics<PeriodType> {
 
     private int week;
 
@@ -124,5 +124,17 @@ public final class WeeklyStatistics extends Statistics {
             w = 1;
         }
         return get(WeeklyStatistics.class, "Year=" + y + " AND Week=" + w + cond());
+    }
+
+    /**
+     * Retrieves the type of period associated with this instance of WeeklyStatistics.
+     * Specifically, this method indicates that the statistical data is organized
+     * and represented on a weekly basis.
+     *
+     * @return the PeriodType for this instance, which is {@code PeriodType.WEEKLY}.
+     */
+    @Override
+    public PeriodType getPeriodType() {
+        return PeriodType.WEEKLY;
     }
 }

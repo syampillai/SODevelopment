@@ -15,7 +15,7 @@ import java.sql.Date;
  * consumption records. Additionally, it provides functionality to format and
  * display period details in a human-readable format.
  */
-public final class WeeklyConsumption extends Consumption {
+public final class WeeklyConsumption extends Consumption<PeriodType> {
 
     private int week;
 
@@ -159,5 +159,15 @@ public final class WeeklyConsumption extends Consumption {
             w = 1;
         }
         return get(WeeklyConsumption.class, "Year=" + y + " AND Week=" + w + cond());
+    }
+
+    /**
+     * Retrieves the period type associated with the weekly consumption data.
+     *
+     * @return the period type, which is {@code PeriodType.WEEKLY}.
+     */
+    @Override
+    public PeriodType getPeriodType() {
+        return PeriodType.WEEKLY;
     }
 }

@@ -22,7 +22,7 @@ public record Data4Unit(Class<? extends Data> dataClass, Unit unit, TimestampPer
             ud.listLinks(AlarmSwitch.class).filter(valueDefinitions::contains).forEach(v -> attributes.add(v.getName()
                     + " AS " + v.getCaption()));
             if(!attributes.isEmpty()) {
-                attributes.add(0, "CollectedAt AS Timestamp");
+                attributes.addFirst("CollectedAt AS Timestamp");
                 processor.accept(new Data4Unit(ud.getDataClass(), unit, p, attributes));
             }
         });

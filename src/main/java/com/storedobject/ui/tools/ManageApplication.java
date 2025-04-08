@@ -2,6 +2,7 @@ package com.storedobject.ui.tools;
 
 import com.storedobject.common.StringList;
 import com.storedobject.core.SQLConnector;
+import com.storedobject.core.SystemLog;
 import com.storedobject.core.SystemUser;
 import com.storedobject.platform.Application;
 import com.storedobject.ui.ELabelField;
@@ -44,6 +45,7 @@ public class ManageApplication extends DataForm implements Transactional {
     protected boolean process() {
         clearAlerts();
         Application a = application.getValue();
+        SystemLog.log("Application-Management", a + " - " + action.getValue() + " - " + getTransactionManager().getUser().getName());
         try {
             switch (action.getValue()) {
                 case 0 -> {

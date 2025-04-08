@@ -45,11 +45,15 @@ public class ValueChart extends View implements CloseableView, Transactional {
         chartType.setWidth("7em");
         long time = com.storedobject.iot.DataSet.getTime();
         if(time == 0) {
-            time = getTransactionManager().date(DateUtility.now()).getTime();
+            time = getTransactionManager().date(DateUtility.now()).getTime() - gui.getSite().getTimeDifference();
         }
         timeStepField.setWidth("7ch");
         timeStepField.setValue(15);
-        timeStepField.addValueChangeListener(e -> changeTimeStep());
+        timeStepField.addValueChangeListener(e -> {
+            if(e.isFromClient()) {
+                changeTimeStep();
+            }
+        });
         chartType.addValueChangeListener(e -> plotAgain());
         period = new TimestampPeriod(
                 DateUtility.createTimestamp(DateUtility.startOfToday().getTime() - gui.getSite().getTimeDifference()),
@@ -85,15 +89,23 @@ public class ValueChart extends View implements CloseableView, Transactional {
     private class ChoosePeriod extends DataForm {
 
         private final TimestampPeriodField periodField = new TimestampPeriodField("Period");
+        private final MinutesField timeStepField = new MinutesField("Time Slice");
+
 
         public ChoosePeriod() {
             super("Choose Period");
-            addField(periodField);
+            addField(periodField, timeStepField);
         }
 
         @Override
         protected boolean process() {
             close();
+            timeStep = timeStepField.getValue() * 60000;
+            if(timeStep == 0) {
+                timeStep = 15 * 60000;
+                timeStepField.setValue(15);
+            }
+            ValueChart.this.timeStepField.setValue(timeStep / 60000);
             period = periodField.getValue();
             int diff = gui.getSite().getTimeDifference();
             Timestamp from = DateUtility.createTimestamp(period.getFrom().getTime() - diff),
@@ -111,6 +123,7 @@ public class ValueChart extends View implements CloseableView, Transactional {
             Timestamp from = DateUtility.createTimestamp(period.getFrom().getTime() + diff),
                     to = DateUtility.createTimestamp(period.getTo().getTime() + diff);
             periodField.setValue(new TimestampPeriod(from, to));
+            timeStepField.setValue(timeStep / 60000);
             super.execute(parent, doNotLock);
         }
     }
@@ -155,8 +168,8 @@ public class ValueChart extends View implements CloseableView, Transactional {
     private void changeTimeStep() {
         timeStep = timeStepField.getValue() * 60000;
         if(timeStep == 0) {
+            timeStep = 15 * 60000;
             timeStepField.setValue(15);
-            return;
         }
         if(values == null) {
             return;

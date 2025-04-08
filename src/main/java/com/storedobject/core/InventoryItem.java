@@ -1527,7 +1527,7 @@ public class InventoryItem extends StoredObject implements HasInventoryItem {
             return null;
         }
         if(pos.size() == 1) {
-            return pos.get(0);
+            return pos.getFirst();
         }
         return pos.stream().filter(po -> po.existsLinks(getTransaction(), InventoryPOItem.class,
                         "PartNumber=" + partNumberId + " AND SerialNumber='" + serialNumber + "'",true))
@@ -1550,7 +1550,7 @@ public class InventoryItem extends StoredObject implements HasInventoryItem {
             return null;
         }
         if(ros.size() == 1) {
-            return ros.get(0);
+            return ros.getFirst();
         }
         return ros.stream().filter(ro -> ro.existsLinks(getTransaction(), InventoryROItem.class,
                         "Item=" + getId(),true))

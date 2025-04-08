@@ -135,7 +135,7 @@ public final class TaxRate extends StoredObject {
             return cached.rate;
         }
         TaxRate tr;
-        try (Query q = query(TaxRate.class, "Id", "Type=" + typeId, "EffectiveDate DESC")) {
+        try (Query q = query(TaxRate.class, "Id", "Type=" + typeId, "EffectiveFrom DESC")) {
             for(ResultSet rs : q) {
                 tr = getFor(new Id(rs.getBigDecimal(1)));
                 if(!date.before(tr.effectiveFrom)) {

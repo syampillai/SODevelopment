@@ -15,7 +15,7 @@ import com.storedobject.core.annotation.*;
  *
  * @author Syam
  */
-public final class MonthlyStatistics extends Statistics {
+public final class MonthlyStatistics extends Statistics<PeriodType> {
 
     private int month;
 
@@ -127,5 +127,17 @@ public final class MonthlyStatistics extends Statistics {
             y++;
         }
         return get(MonthlyStatistics.class, "Year=" + y + " AND Month=" + m + cond());
+    }
+
+    /**
+     * Retrieves the type of period associated with this statistical data.
+     * This method overrides the base class implementation and returns the specific period type
+     * as {@link PeriodType#MONTHLY}, indicating the statistics represent monthly data.
+     *
+     * @return the period type as {@code PeriodType.MONTHLY}.
+     */
+    @Override
+    public PeriodType getPeriodType() {
+        return PeriodType.MONTHLY;
     }
 }

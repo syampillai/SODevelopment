@@ -84,16 +84,19 @@ public final class Resource extends Name {
         super.validateData(tm);
     }
 
-    private <T extends Consumption> T getConsumption(Id item, Class<T> cClass, String condition) {
-        return consumption(item, cClass, condition).single(false);
+    private <T extends Consumption<?>> T getConsumption(Id item, Class<T> cClass, String condition, String orderBy) {
+        return consumption(item, cClass, condition, orderBy).single(false);
     }
 
-    private <T extends Consumption> List<T> listConsumption(Id item, Class<T> cClass, String condition) {
-        return consumption(item, cClass, condition).toList();
+    private <T extends Consumption<?>> List<T> listConsumption(Id item, Class<T> cClass, String condition,
+                                                               String orderBy) {
+        return consumption(item, cClass, condition, orderBy).toList();
     }
 
-    private <T extends Consumption> ObjectIterator<T> consumption(Id item, Class<T> cClass, String condition) {
-        return list(cClass, condition + " AND Resource=" + getId() + " AND Item=" + item);
+    private <T extends Consumption<?>> ObjectIterator<T> consumption(Id item, Class<T> cClass, String condition,
+                                                                     String orderBy) {
+        return list(cClass, condition + " AND Resource=" + getId() + " AND Item=" + item,
+                "Item,Resource,Year" + (orderBy == null ? "" : (", " + orderBy)));
     }
 
     public List<YearlyConsumption> listYearlyConsumption(Id item, int yearFrom, int yearTo) {
@@ -103,11 +106,11 @@ public final class Resource extends Name {
         } else {
             c = "Year BETWEEN " + yearFrom + " AND " + yearTo;
         }
-        return listConsumption(item, YearlyConsumption.class, c);
+        return listConsumption(item, YearlyConsumption.class, c, null);
     }
 
     public YearlyConsumption getYearlyConsumption(Id item, int year) {
-        return getConsumption(item, YearlyConsumption.class, "Year=" + year);
+        return getConsumption(item, YearlyConsumption.class, "Year=" + year, null);
     }
 
     public <D extends Date> YearlyConsumption getYearlyConsumption(Id item, D date) {
@@ -129,11 +132,12 @@ public final class Resource extends Name {
 
     public List<MonthlyConsumption> listMonthlyConsumption(Id item, int year, int monthFrom, int monthTo) {
         if(monthFrom == monthTo) {
-            return listConsumption(item, MonthlyConsumption.class, "Year=" + year + " AND Month=" + monthFrom);
+            return listConsumption(item, MonthlyConsumption.class, "Year=" + year + " AND Month=" + monthFrom,
+                    "Month");
         }
         if(monthFrom < monthTo) {
             return listConsumption(item, MonthlyConsumption.class, "Year=" + year + " AND Month BETWEEN "
-                    + monthFrom + " AND " + monthTo);
+                    + monthFrom + " AND " + monthTo, "Month");
         }
         List<MonthlyConsumption> con = listMonthlyConsumption(item, year, monthFrom, 12);
         con.addAll(listMonthlyConsumption(item, year + 1, 1, monthTo));
@@ -141,7 +145,7 @@ public final class Resource extends Name {
     }
 
     public MonthlyConsumption getMonthlyConsumption(Id item, int year, int month) {
-        return getConsumption(item, MonthlyConsumption.class, "Year=" + year + " AND Month=" + month);
+        return getConsumption(item, MonthlyConsumption.class, "Year=" + year + " AND Month=" + month, "Month");
     }
 
     public <D extends Date> MonthlyConsumption getMonthlyConsumption(Id item, D date) {
@@ -164,11 +168,11 @@ public final class Resource extends Name {
 
     public List<WeeklyConsumption> listWeeklyConsumption(Id item, int year, int weekFrom, int weekTo) {
         if(weekFrom == weekTo) {
-            return listConsumption(item, WeeklyConsumption.class, "Year=" + year + " AND Week=" + weekFrom);
+            return listConsumption(item, WeeklyConsumption.class, "Year=" + year + " AND Week=" + weekFrom, "Week");
         }
         if(weekFrom < weekTo) {
             return listConsumption(item, WeeklyConsumption.class, "Year=" + year + " AND Week BETWEEN "
-                    + weekFrom + " AND " + weekTo);
+                    + weekFrom + " AND " + weekTo, "Week");
         }
         List<WeeklyConsumption> con = listWeeklyConsumption(item, year, weekFrom, 53);
         con.addAll(listWeeklyConsumption(item, year + 1, 1, weekTo));
@@ -176,7 +180,7 @@ public final class Resource extends Name {
     }
 
     public WeeklyConsumption getWeeklyConsumption(Id item, int year, int week) {
-        return getConsumption(item, WeeklyConsumption.class, "Year=" + year + " AND Week=" + week);
+        return getConsumption(item, WeeklyConsumption.class, "Year=" + year + " AND Week=" + week, "Week");
     }
 
     public <D extends Date> WeeklyConsumption getWeeklyConsumption(Id item, D date) {
@@ -199,11 +203,11 @@ public final class Resource extends Name {
 
     public List<HourlyConsumption> listHourlyConsumption(Id item, int year, int hourFrom, int hourTo) {
         if(hourFrom == hourTo) {
-            return listConsumption(item, HourlyConsumption.class, "Year=" + year + " AND Hour=" + hourFrom);
+            return listConsumption(item, HourlyConsumption.class, "Year=" + year + " AND Hour=" + hourFrom, "Hour");
         }
         if(hourFrom < hourTo) {
             return listConsumption(item, HourlyConsumption.class, "Year=" + year + " AND Hour BETWEEN "
-                    + hourFrom + " AND " + hourTo);
+                    + hourFrom + " AND " + hourTo, "Hour");
         }
         List<HourlyConsumption> con = listHourlyConsumption(item, year, hourFrom, 53);
         con.addAll(listHourlyConsumption(item, year + 1, 1, hourTo));
@@ -211,7 +215,7 @@ public final class Resource extends Name {
     }
 
     public HourlyConsumption getHourlyConsumption(Id item, int year, int hour) {
-        return getConsumption(item, HourlyConsumption.class, "Year=" + year + " AND Hour=" + hour);
+        return getConsumption(item, HourlyConsumption.class, "Year=" + year + " AND Hour=" + hour, "Hour");
     }
 
     public <D extends Date> HourlyConsumption getHourlyConsumption(Id item, D date) {
@@ -234,11 +238,11 @@ public final class Resource extends Name {
 
     public List<DailyConsumption> listDailyConsumption(Id item, int year, int dayFrom, int dayTo) {
         if(dayFrom == dayTo) {
-            return listConsumption(item, DailyConsumption.class, "Year=" + year + " AND Day=" + dayFrom);
+            return listConsumption(item, DailyConsumption.class, "Year=" + year + " AND Day=" + dayFrom, "Day");
         }
         if(dayFrom < dayTo) {
             return listConsumption(item, DailyConsumption.class, "Year=" + year + " AND Day BETWEEN "
-                    + dayFrom + " AND " + dayTo);
+                    + dayFrom + " AND " + dayTo, "Day");
         }
         List<DailyConsumption> con = listDailyConsumption(item, year, dayFrom, 366);
         con.addAll(listDailyConsumption(item, year + 1, 1, dayTo));
@@ -246,7 +250,7 @@ public final class Resource extends Name {
     }
 
     public DailyConsumption getDailyConsumption(Id item, int year, int day) {
-        return getConsumption(item, DailyConsumption.class, "Year=" + year + " AND Day=" + day);
+        return getConsumption(item, DailyConsumption.class, "Year=" + year + " AND Day=" + day, "Day");
     }
 
     public <D extends Date> DailyConsumption getDailyConsumption(Id item, D date) {

@@ -35,7 +35,7 @@ public class DataDownload extends ExcelReport {
             setCellValue(h.substring(h.indexOf(" AS ") + 4));
             moveRight();
         }
-        for(StoredObject so: StoredObject.list(data4Unit.dataClass(), data4Unit.condition())) {
+        for(StoredObject so: StoredObject.list(data4Unit.dataClass(), data4Unit.condition(), "CollectedAt")) {
             goToCell(0, row++);
             setCellValue(new Timestamp((long)mls[0].invoke(so, true) + timeDifference));
             getCell().setCellStyle(getDateTimeStyle());

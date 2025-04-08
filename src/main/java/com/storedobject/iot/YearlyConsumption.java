@@ -13,7 +13,7 @@ import com.storedobject.core.*;
  *
  * @author Syam
  */
-public final class YearlyConsumption extends Consumption {
+public final class YearlyConsumption extends Consumption<PeriodType> {
 
     /**
      * Constructs a new instance of the YearlyConsumption class.
@@ -91,5 +91,15 @@ public final class YearlyConsumption extends Consumption {
             return get(YearlyConsumption.class, "Year=" + (getYear() + 1) + cond());
         }
         return null;
+    }
+
+    /**
+     * Retrieves the period type associated with the yearly consumption.
+     *
+     * @return the period type, which is {@link PeriodType#YEARLY}.
+     */
+    @Override
+    public PeriodType getPeriodType() {
+        return PeriodType.YEARLY;
     }
 }

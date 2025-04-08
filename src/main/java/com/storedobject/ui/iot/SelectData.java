@@ -4,10 +4,7 @@ import com.storedobject.common.StringList;
 import com.storedobject.core.DateUtility;
 import com.storedobject.core.StoredObject;
 import com.storedobject.core.TimestampPeriod;
-import com.storedobject.iot.Block;
-import com.storedobject.iot.DataSet;
-import com.storedobject.iot.Unit;
-import com.storedobject.iot.ValueDefinition;
+import com.storedobject.iot.*;
 import com.storedobject.ui.ELabel;
 import com.storedobject.ui.ELabelField;
 import com.storedobject.ui.ObjectComboField;
@@ -15,6 +12,7 @@ import com.storedobject.ui.TimestampPeriodField;
 import com.storedobject.vaadin.DataForm;
 import com.storedobject.vaadin.MultiSelectGrid;
 
+import java.sql.Timestamp;
 import java.util.*;
 import java.util.function.Consumer;
 
@@ -25,6 +23,18 @@ public abstract class SelectData extends BlockSelector {
     public SelectData(String caption, Block block) {
         super(caption, block);
         addField(periodField);
+        siteChanged(block.getSite());
+    }
+
+    @Override
+    protected void siteChanged(Site newSite) {
+        if(newSite != null && periodField != null) {
+            int diff = newSite.getTimeDifference();
+            TimestampPeriod period = periodField.getValue();
+            Timestamp from = DateUtility.createTimestamp(period.getFrom().getTime()),
+                    to = DateUtility.createTimestamp(period.getTo().getTime() + diff);
+            periodField.setValue(new TimestampPeriod(from, to));
+        }
     }
 
     @Override
@@ -34,8 +44,6 @@ public abstract class SelectData extends BlockSelector {
             message("Not active - " + block.getName());
             return false;
         }
-        TimestampPeriod p = periodField.getValue();
-        periodField.setValue(new TimestampPeriod(p.getFrom(), block.getSite().date(DateUtility.now())));
         List<Unit> units = StoredObject.list(Unit.class, "Block=" + block.getId() + " AND Active", true)
                 .toList();
         if(units.isEmpty()) {
@@ -44,7 +52,7 @@ public abstract class SelectData extends BlockSelector {
         }
         close();
         if(units.size() == 1) {
-            accept(units.get(0));
+            accept(units.getFirst());
             return true;
         }
         new SelectUnit(units, block.getName()).execute();

@@ -16,7 +16,7 @@ import java.math.BigDecimal;
  *
  * @author Syam
  */
-public abstract class Consumption extends StoredObject implements DBTransaction.NoHistory {
+public abstract class Consumption<P extends PeriodType> extends StoredObject implements DBTransaction.NoHistory {
 
     private Id resourceId, itemId;
     private double consumption = 0;
@@ -284,7 +284,7 @@ public abstract class Consumption extends StoredObject implements DBTransaction.
      *
      * @return The previous Consumption object, or null if there is no prior consumption data.
      */
-    public abstract Consumption previous();
+    public abstract Consumption<P> previous();
 
     /**
      * Retrieves the next Consumption object in a sequence, if available.
@@ -293,7 +293,7 @@ public abstract class Consumption extends StoredObject implements DBTransaction.
      *
      * @return the next Consumption object, or null if no further object exists in the sequence.
      */
-    public abstract Consumption next();
+    public abstract Consumption<P> next();
 
     /**
      * Constructs a conditional string for querying or filtering data based on item and resource identifiers.
@@ -304,4 +304,13 @@ public abstract class Consumption extends StoredObject implements DBTransaction.
     String cond() {
         return " AND Item=" + itemId + " AND Resource=" + resourceId;
     }
+
+    /**
+     * Retrieves the type of period associated with the consumption instance.
+     * The period type is expected to represent an interval such as HOURLY, DAILY, WEEKLY,
+     * MONTHLY, or YEARLY, as defined in the {@link PeriodType} enum.
+     *
+     * @return The {@link PeriodType} indicating the interval type for this consumption instance.
+     */
+    public abstract PeriodType getPeriodType();
 }

@@ -12,7 +12,7 @@ import java.sql.Date;
  *
  * @author Syam
  */
-public final class HourlyStatistics extends Statistics {
+public final class HourlyStatistics extends Statistics<PeriodType> {
 
     private int hour;
 
@@ -123,5 +123,17 @@ public final class HourlyStatistics extends Statistics {
         }
         ++y;
         return get(HourlyStatistics.class, "Year=" + y + " AND Hour=1" + cond());
+    }
+
+    /**
+     * Retrieves the type of period for the current statistics instance.
+     * For the HourlyStatistics class, this method always returns PeriodType.HOURLY,
+     * indicating hourly granularity for statistical data.
+     *
+     * @return the period type, which is always PeriodType.HOURLY for this implementation.
+     */
+    @Override
+    public PeriodType getPeriodType() {
+        return PeriodType.HOURLY;
     }
 }

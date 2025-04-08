@@ -9,7 +9,7 @@ import com.storedobject.core.*;
  *
  * @author Syam
  */
-public final class YearlyStatistics extends Statistics {
+public final class YearlyStatistics extends Statistics<PeriodType> {
 
     /**
      * Initializes a new instance of the YearlyStatistics class.
@@ -87,5 +87,15 @@ public final class YearlyStatistics extends Statistics {
             return get(YearlyStatistics.class, "Year=" + (getYear() + 1) + cond());
         }
         return null;
+    }
+
+    /**
+     * Retrieves the type of period associated with this instance.
+     *
+     * @return the period type, which is {@code PeriodType.YEARLY}.
+     */
+    @Override
+    public PeriodType getPeriodType() {
+        return PeriodType.YEARLY;
     }
 }

@@ -8,15 +8,15 @@ import com.storedobject.iot.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
-public record Consumption4Unit<C extends Consumption>(Class<C> consumptionClass, Resource resource, AbstractUnit unit,
+public record Consumption4Unit<C extends Consumption<?>>(Class<C> consumptionClass, Resource resource, AbstractUnit unit,
                                int yearFrom, int yearTo) {
 
     public static void process(Resource resource, Block block, int periodicity, int yearFrom, int yearTo,
                                Consumer<Consumption4Unit<?>> processor) {
-        Class<? extends Consumption> cClass;
+        Class<? extends Consumption<?>> cClass;
         try {
             //noinspection unchecked
-            cClass = (Class<? extends Consumption>)
+            cClass = (Class<? extends Consumption<?>>)
                     JavaClassLoader.getLogic("com.storedobject.iot."
                             + ConsumptionDashboard.periodicity.get(periodicity) + "Consumption");
         } catch (ClassNotFoundException e) {

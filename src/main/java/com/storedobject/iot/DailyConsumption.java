@@ -12,7 +12,7 @@ import java.sql.Date;
  *
  * @author Syam
  */
-public final class DailyConsumption extends Consumption {
+public final class DailyConsumption extends Consumption<PeriodType> {
 
     private int day;
 
@@ -149,5 +149,17 @@ public final class DailyConsumption extends Consumption {
         }
         ++y;
         return get(DailyConsumption.class, "Year=" + y + " AND Day=1" + cond());
+    }
+
+    /**
+     * Retrieves the period type for this consumption instance.
+     * This method identifies the frequency or granularity of the
+     * consumption data being represented.
+     *
+     * @return the {@code PeriodType} associated with this instance, which is {@code DAILY}.
+     */
+    @Override
+    public PeriodType getPeriodType() {
+        return PeriodType.DAILY;
     }
 }

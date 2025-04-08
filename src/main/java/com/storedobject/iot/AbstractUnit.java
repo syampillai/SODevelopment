@@ -168,11 +168,11 @@ public abstract class AbstractUnit extends Name {
         return new DataPeriod(siteDate, from, to);
     }
 
-    private <T extends Consumption> T getConsumption(Resource resource, Class<T> cClass, String condition) {
+    private <T extends Consumption<?>> T getConsumption(Resource resource, Class<T> cClass, String condition) {
         return consumption(resource, cClass, condition).single(false);
     }
 
-    private <T extends Consumption> ObjectIterator<T> consumption(Resource resource, Class<T> cClass, String condition) {
+    private <T extends Consumption<?>> ObjectIterator<T> consumption(Resource resource, Class<T> cClass, String condition) {
         return list(cClass, condition + " AND Item=" + getId() + " AND Resource=" + resource.getId());
     }
 
@@ -186,6 +186,20 @@ public abstract class AbstractUnit extends Name {
      */
     public final List<YearlyConsumption> listYearlyConsumption(Resource resource, int yearFrom, int yearTo) {
         return resource.listYearlyConsumption(getId(), yearFrom, yearTo);
+    }
+
+    /**
+     * Retrieves a list of yearly consumption data for a given resource and site over a specified number of years.
+     *
+     * @param resource the resource for which the yearly consumption data is to be retrieved
+     * @param site the site associated with the resource and its consumption data
+     * @param periodCount the number of years for which the yearly consumption data will be listed
+     * @return a list of YearlyConsumption objects representing the yearly consumption data over the specified period
+     */
+    public final List<YearlyConsumption> listYearlyConsumption(Resource resource, Site site, int periodCount) {
+        --periodCount;
+        int yearTo = DateUtility.getYear(site.date(new Date(System.currentTimeMillis())));
+        return listYearlyConsumption(resource, yearTo - periodCount, yearTo);
     }
 
     /**
@@ -248,6 +262,49 @@ public abstract class AbstractUnit extends Name {
     }
 
     /**
+     * Retrieves a list of monthly consumption data for the specified resource within the given date range.
+     *
+     * @param resource The resource for which the monthly consumption data is being retrieved.
+     * @param yearFrom The starting year of the date range.
+     * @param monthFrom The starting month of the date range.
+     * @param yearTo The ending year of the date range.
+     * @param monthTo The ending month of the date range.
+     * @return A List of MonthlyConsumption objects representing the monthly consumption data for
+     *         the specified resource within the provided date range. Returns an empty list if the
+     *         date range is invalid.
+     */
+    public final List<MonthlyConsumption> listMonthlyConsumption(Resource resource, int yearFrom, int monthFrom,
+                                                                 int yearTo, int monthTo) {
+        if(yearFrom > yearTo) {
+            return List.of();
+        }
+        if(yearFrom == yearTo) {
+            return listMonthlyConsumption(resource, yearFrom, monthFrom, monthTo);
+        }
+        List<MonthlyConsumption> list = listMonthlyConsumption(resource, yearFrom, monthFrom, 12);
+        while(yearFrom < yearTo) {
+            ++yearFrom;
+            list.addAll(listMonthlyConsumption(resource, yearFrom, 1, yearFrom == yearTo ? monthTo : 12));
+        }
+        return list;
+    }
+
+    /**
+     * Retrieves a list of monthly consumption data for a specified resource and site
+     * over a given number of periods (months).
+     *
+     * @param resource   the resource for which the consumption data is being retrieved
+     * @param site       the site associated with the resource
+     * @param periodCount the number of months for which the consumption data is required
+     * @return a list of MonthlyConsumption objects representing the consumption data
+     *         for the specified resource and site over the given period
+     */
+    public final List<MonthlyConsumption> listMonthlyConsumption(Resource resource, Site site, int periodCount) {
+        PeriodCount p = PeriodCount.monthly(site, periodCount);
+        return listMonthlyConsumption(resource, p.yearFrom, p.from, p.yearTo, p.to);
+    }
+
+    /**
      * Retrieves the monthly consumption for a specific resource in a given year and month.
      *
      * @param resource the resource for which the monthly consumption is being requested
@@ -272,16 +329,6 @@ public abstract class AbstractUnit extends Name {
         return getMonthlyConsumption(resource, DateUtility.getYear(date), DateUtility.getMonth(date));
     }
 
-    /**
-     * Creates or retrieves a MonthlyConsumption instance for the specified resource and date.
-     * If a MonthlyConsumption instance does not already exist for the specified parameters,
-     * a new virtual instance is initialized and returned.
-     *
-     * @param resource the resource for which the monthly consumption is calculated or retrieved
-     * @param date the date for determining the year and month of the consumption
-     * @param <D> a type parameter extending java.util.Date representing the type of the input date
-     * @return the MonthlyConsumption instance for the given resource and date
-     */
     private <D extends java.util.Date> MonthlyConsumption createMonthlyConsumption(Resource resource, D date) {
         int y = DateUtility.getYear(date), m = DateUtility.getMonth(date);
         MonthlyConsumption c = getMonthlyConsumption(resource, y, m);
@@ -311,6 +358,45 @@ public abstract class AbstractUnit extends Name {
     }
 
     /**
+     * Retrieves the weekly consumption data for a given resource over a specified time period.
+     *
+     * @param resource the resource for which the weekly consumption needs to be calculated
+     * @param yearFrom the starting year of the time range
+     * @param weekFrom the starting week of the starting year
+     * @param yearTo the ending year of the time range
+     * @param weekTo the ending week of the ending year
+     * @return a list of WeeklyConsumption objects representing the consumption data for the given time range
+     */
+    public final List<WeeklyConsumption> listWeeklyConsumption(Resource resource, int yearFrom, int weekFrom,
+                                                               int yearTo, int weekTo) {
+        if(yearFrom > yearTo) {
+            return List.of();
+        }
+        if(yearFrom == yearTo) {
+            return listWeeklyConsumption(resource, yearFrom, weekFrom, weekTo);
+        }
+        List<WeeklyConsumption> list = listWeeklyConsumption(resource, yearFrom, weekFrom, 52);
+        while(yearFrom < yearTo) {
+            ++yearFrom;
+            list.addAll(listWeeklyConsumption(resource, yearFrom, 1, yearFrom == yearTo ? weekTo : 52));
+        }
+        return list;
+    }
+
+    /**
+     * Retrieves a list of weekly consumption data for the specified resource and site over a given number of weeks.
+     *
+     * @param resource The resource for which the consumption data is being requested.
+     * @param site The site associated with the resource.
+     * @param periodCount The number of weeks for which data should be retrieved, counting back from the current week.
+     * @return A list of WeeklyConsumption objects representing the consumption data for the specified period.
+     */
+    public final List<WeeklyConsumption> listWeeklyConsumption(Resource resource, Site site, int periodCount) {
+        PeriodCount p = PeriodCount.weekly(site, periodCount);
+        return listWeeklyConsumption(resource, p.yearFrom, p.from, p.yearTo, p.to);
+    }
+
+    /**
      * Retrieves the weekly consumption for a specified resource, year, and week.
      *
      * @param resource the resource for which the weekly consumption is requested
@@ -337,15 +423,6 @@ public abstract class AbstractUnit extends Name {
         return getWeeklyConsumption(resource, DateUtility.getYear(date), DateUtility.getWeekOfYear(date));
     }
 
-    /**
-     * Creates or retrieves a WeeklyConsumption instance for the specified resource and date.
-     * If a WeeklyConsumption instance for the given resource and date does not exist,
-     * a new virtual instance is created and initialized.
-     *
-     * @param resource the resource for which the WeeklyConsumption is being created or retrieved
-     * @param date the date from which the year and week are derived to locate or create the WeeklyConsumption instance
-     * @return the WeeklyConsumption object for the specified resource and date
-     */
     private <D extends java.util.Date> WeeklyConsumption createWeeklyConsumption(Resource resource, D date) {
         int y = DateUtility.getYear(date), w = DateUtility.getWeekOfYear(date);
         WeeklyConsumption c = getWeeklyConsumption(resource, y, w);
@@ -371,6 +448,45 @@ public abstract class AbstractUnit extends Name {
      */
     public final List<HourlyConsumption> listHourlyConsumption(Resource resource, int year, int hourFrom, int hourTo) {
         return resource.listHourlyConsumption(getId(), year, hourFrom, hourTo);
+    }
+
+    /**
+     * Retrieves a list of hourly consumption records for a specified resource between given years and hours.
+     *
+     * @param resource the resource for which hourly consumption data is to be retrieved
+     * @param yearFrom the starting year of the range
+     * @param hourFrom the starting hour of the range within the starting year
+     * @param yearTo the ending year of the range
+     * @param hourTo the ending hour of the range within the ending year
+     * @return a list of hourly consumption records for the specified resource and range
+     */
+    public final List<HourlyConsumption> listHourlyConsumption(Resource resource, int yearFrom, int hourFrom,
+                                                               int yearTo, int hourTo) {
+        if(yearFrom > yearTo) {
+            return List.of();
+        }
+        if(yearFrom == yearTo) {
+            return listHourlyConsumption(resource, yearFrom, hourFrom, hourTo);
+        }
+        List<HourlyConsumption> list = listHourlyConsumption(resource, yearFrom, hourFrom, lastHour(yearFrom));
+        while(yearFrom < yearTo) {
+            ++yearFrom;
+            list.addAll(listHourlyConsumption(resource, yearFrom, 1, yearFrom == yearTo ? hourTo : lastHour(yearFrom)));
+        }
+        return list;
+    }
+
+    /**
+     * Retrieves a list of hourly consumption data for a specified resource at a given site over a defined period.
+     *
+     * @param resource the resource for which hourly consumption data is to be retrieved
+     * @param site the site associated with the resource
+     * @param periodCount the number of hours to include in the consumption data, counting backwards from the current time
+     * @return a list of HourlyConsumption objects representing consumption data over the specified period
+     */
+    public final List<HourlyConsumption> listHourlyConsumption(Resource resource, Site site, int periodCount) {
+        PeriodCount p = PeriodCount.hourly(site, periodCount);
+        return listHourlyConsumption(resource, p.yearFrom, p.from, p.yearTo, p.to);
     }
 
     /**
@@ -433,6 +549,60 @@ public abstract class AbstractUnit extends Name {
      */
     public final List<DailyConsumption> listDailyConsumption(Resource resource, int year, int dayFrom, int dayTo) {
         return resource.listDailyConsumption(getId(), year, dayFrom, dayTo);
+    }
+
+    /**
+     * Retrieves a list of daily consumption data for a specified resource over a range of dates.
+     *
+     * @param resource the resource for which the daily consumption is to be listed
+     * @param yearFrom the starting year of the date range
+     * @param dayFrom the starting day of the year in the date range
+     * @param yearTo the ending year of the date range
+     * @param dayTo the ending day of the year in the date range
+     * @return a list of {@code DailyConsumption} objects representing the daily consumption data
+     *         for the specified resource within the given date range
+     */
+    public final List<DailyConsumption> listDailyConsumption(Resource resource, int yearFrom, int dayFrom,
+                                                             int yearTo, int dayTo) {
+        if(yearFrom > yearTo) {
+            return List.of();
+        }
+        if(yearFrom == yearTo) {
+            return listDailyConsumption(resource, yearFrom, dayFrom, dayTo);
+        }
+        List<DailyConsumption> list = listDailyConsumption(resource, yearFrom, dayFrom, lastDay(yearFrom));
+        while(yearFrom < yearTo) {
+            ++yearFrom;
+            list.addAll(listDailyConsumption(resource, yearFrom, 1, yearFrom == yearTo ? dayTo : lastDay(yearFrom)));
+        }
+        return list;
+    }
+
+    /**
+     * Retrieves a list of daily consumption records for a given resource within a specific time period.
+     *
+     * @param resource the resource for which the daily consumption data is to be retrieved
+     * @param site the site where the resource is being consumed
+     * @param periodCount the number of days for which daily consumption data should be fetched
+     * @return a list of daily consumption records spanning the specified period
+     */
+    public final List<DailyConsumption> listDailyConsumption(Resource resource, Site site, int periodCount) {
+        PeriodCount p = PeriodCount.daily(site, periodCount);
+        return listDailyConsumption(resource, p.yearFrom, p.from, p.yearTo, p.to);
+    }
+
+    static int lastDay(int year) {
+        return DateUtility.getDayOfYear(DateUtility.create(year, 12, 31));
+    }
+
+    static int lastWeek(int year) {
+        return DateUtility.getWeekOfYear(DateUtility.create(year, 12, 31));
+    }
+
+    static int lastHour(int year) {
+        Date date = DateUtility.create(year + 1, 1, 1); // Jan 1st next year
+        date.setTime(date.getTime() - 10000); // Reduce 10 seconds to make it previous day around midnight
+        return DateUtility.getWeekOfYear(date);
     }
 
     /**
@@ -645,7 +815,118 @@ public abstract class AbstractUnit extends Name {
      * @param siteDate The site-adjusted date associated with this data period.
      * @param from     The start time of the data period, represented in milliseconds since epoch.
      * @param to       The end time of the data period, represented in milliseconds since epoch.
+     *
+     * @author Syam
      */
     record DataPeriod(Date siteDate, long from, long to) {
+    }
+
+    /**
+     * Represents a count of a period defined by a starting year and month,
+     * and an ending year and month.
+     * A record that stores two time periods in terms of:
+     * - Starting year and month.
+     * - Ending year and month.
+     * This class is immutable and provides built-in support for
+     * component-based access methods.
+     * Components:
+     * - yearFrom: The starting year of the period.
+     * - from: The starting month of the period.
+     * - yearTo: The ending year of the period.
+     * - to: The ending month of the period.
+     *
+     * @author Syam
+     */
+    record PeriodCount(int yearFrom, int from, int yearTo, int to) {
+
+        /**
+         * Creates a PeriodCount representing a range of months starting from a specific
+         * number of months in the past up to the current month, based on the site's local date.
+         *
+         * @param site the site whose local date is used as the time reference for calculation
+         * @param periodCount the number of months to include in the period, counting backwards from the current month
+         * @return a PeriodCount object representing the calculated range of months and years
+         */
+        public static PeriodCount monthly(Site site, int periodCount) {
+            --periodCount;
+            Date siteDate = site.date(new Date(System.currentTimeMillis()));
+            int yearTo = DateUtility.getYear(siteDate);
+            int monthTo = DateUtility.getMonth(siteDate);
+            int monthFrom = monthTo - periodCount;
+            int yearFrom = yearTo;
+            while (monthFrom < 1) {
+                --yearFrom;
+                monthFrom += 12;
+            }
+            return new PeriodCount(yearFrom, monthFrom, yearTo, monthTo);
+        }
+
+        /**
+         * Computes the period information on a weekly basis going backwards from the current week.
+         *
+         * @param site the Site object representing the context of the computation
+         * @param periodCount the number of weeks to count back to determine the starting week
+         * @return a PeriodCount object that encapsulates the range of years and weeks from the calculated start week to the current week
+         */
+        public static PeriodCount weekly(Site site, int periodCount) {
+            --periodCount;
+            Date siteDate = site.date(new Date(System.currentTimeMillis()));
+            int yearTo = DateUtility.getYear(siteDate);
+            int weekTo = DateUtility.getWeekOfYear(siteDate);
+            int weekFrom = weekTo - periodCount;
+            int yearFrom = yearTo;
+            while (weekFrom < 1) {
+                --yearFrom;
+                weekFrom += lastWeek(yearFrom);
+            }
+            return new PeriodCount(yearFrom, weekFrom, yearTo, weekTo);
+        }
+
+        /**
+         * Computes a period based on the daily breakdown of the given period count
+         * starting from the current date. Adjusts for year transitions when the period
+         * count exceeds the number of days in the current year.
+         *
+         * @param site the site object providing contextual information such as the current date
+         * @param periodCount the number of daily periods to calculate, where
+         *                    the most recent day corresponds to a count of 1
+         * @return a PeriodCount object representing the start and end dates of the calculated period
+         */
+        public static PeriodCount daily(Site site, int periodCount) {
+            --periodCount;
+            Date date = site.date(new Date(System.currentTimeMillis()));
+            int yearTo = DateUtility.getYear(date);
+            int dayTo = DateUtility.getDayOfYear(date);
+            int dayFrom = dayTo - periodCount;
+            int yearFrom = yearTo;
+            while (dayFrom < 1) {
+                --yearFrom;
+                dayFrom += lastDay(yearFrom);
+            }
+            return new PeriodCount(yearFrom, dayFrom, yearTo, dayTo);
+        }
+
+        /**
+         * Computes the start and end of an hourly period based on the given `Site` and period count.
+         * The method calculates the period in hours starting from the current time
+         * and adjusts appropriately for transitions between years.
+         *
+         * @param site the site information used for obtaining the current date and time
+         * @param periodCount the number of hours to include in the period, starting from the current hour
+         * @return a PeriodCount object representing the calculated period, containing the start year and hour, and end year and hour
+         */
+        public static PeriodCount hourly(Site site, int periodCount) {
+            --periodCount;
+            Date date = site.date(new Date(System.currentTimeMillis()));
+            int yearTo = DateUtility.getYear(date);
+            int hourTo = DateUtility.getHourOfYear(date);
+            int hourFrom = hourTo - periodCount;
+            int yearFrom = yearTo;
+            while (hourFrom < 1) {
+                --yearFrom;
+                hourFrom += lastHour(yearFrom);
+            }
+            return new PeriodCount(yearFrom, hourFrom, yearTo, hourTo);
+        }
     }
 }

@@ -254,6 +254,25 @@ public abstract class Data extends StoredObject implements DBTransaction.NoHisto
     }
 
     /**
+     * Calculates the difference in the values of a specified variable for a given data class
+     * and unit within a specified time period.
+     *
+     * @param <D>         The type of the data class, which must extend the {@code Data} class.
+     * @param dataClass   The data class containing the variable whose value difference is to be calculated.
+     * @param unitId      The identifier of the unit for which the value difference is being calculated.
+     * @param variable    The name of the variable whose value difference is to be calculated.
+     * @param periodType  The type of the time period (e.g., HOURLY, DAILY) for which the value difference is calculated.
+     * @param periodCount The number of periods to look back from the current time.
+     * @return The calculated value difference of the variable over the specified period, or {@code null} if the calculation fails.
+     */
+    public static <D extends Data> Double getValueDifference(Class<D> dataClass, Id unitId, String variable,
+                                                             PeriodType periodType, int periodCount) {
+        long to = System.currentTimeMillis();
+        long from = periodType.time(to, -periodCount);
+        return getValueDifference(dataClass, unitId, variable, from, to);
+    }
+
+    /**
      * Determines the number of state changes for a specified variable of a given data class
      * for a specific unit within a specified time range. A state change is counted when
      * the variable transitions to the specified target state.
@@ -270,7 +289,7 @@ public abstract class Data extends StoredObject implements DBTransaction.NoHisto
      *         or {@code null} if an error occurs during computation.
      */
     public static <D extends Data> Integer getStateChanged(Class<D> dataClass, Id unitId, String variable,
-                                                             long from, long to, boolean toTrue) {
+                                                           long from, long to, boolean toTrue) {
         int changed = -1;
         boolean previous = toTrue, current;
         // Note: If the state was changed exactly at "from", it will be ignored because it was counted previously.
@@ -292,6 +311,62 @@ public abstract class Data extends StoredObject implements DBTransaction.NoHisto
             return null;
         }
         return ++changed;
+    }
+
+    /**
+     * Determines the state changes of a specific variable within a given period of time.
+     *
+     * @param dataClass the class type of the data
+     * @param unitId the unique identifier of the unit
+     * @param variable the name of the variable to monitor for state changes
+     * @param periodType the type of time period to consider (e.g., hours, days)
+     * @param periodCount the number of periods to look back from the current time
+     * @param toTrue boolean indicating if the state change to be counted is towards true
+     * @return the count of state changes for the specified variable within the given period
+     */
+    public static <D extends Data> Integer getStateChanged(Class<D> dataClass, Id unitId, String variable,
+                                                           PeriodType periodType, int periodCount, boolean toTrue) {
+        long to = System.currentTimeMillis();
+        long from = periodType.time(to, -periodCount);
+        return getStateChanged(dataClass, unitId, variable, from, to, toTrue);
+    }
+
+    /**
+     * Computes the number of occurrences of a specific variable with a specified value
+     * for a given data class and unit within a defined time range.
+     *
+     * @param <D>       The type of data class, which must extend the {@code Data} class.
+     * @param dataClass The data class in which the count is being queried.
+     * @param unitId    The identifier of the unit whose data is being queried.
+     * @param variable  The name of the variable to query for.
+     * @param value     The value of the variable to count occurrences of.
+     * @param from      The start time (inclusive) of the time range in milliseconds.
+     * @param to        The end time (inclusive) of the time range in milliseconds.
+     * @return The number of occurrences of the specified value for the variable
+     *         within the specified time range.
+     */
+    public static <D extends Data> int getValueCount(Class<D> dataClass, Id unitId, String variable, int value,
+                                                     long from, long to) {
+        return count(dataClass, "Unit=" + unitId + " AND CollectedAt BETWEEN " + from + " AND " + to + " AND "
+                + variable + "=" + value);
+    }
+
+    /**
+     * Calculates the number of occurrences of a specific variable with a given value
+     * for a specified data class and unit within a defined time period.
+     *
+     * @param <D>         The type of the data class, which must extend the {@code Data} class.
+     * @param dataClass   The data class in which the count is being queried.
+     * @param unitId      The identifier of the unit whose data is being queried.
+     * @param variable    The name of the variable to query for.
+     * @param value       The value of the variable to count occurrences of.
+     * @param periodType  The type of the time period (e.g., HOURLY, DAILY) for the query.
+     * @param periodCount The number*/
+    public static <D extends Data> int getValueCount(Class<D> dataClass, Id unitId, String variable, int value,
+                                                     PeriodType periodType, int periodCount) {
+        long to = System.currentTimeMillis();
+        long from = periodType.time(to, -periodCount);
+        return getValueCount(dataClass, unitId, variable, value, from, to);
     }
 
     /**

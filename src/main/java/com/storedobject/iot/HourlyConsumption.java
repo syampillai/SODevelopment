@@ -14,7 +14,7 @@ import java.util.List;
  *
  * @author Syam
  */
-public final class HourlyConsumption extends Consumption {
+public final class HourlyConsumption extends Consumption<PeriodType> {
 
     private int hour;
 
@@ -114,7 +114,7 @@ public final class HourlyConsumption extends Consumption {
         Date date = date();
         Resource resource = getResource();
         Id itemId = getItemId();
-        List<Consumption> others = new ArrayList<>();
+        List<Consumption<?>> others = new ArrayList<>();
         others.add(resource.createDailyConsumption(itemId, date));
         others.add(resource.createWeeklyConsumption(itemId, date));
         others.add(resource.createMonthlyConsumption(itemId, date));
@@ -131,7 +131,7 @@ public final class HourlyConsumption extends Consumption {
             if(au instanceof Unit) {
                 for(UnitItem ui: list(UnitItem.class, "Unit=" + au.getId() + " AND NOT Independent",
                         true)) {
-                    Consumption c;
+                    Consumption<?> c;
                     c = resource.createHourlyConsumption(ui.getId(), date);
                     if(!c.isVirtual()) {
                         consumption = -c.getConsumption();
@@ -161,7 +161,7 @@ public final class HourlyConsumption extends Consumption {
             }
             consumption = -getConsumption();
             delete(t);
-            for(Consumption c: others) {
+            for(Consumption<?> c: others) {
                 c.addConsumption(consumption);
                 c.save(t);
             }
@@ -206,5 +206,15 @@ public final class HourlyConsumption extends Consumption {
         }
         ++y;
         return get(HourlyConsumption.class, "Year=" + y + " AND Hour=1" + cond());
+    }
+
+    /**
+     * Retrieves the type of period associated with this instance.
+     *
+     * @return the {@link PeriodType} representing the period type, which is {@code HOURLY} in this implementation.
+     */
+    @Override
+    public PeriodType getPeriodType() {
+        return PeriodType.HOURLY;
     }
 }

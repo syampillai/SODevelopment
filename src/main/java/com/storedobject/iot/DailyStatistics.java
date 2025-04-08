@@ -14,7 +14,7 @@ import com.storedobject.core.annotation.*;
  *
  * @author Syam
  */
-public final class DailyStatistics extends Statistics {
+public final class DailyStatistics extends Statistics<PeriodType> {
 
     private int day;
 
@@ -130,5 +130,16 @@ public final class DailyStatistics extends Statistics {
         }
         ++y;
         return get(DailyStatistics.class, "Year=" + y + " AND Day=1" + cond());
+    }
+
+    /**
+     * Retrieves the type of period represented by this instance.
+     *
+     * @return the period type as an enumeration value. This method returns {@code PeriodType.DAILY},
+     * indicating that the associated statistics pertain to daily data.
+     */
+    @Override
+    public PeriodType getPeriodType() {
+        return PeriodType.DAILY;
     }
 }

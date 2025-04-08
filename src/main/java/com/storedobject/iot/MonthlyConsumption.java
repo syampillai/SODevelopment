@@ -10,7 +10,7 @@ import com.storedobject.core.annotation.*;
  *
  * @author Syam
  */
-public final class MonthlyConsumption extends Consumption {
+public final class MonthlyConsumption extends Consumption<PeriodType> {
 
     private int month;
 
@@ -121,5 +121,10 @@ public final class MonthlyConsumption extends Consumption {
             y++;
         }
         return get(MonthlyConsumption.class, "Year=" + y + " AND Month=" + m + cond());
+    }
+
+    @Override
+    public PeriodType getPeriodType() {
+        return PeriodType.MONTHLY;
     }
 }
