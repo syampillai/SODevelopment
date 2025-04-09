@@ -5,10 +5,7 @@ import com.storedobject.core.DateUtility;
 import com.storedobject.core.StoredObject;
 import com.storedobject.core.TimestampPeriod;
 import com.storedobject.iot.*;
-import com.storedobject.ui.ELabel;
-import com.storedobject.ui.ELabelField;
-import com.storedobject.ui.ObjectComboField;
-import com.storedobject.ui.TimestampPeriodField;
+import com.storedobject.ui.*;
 import com.storedobject.vaadin.DataForm;
 import com.storedobject.vaadin.MultiSelectGrid;
 
@@ -19,10 +16,11 @@ import java.util.function.Consumer;
 public abstract class SelectData extends BlockSelector {
 
     private final TimestampPeriodField periodField = new TimestampPeriodField("Period");
+    private final MinutesField timeStepField = new MinutesField("Time Slice");
 
     public SelectData(String caption, Block block) {
         super(caption, block);
-        addField(periodField);
+        addField(periodField, timeStepField);
         siteChanged(block.getSite());
     }
 
@@ -91,7 +89,7 @@ public abstract class SelectData extends BlockSelector {
     }
 
     protected void process(Unit unit, @SuppressWarnings("rawtypes") Collection<ValueDefinition> valueDefinitions) {
-        Data4Unit.process(unit, valueDefinitions, periodField.getValue(), getProcessor());
+        Data4Unit.process(unit, valueDefinitions, periodField.getValue(), timeStepField.getValue() * 60000, getProcessor());
     }
 
     protected abstract Consumer<Data4Unit> getProcessor();

@@ -5,10 +5,12 @@ import com.storedobject.core.DateUtility;
 import com.storedobject.core.StoredObject;
 import com.storedobject.core.StoredObjectUtility;
 import com.storedobject.core.StringUtility;
+import com.storedobject.iot.Data;
 import com.storedobject.office.ExcelReport;
 import com.storedobject.ui.Application;
 
 import java.sql.Timestamp;
+import java.util.function.Predicate;
 
 public class DataDownload extends ExcelReport {
 
@@ -35,7 +37,9 @@ public class DataDownload extends ExcelReport {
             setCellValue(h.substring(h.indexOf(" AS ") + 4));
             moveRight();
         }
-        for(StoredObject so: StoredObject.list(data4Unit.dataClass(), data4Unit.condition(), "CollectedAt")) {
+        Predicate<Data> filter = data4Unit.sliceFilter();
+        for(StoredObject so: StoredObject.list(data4Unit.dataClass(), data4Unit.condition(), "CollectedAt")
+                .filter(filter)) {
             goToCell(0, row++);
             setCellValue(new Timestamp((long)mls[0].invoke(so, true) + timeDifference));
             getCell().setCellStyle(getDateTimeStyle());

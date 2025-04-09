@@ -1327,19 +1327,25 @@ public class Application extends com.storedobject.vaadin.Application implements 
     }
 
     public void information(StyledBuilder appDetails) {
-        String ls;
+        String s;
         appDetails
                 .append("Build: ").append(getDriverIdentifier())
                 .newLine().append("Device Size: ").append(getDeviceWidth()).append('x').append(getDeviceHeight())
                 .newLine().append("URL: ").append(getURL())
                 .newLine().append("Biometric Available: ").append(isBiometricAvailable())
                 .newLine().append("Biometric Registered: ").append(isBiometricRegistered())
-                .newLine().append("License Status: ").append(ls = ApplicationServer.getLicenseStatus());
-        if(!"Free".equals(ls)) {
+                .newLine().append("License Status: ").append(s = ApplicationServer.getLicenseStatus());
+        if(!"Free".equals(s)) {
             String ld = Secret.log(getTransactionManager());
             if(ld != null) {
                 appDetails.newLine().append("License Detail:").newLine().append(ld.substring(ld.indexOf('\n') + 1));
             }
+        }
+        String db;
+        appDetails.newLine().append("DB: ").append(db = SQLConnector.getDatabaseName());
+        s = SQLConnector.getDatabaseMasterName();
+        if(s != null && !s.isBlank() && !db.equals(s)) {
+            appDetails.append(", Logic from: ").append(s);
         }
         appDetails.update();
     }

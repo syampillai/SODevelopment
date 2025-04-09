@@ -29,6 +29,8 @@ public class GUI implements Executable {
     private ValueChart valueChart;
     private SiteView siteView;
     private StatusGrid statusGrid;
+    private DownloadData downloadData;
+    private ViewData viewData;
     private final boolean devMode;
     private final List<Unit> units = new ArrayList<>();
     private Block block;
@@ -41,6 +43,7 @@ public class GUI implements Executable {
     BlockView blockView;
     boolean allowCommand = true;
     boolean allowDownload = true;
+    boolean allowStatus = true;
 
     /**
      * Default constructor for the GUI class.
@@ -252,6 +255,10 @@ public class GUI implements Executable {
      * interface for monitoring or interacting with the current system status.
      */
     public void showStatusGrid() {
+        if(!allowStatus) {
+            Application.message("Not allowed");
+            return;
+        }
         Block block = anyBlock();
         if(block == null) {
             return;
@@ -308,7 +315,16 @@ public class GUI implements Executable {
             Application.message("Not allowed");
             return;
         }
-        new DownloadData(getBlock()).execute();
+        Block block = getBlock();
+        if(block == null) {
+            return;
+        }
+        if(downloadData == null) {
+            downloadData = new DownloadData(block);
+        } else {
+            downloadData.setBlock(block);
+        }
+        downloadData.execute();
     }
 
     /**
@@ -320,7 +336,16 @@ public class GUI implements Executable {
      * initiates data processing and viewing within the associated framework.
      */
     public void viewData() {
-        new ViewData(getBlock(), allowDownload).execute();
+        Block block = getBlock();
+        if(block == null) {
+            return;
+        }
+        if(viewData == null) {
+            viewData = new ViewData(block, allowDownload);
+        } else {
+            viewData.setBlock(block);
+        }
+        viewData.execute();
     }
 
     /**
@@ -479,7 +504,7 @@ public class GUI implements Executable {
      * @return a Button instance configured with a label, icon, and click listener
      */
     Button statusGridButton() {
-        return new Button("Status", VaadinIcon.DASHBOARD, e -> showStatusGrid());
+        return allowStatus ? new Button("Status", VaadinIcon.DASHBOARD, e -> showStatusGrid()) : null;
     }
 
     /**
@@ -576,6 +601,15 @@ public class GUI implements Executable {
      */
     public void setAllowDownload(boolean allowDownload) {
         this.allowDownload = allowDownload;
+    }
+
+    /**
+     * Set whether viewing status (alarm) screen is possible or not.
+     *
+     * @param allowStatus True/false
+     */
+    public void setAllowStatus(boolean allowStatus) {
+        this.allowStatus = allowStatus;
     }
 
     private static class BS extends BlockSelector {

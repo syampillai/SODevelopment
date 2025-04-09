@@ -57,6 +57,17 @@ public abstract class BlockSelector extends DataForm implements Transactional {
     protected void blockChanged(Block newBlock) {
     }
 
+    public void setBlock(Block block) {
+        if(block == null) {
+            return;
+        }
+        Site site = siteField.getObject();
+        if(site == null) {
+            siteField.setValue(block.getSite());
+        }
+        blockField.setValue(block);
+    }
+
     public void setSite(Site site) {
         siteField.setValue(site);
         siteField.setReadOnly(site != null);

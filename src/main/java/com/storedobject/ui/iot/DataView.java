@@ -10,6 +10,7 @@ import com.storedobject.vaadin.ButtonLayout;
 import com.vaadin.flow.component.Component;
 
 import java.sql.Timestamp;
+import java.util.function.Predicate;
 
 public class DataView<D extends Data> extends ObjectGrid<D> {
 
@@ -25,7 +26,9 @@ public class DataView<D extends Data> extends ObjectGrid<D> {
         Unit unit = data4Unit.unit();
         this.site = unit.getSite();
         setFilter(data4Unit.condition(), false);
-        setOrderBy(data4Unit.orderBy(), false);
+        setOrderBy("CollectedAt DESC", false);
+        //noinspection unchecked
+        setLoadFilter((Predicate<D>) data4Unit.sliceFilter(), false);
         load();
     }
 
@@ -38,7 +41,8 @@ public class DataView<D extends Data> extends ObjectGrid<D> {
     public Component createHeader() {
         //noinspection resource
         return new ButtonLayout(new ELabel("Unit: " + data4Unit.unit().getName()),
-                canDownload ? new Button("Download", e -> new DataDownload(data4Unit).execute()) : null,
+                canDownload ? new Button("Download",
+                        e -> new DataDownload(data4Unit).execute()) : null,
                 new Button("Exit", e -> close()));
     }
 }

@@ -48,7 +48,7 @@ public class DownloadData extends SelectData {
             ddField = new ComboField<>("Select", list);
             ddField.setItemLabelGenerator(DataDownload::getFileName);
             addField(ddField);
-            ddField.setValue(list.get(0));
+            ddField.setValue(list.getFirst());
         }
 
         @Override
