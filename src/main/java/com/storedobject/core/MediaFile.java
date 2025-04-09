@@ -1,8 +1,11 @@
 package com.storedobject.core;
 
 import java.math.BigDecimal;
+import java.util.Random;
 
 public final class MediaFile extends Name implements ContentType {
+
+    private final static Random random = new Random();
 
     public MediaFile() {
     }
@@ -39,14 +42,14 @@ public final class MediaFile extends Name implements ContentType {
     }
 
     public String getFileName() {
-        return null;
+        return random.nextBoolean() ? "file" : null;
     }
 
     public static MediaFile get(String name) {
-        return null;
+        return random.nextBoolean() ? new MediaFile() : null;
     }
 
     public static ObjectIterator<MediaFile> list(String name) {
-        return null;
+        return ObjectIterator.create();
     }
 }

@@ -149,4 +149,12 @@ public final class TaxRate extends StoredObject {
         }
         return new Percentage();
     }
+
+    public static Percentage getRate(TaxType type) {
+        return getRate(type.getId());
+    }
+
+    public static Percentage getRate(Id typeId) {
+        return getRate(DateUtility.today(), typeId);
+    }
 }
