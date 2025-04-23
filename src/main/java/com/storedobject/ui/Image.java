@@ -8,12 +8,13 @@ import com.storedobject.core.Signature;
 import com.storedobject.core.StreamData;
 import com.storedobject.ui.util.SOServlet;
 import com.storedobject.vaadin.PaintedImageResource;
+import com.storedobject.vaadin.View;
+import com.storedobject.vaadin.WindowDecorator;
+import com.vaadin.flow.component.HasStyle;
+import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.server.AbstractStreamResource;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.StreamResourceWriter;
-
-import java.io.*;
-import java.nio.charset.StandardCharsets;
 
 public class Image extends com.storedobject.vaadin.Image {
 
@@ -74,19 +75,31 @@ public class Image extends com.storedobject.vaadin.Image {
         return mf == null ? null : new Image(mf);
     }
 
-    private static InputStream noSVGStream() {
-        return new ByteArrayInputStream(
-                """
-                <svg xmlns="http://www.w3.org/2000/svg" width="0" height="0"/>
-                """.getBytes(StandardCharsets.UTF_8));
-    }
-
     private static class NoImageResource extends StreamResource {
 
         private NoImageResource() {
             super(PaintedImageResource.createBaseFileName() + ".svg",
                     (StreamResourceWriter) (outputStream, vs)
-                            -> IO.copy(noSVGStream(), outputStream, true));
+                            -> IO.copy(MediaFile.noImage().getFile().getContent(), outputStream, true));
         }
+    }
+
+    public static void setAsBackground(MediaFile mediaFile, HasStyle component) {
+        if(component instanceof Dialog dialog) {
+            component = dialog.getChildren().filter(c -> !(c instanceof WindowDecorator))
+                    .findFirst().orElse(null);
+            if(component == null) {
+                return;
+            }
+        }
+        component.getStyle()
+                .set("background-image", "url('" + resource(mediaFile) + "')")
+                .set("background-repeat", "no-repeat")
+                .set("background-size", "cover")
+                .set("background-position", "center");
+    }
+
+    public static void setAsBackground(MediaFile mediaFile, View view) {
+        setAsBackground(mediaFile, view.getComponent());
     }
 }

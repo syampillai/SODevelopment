@@ -77,11 +77,11 @@ public class AlertGenerator {
                             if(alarm == null || (System.currentTimeMillis() - alarm.time) > 3600000L
                                     || ds.alarm() != alarm.alarm) { // 1 hour expired or alarm state changed
                                 alarms.put(ds.getId(), new Alarm(System.currentTimeMillis(), ds, ds.alarm()));
-                                alert(ds);
+                                alert(ds, false);
                             }
                         } else if(alarm != null) { // Became normal
                             alarms.remove(ds.getId());
-                            alert(ds);
+                            alert(ds, true);
                         }
                     });
                 }
@@ -90,15 +90,24 @@ public class AlertGenerator {
         });
     }
 
-    private static void alert(DataSet.DataStatus<?> ds) {
+    private static void alert(DataSet.DataStatus<?> ds, boolean fixed) {
         MessageGroup mg = messageGroups.get(ds.unit.getBlockId());
         if(mg == null) {
             mg = ds.unit.getBlock().getMessageGroup();
             messageGroups.put(ds.unit.getBlockId(), mg);
         }
         try {
+            String v = val(ds);
+            if(fixed) {
+                v += " (Issue Fixed)";
+            } else {
+                String m = ds.getAlarmMessage();
+                if(m != null && !m.isEmpty()) {
+                    v += " (" + m + ")";
+                }
+            }
             mg.send(tm, ds.unit.getSite().getName(), ds.unit.getBlock().getName(),
-                    ds.valueDefinition.getShortName() + " = " + val(ds));
+                    ds.valueDefinition.getShortName() + " = " + v);
         } catch (Throwable e) {
             tm.log(e);
         }
@@ -124,7 +133,7 @@ public class AlertGenerator {
         lastUpdateTime = now;
         if(commError) {
             commError = false;
-            send(tm, "IoT Communication Restored", Database.get().name());
+            sendCommStatus("IoT Communication Restored", Database.get().name());
         }
     }
 
@@ -134,10 +143,10 @@ public class AlertGenerator {
         }
         lastUpdateTime = System.currentTimeMillis() + COMM_CHECK_INTERVAL; // This will delay the next duplicate message
         commError = true;
-        send(tm, "IoT Communication Failure", Database.get().name());
+        sendCommStatus("IoT Communication Failure", Database.get().name());
     }
 
-    private static void send(Object... parameters) {
+    private static void sendCommStatus(Object... parameters) {
         try {
             MessageGroup.send("IOT_ERROR_MONITOR", tm, parameters);
         } catch (Throwable e) {

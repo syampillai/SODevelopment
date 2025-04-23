@@ -76,8 +76,7 @@ public class MeasurementField<T extends Quantity> extends TranslatedField<T, T> 
      */
     public MeasurementField(String label, T quantity, int width, int decimals) {
         //noinspection unchecked
-        this(label, (Class<T>) quantity.getClass(), width, decimals, quantity.getUnit());
-        setValue(quantity);
+        this(label, (Class<T>) quantity.getClass(), width, decimals, quantity.getUnit(), quantity);
     }
 
     /**
@@ -141,7 +140,7 @@ public class MeasurementField<T extends Quantity> extends TranslatedField<T, T> 
      * @param decimals Number of decimal places.
      */
     public MeasurementField(String label, Class<T> quantityClass, int width, int decimals) {
-        this(label, quantityClass, width, decimals, null);
+        this(label, quantityClass, width, decimals, null, null);
     }
 
     /**
@@ -206,18 +205,27 @@ public class MeasurementField<T extends Quantity> extends TranslatedField<T, T> 
      */
     public MeasurementField(String label, MeasurementUnit unit, int width, int decimals) {
         //noinspection unchecked
-        this(label, (Class<T>) unit.getQuantityClass(), width, decimals, unit);
+        this(label, (Class<T>) unit.getQuantityClass(), width, decimals, unit, (T)Quantity.create(unit));
     }
 
-    private MeasurementField(String label, Class<T> quantityClass, int width, int decimals, MeasurementUnit unit) {
-        this(label, createQField(quantityClass, width, decimals, unit));
+    private MeasurementField(String label, Class<T> quantityClass, int width, int decimals, MeasurementUnit unit, T quantity) {
+        this(label, createQField(quantityClass, width, decimals, unit), quantity);
     }
 
-    private MeasurementField(String label, AbstractQuantityField<T> field) {
+    private MeasurementField(String label, AbstractQuantityField<T> field, T quantity) {
         super(field, (f, q) -> q, (f, q) -> q);
         if(label != null) {
             setLabel(label);
         }
+        if(quantity != null) {
+            setValue(quantity);
+        }
+    }
+
+    @Override
+    protected boolean valueEquals(T value1, T value2) {
+        //noinspection unchecked
+        return ((AbstractQuantityField<T>)getField()).valueEquals(value1, value2);
     }
 
     private static <Q extends Quantity> AbstractQuantityField<Q> createQField(Class<Q> quantityClass, int width,

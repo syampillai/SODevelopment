@@ -134,6 +134,16 @@ public class SOServlet extends VaadinServlet {
                     }
                 }
             }
+            try {
+                com.storedobject.platform.Application a = com.storedobject.platform.Application.get(SQLConnector.getDatabaseName(), getServer());
+                if(a == null) {
+                    ApplicationServer.log("Unable to communicate with SO Platform environment.");
+                } else {
+                    a.setOwner(Scheduler.getInstance());
+                }
+            } catch (Throwable ignored) {
+                ApplicationServer.log("Not running in a SO Platform environment.");
+            }
         }
 
         // Check for CORS requests

@@ -13,6 +13,8 @@ import java.util.*;
  * Message sender.
  * <p>Note: All message senders (SMS, Email, Telegram etc.) must extend this class.</p>
  *
+ * @param <T> Type of message.
+ *
  * @author Syam
  */
 public abstract class MessageSender<T extends Message> extends DaemonJob {
@@ -22,6 +24,7 @@ public abstract class MessageSender<T extends Message> extends DaemonJob {
     private final Object lock = new Object();
     private byte stage = 0;
     private Timer timer;
+    private static MessageGroup mg;
 
     /**
      * Constructor.
@@ -136,7 +139,13 @@ public abstract class MessageSender<T extends Message> extends DaemonJob {
         if(bs <= 0) {
             bs = 50;
         }
-        List<T> messages = StoredObject.list(messageClass, "NOT Sent", "CreatedAt,Sent")
+        String condition = getSelectCondition();
+        if(condition != null && !condition.isBlank()) {
+            condition = " AND " + condition;
+        } else {
+            condition = "";
+        }
+        List<T> messages = StoredObject.list(messageClass, "NOT Sent AND Error=0" + condition, "CreatedAt,Sent")
                 .filter(this::canSend).limit(bs).toList();
         if(!messages.isEmpty() && monitorDeliveryCost()) {
             int balance = getCreditBalance();
@@ -157,30 +166,16 @@ public abstract class MessageSender<T extends Message> extends DaemonJob {
         if(messages.isEmpty()) {
             return false;
         }
-        return send(messages);
+        return sendMessages(messages);
     }
 
-    private boolean send(List<T> messages) {
-        int error;
-        for(T m: messages) {
-            error = sendMessage(m);
-            switch (error) {
-                case 1, 2 -> m.setError(error);
-                default -> m.sent(error);
-            }
-        }
-        try {
-            if(getTransactionManager().transact(t -> {
-                for(T m: messages) {
-                    m.save(t);
-                }
-            }) == 0) {
-                return true;
-            }
-        } catch(Exception e) {
-            mg(e);
-        }
-        return false;
+    /**
+     * Additional condition to be be added when messages are read for sending.
+     *
+     * @return Default implementation returns null, so no additional selection criteria are applied.
+     */
+    protected String getSelectCondition() {
+        return null;
     }
 
     /**
@@ -215,11 +210,42 @@ public abstract class MessageSender<T extends Message> extends DaemonJob {
     }
 
     /**
-     * Send a message.
+     * Send a batch of messages. The default implementation of this method processes each message by invoking
+     * {@link #sendMessage(Message)} and if this is overridden, the {@link #sendMessage(Message)} will not be
+     * invoked from elsewhere.
+     * <p>Note: The Status of the message should be updated adn saved within this method if overridden.</p>
+     * @param messages Messages to be sent.
+     * @return True if messages are sent successfully.
+     */
+    protected boolean sendMessages(List<T> messages) {
+        int error;
+        for(T m: messages) {
+            error = sendMessage(m);
+            switch (error) {
+                case 1, 2 -> m.setError(error);
+                default -> m.sent(error);
+            }
+        }
+        try {
+            if(getTransactionManager().transact(t -> {
+                for(T m: messages) {
+                    m.save(t);
+                }
+            }) == 0) {
+                return true;
+            }
+        } catch(Exception e) {
+            mg(e);
+        }
+        return false;
+    }
+
+    /**
+     * Send a message. The method should just send the message and should not update any status.
      *
      * @param message Message to send.
      * @return The error code to indicate the status. 0: Successful, 1: Retry later, 2: Insufficient balance. Anything
-     * above 2 indicates an error condition that doesn't allow this message to be sent (for example: invalid mobile
+     * above 2 indicates an error condition that doesn't allow this message to be sent (for example, invalid mobile
      * number in case of an {@link SMSMessage}).
      */
     protected abstract int sendMessage(T message);
@@ -244,6 +270,15 @@ public abstract class MessageSender<T extends Message> extends DaemonJob {
 
     private void mg(Object any) {
         TransactionManager tm = getTransactionManager();
+        if(mg == null) {
+            mg = MessageGroup.create("MESSAGE_DELIVERY", tm);
+            if(mg != null && !schedule.existsLink(mg)) {
+                try {
+                    tm.transact(t -> schedule.addLink(t, mg));
+                } catch (Exception ignored) {
+                }
+            }
+        }
         tm.log(any);
         alert(any);
     }

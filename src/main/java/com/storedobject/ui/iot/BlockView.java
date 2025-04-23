@@ -52,8 +52,6 @@ public class BlockView extends TemplateView implements Transactional, CloseableV
      * - Registers a content resize listener to detect changes in content size
      *   and triggers a reload of the view upon size changes.
      * </pre>
-     *
-     * @author Syam
      */
     public BlockView() {
         super();

@@ -914,11 +914,11 @@ public abstract class Unit extends AbstractUnit {
      */
     public final List<DailyStatistics> listDailyStatistics(String name, int year, int dayFrom, int dayTo) {
         if(dayFrom == dayTo) {
-            return listStatistics(name, DailyStatistics.class, "Year=" + year + " AND Day=" + dayFrom, "Hour");
+            return listStatistics(name, DailyStatistics.class, "Year=" + year + " AND Day=" + dayFrom, "Day");
         }
         if(dayFrom < dayTo) {
             return listStatistics(name, DailyStatistics.class, "Year=" + year + " AND Day BETWEEN "
-                    + dayFrom + " AND " + dayTo, "Hour");
+                    + dayFrom + " AND " + dayTo, "Day");
         }
         List<DailyStatistics> con = listDailyStatistics(name, year, dayFrom, 366);
         con.addAll(listDailyStatistics(name, year + 1, 1, dayTo));
@@ -973,7 +973,7 @@ public abstract class Unit extends AbstractUnit {
      * @return the daily statistics corresponding to the specified parameters
      */
     public final DailyStatistics getDailyStatistics(String name, int year, int day) {
-        return getStatistics(name, DailyStatistics.class, "Year=" + year + " AND Day=" + day, "Hour");
+        return getStatistics(name, DailyStatistics.class, "Year=" + year + " AND Day=" + day, "Day");
     }
 
     /**

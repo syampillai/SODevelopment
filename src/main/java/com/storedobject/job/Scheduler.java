@@ -12,6 +12,14 @@ public final class Scheduler extends SystemDevice {
         return "";
     }
 
+    public static String getStatusValue() {
+        return "";
+    }
+
+    public static int getStatusCode() {
+        return 0;
+    }
+
     public static void restart() {
     }
 

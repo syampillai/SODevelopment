@@ -39,53 +39,29 @@ public class Application extends com.storedobject.vaadin.Application implements 
 
     public static final String COLOR_ERROR = "var(--so-error-color)", COLOR_SUCCESS = "var(--so-success-color)",
             COLOR_INFO = "var(--so-info-color)", COLOR_NORMAL = "var(--so-normal-color)";
-    private static final String COMPACT_STYLES =
-            """
-                    --lumo-size-xl: 3rem;
-                    --lumo-size-l: 2.5rem;
-                    --lumo-size-m: 2rem;
-                    --lumo-size-s: 1.75rem;
-                    --lumo-size-xs: 1.5rem;
-                    --lumo-font-size: 1rem;
-                    --lumo-font-size-xxxl: 1.75rem;
-                    --lumo-font-size-xxl: 1.375rem;
-                    --lumo-font-size-xl: 1.125rem;
-                    --lumo-font-size-l: 1rem;
-                    --lumo-font-size-m: 0.875rem;
-                    --lumo-font-size-s: 0.8125rem;
-                    --lumo-font-size-xs: 0.75rem;
-                    --lumo-font-size-xxs: 0.6875rem;
-                    --lumo-line-height-m: 1.4;
-                    --lumo-line-height-s: 1.2;
-                    --lumo-line-height-xs: 1.1;
-                    --lumo-space-xl: 1.875rem;
-                    --lumo-space-l: 1.25rem;
-                    --lumo-space-m: 0.625rem;
-                    --lumo-space-s: 0.3125rem;
-                    --lumo-space-xs: 0.1875rem;""";
-    private static final String DELETE_COMPACT_STYLES = """
-            --lumo-size-xl
-            --lumo-size-l
-            --lumo-size-m
-            --lumo-size-s
-            --lumo-size-xs
-            --lumo-font-size
-            --lumo-font-size-xxxl
-            --lumo-font-size-xxl
-            --lumo-font-size-xl
-            --lumo-font-size-l
-            --lumo-font-size-m
-            --lumo-font-size-s
-            --lumo-font-size-xs
-            --lumo-font-size-xxs
-            --lumo-line-height-m
-            --lumo-line-height-s
-            --lumo-line-height-xs
-            --lumo-space-xl
-            --lumo-space-l
-            --lumo-space-m
-            --lumo-space-s
-            --lumo-space-xs
+    private static final String COMPACT_STYLES = """
+            --lumo-size-xl: 3rem;
+            --lumo-size-l: 2.5rem;
+            --lumo-size-m: 2rem;
+            --lumo-size-s: 1.75rem;
+            --lumo-size-xs: 1.5rem;
+            --lumo-font-size: 1rem;
+            --lumo-font-size-xxxl: 1.75rem;
+            --lumo-font-size-xxl: 1.375rem;
+            --lumo-font-size-xl: 1.125rem;
+            --lumo-font-size-l: 1rem;
+            --lumo-font-size-m: 0.875rem;
+            --lumo-font-size-s: 0.8125rem;
+            --lumo-font-size-xs: 0.75rem;
+            --lumo-font-size-xxs: 0.6875rem;
+            --lumo-line-height-m: 1.4;
+            --lumo-line-height-s: 1.2;
+            --lumo-line-height-xs: 1.1;
+            --lumo-space-xl: 1.875rem;
+            --lumo-space-l: 1.25rem;
+            --lumo-space-m: 0.625rem;
+            --lumo-space-s: 0.3125rem;
+            --lumo-space-xs: 0.1875rem;
             """;
     private ApplicationServer server;
     private BrowserDeviceLayout layout = null;
@@ -245,8 +221,10 @@ public class Application extends com.storedobject.vaadin.Application implements 
     public void attached() {
         super.attached();
         setCompactTheme(ApplicationServer.getGlobalBooleanProperty("application.theme.compact", true));
-        getUI().getElement().getStyle().set("--so-error-color", "red").set("--so-success-color", "blue")
-                .set("--so-info-color", "green").set("--so-normal-color", "black");
+        getUI().getElement().getStyle().set("--so-error-color", "var(--lumo-error-color)")
+                .set("--so-success-color", "var(--lumo-primary-color)")
+                .set("--so-info-color", "var(--lumo-success-color)")
+                .set("--so-normal-color", "--lumo-body-text-color");
         loadStyles(SOServlet.getTextContent("styles.css"));
     }
 
@@ -289,7 +267,7 @@ public class Application extends com.storedobject.vaadin.Application implements 
     private void compactThemeOff() {
         UI ui = getUI();
         Style s = ui.getElement().getStyle();
-        try(BufferedReader r = new BufferedReader(new StringReader(Application.DELETE_COMPACT_STYLES))) {
+        try(BufferedReader r = new BufferedReader(new StringReader(Application.COMPACT_STYLES))) {
             r.lines().forEach(line -> {
                 line = line.trim();
                 if(line.endsWith(";")) {
@@ -873,6 +851,10 @@ public class Application extends com.storedobject.vaadin.Application implements 
         return mainLayout.isMenuOpened();
     }
 
+    public static MediaFile getHomeImage() {
+        return SOServlet.getImage("homeview", "homeimage", "background");
+    }
+
     @Override
     public final void login() {
         if(login == null) {
@@ -887,7 +869,7 @@ public class Application extends com.storedobject.vaadin.Application implements 
             if(home != null) {
                 new HomeHTMLView(home).execute();
             } else {
-                MediaFile background = SOServlet.getImage("homeview", "background");
+                MediaFile background = getHomeImage();
                 if(background != null) {
                     new ImageView(background).execute();
                 }

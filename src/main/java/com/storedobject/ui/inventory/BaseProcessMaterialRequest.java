@@ -988,7 +988,7 @@ public class BaseProcessMaterialRequest<MR extends MaterialRequest, MRI extends 
                     resetQuantityEdit.setVisible(!quantityEdited.isEmpty());
                 }
                 fillingMode.setItems(actions);
-                fillingMode.setValue(actions.get(0));
+                fillingMode.setValue(actions.getFirst());
                 fillingMode.setVisible(selectedSet.isEmpty());
                 super.execute(parent, doNotLock);
             }

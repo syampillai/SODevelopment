@@ -12,6 +12,8 @@ public final class ContactType extends StoredObject {
 			"Address",
 			"Other",
 			"Telegram",
+			"Android",
+			"iOS (Apple)"
 	};
 	private int displayOrder;
 	private String name;
@@ -50,13 +52,20 @@ public final class ContactType extends StoredObject {
 		if(type == 4 && groupingCode != 0) {
 			throw new Invalid_State("Telegram can be added to persons only");
 		}
-		if(type == 4) {
-			name = "Telegram";
-		}
-		if(!created() && type == 4) {
-			ContactType ct = get(ContactType.class, "Type=4");
+		boolean unique = false;
+		name = switch (type) {
+			case 4, 5, 6 -> {
+				unique = true;
+				displayOrder = Integer.MAX_VALUE - 6 - type;
+				groupingCode = 0;
+				yield getTypeValue();
+			}
+			default -> name;
+		};
+		if(!created() && unique) {
+			ContactType ct = get(ContactType.class, "Type=" + type);
 			if(ct != null) {
-				throw new Invalid_State("Telegram contact type already exists");
+				throw new Invalid_State(getTypeValue() + " contact type already exists");
 			}
 		}
 		if(StringUtility.isWhite(name)) {
@@ -145,6 +154,14 @@ public final class ContactType extends StoredObject {
 		return createFor(tm,4);
 	}
 
+	public static ContactType createForAndroid(TransactionManager tm) {
+		return createFor(tm,5);
+	}
+
+	public static ContactType createForIOS(TransactionManager tm) {
+		return createFor(tm,6);
+	}
+
 	static ContactType createFor(TransactionManager tm, int type) {
 		ContactType ct = StoredObject.get(ContactType.class, "Type=" + type + " AND GroupingCode=0");
 		if(ct != null) {
@@ -162,8 +179,6 @@ public final class ContactType extends StoredObject {
 			}
 			ct = new ContactType();
 			ct.setType(type);
-			ct.setDisplayOrder(Integer.MAX_VALUE - 10);
-			ct.setGroupingCode(0);
 			if (tm.transact(ct::save) == 0) {
 				return ct;
 			}

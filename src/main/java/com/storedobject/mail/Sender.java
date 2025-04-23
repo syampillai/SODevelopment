@@ -15,12 +15,15 @@ import jakarta.mail.internet.MimeMultipart;
 
 import java.io.*;
 import java.math.BigDecimal;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 
 public abstract class Sender extends StoredObject implements Closeable {
 
-	private static final int BATCH_SIZE = 25;
+	static final int BATCH_SIZE = 25;
+	static final Set<Id> invalidGroups = new HashSet<>();
     private static final String[] statusValues = new String[] {
         "Active",
         "Inactive",
@@ -402,12 +405,16 @@ public abstract class Sender extends StoredObject implements Closeable {
 		}
 	}
 
+	static int sendMails(List<Mail> mails, TransactionManager tm) {
+		return sendMailsInt(tm, ObjectIterator.create(mails), null);
+	}
+
 	public static int sendMails(TransactionManager tm) {
 		return sendMails(-1, tm);
 	}
 
 	public static int sendMails(int count, TransactionManager tm) {
-		List<Sender> senders = list(Sender.class, "Status=0", true).toList();
+		List<Sender> senders = senders();
 		if(senders.isEmpty()) {
 			return -1;
 		}
@@ -436,8 +443,18 @@ public abstract class Sender extends StoredObject implements Closeable {
 		mails.close();
 		return sent;
 	}
-	
+
+	private static List<Sender> senders() {
+		return list(Sender.class, "Status=0", true).toList();
+	}
+
 	private static int sendMailsInt(TransactionManager tm, ObjectIterator<Mail> mails, List<Sender> senders) {
+		if(senders == null) {
+			senders = senders();
+			if(senders.isEmpty()) {
+				return -1;
+			}
+		}
 		Transaction t = null;
 		Sender sender;
 		int senderIndex = -1, c = 0;
@@ -531,6 +548,7 @@ public abstract class Sender extends StoredObject implements Closeable {
 				break;
 			}
 		}
+		invalidGroups.add(mail.getSenderGroupId());
 		return null;
 	}
 

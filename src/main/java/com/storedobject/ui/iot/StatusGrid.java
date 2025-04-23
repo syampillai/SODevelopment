@@ -70,7 +70,7 @@ public class StatusGrid extends DataGrid<DataSet.DataStatus> {
     }
 
     public String getMessage(DataSet.DataStatus ds) {
-        return ds.getValueDefinition().getAlertMessage(ds.alarm());
+        return ds.getAlarmMessage();
     }
 
     @Override

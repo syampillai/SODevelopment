@@ -453,13 +453,13 @@ public class SystemTableDeployer extends View implements Transactional {
             }
         }
         for(String[] c : dropOuts) {
-            alterTable.add(0, pre + "DROP COLUMN " + c[0] + " CASCADE");
+            alterTable.addFirst(pre + "DROP COLUMN " + c[0] + " CASCADE");
         }
         List<String> list = Database.get().parentTable(tableName);
-        if(list.isEmpty() || !list.get(0).equalsIgnoreCase(pTableName)) {
+        if(list.isEmpty() || !list.getFirst().equalsIgnoreCase(pTableName)) {
             alterTable.add(pre + "INHERIT " + pTableName);
             if(!list.isEmpty()) {
-                alterTable.add(0, pre + "NO INHERIT " + list.get(0));
+                alterTable.addFirst(pre + "NO INHERIT " + list.getFirst());
             }
         }
         if(history) {
@@ -656,7 +656,7 @@ public class SystemTableDeployer extends View implements Transactional {
 
         private void render() {
             if(list.size() < 200) {
-                render(list.get(list.size() - 1));
+                render(list.getLast());
                 sb.update();
                 return;
             }

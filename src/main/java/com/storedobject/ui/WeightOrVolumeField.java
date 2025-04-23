@@ -53,9 +53,4 @@ public class WeightOrVolumeField extends AbstractQuantityField<WeightOrVolume> {
     public WeightOrVolumeField(String label, int width, int decimals, MeasurementUnit unit) {
         super(label, width, decimals, WeightOrVolume.class, unit);
     }
-
-    @Override
-    protected boolean valueEqualsForZero(WeightOrVolume value1, WeightOrVolume value2) {
-        return (value1.isWeightType() && value2.isWeightType()) || (!value1.isWeightType() && !value2.isWeightType());
-    }
 }

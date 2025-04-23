@@ -28,7 +28,7 @@ public class DataSet {
     private static final HashMap<String, Function<Object, String>> customFunctions = new HashMap<>();
     static {
         new Timer().schedule(new Refresher(), 3000, REFRESH_RATE * 1000L);
-        refresh();
+        refreshInt();
     }
 
     private DataSet() {
@@ -37,17 +37,20 @@ public class DataSet {
     /**
      * Used internally by data acquisition logic to update the data-update time.
      *
+     * @param unitIds Ids of the updated units.
      * @param time Time.
      */
-    static void dataUpdated(Id unitId, long time) {
-        if(lastUpdate.get() >= time) {
-            return;
-        }
+    static void dataUpdated(Set<Id> unitIds, long time) {
         synchronized(unitsUpdated) {
-            unitsUpdated.add(unitId);
+            unitsUpdated.addAll(unitIds);
         }
-        lastUpdate.set(time);
-        AlertGenerator.dataUpdated(time);
+        if(lastUpdate.get() < time) {
+            lastUpdate.set(time);
+        }
+        try {
+            AlertGenerator.dataUpdated(lastUpdate.get());
+        } catch(Throwable ignored) {
+        }
     }
 
     static void pingReceived(long time) {
@@ -91,7 +94,7 @@ public class DataSet {
         return sites;
     }
 
-    public static void refresh() {
+    private static void refreshInt() {
         try {
             AlertGenerator.clearAlerts();
             sites.clear();
@@ -101,15 +104,15 @@ public class DataSet {
         }
     }
 
-    static void scheduleRefresh() {
-        new Thread(() -> {
+    public static void refresh() {
+        Thread.startVirtualThread(() -> {
             try {
                 Thread.sleep(2000);
             } catch (InterruptedException ignored) {
             }
-            refresh();
+            refreshInt();
             Controller.restart();
-        }).start();
+        });
     }
 
     public static void register(Consumer<Id> consumer) {
@@ -239,9 +242,7 @@ public class DataSet {
         }
 
         /**
-         * Sets the necessary values or configuration associated with the current data status.
-         * This method is intended to be implemented by subclasses to define specific logic for setting
-         * data or attributes related to the data status. (For internal use only).
+         * Sets the latest value.
          */
         abstract void set();
 
@@ -482,6 +483,15 @@ public class DataSet {
         public int ordinality() {
             return unit.getOrdinality();
         }
+
+        /**
+         * Get the alarm message associated with current alarm condition.
+         *
+         * @return Alarm message.
+         */
+        public String getAlarmMessage() {
+            return valueDefinition.getAlertMessage(alarm());
+        }
     }
 
     public static class LimitStatus extends DataStatus<Double> {
@@ -502,7 +512,20 @@ public class DataSet {
             try {
                 //noinspection DataFlowIssue
                 value = valueDefinition.getValue(unit.getId());
-            } catch (Throwable ignored) {
+            } catch (Throwable throwable) {
+                /*
+                Device device = null;
+                MQTT mqtt = MQTT.get();
+                if(mqtt != null) {
+                    TransactionManager tm = mqtt.getTransactionManager();
+                    if(tm != null) {
+                        device = tm.getDevice();
+                    }
+                }
+                ApplicationServer.log(device,"Unable to set IoT value for " + valueDefinition.getName()
+                        + ", Unit: " + unit.getId());
+                ApplicationServer.log(device, throwable);
+                */
             }
         }
 
@@ -560,7 +583,7 @@ public class DataSet {
                 return 3;
             }
             if (value >= valueLimit.getHigher()) {
-                return 3;
+                return 2;
             }
             if (value >= valueLimit.getHigh()) {
                 return 1;
@@ -797,7 +820,7 @@ public class DataSet {
                 }
                 sortStatus(statusList);
                 while (statusList.size() > VALUE_COUNT) {
-                    statusList.remove(statusList.size() - 1);
+                    statusList.removeLast();
                 }
             }
             cellStatusUpdated = true;
@@ -1020,18 +1043,21 @@ public class DataSet {
         }
 
         public void load(long from, long to) {
-            String condition = "CollectedAt BETWEEN " + from + " AND " + to, conditionStart = "CollectedAt < " + from;
+            String condition = "CollectedAt BETWEEN " + from + " AND " + to + " AND Unit=",
+                    conditionStart = "CollectedAt < " + from + " AND Unit=";
             startTime = from;
             endTime = to;
             ArrayListSet<Class<Data>> classes = new ArrayListSet<>();
+            Map<Class<?>, Id> unitIds = new HashMap<>();
             values.forEach(dv -> {
                 dv.values.clear();
                 classes.add(dv.ioTClass);
+                unitIds.put(dv.ioTClass, dv.dataStatus.unit.getId());
             });
             ObjectIterator<Data> objects;
             while(!classes.isEmpty()) {
-                Class<Data> ioTObjectClass = classes.remove(0);
-                objects = StoredObject.list(ioTObjectClass, condition, "CollectedAt", true);
+                Class<Data> ioTObjectClass = classes.removeFirst();
+                objects = StoredObject.list(ioTObjectClass, condition + unitIds.get(ioTObjectClass), "CollectedAt");
                 try {
                     boolean found = false;
                     for(Data object : objects) {
@@ -1039,8 +1065,8 @@ public class DataSet {
                         extractValue(object);
                     }
                     if(!found) {
-                        Data object = StoredObject.list(ioTObjectClass, conditionStart, "CollectedAt DESC",
-                                true).findFirst();
+                        Data object = StoredObject.list(ioTObjectClass, conditionStart + unitIds.get(ioTObjectClass),
+                                "CollectedAt DESC", true).findFirst();
                         if(object != null) {
                             extractValue(object);
                         }
@@ -1167,6 +1193,14 @@ public class DataSet {
         }
 
         void add(long time, double value) {
+            time = (time / 60000) * 60000;
+            if(!values.isEmpty()) {
+                ValueAndTime v = values.getLast();
+                if(v.time == time) {
+                    value = (v.value + value) / 2;
+                    values.removeLast();
+                }
+            }
             values.add(new ValueAndTime(time, value));
         }
 

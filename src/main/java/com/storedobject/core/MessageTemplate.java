@@ -5,6 +5,7 @@ import com.storedobject.common.IO;
 import com.storedobject.common.SOException;
 import com.storedobject.core.annotation.Column;
 import com.storedobject.core.annotation.SetNotAllowed;
+import com.storedobject.whatsapp.WhatsAppMessage;
 import com.storedobject.job.MessageSender;
 import com.storedobject.mail.Mail;
 import com.storedobject.mail.SenderGroup;
@@ -20,8 +21,10 @@ public final class MessageTemplate extends StoredObject {
             "SMS",
             "Email",
             "Application",
-            "Other",
+            "WhatsApp",
             "Telegram",
+            "Android",
+            "iOS (Apple)"
     };
     private String code;
     private Id contactTypeId;
@@ -115,8 +118,8 @@ public final class MessageTemplate extends StoredObject {
 
     @Override
     public void validateData(TransactionManager tm) throws Exception {
-        if(delivery == 3) {
-            throw new Invalid_Value("Unsupported delivery type");
+        if(delivery > 4) {
+            throw new Invalid_State("Delivery type " + getDeliveryValue() + " is not configured");
         }
         if(StringUtility.isWhite(code)) {
             throw new Invalid_Value("Code");
@@ -126,12 +129,15 @@ public final class MessageTemplate extends StoredObject {
         if(StringUtility.isWhite(template)) {
             throw new Invalid_Value("Template");
         }
-        if(delivery != 2) {
-            ContactType ct = getContactType();
-            if(delivery != ct.getType()) {
-                throw new Invalid_State("Contact type (" + ct.getTypeValue() + ") doesn't match with delivery type (" +
-                        getDeliveryValue() + ")");
-            }
+        ContactType ct = getContactType();
+        boolean matched = switch (delivery) {
+            case 2 -> true; // Application - no need to check
+            case 3 -> ct.getType() == 0; // WhatsApp
+            default -> delivery == ct.getType();
+        };
+        if(!matched) {
+            throw new Invalid_State("Contact type (" + ct.getTypeValue() + ") doesn't match with delivery type (" +
+                    getDeliveryValue() + ")");
         }
         super.validateData(tm);
     }
@@ -445,7 +451,7 @@ public final class MessageTemplate extends StoredObject {
             Message message;
             switch(delivery) {
                 case 0 -> // SMS
-                    message = new SMSMessage();
+                        message = new SMSMessage();
                 case 1 -> {// Email
                     try {
                         message = Mail.createAlert(tc.getManager());
@@ -460,8 +466,10 @@ public final class MessageTemplate extends StoredObject {
                             createValidity(messageParameters));
                     return true;
                 }
+                case 3 -> // WhatsApp
+                        message = new WhatsAppMessage();
                 case 4 -> // Telegram
-                    message = new Telegram();
+                        message = new Telegram();
                 default -> {
                     tc.rollback("Don't know how to handle messages of type '" + getDeliveryValue() + "'");
                     return false;
@@ -481,13 +489,13 @@ public final class MessageTemplate extends StoredObject {
             }
             message.setSentTo(person);
             switch(delivery) {
-                case 0 -> { // SMS
+                case 0, 3 -> { // SMS, WhatsApp
                     long mobile;
                     try {
                         mobile = HasContacts.phoneToNumber(contact.getContactValue());
                     } catch (Throwable error) {
                         tc.rollback("Invalid mobile number '" + contact.getValue() +
-                                "' configured to send SMS for " + person.toDisplay());
+                                "' configured to send SMS/WhatsApp for " + person.toDisplay());
                         return false;
                     }
                     //noinspection ConstantConditions

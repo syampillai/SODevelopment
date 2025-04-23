@@ -16,7 +16,7 @@ public final class ValueStyle extends StoredObject {
     private static final String DEFAULT_1 = "color:#333333\nbackground:#FFCC33";
     private static final String DEFAULT_0 = "color:#FFFFFF\nbackground:#66CC66";
     private String style = DEFAULT_TEXT, styleLabel = "color:#FFFFFF\nbackground:#333333", styleOff = DEFAULT_3,
-            styleOn = DEFAULT_0, styleLowest = DEFAULT_2, styleLower = DEFAULT_2, styleLow = DEFAULT_1,
+            styleOn = DEFAULT_0, styleLowest = DEFAULT_3, styleLower = DEFAULT_2, styleLow = DEFAULT_1,
             styleNormal = DEFAULT_0, styleHigh = DEFAULT_1, styleHigher = DEFAULT_2, styleHighest = DEFAULT_3;
 
     public ValueStyle() {

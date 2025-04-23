@@ -24,7 +24,6 @@ public class AbstractQuantityField<T extends Quantity> extends CustomTextField<T
     private final Class<T> quantityClass;
     private final int decimals;
     private boolean required = false;
-    private boolean changed = false;
     private T maxAllowed;
 
     @SuppressWarnings("unchecked")
@@ -94,7 +93,6 @@ public class AbstractQuantityField<T extends Quantity> extends CustomTextField<T
             //noinspection unchecked
             q1 = (T) q.convert(unit);
             if(q1 != null) {
-                changed = true;
                 setValue(q1);
                 return;
             }
@@ -111,7 +109,7 @@ public class AbstractQuantityField<T extends Quantity> extends CustomTextField<T
         if(value.isZero() && v.isZero() && !value.getUnit().equals(v.getUnit())) {
             setPresentationValue(value);
         }
-        super.setValue(convert(value));
+        super.setValue(value);
     }
 
     private T convert(T value) {
@@ -151,6 +149,9 @@ public class AbstractQuantityField<T extends Quantity> extends CustomTextField<T
     protected T getModelValue(String string) {
         T q;
         string = string.trim().replace(",", "").replace("+", "");
+        if(string.isEmpty()) {
+            string = "0";
+        }
         try {
             Double.parseDouble(string);
             q = (T)Quantity.create(new BigDecimal(string), this.getUnit());
@@ -198,19 +199,13 @@ public class AbstractQuantityField<T extends Quantity> extends CustomTextField<T
     }
 
     @Override
-    protected boolean valueEquals(T value1, T value2) {
-        if(changed) {
-            changed = false;
-            return false;
-        }
-        if(value1.equals(value2)) {
-            return (value1.isZero() && valueEqualsForZero(value1, value2)) || value1.getUnit().equals(value2.getUnit());
-        }
-        return false;
+    public boolean valueEquals(T value1, T value2) {
+        return value1.equals(value2) && value1.getUnit().equals(value2.getUnit());
     }
 
-    protected boolean valueEqualsForZero(T value1, T value2) {
-        return true;
+    @Override
+    public boolean isEmpty() {
+        return getValue().isZero();
     }
 
     public void setAllowedUnits(Collection<MeasurementUnit> allowedUnits) {
