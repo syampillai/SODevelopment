@@ -4,7 +4,15 @@ public class DatabaseInputStream extends java.io.ByteArrayInputStream {
 
     public static int BUFFER_SIZE;
 
-    public DatabaseInputStream(com.storedobject.core.Id p1) {
+    public DatabaseInputStream(Id id) {
+        this(id, null, false);
+    }
+
+    DatabaseInputStream(StreamData sd) {
+        this(sd.getId(), sd.old() ? sd.getTransactionId() : null, false);
+    }
+
+    DatabaseInputStream(Id id, Id tranId, boolean master) {
         this();
     }
 

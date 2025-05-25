@@ -1,3 +1,4 @@
 .idea/
 back/
 target/
+/frontend/generated/

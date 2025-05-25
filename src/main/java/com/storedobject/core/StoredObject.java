@@ -714,6 +714,11 @@ public abstract class StoredObject implements Displayable, HasId, StringFiller {
         return new Id();
     }
 
+    // For internal use only.
+    final String historyString() {
+        return "";
+    }
+
     public SystemUser user() {
         return getHistorical(SystemUser.class, userId());
     }
