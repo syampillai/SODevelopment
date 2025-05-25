@@ -390,8 +390,11 @@ public class SystemLogViewer extends View implements Transactional, CloseableVie
         }
 
         public String getColumnCaption(String columnName) {
-            return columnName.equals("LoggedAt") ? ("Time (" + getTransactionManager().getEntity().getTimeZone() + ")")
-                    : super.getColumnCaption(columnName);
+            if(columnName.equals("LoggedAt")) {
+                SystemEntity se = getTransactionManager().getEntity();
+                return "Time (" + (se == null ? "GMT" : se.getTimeZone()) + ")";
+            }
+            return super.getColumnCaption(columnName);
         }
 
         public String getLoggedAt(SystemLog systemLog) {

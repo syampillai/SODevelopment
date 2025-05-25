@@ -42,7 +42,7 @@ public class CalendarViewer extends View implements CloseableView, Transactional
         div.add(buttons, calendarView);
         setComponent(div);
         trackValueChange(menu);
-        calendar = (Calendar) menuList.get(0);
+        calendar = (Calendar) menuList.getFirst();
         menu.setValue(calendar);
         trackValueChange(view);
         Button previous = new Button("Previous", "angle_left", e -> previous());
@@ -65,7 +65,7 @@ public class CalendarViewer extends View implements CloseableView, Transactional
 
     private void loadMenu() {
         loadMenu0();
-        menu.setValue(menuList.get(0));
+        menu.setValue(menuList.getFirst());
     }
 
     private String menuDisplay(Object item) {
@@ -97,7 +97,7 @@ public class CalendarViewer extends View implements CloseableView, Transactional
                 if(this.personId == null) {
                     throw new SORuntimeException("Can't create calendar for you!");
                 } else {
-                    menu.setValue(menuList.get(0));
+                    menu.setValue(menuList.getFirst());
                     return;
                 }
             }
@@ -110,57 +110,33 @@ public class CalendarViewer extends View implements CloseableView, Transactional
     public void valueChanged(ChangedValues changedValues) {
         if(changedValues.getChanged() == menu) {
             Object o = menu.getValue();
-            if(o == null) {
-                return;
-            }
-            if(o instanceof Calendar) {
-                calendar = (Calendar)o;
-                loadCalendar();
-                return;
-            }
-            if(o instanceof Person) {
-                setPerson((Person)o);
-                return;
-            }
-            if(o.equals(CONFIGURE)) {
-                editor().editObject(calendar, this);
-                return;
-            }
-            if(o.equals(CREATE_NEW)) {
-                editor().editObject(newCalendar(), this);
-                return;
-            }
-            if(o.equals(DELETE)) {
-                new ActionForm("Do you really want to delete this calendar?", this::deleteCalendar, this::reset).execute();
+            switch (o) {
+                case Calendar c -> {
+                    calendar = c;
+                    loadCalendar();
+                }
+                case Person p -> setPerson(p);
+                case String s -> {
+                    switch (s) {
+                        case CONFIGURE -> editor().editObject(calendar, this);
+                        case CREATE_NEW -> editor().editObject(newCalendar(), this);
+                        case DELETE -> new ActionForm("Do you really want to delete this calendar?", this::deleteCalendar, this::reset)
+                                .execute();
+                    }
+                }
+                case null, default -> {
+                }
             }
             return;
         }
         if(changedValues.getChanged() == view) {
             switch(view.getValue()) {
-                case 0 -> {
-                    calendarView.changeView(CalendarViewImpl.DAY_GRID_MONTH);
-                    return;
-                }
-                case 1 -> {
-                    calendarView.changeView(CalendarViewImpl.TIME_GRID_WEEK);
-                    return;
-                }
-                case 2 -> {
-                    calendarView.changeView(CalendarViewImpl.TIME_GRID_DAY);
-                    return;
-                }
-                case 3 -> {
-                    calendarView.changeView(CalendarViewImpl.LIST_DAY);
-                    return;
-                }
-                case 4 -> {
-                    calendarView.changeView(CalendarViewImpl.LIST_WEEK);
-                    return;
-                }
-                case 5 -> {
-                    calendarView.changeView(CalendarViewImpl.LIST_MONTH);
-                    return;
-                }
+                case 0 -> calendarView.changeView(CalendarViewImpl.DAY_GRID_MONTH);
+                case 1 -> calendarView.changeView(CalendarViewImpl.TIME_GRID_WEEK);
+                case 2 -> calendarView.changeView(CalendarViewImpl.TIME_GRID_DAY);
+                case 3 -> calendarView.changeView(CalendarViewImpl.LIST_DAY);
+                case 4 -> calendarView.changeView(CalendarViewImpl.LIST_WEEK);
+                case 5 -> calendarView.changeView(CalendarViewImpl.LIST_MONTH);
                 case 6 -> calendarView.changeView(CalendarViewImpl.LIST_YEAR);
             }
             return;

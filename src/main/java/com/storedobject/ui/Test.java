@@ -1,26 +1,13 @@
 package com.storedobject.ui;
 
-import com.storedobject.core.MeasurementUnit;
-import com.storedobject.core.Quantity;
-import com.storedobject.vaadin.DataForm;
+import com.storedobject.vaadin.CloseableView;
+import com.storedobject.vaadin.View;
 
-public class Test extends DataForm {
+public class Test extends View implements CloseableView {
 
     public Test() {
         super("Test");
-        Quantity q1 = Quantity.create(0, MeasurementUnit.get("°C"));
-        Quantity q2 = Quantity.create(0, MeasurementUnit.get("°F"));
-        message("q1: " + q1.toString() + " (" + q1.getUnit() + ")" );
-        message("q2: " + q2.toString() + " (" + q2.getUnit() + ")" );
-        //addField(new MeasurementField<>("Quantity 1", q1));
-        MeasurementField<Quantity> mf = new MeasurementField<>("Quantity 1", q2.getUnit());
-        addField(mf);
-        mf.addValueChangeListener(
-                e -> message("Value changed from: " + e.getOldValue() + " to " + e.getValue()));
-    }
-
-    @Override
-    protected boolean process() {
-        return false;
+        ModelViewer modelViewer = new ModelViewer(MediaCSS.mediaURL("test-model"));
+        setComponent(modelViewer);
     }
 }

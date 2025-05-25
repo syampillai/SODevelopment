@@ -136,6 +136,7 @@ public abstract class Message extends StoredObject {
         setSentTo(sentTo == null ? null : sentTo.getId());
     }
 
+    @Column(order = 800, required = false)
     public Id getSentToId() {
         return sentToId;
     }

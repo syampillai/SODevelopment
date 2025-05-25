@@ -7,11 +7,11 @@
     <parent>
         <groupId>com.storedobject</groupId>
         <artifactId>so-uipom</artifactId>
-        <version>24.7.2-3</version>
+        <version>24.7.5</version>
     </parent>
 
     <artifactId>so-development</artifactId>
-    <version>14.0.1</version>
+    <version>14.0.3</version>
 
     <name>${project.groupId}:${project.artifactId}</name>
     <description>SO Development skeleton classes</description>

@@ -38,7 +38,7 @@ public class GMailRegistrationService implements ParameterService {
 	public StringList getMandatoryParameters() {
 		return parameters;
 	}
-	
+
 	@Override
 	public boolean requiresPOST(ApplicationServer applicationServer) {
 		return false;

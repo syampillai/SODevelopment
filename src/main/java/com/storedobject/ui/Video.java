@@ -1,8 +1,8 @@
 package com.storedobject.ui;
 
+import com.storedobject.core.HasStreamData;
 import com.storedobject.core.Id;
 import com.storedobject.core.MediaFile;
-import com.storedobject.core.StreamData;
 import com.storedobject.ui.util.SOServlet;
 import com.vaadin.flow.server.StreamResource;
 
@@ -19,7 +19,7 @@ public class Video extends com.storedobject.vaadin.Video {
      *
      * @param streamData Stream data from which media streamAll to be pulled
      */
-    public Video(StreamData streamData) {
+    public Video(HasStreamData streamData) {
         super(new DBResource(streamData));
     }
 
@@ -57,8 +57,7 @@ public class Video extends com.storedobject.vaadin.Video {
      * @param mediaFile Media file containing the video
      */
     public Video(MediaFile mediaFile) {
-        this(mediaFile != null && mediaFile.isVideo() ? ("media/" + mediaFile.getFileName()) : "",
-                mediaFile != null && mediaFile.isVideo() ? mediaFile.getMimeType() : "");
+        this(resource(mediaFile), mediaFile != null && mediaFile.isVideo() ? mediaFile.getMimeType() : "");
     }
 
     /**
@@ -71,4 +70,17 @@ public class Video extends com.storedobject.vaadin.Video {
         MediaFile mf = SOServlet.getVideo(names);
         return mf == null ? null : new Video(mf);
     }
+
+
+    private static String resource(MediaFile mediaFile) {
+        return mediaFile != null && mediaFile.isVideo() ? ("media/" + mediaFile.getFileName()) : "";
+    }
+
+    public void setSource(MediaFile mediaFile) {
+        if(mediaFile == null || !mediaFile.isVideo()) {
+            return;
+        }
+        super.setSource(resource(mediaFile), mediaFile.getMimeType());
+    }
+
 }

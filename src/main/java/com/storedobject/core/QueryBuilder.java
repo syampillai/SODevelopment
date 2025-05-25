@@ -5,8 +5,8 @@ import java.util.Base64;
 
 /**
  * A builder class for constructing queries and retrieving {@link StoredObject} instances based on various criteria.
- * This class provides methods to specify conditions, sorting and other query parameters. This can be used for
- * querying and/or retrieving {@link StoredObject} instances, their link instances  and master instances.
+ * This class provides methods to specify conditions, sorting, and other query parameters. This can be used for
+ * querying and/or retrieving {@link StoredObject} instances, their link instances, and master instances.
  *
  * @param <T> The type of {@link StoredObject} this builder targets.
  *
@@ -127,7 +127,7 @@ public class QueryBuilder<T extends StoredObject> {
      *
      * @param columns A string representing the column names to include in the query. The column names should
      *                be separated by commas if specifying multiple columns. Since the SO platform supports
-     *                dot (.) notation to retrieve related class instances, it may be used to obtain attributes of
+     *                dot (.) notation to retrieve related class instances, it may be used to get attributes of
      *                related class instances.
      * @return The current {@code QueryBuilder} instance with the specified columns applied.
      */
@@ -373,7 +373,7 @@ public class QueryBuilder<T extends StoredObject> {
     }
 
     /**
-     * Check whether link objects exists associated with the specified parent object.
+     * Check whether link objects exist associated with the specified parent object.
      *
      * @param parent The parent object for which linked objects are to be queried.
      * @return True/false.
@@ -383,7 +383,7 @@ public class QueryBuilder<T extends StoredObject> {
     }
 
     /**
-     * Check whether link objects exists associated with the specified parent object.
+     * Check whether link objects exist associated with the specified parent object.
      *
      * @param parentId The parent object Id for which linked objects are to be queried.
      * @return True/false.
@@ -393,7 +393,7 @@ public class QueryBuilder<T extends StoredObject> {
     }
 
     /**
-     * Check whether link objects exists  associated with the specified parent object
+     * Check whether link objects exist associated with the specified parent object
      * and of a specific link type.
      *
      * @param parent The parent object for which linked objects of the specified link type are to be queried.
@@ -405,7 +405,7 @@ public class QueryBuilder<T extends StoredObject> {
     }
 
     /**
-     * Check whether link objects exists  associated with the specified parent object
+     * Check whether link objects exist associated with the specified parent object
      * and of a specific link type.
      *
      * @param parentId The parent object Id for which linked objects of the specified link type are to be queried.
@@ -502,7 +502,7 @@ public class QueryBuilder<T extends StoredObject> {
     }
 
     /**
-     * Check whether master objects exists related to the given stored object link.
+     * Check whether master objects exist related to the given stored object link.
      *
      * @param link the StoredObject that serves as a reference for querying master objects
      * @return True/false.
@@ -512,7 +512,7 @@ public class QueryBuilder<T extends StoredObject> {
     }
 
     /**
-     * Check whether master objects exists related to the given stored object link.
+     * Check whether master objects exist related to the given stored object link.
      *
      * @param linkId the link object that serves as a reference for querying master objects
      * @return True/false.
@@ -522,7 +522,7 @@ public class QueryBuilder<T extends StoredObject> {
     }
 
     /**
-     * Check whether master objects exists associated with a given stored object link and link type.
+     * Check whether master objects exist associated with a given stored object link and link type.
      *
      * @param link      the stored object link to query masters for
      * @param linkType  the type of link defining the relationship between the object and its masters
@@ -533,7 +533,7 @@ public class QueryBuilder<T extends StoredObject> {
     }
 
     /**
-     * Check whether master objects exists associated with a given stored object link and link type.
+     * Check whether master objects exist associated with a given stored object link and link type.
      *
      * @param link      the stored object link to query masters for
      * @param linkType  the type of link defining the relationship between the object and its masters

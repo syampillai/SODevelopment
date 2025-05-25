@@ -252,8 +252,8 @@ public final class MessageGroup extends StoredObject implements RequiresApproval
     /**
      * Create and send a message to all members of this group.
      * @param tm Transaction Manager.
-     * @param messageParameters Parameters for creating message from the associated template.
-     * @throws Throwable If message can not be created.
+     * @param messageParameters Parameters for creating a message from the associated template.
+     * @throws Throwable If a message cannot be created.
      */
     public void send(TransactionManager tm, Object... messageParameters) throws Throwable {
         send((Person)null, tm, messageParameters);
@@ -263,8 +263,8 @@ public final class MessageGroup extends StoredObject implements RequiresApproval
      * Create and send a message to all members of this group and to an additional person.
      * @param person Additional person to receive the message
      * @param tm Transaction Manager.
-     * @param messageParameters Parameters for creating message from the associated template.
-     * @throws Throwable If message can not be created.
+     * @param messageParameters Parameters for creating a message from the associated template.
+     * @throws Throwable If a message cannot be created.
      */
     public void send(Person person, TransactionManager tm, Object... messageParameters) throws Throwable {
         TransactionControl tc;
@@ -279,8 +279,8 @@ public final class MessageGroup extends StoredObject implements RequiresApproval
     /**
      * Create and send a message to all members of this group.
      * @param tc Transaction Control.
-     * @param messageParameters Parameters for creating message from the associated template.
-     * @throws Throwable If message can not be created.
+     * @param messageParameters Parameters for creating a message from the associated template.
+     * @throws Throwable If a message cannot be created.
      */
 
     public void send(TransactionControl tc, Object... messageParameters) throws Throwable {
@@ -291,8 +291,8 @@ public final class MessageGroup extends StoredObject implements RequiresApproval
      * Create and send a message to all members of this group and to an additional person.
      * @param person Additional person to receive the message
      * @param tc Transaction Control.
-     * @param messageParameters Parameters for creating message from the associated template.
-     * @throws Throwable If message can not be created.
+     * @param messageParameters Parameters for creating a message from the associated template.
+     * @throws Throwable If a message cannot be created.
      */
     public void send(Person person, TransactionControl tc, Object... messageParameters) throws Throwable {
         MessageTemplate messageTemplate = getTemplate();
@@ -308,8 +308,8 @@ public final class MessageGroup extends StoredObject implements RequiresApproval
      * group does not exist.
      * @param groupName Name of the message group.
      * @param tm Transaction Manager.
-     * @param messageParameters Parameters for creating message from the associated template.
-     * @throws Throwable If message can not be created.
+     * @param messageParameters Parameters for creating a message from the associated template.
+     * @throws Throwable If a message cannot be created.
      */
     public static void send(String groupName, TransactionManager tm, Object... messageParameters) throws Throwable {
         send(groupName, null, tm, messageParameters);
@@ -320,8 +320,8 @@ public final class MessageGroup extends StoredObject implements RequiresApproval
      * group does not exist.
      * @param groupName Name of the message group.
      * @param tc Transaction Control.
-     * @param messageParameters Parameters for creating message from the associated template.
-     * @throws Throwable If message can not be created.
+     * @param messageParameters Parameters for creating a message from the associated template.
+     * @throws Throwable If a message cannot be created.
      */
     public static void send(String groupName, TransactionControl tc, Object... messageParameters) throws Throwable {
         send(groupName, null, tc, messageParameters);
@@ -333,8 +333,8 @@ public final class MessageGroup extends StoredObject implements RequiresApproval
      * @param groupName Name of the message group.
      * @param person Additional person to receive the message
      * @param tm Transaction Manager.
-     * @param messageParameters Parameters for creating message from the associated template.
-     * @throws Throwable If message can not be created.
+     * @param messageParameters Parameters for creating a message from the associated template.
+     * @throws Throwable If a message cannot be created.
      */
     public static void send(String groupName, Person person, TransactionManager tm, Object... messageParameters) throws Throwable {
         MessageGroup mg = get(groupName);
@@ -351,8 +351,8 @@ public final class MessageGroup extends StoredObject implements RequiresApproval
      * @param groupName Name of the message group.
      * @param person Additional person to receive the message (Could be null).
      * @param tc Transaction Control.
-     * @param messageParameters Parameters for creating message from the associated template.
-     * @throws Throwable If message can not be created.
+     * @param messageParameters Parameters for creating a message from the associated template.
+     * @throws Throwable If a message cannot be created.
      */
     public static void send(String groupName, Person person, TransactionControl tc, Object... messageParameters)
             throws Throwable {
@@ -384,10 +384,10 @@ public final class MessageGroup extends StoredObject implements RequiresApproval
 
     /**
      * Create and send a message to all members of this group.
-     * <p>Note: If the message group does not exist a new one will be created.</p>
+     * <p>Note: If the message group does not exist, a new one will be created.</p>
      * @param groupName Name of the message group.
      * @param tm Transaction manager.
-     * @param messageParameters Parameters for creating message from the associated template.
+     * @param messageParameters Parameters for creating a message from the associated template.
      * @return True if the message is successfully created for delivery.
      */
     public static boolean notify(String groupName, TransactionManager tm, Object... messageParameters) {

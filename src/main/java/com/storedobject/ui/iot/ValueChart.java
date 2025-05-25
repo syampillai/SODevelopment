@@ -233,7 +233,7 @@ public class ValueChart extends View implements CloseableView, Transactional {
                 } else {
                     lc.setSmoothness(true);
                 }
-                lc.getPointSymbol(true).setType(PointSymbolType.NONE);
+                lc.getPointSymbol(true);
             }
             chart.setName(dv.getName());
             chart.plotOn(coordinate, xAxis, yAxis);

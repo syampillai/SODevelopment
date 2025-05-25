@@ -1,12 +1,14 @@
 package com.storedobject.ui.iot;
 
 import com.storedobject.common.StringList;
+import com.storedobject.core.DateUtility;
 import com.storedobject.core.Id;
 import com.storedobject.core.StoredObject;
 import com.storedobject.iot.*;
 import com.storedobject.ui.DataGrid;
 import com.storedobject.ui.ELabel;
 import com.storedobject.ui.HTMLText;
+import com.storedobject.ui.Transactional;
 import com.storedobject.vaadin.Button;
 import com.storedobject.vaadin.ButtonLayout;
 import com.storedobject.vaadin.HTMLGenerator;
@@ -15,10 +17,11 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.html.Span;
 
+import java.sql.Timestamp;
 import java.util.function.Consumer;
 
 @SuppressWarnings("rawtypes")
-public class StatusGrid extends DataGrid<DataSet.DataStatus> {
+public class StatusGrid extends DataGrid<DataSet.DataStatus> implements Transactional {
 
     private final ELabel lastUpdate = new ELabel();
     private Consumer<Id> refresher;
@@ -30,7 +33,7 @@ public class StatusGrid extends DataGrid<DataSet.DataStatus> {
     private volatile boolean updating = false;
 
     public StatusGrid(GUI gui) {
-        super(DataSet.DataStatus.class, StringList.create("Block", "Unit", "Attribute", "Value", "Status", "Message"));
+        super(DataSet.DataStatus.class, StringList.create("Block", "Unit", "Attribute", "Value", "Status", "Time", "Message"));
         this.gui = gui;
         setCaption("Status");
         blockField.addValueChangeListener(e -> loadStatus());
@@ -58,7 +61,19 @@ public class StatusGrid extends DataGrid<DataSet.DataStatus> {
 
     @Override
     public String getColumnCaption(String columnName) {
-        return "Block".equals(columnName) ? "Building/Block" : super.getColumnCaption(columnName);
+        return switch (columnName) {
+            case "Block" -> "Building/Block";
+            case "Time" -> "Time (" + getTransactionManager().getEntity().getTimeZone() + ")";
+            default -> super.getColumnCaption(columnName);
+        };
+    }
+
+    public String getTime(DataSet.DataStatus ds) {
+        long time = ds.getAlarmAt();
+        if(time == 0) {
+            return "";
+        }
+        return DateUtility.formatWithTimeHHMM(getTransactionManager().date(new Timestamp(time)));
     }
 
     public String getBlock(DataSet.DataStatus ds) {

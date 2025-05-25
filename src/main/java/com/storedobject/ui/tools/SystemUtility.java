@@ -7,7 +7,6 @@ import com.storedobject.report.ObjectListExcel;
 import com.storedobject.ui.Application;
 import com.storedobject.ui.*;
 import com.storedobject.ui.common.ExcelDataUpload;
-import com.storedobject.ui.util.SOServlet;
 import com.storedobject.vaadin.*;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.checkbox.Checkbox;
@@ -126,7 +125,7 @@ public class SystemUtility extends View implements CloseableView, Transactional 
         form.add(buttons);
         buttons = new ButtonLayout();
         buttons.add(new Button("Reload CORS", VaadinIcon.SPECIALIST, e -> {
-            SOServlet.reloadCORS();
+            CORS.clear();
             message("CORS reloaded!");
         }));
         form.add(buttons);

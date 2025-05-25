@@ -15,40 +15,32 @@ public class DBResource extends StreamResource {
         this(StoredObject.get(StreamData.class, streamDataId));
     }
 
-    public DBResource(StreamData streamData) {
-        this(streamData, null);
-    }
-
-    public DBResource(FileData fileData) {
-        this(fileData == null ? null : fileData.getFile(), fileData == null ? null : fileData.getName());
-    }
-
-    public DBResource(MediaFile mediaFile) {
-        this(mediaFile == null ? null : mediaFile.getFile(), mediaFile == null ? null : mediaFile.getName());
+    public DBResource(HasStreamData hasStreamData) {
+        this(hasStreamData == null ? null : hasStreamData.getStreamData(), fileName(hasStreamData));
     }
 
     private DBResource(StreamData streamData, String fileName) {
-        super(fileName(streamData), new DBStream(streamData, fileName));
+        super(fileName, new DBStream(streamData == null ? null : streamData.getStreamData(), fileName));
         setContentType(streamData == null ? "text/plain" : streamData.getMimeType());
     }
 
-    private static String fileName(StreamData streamData) {
+    private static String fileNameGen(StreamData streamData) {
         return PaintedImageResource.createBaseFileName() + "." + (streamData == null ? "txt" : streamData.getFileExtension());
     }
 
-    private static class DBStream implements InputStreamFactory {
-
-        private final StreamData streamData;
-        private final String fileName;
-
-        private DBStream(StreamData streamData, String fileName) {
-            this.streamData = streamData;
-            this.fileName = fileName;
+    private static String fileName(HasStreamData hasStreamData) {
+        if (hasStreamData == null) {
+            return fileNameGen(null);
         }
+        String name = hasStreamData.getName();
+        return name == null ? fileNameGen(hasStreamData.getStreamData()) : hasStreamData.getFileName();
+    }
+
+    private record DBStream(StreamData streamData, String fileName) implements InputStreamFactory {
 
         @Override
         public InputStream createInputStream() {
-            if(streamData == null) {
+            if (streamData == null) {
                 return new ByteArrayInputStream(("No content" + (fileName == null ? "!" : ("for file - " + fileName))).getBytes(StandardCharsets.UTF_8));
             }
             return streamData.getContent();

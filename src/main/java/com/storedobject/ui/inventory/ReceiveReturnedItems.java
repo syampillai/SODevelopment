@@ -312,8 +312,12 @@ public class ReceiveReturnedItems extends DataForm implements Transactional {
         @Override
         public void createHeaders() {
             if(type == 3) { // RO
-                prependHeader().join().setComponent(new ButtonLayout(new ELabel("Date: "), dateField,
-                        new ELabel(" Invoice No.: "), invoiceRefField, new ELabel(" Invoice Date: "),
+                SearchField searchField = new SearchField(this::search).toUpperCase().trim();
+                searchField.setPlaceholder("P/N or S/N");
+                prependHeader().join().setComponent(new ButtonLayout(new ELabel("Search: "), searchField,
+                        new ELabel("Date: "), dateField,
+                        new ELabel(" Invoice No.: "), invoiceRefField,
+                        new ELabel(" Invoice Date: "),
                         invoiceDateField));
             }
             if(confirm) {
@@ -323,6 +327,15 @@ public class ReceiveReturnedItems extends DataForm implements Transactional {
                     "These items will be received, please double-check and confirm! Undo not possible after this step!!",
                     Application.COLOR_ERROR);
             prependHeader().join().setComponent(h);
+        }
+
+        private void search(String text) {
+            if(text.isEmpty()) {
+                clearViewFilters();
+                return;
+            }
+            setViewFilter(ii -> ii.getSerialNumber().contains(text)
+                    || ii.getPartNumber().getPartNumber().contains(text));
         }
 
         @Override

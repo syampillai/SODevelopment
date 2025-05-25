@@ -5,7 +5,6 @@ import com.storedobject.common.JSON;
 import com.storedobject.common.StringList;
 import com.storedobject.core.*;
 import com.storedobject.oauth.OAuth;
-import com.storedobject.ui.Application;
 import com.storedobject.ui.MediaCSS;
 import com.vaadin.flow.server.VaadinServlet;
 import jakarta.servlet.ServletContext;
@@ -35,7 +34,6 @@ public class SOServlet extends VaadinServlet {
     private static final WeakHashMap<String, TextContent> tcCache = new WeakHashMap<>();
     private static final long CACHE_TIME_IN_MILLIS = TimeUnit.MILLISECONDS.convert(365, TimeUnit.DAYS);
     private static final long CACHE_TIME_IN_SECONDS = CACHE_TIME_IN_MILLIS / 1000;
-    private static final List<String> CORS = new ArrayList<>();
     private static String headerKey = null, headerValue = null;
     private static final Map<String, Resource> specialResources = new HashMap<>();
     private static final StringList resourcesToIgnore = StringList.create(
@@ -68,29 +66,6 @@ public class SOServlet extends VaadinServlet {
         }
     }
 
-    private boolean isAllowedRequestOrigin(String origin) {
-        if("null".equals(origin)) {
-            return true;
-        }
-        try {
-            if(CORS.isEmpty()) {
-                Arrays.stream(GlobalProperty.get("SECURITY-CORS").split(","))
-                        .map(String::trim).filter(c -> !c.isBlank()).forEach(CORS::add);
-                if(CORS.isEmpty()) {
-                    CORS.add(".*");
-                }
-            }
-            if(CORS.stream().anyMatch(origin::matches)) {
-                return true;
-            }
-        } catch(Throwable error) {
-            CORS.add("_");
-            return false;
-        }
-        ApplicationServer.log(Application.get(), "CORS rejected: " + origin);
-        return false;
-    }
-
     @Override
     protected void service(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -100,7 +75,7 @@ public class SOServlet extends VaadinServlet {
             String hv = request.getHeader(headerKey);
             if(!headerValue.equals(hv)) {
                 ApplicationServer.log("Illegal request header specified - " + headerKey + " = " + hv);
-                response.sendError(HttpServletResponse.SC_FORBIDDEN);
+                CORS.reject(response);
                 return;
             }
         }
@@ -146,40 +121,9 @@ public class SOServlet extends VaadinServlet {
             }
         }
 
-        // Check for CORS requests
-        String origin = request.getHeader("Origin");
-        if (origin != null) {
-            if("null".equals(origin)) {
-                origin = "*";
-            }
-            if(isAllowedRequestOrigin(origin)) { // Allowed
-                switch (request.getMethod().toLowerCase()) {
-                    case "options" -> {
-                        response.addHeader("Access-Control-Allow-Origin", origin);
-                        response.setHeader("Allow", "GET, HEAD, POST, PUT, DELETE, TRACE, OPTIONS");
-
-                        // Allow the requested method
-                        String method = request.getHeader("Access-Control-Request-Method");
-                        response.addHeader("Access-Control-Allow-Methods", method);
-
-                        // Allow the requested headers
-                        String headers = request.getHeader("Access-Control-Request-Headers");
-                        response.addHeader("Access-Control-Allow-Headers", headers);
-
-                        response.addHeader("Access-Control-Allow-Credentials", "true");
-                        response.setContentType("text/plain");
-                        response.setCharacterEncoding("utf-8");
-                        response.getWriter().flush();
-                        return;
-                    }
-                    case "post", "get" -> {
-                        response.addHeader("Access-Control-Allow-Origin", origin);
-                        response.addHeader("Access-Control-Allow-Credentials", "true");
-                    }
-                }
-            } else { // Not allowed
-                response.sendError(HttpServletResponse.SC_FORBIDDEN);
-            }
+        // Handle CORS
+        if(CORS.rejected(request, response)) {
+            return;
         }
 
         // Check for controlled caches like media, text content etc.
@@ -534,10 +478,6 @@ public class SOServlet extends VaadinServlet {
 
     public static String getProtocol() {
         return url.substring(0, url.indexOf(':'));
-    }
-
-    public static void reloadCORS() {
-        CORS.clear();
     }
 
     public static OAuth getOAuth() {

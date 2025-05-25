@@ -2,10 +2,7 @@ package com.storedobject.ui;
 
 import com.storedobject.common.IO;
 import com.storedobject.common.SVG;
-import com.storedobject.core.Id;
-import com.storedobject.core.MediaFile;
-import com.storedobject.core.Signature;
-import com.storedobject.core.StreamData;
+import com.storedobject.core.*;
 import com.storedobject.ui.util.SOServlet;
 import com.storedobject.vaadin.PaintedImageResource;
 import com.storedobject.vaadin.View;
@@ -28,7 +25,7 @@ public class Image extends com.storedobject.vaadin.Image {
         super(url);
     }
 
-    public Image(StreamData streamData) {
+    public Image(HasStreamData streamData) {
         this(new DBResource(streamData));
     }
 

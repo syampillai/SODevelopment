@@ -8,7 +8,7 @@ import java.io.InputStream;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 
-public final class MediaFile extends Name implements ContentType {
+public final class MediaFile extends Name implements ContentType, HasStreamData {
 
     private static MediaFile noImage;
     private Id fileId = Id.ZERO;
@@ -66,6 +66,11 @@ public final class MediaFile extends Name implements ContentType {
             file = get(StreamData.class, fileId);
         }
         return file;
+    }
+
+    @Override
+    public StreamData getStreamData() {
+        return getFile();
     }
 
     @SetNotAllowed

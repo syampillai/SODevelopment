@@ -215,6 +215,7 @@ public class DataSet {
     public abstract static class DataStatus<V> {
 
         private final long id = statusId.next();
+        protected long alarmAt = 0;
         final Unit unit;
         final ValueDefinition<V> valueDefinition;
 
@@ -485,12 +486,21 @@ public class DataSet {
         }
 
         /**
-         * Get the alarm message associated with current alarm condition.
+         * Get the alarm message associated with the current alarm condition.
          *
          * @return Alarm message.
          */
         public String getAlarmMessage() {
             return valueDefinition.getAlertMessage(alarm());
+        }
+
+        /**
+         * Retrieve the time at which the alarm condition was last triggered.
+         *
+         * @return The time at which the alarm condition was last triggered.
+         */
+        public long getAlarmAt() {
+            return alarmAt;
         }
     }
 
@@ -510,8 +520,12 @@ public class DataSet {
         @Override
         void set() {
             try {
+                int alarmBefore = alarm();
                 //noinspection DataFlowIssue
                 value = valueDefinition.getValue(unit.getId());
+                if(alarmAt == 0 || alarmBefore != alarm()) {
+                    alarmAt = System.currentTimeMillis();
+                }
             } catch (Throwable throwable) {
                 /*
                 Device device = null;
@@ -703,6 +717,7 @@ public class DataSet {
         private AlarmStatus(Unit unit, AlarmSwitch alarmSwitch) {
             super(unit, alarmSwitch);
             value = alarmSwitch.getAlarmWhen() == 0;
+            alarmAt = System.currentTimeMillis();
         }
 
         /**
@@ -713,8 +728,12 @@ public class DataSet {
         @Override
         void set() {
             try {
+                boolean valueBefore = value;
                 //noinspection DataFlowIssue
                 value = valueDefinition.getValue(unit.getId());
+                if(valueBefore != value) {
+                    alarmAt = System.currentTimeMillis();
+                }
             } catch (Throwable ignored) {
             }
         }

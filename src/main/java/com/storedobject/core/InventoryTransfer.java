@@ -132,6 +132,7 @@ public abstract class InventoryTransfer extends StoredObject implements OfEntity
 
     @Override
     public final <O extends StoredObject> Amend<O> getAmend() {
+        /*
         InventoryTransfer it = this;
         int a = amendment;
         while(a > 0) {
@@ -140,6 +141,9 @@ public abstract class InventoryTransfer extends StoredObject implements OfEntity
         }
         //noinspection unchecked
         return (Amend<O>) new Amend<>(it, it.amendment);
+        */
+        //noinspection unchecked
+        return (Amend<O>) new Amend<>(this, amendment);
     }
 
     public final void setAmendment(int amendment) {

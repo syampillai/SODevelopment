@@ -1,15 +1,14 @@
 package com.storedobject.iot;
 
-import com.storedobject.core.Database;
-import com.storedobject.core.Id;
-import com.storedobject.core.StringUtility;
-import com.storedobject.core.TransactionManager;
+import com.storedobject.core.*;
 import com.storedobject.job.MessageGroup;
 
+import java.sql.Timestamp;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Alert Generator.
@@ -24,14 +23,21 @@ import java.util.TimerTask;
  */
 public class AlertGenerator {
 
+    private static final long startedAt = System.currentTimeMillis();
+    static final Map<String, Long> frequency = new ConcurrentHashMap<>();
     private static AlertGenerator instance;
     private static long lastUpdateTime = System.currentTimeMillis();
     private static final long COMM_CHECK_INTERVAL = 15 * 60 * 1000L; // 15 Minutes
     private static TransactionManager tm;
     private static boolean commError = false;
-    private record Alarm(long time, DataSet.DataStatus<?> ds, int alarm) {}
     private static final Map<Long, Alarm> alarms = new HashMap<>();
     private static final Map<Id, MessageGroup> messageGroups = new HashMap<>();
+    private record Alarm(long time, DataSet.DataStatus<?> ds, int alarm, long occurredAt) {
+
+        Alarm(long time, DataSet.DataStatus<?> ds, int alarm, Alarm parent) {
+            this(time, ds, alarm, parent == null ? ds.getAlarmAt() : parent.occurredAt);
+        }
+    }
 
     private AlertGenerator() {
         new Timer().schedule(new TimerTask() {
@@ -74,14 +80,18 @@ public class AlertGenerator {
                     ud.getDataStatus().stream().filter(ds -> ds.getValueDefinition().getAlert()).forEach(ds -> {
                         Alarm alarm = alarms.get(ds.getId());
                         if(ds.alert()) {
-                            if(alarm == null || (System.currentTimeMillis() - alarm.time) > 3600000L
-                                    || ds.alarm() != alarm.alarm) { // 1 hour expired or alarm state changed
-                                alarms.put(ds.getId(), new Alarm(System.currentTimeMillis(), ds, ds.alarm()));
-                                alert(ds, false);
+                            long now = System.currentTimeMillis();
+                            if(alarm == null || (now - alarm.time) > frequency(ds)
+                                    || ds.alarm() != alarm.alarm) { // Last alert expired or alarm state changed
+                                alarm = new Alarm(now, ds, ds.alarm(), alarm);
+                                alarms.put(ds.getId(), alarm);
+                                if((now - startedAt) > 300000L) { // More than 5 minutes have passed, we will start the alerts
+                                    alert(alarm, false);
+                                }
                             }
                         } else if(alarm != null) { // Became normal
                             alarms.remove(ds.getId());
-                            alert(ds, true);
+                            alert(alarm, true);
                         }
                     });
                 }
@@ -90,7 +100,13 @@ public class AlertGenerator {
         });
     }
 
-    private static void alert(DataSet.DataStatus<?> ds, boolean fixed) {
+    private static String siteTime(long time) {
+        Timestamp ts = tm.date(new Timestamp(time));
+        return DateUtility.formatWithTimeHHMM(ts);
+    }
+
+    private static void alert(Alarm alarm, boolean fixed) {
+        DataSet.DataStatus<?> ds = alarm.ds;
         MessageGroup mg = messageGroups.get(ds.unit.getBlockId());
         if(mg == null) {
             mg = ds.unit.getBlock().getMessageGroup();
@@ -106,8 +122,14 @@ public class AlertGenerator {
                     v += " (" + m + ")";
                 }
             }
+            String time = "Detected at " + siteTime(alarm.occurredAt);
+            if(fixed) {
+                time += ", Fixed at " + siteTime(ds.getAlarmAt());
+            } else if((alarm.time - alarm.occurredAt) > 300000L) {
+                time += ", Not yet fixed at " + siteTime(alarm.time);
+            }
             mg.send(tm, ds.unit.getSite().getName(), ds.unit.getBlock().getName(),
-                    ds.valueDefinition.getShortName() + " = " + v);
+                    ds.valueDefinition.getShortName() + " = " + v, time);
         } catch (Throwable e) {
             tm.log(e);
         }
@@ -152,5 +174,17 @@ public class AlertGenerator {
         } catch (Throwable e) {
             tm.log(e);
         }
+    }
+
+    private static long frequency(DataSet.DataStatus<?> ds) {
+        int significance = ds.getValueDefinition().getSignificance();
+        String key = tm.getEntity().getId() + "/" + significance;
+        Long frequency = AlertGenerator.frequency.get(key);
+        if(frequency == null) {
+            AlertRepeatFrequency atf = AlertRepeatFrequency.get(significance, tm);
+            frequency = atf.getFrequency() * 60 * 1000L;
+            AlertGenerator.frequency.put(key, frequency);
+        }
+        return frequency;
     }
 }
