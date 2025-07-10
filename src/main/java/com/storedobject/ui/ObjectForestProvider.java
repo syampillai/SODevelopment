@@ -4,17 +4,18 @@ import com.storedobject.common.ResourceOwner;
 import com.storedobject.core.ObjectList;
 import com.storedobject.core.ObjectForest;
 import com.storedobject.core.*;
+import com.storedobject.ui.util.ChildVisitor;
 import com.vaadin.flow.data.provider.hierarchy.HierarchicalQuery;
 import com.vaadin.flow.function.SerializablePredicate;
 
 import javax.annotation.Nonnull;
 import java.util.List;
-import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 public class ObjectForestProvider<T extends StoredObject> extends AbstractTreeProvider<Object, T>
-        implements ObjectLoader<T>, ObjectChangedListener<T>, AutoCloseable, ResourceOwner, FilterMethods<T> {
+        implements ObjectLoader<T>, ObjectChangedListener<T>, AutoCloseable, ResourceOwner, FilterMethods<T>,
+        ChildVisitor<T, Object> {
 
     private final ObjectLoadFilter<T> systemFilter = new ObjectLoadFilter<>(), fixedFilter = new ObjectLoadFilter<>();
     private LoadCallBack loadCallBack;
@@ -32,6 +33,15 @@ public class ObjectForestProvider<T extends StoredObject> extends AbstractTreePr
     @Override
     public List<T> getRoots() {
         return forest.getRoots();
+    }
+
+    @Override
+    public List<T> listRoots() {
+        return getRoots();
+    }
+
+    public Stream<Object> streamChildren(Object parent) {
+        return forest.stream(parent, 0, Integer.MAX_VALUE);
     }
 
     @Override
@@ -234,22 +244,6 @@ public class ObjectForestProvider<T extends StoredObject> extends AbstractTreePr
 
     protected interface LoadCallBack {
         void load(Runnable loadFunction);
-    }
-
-    /**
-     * Visit the children of the parent item.
-     *
-     * @param parent Parent item.
-     * @param consumer Consumer to consume the visit purpose.
-     * @param includeGrandChildren Whether recursively include grand-children or not.
-     */
-    public void visitChildren(Object parent, Consumer<Object> consumer, boolean includeGrandChildren) {
-        forest.stream(parent, 0, Integer.MAX_VALUE).forEach(c -> {
-            consumer.accept(c);
-            if(includeGrandChildren) {
-                visitChildren(c, consumer, true);
-            }
-        });
     }
 
     @Override

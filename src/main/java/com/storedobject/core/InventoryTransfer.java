@@ -109,17 +109,13 @@ public abstract class InventoryTransfer extends StoredObject implements OfEntity
 
     @Override
     public String getTagPrefix() {
-        if(this instanceof InventoryRO) {
-            return "RO-";
-        } else if(this instanceof MaterialReturned) {
-            return "MR-";
-        } else if(this instanceof MaterialTransferred) {
-            return "MT-";
-        } else if(this instanceof InventorySale) {
-            return "IS-";
-        } else {
-            throw new SORuntimeException("Unknown class " + getClass().getName());
-        }
+        return switch (this) {
+            case InventoryRO ignored -> "RO-";
+            case MaterialReturned ignored -> "MR-";
+            case MaterialTransferred ignored -> "MT-";
+            case InventorySale ignored -> "IS-";
+            default -> throw new SORuntimeException("Unknown class " + getClass().getName());
+        };
     }
 
     @Override
@@ -132,16 +128,6 @@ public abstract class InventoryTransfer extends StoredObject implements OfEntity
 
     @Override
     public final <O extends StoredObject> Amend<O> getAmend() {
-        /*
-        InventoryTransfer it = this;
-        int a = amendment;
-        while(a > 0) {
-            --a;
-            it = it.listLinks(it.getClass(), "No=" + no + " AND Amendment=" + a).findFirst();
-        }
-        //noinspection unchecked
-        return (Amend<O>) new Amend<>(it, it.amendment);
-        */
         //noinspection unchecked
         return (Amend<O>) new Amend<>(this, amendment);
     }
@@ -458,7 +444,7 @@ public abstract class InventoryTransfer extends StoredObject implements OfEntity
     }
 
     /**
-     * Amend this. This entry be closed (marked with "returned" status) and another entry will be created with all
+     * Amend this. This entry will be closed (marked with status as "returned"), and another entry will be created with all
      * the items under it. Any new item added to it will be added with a new amendment number.
      *
      * @param transaction Transaction.

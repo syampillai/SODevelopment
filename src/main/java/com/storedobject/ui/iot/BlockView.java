@@ -1,21 +1,12 @@
 package com.storedobject.ui.iot;
 
-import com.storedobject.core.DateUtility;
 import com.storedobject.core.Id;
 import com.storedobject.core.StoredObject;
 import com.storedobject.iot.*;
-import com.storedobject.ui.Application;
-import com.storedobject.ui.TemplateView;
-import com.storedobject.ui.Transactional;
-import com.storedobject.vaadin.CloseableView;
-import com.storedobject.vaadin.View;
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.html.Span;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
-import java.util.function.Consumer;
 
 /**
  * BlockView represents a view specifically designed to handle block entities and relevant updates in the IoT system.
@@ -27,18 +18,13 @@ import java.util.function.Consumer;
  *
  * @author Syam
  */
-public class BlockView extends TemplateView implements Transactional, CloseableView {
+public class BlockView extends AbstractBlockView {
 
     private final Object lock = new Object();
-    private Consumer<Id> refresher;
-    private final Application application;
     private final List<Unit> units = new ArrayList<>();
     private Block block;
-    private Date lastUpdateTime;
     private boolean repainting = false;
 
-    @com.vaadin.flow.component.template.Id
-    private Span lastUpdate;
     @com.vaadin.flow.component.template.Id("block")
     private BlockComboField blockField;
 
@@ -56,48 +42,13 @@ public class BlockView extends TemplateView implements Transactional, CloseableV
     public BlockView() {
         super();
         setCaption("Block View");
-        Application.get().closeMenu();
-        application = Application.get();
     }
 
-    /**
-     * Cleans up resources and releases references related to the BlockView instance.
-     * This method removes the associated size attribute, unregisters any linked data refresher,
-     * stops polling from the associated application, and invokes the superclasses clean method.
-     * If a refresher is currently active, it will be unregistered before being set to null.
-     * <p>Note: Do not call this method anywhere from your logic.</p>
-     */
     @Override
-    public void clean() {
-        if(refresher != null) {
-            DataSet.unregister(refresher);
-            refresher = null;
-        }
-        application.stopPolling(this);
-        super.clean();
-    }
-
-    /**
-     * Executes the operation for the current block view. This method ensures the
-     * proper setup of a refresher mechanism and block association prior to execution.
-     * It also invokes the parent class's execute method to perform any additional
-     * actions required.
-     *
-     * @param lock A {@link View} object used to control the execution context
-     *             and ensure thread safety.
-     */
-    @Override
-    public void execute(View lock) {
-        if(refresher == null) {
-            lastUpdateTime = null;
-            application.setPollInterval(this, 30000);
-            refresher = this::refreshStatus;
-            DataSet.register(refresher);
-        }
+    protected final void drawBlocks() {
         if(block == null) {
             findBlock();
         }
-        super.execute(lock);
     }
 
     /**
@@ -142,21 +93,7 @@ public class BlockView extends TemplateView implements Transactional, CloseableV
             return;
         }
         blockField.setSite(site);
-    }
-
-    /**
-     * Retrieves the Site associated with this BlockView instance.
-     * If a block is set, it will return the site associated with the block.
-     * If no block is set, it will return the site associated with the blockField,
-     * or null if blockField is not available.
-     *
-     * @return The associated Site object, or null if no site is available.
-     */
-    public Site getSite() {
-        if(block != null) {
-            return block.getSite();
-        }
-        return blockField == null ? null : blockField.getSite();
+        super.setSite(site);
     }
 
     /**
@@ -182,28 +119,6 @@ public class BlockView extends TemplateView implements Transactional, CloseableV
     protected void reloading() {
     }
 
-    /**
-     * Retrieves the last update time of the block view.
-     *
-     * @return the date and time of the last update as a {@code Date} object
-     */
-    public Date getLastUpdateTime() {
-        return lastUpdateTime;
-    }
-
-    /**
-     * Retrieves the formatted timestamp for the last update of the block view.
-     * If no update has been recorded, it returns "UNKNOWN".
-     *
-     * @return A formatted string representing the last update timestamp, or "UNKNOWN" if no update exists.
-     */
-    public String getLastUpdate() {
-        if(lastUpdateTime == null) {
-            return "UNKNOWN";
-        }
-        return DateUtility.formatWithTimeHHMM(lastUpdateTime);
-    }
-
     private void findBlock() {
         Block block = this.block;
         if(block != null) {
@@ -227,11 +142,8 @@ public class BlockView extends TemplateView implements Transactional, CloseableV
         }
     }
 
-    private void refreshStatus(Id blockId) {
-        lastUpdateTime = application.getTransactionManager().date(new Date());
-        if(lastUpdate != null) {
-            application.access(() -> lastUpdate.setText(getLastUpdate()));
-        }
+    @Override
+    protected void redrawBlock(Id blockId) {
         if(block == null || !blockId.equals(this.block.getId())) {
             return;
         }
@@ -346,15 +258,12 @@ public class BlockView extends TemplateView implements Transactional, CloseableV
      */
     @Override
     protected Component createComponentForId(String id) {
-        return switch (id) {
-            case "lastUpdate" -> new Span();
-            case "block" -> {
-                BlockComboField blockField = new BlockComboField();
-                blockField.setMinWidth("400px");
-                blockField.addValueChangeListener(e -> setBlock(e.getValue()));
-                yield blockField;
-            }
-            default -> super.createComponentForId(id);
-        };
+        if("block".equals(id)) {
+            BlockComboField blockField = new BlockComboField();
+            blockField.setMinWidth("400px");
+            blockField.addValueChangeListener(e -> setBlock(e.getValue()));
+            return blockField;
+        }
+        return super.createComponentForId(id);
     }
 }

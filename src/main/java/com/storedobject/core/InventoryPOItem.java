@@ -187,6 +187,10 @@ public class InventoryPOItem extends StoredObject implements Detail {
         }
         Quantity uom = pn.getUnitOfMeasurement();
         quantity.canConvert(uom);
+        MeasurementUnit mu = quantity.getUnit();
+        if(mu.obsolete) {
+            throw new Invalid_State("Obsolete unit used: " + quantity);
+        }
         if(pn.isSerialized()) {
             if(quantity.isZero()) {
                 quantity = Count.ONE;
@@ -290,7 +294,7 @@ public class InventoryPOItem extends StoredObject implements Detail {
             save(transaction);
             return;
         }
-        Money incUC = unitPrice.subtract(this.unitPrice), m;
+        Money incUC = unitPrice.subtract(this.unitPrice);
         boolean itemFound;
         setUnitPrice(unitPrice);
         save(transaction);
@@ -310,14 +314,7 @@ public class InventoryPOItem extends StoredObject implements Detail {
                     if(!itemFound) {
                         itemFound = ii.getId().equals(gi.getItemId());
                     }
-                    if(ii.getQuantity().isGreaterThanOrEqual(gi.getQuantity())) {
-                        m = ii.getCost().add(incUC.multiply(gi.getQuantity()));
-                    } else {
-                        m = ii.getCost()
-                                .add(incUC.multiply(ii.getQuantity().convert(gi.getQuantity().getUnit())));
-                    }
-                    transaction.updateSQL("UPDATE core.InventoryItem SET Cost=" + m.getStorableValue()
-                            + " WHERE Id=" + ii.getId());
+                    costChange(transaction, ii, gi, incUC);
                     for(InventoryLedger movement : list(InventoryLedger.class, "Item=" + ii.getId()
                             + " AND Date>='" + Database.format(g.date) + "'", "Item,Date")) {
                         movement.increaseCost(transaction, incUC, gi.getQuantity());
@@ -326,14 +323,7 @@ public class InventoryPOItem extends StoredObject implements Detail {
                 if(!itemFound) {
                     InventoryItem ii = gi.getItem();
                     if(ii != null && !ii.getQuantity().isZero()) {
-                        if(ii.getQuantity().isGreaterThanOrEqual(gi.getQuantity())) {
-                            m = ii.getCost().add(incUC.multiply(gi.getQuantity()));
-                        } else {
-                            m = ii.getCost()
-                                    .add(incUC.multiply(ii.getQuantity().convert(gi.getQuantity().getUnit())));
-                        }
-                        transaction.updateSQL("UPDATE core.InventoryItem SET Cost=" + m.getStorableValue()
-                                + " WHERE Id=" + ii.getId());
+                        costChange(transaction, ii, gi, incUC);
                     }
                     for(InventoryLedger movement : list(InventoryLedger.class, "Item=" + gi.getItemId()
                             + " AND Date>='" + Database.format(g.date) + "'", "Item,Date")) {
@@ -342,6 +332,18 @@ public class InventoryPOItem extends StoredObject implements Detail {
                 }
             }
         }
+    }
+
+    private static void costChange(DBTransaction transaction, InventoryItem ii, InventoryGRNItem gi, Money incUC) {
+        Money m;
+        if(ii.getQuantity().isGreaterThanOrEqual(gi.getQuantity())) {
+            m = ii.getCost().add(incUC.multiply(gi.getQuantity()));
+        } else {
+            m = ii.getCost()
+                    .add(incUC.multiply(ii.getQuantity().convert(gi.getQuantity().getUnit())));
+        }
+        transaction.updateSQL("UPDATE core.InventoryItem SET Cost=" + m.getStorableValue()
+                + " WHERE Id=" + ii.getId());
     }
 
     /**

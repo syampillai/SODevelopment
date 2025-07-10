@@ -127,8 +127,8 @@ public class InventoryItem extends StoredObject implements HasInventoryItem {
     /**
      * Get the serial number for display purposes.
      *
-     * @return By default, the {@link #serialNumber} value is returned with appropriate name prefix.
-     * But, it can be overridden to display other details.
+     * @return By default, the {@link #serialNumber} value is returned with the appropriate name prefix.
+     * But it can be overridden to display other details.
      */
     public String getSerialNumberDisplay() {
         if(serialNumber == null || serialNumber.isBlank()) {
@@ -226,7 +226,7 @@ public class InventoryItem extends StoredObject implements HasInventoryItem {
      * Get the name of the current location for display purposes.
      *
      * @return By default, this method returns the {@link #toDisplay()} string of the location
-     * returned by the {@link #getLocation()} method. But, this could be overridden to provide other information.
+     * returned by the {@link #getLocation()} method. But this could be overridden to provide other information.
      */
     public String getLocationDisplay() {
         return getLocation().toDisplay();
@@ -329,7 +329,7 @@ public class InventoryItem extends StoredObject implements HasInventoryItem {
      * @param tm Transaction manager.
      * @param newCost New cost.
      * @param updateAll Update all items or not (applicable for serialized items only).
-     * @throws Exception if error occurs while updating.
+     * @throws Exception if an error occurs while updating.
      */
     public boolean updateCost(TransactionManager tm, Money newCost, boolean updateAll) throws Exception {
         if(newCost == null || newCost.isNegative()) {
@@ -518,6 +518,9 @@ public class InventoryItem extends StoredObject implements HasInventoryItem {
             }
         }
         MeasurementUnit u = partNumber.getUnitOfMeasurement().getUnit();
+        if(u.obsolete) {
+            throw new Invalid_State("Unit of Measurement is obsolete: " + u);
+        }
         if(quantity.getUnit().getType() != u.getType()) {
             if(quantity.isZero()) {
                 quantity = Quantity.create(u);
@@ -611,7 +614,7 @@ public class InventoryItem extends StoredObject implements HasInventoryItem {
                 }
             }
             // Rented from
-            // External owner
+            // an External owner
             case 9, 17 -> {
                 if (Id.isNull(ownerId)) {
                     ownerId = location.getEntityId();
@@ -869,8 +872,8 @@ public class InventoryItem extends StoredObject implements HasInventoryItem {
 
     /**
      * <p>Is this an expendable item?</p>
-     * <p>Items (such as nut, bolt, rivet etc.) for which (1) no authorized repair procedure exists, and/or
-     * (2) the cost of repair would exceed cost of its replacement. Expendable items are usually considered to be
+     * <p>Items (such as nut, bolt, rivet, etc.) for which (1) no authorized repair procedure exists, and/or
+     * (2) the cost of repair would exceed the cost of its replacement. Expendable items are usually considered to be
      * consumed when issued and are not recorded as returnable inventory.</p>
      *
      * @return True or false.
@@ -881,8 +884,8 @@ public class InventoryItem extends StoredObject implements HasInventoryItem {
 
     /**
      * <p>Is this a consumable item?</p>
-     * <p>A consumable item (or a consumable) is an item that is once used, can not be recovered. Once issued from
-     * stores, consumables gets incorporated into other items and loose their identity. An example of a consumable
+     * <p>A consumable item (or a consumable) is an item that is once used, cannot be recovered. Once issued from
+     * stores, consumables get incorporated into other items and lose their identity. An example of a consumable
      * is paint.</p>
      *
      * @return True or false.
@@ -916,7 +919,7 @@ public class InventoryItem extends StoredObject implements HasInventoryItem {
     /**
      * <p>Is this a repairable item?</p>
      * <p>This method is used to check whether an item is repairable or not. It makes sure that the item
-     * is a serialized items and its {@link #isRepairable()} returns <code>true</code>.</p>
+     * is a serialized item and its {@link #isRepairable()} returns <code>true</code>.</p>
      *
      * @return True or false.
      */
@@ -959,7 +962,7 @@ public class InventoryItem extends StoredObject implements HasInventoryItem {
      * Check whether the measurement unit of the given quantity compatible for this item or not.
      *
      * @param quantity Quantity to check.
-     * @param name Name of the quantity (used to generate message of the exception).
+     * @param name Name of the quantity (used to generate a message of the exception).
      * @throws Invalid_State Throws if the measurement unit is not compatible.
      */
     public void checkUnit(Quantity quantity, String name) throws Invalid_State {
@@ -1168,7 +1171,7 @@ public class InventoryItem extends StoredObject implements HasInventoryItem {
 
     /**
      * List all the items for the given part number. It will return even the items fitted on assemblies,
-     * items sent for repair etc. However, items that are already scrapped/consumed will not be included.
+     * items sent for repair, etc. However, items that are already scrapped/consumed will not be included.
      *
      * @param partNumber Part number for which the list needs to be obtained.
      * @return List of items.
@@ -1179,7 +1182,7 @@ public class InventoryItem extends StoredObject implements HasInventoryItem {
 
     /**
      * List all the items for the given part number. It will return even the items fitted on assemblies,
-     * items sent for repair etc. However, items that are already scrapped/consumed will not be included.
+     * items sent for repair, etc. However, items that are already scrapped/consumed will not be included.
      *
      * @param partNumber Part number for which the list needs to be obtained.
      * @param condition Additional condition if any. Could be null.
@@ -1191,7 +1194,7 @@ public class InventoryItem extends StoredObject implements HasInventoryItem {
 
     /**
      * List all the items for the given part number. It will return even the items fitted on assemblies,
-     * items sent for repair etc. However, items that are already scrapped/consumed will not be included.
+     * items sent for repair, etc. However, items that are already scrapped/consumed will not be included.
      *
      * @param partNumber Part number for which the list needs to be obtained.
      * @param includeZeros Whether to include zero quantity items (in the case of non-serialized items) or not.
@@ -1203,7 +1206,7 @@ public class InventoryItem extends StoredObject implements HasInventoryItem {
 
     /**
      * List all the items for the given part number. It will return even the items fitted on assemblies,
-     * items sent for repair etc. However, items that are already scrapped/consumed will not be included.
+     * items sent for repair, etc. However, items that are already scrapped/consumed will not be included.
      *
      * @param partNumber Part number for which the list needs to be obtained.
      * @param condition Additional condition if any. Could be null.
@@ -1319,7 +1322,7 @@ public class InventoryItem extends StoredObject implements HasInventoryItem {
     }
 
     /**
-     * List of all fitment positions (includes full tree) under this item.
+     * List of all fitment positions (includes the full tree) under this item.
      *
      * @return Iterator containing all fitment positions.
      */
@@ -1504,7 +1507,7 @@ public class InventoryItem extends StoredObject implements HasInventoryItem {
     }
 
     /**
-     * Get that description of the status of this item (serviceability, storage condition etc.)
+     * Get that description of the status of this item (serviceability, storage condition, etc.)
      * @return Status description.
      */
     public String getStatusDescription() {
@@ -1567,13 +1570,14 @@ public class InventoryItem extends StoredObject implements HasInventoryItem {
      * @param invoiceDate Invoice date.
      * @param invoiceReference Invoice reference (supplier's invoice number).
      * @param supplier Supplier.
-     * @param grnType GRN Type - 0:Purchase, 1:External Owner, 2:Loaned from, 3:Items Repaired by, 4:Sales Return
+     * @param grnType GRN Type - 0:Purchase, 1: External Owner, 2: Loaned from, 3: Items Repaired by, 4: Sales Return
      * @return GRN
      * @throws Exception if transaction errors occur.
      */
     public InventoryGRN createGRN(Transaction transaction, InventoryStore store, Date grnDate, int grnNumber,
                                   Date invoiceDate, String invoiceReference, Entity supplier, int grnType)
             throws Exception {
+        Currency localCurrency = transaction.getManager().getCurrency();
         InventoryGRN grn = getGRN();
         if(grn != null) {
             if(grn.getType() == grnType) {
@@ -1585,8 +1589,21 @@ public class InventoryItem extends StoredObject implements HasInventoryItem {
                 grn = null;
             }
         }
+        boolean changed = false;
         if(grn == null) {
             grn = new InventoryGRN();
+            if(cost.getCurrency() == localCurrency) {
+                grn.setExchangeRate(new Rate());
+                grn.setCurrencyObject(localCurrency);
+            } else {
+                Rate rate = cost.getBuyingRate(localCurrency);
+                grn.setExchangeRate(rate);
+                grn.setCurrencyObject(cost.getCurrency());
+                cost = cost.multiply(rate, localCurrency);
+                changed = true;
+            }
+        } else if(!Currency.getInstance(grn.getCurrency()).equals(cost.getCurrency())) {
+            throw new SOException("GRN currency does not match with the cost of the item");
         }
         grn.no = grnNumber;
         grn.date.setTime(grnDate.getTime());
@@ -1600,6 +1617,9 @@ public class InventoryItem extends StoredObject implements HasInventoryItem {
         grn.save(transaction);
         if(!this.gRNId.equals(grn.getId())) {
             this.gRNId = grn.getId();
+            changed = true;
+        }
+        if(changed) {
             save(transaction);
         }
         return grn;
@@ -1654,7 +1674,7 @@ public class InventoryItem extends StoredObject implements HasInventoryItem {
     }
 
     /**
-     * Attach the RO for this item. This method is used only for creating ROs for the items that are data-picked.
+     * Attach the RO to this item. This method is used only for creating ROs for the items that are data-picked.
      *
      * @param transaction Transaction.
      * @param ro RO to attach.

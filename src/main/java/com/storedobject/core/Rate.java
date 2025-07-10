@@ -7,7 +7,7 @@ import java.math.RoundingMode;
 
 /**
  * Class that represents a rate value such as currency rate etc. The default number of decimals is 6.
- * It can not be zero or negative.
+ * It cannot be zero or negative.
  * This class is immutable.
  *
  * @author Syam
@@ -65,7 +65,7 @@ public final class Rate extends DecimalNumber {
 	}
 
 	/**
-	 * Create a rate with given number of decimals.
+	 * Create a rate with a given number of decimals.
 	 * @param decimals Decimal places
 	 *
 	 * @param value The value
@@ -76,7 +76,7 @@ public final class Rate extends DecimalNumber {
 	}
 
 	/**
-	 * Construct a rate from a BigDecimal with given number of decimals.
+	 * Construct a rate from a BigDecimal with a given number of decimals.
 	 * @param decimals Decimal places
 	 *
 	 * @param value The BigDecimal value.

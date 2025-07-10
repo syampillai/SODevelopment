@@ -246,4 +246,30 @@ public class DecimalNumber implements Storable, Comparable<DecimalNumber> {
 	public BigDecimal getAverageValue(BigDecimal second) {
 		return value.add(second).divide(TWO, RoundingMode.HALF_UP);
 	}
+
+	public boolean isSameValue(BigInteger another) {
+		return isSameValue(new BigDecimal(another));
+	}
+
+	public boolean isSameValue(BigDecimal another) {
+		String v1 = trim(value.toPlainString());
+		String v2 = trim(another.toPlainString());
+		return v1.equals(v2);
+	}
+
+	public boolean isSameValue(DecimalNumber another) {
+		return isSameValue(another.getValue());
+	}
+
+	private static String trim(String v) {
+		if(v.contains(".")) {
+			while (v.endsWith("0")) {
+				v = v.substring(0, v.length() - 1);
+			}
+		}
+		if(v.endsWith(".")) {
+			v = v.substring(0, v.length() - 1);
+		}
+		return v;
+	}
 }

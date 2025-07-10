@@ -24,4 +24,11 @@ public class PackingUnit extends StoredObject {
     public Quantity getQuantity() {
         return null;
     }
+
+    public void setObsolete(boolean obsolete) {
+    }
+
+    public boolean getObsolete() {
+        return false;
+    }
 }

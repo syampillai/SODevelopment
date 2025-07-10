@@ -4,17 +4,18 @@ import com.storedobject.common.ResourceOwner;
 import com.storedobject.core.ObjectList;
 import com.storedobject.core.ObjectTree;
 import com.storedobject.core.*;
+import com.storedobject.ui.util.ChildVisitor;
 import com.vaadin.flow.data.provider.hierarchy.HierarchicalQuery;
 import com.vaadin.flow.function.SerializablePredicate;
 
 import javax.annotation.Nonnull;
 import java.util.List;
-import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 public class ObjectTreeProvider<T extends StoredObject> extends AbstractTreeProvider<T, T>
-        implements ObjectLoader<T>, ObjectChangedListener<T>, AutoCloseable, ResourceOwner, FilterMethods<T> {
+        implements ObjectLoader<T>, ObjectChangedListener<T>, AutoCloseable, ResourceOwner, FilterMethods<T>,
+        ChildVisitor<T, T> {
 
     private final ObjectLoadFilter<T> systemFilter = new ObjectLoadFilter<>(), fixedFilter = new ObjectLoadFilter<>();
     private LoadCallBack loadCallBack;
@@ -32,6 +33,16 @@ public class ObjectTreeProvider<T extends StoredObject> extends AbstractTreeProv
     @Override
     public List<T> getRoots() {
         return tree.getRoots();
+    }
+
+    @Override
+    public List<T> listRoots() {
+        return getRoots();
+    }
+
+    @Override
+    public Stream<T> streamChildren(T parent) {
+        return tree.stream(parent, 0, Integer.MAX_VALUE);
     }
 
     @Override
@@ -220,22 +231,6 @@ public class ObjectTreeProvider<T extends StoredObject> extends AbstractTreeProv
 
     protected interface LoadCallBack {
         void load(Runnable loadFunction);
-    }
-
-    /**
-     * Visit the children of the parent item.
-     *
-     * @param parent Parent item.
-     * @param consumer Consumer to consume the visit purpose.
-     * @param includeGrandChildren Whether recursively include grand-children or not.
-     */
-    public void visitChildren(T parent, Consumer<T> consumer, boolean includeGrandChildren) {
-        tree.stream(parent, 0, Integer.MAX_VALUE).forEach(c -> {
-            consumer.accept(c);
-            if(includeGrandChildren) {
-                visitChildren(parent, consumer, true);
-            }
-        });
     }
 
     @Override

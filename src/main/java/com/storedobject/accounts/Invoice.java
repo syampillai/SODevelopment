@@ -302,31 +302,38 @@ public abstract class Invoice extends StoredObject implements OfEntity, Financia
             throw new Invalid_Value("Party account doesn't belong to this organization");
         }
         int allow = ac.getAllow();
-        if(ea instanceof CashAccount && (allow & 2) != 2) {
-            throw new Invalid_State("Can't accept cash payment");
-        } else if(ea instanceof AbstractCardAccount && (allow & 4) != 4) {
-            throw new Invalid_State("Can't accept card payment");
-        } else if(ea instanceof DigitalPaymentAccount && (allow & 8) != 8) {
-            throw new Invalid_State("Can't accept digital payment");
-        } else {
-            if((allow & 1) == 0) {
-                if(ac.getEntityAccountClass() == ea.getClass()) {
-                    allow = 1;
-                } else {
-                    allow = 0;
+        switch (ea) {
+            case CashAccount ignored when (allow & 2) != 2 -> throw new Invalid_State("Can't accept cash payment");
+            case AbstractCardAccount ignored when (allow & 4) != 4 ->
+                    throw new Invalid_State("Can't accept card payment");
+            case DigitalPaymentAccount ignored when (allow & 8) != 8 ->
+                    throw new Invalid_State("Can't accept digital payment");
+            default -> {
+                int canAllow = canAllow(allow, ac, ea);
+                if (canAllow == 0) {
+                    throw new Invalid_State("Can't accept party accounts of type " + StringUtility.makeLabel(ea.getClass()));
                 }
-            } else {
-                if(ac.getEntityAccountClass().isAssignableFrom(ea.getClass())) {
-                    allow = 1;
-                } else {
-                    allow = 0;
-                }
-            }
-            if(allow == 0) {
-                throw new Invalid_State("Can't accept party accounts of type " + StringUtility.makeLabel(ea.getClass()));
             }
         }
         return ea;
+    }
+
+    private static int canAllow(int allow, AccountConfiguration ac, EntityAccount ea) {
+        int canAllow;
+        if ((allow & 1) == 0) {
+            if (ac.getEntityAccountClass() == ea.getClass()) {
+                canAllow = 1;
+            } else {
+                canAllow = 0;
+            }
+        } else {
+            if (ac.getEntityAccountClass().isAssignableFrom(ea.getClass())) {
+                canAllow = 1;
+            } else {
+                canAllow = 0;
+            }
+        }
+        return canAllow;
     }
 
     public final AccountConfiguration getConfiguration() {
@@ -371,7 +378,7 @@ public abstract class Invoice extends StoredObject implements OfEntity, Financia
         Money m = total;
         Currency lc = accountGL.getCurrency();
         if(ea.getCurrency() != lc) {
-            m = m.convert(exchangeRate.reverse(), lc);
+            m = m.multiply(exchangeRate.reverse(), lc);
         }
         if(this instanceof SupplierInvoice) {
             m = m.negate();

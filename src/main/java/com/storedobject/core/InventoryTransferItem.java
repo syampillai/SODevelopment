@@ -94,6 +94,10 @@ public abstract class InventoryTransferItem extends StoredObject implements Deta
         } else if(quantity.isZero()) {
             quantity = item.getQuantity();
         }
+        MeasurementUnit mu = quantity.getUnit();
+        if(mu.obsolete) {
+            throw new Invalid_State("Obsolete unit used: " + quantity);
+        }
         if(quantity.isZero()) {
             throw new Invalid_State("Quantity of the item can't be zero");
         }

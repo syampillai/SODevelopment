@@ -79,18 +79,6 @@ public final class Money implements Storable, Comparable<Money> {
 		return new Money();
 	}
 
-	public Money convert(Currency currency) {
-		return new Money();
-	}
-	
-	public Money buy(Currency currency) {
-		return new Money();
-	}
-	
-	public Money sell(Currency currency) {
-		return new Money();
-	}
-
 	public Money add(String amount) {
 		return new Money();
 	}
@@ -119,57 +107,119 @@ public final class Money implements Storable, Comparable<Money> {
 		return new Money();
 	}
 
+	/**
+	 * Multiply the amount with a value
+	 * @param multiplicand Multiplicand
+	 * @return Result
+	 */
 	public Money multiply(double multiplicand) {
 		return new Money();
 	}
 
+	/**
+	 * Multiply the amount with a value and convert to another currency.
+	 * @param multiplicand Multiplicand
+	 * @return Result
+	 */
+	public Money multiply(double multiplicand, Currency currency) {
+		return new Money();
+	}
+
+	/**
+	 * Multiply the amount with a value
+	 * @param multiplicand Multiplicand
+	 * @return Result
+	 */
 	public Money multiply(BigDecimal multiplicand) {
 		return new Money();
 	}
 
-	public Money multiply(DecimalNumber multiplicand) {
-		return new Money();
-	}
-
-	public Money multiply(Rate multiplicand) {
-		return new Money();
-	}
-
 	/**
-	 * Divide the amount with an "exchange rate" to convert it into another currency value.
-	 * @param exchangeRate Exchange rate
-	 * @param currency Currency to which the conversion is done
+	 * Multiply the amount with a rate and convert to another currency.
+	 * @param multiplicand Multiplicand
+	 * @param currency Currency to convert to.
 	 * @return Result
 	 */
-	public Money convert(Rate exchangeRate, Currency currency) {
+	public Money multiply(BigDecimal multiplicand, Currency currency) {
 		return new Money();
 	}
 
 	/**
-	 * Convert this monetary value to the equivalent in local currency by applying the given "exchange rate". Unlike
-	 * the {@link #convert(Rate, Currency)} method, this method multiplies the monetary value with the exchange rate.
+	 * Multiply the amount with a rate
+	 * @param multiplicand Multiplicand
+	 * @return Result
+	 */
+	public Money multiply(DecimalNumber multiplicand) {
+		return multiply(multiplicand.getValue());
+	}
+
+	/**
+	 * Multiply the amount with a rate and convert to another currency.
+	 * @param multiplicand Multiplicand
+	 * @param currency Currency to convert to.
+	 * @return Result
+	 */
+	public Money multiply(DecimalNumber multiplicand, Currency currency) {
+		return multiply(multiplicand.getValue(), currency);
+	}
+
+	/**
+	 * Convert this monetary value to another currency (by multiplying with the average rate).
+	 *
+	 * @param currency Currency to convert to.
+	 * @param rateProvider Currency rate provider.
+	 *
+	 * @return Converted monetary value.
+	 */
+	public Money convert(Currency currency, CurrencyRateProvider rateProvider) {
+		return new Money();
+	}
+
+	/**
+	 * Convert this monetary value to another currency (by multiplying with the average rate).
+	 *
+	 * @param currency Currency to convert to.
+	 *
+	 * @return Converted monetary value.
+	 */
+	public Money convert(Currency currency) {
+		return convert(DateUtility.today(), currency);
+	}
+
+	/**
+	 * Convert this monetary value to another currency (by multiplying with the average rate).
+	 *
+	 * @param date Effective date.
+	 * @param currency Currency to convert to.
+	 *
+	 * @return Converted monetary value.
+	 */
+	public Money convert(Date date, Currency currency) {
+		return new Money();
+	}
+
+	/**
+	 * Convert this monetary value to the equivalent in local currency by multiplying with the given "exchange rate".
 	 * @param exchangeRate Exchange rate
 	 * @param tm Transaction manager (Local currency will be determined from this)
 	 * @return Result
 	 */
 	public Money toLocal(Rate exchangeRate, TransactionManager tm) {
-		return new Money();
+		return multiply(exchangeRate, tm.getCurrency());
 	}
 
 	/**
-	 * Convert this monetary value to the equivalent in local currency by applying the given "exchange rate". Unlike
-	 * the {@link #convert(Rate, Currency)} method, this method multiplies the monetary value with the exchange rate.
+	 * Convert this monetary value to the equivalent in local currency by multiplying with the given "exchange rate".
 	 * @param exchangeRate Exchange rate
 	 * @param systemEntity System entity (Local currency will be determined from this)
 	 * @return Result
 	 */
 	public Money toLocal(Rate exchangeRate, SystemEntity systemEntity) {
-		return new Money();
+		return multiply(exchangeRate, Currency.getInstance(systemEntity.getCurrency()));
 	}
 
 	/**
-	 * Convert this monetary value to the equivalent in local currency by applying the current "exchange rate". Unlike
-	 * the {@link #convert(Rate, Currency)} method, this method multiplies the monetary value with the exchange rate.
+	 * Convert this monetary value to the equivalent in local currency by multiplying with the given "exchange rate".
 	 * @param tm Transaction manager (Local currency will be determined from this)
 	 * @return Result
 	 */
@@ -178,8 +228,7 @@ public final class Money implements Storable, Comparable<Money> {
 	}
 
 	/**
-	 * Convert this monetary value to the equivalent in local currency by applying the current "exchange rate". Unlike
-	 * the {@link #convert(Rate, Currency)} method, this method multiplies the monetary value with the exchange rate.
+	 * Convert this monetary value to the equivalent in local currency by multiplying with the given "exchange rate".
 	 * @param date Effective date.
 	 * @param tm Transaction manager (Local currency will be determined from this)
 	 * @return Result
@@ -189,8 +238,7 @@ public final class Money implements Storable, Comparable<Money> {
 	}
 
 	/**
-	 * Convert this monetary value to the equivalent in local currency by applying the current "exchange rate". Unlike
-	 * the {@link #convert(Rate, Currency)} method, this method multiplies the monetary value with the exchange rate.
+	 * Convert this monetary value to the equivalent in local currency by multiplying with the given "exchange rate".
 	 * @param systemEntity System entity (Local currency will be determined from this)
 	 * @return Result
 	 */
@@ -199,8 +247,7 @@ public final class Money implements Storable, Comparable<Money> {
 	}
 
 	/**
-	 * Convert this monetary value to the equivalent in local currency by applying the current "exchange rate". Unlike
-	 * the {@link #convert(Rate, Currency)} method, this method multiplies the monetary value with the exchange rate.
+	 * Convert this monetary value to the equivalent in local currency by multiplying with the given "exchange rate".
 	 * @param date Effective date.
 	 * @param systemEntity System entity (Local currency will be determined from this)
 	 * @return Result
@@ -209,132 +256,358 @@ public final class Money implements Storable, Comparable<Money> {
 		return new Money();
 	}
 
+	/**
+	 * Convert this monetary value to another currency by applying the buying rate.
+	 *
+	 * @param currency Currency to convert to.
+	 * @param rateProvider Currency rate provider.
+	 *
+	 * @return Converted monetary value.
+	 */
+	public Money buy(Currency currency, CurrencyRateProvider rateProvider) {
+		return new Money();
+	}
+
+	/**
+	 * Convert this monetary value to another currency by applying the buying rate.
+	 *
+	 * @param currency Currency to convert to.
+	 *
+	 * @return Converted monetary value.
+	 */
+	public Money buy(Currency currency) {
+		return buy(DateUtility.today(), currency);
+	}
+
+	/**
+	 * Convert this monetary value to another currency by applying the buying rate.
+	 *
+	 * @param date Effective date.
+	 * @param currency Currency to convert to.
+	 *
+	 * @return Converted monetary value.
+	 */
+	public Money buy(Date date, Currency currency) {
+		return new Money();
+	}
+
+	/**
+	 * Convert this monetary value to another currency by applying the selling rate.
+	 *
+	 * @param currency Currency to convert to.
+	 * @param rateProvider Currency rate provider.
+	 *
+	 * @return Converted monetary value.
+	 */
+	public Money sell(Currency currency, CurrencyRateProvider rateProvider) {
+		return new Money();
+	}
+
+	/**
+	 * Convert this monetary value to another currency by applying the selling rate.
+	 *
+	 * @param currency Currency to convert to.
+	 *
+	 * @return Converted monetary value.
+	 */
+	public Money sell(Currency currency) {
+		return sell(DateUtility.today(), currency);
+	}
+
+	/**
+	 * Convert this monetary value to another currency by applying the selling rate.
+	 *
+	 * @param date Effective date.
+	 * @param currency Currency to convert to.
+	 *
+	 * @return Converted monetary value.
+	 */
+	public Money sell(Date date, Currency currency) {
+		return new Money();
+	}
+
 
 	/**
 	 * Gets the selling rate.
+	 * <p>Note: To convert to the target currency, you need to divide the monetary value with this rate.</p>
 	 * @param currency Currency for which rate is required.
 	 * @return Rate
 	 */
 	public Rate getBuyingRate(Currency currency) {
-		return findRate(currency, null).getBuyingRate();
+		return getBuyingRate(DateUtility.today(), currency);
 	}
 
 	/**
 	 * Gets the selling rate.
+	 * <p>Note: To convert to the target currency, you need to divide the monetary value with this rate.</p>
+	 * @param date Effective date.
+	 * @param currency Currency for which rate is required.
+	 * @return Rate
+	 */
+	public Rate getBuyingRate(Date date, Currency currency) {
+		return findRate(date, currency, null).getBuyingRate();
+	}
+
+	/**
+	 * Gets the selling rate.
+	 * <p>Note: To convert to the target currency, you need to divide the monetary value with this rate.</p>
 	 * @param currency Currency for which rate is required.
 	 * @return Rate
 	 */
 	public Rate getSellingRate(Currency currency) {
-		return findRate(currency, null).getSellingRate();
+		return getSellingRate(DateUtility.today(), currency);
+	}
+
+	/**
+	 * Gets the selling rate.
+	 * <p>Note: To convert to the target currency, you need to divide the monetary value with this rate.</p>
+	 * @param date Effective date.
+	 * @param currency Currency for which rate is required.
+	 * @return Rate
+	 */
+	public Rate getSellingRate(Date date, Currency currency) {
+		return findRate(date, currency, null).getSellingRate();
 	}
 
 	/**
 	 * Gets the exchange rate (average of selling rate and buying rate).
+	 * <p>Note: To convert to the target currency, you need to divide the monetary value with this rate.</p>
 	 * @param currency Currency for which rate is required.
 	 * @return Rate
 	 */
 	public Rate getExchangeRate(Currency currency) {
-		return findRate(currency, null).getRate();
+		return getExchangeRate(DateUtility.today(), currency);
+	}
+
+	/**
+	 * Gets the exchange rate (average of selling rate and buying rate).
+	 * <p>Note: To convert to the target currency, you need to divide the monetary value with this rate.</p>
+	 * @param date Effective date.
+	 * @param currency Currency for which rate is required.
+	 * @return Rate
+	 */
+	public Rate getExchangeRate(Date date, Currency currency) {
+		return findRate(date, currency, null).getRate();
 	}
 
 	/**
 	 * Gets the buying rate.
+	 * <p>Note: To convert to the target currency, you need to divide the monetary value with this rate.</p>
 	 * @param currency Currency for which rate is required.
 	 * @param systemEntity System Entity.
 	 * @return Rate
 	 */
 	public Rate getBuyingRate(Currency currency, SystemEntity systemEntity) {
-		return findRate(currency, systemEntity).getBuyingRate();
+		return getBuyingRate(DateUtility.today(), currency, systemEntity);
+	}
+
+	/**
+	 * Gets the buying rate.
+	 * <p>Note: To convert to the target currency, you need to divide the monetary value with this rate.</p>
+	 * @param date Effective date.
+	 * @param currency Currency for which rate is required.
+	 * @param systemEntity System Entity.
+	 * @return Rate
+	 */
+	public Rate getBuyingRate(Date date, Currency currency, SystemEntity systemEntity) {
+		return findRate(date, currency, systemEntity).getBuyingRate();
 	}
 
 	/**
 	 * Gets the selling rate.
+	 * <p>Note: To convert to the target currency, you need to divide the monetary value with this rate.</p>
 	 * @param currency Currency for which rate is required.
 	 * @param systemEntity System Entity.
 	 * @return Rate
 	 */
 	public Rate getSellingRate(Currency currency, SystemEntity systemEntity) {
-		return findRate(currency, systemEntity).getSellingRate();
+		return getSellingRate(DateUtility.today(), currency, systemEntity);
+	}
+
+	/**
+	 * Gets the selling rate.
+	 * <p>Note: To convert to the target currency, you need to divide the monetary value with this rate.</p>
+	 * @param date Effective date.
+	 * @param currency Currency for which rate is required.
+	 * @param systemEntity System Entity.
+	 * @return Rate
+	 */
+	public Rate getSellingRate(Date date, Currency currency, SystemEntity systemEntity) {
+		return findRate(date, currency, systemEntity).getSellingRate();
 	}
 
 	/**
 	 * Gets the exchange rate (average of selling rate and buying rate).
+	 * <p>Note: To convert to the target currency, you need to divide the monetary value with this rate.</p>
 	 * @param currency Currency for which rate is required.
 	 * @param systemEntity System Entity.
 	 * @return Rate
 	 */
 	public Rate getExchangeRate(Currency currency, SystemEntity systemEntity) {
-		return findRate(currency, systemEntity).getRate();
+		return getExchangeRate(DateUtility.today(), currency, systemEntity);
+	}
+
+	/**
+	 * Gets the exchange rate (average of selling rate and buying rate).
+	 * <p>Note: To convert to the target currency, you need to divide the monetary value with this rate.</p>
+	 * @param date Effective date.
+	 * @param currency Currency for which rate is required.
+	 * @param systemEntity System Entity.
+	 * @return Rate
+	 */
+	public Rate getExchangeRate(Date date, Currency currency, SystemEntity systemEntity) {
+		return findRate(date, currency, systemEntity).getRate();
 	}
 
 	/**
 	 * Gets the selling rate.
+	 * <p>Note: To convert to the target currency, you need to divide the monetary value with this rate.</p>
 	 * @param from Currency for which rate is required.
 	 * @param to Target currency to convert to.
 	 * @return Rate
 	 */
 	public static Rate getBuyingRate(Currency from, Currency to) {
-		return findRate(from, to, null).getBuyingRate();
+		return getBuyingRate(DateUtility.today(), from, to);
 	}
 
 	/**
 	 * Gets the selling rate.
+	 * <p>Note: To convert to the target currency, you need to divide the monetary value with this rate.</p>
+	 * @param date Effective date.
+	 * @param from Currency for which rate is required.
+	 * @param to Target currency to convert to.
+	 * @return Rate
+	 */
+	public static Rate getBuyingRate(Date date, Currency from, Currency to) {
+		return findRate(date, from, to, null).getBuyingRate();
+	}
+
+	/**
+	 * Gets the selling rate.
+	 * <p>Note: To convert to the target currency, you need to divide the monetary value with this rate.</p>
 	 * @param from Currency for which rate is required.
 	 * @param to Target currency to convert to.
 	 * @return Rate
 	 */
 	public static Rate getSellingRate(Currency from, Currency to) {
-		return findRate(from, to, null).getSellingRate();
+		return getSellingRate(DateUtility.today(), from, to);
+	}
+
+	/**
+	 * Gets the selling rate.
+	 * <p>Note: To convert to the target currency, you need to divide the monetary value with this rate.</p>
+	 * @param date Effective date.
+	 * @param from Currency for which rate is required.
+	 * @param to Target currency to convert to.
+	 * @return Rate
+	 */
+	public static Rate getSellingRate(Date date, Currency from, Currency to) {
+		return findRate(date, from, to, null).getSellingRate();
 	}
 
 	/**
 	 * Gets the exchange rate (average of selling rate and buying rate).
+	 * <p>Note: To convert to the target currency, you need to divide the monetary value with this rate.</p>
 	 * @param from Currency for which rate is required.
 	 * @param to Target currency to convert to.
 	 * @return Rate
 	 */
 	public static Rate getExchangeRate(Currency from, Currency to) {
-		return findRate(from, to, null).getRate();
+		return getExchangeRate(DateUtility.today(), from, to, null);
+	}
+
+	/**
+	 * Gets the exchange rate (average of selling rate and buying rate).
+	 * <p>Note: To convert to the target currency, you need to divide the monetary value with this rate.</p>
+	 * @param date Effective date.
+	 * @param from Currency for which rate is required.
+	 * @param to Target currency to convert to.
+	 * @return Rate
+	 */
+	public static Rate getExchangeRate(Date date, Currency from, Currency to) {
+		return findRate(date, from, to, null).getRate();
 	}
 
 	/**
 	 * Gets the buying rate.
+	 * <p>Note: To convert to the target currency, you need to divide the monetary value with this rate.</p>
 	 * @param from Currency for which rate is required.
 	 * @param to Target currency to convert to.
 	 * @param systemEntity System Entity.
 	 * @return Rate
 	 */
 	public static Rate getBuyingRate(Currency from, Currency to, SystemEntity systemEntity) {
-		return findRate(from, to, systemEntity).getBuyingRate();
+		return getBuyingRate(DateUtility.today(), from, to, systemEntity);
+	}
+
+	/**
+	 * Gets the buying rate.
+	 * <p>Note: To convert to the target currency, you need to divide the monetary value with this rate.</p>
+	 * @param date Effective date.
+	 * @param from Currency for which rate is required.
+	 * @param to Target currency to convert to.
+	 * @param systemEntity System Entity.
+	 * @return Rate
+	 */
+	public static Rate getBuyingRate(Date date, Currency from, Currency to, SystemEntity systemEntity) {
+		return findRate(date, from, to, systemEntity).getBuyingRate();
 	}
 
 	/**
 	 * Gets the selling rate.
+	 * <p>Note: To convert to the target currency, you need to divide the monetary value with this rate.</p>
 	 * @param from Currency for which rate is required.
 	 * @param to Target currency to convert to.
 	 * @param systemEntity System Entity.
 	 * @return Rate
 	 */
 	public static Rate getSellingRate(Currency from, Currency to, SystemEntity systemEntity) {
-		return findRate(from, to, systemEntity).getSellingRate();
+		return getSellingRate(DateUtility.today(), from, to, systemEntity);
+	}
+
+	/**
+	 * Gets the selling rate.
+	 * <p>Note: To convert to the target currency, you need to divide the monetary value with this rate.</p>
+	 * @param date Effective date.
+	 * @param from Currency for which rate is required.
+	 * @param to Target currency to convert to.
+	 * @param systemEntity System Entity.
+	 * @return Rate
+	 */
+	public static Rate getSellingRate(Date date, Currency from, Currency to, SystemEntity systemEntity) {
+		return findRate(date, from, to, systemEntity).getSellingRate();
 	}
 
 	/**
 	 * Gets the exchange rate (average of selling rate and buying rate).
+	 * <p>Note: To convert to the target currency, you need to divide the monetary value with this rate.</p>
 	 * @param from Currency for which rate is required.
 	 * @param to Target currency to convert to.
 	 * @param systemEntity System Entity.
 	 * @return Rate
 	 */
 	public static Rate getExchangeRate(Currency from, Currency to, SystemEntity systemEntity) {
-		return findRate(from, to, systemEntity).getRate();
+		return getExchangeRate(DateUtility.today(), from, to, systemEntity);
 	}
 
-	private CurrencyRateProvider findRate(Currency currency, SystemEntity systemEntity) {
-		return findRate(currency, currency, systemEntity);
+	/**
+	 * Gets the exchange rate (average of selling rate and buying rate).
+	 * <p>Note: To convert to the target currency, you need to divide the monetary value with this rate.</p>
+	 * @param date Effective date.
+	 * @param from Currency for which rate is required.
+	 * @param to Target currency to convert to.
+	 * @param systemEntity System Entity.
+	 * @return Rate
+	 */
+	public static Rate getExchangeRate(Date date, Currency from, Currency to, SystemEntity systemEntity) {
+		return findRate(date, from, to, systemEntity).getRate();
 	}
 
-	private static CurrencyRateProvider findRate(Currency from, Currency to, SystemEntity systemEntity) {
+	private CurrencyRateProvider findRate(Date date, Currency currency, SystemEntity systemEntity) {
+		return new ExchangeRate();
+	}
+
+	private static CurrencyRateProvider findRate(Date date, Currency from, Currency to, SystemEntity systemEntity) {
 		return new ExchangeRate();
 	}
 

@@ -6,6 +6,7 @@ import com.storedobject.core.ObjectForest;
 import com.storedobject.core.*;
 import com.storedobject.vaadin.ActionForm;
 import com.storedobject.vaadin.Button;
+import com.storedobject.vaadin.ButtonLayout;
 import com.storedobject.vaadin.CloseableView;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.html.Span;
@@ -92,7 +93,8 @@ public class FileViewer extends ObjectForestViewer<FileFolder> implements Closea
 
     @Override
     public Component createHeader() {
-        return null;
+        return new ButtonLayout(new ELabel("Name Search:"), new TreeSearchField<>(this),
+                new Button("Exit", e -> close()));
     }
 
     @Override

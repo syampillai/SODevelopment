@@ -232,7 +232,13 @@ public final class InventoryGRNItem extends StoredObject implements Detail, HasI
 
     @Override
     public void validateData(TransactionManager tm) throws Exception {
-        if(deleted() || internal) {
+        if(deleted()) {
+            return;
+        }
+        if(unitCost.getCurrency() != tm.getCurrency()) {
+            throw new Invalid_State("Currency mismatch");
+        }
+        if(internal) {
             return;
         }
         serialNumber = toCode(serialNumber);
@@ -246,6 +252,10 @@ public final class InventoryGRNItem extends StoredObject implements Detail, HasI
             }
         } else {
             quantity.canConvert(pn.getUnitOfMeasurement(), "Item " + pn.toDisplay() + ".");
+        }
+        MeasurementUnit mu = quantity.getUnit();
+        if(mu.obsolete) {
+            throw new Invalid_State("Obsolete unit used: " + quantity);
         }
         itemId = tm.checkTypeAny(this, itemId, InventoryItem.class, true);
         binId = tm.checkTypeAny(this, binId, InventoryBin.class, true);
@@ -453,7 +463,7 @@ public final class InventoryGRNItem extends StoredObject implements Detail, HasI
         }
         InventoryPO po;
         if(pos.size() == 1) {
-            po = pos.get(0);
+            po = pos.getFirst();
         } else {
             po = null;
             InventoryPOItem item = null, second;

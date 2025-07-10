@@ -8,7 +8,7 @@ import com.storedobject.ui.util.ChildVisitor;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 public abstract class AbstractObjectForest<T extends StoredObject> extends DataTreeGrid<Object>
         implements ObjectGridData<T, Object>, ChildVisitor<T, Object> {
@@ -125,12 +125,17 @@ public abstract class AbstractObjectForest<T extends StoredObject> extends DataT
 
     public T getRoot() {
         List<T> roots = listRoots();
-        return roots.size() == 1 ? roots.get(0) : null;
+        return roots.size() == 1 ? roots.getFirst() : null;
     }
 
     @Override
     public List<T> listRoots() {
         return getDataProvider().getRoots();
+    }
+
+    @Override
+    public Stream<Object> streamChildren(Object parent) {
+        return getDataProvider().streamChildren(parent);
     }
 
     public T getItem(int index) {
@@ -145,11 +150,6 @@ public abstract class AbstractObjectForest<T extends StoredObject> extends DataT
         }
         select(object);
         scrollTo(object);
-    }
-
-    @Override
-    public void setObjects(Iterable<T> objects) {
-        load(ObjectIterator.create(objects.iterator()));
     }
 
     @SafeVarargs
@@ -195,18 +195,6 @@ public abstract class AbstractObjectForest<T extends StoredObject> extends DataT
      */
     public void deselectChildren(Object parent, boolean includeGrandChildren) {
         visitChildren(parent, this::deselect, includeGrandChildren);
-    }
-
-    /**
-     * Visit the children of the parent item.
-     *
-     * @param parent Parent item.
-     * @param consumer Consumer to consume the visit purpose.
-     * @param includeGrandChildren Whether recursively include grand-children or not.
-     */
-    @Override
-    public void visitChildren(Object parent, Consumer<Object> consumer, boolean includeGrandChildren) {
-        getDataProvider().visitChildren(parent, consumer, includeGrandChildren);
     }
 
     /**

@@ -7,12 +7,13 @@ import com.storedobject.core.annotation.Table;
 
 import java.math.BigDecimal;
 import java.sql.Date;
+import java.util.Currency;
 import java.util.List;
 import java.util.Map;
 
 /**
  * Base class for creating Purchase Orders (POs). This class may be used as such, or it can be extended to add more
- * fields if required. It may also be used for other type of orders such as "Loan Orders" etc. and in such cases,
+ * fields if required. It may also be used for another type of orders such as "Loan Orders" etc. and in such cases,
  * the appropriate GRN type ({@link #getGRNType()}) should be returned.
  *
  * @author Syam
@@ -311,7 +312,7 @@ public class InventoryPO extends StoredObject implements HasChildren, HasReferen
     }
 
     /**
-     * Amend this PO. This PO will be foreclosed and another PO will be created with the balance items to receive.
+     * Amend this PO. This PO will be foreclosed, and another PO will be created with the balance items to receive.
      *
      * @param transaction Transaction.
      * @return The id of the newly created (and saved) PO with balance items to receive.
@@ -365,8 +366,13 @@ public class InventoryPO extends StoredObject implements HasChildren, HasReferen
         if(getApprovalRequired()) {
             throw new Invalid_State("Approval required");
         }
-        if(!existsLinks(InventoryPOItem.class, true)) {
+        List<InventoryPOItem> items = listItems().toList();
+        if(items.isEmpty()) {
             throw new Invalid_State("Item list is empty");
+        }
+        Currency currency = items.getFirst().getUnitPrice().getCurrency();
+        if(items.stream().skip(1).anyMatch(i -> !i.getUnitPrice().getCurrency().equals(currency))) {
+            throw new Invalid_State("All items must have the same currency");
         }
         internal = true;
         status = 1;
@@ -402,17 +408,21 @@ public class InventoryPO extends StoredObject implements HasChildren, HasReferen
      *                      could be passed.
      * @param invoiceDate Invoice date (of the supplier) if applicable. For existing GRNs, <code>null</code>
      *                    could be passed.
+     * @param exchangeRate Exchange rate to be used for the GRN. For existing GRNs, <code>null</code> could be passed.
      * @return The GRN that is created/modified.
      * @throws Exception If the GRN can't be created.
      */
     public InventoryGRN createGRN(Transaction transaction, Map<Id, Quantity> quantities, InventoryGRN grn,
-                                  String invoiceNumber, Date invoiceDate)
+                                  String invoiceNumber, Date invoiceDate, Rate exchangeRate)
             throws Exception {
         switch(status) {
             case 1, 2 -> {
             }
             default -> throw new Invalid_State("Can't proceed with Status = " + getStatusValue());
         }
+        List<InventoryPOItem> items = listItems().toList();
+        Currency localCurrency = transaction.getManager().getCurrency(),
+                currency = items.getFirst().getUnitPrice().getCurrency();
         if(grn != null) {
             if(grn.getType() != getGRNType()) {
                 throw new Invalid_State(grn.getReference() + " is of different type");
@@ -428,6 +438,10 @@ public class InventoryPO extends StoredObject implements HasChildren, HasReferen
             if(grn.isClosed()) {
                 throw new Invalid_State(grn.getReference() + " is already closed");
             }
+            if(grn.getCurrencyObject() != currency) {
+                throw new Invalid_State(grn.getReference() + " has different currency: " + grn.getCurrency() + " vs "
+                        + currency.getCurrencyCode());
+            }
             boolean saveGRN = false;
             if(invoiceNumber != null && !grn.getInvoiceNumber().equals(invoiceNumber)) {
                 grn.setInvoiceNumber(invoiceNumber);
@@ -437,12 +451,17 @@ public class InventoryPO extends StoredObject implements HasChildren, HasReferen
                 grn.setInvoiceDate(invoiceDate);
                 saveGRN = true;
             }
+            if(exchangeRate == null) {
+                exchangeRate = grn.getExchangeRate();
+            } else if(!grn.getExchangeRate().isSameValue(exchangeRate)) {
+                throw new Invalid_State("Exchange rate passed is different from the existing one: "
+                        + grn.getExchangeRate() + " vs " + exchangeRate);
+            }
             if(saveGRN) {
                 grn.save(transaction);
             }
         }
         Quantity b, q;
-        List<InventoryPOItem> items = listItems().toList();
         boolean partial = false;
         for(InventoryPOItem item: items) {
             b = item.getBalance();
@@ -467,6 +486,16 @@ public class InventoryPO extends StoredObject implements HasChildren, HasReferen
         }
         InventoryGRNItem grnItem;
         if(grn == null) {
+            if(exchangeRate == null) {
+                if(currency == localCurrency) {
+                    exchangeRate = Rate.ONE;
+                } else {
+                    exchangeRate = Money.getBuyingRate(date, currency, localCurrency,
+                            transaction.getManager().getEntity());
+                }
+            } else if(currency == localCurrency && !exchangeRate.isOne()) {
+                throw new Invalid_State("Invalid exchange rate passed: " + exchangeRate );
+            }
             grn = new InventoryGRN();
             grn.setType(getGRNType());
             grn.setStore(storeId);
@@ -477,6 +506,8 @@ public class InventoryPO extends StoredObject implements HasChildren, HasReferen
             if(invoiceNumber != null) {
                 grn.setInvoiceNumber(invoiceNumber);
             }
+            grn.setCurrencyObject(currency);
+            grn.setExchangeRate(exchangeRate);
             grn.save(transaction);
         }
         String sn;
@@ -524,7 +555,7 @@ public class InventoryPO extends StoredObject implements HasChildren, HasReferen
                 grnItem.setPartNumber(item.getPartNumberId());
                 grnItem.setSerialNumber(sn);
                 grnItem.setQuantity(q);
-                grnItem.setUnitCost(item.getUnitPrice());
+                grnItem.setUnitCost(item.getUnitPrice().multiply(exchangeRate, localCurrency));
                 grnItem.save(transaction);
                 grn.addLink(transaction, grnItem);
                 sn = "";

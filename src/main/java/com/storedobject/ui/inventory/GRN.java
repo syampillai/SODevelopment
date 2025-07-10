@@ -517,7 +517,7 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
     }
 
     /**
-     * Create suppliers list for the given type of GRN.
+     * Create a supplier list for the given type of GRN.
      *
      * @param type Type of GRN.
      * @return List of supplier entities.

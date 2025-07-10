@@ -9,10 +9,7 @@ import com.storedobject.core.annotation.Table;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.sql.Date;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * GRN class. Used to accept items received from a supplier.
@@ -38,6 +35,8 @@ public final class InventoryGRN extends StoredObject implements HasChildren, Has
     int no = 0;
     private Money landedCost = new Money();
     private String reference;
+    private String currency;
+    private Rate exchangeRate = new Rate(6);
 
     public InventoryGRN() {
     }
@@ -52,6 +51,8 @@ public final class InventoryGRN extends StoredObject implements HasChildren, Has
         columns.add("Status", "int");
         columns.add("Type", "int");
         columns.add("LandedCost", "money");
+        columns.add("Currency", "currency");
+        columns.add("ExchangeRate", "rate");
     }
 
     public static String[] protectedColumns() {
@@ -287,6 +288,38 @@ public final class InventoryGRN extends StoredObject implements HasChildren, Has
         return landedCost;
     }
 
+    public void setCurrency(String currency) {
+        this.currency = currency;
+    }
+
+    @Column(order = 800, style = "(currency)")
+    public String getCurrency() {
+        return currency;
+    }
+
+    public void setCurrencyObject(Currency currency) {
+        if(currency != null) {
+            setCurrency(currency.getCurrencyCode());
+        }
+    }
+
+    public Currency getCurrencyObject() {
+        return Currency.getInstance(currency);
+    }
+
+    public void setExchangeRate(Rate exchangeRate) {
+        this.exchangeRate = exchangeRate;
+    }
+
+    public void setExchangeRate(Object value) {
+        setExchangeRate(Rate.create(value, 6));
+    }
+
+    @Column(order = 900)
+    public Rate getExchangeRate() {
+        return exchangeRate;
+    }
+
     public boolean isProcessed() {
         return status >= 1;
     }
@@ -299,6 +332,12 @@ public final class InventoryGRN extends StoredObject implements HasChildren, Has
     public void validateData(TransactionManager tm) throws Exception {
         storeId = tm.checkTypeAny(this, storeId, InventoryStore.class, false);
         supplierId = tm.checkType(this, supplierId, Entity.class, false);
+        checkCurrency(currency, false);
+        if(tm.getCurrency().getCurrencyCode().equals(currency)) {
+            exchangeRate = new Rate(1);
+        } else {
+            exchangeRate.checkLimit("Exchange Rate", 14);
+        }
         super.validateData(tm);
     }
 

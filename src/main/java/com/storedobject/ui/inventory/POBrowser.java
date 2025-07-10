@@ -13,10 +13,7 @@ import com.vaadin.flow.component.grid.contextmenu.GridMenuItem;
 import com.vaadin.flow.component.icon.VaadinIcon;
 
 import java.sql.Date;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
@@ -537,7 +534,7 @@ public class POBrowser<T extends InventoryPO> extends ObjectBrowser<T> implement
             return;
         }
         if(grns.size() == 1) {
-            processGRN(grns.get(0));
+            processGRN(grns.getFirst());
             return;
         }
         new GRNs(grns, this::processGRN).execute();
@@ -554,7 +551,7 @@ public class POBrowser<T extends InventoryPO> extends ObjectBrowser<T> implement
             return;
         }
         if(grns.size() == 1) {
-            processGRN(grns.get(0), true);
+            processGRN(grns.getFirst(), true);
             return;
         }
         new GRNs(grns, grn -> processGRN(grn, true)).execute();
@@ -565,12 +562,14 @@ public class POBrowser<T extends InventoryPO> extends ObjectBrowser<T> implement
         private final T po;
         private final Map<Id, QField> qFields = new HashMap<>();
         private final Checkbox confirmExcess = new Checkbox("Confirm Excess");
+        private final Currency currency;
         private SupplierInvoice supplierInvoice;
 
         public ReceiveItems(T po, List<InventoryPOItem> items) {
             super(InventoryPOItem.class, items,
                     StringList.create("PartNumber", "SerialNumber AS Serial/Batch Number", "Expected"));
             setCaption("Receive Items - GRN");
+            currency = items.getFirst().getUnitPrice().getCurrency();
             this.po = po;
             createHTMLColumn("PartNumber", this::pn);
             GridContextMenu<InventoryPOItem> cm = new GridContextMenu<>(this);
@@ -721,7 +720,7 @@ public class POBrowser<T extends InventoryPO> extends ObjectBrowser<T> implement
                 if(g.getInvoiceNumber().isBlank()) {
                     supplierInvoice().processGRN(qs, g);
                 } else {
-                    process(qs, g, null, null);
+                    process(qs, g, null, null, null);
                 }
             }) {
                 @Override
@@ -736,14 +735,16 @@ public class POBrowser<T extends InventoryPO> extends ObjectBrowser<T> implement
         private SupplierInvoice supplierInvoice() {
             if(supplierInvoice == null) {
                 supplierInvoice = new SupplierInvoice();
+            } else {
+                supplierInvoice.set(getTransactionManager(), currency);
             }
             return supplierInvoice;
         }
 
-        private void process(Map<Id, Quantity> qs, InventoryGRN grn, String invoiceNumber, Date invoiceDate) {
+        private void process(Map<Id, Quantity> qs, InventoryGRN grn, String invoiceNumber, Date invoiceDate, Rate exchangeRate) {
             close();
             AtomicReference<InventoryGRN> grnCreated = new AtomicReference<>();
-            if(transact(t -> grnCreated.set(po.createGRN(t, qs, grn, invoiceNumber, invoiceDate)))) {
+            if(transact(t -> grnCreated.set(po.createGRN(t, qs, grn, invoiceNumber, invoiceDate, exchangeRate)))) {
                 POBrowser.this.close();
                 InventoryGRN g = grnCreated.get();
                 g.reload();
@@ -757,6 +758,10 @@ public class POBrowser<T extends InventoryPO> extends ObjectBrowser<T> implement
 
             private InventoryGRN grn;
             private Map<Id, Quantity> quantityMap;
+
+            public SupplierInvoice() {
+                super(POBrowser.this.getTransactionManager(), currency);
+            }
 
             void processGRN(Map<Id, Quantity> quantityMap, InventoryGRN grn) {
                 this.quantityMap = quantityMap;
@@ -775,7 +780,8 @@ public class POBrowser<T extends InventoryPO> extends ObjectBrowser<T> implement
                 if(ref.isBlank()) {
                     ref = null;
                 }
-                ReceiveItems.this.process(quantityMap, grn, ref, ref == null ? null : dateField.getValue());
+                ReceiveItems.this.process(quantityMap, grn, ref, ref == null ? null : dateField.getValue(),
+                        rateField.getValue());
                 return true;
             }
         }

@@ -5,10 +5,8 @@ import com.storedobject.common.StringList;
 import com.storedobject.core.ObjectForest;
 import com.storedobject.core.*;
 import com.storedobject.report.FileCirculationStatus;
-import com.storedobject.vaadin.ActionForm;
-import com.storedobject.vaadin.DataForm;
-import com.storedobject.vaadin.MultiSelectGrid;
-import com.storedobject.vaadin.TokensField;
+import com.storedobject.vaadin.*;
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.grid.contextmenu.GridContextMenu;
 import com.vaadin.flow.component.grid.contextmenu.GridMenuItem;
 
@@ -19,7 +17,7 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
 
-public class FileManager extends ObjectForestBrowser<FileFolder> implements Transactional {
+public class FileManager extends ObjectForestBrowser<FileFolder> implements Transactional, CloseableView {
 
     private List<DocumentConfiguration> dcs;
     private CEditor cEditor;
@@ -140,6 +138,12 @@ public class FileManager extends ObjectForestBrowser<FileFolder> implements Tran
 
     private Object o(Object o) {
         return o instanceof ObjectForest.LinkObject lo ? lo.getObject() : o;
+    }
+
+    @Override
+    public Component createHeader() {
+        return new ButtonLayout(new ELabel("Name Search:"), new TreeSearchField<>(this),
+                new Button("Exit", e -> close()));
     }
 
     @Override

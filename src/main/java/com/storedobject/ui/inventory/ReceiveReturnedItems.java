@@ -186,6 +186,19 @@ public class ReceiveReturnedItems extends DataForm implements Transactional {
         if(pLoc == null) {
             return true; // Should not happen
         }
+        // The previous location was a repair location:
+        // Check if it was moved from there to the current repair location.
+        // This can happen if the repair location was not correct and the RO was amended to correct it.
+        if(pLoc.getType() == 3) {
+            int step = 0;
+            while (pLoc.getType() == 3) {
+                ++step;
+                pLoc = ii.getPreviousLocation(step);
+                if (pLoc == null) {
+                    return false; // Should not happen
+                }
+            }
+        }
         return pLoc instanceof InventoryBin bin && bin.getStoreId().equals(storeBin.getStoreId());
     }
 

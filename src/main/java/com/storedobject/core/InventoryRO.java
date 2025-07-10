@@ -85,26 +85,26 @@ public final class InventoryRO extends InventoryTransfer implements TradeType {
      * Close the RO (only if all the items are returned via some means).
      *
      * @param tm Transaction manager.
-     * @param manual Manual or not (Status will be set to "Returned" or "Closed" accordingly).
+     * @param manually Manually or not (Status will be set to "Returned" or "Closed" accordingly).
      */
-    public void close(TransactionManager tm, boolean manual) throws Exception {
-        tm.transact(t -> close(t, manual));
+    public void close(TransactionManager tm, boolean manually) throws Exception {
+        tm.transact(t -> close(t, manually));
     }
 
     /**
      * Close the RO (only if all the items are returned via some means).
      *
      * @param transaction Transaction.
-     * @param manual Manual or not (Status will be set to "Returned" or "Closed" accordingly).
+     * @param manually Manually or not (Status will be set to "Returned" or "Closed" accordingly).
      */
-    public void close(Transaction transaction, boolean manual) throws Exception {
+    public void close(Transaction transaction, boolean manually) throws Exception {
         InventoryItem ii = listLinks(InventoryROItem.class)
                 .map(InventoryTransferItem::getItem)
                 .filter(i -> i.getLocationId().equals(getToLocationId())).findFirst();
         if(ii != null) {
             throw new Invalid_State("Item '" + ii.toDisplay() + "' is still located at the repair location.");
         }
-        status = manual ? 3 : 4; // Returned / Closed
+        status = manually ? 3 : 4; // Returned / Closed
         save(transaction);
     }
 

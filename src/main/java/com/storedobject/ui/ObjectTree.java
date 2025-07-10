@@ -10,7 +10,7 @@ import com.vaadin.flow.shared.Registration;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 public class ObjectTree<T extends StoredObject> extends DataTreeGrid<T>
         implements ObjectGridData<T, T>, ChildVisitor<T, T> {
@@ -159,12 +159,17 @@ public class ObjectTree<T extends StoredObject> extends DataTreeGrid<T>
 
     public T getRoot() {
         List<T> roots = listRoots();
-        return roots.size() == 1 ? roots.get(0) : null;
+        return roots.size() == 1 ? roots.getFirst() : null;
     }
 
     @Override
     public List<T> listRoots() {
         return getDataProvider().getRoots();
+    }
+
+    @Override
+    public Stream<T> streamChildren(T parent) {
+        return getDataProvider().streamChildren(parent);
     }
 
     @SafeVarargs
@@ -309,23 +314,11 @@ public class ObjectTree<T extends StoredObject> extends DataTreeGrid<T>
     }
 
     /**
-     * Visit the children of the parent item.
-     *
-     * @param parent Parent item.
-     * @param consumer Consumer to consume the visit purpose.
-     * @param includeGrandChildren Whether recursively include grand-children or not.
-     */
-    @Override
-    public void visitChildren(T parent, Consumer<T> consumer, boolean includeGrandChildren) {
-        getDataProvider().visitChildren(parent, consumer, includeGrandChildren);
-    }
-
-    /**
      * Prefix string that is added to the "action" string to determine the actual {@link UIAction} to be checked. See
      * {@link #actionAllowed(String)}. For example, {@link com.storedobject.ui.inventory.POBrowser} returns the value
      * "PO" for this method.
      *
-     * @return Prefix string. Default implementation returns null. That means that all the actions are allowed.
+     * @return Prefix string. The default implementation returns null. That means that all the actions are allowed.
      */
     protected String getActionPrefix() {
         return null;

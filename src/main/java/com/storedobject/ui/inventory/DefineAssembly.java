@@ -18,7 +18,6 @@ import com.vaadin.flow.data.provider.hierarchy.AbstractHierarchicalDataProvider;
 import com.vaadin.flow.data.provider.hierarchy.HierarchicalQuery;
 
 import java.util.*;
-import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 public class DefineAssembly<T extends InventoryItemType, C extends InventoryItemType>
@@ -93,11 +92,6 @@ public class DefineAssembly<T extends InventoryItemType, C extends InventoryItem
 
     public String getOptional(InventoryAssembly ia) {
         return ia == root || !ia.getOptional() ? "" : "Yes";
-    }
-
-    @Override
-    public boolean isColumnSortable(String columnName) {
-        return false;
     }
 
     @Override
@@ -430,7 +424,7 @@ public class DefineAssembly<T extends InventoryItemType, C extends InventoryItem
         }
 
         @Override
-        public void generateContent() throws Exception {
+        public void generateContent() {
             table = createTable(3, 3, 3, 3, 3, 3, 3, 3, 60, 20, 20, 20, 20);
             boolean first = true;
             PDFCell cell;
@@ -493,21 +487,12 @@ public class DefineAssembly<T extends InventoryItemType, C extends InventoryItem
     }
 
     @Override
-    public List<InventoryAssembly> listRoots() {
-        List<InventoryAssembly> roots = new ArrayList<>();
-        if(root != null) {
-            roots.add(root);
-        }
-        return roots;
+    public Stream<InventoryAssembly> streamRoots() {
+        return root == null ? Stream.empty() : Stream.of(root);
     }
 
     @Override
-    public void visitChildren(InventoryAssembly parent, Consumer<InventoryAssembly> consumer, boolean includeGrandChildren) {
-        consumer.accept(parent);
-        if(includeGrandChildren) {
-            subassemblies(parent).forEach(c -> visitChildren(c, consumer, true));
-        } else {
-            subassemblies(parent).forEach(consumer);
-        }
+    public List<InventoryAssembly> listChildren(InventoryAssembly parent) {
+        return subassemblies(parent);
     }
 }

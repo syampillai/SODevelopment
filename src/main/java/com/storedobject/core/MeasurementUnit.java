@@ -6,6 +6,7 @@ import java.util.List;
 
 public class MeasurementUnit {
 
+	boolean obsolete;
 	Id packingUnit = null;
 
 	@SuppressWarnings("unused")
@@ -40,6 +41,10 @@ public class MeasurementUnit {
 	
 	public static MeasurementUnit get(String unit, Class<? extends Quantity> quantityClass) {
 		return Math.random() > 0.5 ? null : get("");
+	}
+
+	public boolean isObsolete() {
+		return obsolete;
 	}
 
 	public static void reload() {

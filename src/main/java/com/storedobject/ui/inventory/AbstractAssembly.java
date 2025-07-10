@@ -22,7 +22,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 public abstract class AbstractAssembly<T extends InventoryItem, C extends InventoryItem>
@@ -507,22 +506,12 @@ public abstract class AbstractAssembly<T extends InventoryItem, C extends Invent
     }
 
     @Override
-    public List<InventoryFitmentPosition> listRoots() {
-        List<InventoryFitmentPosition> roots = new ArrayList<>();
-        if(root != null) {
-            roots.add(root);
-        }
-        return roots;
+    public Stream<InventoryFitmentPosition> streamRoots() {
+        return root == null ? Stream.empty() : Stream.of(root);
     }
 
     @Override
-    public void visitChildren(InventoryFitmentPosition parent, Consumer<InventoryFitmentPosition> consumer,
-                              boolean includeGrandChildren) {
-        consumer.accept(parent);
-        if(includeGrandChildren) {
-            subassemblies(parent).forEach(c -> visitChildren(c, consumer, true));
-        } else {
-            subassemblies(parent).forEach(consumer);
-        }
+    public List<InventoryFitmentPosition> listChildren(InventoryFitmentPosition parent) {
+        return subassemblies(parent);
     }
 }

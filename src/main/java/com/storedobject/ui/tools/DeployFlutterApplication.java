@@ -52,7 +52,8 @@ public class DeployFlutterApplication extends DataForm {
 
     @Override
     protected void execute(View parent, boolean doNotLock) {
-        folder = ApplicationServer.getGlobalProperty("application.flutter.path", "/home/tomcat/flutter/");
+        folder = ApplicationServer.getGlobalProperty("application.flutter.path",
+                "/home/" + System.getProperty("user.name") + "/soengine/hosts/" + SOServlet.getServer() + "/fileapps/flutter/");
         if(!folder.endsWith(File.separator)) {
             folder += File.separator;
         }
