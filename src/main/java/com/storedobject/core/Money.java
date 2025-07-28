@@ -345,7 +345,7 @@ public final class Money implements Storable, Comparable<Money> {
 	 * @return Rate
 	 */
 	public Rate getBuyingRate(Date date, Currency currency) {
-		return findRate(date, currency, null).getBuyingRate();
+		return findRate(date, currency).getBuyingRate();
 	}
 
 	/**
@@ -366,7 +366,7 @@ public final class Money implements Storable, Comparable<Money> {
 	 * @return Rate
 	 */
 	public Rate getSellingRate(Date date, Currency currency) {
-		return findRate(date, currency, null).getSellingRate();
+		return findRate(date, currency).getSellingRate();
 	}
 
 	/**
@@ -387,7 +387,7 @@ public final class Money implements Storable, Comparable<Money> {
 	 * @return Rate
 	 */
 	public Rate getExchangeRate(Date date, Currency currency) {
-		return findRate(date, currency, null).getRate();
+		return findRate(date, currency).getRate();
 	}
 
 	/**
@@ -397,7 +397,7 @@ public final class Money implements Storable, Comparable<Money> {
 	 * @param systemEntity System Entity.
 	 * @return Rate
 	 */
-	public Rate getBuyingRate(Currency currency, SystemEntity systemEntity) {
+	public static Rate getBuyingRate(Currency currency, SystemEntity systemEntity) {
 		return getBuyingRate(DateUtility.today(), currency, systemEntity);
 	}
 
@@ -409,8 +409,8 @@ public final class Money implements Storable, Comparable<Money> {
 	 * @param systemEntity System Entity.
 	 * @return Rate
 	 */
-	public Rate getBuyingRate(Date date, Currency currency, SystemEntity systemEntity) {
-		return findRate(date, currency, systemEntity).getBuyingRate();
+	public static Rate getBuyingRate(Date date, Currency currency, SystemEntity systemEntity) {
+		return findRate(date, currency, null, systemEntity).getBuyingRate();
 	}
 
 	/**
@@ -420,7 +420,7 @@ public final class Money implements Storable, Comparable<Money> {
 	 * @param systemEntity System Entity.
 	 * @return Rate
 	 */
-	public Rate getSellingRate(Currency currency, SystemEntity systemEntity) {
+	public static Rate getSellingRate(Currency currency, SystemEntity systemEntity) {
 		return getSellingRate(DateUtility.today(), currency, systemEntity);
 	}
 
@@ -432,8 +432,8 @@ public final class Money implements Storable, Comparable<Money> {
 	 * @param systemEntity System Entity.
 	 * @return Rate
 	 */
-	public Rate getSellingRate(Date date, Currency currency, SystemEntity systemEntity) {
-		return findRate(date, currency, systemEntity).getSellingRate();
+	public static Rate getSellingRate(Date date, Currency currency, SystemEntity systemEntity) {
+		return findRate(date, currency, null, systemEntity).getSellingRate();
 	}
 
 	/**
@@ -443,7 +443,7 @@ public final class Money implements Storable, Comparable<Money> {
 	 * @param systemEntity System Entity.
 	 * @return Rate
 	 */
-	public Rate getExchangeRate(Currency currency, SystemEntity systemEntity) {
+	public static Rate getExchangeRate(Currency currency, SystemEntity systemEntity) {
 		return getExchangeRate(DateUtility.today(), currency, systemEntity);
 	}
 
@@ -455,8 +455,8 @@ public final class Money implements Storable, Comparable<Money> {
 	 * @param systemEntity System Entity.
 	 * @return Rate
 	 */
-	public Rate getExchangeRate(Date date, Currency currency, SystemEntity systemEntity) {
-		return findRate(date, currency, systemEntity).getRate();
+	public static Rate getExchangeRate(Date date, Currency currency, SystemEntity systemEntity) {
+		return findRate(date, currency, null, systemEntity).getRate();
 	}
 
 	/**
@@ -603,11 +603,14 @@ public final class Money implements Storable, Comparable<Money> {
 		return findRate(date, from, to, systemEntity).getRate();
 	}
 
-	private CurrencyRateProvider findRate(Date date, Currency currency, SystemEntity systemEntity) {
-		return new ExchangeRate();
+	private CurrencyRateProvider findRate(Date date, Currency currency) {
+		return findRate(date, currency, null, null);
 	}
 
 	private static CurrencyRateProvider findRate(Date date, Currency from, Currency to, SystemEntity systemEntity) {
+		if(systemEntity == null && to == null && from != null && date != null) {
+			return new CurrencyRate();
+		}
 		return new ExchangeRate();
 	}
 
