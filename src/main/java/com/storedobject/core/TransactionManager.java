@@ -88,7 +88,7 @@ public final class TransactionManager {
     }
 
     public SystemUser getUser() {
-        return new SystemUser();
+        return StoredObject.get(SystemUser.class);
     }
 
     public boolean setEntity(SystemEntity entity) {

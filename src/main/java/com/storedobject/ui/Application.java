@@ -2085,9 +2085,11 @@ public class Application extends com.storedobject.vaadin.Application implements 
 
     public void checkDayEnd() {
         SystemEntity se = getTransactionManager().getEntity();
-        Date wd = se.getWorkingDate();
-        if(wd.before(DateUtility.today()) && Financial.isActive(se)) {
-            error("Please note that financial transactions for " + DateUtility.formatDate(wd)+ ", are still pending closure.");
+        if(se != null) {
+            Date wd = se.getWorkingDate();
+            if (wd.before(DateUtility.today()) && Financial.isActive(se)) {
+                error("Please note that financial transactions for " + DateUtility.formatDate(wd) + ", are still pending closure.");
+            }
         }
     }
 
