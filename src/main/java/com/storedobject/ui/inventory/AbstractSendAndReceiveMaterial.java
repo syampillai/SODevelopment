@@ -515,7 +515,7 @@ public abstract class AbstractSendAndReceiveMaterial<T extends InventoryTransfer
             if(loc.getId().equals(to.getId())) {
                 return false;
             }
-            if(storeId != null && loc instanceof InventoryBin && ((InventoryBin) loc).getStoreId().equals(storeId)) {
+            if(loc instanceof InventoryBin && ((InventoryBin) loc).getStoreId().equals(storeId)) {
                 return false;
             }
             moved.add(i);

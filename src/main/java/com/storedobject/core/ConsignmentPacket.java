@@ -2,7 +2,7 @@ package com.storedobject.core;
 
 import com.storedobject.core.annotation.Column;
 
-public final class ConsignmentPacket extends StoredObject implements Detail {
+public class ConsignmentPacket extends StoredObject implements Detail {
 
     private String label = "";
     private Distance length = Quantity.create(Distance.class, "cm");
@@ -152,7 +152,7 @@ public final class ConsignmentPacket extends StoredObject implements Detail {
 
     @Override
     public boolean isDetailOf(Class<? extends StoredObject> masterClass) {
-        return Consignment.class.isAssignableFrom(masterClass);
+        return Consignment.class == masterClass;
     }
 
     @Override

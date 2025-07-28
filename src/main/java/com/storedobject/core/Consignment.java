@@ -7,7 +7,7 @@ import com.storedobject.core.annotation.SetNotAllowed;
 import java.math.BigDecimal;
 import java.sql.Date;
 
-public final class Consignment extends StoredObject implements HasReference {
+public class Consignment extends StoredObject implements HasReference {
 
     private static final ReferencePattern<Consignment> ref = new ReferencePattern<>();
     private String reference;

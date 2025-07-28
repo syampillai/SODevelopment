@@ -332,6 +332,9 @@ public final class InventoryGRN extends StoredObject implements HasChildren, Has
     public void validateData(TransactionManager tm) throws Exception {
         storeId = tm.checkTypeAny(this, storeId, InventoryStore.class, false);
         supplierId = tm.checkType(this, supplierId, Entity.class, false);
+        if(currency == null) {
+            currency = tm.getCurrency().getCurrencyCode();
+        }
         checkCurrency(currency, false);
         if(tm.getCurrency().getCurrencyCode().equals(currency)) {
             exchangeRate = new Rate(1);

@@ -34,7 +34,7 @@ public abstract class SupplierInvoiceDetail extends DataForm {
         } else {
             setFieldVisible(rateField);
             rateField.setHelperText(currency.getCurrencyCode() + " to " + localCurrency.getCurrencyCode());
-            rateField.setValue(Money.getBuyingRate(DateUtility.today(), currency, localCurrency, tm.getEntity()));
+            rateField.setValue(Money.getBuyingRate(DateUtility.today(), currency, tm.getEntity()));
         }
     }
 }

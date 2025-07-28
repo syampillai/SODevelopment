@@ -342,7 +342,11 @@ public class SystemUtility extends View implements CloseableView, Transactional 
         }
         getApplication().view(StringUtility.makeLabel(so.getClass()) + " (Id " + so.getId()
                         + ", Transaction " + so.getTransactionId() + ")" + (so.undeleted() ? " - DELETED" : ""), so,
-                "Undelete", so.undeleted() ? this::undelete : null);
+                so.undeleted() ? new ObjectViewerButton<>("Undelete", (oe, o) -> {
+                    oe.close();
+                    undelete(o);
+                }) : null,
+                new ObjectViewerButton<>("Audit Trail", (oe, o) -> new ObjectHistoryGrid<>(o).execute()));
     }
     
     private void undelete(StoredObject so) {

@@ -54,7 +54,7 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
      */
     protected HasComponents buttonPanel;
     /**
-     * Print button if defined. Print button will be defined automatically. Please see {@link PrintButton}.
+     * Teh Print button if defined. Print button will be defined automatically. Please see {@link PrintButton}.
      */
     protected PrintButton print;
     /**
@@ -167,7 +167,7 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
     /**
      * Constructor.
      *
-     * @param className Fully-qualified name of the {@link StoredObject} class. The class name may be decorated to
+     * @param className Fully qualified name of the {@link StoredObject} class. The class name may be decorated to
      *                  specify the allowed actions. <p>For example, if you specify the class name like this
      *                  - "(ADD,EDIT)com.storedobject.core.Person" -, it will allow only ADD and EDIT operations.</p>
      */
@@ -304,7 +304,7 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
     }
 
     /**
-     * Create an editor for the purpose of embedding an object field.
+     * Create an editor to embed an object field.
      *
      * @param formField Field to embed.
      *
@@ -433,7 +433,7 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
     }
 
     /**
-     * Get the filtered result of actions. This is invoked before allowing the actions and this can disable some
+     * Get the filtered result of actions. This is invoked before allowing the actions, and this can disable some
      * actions allowed. The default implementation doesn't filter anything.
      *
      * @param actions Actions to filter. (ORed values of {@link EditorAction})
@@ -535,7 +535,7 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
     }
 
     /**
-     * Set the "set not allowed" flag for a field so that, it will not allow changing the field-value if the value
+     * Set the "set not allowed" flag for a field so that it will not allow changing the field-value if the value
      * already exists. (Typically, this is invoked by the platform itself).
      *
      * @param fieldName Field name.
@@ -758,7 +758,7 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
     }
 
     /**
-     * This method is invoked at the time of creating the UI and this is where extra buttons need t be created to
+     * This method is invoked at the time of creating the UI, and this is where extra buttons need t be created to
      * display as extra buttons on the {@link #buttonPanel}.
      */
     protected void createExtraButtons() {
@@ -890,14 +890,14 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
     }
 
     /**
-     * Post ledger entries. This is equivalent to pressing the "Post Ledger" button.
+     * Create ledger entries. This is equivalent to pressing the "Post Ledger" button.
      */
     public void postLedger() {
         postLedger(getObject());
     }
 
     /**
-     * Post ledger entries. This is equivalent to pressing the "Post Ledger" button.
+     * Create ledger entries. This is equivalent to pressing the "Post Ledger" button.
      */
     public void postLedger(T object) {
         clearAlerts();
@@ -1099,8 +1099,8 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
 
     /**
      * Save the current instance to the database.
-     * <p>Note: Not only save operation includes saving the current instance, but also
-     * it includes saving the links, connected master (if any), contact data, attachments etc. So, this method may be
+     * <p>Note: Not only the save operation includes saving the current instance, but also
+     * it includes saving the links, connected master (if any), contact data, attachments, etc. So, this method may be
      * invoked from within customized save operations too.</p>
      *
      * @param t Transaction.
@@ -1220,7 +1220,7 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
     }
 
     /**
-     * This method is invoked when anchor values are set via the anchor form and if any exception is
+     * This method is invoked when anchor values are set via the anchor form, and if any exception is
      * thrown from this method, anchor values will be asked again.
      *
      * @throws Exception If anchor values are not acceptable for some reason.
@@ -1509,14 +1509,14 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
     }
 
     /**
-     * Invoked when editing is cancelled.
+     * Invoked when editing is canceled.
      */
     @Override
     public void editingCancelled() {
     }
 
     /**
-     * Check whether delete operation is allowed for the current object instance.
+     * Check whether the delete operation is allowed for the current object instance.
      *
      * @return True if allowed.
      */
@@ -1525,7 +1525,7 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
     }
 
     /**
-     * Check whether edit operation is allowed for the current object instance.
+     * Check whether an edit operation is allowed for the current object instance.
      *
      * @return True if allowed.
      */
@@ -1543,7 +1543,7 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
     }
 
     /**
-     * Check whether search operation is allowed or not.
+     * Check whether a search operation is allowed or not.
      *
      * @return True if allowed.
      */
@@ -1553,7 +1553,7 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
     }
 
     /**
-     * Check whether ledger can be posted or not.
+     * Check whether a ledger can be posted or not.
      *
      * @return True if allowed.
      */
@@ -1562,7 +1562,7 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
     }
 
     /**
-     * Check whether ledger can be viewed or not.
+     * Check whether the ledger can be viewed or not.
      *
      * @return True if allowed.
      */
@@ -1683,7 +1683,7 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
     }
 
     /**
-     * View the current object. If the editor is in the editing mode, it will be cancelled and will be switched
+     * View the current object. If the editor is in the editing mode, it will be canceled and will be switched
      * to viewing mode.
      */
     public void viewObject() {
@@ -1691,20 +1691,20 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
     }
 
     /**
-     * View the object that is passed. If the editor is in the editing mode, it will be cancelled and will
+     * View the object that is passed. If the editor is in the editing mode, it will be canceled and will
      * be switched to viewing mode.
      *
-     * @param object Object to view. If null is passed, current object will be used.
+     * @param object Object to view. If null is passed, the current object will be used.
      */
     public void viewObject(T object) {
         viewObject(object, null, true);
     }
 
     /**
-     * View the object that is passed. If the editor is in the editing mode, it will be cancelled and will
+     * View the object that is passed. If the editor is in the editing mode, it will be canceled and will
      * be switched to viewing mode.
      *
-     * @param object Object to view. If null is passed, current object will be used.
+     * @param object Object to view. If null is passed, the current object will be used.
      * @param parent Parent view.
      */
     public void viewObject(T object, com.storedobject.vaadin.View parent) {
@@ -1712,10 +1712,10 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
     }
 
     /**
-     * View the object that is passed. If the editor is in the editing mode, it will be cancelled and will
+     * View the object that is passed. If the editor is in the editing mode, it will be canceled and will
      * be switched to viewing mode.
      *
-     * @param object Object to view. If null is passed, current object will be used.
+     * @param object Object to view. If null is passed, the current object will be used.
      * @param parent Parent view.
      * @param doNotLock To specify whether the parent to be locked or not.
      */
@@ -1724,38 +1724,38 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
     }
 
     /**
-     * View the object that is passed. If the editor is in the editing mode, it will be cancelled and will
+     * View the object that is passed. If the editor is in the editing mode, it will be canceled and will
      * be switched to viewing mode.
      *
      * @param actionName Name of the action to be allowed while viewing. This will be used only when an action is
      *                   specified and is used as a label to the button for the action.
-     * @param action Action to carry out. A button will be displayed and that can be pressed for invoking the action.
+     * @param action Action to carry out. A button will be displayed and that can be pressed to invoke the action.
      */
     public void viewObject(String actionName, Consumer<T> action) {
         viewObject(null, actionName, action, null, true);
     }
 
     /**
-     * View the object that is passed. If the editor is in the editing mode, it will be cancelled and will
+     * View the object that is passed. If the editor is in the editing mode, it will be canceled and will
      * be switched to viewing mode.
      *
-     * @param object Object to view. If null is passed, current object will be used.
+     * @param object Object to view. If null is passed, the current object will be used.
      * @param actionName Name of the action to be allowed while viewing. This will be used only when an action is
      *                   specified and is used as a label to the button for the action.
-     * @param action Action to carry out. A button will be displayed and that can be pressed for invoking the action.
+     * @param action Action to carry out. A button will be displayed and that can be pressed to invoke the action.
      */
     public void viewObject(T object, String actionName, Consumer<T> action) {
         viewObject(object, actionName, action, null, true);
     }
 
     /**
-     * View the object that is passed. If the editor is in the editing mode, it will be cancelled and will
+     * View the object that is passed. If the editor is in the editing mode, it will be canceled and will
      * be switched to viewing mode.
      *
-     * @param object Object to view. If null is passed, current object will be used.
+     * @param object Object to view. If null is passed, the current object will be used.
      * @param actionName Name of the action to be allowed while viewing. This will be used only when an action is
      *                   specified and is used as a label to the button for the action.
-     * @param action Action to carry out. A button will be displayed and that can be pressed for invoking the action.
+     * @param action Action to carry out. A button will be displayed and that can be pressed to invoke the action.
      * @param parent Parent view.
      */
     public void viewObject(T object, String actionName, Consumer<T> action, com.storedobject.vaadin.View parent) {
@@ -1763,32 +1763,32 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
     }
 
     /**
-     * View the object that is passed. If the editor is in the editing mode, it will be cancelled and will
+     * View the object that is passed. If the editor is in the editing mode, it will be canceled and will
      * be switched to viewing mode.
      *
-     * @param action Action to carry out. A button will be displayed and that can be pressed for invoking the action.
+     * @param action Action to carry out. A button will be displayed and that can be pressed to invoke the action.
      */
     public void viewObject(Consumer<T> action) {
         viewObject(getObject(), null, action, null, true);
     }
 
     /**
-     * View the object that is passed. If the editor is in the editing mode, it will be cancelled and will
+     * View the object that is passed. If the editor is in the editing mode, it will be canceled and will
      * be switched to viewing mode.
      *
-     * @param object Object to view. If null is passed, current object will be used.
-     * @param action Action to carry out. A button will be displayed and that can be pressed for invoking the action.
+     * @param object Object to view. If null is passed, the current object will be used.
+     * @param action Action to carry out. A button will be displayed and that can be pressed to invoke the action.
      */
     public void viewObject(T object, Consumer<T> action) {
         viewObject(object, null, action, null, true);
     }
 
     /**
-     * View the object that is passed. If the editor is in the editing mode, it will be cancelled and will
+     * View the object that is passed. If the editor is in the editing mode, it will be canceled and will
      * be switched to viewing mode.
      *
-     * @param object Object to view. If null is passed, current object will be used.
-     * @param action Action to carry out. A button will be displayed and that can be pressed for invoking the action.
+     * @param object Object to view. If null is passed, the current object will be used.
+     * @param action Action to carry out. A button will be displayed and that can be pressed to invoke the action.
      * @param parent Parent view.
      */
     public void viewObject(T object, Consumer<T> action, com.storedobject.vaadin.View parent) {
@@ -1796,11 +1796,11 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
     }
 
     /**
-     * View the object that is passed. If the editor is in the editing mode, it will be cancelled and will
+     * View the object that is passed. If the editor is in the editing mode, it will be canceled and will
      * be switched to viewing mode.
      *
-     * @param object Object to view. If null is passed, current object will be used.
-     * @param action Action to carry out. A button will be displayed and that can be pressed for invoking the action.
+     * @param object Object to view. If null is passed, the current object will be used.
+     * @param action Action to carry out. A button will be displayed and that can be pressed to invoke the action.
      * @param parent Parent view.
      * @param doNotLock To specify whether the parent to be locked or not.
      */
@@ -1809,18 +1809,119 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
     }
 
     /**
-     * View the object that is passed. If the editor is in the editing mode, it will be cancelled and will
+     * View the object that is passed. If the editor is in the editing mode, it will be canceled and will
      * be switched to viewing mode.
      *
-     * @param object Object to view. If null is passed, current object will be used.
+     * @param object Object to view. If null is passed, the current object will be used.
      * @param actionName Name of the action to be allowed while viewing. This will be used only when an action is
      *                   specified and is used as a label to the button for the action.
-     * @param action Action to carry out. A button will be displayed and that can be pressed for invoking the action.
+     * @param action Action to carry out. A button will be displayed and that can be pressed to invoke the action.
      * @param parent Parent view.
      * @param doNotLock To specify whether the parent to be locked or not.
      */
     public void viewObject(T object, String actionName, Consumer<T> action,
                            com.storedobject.vaadin.View parent, boolean doNotLock) {
+        viewObject(object, parent, doNotLock, action(object == null ? getObject() : object, actionName, action));
+    }
+
+    private ObjectViewerButton<T>[] action(T o, String actionName, Consumer<T> action) {
+        if(o == null || action == null) {
+            return null;
+        }
+        String icon;
+        if(actionName == null || actionName.isEmpty() || "Process".equals(actionName)) {
+            actionName = "Process";
+            icon = "process";
+        } else {
+            int p = actionName.indexOf('|');
+            if(p > 0) {
+                icon = actionName.substring(p + 1).trim();
+                actionName = actionName.substring(0, p).trim();
+            } else {
+                icon = "";
+            }
+        }
+        ObjectViewerButton<T> b = new ObjectViewerButton<>(actionName, icon, (oe, object) -> {
+            oe.close();
+            action.accept(object);
+        });
+        //noinspection unchecked
+        return new ObjectViewerButton[]{ b };
+    }
+
+    /**
+     * View the current object. If the editor is in the editing mode, it will be canceled and will
+     * be switched to viewing mode.
+     *
+     * @param buttons Additional buttons to be added.
+     */
+    @SafeVarargs
+    public final void viewObject(ObjectViewerButton<T>... buttons) {
+        viewObject((T)null, buttons);
+    }
+
+    /**
+     * View the current object. If the editor is in the editing mode, it will be canceled and will
+     * be switched to viewing mode.
+     *
+     * @param parent Parent view.
+     * @param buttons Additional buttons to be added.
+     */
+    @SafeVarargs
+    public final void viewObject(com.storedobject.vaadin.View parent, ObjectViewerButton<T>... buttons) {
+        viewObject(null, parent, parent == null, buttons);
+    }
+
+    /**
+     * View the current object. If the editor is in the editing mode, it will be canceled and will
+     * be switched to viewing mode.
+     *
+     * @param parent Parent view.
+     * @param doNotLock To specify whether the parent to be locked or not.
+     * @param buttons Additional buttons to be added.
+     */
+    @SafeVarargs
+    public final void viewObject(com.storedobject.vaadin.View parent, boolean doNotLock, ObjectViewerButton<T>... buttons) {
+        viewObject(null, parent, doNotLock, buttons);
+    }
+
+    /**
+     * View the object that is passed. If the editor is in the editing mode, it will be canceled and will
+     * be switched to viewing mode.
+     *
+     * @param object Object to view. If null is passed, the current object will be used.
+     * @param buttons Additional buttons to be added.
+     */
+    @SafeVarargs
+    public final void viewObject(T object, ObjectViewerButton<T>... buttons) {
+        viewObject(object, null, false, buttons);
+    }
+
+    /**
+     * View the object that is passed. If the editor is in the editing mode, it will be canceled and will
+     * be switched to viewing mode.
+     *
+     * @param object Object to view. If null is passed, the current object will be used.
+     * @param parent Parent view.
+     * @param buttons Additional buttons to be added.
+     */
+    @SafeVarargs
+    public final void viewObject(T object, com.storedobject.vaadin.View parent, ObjectViewerButton<T>... buttons) {
+        viewObject(object, parent, parent == null, buttons);
+    }
+
+    /**
+     * View the object that is passed. If the editor is in the editing mode, it will be canceled and will
+     * be switched to viewing mode.
+     *
+     * @param object Object to view. If null is passed, the current object will be used.
+     * @param parent Parent view.
+     * @param doNotLock To specify whether the parent to be locked or not.
+     * @param buttons Additional buttons to be added.
+     */
+    @SafeVarargs
+    public final void viewObject(T object, com.storedobject.vaadin.View parent, boolean doNotLock,
+                                 ObjectViewerButton<T>... buttons) {
         if(object == null) {
             object = getObject();
         }
@@ -1830,26 +1931,14 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
         interruptEditing(object);
         execute(parent, doNotLock);
         buttonPanel.removeAll();
-        if(action != null) {
-            T o = object;
-            String icon;
-            if(actionName == null || actionName.isEmpty() || "Process".equals(actionName)) {
-                actionName = "Process";
-                icon = "process";
-            } else {
-                int p = actionName.indexOf('|');
-                if(p > 0) {
-                    icon = actionName.substring(p + 1).trim();
-                    actionName = actionName.substring(0, p).trim();
-                } else {
-                    icon = "";
+        if(buttons != null) {
+            final T o = object;
+            for(ObjectViewerButton<T> b: buttons) {
+                if(b != null) {
+                    buttonPanel.add(b);
+                    b.addClickListener(e -> b.consumer.accept(this, o));
                 }
             }
-            buttonPanel.add(new Button(actionName, icon, e -> {
-                        close();
-                        action.accept(o);
-                    })
-            );
         }
         if(print != null) {
             buttonPanel.add(print);
@@ -2003,7 +2092,7 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
     }
 
     /**
-     * Check whether the editor is in "view only" mode. The editor is in "view only" mode if the buttons are not
+     * Check whether the editor is in "view-only" mode. The editor is in "view-only" mode if the buttons are not
      * available for editing (maybe hidden or disabled too).
      *
      * @return True/false.
@@ -2023,7 +2112,7 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
     }
 
     /**
-     * Allow/disallow "Do not save" option. (See {@link #setDoNotSave(boolean)}).
+     * Allow/disallow the "Do not save" option. (See {@link #setDoNotSave(boolean)}).
      *
      * @param allowDoNotSave True if link editing needs to be allowed
      */
@@ -2032,7 +2121,7 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
     }
 
     /**
-     * Check whether "Do not save" option is allowed or not.
+     * Check whether the "Do not save" option is allowed or not.
      *
      * @return True/false.
      */
@@ -2046,7 +2135,7 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
      *
      * @param fieldName Field for which grid to be created.
      * @param field Field.
-     * @return Grid for the link field. A null may be returned so that default grid will be automatically created.
+     * @return Grid for the link field. A null may be returned so that the default grid will be automatically created.
      */
     protected LinkGrid<?> createLinkFieldGrid(String fieldName, ObjectLinkField<?> field) {
         return null;
@@ -2586,7 +2675,7 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
 
     /**
      * Set the buffered mode. In buffered mode, instances will be backed up before editing and will be restored if
-     * editing is cancelled.
+     * editing is canceled.
      *
      * @param buffered True/false.
      */
@@ -2640,7 +2729,7 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
      * @param item Item that is changed.
      * @param changeAction Change action (One of the static values defined in the {@link EditorAction}).
      * @param <L> Type of link value.
-     * @return True if change is acceptable. If false is returned, value will be ignored.
+     * @return True if change is acceptable. If false is returned, the value will be ignored.
      */
     public <L extends StoredObject> boolean acceptValueChange(ObjectLinkField<L> linkField, L item, int changeAction) {
         return true;
@@ -2709,7 +2798,7 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
     }
 
     /**
-     * Ask the editor to refresh the given grid whenever object on the editor is changed (inserted/updated/deleted).
+     * Ask the editor to refresh the given grid whenever an object in the editor is changed (inserted/updated/deleted).
      * @param grid Grid to refresh.
      */
     public void refreshMe(ObjectListGrid<T> grid) {
@@ -2796,7 +2885,7 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
      * {@link #actionAllowed(String)}. For example, {@link com.storedobject.ui.inventory.POBrowser} returns the value
      * "PO" for this method.
      *
-     * @return Prefix string. Default implementation returns null. That means that all the actions are allowed.
+     * @return Prefix string. The default implementation returns null. That means that all the actions are allowed.
      */
     protected String getActionPrefix() {
         return null;
@@ -2810,7 +2899,7 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
      * However, it is up to the logic to decide the course of action.
      * <p>The user's groups can be configured to allow various UI actions ({@link com.storedobject.core.UIAction}.
      * Each {@link com.storedobject.core.UIAction} represents a unique "action" string ({@link UIAction#getAction()})
-     * and that value should be equal to {@link #getActionPrefix()} + "-" + action in order to allow that action.</p>
+     * and that value should be equal to {@link #getActionPrefix()} + "-" + action to allow that action.</p>
      *
      * @param action Action string.
      * @return True/false. Please note that it will always return <code>true</code> if {@link #getActionPrefix()}

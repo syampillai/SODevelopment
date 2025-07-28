@@ -91,7 +91,7 @@ public class ObjectHistoryGrid<T extends StoredObject> extends DataGrid<T> imple
     @Override
     public String getColumnCaption(String columnName) {
         return switch(columnName) {
-            case "TransactionIP" -> "I Address";
+            case "TransactionIP" -> "IP Address";
             case "Timestamp" -> "Timestamp (" + getTransactionManager().getEntity().getTimeZone() + ")";
             default -> super.getColumnCaption(columnName);
         };

@@ -3,7 +3,7 @@ package com.storedobject.core;
 import com.storedobject.core.annotation.*;
 import java.math.BigDecimal;
 
-public final class ConsignmentItem extends StoredObject implements Detail {
+public class ConsignmentItem extends StoredObject implements Detail {
 
     private Id itemId;
     private Quantity quantity = Quantity.create(Quantity.class);
@@ -87,7 +87,7 @@ public final class ConsignmentItem extends StoredObject implements Detail {
 
     @Override
     public boolean isDetailOf(Class<? extends StoredObject> masterClass) {
-        return Consignment.class.isAssignableFrom(masterClass);
+        return Consignment.class == masterClass;
     }
 
     @Override

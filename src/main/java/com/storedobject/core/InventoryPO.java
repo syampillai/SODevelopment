@@ -490,8 +490,7 @@ public class InventoryPO extends StoredObject implements HasChildren, HasReferen
                 if(currency == localCurrency) {
                     exchangeRate = Rate.ONE;
                 } else {
-                    exchangeRate = Money.getBuyingRate(date, currency, localCurrency,
-                            transaction.getManager().getEntity());
+                    exchangeRate = Money.getBuyingRate(date, currency, transaction.getManager().getEntity());
                 }
             } else if(currency == localCurrency && !exchangeRate.isOne()) {
                 throw new Invalid_State("Invalid exchange rate passed: " + exchangeRate );

@@ -14,7 +14,7 @@ public class PackingUnitBrowser extends ObjectBrowser<PackingUnit> {
     private Button deploy;
 
     public PackingUnitBrowser() {
-        super(PackingUnit.class, EditorAction.ALL & (~EditorAction.DELETE) & (~EditorAction.EDIT));
+        super(PackingUnit.class, EditorAction.ALL & (~EditorAction.DELETE));
     }
 
     public PackingUnitBrowser(String className) {

@@ -8,15 +8,20 @@ import com.storedobject.ui.Application;
 import com.storedobject.vaadin.*;
 import com.vaadin.flow.component.icon.VaadinIcon;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class CreateConsignment implements Executable {
+public class CreateConsignment<C extends Consignment> implements Executable {
 
     private final TransactionManager tm;
     private final StoredObject parent;
     private final List<HasInventoryItem> items = new ArrayList<>();
-    private Consignment consignment;
+    private final Class<C> consignmentClass;
+    private final Class<? extends ConsignmentItem> itemClass;
+    private final Class<? extends ConsignmentPacket> packetClass;
+    private final int consignmentType;
+    private C consignment;
     private final View parentView;
     @SuppressWarnings("rawtypes")
     private final ObjectBrowser parentBrowser;
@@ -30,25 +35,50 @@ public class CreateConsignment implements Executable {
         } else {
             parentBrowser = null;
         }
+        if(parent != null) {
+            consignmentType = switch (parent) {
+                case MaterialReturned ignored -> 0;
+                case InventoryRO ignored -> 1;
+                case InventoryTransfer ignored -> 2;
+                default -> -1;
+            };
+        } else {
+            consignmentType = -1;
+        }
+        if(parent != null && consignmentType == -1) {
+            Application.error("No consignment editor configured for - \"" + StringUtility.makeLabel(parent.getClass()) + "\"");
+        }
+        Class<C> cClass = null;
+        try {
+            //noinspection unchecked
+            cClass = (Class<C>) JavaClassLoader.createClassFromProperty("CONSIGNMENT-CLASS-" + consignmentType);
+        } catch (Throwable e) {
+            Application.error(e);
+        }
+        //noinspection unchecked
+        consignmentClass = cClass == null ? (Class<C>) Consignment.class : cClass;
+        Class<? extends ConsignmentItem> iclass = null;
+        try {
+            //noinspection unchecked
+            iclass = (Class<? extends ConsignmentItem>) JavaClassLoader.getLogic(consignmentClass.getName() + "Item");
+        } catch (Throwable ignored) {
+        }
+        itemClass = iclass == null ? ConsignmentItem.class : iclass;
+        Class<? extends ConsignmentPacket> pClass = null;
+        try {
+            //noinspection unchecked
+            pClass = (Class<? extends ConsignmentPacket>) JavaClassLoader.getLogic(consignmentClass.getName() + "Packet");
+        } catch (ClassNotFoundException ignored) {
+        }
+        packetClass = pClass == null ? ConsignmentPacket.class : pClass;
     }
 
     @Override
     public void execute() {
-        if(parent == null || tm == null) {
+        if(parent == null || tm == null || consignmentType == -1) {
             return;
         }
-        int type;
-        if(parent instanceof MaterialReturned) {
-            type = 0;
-        } else if(parent instanceof InventoryRO) {
-            type = 1;
-        } else if(parent instanceof InventoryTransfer) {
-            type = 2;
-        } else {
-            Application.message("No consignment editor configured!");
-            return;
-        }
-        consignment = parent.listLinks(Consignment.class).single(false);
+        consignment = parent.listLinks(consignmentClass).single(false);
         try {
             items();
         } catch(Throwable e) {
@@ -56,10 +86,10 @@ public class CreateConsignment implements Executable {
             return;
         }
         if(consignment == null) {
-            new AskUser(type).execute(parentView);
+            new AskUser(consignmentType).execute(parentView);
             return;
         } else {
-            if(consignment.getType() != type) {
+            if(consignment.getType() != consignmentType) {
                 Application.message("Consistency error, please contact Technical Support!");
                 return;
             }
@@ -73,9 +103,9 @@ public class CreateConsignment implements Executable {
         editor.execute(parentView);
     }
 
-    private void createConsignment(int type) {
-        consignment = new Consignment(parent);
-        consignment.setType(type);
+    private void createConsignment() throws NoSuchMethodException, InvocationTargetException, InstantiationException,
+            IllegalAccessException {
+        consignment = consignmentClass.getConstructor(StoredObject.class).newInstance(parent);
         attachConsignment(true);
     }
 
@@ -126,12 +156,12 @@ public class CreateConsignment implements Executable {
         }
     }
 
-    private class Editor extends ObjectEditor<Consignment> {
+    private class Editor extends ObjectEditor<C> {
 
         private final Button assignBoxes = new Button("Assign Boxes", VaadinIcon.PACKAGE, e -> assignBoxes());
 
         public Editor() {
-            super(Consignment.class, EditorAction.EDIT | EditorAction.VIEW | EditorAction.DELETE);
+            super(consignmentClass, EditorAction.EDIT | EditorAction.VIEW | EditorAction.DELETE);
             addConstructedListener(e -> setFieldReadOnly("Type"));
             if(parentBrowser != null) {
                 addObjectChangedListener(new ObjectChangedListener<>() {
@@ -164,21 +194,29 @@ public class CreateConsignment implements Executable {
             return super.includeField(fieldName);
         }
 
-        private void assignBoxes() {
+        private <I extends ConsignmentItem, P extends ConsignmentPacket> void assignBoxes() {
             clearAlerts();
-            List<ConsignmentPacket> packets = consignment.listLinks(ConsignmentPacket.class, null,"Number")
-                    .toList();
+            @SuppressWarnings("unchecked") List<P> packets = consignment.listLinks(packetClass, null,"Number")
+                    .map(p -> (P) p).toList();
             if(packets.isEmpty()) {
                 message("No packages defined!");
                 return;
             }
-            List<ConsignmentItem> previousItems = consignment.listLinks(ConsignmentItem.class).toList();
-            List<ConsignmentItem> currentItems = new ArrayList<>();
+            @SuppressWarnings("unchecked") List<I> previousItems = consignment.listLinks(itemClass)
+                    .map(i -> (I)i).toList();
+            List<I> currentItems = new ArrayList<>();
             items.forEach(i -> {
-                ConsignmentItem ci = previousItems.stream().filter(p -> i.getItem().getId().equals(p.getItemId()))
+                I ci = previousItems.stream()
+                        .filter(c -> i.getItem().getId().equals(c.getItemId()))
                         .findAny().orElse(null);
                 if(ci == null) {
-                    ci = new ConsignmentItem();
+                    try {
+                        //noinspection unchecked
+                        ci = (I) itemClass.getConstructor().newInstance();
+                    } catch (Throwable e) {
+                        error(e);
+                        return;
+                    }
                     InventoryItem item = i.getItem();
                     ci.setItem(item);
                     ci.setQuantity(i.getQuantity());
@@ -188,7 +226,7 @@ public class CreateConsignment implements Executable {
                 }
                 currentItems.add(ci);
             });
-            ItemEditor itemsEditor = new ItemEditor();
+            ItemEditor<I, P> itemsEditor = new ItemEditor<>();
             previousItems.forEach(ci -> {
                 if(!currentItems.contains(ci)) {
                     itemsEditor.toRemove.add(ci);
@@ -200,13 +238,14 @@ public class CreateConsignment implements Executable {
         }
     }
 
-    private class ItemEditor extends ObjectListEditor<ConsignmentItem> {
+    private class ItemEditor<I extends ConsignmentItem, P extends ConsignmentPacket> extends ObjectListEditor<I> {
 
         private final List<ConsignmentItem> toRemove = new ArrayList<>();
-        List<ConsignmentPacket> packets;
+        List<P> packets;
 
         public ItemEditor() {
-            super(ConsignmentItem.class);
+            //noinspection unchecked
+            super((Class<I>) itemClass);
             addConstructedListener(f -> buttonPanel.add(new Button("Exit", e -> checkAndClose())));
             setAllowAdd(false);
             setAllowDelete(false);
@@ -278,7 +317,12 @@ public class CreateConsignment implements Executable {
             clearAlerts();
             if(choice.getValue() == 0) {
                 close();
-                createConsignment(type);
+                try {
+                    createConsignment();
+                } catch(Throwable e) {
+                    error(e);
+                    return false;
+                }
                 return true;
             }
             int no = noField.getValue();
@@ -287,10 +331,11 @@ public class CreateConsignment implements Executable {
                 noField.focus();
                 return false;
             }
-            List<Consignment> consignments = StoredObject.list(Consignment.class,
+            List<C> consignments = StoredObject.list(consignmentClass,
                     "Type=" + type + " AND No=" + no + " AND Date='"
                             + Database.format(dateField.getValue()) + "'")
-                    .filter(c -> c.listMasters(parent.getClass()).filter(p -> !p.getId().equals(parent.getId()))
+                    .filter(c -> c.listMasters(parent.getClass())
+                            .filter(p -> !p.getId().equals(parent.getId()))
                             .findFirst() != null).toList();
             if(consignments.isEmpty()) {
                 warning("No such consignment found!");
@@ -298,8 +343,8 @@ public class CreateConsignment implements Executable {
                 return false;
             }
             close();
-            SelectGrid<Consignment> select = new SelectGrid<>(Consignment.class, consignments,
-                    StoredObjectUtility.browseColumns(Consignment.class),
+            SelectGrid<C> select = new SelectGrid<>(consignmentClass, consignments,
+                    StoredObjectUtility.browseColumns(consignmentClass),
                     c -> {
                         consignment = c;
                         attachConsignment(false);

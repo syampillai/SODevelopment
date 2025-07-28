@@ -37,12 +37,19 @@ public class DataView<D extends Data> extends ObjectGrid<D> {
         return site.date(data.getTimestamp());
     }
 
+    protected void addExtraButtons(ButtonLayout buttonLayout) {
+    }
+
     @Override
     public Component createHeader() {
-        //noinspection resource
-        return new ButtonLayout(new ELabel("Unit: " + data4Unit.unit().getName()),
-                canDownload ? new Button("Download",
-                        e -> new DataDownload(data4Unit).execute()) : null,
-                new Button("Exit", e -> close()));
+        ButtonLayout buttonLayout = new ButtonLayout(new ELabel("Unit: " + data4Unit.unit().getName()));
+        addExtraButtons(buttonLayout);
+        if(canDownload) {
+            //noinspection resource
+            buttonLayout.add(new Button("Download",
+                    e -> new DataDownload(data4Unit).execute()));
+        }
+        buttonLayout.add(new Button("Exit", e -> close()));
+        return buttonLayout;
     }
 }

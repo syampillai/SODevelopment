@@ -8,6 +8,7 @@ import com.storedobject.iot.*;
 import com.storedobject.ui.*;
 import com.storedobject.vaadin.DataForm;
 import com.storedobject.vaadin.MultiSelectGrid;
+import com.storedobject.vaadin.SelectGrid;
 
 import java.sql.Timestamp;
 import java.util.*;
@@ -17,11 +18,20 @@ public abstract class SelectData extends BlockSelector {
 
     private final TimestampPeriodField periodField = new TimestampPeriodField("Period");
     private final MinutesField timeStepField = new MinutesField("Time Slice");
+    private final boolean choose, valuesOnly;
 
     public SelectData(String caption, Block block) {
+        this(caption, block, false, false);
+    }
+
+    protected SelectData(String caption, Block block, boolean valuesOnly, boolean choose) {
         super(caption, block);
+        this.valuesOnly = valuesOnly;
+        this.choose = choose;
         addField(periodField, timeStepField);
-        siteChanged(block.getSite());
+        if(block != null) {
+            siteChanged(block.getSite());
+        }
     }
 
     @Override
@@ -59,7 +69,7 @@ public abstract class SelectData extends BlockSelector {
 
     private void accept(Unit unit) {
         @SuppressWarnings("rawtypes") List<ValueDefinition> valueDefinitions = new ArrayList<>();
-        buildTree(valueDefinitions, unit);
+        buildTree(valueDefinitions, unit, valuesOnly);
         clearAlerts();
         if(valueDefinitions.isEmpty()) {
             warning("No 'Value Definitions' found for '" + unit.getName() + "'");
@@ -67,24 +77,32 @@ public abstract class SelectData extends BlockSelector {
         if(valueDefinitions.size() == 1) {
             process(unit, valueDefinitions);
         } else {
-            new SelectValues<>(ValueDefinition.class, valueDefinitions, unit).execute();
+            if(choose) {
+                new SelectValue<>(ValueDefinition.class, valueDefinitions, unit).execute();
+            } else {
+                new SelectValues<>(ValueDefinition.class, valueDefinitions, unit).execute();
+            }
         }
     }
 
-    private static void buildTree(@SuppressWarnings("rawtypes") List<ValueDefinition> values, Unit unit) {
+    private static void buildTree(@SuppressWarnings("rawtypes") List<ValueDefinition> values, Unit unit, boolean valuesOnly) {
         DataSet.getSites().stream().filter(s -> s.getSite().getId().equals(unit.getSiteId()))
-                .forEach(s -> buildBranches(values, s, unit));
+                .forEach(s -> buildBranches(values, s, unit, valuesOnly));
     }
 
     private static void buildBranches(@SuppressWarnings("rawtypes") List<ValueDefinition> values,
-                                      DataSet.AbstractData parent, Unit unit) {
+                                      DataSet.AbstractData parent, Unit unit, boolean valuesOnly) {
         parent.children().forEach(row -> {
             if(row instanceof DataSet.UnitData ud) {
                 if(ud.getUnit().getId().equals(unit.getId())) {
-                    ud.getDataStatus().forEach(ds -> values.add(ds.getValueDefinition()));
+                    ud.getDataStatus().forEach(ds -> {
+                        if(!valuesOnly || ds instanceof DataSet.LimitStatus) {
+                            values.add(ds.getValueDefinition());
+                        }
+                    });
                 }
             }
-            buildBranches(values, row, unit);
+            buildBranches(values, row, unit, valuesOnly);
         });
     }
 
@@ -137,6 +155,31 @@ public abstract class SelectData extends BlockSelector {
             }
             @SuppressWarnings("rawtypes") Set<ValueDefinition> set = new HashSet<>(selected);
             //noinspection
+            SelectData.this.process(unit, set);
+        }
+    }
+
+    private class SelectValue<T extends ValueDefinition<?>> extends SelectGrid<T> {
+
+        private final Unit unit;
+
+        public SelectValue(Class<T> vdClass, List<T> items, Unit unit) {
+            super(vdClass, items, StringList.create("Values"));
+            this.unit = unit;
+            setCaption("Choose a Value");
+            addConstructedListener(e -> buttonLayout.add(new ELabel("Unit: " + unit.getName())));
+        }
+
+        @SuppressWarnings("unused")
+        public String getValues(T valueDefinition) {
+            return valueDefinition.getCaption();
+        }
+
+        @Override
+        protected void process(T selected) {
+            super.process(selected);
+            @SuppressWarnings("rawtypes") Set<ValueDefinition> set = new HashSet<>();
+            set.add(selected);
             SelectData.this.process(unit, set);
         }
     }

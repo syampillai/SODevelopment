@@ -5,9 +5,11 @@ import com.storedobject.core.DateUtility;
 import com.storedobject.core.SOException;
 import com.storedobject.core.StringUtility;
 import com.storedobject.core.*;
+import com.storedobject.sms.QuickSender;
 import com.storedobject.ui.util.ApplicationFrame;
 import com.storedobject.ui.util.ContentGenerator;
 import com.storedobject.ui.util.*;
+import com.storedobject.ui.util.DocumentViewer;
 import com.storedobject.vaadin.ApplicationMenu;
 import com.storedobject.vaadin.*;
 import com.vaadin.flow.component.*;
@@ -171,7 +173,7 @@ public class Application extends com.storedobject.vaadin.Application implements 
     }
 
     /**
-     * This return the {@link Login} instance associated with application. It will be available only till
+     * This returns the {@link Login} instance associated with application. It will be available only till
      * logged in.
      *
      * @return Login instance when not logged in, otherwise null.
@@ -208,7 +210,7 @@ public class Application extends com.storedobject.vaadin.Application implements 
 
     /**
      * Whether this application supports {@link CloseableView} or not. Applications may override the standard
-     * menu system and the overridden menu system may not have support for displaying appropriate "close" icon for
+     * menu system, and the overridden menu system may not have support for displaying the appropriate "close" icon for
      * closing the view. In such cases, this method should return <code>false</code>.
      *
      * @return True/false. Default is true.
@@ -361,8 +363,8 @@ public class Application extends com.storedobject.vaadin.Application implements 
      *     2, -2: Closed after showing a message.
      *     3, -3: Application server session expired.
      *     4, -4: Login failed and closed.
-     *     5, -5: Cancelled from the login screen.
-     *     6, -6: Cancelled while selecting the entity.
+     *     5, -5: Canceled from the login screen.
+     *     6, -6: Canceled while selecting the entity.
      *     7, -7: Timed out during interactive session dialog.
      *     8, -8: Closed by the user in the interactive session dialog.
      *     9, -9: Closed while switching to another server/DB.
@@ -381,10 +383,22 @@ public class Application extends com.storedobject.vaadin.Application implements 
         close(100);
     }
 
+    /**
+     * Closes the current session or process and redirects to the specified exit site.
+     *
+     * @param exitSite the URL or identifier of the exit site to redirect to after closing
+     */
     public void close(final String exitSite) {
         close(exitSite, 100);
     }
 
+    /**
+     * Closes the application server connection with a specified reason.
+     * Handles the logic for determining the exit site from global properties
+     * or layout configuration before initiating closure.
+     *
+     * @param reason the integer code representing the reason for closing the connection
+     */
     public void close(int reason) {
         if(server == null) {
             return;
@@ -396,7 +410,16 @@ public class Application extends com.storedobject.vaadin.Application implements 
         close(exit, reason);
     }
 
-
+    /**
+     * Closes the current session, releasing resources and optionally triggering client-side behaviors
+     * based on the provided parameters. This method ensures proper cleanup and performs actions
+     * such as closing views, removing layout components, and optionally navigating to an external site.
+     *
+     * @param exitSite The URL to navigate to when the session is closed. If null or empty,
+     *                 a default close behavior is executed.
+     * @param reason   The integer code representing the reason for the closure. This value
+     *                 influences internal handling of the close operation.
+     */
     public void close(final String exitSite, int reason) {
         if(server == null) {
             return;
@@ -504,10 +527,21 @@ public class Application extends com.storedobject.vaadin.Application implements 
         }
     }
 
+    /**
+     * Retrieves the current instance of the Application.
+     *
+     * @return The current Application instance.
+     */
     public static Application get() {
         return (Application) com.storedobject.vaadin.Application.get();
     }
 
+    /**
+     * Retrieves the default currency used by the application.
+     *
+     * @return the default {@link Currency} of the application
+     * @throws SORuntimeException if the default currency cannot be determined
+     */
     public static Currency getDefaultCurrency() {
         Application a = get();
         if(a != null) {
@@ -516,6 +550,15 @@ public class Application extends com.storedobject.vaadin.Application implements 
         throw new SORuntimeException("Unable to determine default currency");
     }
 
+    /**
+     * Retrieves the default country associated with the application.
+     * If an application instance is available, this method fetches
+     * and returns the country set in the application's transaction manager.
+     * If no application instance is available, an exception is thrown.
+     *
+     * @return the default country as a string if available
+     * @throws SORuntimeException if the default country cannot be determined
+     */
     public static String getDefaultCountry() {
         Application a = get();
         if(a != null) {
@@ -524,14 +567,29 @@ public class Application extends com.storedobject.vaadin.Application implements 
         throw new SORuntimeException("Unable to determine default country");
     }
 
+    /**
+     * Checks if biometric authentication is available on the device.
+     *
+     * @return true if biometric authentication is available, false otherwise.
+     */
     public boolean isBiometricAvailable() {
         return biometricAvailable;
     }
 
+    /**
+     * Checks if biometric authentication is registered on the device.
+     *
+     * @return true if biometric authentication is registered, false otherwise.
+     */
     public boolean isBiometricRegistered() {
         return biometricRegistered;
     }
 
+    /**
+     * Retrieves the identifier of the biometric device associated with this instance.
+     *
+     * @return the unique identifier of the biometric device
+     */
     public Id getBiometricDeviceId() {
         return biometricDeviceId;
     }
@@ -543,6 +601,11 @@ public class Application extends com.storedobject.vaadin.Application implements 
         biometricRegistered = true;
     }
 
+    /**
+     * Retrieves the TransactionManager associated with the server.
+     *
+     * @return the TransactionManager if the server is not null; otherwise, null.
+     */
     public TransactionManager getTransactionManager() {
         return server == null ? null : server.getTransactionManager();
     }
@@ -569,7 +632,7 @@ public class Application extends com.storedobject.vaadin.Application implements 
 
     /**
      * Get the title of the currently running logic. Note: A call to this method will reset
-     * it, and you can not call it again to get it!
+     * it, and you cannot call it again to get it!
      *
      * @param defaultTitle Default title to be returned if there is no current logic.
      * @return Title of the logic or default title.
@@ -583,7 +646,7 @@ public class Application extends com.storedobject.vaadin.Application implements 
     /**
      * Get the caption of the currently running logic from the current {@link Application}.
      * Note: A call to this method will reset
-     * it, and you can not call it again to get it!
+     * it, and you cannot call it again to get it!
      *
      * @param defaultCaption Default caption to be returned if there is no current logic or application instance in the
      *                       current context.
@@ -633,7 +696,7 @@ public class Application extends com.storedobject.vaadin.Application implements 
 
     @Override
     public String getDriverIdentifier() {
-        return com.vaadin.flow.server.Version.getFullVersion();
+        return Version.getFullVersion();
     }
 
     @Override
@@ -656,51 +719,165 @@ public class Application extends com.storedobject.vaadin.Application implements 
         }
     }
 
+    /**
+     * Displays the specified media file. By default, the media file is not set to fullscreen mode.
+     *
+     * @param mediaFile the media file to be displayed
+     */
     public void view(MediaFile mediaFile) {
         view(mediaFile, false);
     }
 
+    /**
+     * Displays the media file with the given caption.
+     *
+     * @param caption the caption text to be displayed with the media file
+     * @param mediaFile the media file to be viewed
+     */
     public void view(String caption, MediaFile mediaFile) {
         view(caption, mediaFile, false);
     }
 
+    /**
+     * Displays the given media file in the appropriate view mode.
+     *
+     * @param mediaFile   the media file to be viewed
+     * @param windowMode  indicates whether the media should be displayed in windowed mode
+     */
     public void view(MediaFile mediaFile, boolean windowMode) {
         view(mediaFile.getName(), mediaFile, windowMode);
     }
 
+    /**
+     * Displays the specified media file in the viewer with the given caption.
+     *
+     * @param caption The title or description to be displayed alongside the media file.
+     * @param mediaFile The media file that needs to be displayed.
+     * @param windowMode Determines whether the viewer should open in windowed mode
+     *                   (true for windowed mode, false for fullscreen mode).
+     */
     public void view(String caption, MediaFile mediaFile, boolean windowMode) {
-        com.storedobject.ui.util.DocumentViewer.view(caption, mediaFile, windowMode);
+        DocumentViewer.view(caption, mediaFile, windowMode);
     }
 
+    /**
+     * Displays the view for a specific object based on its ID with the provided caption.
+     *
+     * @param caption the title or label to display in the view
+     * @param objectId the unique identifier of the object to be viewed
+     */
     public void view(String caption, Id objectId) {
         view(caption, StoredObject.get(objectId));
     }
 
+    /**
+     * Displays the details of an object with the given identifier.
+     *
+     * @param objectId the identifier of the object to be viewed
+     */
     public void view(Id objectId) {
         view(null, objectId);
     }
 
+    /**
+     * Displays or processes a view for the specified stored object. If the view logic
+     * requires additional parameters, it defaults the first parameter to null.
+     *
+     * @param object the stored object to be viewed or processed
+     */
     public void view(StoredObject object) {
         view(null, object);
     }
 
+    /**
+     * Displays the specified stored object with an optional caption.
+     *
+     * @param caption the caption to be displayed along with the stored object
+     * @param object the stored object to be viewed
+     */
     public void view(String caption, StoredObject object) {
         view(caption, object, null, null);
     }
 
+    /**
+     * Opens a view for the specified object using the provided parameters.
+     *
+     * @param caption    the caption or title to be displayed in the view
+     * @param objectId   the identifier of the object to be viewed
+     * @param actionName the name of the action to be performed in the view
+     * @param action     a callback that provides a consumer for the stored object
+     */
     public void view(String caption, Id objectId, String actionName, Consumer<StoredObject> action) {
         view(caption, StoredObject.get(objectId), actionName, null);
     }
 
+    /**
+     * Displays the view for the specified object with the given caption and action buttons.
+     *
+     * @param caption        The caption to be displayed for the view.
+     * @param objectId       The ID of the object to be viewed.
+     * @param actionButtons  Optional action buttons to be displayed with the view.
+     */
+    public void view(String caption, Id objectId, ObjectViewerButton<?>... actionButtons) {
+        view(caption, StoredObject.get(objectId), actionButtons);
+    }
+
+    /**
+     * Performs a view operation for the given object ID and action name, executing the provided action.
+     *
+     * @param objectId the unique identifier of the object to be viewed
+     * @param actionName the name of the action to be performed
+     * @param action a Consumer functional interface to execute the specific operation on the object
+     */
     public void view(Id objectId, String actionName, Consumer<StoredObject> action) {
         view(null, objectId, actionName, null);
     }
 
+    /**
+     * Displays the given stored object and performs an action based on the provided action name.
+     *
+     * @param object the stored object to be viewed
+     * @param actionName the name of the action to be executed
+     * @param action a consumer that defines the behavior to execute on the stored object
+     */
     public void view(StoredObject object, String actionName, Consumer<StoredObject> action) {
         view(null, object);
     }
 
+    /**
+     * Displays the specified stored object with optional action buttons.
+     *
+     * @param object the stored object to be viewed
+     * @param actionButtons an optional array of action buttons to be included in the view
+     */
+    public void view(StoredObject object, ObjectViewerButton<?>... actionButtons) {
+        view(null, object, actionButtons);
+    }
+
+    /**
+     * Displays the given stored object using a specific viewer with an associated action.
+     *
+     * @param caption the caption or title to be used for the view
+     * @param object the stored object to be viewed
+     * @param actionName the name of the action that can be performed on the object
+     * @param action the action to be executed on the stored object
+     */
     public void view(String caption, StoredObject object, String actionName, Consumer<StoredObject> action) {
+        viewer().view(caption, object, actionName, action);
+    }
+
+    /**
+     * Displays the given stored object using the specified caption and action buttons.
+     *
+     * @param caption the caption or title to display for the view
+     * @param object the stored object that needs to be viewed
+     * @param actionButtons optional action buttons to display along with the view
+     */
+    public void view(String caption, StoredObject object, ObjectViewerButton<?>... actionButtons) {
+        viewer().view(caption, object, actionButtons);
+    }
+
+    private ObjectViewer viewer() {
         ObjectViewer v = null;
         if(objectViewer == null) {
             objectViewer = new ObjectViewer(this);
@@ -713,7 +890,7 @@ public class Application extends com.storedobject.vaadin.Application implements 
         if(v == null) {
             v = new ObjectViewer(this);
         }
-        v.view(caption, object, actionName, action);
+        return v;
     }
 
     private record CP(String caption, ContentProducer producer, Consumer<Long> timeTracker, boolean windowMode,
@@ -722,11 +899,30 @@ public class Application extends com.storedobject.vaadin.Application implements 
 
     private final List<CP> contentProducers = new ArrayList<>();
 
+    /**
+     * Displays a view with the specified caption and content producer. Tracks the render time and allows for an optional windowed mode.
+     *
+     * @param caption the title or label of the view to be displayed
+     * @param producer the content producer responsible for generating the view's content
+     * @param timeTracker a consumer to track and handle the rendering time in milliseconds
+     * @param windowMode a boolean flag indicating whether the view should be displayed in windowed mode
+     */
     @Override
     public void view(String caption, ContentProducer producer, Consumer<Long> timeTracker, boolean windowMode) {
         view(caption, producer, timeTracker, windowMode, (Component[]) null);
     }
 
+    /**
+     * Displays content produced by the given ContentProducer in a specific view.
+     * Manages the display lifecycle, including the addition of header buttons and
+     * tracking view time. Supports windowed mode and asynchronous content generation.
+     *
+     * @param caption The title or caption to be displayed for the view.
+     * @param producer The ContentProducer responsible for generating content to be displayed.
+     * @param timeTracker A Consumer that accepts a Long value representing the time spent in the view.
+     * @param windowMode A boolean indicating whether the view should be displayed in window mode.
+     * @param extraHeaderButtons Optional additional header buttons to be displayed in the view.
+     */
     public void view(String caption, ContentProducer producer, Consumer<Long> timeTracker, boolean windowMode,
                      Component... extraHeaderButtons) {
         if(server == null) {
@@ -744,6 +940,10 @@ public class Application extends com.storedobject.vaadin.Application implements 
                 windowMode, extraHeaderButtons).kick();
     }
 
+    /**
+     * Closes the currently displayed wait message, if any.
+     * This method invokes the close operation on the instance of the waitMessage.
+     */
     public void closeWaitMessage() {
         waitMessage.close();
     }
@@ -784,6 +984,11 @@ public class Application extends com.storedobject.vaadin.Application implements 
         }
     }
 
+    /**
+     * Retrieves the alert button component.
+     *
+     * @return the Component representing the alert button
+     */
     public Component getAlertButton() {
         return alertButton;
     }
@@ -810,22 +1015,54 @@ public class Application extends com.storedobject.vaadin.Application implements 
         alert(caption, alert, null);
     }
 
+    /**
+     * Displays an alert dialog with a specified caption, message, and icon.
+     *
+     * @param caption the title text to be displayed on the alert dialog
+     * @param alert the message content to be displayed in the alert dialog
+     * @param icon the identifier for the icon to be shown in the alert dialog
+     */
     public void alert(String caption, String alert, String icon) {
         createAlert(caption, alert, icon).show();
     }
 
+    /**
+     * Retrieves a StyledBuilder object that represents an alert.
+     * Optionally, parameters can be provided to specify the type or content of the alert.
+     *
+     * @return a StyledBuilder instance representing the alert.
+     */
     public StyledBuilder getAlert() {
         return getAlert(null, null);
     }
 
+    /**
+     * Retrieves a StyledBuilder instance configured for a specific alert.
+     *
+     * @param alertHandler the handler object used to identify or process the alert
+     * @return a StyledBuilder instance for the specified alert
+     */
     public StyledBuilder getAlert(Object alertHandler) {
         return getAlert(alertHandler, null);
     }
 
+    /**
+     * Retrieves a configured alert using the provided alert handler and reference ID.
+     *
+     * @param alertHandler the object responsible for handling alert configurations
+     * @param reference the unique identifier associated with the alert
+     * @return a StyledBuilder instance representing the constructed alert
+     */
     public StyledBuilder getAlert(Object alertHandler, Id reference) {
         return createAlert(alertHandler, reference);
     }
 
+    /**
+     * Retrieves a StyledBuilder object that represents an alert, using the provided reference.
+     *
+     * @param reference the identifier used to locate or configure the alert
+     * @return a StyledBuilder object associated with the specified reference
+     */
     public StyledBuilder getAlert(Id reference) {
         return getAlert(null, reference);
     }
@@ -839,22 +1076,52 @@ public class Application extends com.storedobject.vaadin.Application implements 
         }
     }
 
+    /**
+     * Triggers the action to open the aplication menu.
+     */
     public void openMenu() {
         mainLayout.openMenu();
     }
 
+    /**
+     * Closes the application open.
+     */
     public void closeMenu() {
         mainLayout.closeMenu();
     }
 
+    /**
+     * Determines whether the application menu is currently opened.
+     *
+     * @return true if the menu is opened, false otherwise
+     */
     public boolean isMenuOpened() {
         return mainLayout.isMenuOpened();
     }
 
+    /**
+     * Retrieves the background image used for the home view.
+     *
+     * @return a MediaFile representing the background image for the home view
+     */
     public static MediaFile getHomeImage() {
         return SOServlet.getImage("homeview", "homeimage", "background");
     }
 
+    /**
+     * Handles the login process for the application.
+     * The method performs the following main tasks:
+     * 1. Retrieves the application name and sets the screen caption with the application's name
+     *    and display version unless the application name is unavailable or invalid.
+     * 2. Loads and executes the home view for the application if an appropriate HTML content
+     *    or home background image is available. Otherwise, it proceeds with alternate views.
+     * 3. Displays a notice image if available, invoking the `view` method.
+     * 4. Initializes the login form, either by calling a custom login form or falling back to
+     *    a predefined screen-based login method.
+     * This method ensures proper handling of missing resources or errors during execution by
+     * catching and safely ignoring exceptions. It is an entry point for managing the application's
+     * user authentication interface and sets up the required resources for a fresh login session.
+     */
     @Override
     public final void login() {
         if(login == null) {
@@ -1272,8 +1539,8 @@ public class Application extends com.storedobject.vaadin.Application implements 
         if(frameMenu instanceof com.storedobject.core.ApplicationMenu am) {
             autos = as.populateMenu(am, null);
         } else {
-            Application.Menu am;
-            autos = as.populateMenu(am = new Application.Menu(frameMenu), null);
+            Menu am;
+            autos = as.populateMenu(am = new Menu(frameMenu), null);
             ArrayList<Logic> allLogic = am.logicList;
             am.logicList = null;
             Component sm = mainLayout.getMenuSearcher();
@@ -2049,13 +2316,13 @@ public class Application extends com.storedobject.vaadin.Application implements 
         }
     }
 
-    private com.storedobject.sms.QuickSender smsSender;
+    private QuickSender smsSender;
     private com.storedobject.mail.QuickSender mailSender;
 
-    public com.storedobject.sms.QuickSender getSMSSender() {
+    public QuickSender getSMSSender() {
         if(smsSender == null) {
             try {
-                smsSender = com.storedobject.sms.QuickSender.create();
+                smsSender = QuickSender.create();
             } catch (SOException e) {
                 log(e);
                 warning(e);
