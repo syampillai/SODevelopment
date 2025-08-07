@@ -151,6 +151,6 @@ public final class InventoryLedger extends StoredObject {
         return new QuantityWithCost(Count.ZERO, new Money());
     }
 
-    public void increaseCost(DBTransaction t, Money incUC, Quantity quantity) {
+    public void increaseCost(DBTransaction t, Money incUC, Quantity quantity, Rate exchangeRate) {
     }
 }

@@ -35,7 +35,7 @@ public class DataUpload extends DataForm {
         String password = adminPassword.getValue();
         try {
             if(!Database.get().validateSecurityPassword(password)) {
-                throw new SOException("Administrator password is invalid");
+                throw new SOException("Administrator password is invalid!");
             }
         } catch(Exception e) {
             warning(e);

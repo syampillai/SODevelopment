@@ -219,9 +219,6 @@ public class LogicParser {
         if(InventoryPO.class.isAssignableFrom(objectClass)) {
             return POBrowser.class.getName();
         }
-        if(InventoryPOItem.class.isAssignableFrom(objectClass)) {
-            return POItemBrowser.class.getName();
-        }
         if(CustomerInvoice.class == objectClass) {
             return CustomerInvoiceBrowser.class.getName();
         }
@@ -245,9 +242,6 @@ public class LogicParser {
         }
         if(InventoryPO.class.isAssignableFrom(objectClass)) {
             return new POBrowser(objectClass, actions, title);
-        }
-        if(InventoryPOItem.class.isAssignableFrom(objectClass)) {
-            return new POItemBrowser(objectClass, actions, title);
         }
         if(CustomerInvoice.class == objectClass) {
             return (ObjectBrowser<O>) new CustomerInvoiceBrowser(actions, title);

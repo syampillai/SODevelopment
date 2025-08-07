@@ -54,10 +54,18 @@ public interface Transactional extends Reentrant, com.storedobject.vaadin.Execut
     }
 
     default boolean transactControl(boolean failOnNoChanges, TransactionManager.TransactControl transactControl) {
+        return transactControl(failOnNoChanges, transactControl, "No changes were made!");
+    }
+
+    default boolean transactControl(TransactionManager.TransactControl transactControl, String noChangesMessage) {
+        return transactControl(false, transactControl, noChangesMessage);
+    }
+
+    default boolean transactControl(boolean failOnNoChanges, TransactionManager.TransactControl transactControl, String noChangesMessage) {
         try {
             int no = getTransactionManager().transactControl(transactControl);
             if(no < 0) {
-                getApplication().access(() -> Application.warning("No changes were made!"));
+                getApplication().access(() -> Application.warning(noChangesMessage));
                 return !failOnNoChanges;
             } else if(no > 0) {
                 getApplication().access(() -> Application.warning("Transaction: " + no + " (Approvals Required)"));

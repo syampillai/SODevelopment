@@ -345,7 +345,6 @@ public abstract class AbstractRequestMaterial<MR extends MaterialRequest, MRI ex
 
         public MRIGrid(ObjectLinkField<MRI> linkField) {
             super(linkField, StringList.create("Item", "PartNumber", "Requested", "Issued", "Balance"));
-            new ItemTypeContextMenu<>(this);
         }
 
         @SuppressWarnings("unused")

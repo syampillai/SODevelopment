@@ -14,6 +14,7 @@ import com.vaadin.flow.component.icon.VaadinIcon;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 public abstract class AbstractSendAndReceiveMaterial<T extends InventoryTransfer, L extends InventoryTransferItem>
@@ -470,10 +471,20 @@ public abstract class AbstractSendAndReceiveMaterial<T extends InventoryTransfer
         if(mt != null) {
             if(mt.getAmendment() > 0 && noItems(mt)) {
                 Application a = getApplication();
-                ActionForm.execute("Item list is empty, do you really want to send?", () -> sendInt(a, mt));
+                ActionForm.execute("Item list is empty, do you really want to send?", () -> send(a, mt));
                 return;
             }
-            sendInt(getApplication(), mt);
+            send(getApplication(), mt);
+        }
+    }
+
+    private void send(Application a, T mt) {
+        ELabel warn = inTransit(mt);
+        if(warn == null) {
+            sendInt(a, mt);
+        } else {
+            warn.newLine().append("Do you really want to send?", Application.COLOR_ERROR).update();
+            ActionForm.execute(warn, () -> sendInt(a, mt));
         }
     }
 
@@ -484,6 +495,18 @@ public abstract class AbstractSendAndReceiveMaterial<T extends InventoryTransfer
                 message("Sent successfully");
             }
         });
+    }
+
+    private ELabel inTransit(T mt) {
+        ELabel el = new ELabel("Items in Transit:");
+        AtomicInteger count = new AtomicInteger(0);
+        mt.listLinks(getItemClass()).forEach(mi -> {
+            InventoryItem ii = mi.getItem();
+            if(ii.getInTransit()) {
+                el.newLine().append("(" + count.incrementAndGet() + ") " + ii.toDisplay());
+            }
+        });
+        return count.get() == 0 ? null : el;
     }
 
     private void receive() {

@@ -211,7 +211,7 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
     private void computeLandedCost(InventoryGRN grn) {
         clearAlerts();
         try {
-            new ComputeLandedCost(grn).execute(getView());
+            new ComputeLandedCost(grn, this).execute(getView());
         } catch(SOException e) {
             warning(e);
         }
@@ -474,10 +474,6 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
         }
         if(viewer == null) {
             viewer = ObjectEditor.create(InventoryGRN.class);
-            viewer.getContainer();
-            @SuppressWarnings("unchecked") DetailLinkGrid<InventoryGRNItem> itemGrid =
-                    (DetailLinkGrid<InventoryGRNItem>) viewer.getLinkField("Items").getGrid();
-            new ItemContextMenu<>(itemGrid).setHideGRNDetails(true);
         }
         viewer.setCaption("GRN: " + object.getReference());
         viewer.viewObject(object);
@@ -1025,7 +1021,7 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
             private SplitQuantity splitQuantity;
 
             public GRNItemGrid() {
-                super(grnItemsField);
+                super(grnItemsField, false);
                 setObjectEditor(new GRNItemEditor());
                 getButtonPanel().add(editItem, splitQty, inspect, bin, assemble, hint);
                 ItemContextMenu<InventoryGRNItem> contextMenu = new ItemContextMenu<>(this);

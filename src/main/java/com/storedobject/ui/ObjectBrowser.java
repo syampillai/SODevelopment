@@ -3,7 +3,6 @@ package com.storedobject.ui;
 import com.storedobject.core.*;
 import com.storedobject.ui.accounts.JournalVoucherBrowser;
 import com.storedobject.ui.inventory.POBrowser;
-import com.storedobject.ui.inventory.POItemBrowser;
 import com.storedobject.ui.util.LoadFilterButtons;
 import com.storedobject.ui.util.LogicParser;
 import com.storedobject.vaadin.ActionForm;
@@ -128,7 +127,6 @@ public class ObjectBrowser<T extends StoredObject> extends ObjectGrid<T>
         getDataProvider().setLoadCallBack(this::loadInt);
         if( // Do not allow certain special editable classes to directly inherit this class
                 (InventoryPO.class.isAssignableFrom(getObjectClass()) && !(this instanceof POBrowser))
-                        || (InventoryPOItem.class.isAssignableFrom(getObjectClass()) && !(this instanceof POItemBrowser))
                         || (JournalVoucher.class.isAssignableFrom(getObjectClass()) && !(this instanceof JournalVoucherBrowser))
         ) {
             boolean a = actions < 0;
@@ -633,7 +631,7 @@ public class ObjectBrowser<T extends StoredObject> extends ObjectGrid<T>
     }
 
     /**
-     * This method is invoked when anchor values are set via the anchor form and if any exception is
+     * This method is invoked when anchor values are set via the anchor form, and if any exception is
      * thrown from this method, anchor values will be asked again.
      *
      * @throws Exception If anchor values are not acceptable for some reason.

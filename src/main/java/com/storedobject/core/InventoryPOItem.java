@@ -5,7 +5,7 @@ import com.storedobject.core.annotation.*;
 import java.math.BigDecimal;
 import java.util.List;
 
-public class InventoryPOItem extends StoredObject implements Detail {
+public class InventoryPOItem extends StoredObject implements Detail, HasInventoryItemType {
 
     private final static String[] typeValues = {
             "", "APN", "Excess"
@@ -317,7 +317,7 @@ public class InventoryPOItem extends StoredObject implements Detail {
                     costChange(transaction, ii, gi, incUC);
                     for(InventoryLedger movement : list(InventoryLedger.class, "Item=" + ii.getId()
                             + " AND Date>='" + Database.format(g.date) + "'", "Item,Date")) {
-                        movement.increaseCost(transaction, incUC, gi.getQuantity());
+                        movement.increaseCost(transaction, incUC, gi.getQuantity(), g.getExchangeRate());
                     }
                 }
                 if(!itemFound) {
@@ -327,7 +327,7 @@ public class InventoryPOItem extends StoredObject implements Detail {
                     }
                     for(InventoryLedger movement : list(InventoryLedger.class, "Item=" + gi.getItemId()
                             + " AND Date>='" + Database.format(g.date) + "'", "Item,Date")) {
-                        movement.increaseCost(transaction, incUC, gi.getQuantity());
+                        movement.increaseCost(transaction, incUC, gi.getQuantity(), g.getExchangeRate());
                     }
                 }
             }
@@ -354,5 +354,10 @@ public class InventoryPOItem extends StoredObject implements Detail {
      */
     public boolean canReceive() {
         return true;
+    }
+
+    @Override
+    public InventoryItemType getInventoryItemType() {
+        return getPartNumber();
     }
 }

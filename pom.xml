@@ -7,11 +7,11 @@
     <parent>
         <groupId>com.storedobject</groupId>
         <artifactId>so-uipom</artifactId>
-        <version>24.7.5</version>
+        <version>24.8.5</version>
     </parent>
 
     <artifactId>so-development</artifactId>
-    <version>14.0.5</version>
+    <version>14.1.0</version>
 
     <name>${project.groupId}:${project.artifactId}</name>
     <description>SO Development skeleton classes</description>
@@ -74,14 +74,14 @@
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
-            <version>42.7.4</version>
+            <version>42.7.7</version>
         </dependency>
 
         <!-- Java mail -->
         <dependency>
             <groupId>com.sun.mail</groupId>
             <artifactId>jakarta.mail</artifactId>
-            <version>2.0.1</version>
+            <version>2.0.2</version>
         </dependency>
 
         <!-- POI APIs for Excel interface -->

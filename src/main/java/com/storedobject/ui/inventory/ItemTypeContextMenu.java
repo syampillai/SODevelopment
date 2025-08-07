@@ -2,7 +2,7 @@ package com.storedobject.ui.inventory;
 
 import com.storedobject.core.HasInventoryItemType;
 import com.storedobject.core.InventoryItemType;
-import com.storedobject.vaadin.DataGrid;
+import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.contextmenu.GridContextMenu;
 import com.vaadin.flow.component.grid.contextmenu.GridMenuItem;
 import com.vaadin.flow.function.SerializablePredicate;
@@ -13,7 +13,7 @@ public class ItemTypeContextMenu<T extends HasInventoryItemType> extends GridCon
     private GridMenuItem<T> pnDetails, viewStock;
     private final ItemContext context = new ItemContext();
 
-    public ItemTypeContextMenu(DataGrid<T> itemTypeGrid) {
+    public ItemTypeContextMenu(Grid<T> itemTypeGrid) {
         super(itemTypeGrid);
         super.setDynamicContentHandler(hit -> {
             itemTypeGrid.deselectAll();

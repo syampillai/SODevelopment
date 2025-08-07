@@ -234,6 +234,9 @@ public class InventoryPO extends StoredObject implements HasChildren, HasReferen
 
     @Override
     public void validateData(TransactionManager tm) throws Exception {
+        if(date.after(DateUtility.today())) {
+            throw new Invalid_State("Date cannot be in the future");
+        }
         if(getType() >= 1000) {
             throw new Invalid_State("Invalid type");
         }

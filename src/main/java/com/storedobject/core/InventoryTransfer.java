@@ -267,6 +267,9 @@ public abstract class InventoryTransfer extends StoredObject implements OfEntity
 
     @Override
     public void validateData(TransactionManager tm) throws Exception {
+        if(date.after(DateUtility.today())) {
+            throw new Invalid_State("Date cannot be in the future");
+        }
         systemEntityId = check(tm, systemEntityId);
         fromLocationId = tm.checkTypeAny(this, fromLocationId, InventoryLocation.class, false);
         toLocationId = tm.checkTypeAny(this, toLocationId, InventoryLocation.class, false);

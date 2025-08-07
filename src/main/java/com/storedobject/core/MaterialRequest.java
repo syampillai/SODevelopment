@@ -363,6 +363,9 @@ public class MaterialRequest extends StoredObject implements OfEntity, HasRefere
 
     @Override
     public void validateData(TransactionManager tm) throws Exception {
+        if(date.after(DateUtility.today())) {
+            throw new Invalid_State("Date cannot be in the future");
+        }
         systemEntityId = check(tm, systemEntityId);
         fromLocationId = tm.checkTypeAny(this, fromLocationId, InventoryLocation.class, false);
         toLocationId = tm.checkTypeAny(this, toLocationId, InventoryLocation.class, false);
@@ -566,7 +569,7 @@ public class MaterialRequest extends StoredObject implements OfEntity, HasRefere
         }
         Quantity r = reduceBy, b;
         while(r.isPositive() && !mris.isEmpty()) {
-            mri = mris.remove(0);
+            mri = mris.removeFirst();
             b = mri.getBalance();
             r = r.subtract(b);
             mri.reduceRequestedQuantity(transaction, b, false);

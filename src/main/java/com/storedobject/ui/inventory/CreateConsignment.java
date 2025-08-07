@@ -40,6 +40,7 @@ public class CreateConsignment<C extends Consignment> implements Executable {
                 case MaterialReturned ignored -> 0;
                 case InventoryRO ignored -> 1;
                 case InventoryTransfer ignored -> 2;
+                case InventoryGRN ignored -> 3;
                 default -> -1;
             };
         } else {

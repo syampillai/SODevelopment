@@ -111,7 +111,8 @@ public class ApplicationFrame extends com.storedobject.vaadin.ApplicationFrame i
             logoutButton.setStyle("color", "var(--lumo-error-color)");
             logoutButton.getElement().setAttribute("title", "Sign out");
             logoutButton.getElement().setAttribute("tabindex", "-1");
-            getToolbox().add(new SpeakerButton(), ((Application) application).getAlertButton(),
+            getToolbox().add(new TimeComponent(tm.getTimeDifference()), new SpeakerButton(),
+                    ((Application) application).getAlertButton(),
                     new CompactSwitcher(a).icon, logoutButton);
         }
         if(!ApplicationServer.getGlobalBooleanProperty("application.config.menu.hide")) {
@@ -253,7 +254,7 @@ public class ApplicationFrame extends com.storedobject.vaadin.ApplicationFrame i
             super(user.getName());
             count = entities.size();
             this.entities = new ObjectComboField<>("Select Organization", SystemEntity.class, entities);
-            this.entities.setValue(entities.get(0));
+            this.entities.setValue(entities.getFirst());
             addConstructedListener(o -> setColumns(1));
         }
 

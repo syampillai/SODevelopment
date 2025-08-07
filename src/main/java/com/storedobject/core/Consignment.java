@@ -12,7 +12,7 @@ public class Consignment extends StoredObject implements HasReference {
     private static final ReferencePattern<Consignment> ref = new ReferencePattern<>();
     private String reference;
     private final static String[] typeValues = new String[] {
-            "Return", "Repair Order", "Transfer"
+            "Material Return", "Repair Return", "Transfer", "GRN"
     };
     private final Date date = DateUtility.today();
     private int no = 0, type = 0;
@@ -25,12 +25,13 @@ public class Consignment extends StoredObject implements HasReference {
 
     public Consignment(StoredObject parent) {
         this.parent = parent;
-        if(parent instanceof InventoryRO) {
-            type = 1;
-        } else if(parent instanceof MaterialReturned) {
-            type = 0;
-        } else {
-            type = 2;
+        switch (parent) {
+            case MaterialReturned ignored -> type = 0;
+            case InventoryRO ignored -> type = 1;
+            case InventoryTransfer ignored -> type = 2;
+            case InventoryGRN ignored -> type = 3;
+            default ->
+                    throw new SORuntimeException("Consignment not configured for: " + StringUtility.makeLabel(parent.getClass()));
         }
     }
 
@@ -215,30 +216,45 @@ public class Consignment extends StoredObject implements HasReference {
     }
 
     Id loc() {
-        if(type == 0) {
-            MaterialReturned mt;
-            if(parent == null) {
-                mt = listMasters(MaterialReturned.class, true).findFirst();
-            } else {
-                mt = (MaterialReturned) parent;
+        switch (type) {
+            case 0 -> {
+                MaterialReturned mt;
+                if(parent == null) {
+                    mt = listMasters(MaterialReturned.class, true).findFirst();
+                } else {
+                    mt = (MaterialReturned) parent;
+                }
+                return mt == null ? Id.ZERO : mt.fromLocationId;
             }
-            return mt == null ? Id.ZERO : mt.fromLocationId;
-        } else if(type == 2) {
-            InventoryTransfer it;
-            if(parent == null) {
-                it = listMasters(InventoryTransfer.class, true).findFirst();
-            } else {
-                it = (InventoryTransfer) parent;
+            case 1 -> {
+                InventoryRO ro;
+                if(parent == null) {
+                    ro = listMasters(InventoryRO.class).findFirst();
+                } else {
+                    ro = (InventoryRO) parent;
+                }
+                return ro == null ? Id.ZERO : ro.fromLocationId;
             }
-            return it == null ? Id.ZERO : it.fromLocationId;
+            case 2 -> {
+                InventoryTransfer it;
+                if(parent == null) {
+                    it = listMasters(InventoryTransfer.class, true).findFirst();
+                } else {
+                    it = (InventoryTransfer) parent;
+                }
+                return it == null ? Id.ZERO : it.fromLocationId;
+            }
+            case 3 -> {
+                InventoryGRN grn;
+                if(parent == null) {
+                    grn = listMasters(InventoryGRN.class).findFirst();
+                } else {
+                    grn = (InventoryGRN) parent;
+                }
+                return grn == null ? Id.ZERO : grn.getStore().getStoreBin().getId();
+            }
         }
-        InventoryRO ro;
-        if(parent == null) {
-            ro = listMasters(InventoryRO.class).findFirst();
-        } else {
-            ro = (InventoryRO) parent;
-        }
-        return ro == null ? Id.ZERO : ro.fromLocationId;
+        return Id.ZERO;
     }
 
     public String getReference() {

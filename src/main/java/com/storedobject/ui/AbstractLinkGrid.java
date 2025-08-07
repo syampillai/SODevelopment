@@ -1,27 +1,41 @@
 package com.storedobject.ui;
 
 import com.storedobject.common.SORuntimeException;
-import com.storedobject.core.Filtered;
-import com.storedobject.core.StoredObject;
-import com.storedobject.core.StoredObjectUtility;
+import com.storedobject.core.*;
+import com.storedobject.ui.inventory.ItemContextMenu;
+import com.storedobject.ui.inventory.ItemTypeContextMenu;
 import com.storedobject.vaadin.View;
+import com.vaadin.flow.component.grid.Grid;
 
 public abstract class AbstractLinkGrid<T extends StoredObject> extends EditableObjectGrid<T> implements LinkGrid<T> {
 
     final StoredObjectUtility.Link<T> link;
     final ObjectLinkField<T> linkField;
 
-    public AbstractLinkGrid(ObjectLinkField<T> linkField, Iterable<String> columns, boolean any) {
+    public AbstractLinkGrid(ObjectLinkField<T> linkField, Iterable<String> columns, boolean any, boolean createContextMenu) {
         super(linkField.getObjectClass(), columns, any);
         this.linkField = linkField;
         this.link = linkField.getLink();
-        setAllRowsVisible(true);
+        init(createContextMenu);
     }
 
-    protected AbstractLinkGrid(ObjectLinkField<T> linkField, Filtered<T> list, Iterable<String> columns) {
+    protected AbstractLinkGrid(ObjectLinkField<T> linkField, Filtered<T> list, Iterable<String> columns, boolean createContextMenu) {
         super(linkField.getObjectClass(), list, columns);
         this.linkField = linkField;
         this.link = linkField.getLink();
+        init(createContextMenu);
+    }
+
+    private void init(boolean createContextMenu) {
+        if(createContextMenu) {
+            if(HasInventoryItem.class.isAssignableFrom(getObjectClass())) {
+                @SuppressWarnings("unchecked") Grid<? extends HasInventoryItem> g = (Grid<? extends HasInventoryItem>) this;
+                new ItemContextMenu<>(g).setHideGRNDetails(getObjectClass() == InventoryGRNItem.class);
+            } else if(HasInventoryItemType.class.isAssignableFrom(getObjectClass())) {
+                @SuppressWarnings("unchecked") Grid<? extends HasInventoryItemType> g = (Grid<? extends HasInventoryItemType>) this;
+                new ItemTypeContextMenu<>(g);
+            }
+        }
         setAllRowsVisible(true);
     }
 

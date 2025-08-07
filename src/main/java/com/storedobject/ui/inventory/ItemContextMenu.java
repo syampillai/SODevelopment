@@ -1,7 +1,8 @@
 package com.storedobject.ui.inventory;
 
 import com.storedobject.core.*;
-import com.storedobject.vaadin.DataGrid;
+import com.storedobject.vaadin.ExecutableView;
+import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.contextmenu.GridContextMenu;
 import com.vaadin.flow.component.grid.contextmenu.GridMenuItem;
 import com.vaadin.flow.function.SerializablePredicate;
@@ -14,27 +15,27 @@ public class ItemContextMenu<T extends HasInventoryItem> extends GridContextMenu
             breakAssembly, movementDetails, grnDetails, editCost, itemDetails, costDetails, pnDetails, viewStock;
     private SerializablePredicate<T> dynamicContentHandler;
 
-    public ItemContextMenu(DataGrid<T> itemGrid) {
+    public ItemContextMenu(Grid<T> itemGrid) {
         this(itemGrid, null);
     }
 
-    public ItemContextMenu(DataGrid<T> itemGrid, Runnable refresher) {
+    public ItemContextMenu(Grid<T> itemGrid, Runnable refresher) {
         this(itemGrid, false, false, false, refresher);
     }
 
-    public ItemContextMenu(DataGrid<T> itemGrid, boolean canInspect, boolean allowBreaking,
+    public ItemContextMenu(Grid<T> itemGrid, boolean canInspect, boolean allowBreaking,
                            boolean allowEditCost) {
         this(itemGrid, canInspect, allowBreaking, allowEditCost, null);
     }
 
-    public ItemContextMenu(DataGrid<T> itemGrid, boolean canInspect, boolean allowBreaking,
+    public ItemContextMenu(Grid<T> itemGrid, boolean canInspect, boolean allowBreaking,
                            boolean allowEditCost, Runnable refresher) {
         super(itemGrid);
         this.allowInspection = canInspect;
         this.allowBreaking = allowBreaking;
         this.allowEditCost = allowEditCost;
         context.setRefresher(refresher);
-        context.setView(itemGrid);
+        context.setView((ExecutableView) itemGrid);
         super.setDynamicContentHandler(hi -> {
             itemGrid.deselectAll();
             if(hi == null) {

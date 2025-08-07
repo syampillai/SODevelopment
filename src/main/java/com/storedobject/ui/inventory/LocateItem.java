@@ -147,11 +147,14 @@ public class LocateItem extends DataGrid<InventoryItem> implements CloseableView
     private LocateItem(String caption, InventoryItemType partNumber, Class<? extends InventoryItem> itemClass,
                        Class<? extends InventoryItemType> itemTypeClass, boolean canInspect, String originalCaption) {
         super(InventoryItem.class, ItemField.COLUMNS);
+        if(originalCaption == null) {
+            originalCaption = "";
+        }
         setCaption(caption == null || caption.isEmpty() ? "Items" : caption);
         if(!canInspect && originalCaption.contains(INSPECT)) {
             canInspect = true;
         }
-        if(originalCaption != null && originalCaption.contains("|")) {
+        if(originalCaption.contains("|")) {
             caption = originalCaption.substring(originalCaption.indexOf('|') + 1).
                     replace(INSPECT, "").replace(EDIT_COST, "").replace(",", "")
                     .replace("|", "");
@@ -191,7 +194,7 @@ public class LocateItem extends DataGrid<InventoryItem> implements CloseableView
         servFilter.addValueChangeListener(e -> loadItems());
         locFilter.addValueChangeListener(e -> loadItems());
         contextMenu = new ItemContextMenu<>(this, canInspect, false,
-                originalCaption != null && originalCaption.contains(EDIT_COST), this::loadItems);
+                originalCaption.contains(EDIT_COST), this::loadItems);
         contextMenu.setHideViewStock(true);
     }
 

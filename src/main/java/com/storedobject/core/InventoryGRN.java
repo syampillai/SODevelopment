@@ -292,7 +292,7 @@ public final class InventoryGRN extends StoredObject implements HasChildren, Has
         this.currency = currency;
     }
 
-    @Column(order = 800, style = "(currency)")
+    @Column(order = 800, style = "(currency)", caption = "Original Currency")
     public String getCurrency() {
         return currency;
     }
@@ -330,6 +330,9 @@ public final class InventoryGRN extends StoredObject implements HasChildren, Has
 
     @Override
     public void validateData(TransactionManager tm) throws Exception {
+        if(date.after(DateUtility.today())) {
+            throw new Invalid_State("Date cannot be in the future");
+        }
         storeId = tm.checkTypeAny(this, storeId, InventoryStore.class, false);
         supplierId = tm.checkType(this, supplierId, Entity.class, false);
         if(currency == null) {
@@ -615,7 +618,7 @@ public final class InventoryGRN extends StoredObject implements HasChildren, Has
     }
 
     /**
-     * Is a specific type of landed cost is applicable to this GRN?
+     * Is a specific type of landed cost applicable to this GRN?
      *
      * @param landedCostType Type of landed cost.
      * @return True/false.
@@ -631,10 +634,53 @@ public final class InventoryGRN extends StoredObject implements HasChildren, Has
      * @throws Exception If any error occurs.
      */
     public void computeLandedCost(TransactionManager tm) throws Exception {
+        get(getClass(), getId()).computeLandedCostInt(tm, true);
+    }
+
+    void computeLandedCostInt(TransactionManager tm, boolean convertCurrency) throws Exception {
         if(status == 0) {
             throw new SOException("Not yet processed");
         }
         List<InventoryGRNItem> grnItems = listLinks(InventoryGRNItem.class).toList();
+        Currency locCur = tm.getCurrency();
+        InventoryGRNItem foreignGI = grnItems.stream().filter(gi -> gi.getCost().getCurrency() != locCur)
+                .findAny().orElse(null);
+        if(foreignGI != null) {
+            if(!convertCurrency) {
+                throw new SOException("Foreign currency found in GRN: " + foreignGI.getCost().getCurrency());
+            }
+            Currency foreignGICur = foreignGI.getCost().getCurrency();
+            Rate rate = Money.getBuyingRate(date, grnItems.getFirst().getUnitCost().getCurrency(), tm.getEntity());
+            int tranNo = tm.transact(t -> {
+                Currency foreignCur;
+                for(InventoryGRNItem gi: grnItems) {
+                    gi.internal = true;
+                    Money cost = gi.getUnitCost();
+                    foreignCur = cost.getCurrency();
+                    if(foreignCur == locCur) {
+                        gi.save(t);
+                        gi.internal = true;
+                        continue;
+                    }
+                    if(foreignCur != foreignGICur) {
+                        throw new SOException("Multiple foreign currencies found in GRN: " + foreignCur + ", "
+                                + foreignGICur);
+                    }
+                    gi.setUnitCost(cost.multiply(rate, locCur));
+                    gi.save(t);
+                    gi.internal = true;
+                }
+                exchangeRate = rate;
+                currency = foreignGICur.getCurrencyCode();
+                internal = true;
+                save(t);
+            });
+            if(tranNo > 0) {
+                throw new SOException("Please authorize transaction #" + tranNo + " and retry.");
+            }
+            computeLandedCostInt(tm, false);
+            return;
+        }
         Money itemTax = new Money();
         for(InventoryGRNItem grnItem: grnItems) {
             itemTax = itemTax.add(grnItem.getTax());
@@ -642,7 +688,7 @@ public final class InventoryGRN extends StoredObject implements HasChildren, Has
         Money newCost = new Money(), lcTax = new Money();
         for(LandedCost lc: listLinks(LandedCost.class)) {
             LandedCostType lct = lc.getType();
-            Money ea = lc.getEffectiveAmount();
+            Money ea = lc.getEffectiveAmount().toLocal(date, tm);
             if(lct.getTax()) {
                 lcTax = lcTax.add(ea);
                 if (!itemTax.isZero()) {
@@ -654,13 +700,18 @@ public final class InventoryGRN extends StoredObject implements HasChildren, Has
         if(!itemTax.equals(lcTax) && !lcTax.isZero() && !itemTax.isZero()) {
             throw new Invalid_State("Tax mismatch - Tax from items: " + itemTax + ", Tax from landed cost: " + lcTax);
         }
+        boolean skip = true;
         for(InventoryGRNItem grnItem: grnItems) {
             InventoryItem ii = grnItem.getItem();
+            if(ii.getCost().getCurrency() != locCur) {
+                skip = false;
+            }
             if(ii.getPartNumber() instanceof AbstractServiceItemType) {
                 newCost = newCost.add(grnItem.getCost()).add(grnItem.getTax());
             }
         }
-        if(newCost.equals(landedCost)) {
+        if(skip && newCost.equals(landedCost)) {
+            System.err.println("Going back");
             return;
         }
         grnItems.removeIf(grnItem -> grnItem.getItem().getPartNumber() instanceof AbstractServiceItemType);
@@ -683,7 +734,8 @@ public final class InventoryGRN extends StoredObject implements HasChildren, Has
             t = tm.createTransaction();
             for(InventoryGRNItem grnItem: grnItems) {
                 gi = giMap.get(grnItem.getId());
-                if(gi.incUC.isZero()) {
+                if(skip && gi.incUC.isZero()) {
+                    System.err.println("Skipping");
                     continue;
                 }
                 updateGRNItemCost(gi, grnItem, t);
@@ -717,7 +769,7 @@ public final class InventoryGRN extends StoredObject implements HasChildren, Has
             updateItemCost(gi, t, grnItem, ii);
             for(InventoryLedger movement : list(InventoryLedger.class, "Item=" + ii.getId()
                     + " AND Date>='" + Database.format(date) + "'", "Item,Date")) {
-                movement.increaseCost(t, gi.incUC, grnItem.getQuantity());
+                movement.increaseCost(t, gi.incUC, grnItem.getQuantity(), exchangeRate);
             }
         }
         if(!itemFound) {
@@ -727,13 +779,18 @@ public final class InventoryGRN extends StoredObject implements HasChildren, Has
             }
             for(InventoryLedger movement : list(InventoryLedger.class, "Item=" + grnItem.getItemId()
                     + " AND Date>='" + Database.format(date) + "'", "Item,Date")) {
-                movement.increaseCost(t, gi.incUC, grnItem.getQuantity());
+                movement.increaseCost(t, gi.incUC, grnItem.getQuantity(), exchangeRate);
             }
         }
     }
 
     private void updateItemCost(GI gi, DBTransaction t, InventoryGRNItem grnItem, InventoryItem ii) {
-        Money m;
+        Money m = ii.getCost();
+        Currency localCur = t.getManager().getCurrency();
+        if(m.getCurrency() != localCur) {
+            ii.illegal = false;
+            ii.setCost(m.multiply(exchangeRate, localCur));
+        }
         if(ii.getQuantity().isGreaterThanOrEqual(grnItem.getQuantity())) {
             m = ii.getCost().add(gi.incUC.multiply(grnItem.getQuantity()));
         } else {

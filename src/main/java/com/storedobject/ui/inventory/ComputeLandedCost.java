@@ -1,14 +1,12 @@
 package com.storedobject.ui.inventory;
 
 import com.storedobject.core.*;
-import com.storedobject.ui.Application;
-import com.storedobject.ui.ELabelField;
-import com.storedobject.ui.MoneyField;
-import com.storedobject.ui.Transactional;
+import com.storedobject.ui.*;
 import com.storedobject.vaadin.DataForm;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 public class ComputeLandedCost extends DataForm implements Transactional {
@@ -16,9 +14,11 @@ public class ComputeLandedCost extends DataForm implements Transactional {
     private final InventoryGRN grn;
     private final List<LandedCost> costs = new ArrayList<>();
     private final List<MoneyField> costFields = new ArrayList<>();
+    private final ObjectBrowser<InventoryGRN> grns;
 
-    public ComputeLandedCost(InventoryGRN grn) throws SOException {
+    public ComputeLandedCost(InventoryGRN grn, ObjectBrowser<InventoryGRN> grns) throws SOException {
         super("Landed Cost");
+        this.grns = grns;
         this.grn = grn;
         setButtonsAtTop(true);
         setColumns(1);
@@ -47,7 +47,7 @@ public class ComputeLandedCost extends DataForm implements Transactional {
                 cost.setType(type);
             }
             this.costs.add(cost);
-            mf = new MoneyField((type.getDeduct() ? '-' : '+') + ' ' + type.getName());
+            mf = new MoneyField((type.getDeduct() ? "-" : "+") + ' ' + type.getName());
             mf.setValue(cost.getAmount());
             costFields.add(mf);
             addField(mf);
@@ -55,10 +55,6 @@ public class ComputeLandedCost extends DataForm implements Transactional {
         if(this.costs.isEmpty()) {
             throw new SOException("No landed cost configuration found for the associated PO!");
         }
-    }
-
-    public ComputeLandedCost(Application application, InventoryGRN grn) throws SOException {
-        this(grn);
     }
 
     @Override
@@ -75,6 +71,7 @@ public class ComputeLandedCost extends DataForm implements Transactional {
     @Override
     protected boolean process() {
         clearAlerts();
+        AtomicBoolean changed = new AtomicBoolean(false);
         if(!transactControl(tc -> {
             Money m;
             LandedCost cost;
@@ -82,21 +79,29 @@ public class ComputeLandedCost extends DataForm implements Transactional {
                 m = costFields.get(i).getValue();
                 cost = costs.get(i);
                 if(!cost.getAmount().equals(m)) {
+                    changed.set(true);
                     cost.setAmount(m);
                     tc.save(cost);
                     tc.addLink(grn, cost);
                 }
             }
-        })) {
+        }, "No changes were made to the landed cost details!")) {
             return false;
         }
-        message("Landed cost details saved successfully");
+        if(changed.get()) {
+            message("Landed cost details saved successfully");
+        }
         try {
             grn.computeLandedCost(getTransactionManager());
-            message("Landed cost computed successfully");
+            message("Landed cost " + (changed.get() ? "" : "re") + "computed successfully");
         } catch(Exception e) {
             error(e);
             return false;
+        } finally {
+            if(grns != null) {
+                grn.reload();
+                grns.refresh(grn);
+            }
         }
         return true;
     }

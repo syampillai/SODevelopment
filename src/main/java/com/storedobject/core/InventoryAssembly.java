@@ -6,13 +6,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * <p>An item can be an assembly, composed of one or more sub-items and each sub-item
+ * <p>An item can be an assembly, composed of one or more subitems, and each subitem
  * can also be an assembly.</p>
- * <p>This class represents definition of an assembly node.</p>
+ * <p>This class represents the definition of an assembly node.</p>
  *
  * @author Syam
  */
-public final class InventoryAssembly extends StoredObject {
+public final class InventoryAssembly extends StoredObject implements HasInventoryItemType {
 
     private String position;
     private Id itemTypeId, parentItemTypeId;
@@ -206,7 +206,7 @@ public final class InventoryAssembly extends StoredObject {
                 collectAll(positions);
         for(InventoryFitmentPosition p: positions) {
             if(exists(InventoryItem.class, "Location=" + p.getId(), true)) {
-                throw new Invalid_State("Assembly definition is in use (by " + positions.get(0).toDisplay() + ")");
+                throw new Invalid_State("Assembly definition is in use (by " + positions.getFirst().toDisplay() + ")");
             }
         }
         for(InventoryFitmentPosition p: positions) {
@@ -299,5 +299,10 @@ public final class InventoryAssembly extends StoredObject {
      */
     public int getLevel() {
         return level;
+    }
+
+    @Override
+    public InventoryItemType getInventoryItemType() {
+        return getItemType();
     }
 }

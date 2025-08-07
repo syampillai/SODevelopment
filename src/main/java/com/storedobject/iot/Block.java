@@ -477,7 +477,7 @@ public final class Block extends AbstractUnit {
      */
     public void recomputeConsumption(TransactionManager tm, Resource resource) throws Exception {
         tm.transact(t -> {
-            for(Consumption c: list(Consumption.class, "Resource=" + resource.getId(), true)) {
+            for(Consumption<?> c: list(Consumption.class, "Resource=" + resource.getId(), true)) {
                 c.delete(t);
             }
         });
@@ -589,7 +589,7 @@ public final class Block extends AbstractUnit {
             return -1;
         }
         Date siteDate = dataPeriod.siteDate();
-        List<Consumption> consumptionList = new ArrayList<>();
+        List<Consumption<?>> consumptionList = new ArrayList<>();
         List<AbstractUnit> units = list(Unit.class, "Block=" + getId() + " AND Active", true)
                 .filter(u -> !(u instanceof SuperUnit)) // Super-units are skipped first
                 .toList(u -> u);
@@ -619,7 +619,7 @@ public final class Block extends AbstractUnit {
                 }
                 consumption = null;
                 for (Unit child: children) {
-                    for (Consumption c: consumptionList) {
+                    for (Consumption<?> c: consumptionList) {
                         if(c.getItemId().equals(child.getId())) {
                             if(consumption == null) {
                                 consumption = c.getConsumption();
@@ -673,7 +673,7 @@ public final class Block extends AbstractUnit {
         consumptionList.add(mcB);
         consumptionList.add(ycB);
         tm.transact(t -> {
-            for(Consumption c: consumptionList) {
+            for(Consumption<?> c: consumptionList) {
                 if(c.isVirtual()) {
                     c.makeNew();
                 }
