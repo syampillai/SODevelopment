@@ -53,6 +53,25 @@ public interface ConsumptionCalculator {
     }
 
     /**
+     * Creates a ConsumptionCalculator instance to compute the difference in values of a specific
+     * variable for a given data class between the specified time range. The calculation is adjusted
+     * by a multiplier and handles potential negative values by applying an optional meter reset.
+     *
+     * @param dataClass the class type extending Data, representing the data source for the computation
+     * @param variable the name of the variable to compute the difference for
+     * @param multiplier the factor by which the computed difference is multiplied
+     * @param meterReset the value used to reset a negative difference to a positive range
+     * @return a ConsumptionCalculator instance configured for the specified data class, variable,
+     *         multiplier, and meter reset logic
+     */
+    static ConsumptionCalculator create(Class<? extends Data> dataClass, String variable, double multiplier, double meterReset) {
+        return (resource, unitId, from, to) -> {
+            Double c = Data.getValueIncrease(dataClass, unitId, variable, from, to, meterReset);
+            return c == null ? null : c * multiplier;
+        };
+    }
+
+    /**
      * Creates a ConsumptionCalculator instance that computes consumption based on state changes
      * of the specified variable within the provided data class. The calculation can be customized
      * using the boolean condition and multiplier.

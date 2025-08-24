@@ -133,6 +133,7 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
     private FormLayout currentTab;
     private String fieldName = "";
     private JournalVoucherView voucherView;
+    private boolean embeddedMode = false;
 
     /**
      * Constructor.
@@ -805,6 +806,9 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
     }
 
     private void drawButtons() {
+        if(embeddedMode && buttonPanel instanceof Component b) {
+            b.setVisible(false);
+        }
         buttonPanel.removeAll();
         form.setReadOnly(true);
         if(add != null) {
@@ -1332,6 +1336,9 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
         if(fields.allMatch(HasValue::isReadOnly)) {
             form.setReadOnly(true);
             return 0;
+        }
+        if(embeddedMode && buttonPanel instanceof Component b) {
+            b.setVisible(true);
         }
         buttonPanel.removeAll();
         buttonPanel.add(save);
@@ -2924,6 +2931,15 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
             return false;
         }
         return true;
+    }
+
+    @Override
+    public void setEmbeddedView(View embeddedView) {
+        super.setEmbeddedView(embeddedView);
+        embeddedMode = embeddedView != null;
+        if(embeddedMode && !isEditing() && buttonPanel instanceof Component b) {
+            b.setVisible(false);
+        }
     }
 
     private static class LedgerButton extends Button {

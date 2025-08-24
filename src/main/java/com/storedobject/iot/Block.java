@@ -96,7 +96,7 @@ public final class Block extends AbstractUnit {
      * Retrieves a Block object by searching for it using the specified name.
      *
      * @param name The name of the Block to retrieve.
-     * @return The Block object that matches the specified name, or null if no match is found.
+     * @return The Block object that matches the specified name or null if no match is found.
      */
     public static Block get(String name) {
         return StoredObjectUtility.get(Block.class, "Name", name, false);
@@ -175,7 +175,7 @@ public final class Block extends AbstractUnit {
     /**
      * Sets the site associated with this block.
      *
-     * @param site The site object to associate. If null, the site ID will be set to null.
+     * @param site The site to associate. If null, the site ID will be set to null.
      */
     public void setSite(Site site) {
         setSite(site == null ? null : site.getId());
@@ -387,7 +387,7 @@ public final class Block extends AbstractUnit {
 
     /**
      * Returns the layout style value corresponding to the given layout style index.
-     * The method retrieves the value from the `layoutStyleValues` array using modulus operation
+     * The method retrieves the value from the `layoutStyleValues` array using a modulus operation
      * to ensure the index remains within bounds of the array.
      *
      * @param layoutStyle an integer representing the index of the layout style
@@ -454,6 +454,31 @@ public final class Block extends AbstractUnit {
     }
 
     /**
+     * Deletes the consumption data for the given resource.
+     *
+     * @param tm The transaction manager to handle database transactions for the operation.
+     * @param resource The resource for which the consumption needs to be deleted.
+     * @throws Exception If an error occurs during the transaction.
+     */
+    public void deleteConsumption(TransactionManager tm, Resource resource) throws Exception {
+        String uids;
+        List<AbstractUnit> units = listAllUnits().toList();
+        if(units.isEmpty()) {
+            uids = "" + getId();
+        } else {
+            uids = units.stream().map(u -> u.getId().toString()).collect(Collectors.joining(","));
+            uids += "," + getId();
+        }
+        String finalUids = uids;
+        tm.transact(t -> {
+            for(Consumption<?> c: list(Consumption.class,
+                    "Resource=" + resource.getId() + " AND Item IN (" + finalUids + ")", true)) {
+                c.delete(t);
+            }
+        });
+    }
+
+    /**
      * Recomputes the consumption statistics for all resources associated with the object.
      *
      * @param tm The transaction manager used to handle transactional operations during the computation.
@@ -468,7 +493,7 @@ public final class Block extends AbstractUnit {
 
     /**
      * Recomputes the consumption data for the given resource by first removing existing
-     * consumption entries associated with the resource, and then recalculating the
+     * consumption entries associated with the resource and then recalculating the
      * consumption values using the current data and requirements.
      *
      * @param tm The transaction manager to handle database transactions for the operation.
@@ -476,11 +501,7 @@ public final class Block extends AbstractUnit {
      * @throws Exception If an error occurs during the transaction or computation process.
      */
     public void recomputeConsumption(TransactionManager tm, Resource resource) throws Exception {
-        tm.transact(t -> {
-            for(Consumption<?> c: list(Consumption.class, "Resource=" + resource.getId(), true)) {
-                c.delete(t);
-            }
-        });
+        deleteConsumption(tm, resource);
         computeConsumption(tm, resource);
     }
 
@@ -492,7 +513,17 @@ public final class Block extends AbstractUnit {
      * @throws Exception If an error occurs during the computation process.
      */
     public void computeConsumption(TransactionManager tm) throws Exception {
-        List<Resource> resources = list(Resource.class).toList();
+        computeConsumption(tm, list(Resource.class).toList());
+    }
+
+    /**
+     * Calculates the consumption of resources using the provided transaction manager.
+     *
+     * @param tm the transaction manager used for processing resource consumption
+     * @param resources an iterable collection of resources for which consumption is to be computed
+     * @throws Exception if an error occurs during the computation process
+     */
+    public void computeConsumption(TransactionManager tm, Iterable<Resource> resources) throws Exception {
         for(Resource resource: resources) {
             computeConsumption(tm, resource);
         }
@@ -560,7 +591,7 @@ public final class Block extends AbstractUnit {
         }
         int result;
         while ((result = consumption(tm, resource, dateGMT)) == -2) { // Data gap?
-            dateGMT = new Date(dateGMT.getTime() + 3600000L); // Look in the subsequent hour
+            dateGMT = new Date(dateGMT.getTime() + 3600000L); // Look in the later hour
         }
         return result;
     }

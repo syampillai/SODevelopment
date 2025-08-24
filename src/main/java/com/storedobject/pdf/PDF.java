@@ -1097,6 +1097,36 @@ public abstract class PDF implements java.io.Closeable, com.storedobject.core.Co
     }
 
     /**
+     * Adds a blank row to the table.
+     *
+     * @param table Table to which row to be added.
+     * @param cellCustomizer Cell customizer.
+     */
+    public void addBlankRow(PDFTable table, Function<PDFCell, PDFCell> cellCustomizer) {
+    }
+
+    /**
+     * Adds a blank row to the table.
+     *
+     * @param table Table to which row to be added.
+     * @param fromColumn Column from which blank cells to be added.
+     * @param cellCustomizer Cell customizer.
+     */
+    public void addBlankRow(PDFTable table, int fromColumn, Function<PDFCell, PDFCell> cellCustomizer) {
+    }
+
+    /**
+     * Adds a blank row to the table.
+     *
+     * @param table Table to which row to be added.
+     * @param fromColumn Column from which blank cells to be added.
+     * @param toColumn Column up to which blank cells to be added.
+     * @param cellCustomizer Cell customizer.
+     */
+    public void addBlankRow(PDFTable table, int fromColumn, int toColumn, Function<PDFCell, PDFCell> cellCustomizer) {
+    }
+
+    /**
      * Add an image at position (0, 0) in the current page.
      *
      * @param image Image to add.

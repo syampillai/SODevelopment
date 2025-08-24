@@ -2,8 +2,10 @@ package com.storedobject.core;
 
 import java.math.BigDecimal;
 import java.sql.Date;
+import java.time.ZoneId;
 import java.util.Currency;
 import java.util.Locale;
+import java.util.TimeZone;
 
 /**
  * This class represents an entity whose accounting system exists in this server.
@@ -73,7 +75,11 @@ public final class SystemEntity extends StoredObject implements RequiresApproval
 	public void setTimeZone(String timeZone) {
 	}
 
-	public void setStartOfFinancialYear(Date startDate) {
+    public ZoneId getZoneId() {
+        return ZoneId.systemDefault();
+    }
+
+    public void setStartOfFinancialYear(Date startDate) {
 	}
 
 	public Date getStartOfFinancialYear() {

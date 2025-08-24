@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * An image based menu to be created from the logic defined via an {@link ApplicationModule} instance.
+ * An image-based menu to be created from the logic defined via an {@link ApplicationModule} instance.
  *
  * @author Syam
  */

@@ -4,7 +4,7 @@ import com.storedobject.core.TemplateString;
 
 /**
  * Template string that can be evaluated. Values are defined using variable names: ${name}. If you want to use
- * $ symbol as a literal (escaping), use $$.
+ *  the $ symbol as a literal (escaping), use $$.
  *
  * @param <T> Type of object to apply on the template.
  * @author Syam

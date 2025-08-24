@@ -147,7 +147,7 @@ public abstract class AbstractUnit extends Name {
     }
 
     /**
-     * Retrieves a DataPeriod object for the specified GMT date based on the site's timezone.
+     * Creates a DataPeriod object for the specified GMT date based on the site's timezone.
      * The method calculates the start and end time of the data period within the given year
      * and ensures the data period lies in the past relative to the current system time.
      *

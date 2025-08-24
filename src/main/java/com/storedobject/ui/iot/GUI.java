@@ -201,6 +201,10 @@ public class GUI implements Executable {
      */
     public void showDashboard() {
         if(blockView != null) {
+            Block block = getBlock();
+            if(block != null) {
+                blockView.setBlock(block);
+            }
             blockView.execute();
             return;
         }
@@ -243,6 +247,7 @@ public class GUI implements Executable {
         if(devMode) {
             selectBlock(b -> siteView.execute());
         } else {
+            siteView.setBlock(getBlock());
             siteView.execute();
         }
     }

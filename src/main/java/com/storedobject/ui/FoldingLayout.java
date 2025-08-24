@@ -204,7 +204,7 @@ public class FoldingLayout extends Composite<Component> {
         if(components.isEmpty()) {
             return;
         }
-        Component last = components.get(components.size() - 1);
+        Component last = components.getLast();
         components.forEach(component -> {
             content.add(component);
             if(component != last) {

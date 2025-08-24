@@ -331,11 +331,7 @@ public final class Site extends StoredObject {
      */
     @Override
     public String toDisplay() {
-        String p = project;
-        if (p.length() > 30) {
-            p = p.substring(0, 30) + "...";
-        }
-        return name + " (" + p + ")";
+        return name;
     }
 
     /**

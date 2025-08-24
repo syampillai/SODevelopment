@@ -241,16 +241,50 @@ public abstract class Data extends StoredObject implements DBTransaction.NoHisto
      */
     public static <D extends Data> Double getValueDifference(Class<D> dataClass, Id unitId, String variable,
                                                              long from, long to) {
+        Value[] v = values(dataClass, unitId, variable, from, to);
+        if(v == null) {
+            return null;
+        }
+        Value v1 = v[0], v2 = v[1];
+        return (v2.value - v1.value) * (to - from) / (v2.time - v1.time);
+    }
+
+    /**
+     * Get the increase in data value collected at 2 different time instances.
+     *
+     * @param dataClass Data class.
+     * @param unitId Unit Id.
+     * @param from Time from.
+     * @param to Time to.
+     * @param meterReset Value at which the Meter resets.
+     * @param <D> Data type.
+     * @return Data value if found.
+     */
+    public static <D extends Data> Double getValueIncrease(Class<D> dataClass, Id unitId, String variable,
+                                                             long from, long to, double meterReset) {
+        Value[] v = values(dataClass, unitId, variable, from, to);
+        if(v == null) {
+            return null;
+        }
+        Value v1 = v[0], v2 = v[1];
+        if(v2.value < v1.value) {
+            v2 = new Value(v2.time, v2.value + meterReset);
+        }
+        return (v2.value - v1.value) * (to - from) / (v2.time - v1.time);
+    }
+
+    private static <D extends Data> Value[] values(Class<D> dataClass, Id unitId, String variable,
+                           long from, long to) {
         Duration timeSpan = Duration.ofMillis((to - from) >> 1);
         Value v1 = Data.getValueAt(dataClass, unitId, variable, from, timeSpan);
         if(v1 == null) {
             return null;
         }
         Value v2 = Data.getValueAt(dataClass, unitId, variable, to, timeSpan);
-        if(v2 == null) {
+        if(v2 == null || v1.time == v2.time) {
             return null;
         }
-        return (v2.value - v1.value) * (to - from) / (v2.time - v1.time);
+        return new Value[] { v1, v2 };
     }
 
     /**
@@ -270,6 +304,26 @@ public abstract class Data extends StoredObject implements DBTransaction.NoHisto
         long to = System.currentTimeMillis();
         long from = periodType.time(to, -periodCount);
         return getValueDifference(dataClass, unitId, variable, from, to);
+    }
+
+    /**
+     * Calculates the increase in the value of a specified variable for a given data class
+     * and unit within a specified time period.
+     *
+     * @param <D>         The type of the data class, which must extend the {@code Data} class.
+     * @param dataClass   The data class containing the variable whose value difference is to be calculated.
+     * @param unitId      The identifier of the unit for which the value difference is being calculated.
+     * @param variable    The name of the variable whose value difference is to be calculated.
+     * @param periodType  The type of the time period (e.g., HOURLY, DAILY) for which the value difference is calculated.
+     * @param periodCount The number of periods to look back from the current time.
+     * @param meterReset Value at which the Meter resets.
+     * @return The calculated value difference of the variable over the specified period, or {@code null} if the calculation fails.
+     */
+    public static <D extends Data> Double getValueIncrease(Class<D> dataClass, Id unitId, String variable,
+                                                             PeriodType periodType, int periodCount, double meterReset) {
+        long to = System.currentTimeMillis();
+        long from = periodType.time(to, -periodCount);
+        return getValueIncrease(dataClass, unitId, variable, from, to, meterReset);
     }
 
     /**

@@ -8,6 +8,7 @@ import com.storedobject.core.StringUtility;
 import com.storedobject.iot.*;
 import com.storedobject.ui.ELabel;
 import com.storedobject.vaadin.*;
+import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 
 import java.sql.Date;
@@ -17,7 +18,7 @@ import java.util.Map;
 public class ConsumptionDashboard extends View implements CloseableView {
 
     static final StringList periodicity = StringList.create("Hourly", "Daily", "Weekly", "Monthly", "Yearly");
-    private final StringList view = StringList.create("Readings", "Comparison", "Hierarchy", "Trend");
+    private final StringList view = StringList.create("Readings", "Comparison", "Hierarchy", "Trend", "View/Download");
     private final Resource resource;
     private Block block;
     private final ELabel site = new ELabel();
@@ -26,23 +27,28 @@ public class ConsumptionDashboard extends View implements CloseableView {
     private final Map<Integer, ConsumptionList> consumptionMap = new HashMap<>();
     private final VerticalLayout layout = new VerticalLayout();
     private final ButtonLayout buttons;
-    private int trendType = 0;
+    private int trendType = 1;
+    private final Button switchBlock;
+    private final GUI gui;
 
     public ConsumptionDashboard(GUI gui, Resource resource) {
+        this.gui = gui;
         this.resource = resource;
         setCaption(resource.getName() + " Consumption");
-        buttons = new ButtonLayout(
-                site,
-                new ELabel("| Periodicity:"),
-                periodicityField,
-                new ELabel("View:"),
-                viewField,
-                gui.dashboardButton(),
-                gui.chartButton(),
-                gui.statusGridButton(),
-                gui.siteViewButton(),
-                gui.consumptionButton(),
-                new Button("Exit", e -> close())
+        switchBlock =  new Button("Switch Block", VaadinIcon.CHART_3D, e -> loadBlocks());
+            buttons = new ButtonLayout(
+            site,
+            switchBlock,
+            new ELabel(" Periodicity:"),
+            periodicityField,
+            new ELabel("View:"),
+            viewField,
+            gui.dashboardButton(),
+            gui.chartButton(),
+            gui.statusGridButton(),
+            gui.siteViewButton(),
+            gui.consumptionButton(),
+            new Button("Exit", e -> close())
         );
         periodicityField.addValueChangeListener(e -> chart());
         viewField.addValueChangeListener(e -> chart());
@@ -59,11 +65,21 @@ public class ConsumptionDashboard extends View implements CloseableView {
         super.execute(parent, doNotLock);
     }
 
+    private void loadBlocks() {
+        if(!executing()) {
+            return;
+        }
+        gui.selectBlock(this::setBlock);
+    }
+
     public void setBlock(Block block) {
         if(block == null || (this.block != null && block.getId().equals(this.block.getId()))) {
             return;
         }
-        site.clearContent().append("Site: " + block.getSite().getName() + " | Block: " + block.getName()).update();
+        dataMap.clear();
+        consumptionMap.clear();
+        site.clearContent().append("Site: " + block.getSite().getName()).update();
+        switchBlock.setText(block.getName());
         this.block = block;
         chart();
     }
@@ -173,6 +189,7 @@ public class ConsumptionDashboard extends View implements CloseableView {
             case 1 -> comparison();
             case 2 -> hierarchy();
             case 3 -> trend();
+            case 4 -> view();
             default -> false;
         }) {
             return;
@@ -180,6 +197,15 @@ public class ConsumptionDashboard extends View implements CloseableView {
         layout.removeAll();
         layout.add(buttons);
         layout.add(label(resource.getName() + " - No data found"));
+    }
+
+    private boolean view() {
+        ConsumptionList cl = cl(periodicityField.getValue(), 0);
+        if(cl.isEmpty()) {
+            return false;
+        }
+        cl.view();
+        return true;
     }
 
     private boolean readings() {

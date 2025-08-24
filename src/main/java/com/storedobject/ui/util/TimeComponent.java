@@ -8,7 +8,7 @@ import com.vaadin.flow.component.dependency.JsModule;
 @JsModule("./so/time/so-time.js")
 public class TimeComponent extends LitComponent {
 
-    public TimeComponent(int timeDifference) {
-        executeJS("initComp",timeDifference);
+    public TimeComponent(int timeDifference, String timeZoneName) {
+        executeJS("initComp", timeDifference, timeZoneName);
     }
 }

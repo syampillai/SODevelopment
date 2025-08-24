@@ -310,7 +310,7 @@ public class ReportDefinition extends Name {
         } else {
             columns = listLinks(ReportColumnDefinition.class, null, "DisplayOrder").toList();
         }
-        if(columns.isEmpty() || (columns.size() == 1 && "RowCount".equals(columns.get(0).getAttribute()))) {
+        if(columns.isEmpty() || (columns.size() == 1 && "RowCount".equals(columns.getFirst().getAttribute()))) {
             if(custom == null) {
                 custom = columns();
             }

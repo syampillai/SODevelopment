@@ -9,15 +9,18 @@ public interface ContentType {
     }
 
     default boolean isImage() {
-        return getMimeType().startsWith("image/");
+        String mimeType = getMimeType();
+        return mimeType != null && mimeType.startsWith("image/");
     }
 
     default boolean isVideo() {
-        return getMimeType().startsWith("video/");
+        String mimeType = getMimeType();
+        return mimeType != null && mimeType.startsWith("video/");
     }
 
     default boolean isAudio() {
-        return getMimeType().startsWith("audio/");
+        String mimeType = getMimeType();
+        return mimeType != null && mimeType.startsWith("audio/");
     }
 
     default boolean isMedia() {
@@ -25,21 +28,24 @@ public interface ContentType {
     }
 
     default boolean isLink() {
-        return getContentType().startsWith("l:");
+        String contentType = getContentType();
+        return contentType != null && contentType.startsWith("l:");
     }
 
     default boolean isPDF() {
-        return getMimeType().equals("application/pdf");
+        String mimeType = getMimeType();
+        return mimeType != null && mimeType.equals("application/pdf");
     }
 
     default boolean isHTML() {
-        return getMimeType().equals("text/html");
+        String mimeType = getMimeType();
+        return mimeType != null && mimeType.equals("text/html");
     }
 
     default boolean isText() {
-        return getMimeType().equals("text/plain");
+        String mimeType = getMimeType();
+        return mimeType != null && mimeType.equals("text/plain");
     }
-
     default String getLink() {
         return null;
     }

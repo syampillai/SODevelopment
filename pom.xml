@@ -7,11 +7,11 @@
     <parent>
         <groupId>com.storedobject</groupId>
         <artifactId>so-uipom</artifactId>
-        <version>24.8.5</version>
+        <version>24.8.6</version>
     </parent>
 
     <artifactId>so-development</artifactId>
-    <version>14.1.0</version>
+    <version>14.2.0</version>
 
     <name>${project.groupId}:${project.artifactId}</name>
     <description>SO Development skeleton classes</description>
@@ -28,7 +28,7 @@
     <developers>
         <developer>
             <name>Syam Pillai</name>
-            <email>syam@engravgroup.com</email>
+            <email>syam.s.pillai@gmail.com</email>
             <organization>Syam Pillai</organization>
             <organizationUrl>https://github.com/syampillai</organizationUrl>
         </developer>
@@ -42,6 +42,13 @@
     </repositories>
 
     <dependencies>
+
+        <!-- SO Client -->
+        <dependency>
+            <groupId>com.storedobject</groupId>
+            <artifactId>so-client</artifactId>
+            <version>3.1.0</version>
+        </dependency>
 
         <!-- Java Servlet -->
         <dependency>

@@ -487,7 +487,7 @@ public class LoginMessage extends StoredObject {
 			if((su.getStatus() & 0b110) > 0) { // Eliminate system/process users
 				return null;
 			}
-			return (SystemUser)so;
+			return su;
 		}
 		if(so instanceof Person) {
 			return su(so.getId());

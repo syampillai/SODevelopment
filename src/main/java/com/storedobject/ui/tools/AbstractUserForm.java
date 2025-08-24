@@ -27,7 +27,7 @@ public abstract class AbstractUserForm extends DataForm implements Transactional
     protected final boolean process() {
         SystemUser su = user.getObject();
         if(su == null) {
-            warning("Please select the login first");
+            warning("Please select the user first");
             return false;
         }
         return processUser(su);

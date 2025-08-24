@@ -1,10 +1,8 @@
 package com.storedobject.core;
 
 import com.storedobject.core.annotation.*;
-
 import java.math.BigDecimal;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public class AutoLogin extends StoredObject {
 
@@ -95,5 +93,36 @@ public class AutoLogin extends StoredObject {
 
     public Map<String, Object> getPayload() {
         return new HashMap<>();
+    }
+
+    public static ObjectIterator<AutoLogin> listLogin4JWT(SystemUser su) {
+        return list(AutoLogin.class, "SystemUser=" + su.getId() + " AND LoginMethod=0");
+    }
+
+    public static AutoLogin getLogin4JWT(String clientId) {
+        return get(AutoLogin.class, "lower(Via)='" + toCode(clientId).toLowerCase() + "'");
+    }
+
+    public static AutoLogin createLogin4JWT(TransactionManager tm, SystemUser su, String clientId, boolean signed) throws Exception {
+        return new AutoLogin();
+    }
+
+    public void reissueJWT(TransactionManager tm) throws Exception {
+    }
+
+    public String generateJWT() {
+        return generateJWT(signingSecret, encryptionSecret, systemUserId.toString(), "SO", via, 0, null);
+    }
+
+    public static String generateJWT(
+            String signingSecretBase64,
+            String encryptionSecretBase64,
+            String subject,
+            String issuer,
+            String audience,
+            long ttlSeconds,
+            Map<String, Object> additionalClaims
+    ) {
+        return "";
     }
 }

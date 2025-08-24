@@ -20,6 +20,7 @@ import com.vaadin.flow.data.provider.ListDataProvider;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.TimeZone;
 
 @CssImport("./so/shared-styles.css")
 @CssImport("./so/animation/animation.css")
@@ -111,7 +112,11 @@ public class ApplicationFrame extends com.storedobject.vaadin.ApplicationFrame i
             logoutButton.setStyle("color", "var(--lumo-error-color)");
             logoutButton.getElement().setAttribute("title", "Sign out");
             logoutButton.getElement().setAttribute("tabindex", "-1");
-            getToolbox().add(new TimeComponent(tm.getTimeDifference()), new SpeakerButton(),
+            SystemEntity se = tm.getEntity();
+            TimeZone timeZone = se == null ? null : TimeZone.getTimeZone(se.getZoneId());
+            getToolbox().add(new TimeComponent(tm.getTimeDifference(),
+                            timeZone == null ? "" : timeZone.getDisplayName(false, TimeZone.SHORT)),
+                    new SpeakerButton(),
                     ((Application) application).getAlertButton(),
                     new CompactSwitcher(a).icon, logoutButton);
         }

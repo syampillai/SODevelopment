@@ -15,7 +15,7 @@ import java.util.function.Consumer;
 
 /**
  * In many situations, a {@link StoredObject} instance may contain a code attribute (a String attribute that looks
- * like a code - part number of an inventory item for example) and this field accept such codes for inputting the
+ * like a code - part number of an inventory item, for example) and this field accepts such codes for inputting the
  * object instance.
  *
  * @param <T> Type of object instance.

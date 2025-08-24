@@ -44,6 +44,7 @@ public class ExcelDataUpload extends UploadProcessorView implements Transactiona
     private int minimumRow = 0, minimumCell;
     private final Button ok = new Button("Process", e -> processData());
     private final Button cancel = new Button("Cancel", e -> close());
+    private String processingMessage = "You may now process the data for creating entries in the system.";
 
     /**
      * Constructor.
@@ -81,6 +82,15 @@ public class ExcelDataUpload extends UploadProcessorView implements Transactiona
     protected void buildFields() {
     }
 
+    /**
+     * Sets the processing message to the specified value.
+     *
+     * @param processingMessage the message to set as the processing message
+     */
+    public void setProcessingMessage(String processingMessage) {
+        this.processingMessage = processingMessage;
+    }
+
     @Override
     protected final void process(InputStream content, String mimeType) {
         dataUpload().process(content);
@@ -113,9 +123,9 @@ public class ExcelDataUpload extends UploadProcessorView implements Transactiona
     }
 
     /**
-     * Data boundary can be set using this method. For example: setDataBoundary("A5:H136"). The full rectangular boundary may not have to
-     * be specified. Only the starting line needs to be specified and the rest will be detected automatically. For example: setBoundary("A5:H5").
-     * If no gaps (blank cells) exist near the boundary area, you may even specify the starting cell. For example: setBoundary("A5"). If no
+     * Data boundary can be set using this method. For example, setDataBoundary("A5:H136"). The full rectangular boundary may not have to
+     * be specified. Only the starting line needs to be specified, and the rest will be detected automatically. For example, setBoundary("A5:H5").
+     * If no gaps (blank cells) exist near the boundary area, you may even specify the starting cell. For example, setBoundary("A5"). If no
      * data boundary is set, it will try to detect automatically starting from cell "A1".
      *
      * @param rangeAddress Range address in Excel format.
@@ -133,7 +143,7 @@ public class ExcelDataUpload extends UploadProcessorView implements Transactiona
     }
 
     /**
-     * Override this method for processing data. 'data' is already populated from the spreadsheet that was uploaded. The dimensions
+     * Override this method for processing data. The 'data' is already populated from the spreadsheet that was uploaded. The dimensions
      * of 'data' will be equal to the size of the data boundary defined.
      *
      * @param data Uploaded data
@@ -253,7 +263,7 @@ public class ExcelDataUpload extends UploadProcessorView implements Transactiona
 
     /**
      * Check whether the given row is a main data row or not. By default, every data row is considered as
-     * main data row. However, an extended class can override this.
+     * the main data row. However, an extended class can override this.
      *
      * @param row Row number.
      * @return True/false.
@@ -450,6 +460,8 @@ public class ExcelDataUpload extends UploadProcessorView implements Transactiona
             return new NumberConverter();
         } else if(type == int.class || type == Integer.class) {
             return new IntegerConverter();
+        } else if(type == long.class || type == Long.class) {
+            return new LongConverter();
         } else if(type == String.class) {
             return new StringConverter();
         } else if(StoredObject.class.isAssignableFrom(type)) {
@@ -778,20 +790,23 @@ public class ExcelDataUpload extends UploadProcessorView implements Transactiona
 
         @Override
         public Object convert(Object v) throws Exception {
-            if(v instanceof Number) {
-                return ((Number) v).doubleValue();
+            if(v instanceof Number n) {
+                return n.doubleValue();
             }
             if(v == null) {
                 throw new Exception();
             }
-            if(v instanceof Boolean) {
-                return ((Boolean)v) ? ONE : ZERO;
+            if(v instanceof Boolean b) {
+                return b ? ONE : ZERO;
             }
-            if(v instanceof String) {
+            if(v instanceof String s) {
                 try {
-                    return Double.parseDouble((String)v);
+                    return Double.parseDouble(s);
                 } catch(NumberFormatException ignored) {
                 }
+            }
+            if(v instanceof java.util.Date d) {
+                return d.getTime();
             }
             throw new Exception();
         }
@@ -849,6 +864,19 @@ public class ExcelDataUpload extends UploadProcessorView implements Transactiona
         @Override
         public Object convert(Object v) throws Exception {
             return ((Number)super.convert(v)).intValue();
+        }
+
+        @Override
+        public Object nullValue() {
+            return 0;
+        }
+    }
+
+    private static class LongConverter extends NumberConverter {
+
+        @Override
+        public Object convert(Object v) throws Exception {
+            return ((Number)super.convert(v)).longValue();
         }
 
         @Override
@@ -1262,7 +1290,7 @@ public class ExcelDataUpload extends UploadProcessorView implements Transactiona
             });
             newLine();
             blueMessage("Number of rows read from the file: " + data.size());
-            blueMessage("You may now process the data for creating entries in the system.");
+            blueMessage(processingMessage);
             getApplication().access(() -> ok.setVisible(true));
         }
     }

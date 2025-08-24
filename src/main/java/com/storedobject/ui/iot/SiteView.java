@@ -133,7 +133,7 @@ public class SiteView extends ImageViewer implements Transactional, CloseableVie
     private void reload() {
         Block block = gui.getBlock();
         if(block != null) {
-            loadBlock(block);
+            setBlock(block);
             return;
         }
         loadSite(false);
@@ -161,10 +161,10 @@ public class SiteView extends ImageViewer implements Transactional, CloseableVie
         if(!executing()) {
             return;
         }
-        gui.selectBlock(this::loadBlock);
+        gui.selectBlock(this::setBlock);
     }
 
-    private void loadBlock(Block block) {
+    public void setBlock(Block block) {
         if(block != null) {
             loadBlock();
         }

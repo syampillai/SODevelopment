@@ -42,7 +42,7 @@ public class ConsumptionList extends ArrayList<ConsumptionList.Entry> {
         }
     }
 
-    private void createEntry(Consumption c, int size, int index) {
+    private void createEntry(Consumption<?> c, int size, int index) {
         String p = c.getPeriodDetail();
         Entry entry = stream().filter(e -> e.period.equals(p))
                 .findAny().orElse(null);
@@ -186,7 +186,7 @@ public class ConsumptionList extends ArrayList<ConsumptionList.Entry> {
 
         @Override
         public Object getTitle() {
-            return units.get(0).unit().getSite().getName() + "\n" + ConsumptionList.this.getCaption()
+            return units.getFirst().unit().getSite().getName() + "\n" + ConsumptionList.this.getCaption()
                     + " in " + resource.getMeasurementUnit();
         }
 

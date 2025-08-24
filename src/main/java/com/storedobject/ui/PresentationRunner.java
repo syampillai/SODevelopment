@@ -28,7 +28,7 @@ public abstract class PresentationRunner implements Executable {
     private long time;
 
     /**
-     * Constructor with default (10 seconds) refresh rate.
+     * Constructor with a default (10 seconds) refresh rate.
      */
     public PresentationRunner() {
         this(0);
