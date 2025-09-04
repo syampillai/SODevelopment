@@ -142,7 +142,7 @@ public abstract class AbstractUnit extends Name {
      * @param resource The resource to check for consumption.
      * @return {@code true} if the unit consumes the specified resource; {@code false} otherwise.
      */
-    public boolean consumes(Resource resource) {
+    public final boolean consumes(Resource resource) {
         return consumes(resource.getCode());
     }
 

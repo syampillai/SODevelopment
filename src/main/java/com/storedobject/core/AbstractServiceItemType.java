@@ -64,12 +64,12 @@ public abstract class AbstractServiceItemType extends InventoryItemType {
 
     @Override
     public String getPartNumberName() {
-        return "SAC";
+        return "SAC-";
     }
 
     @Override
     public String getPartNumberShortName() {
-        return "SAC";
+        return "SAC-";
     }
 
     protected void serviceCodeFromPN() {

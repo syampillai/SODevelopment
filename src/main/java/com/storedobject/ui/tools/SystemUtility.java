@@ -40,8 +40,6 @@ public class SystemUtility extends View implements CloseableView, Transactional 
     private final Button edit;
     private final Button editRaw;
     private final Button executeRaw;
-    private final Button viewTranRaw;
-    private final Button downloadConnInfo;
     private final LongField rawId;
     private final LongField rawTranId;
     private final boolean isAdmin;
@@ -82,6 +80,7 @@ public class SystemUtility extends View implements CloseableView, Transactional 
         buttons.add(editRaw = new Button("Raw Editor", VaadinIcon.LIFEBUOY, this));
         buttons.add(new Button("View SQL", VaadinIcon.BUG, e -> viewSQL()));
         buttons.add(new Button("Raw Table Details", VaadinIcon.FILE_TABLE, e -> viewTable()));
+        buttons.add(new Button("Search Deleted", VaadinIcon.SEARCH, e -> searchDeleted()));
         form.add(label("Execute Logic"));
         form.add(rawCommand = new TextField("Command"));
         buttons = new ButtonLayout();
@@ -97,7 +96,7 @@ public class SystemUtility extends View implements CloseableView, Transactional 
         buttons = new ButtonLayout();
         buttons.add(new ELabel("Raw Transaction Id: "),
                 rawTranId,
-                viewTranRaw = new Button("View", this));
+                new Button("View", e -> viewTran()));
         form.add(buttons);
         form.add(label("Upload Data"));
         DataLoader dataLoader = new DataLoader(getApplication());
@@ -115,7 +114,7 @@ public class SystemUtility extends View implements CloseableView, Transactional 
         buttons.add(new ELabel("Debug"), connectionDebug = new BooleanField(SQLConnector.debug));
         connectionDebug.addValueChangeListener(e -> SQLConnector.debug = e.getValue());
         buttons.add(new ELabel("Age in Minutes:"), connectionAge = new IntegerField(5, 4));
-        buttons.add(downloadConnInfo = new Button("Download", this));
+        buttons.add(new Button("Download", e -> connInfo()));
         form.add(buttons);
         form.add(label("Miscellaneous"));
         speech = new TextArea("Text to Speak out");
@@ -170,40 +169,6 @@ public class SystemUtility extends View implements CloseableView, Transactional 
     @Override
     public void clicked(Component c) {
         clearAlerts();
-        if(c == downloadConnInfo) {
-            TextContentProducer cp = new TextContentProducer() {
-                @Override
-                public void generateContent() {
-                    Writer w = getWriter();
-                    SQLConnector.getDebugInfo(connectionAge.getValue()).forEach(d -> {
-                        try {
-                            w.write(d);
-                            w.write("\n\n");
-                        } catch (IOException ignored) {
-                        }
-                    });
-                }
-            };
-            getApplication().view(cp);
-            return;
-        }
-        if(c == viewTranRaw) {
-            long t = rawTranId.getValue();
-            TransactionInformation ti = TransactionInformation.get(new BigInteger("" + t));
-            if(ti == null) {
-                warning("Transaction not found: " + t);
-                return;
-            }
-            StringBuilder s = new StringBuilder("Transaction: ");
-            s.append(t).append("\n");
-            ti.dump(s);
-            TextArea ta = new TextArea();
-            ta.setWidthFull();
-            ta.setValue(s.toString());
-            ta.setReadOnly(true);
-            View.createCloseableView(ta, "Transaction " + t).execute();
-            return;
-        }
         if(c == executeRaw) {
             String command = rawCommand.getValue().trim();
             getApplication().getServer().execute(command);
@@ -316,6 +281,70 @@ public class SystemUtility extends View implements CloseableView, Transactional 
         }
     }
 
+    private void connInfo() {
+        TextContentProducer cp = new TextContentProducer() {
+            @Override
+            public void generateContent() {
+                Writer w = getWriter();
+                SQLConnector.getDebugInfo(connectionAge.getValue()).forEach(d -> {
+                    try {
+                        w.write(d);
+                        w.write("\n\n");
+                    } catch (IOException ignored) {
+                    }
+                });
+            }
+        };
+        getApplication().view(cp);
+    }
+
+    private void viewTran() {
+        long t = rawTranId.getValue();
+        if(t == 0) {
+            return;
+        }
+        TransactionInformation ti = TransactionInformation.get(new BigInteger("" + t));
+        if(ti == null) {
+            warning("Transaction not found: " + t);
+            return;
+        }
+        StringBuilder s = new StringBuilder("Transaction: ");
+        s.append(t).append("\n");
+        ti.dump(s);
+        TextArea ta = new TextArea();
+        ta.setWidthFull();
+        ta.setValue(s.toString());
+        ta.setReadOnly(true);
+        View.createCloseableView(ta, "Transaction " + t).execute();
+    }
+
+    private void searchDeleted() {
+        if(objectClass() == null) {
+            return;
+        }
+        clearAlerts();
+        String condition = where.getValue().trim();
+        if(condition.isEmpty()) {
+            warning("No condition specified!");
+            return;
+        }
+        List<Id> ids = StoredObject.listDeletedIds(ClassAttribute.get(objectClass), condition, 0);
+        if(ids.isEmpty()) {
+            message("No deleted entries found!");
+            return;
+        }
+        TextView tv = new TextView("Deleted Entries");
+        tv.blueMessage("Class: " + objectClass.getName()).newLine();
+        tv.blueMessage("Deleted entries matching the condition: " + condition).newLine();
+        for(Id id: ids) {
+            tv.newLine(true);
+            tv.append("Id = " + id);
+        }
+        tv.update();
+        tv.setWindowMode(false);
+        tv.execute();
+    }
+
     @SuppressWarnings("rawtypes")
     private ObjectIterator objects(ObjectIterator objectList) {
         long rowsRequired = limit.getValue();
@@ -329,6 +358,7 @@ public class SystemUtility extends View implements CloseableView, Transactional 
         Id id = new Id(new BigInteger("" + rawId.getValue()));
         StoredObject so = StoredObject.get(id);
         if(so == null) {
+            clearAlerts();
             so = StoredObject.getDeleted(id);
             if(so == null) {
                 warning("No object found for Id = " + id);

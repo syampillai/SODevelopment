@@ -15,7 +15,7 @@ public final class UnpostedJournalEntry extends StoredObject implements Detail, 
     private String particulars;
     private Date valueDate;
     boolean internal = false;
-    private String extraData;
+    private String extraData = "";
 
     public UnpostedJournalEntry() {
     }
@@ -190,6 +190,13 @@ public final class UnpostedJournalEntry extends StoredObject implements Detail, 
             }
             if (valueDate == null) {
                 throw new Invalid_Value("Value Date");
+            }
+            if(!extraData.isBlank()) {
+                try {
+                    new JSON(extraData);
+                } catch(Throwable t) {
+                    throw new Invalid_Value("Extra Data - Not a valid JSON");
+                }
             }
         }
         super.validateData(tm);

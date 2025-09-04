@@ -51,7 +51,7 @@ public class ComputedIntegerField extends ComputedField<ComputedInteger, Integer
     }
 
     public ComputedIntegerField(String label, ComputedInteger value, int width) {
-        super(new IntegerField(), label, value, new ComputedInteger());
+        super(new IntegerField(), label, new ComputedInteger(), value);
         ((IntegerField)getField()).setLength(width);
     }
 

@@ -1,20 +1,16 @@
 package com.storedobject.ui;
 
-import com.storedobject.core.StringUtility;
 import com.storedobject.core.converter.MinutesValueConverter;
 import com.storedobject.vaadin.CustomTextField;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.textfield.TextField;
-import org.vaadin.textfieldformatter.CustomStringBlockFormatter;
 
 public class MinutesField extends CustomTextField<Integer> {
 
     private static final Integer ZERO = 0;
     private int width;
-    private boolean allowDays = true;
+    private boolean allowDays = false;
     private boolean trimToDay = false;
-    private boolean freeFormat = true;
-    private CustomStringBlockFormatter formatter;
 
     public MinutesField() {
         this(null);
@@ -48,17 +44,6 @@ public class MinutesField extends CustomTextField<Integer> {
         return trimToDay;
     }
 
-    public void setFreeFormat(boolean freeFormat) {
-        if(freeFormat != this.freeFormat) {
-            this.freeFormat = freeFormat;
-            setLength(width);
-        }
-    }
-
-    public boolean isFreeFormat() {
-        return freeFormat;
-    }
-
     @Override
     public void setValue(Integer value) {
         int v = value == null ? 0 : value;
@@ -79,18 +64,13 @@ public class MinutesField extends CustomTextField<Integer> {
 
     @Override
     protected String format(Integer value) {
-        return pad(MinutesValueConverter.format(value, allowDays && !freeFormat));
+        return pad(MinutesValueConverter.format(value, allowDays));
     }
 
     private String pad(String v) {
-        if(!freeFormat) {
-            if (v.length() < width) {
-                v = StringUtility.padLeft(v, width, '0');
-            }
-        }
         if(v.length() > width) {
             width = v.length();
-            changePattern();
+            setPattern();
         }
         return v;
     }
@@ -100,18 +80,13 @@ public class MinutesField extends CustomTextField<Integer> {
     }
 
     public void setLength(int width) {
-        if(freeFormat && width < 5) {
-            width = 8;
-        }
         if(width < 5) {
             width = 5;
         }
-        if(allowDays) {
-            if(width < 8) {
-                width = 8;
-            }
+        if(allowDays && width < 8) {
+            width = 8;
         }
-        if(this.width == width && (freeFormat == (formatter == null))) {
+        if(this.width == width) {
             return;
         }
         this.width = width;
@@ -131,23 +106,6 @@ public class MinutesField extends CustomTextField<Integer> {
     }
 
     private void setPattern() {
-        changePattern();
         setPresentationValue(getValue());
-    }
-
-    private void changePattern() {
-        if(formatter != null) {
-            formatter.remove();
-        }
-        if(freeFormat) {
-            formatter = null;
-            return;
-        }
-        if(allowDays) {
-            formatter = new CustomStringBlockFormatter(new int[] { width - 7, 2, 2 }, new String[] { "D ", ":", ":" }, CustomStringBlockFormatter.ForceCase.UPPER, null, true);
-        } else {
-            formatter = new CustomStringBlockFormatter(new int[] { width - 3, 2 }, new String[] {  ":", ":" }, CustomStringBlockFormatter.ForceCase.UPPER, null, true);
-        }
-        formatter.extend((TextField) getField());
     }
 }

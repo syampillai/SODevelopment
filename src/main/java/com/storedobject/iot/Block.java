@@ -538,6 +538,9 @@ public final class Block extends AbstractUnit {
      * @throws Exception If an error occurs during the consumption computation process.
      */
     public void computeConsumption(TransactionManager tm, Resource resource) throws Exception {
+        if(!consumes(resource.getCode())) {
+            return;
+        }
         int result = 1;
         while (result == 1) {
             result = consumption(tm, resource);
@@ -565,7 +568,7 @@ public final class Block extends AbstractUnit {
             }
         }
         if(y == -1) { // Never computed
-            List<Unit> units = list(Unit.class, "Active", true).toList();
+            List<Unit> units = list(Unit.class, "Active AND Block=" + getId(), true).toList();
             if(units.isEmpty()) {
                 return 0;
             }
@@ -782,6 +785,6 @@ public final class Block extends AbstractUnit {
 
     @Override
     public boolean consumes(int resource) {
-        return true;
+        return listAllUnits().filter(u -> !(u instanceof Block)).anyMatch(u -> u.consumes(resource));
     }
 }

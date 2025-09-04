@@ -714,6 +714,10 @@ public abstract class StoredObject implements Displayable, HasId, StringFiller {
         return new Id();
     }
 
+    public static List<Id> listDeletedIds(ClassAttribute<?> ca, String rawCondition, int maxCount) {
+        return Collections.emptyList();
+    }
+
     // For internal use only.
     final String historyString() {
         return "";

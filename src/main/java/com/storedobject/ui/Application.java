@@ -1170,12 +1170,12 @@ public class Application extends com.storedobject.vaadin.Application implements 
         }
         if(autoToken != null) {
             removeData(String.class);
-            String via = getQueryParameter("via");
-            removeQueryParameter("via");
-            if(via != null && !via.isBlank()) {
+            String clientID = getQueryParameter("clientID");
+            removeQueryParameter("clientID");
+            if(clientID != null && !clientID.isBlank()) {
                 String loginBlock = autoToken;
                 return () -> {
-                    if(!login.login(loginBlock, via)) {
+                    if(!login.login(loginBlock, clientID)) {
                         screenLogin();
                     }
                 };

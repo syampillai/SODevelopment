@@ -37,7 +37,7 @@ class IssueItems extends DataForm implements Transactional {
             ef.append("Within the ");
         } else {
             ef.append(locationFrom.toDisplay(), Application.COLOR_SUCCESS);
-            ef.append(" \u25BA ");
+            ef.append(" ► ");
         }
         ef.append(locationTo.toDisplay(), Application.COLOR_SUCCESS).update();
         refField.setLabel("Reference (" + DateUtility.formatDate(date) + ")");

@@ -51,7 +51,7 @@ public class ComputedDoubleField extends ComputedField<ComputedDouble, Double> {
     }
 
     public ComputedDoubleField(String label, ComputedDouble value, int decimals) {
-        super(new DoubleField(), label, value, new ComputedDouble());
+        super(new DoubleField(), label, new ComputedDouble(), value);
         ((DoubleField)getField()).setLength(decimals);
     }
 
@@ -60,7 +60,7 @@ public class ComputedDoubleField extends ComputedField<ComputedDouble, Double> {
     }
 
     public ComputedDoubleField(String label, ComputedDouble value, int width, int decimals) {
-        super(new DoubleField(0.0, width, decimals), label, value, new ComputedDouble());
+        super(new DoubleField(0.0, width, decimals), label, new ComputedDouble(), value);
     }
 
     public void setValue(Double value) {

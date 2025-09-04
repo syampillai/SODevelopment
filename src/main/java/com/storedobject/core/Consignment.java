@@ -24,14 +24,24 @@ public class Consignment extends StoredObject implements HasReference {
     }
 
     public Consignment(StoredObject parent) {
+        this(parent.getClass());
         this.parent = parent;
-        switch (parent) {
-            case MaterialReturned ignored -> type = 0;
-            case InventoryRO ignored -> type = 1;
-            case InventoryTransfer ignored -> type = 2;
-            case InventoryGRN ignored -> type = 3;
-            default ->
-                    throw new SORuntimeException("Consignment not configured for: " + StringUtility.makeLabel(parent.getClass()));
+    }
+
+    public <T extends StoredObject> Consignment(Class<T> parentClass) {
+        if(parentClass == null) {
+            throw new IllegalArgumentException("Parent class must not be null");
+        }
+        if(MaterialReturned.class.isAssignableFrom(parentClass)) {
+            type = 0;
+        } else if(InventoryRO.class.isAssignableFrom(parentClass)) {
+            type = 1;
+        } else if(InventoryTransfer.class.isAssignableFrom(parentClass)) {
+            type = 2;
+        } else if(InventoryGRN.class.isAssignableFrom(parentClass)) {
+            type = 3;
+        } else {
+            throw new SORuntimeException("Consignment not configured for: " + StringUtility.makeLabel(parentClass));
         }
     }
 
@@ -58,7 +68,7 @@ public class Consignment extends StoredObject implements HasReference {
     }
 
     public static String[] browseColumns() {
-        return new String[] { "Reference", "Date", "PortOfLoading", "PortOfDischarge", "AirwayBillNumber", "Remark" };
+        return new String[] { "Reference", "Type", "Date", "PortOfLoading", "PortOfDischarge", "AirwayBillNumber", "Remark" };
     }
 
     public static String[] getTypeValues() {

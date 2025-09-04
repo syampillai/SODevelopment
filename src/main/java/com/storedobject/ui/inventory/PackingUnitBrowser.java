@@ -7,7 +7,6 @@ import com.storedobject.ui.ObjectBrowser;
 import com.storedobject.ui.ObjectEditor;
 import com.storedobject.vaadin.Button;
 import com.storedobject.vaadin.ConfirmButton;
-import com.vaadin.flow.component.Component;
 
 public class PackingUnitBrowser extends ObjectBrowser<PackingUnit> {
 
@@ -23,7 +22,7 @@ public class PackingUnitBrowser extends ObjectBrowser<PackingUnit> {
 
     @Override
     protected void createExtraButtons() {
-        deploy = new ConfirmButton("Deploy", "system", this);
+        deploy = new ConfirmButton("Deploy", "system", e -> deploy());
     }
 
     @Override
@@ -31,14 +30,9 @@ public class PackingUnitBrowser extends ObjectBrowser<PackingUnit> {
         buttonPanel.add(deploy);
     }
 
-    @Override
-    public void clicked(Component c) {
-        if(c == deploy) {
-            MeasurementUnit.reload();
-            warning("All 'Packing Units' are updated");
-            return;
-        }
-        super.clicked(c);
+    private void deploy() {
+        MeasurementUnit.reload();
+        warning("All 'Packing Units' are updated");
     }
 
     @Override

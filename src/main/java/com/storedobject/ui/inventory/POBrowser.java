@@ -356,7 +356,10 @@ public class POBrowser<T extends InventoryPO> extends ObjectBrowser<T> implement
 
     private boolean approve(T po) {
         po.setApprovalRequired(false);
-        return transact(po::save);
+        return transact(t -> {
+            po.save(t);
+            po.addLink(t, getTransactionManager().getUser());
+        });
     }
 
     private void placeOrder() {

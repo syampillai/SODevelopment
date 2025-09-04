@@ -765,7 +765,7 @@ public class BaseProcessMaterialRequest<MR extends MaterialRequest, MRI extends 
         private Quantity readyToIssue(MaterialRequestItem mri) {
             Quantity q = readyToIssueMap.get(mri.getId());
             if(q == null) {
-                q = mri.getPartNumber().getUnitOfMeasurement();
+                q = mri.getRequested().zero();
                 for(MaterialIssuedItem mii: items(mri)) {
                     q = q.add(mii.getQuantity());
                 }
@@ -997,15 +997,16 @@ public class BaseProcessMaterialRequest<MR extends MaterialRequest, MRI extends 
         private record FillAction(String actionName, Runnable action) implements Runnable {
 
             @Override
-                    public void run() {
-                        action.run();
-                    }
+            public void run() {
+                action.run();
+            }
 
-                    @Override
-                    public String toString() {
-                        return actionName;
-                    }
-                }
+            @SuppressWarnings("NullableProblems")
+            @Override
+            public String toString() {
+                return actionName;
+            }
+        }
 
         private class EditQuantity extends DataForm {
 

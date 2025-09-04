@@ -567,6 +567,9 @@ public class InventoryPO extends StoredObject implements HasChildren, HasReferen
             throw new Invalid_State("No items received");
         }
         addLink(transaction, grn);
+        for(Consignment c: listLinks(Consignment.class, true)) {
+            grn.addLink(transaction, c);
+        }
         return grn;
     }
 

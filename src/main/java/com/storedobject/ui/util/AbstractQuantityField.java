@@ -39,7 +39,7 @@ public class AbstractQuantityField<T extends Quantity> extends CustomTextField<T
         this.decimals = decimals;
         getField().setMaxLength(width);
         if (unit != null && MeasurementUnit.get(unit.getUnit(), quantityClass) != null) {
-            this.setValue((T)Quantity.create(0.0D, unit));
+            this.setValue((T)Quantity.create(BigDecimal.ZERO, unit));
         }
         this.setPresentationValue(this.getValue());
         this.setLabel(label);

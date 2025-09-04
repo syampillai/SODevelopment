@@ -12,29 +12,20 @@ import java.net.URL;
 import java.sql.Date;
 import java.sql.Time;
 import java.sql.Timestamp;
-import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeParseException;
 import java.util.*;
 import java.util.function.BiFunction;
+import java.time.OffsetDateTime;
+import java.time.format.DateTimeFormatter;
 
 /**
  * Extended JSON class with more extract methods for the core-specific attribute types.
- *
+ * 
  * @author Syam
  */
 public class JSON extends com.storedobject.common.JSON {
-
-    /**
-     * ISO 8601 date format string.
-     */
-    public static final String DATE_FORMAT = "yyyy-MM-dd";
-    /**
-     * ISO 8601 date-time (timestamp) format string.
-     */
-    public static final String DATE_TIME_FORMAT = "yyyy-MM-dd'T'hh:mm:ss.SSS";
-    /**
-     * ISO 8601 time format string.
-     */
-    public static final String TIME_FORMAT = "hh:mm:ss.SSS";
 
     /**
      * Construct an empty JSON.
@@ -86,7 +77,7 @@ public class JSON extends com.storedobject.common.JSON {
 
     private static Date getDate(com.storedobject.common.JSON json, String attribute) {
         try {
-            return new Date(new SimpleDateFormat(DATE_FORMAT).parse(json.getString(attribute)).getTime());
+            return DateTimeConverter.date(json.getString(attribute));
         } catch(Throwable e) {
             return null;
         }
@@ -107,8 +98,7 @@ public class JSON extends com.storedobject.common.JSON {
      */
     public Timestamp getTimestamp(String attribute) {
         try {
-            return new Timestamp(new SimpleDateFormat(DATE_TIME_FORMAT)
-                    .parse(getString(attribute)).getTime());
+            return DateTimeConverter.timestamp(getString(attribute));
         } catch(Throwable e) {
             return null;
         }
@@ -121,8 +111,7 @@ public class JSON extends com.storedobject.common.JSON {
      */
     public Time getTime(String attribute) {
         try {
-            return new Time(new SimpleDateFormat(TIME_FORMAT)
-                    .parse(getString(attribute)).getTime());
+            return DateTimeConverter.time(getString(attribute));
         } catch(Throwable e) {
             return null;
         }
@@ -244,7 +233,7 @@ public class JSON extends com.storedobject.common.JSON {
     }
 
     private <T> ComputedValue<T> getComputed(String attribute,
-                                             BiFunction<Number, Boolean, ComputedValue<T>> func) {
+                                                    BiFunction<Number, Boolean, ComputedValue<T>> func) {
         com.storedobject.common.JSON json = get(attribute);
         if(json == null) {
             return null;
@@ -377,5 +366,108 @@ public class JSON extends com.storedobject.common.JSON {
      */
     public Account getAccount(String attribute) {
         return Account.getFor(getString(attribute));
+    }
+
+    public static class DateTimeConverter {
+
+        private static final DateTimeFormatter RFC_3339_FORMATTER = DateTimeFormatter.ISO_OFFSET_DATE_TIME;
+
+        // ===== PARSE ANY RFC 3339 (ANY TIMEZONE) =====
+
+        /**
+         * Parses any RFC 3339 string (with any timezone) to java.sql.Date
+         * The date is converted to UTC for storage
+         */
+        public static java.sql.Date date(String anyRfc3339String) {
+            Instant instant = parseToInstant(anyRfc3339String);
+            return new java.sql.Date(instant.toEpochMilli());
+        }
+
+        /**
+         * Parses any RFC 3339 string (with any timezone) to java.sql.Time
+         * The time is converted to UTC for storage
+         */
+        public static java.sql.Time time(String anyRfc3339String) {
+            Instant instant = parseToInstant(anyRfc3339String);
+            return new java.sql.Time(instant.toEpochMilli());
+        }
+
+        /**
+         * Parses any RFC 3339 string (with any timezone) to java.sql.Timestamp
+         * The timestamp is converted to UTC for storage
+         */
+        public static java.sql.Timestamp timestamp(String anyRfc3339String) {
+            Instant instant = parseToInstant(anyRfc3339String);
+            return java.sql.Timestamp.from(instant);
+        }
+
+        /**
+         * Parses any RFC 3339 string and converts it to UTC Instant
+         */
+        private static Instant parseToInstant(String rfc3339String) {
+            if (rfc3339String == null) {
+                throw new IllegalArgumentException("Input string cannot be null");
+            }
+
+            try {
+                OffsetDateTime odt = OffsetDateTime.parse(rfc3339String, RFC_3339_FORMATTER);
+                return odt.toInstant();
+
+            } catch (DateTimeParseException e) {
+                throw new IllegalArgumentException("Invalid RFC 3339 format: " + rfc3339String, e);
+            }
+        }
+
+        // ===== CONVERT FROM UTC JAVA.SQL.* TO RFC 3339 UTC STRING =====
+
+        /**
+         * Converts java.sql.Date (assumed UTC) to RFC 3339 UTC string
+         * Example: "2023-10-27T00:00:00Z"
+         * @param utcDate MUST represent a UTC date
+         */
+        public static String format(java.util.Date utcDate) {
+            if (utcDate == null) return null;
+            java.sql.Date d = utcDate instanceof java.sql.Date sqlDate ? sqlDate : new java.sql.Date(utcDate.getTime());
+            // Since we assume UTC input, we can safely convert
+            return d.toLocalDate().atStartOfDay(ZoneOffset.UTC)
+                    .format(DateTimeFormatter.ISO_INSTANT);
+        }
+
+        /**
+         * Converts java.sql.Time (assumed UTC) to RFC 3339 UTC string
+         * Example: "1970-01-01T14:30:45Z"
+         * @param utcSqlTime MUST represent a UTC time
+         */
+        public static String format(java.sql.Time utcSqlTime) {
+            if (utcSqlTime == null) return null;
+            // java.sql.Time is based on milliseconds since epoch (1970-01-01 UTC)
+            Instant instant = Instant.ofEpochMilli(utcSqlTime.getTime());
+            return instant.toString();
+        }
+
+        /**
+         * Converts java.sql.Timestamp (assumed UTC) to RFC 3339 UTC string
+         * Example: "2023-10-27T14:30:45.123456789Z"
+         * @param utcSqlTimestamp MUST represent a UTC timestamp
+         */
+        public static String format(java.sql.Timestamp utcSqlTimestamp) {
+            if (utcSqlTimestamp == null) return null;
+            return utcSqlTimestamp.toInstant().toString();
+        }
+
+        // ===== VALIDATION AND UTILITY METHODS =====
+
+        /**
+         * Validates that a string is in RFC 3339 format (any timezone)
+         */
+        public static boolean isValidRFC3339(String input) {
+            if (input == null) return false;
+            try {
+                OffsetDateTime.parse(input, RFC_3339_FORMATTER);
+                return true;
+            } catch (DateTimeParseException e) {
+                return false;
+            }
+        }
     }
 }

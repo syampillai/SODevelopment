@@ -10,7 +10,7 @@ public class ServiceItemType extends AbstractServiceItemType {
     
     public static String[] browseColumns() {
         return new String[] {
-            "PartNumber as SAC",
+            "PartNumber as SAC-",
             "Name.Name as Name"
         };
     }
@@ -25,7 +25,8 @@ public class ServiceItemType extends AbstractServiceItemType {
     
     public static void customizeMetadata(UIFieldMetadata md) {
         switch (md.getFieldName()) {
-            case "PartNumber", "HSNCode" -> md.setCaption("SAC");
+            case "PartNumber" -> md.setCaption("SAC-");
+            case "HSNCode" -> md.setCaption("SAC");
         }
     }
 }

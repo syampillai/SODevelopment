@@ -454,7 +454,10 @@ public abstract class AbstractSendAndReceiveMaterial<T extends InventoryTransfer
 
     private boolean approve(T mt) {
         mt.setApprovalRequired(false);
-        return transact(mt::save);
+        return transact(t -> {
+            mt.save(t);
+            mt.addLink(t, getTransactionManager().getUser());
+        });
     }
 
     private void approveInt(Application a, T mt) {

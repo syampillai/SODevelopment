@@ -51,7 +51,7 @@ public class ComputedLongField extends ComputedField<ComputedLong, Long> {
     }
 
     public ComputedLongField(String label, ComputedLong value, int width) {
-        super(new LongField(), label, value, new ComputedLong());
+        super(new LongField(), label, new ComputedLong(), value);
         ((LongField)getField()).setLength(width);
     }
 

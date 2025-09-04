@@ -172,7 +172,7 @@ public class MoneyField extends CustomTextField<Money> implements RequiredField 
         }
         if(allowedCurrencies != null && !allowedCurrencies.isEmpty()
                 && !allowedCurrencies.contains(value.getCurrency())) {
-            value = new Money(value.getValue(), allowedCurrencies.get(0));
+            value = new Money(value.getValue(), allowedCurrencies.getFirst());
         }
         super.setValue(value);
     }
@@ -193,7 +193,7 @@ public class MoneyField extends CustomTextField<Money> implements RequiredField 
                 m = getEmptyValue();
             }
             if(allowedCurrencies != null && !allowedCurrencies.contains(m.getCurrency())) {
-                m = new Money(m.getValue(), allowedCurrencies.get(0));
+                m = new Money(m.getValue(), allowedCurrencies.getFirst());
                 focus();
             }
         }
@@ -288,7 +288,7 @@ public class MoneyField extends CustomTextField<Money> implements RequiredField 
         }
         Money m = getValue();
         if(!allowedCurrencies.contains(m.getCurrency())) {
-            setValue(new Money(m.getValue(), allowedCurrencies.get(0)));
+            setValue(new Money(m.getValue(), allowedCurrencies.getFirst()));
         }
         if(allowedCurrencies.size() > 1) {
             if(popup == null) {
@@ -353,7 +353,7 @@ public class MoneyField extends CustomTextField<Money> implements RequiredField 
     @Override
     public Money getEmptyValue() {
         if(allowedCurrencies != null && !allowedCurrencies.isEmpty()) {
-            return new Money(0, allowedCurrencies.get(0));
+            return new Money(0, allowedCurrencies.getFirst());
         }
         return super.getEmptyValue();
     }

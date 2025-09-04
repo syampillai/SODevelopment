@@ -50,8 +50,8 @@ public class ComputedMinutesField extends ComputedField<ComputedMinute, Integer>
     }
 
     public ComputedMinutesField(String label, ComputedMinute value, int width) {
-        super(new MinutesField(), label, value, new ComputedMinute());
-        getF().setLength(width);
+        super(new MinutesField(), label, new ComputedMinute(), value);
+        setLength(width);
     }
 
     public void setAllowDays(boolean allowDays) {
