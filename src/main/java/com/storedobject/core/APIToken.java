@@ -186,7 +186,7 @@ public class APIToken extends StoredObject {
     public static APIToken get(String purpose, SystemUser user) {
         purpose = toCode(purpose).toLowerCase();
         List<SystemUserGroup> groups = null;
-        try(ObjectIterator<APIToken> tokens = list(APIToken.class, "lower(Purpose)='", purpose + "'")) {
+        try(ObjectIterator<APIToken> tokens = list(APIToken.class, "lower(Purpose)='" + purpose + "'")) {
             for(APIToken token : tokens) {
                 if(token.existsLink(user) || token.existsLink(SystemUserGroup.getDefault())) {
                     return token;

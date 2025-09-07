@@ -377,45 +377,49 @@ public abstract class StoredObject implements Displayable, HasId, StringFiller {
         save();
     }
 
-    public final void save(Map<String, Object> map) throws Throwable {
+    public final void save(JSONMap map) throws Throwable {
         map.put("x", "y");
         save();
     }
 
-    public final void save(Map<String, Object> map, boolean includeReferences) throws Throwable {
+    public final void save(JSONMap map, boolean includeReferences) throws Throwable {
         save();
     }
 
-    public final void save(Map<String, Object> map, boolean includeReferences, boolean includeClassInfo) throws Throwable {
+    public final void save(JSONMap map, boolean includeReferences, boolean includeClassInfo) throws Throwable {
         save();
     }
 
-    public final void save(Map<String, Object> map, StringList attributes, boolean includeReferences, boolean includeClassInfo) throws Throwable {
+    public final void save(JSONMap map, StringList attributes, boolean includeReferences, boolean includeClassInfo) throws Throwable {
         save();
     }
 
-    public final void save(Map<String, Object> map, String valueName, boolean includeReferences, boolean includeClassInfo) throws Throwable {
+    public final void save(JSONMap map, String valueName, boolean includeReferences, boolean includeClassInfo) throws Throwable {
         save();
     }
 
-    public final void save(Map<String, Object> map, String valueName, boolean includeReferences) throws Throwable {
+    public final void save(JSONMap map, String valueName, boolean includeReferences) throws Throwable {
         save();
     }
 
-    public final void save(Map<String, Object> map, StringList attributes, String valueName) throws Throwable {
+    public final void save(JSONMap map, StringList attributes, String valueName) throws Throwable {
         save();
     }
 
-    public final void save(Map<String, Object> map, StringList attributes) throws Throwable {
+    public final void save(JSONMap map, StringList attributes) throws Throwable {
         save();
     }
 
-    public final void save(Map<String, Object> map, String valueName) throws Throwable {
+    public final void save(JSONMap map, String valueName) throws Throwable {
         save();
     }
 
-    public final void save(Map<String, Object> map, StringList attributes, String valueName, boolean includeReferences, boolean includeClassInfo) throws Throwable {
+    public final void save(JSONMap map, StringList attributes, String valueName, boolean includeReferences, boolean includeClassInfo) throws Throwable {
         save();
+    }
+
+    public final void save(JSONMap map, StringList attributes, String valueName, boolean includeClassInfo,
+                           Function<Class<? extends StoredObject>, StringList> allowedAttributes) throws Throwable {
     }
 
     public boolean copy(StoredObject another) throws Exception {
@@ -439,7 +443,7 @@ public abstract class StoredObject implements Displayable, HasId, StringFiller {
      * @param map Map.
      * @throws Exception If any error occurs because the map contains incompatible values.
      */
-    public final void load(Map<String, Object> map) throws Exception {
+    public final void load(JSONMap map) throws Exception {
         if (map.get("id") == null) {
             throw new Exception();
         }

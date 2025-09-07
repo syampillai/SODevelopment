@@ -69,6 +69,16 @@ public class JSONMap implements Map<String, Object>, Serializable {
         return map;
     }
 
+    /**
+     * Converts the current JSONMap instance into a JSON object representation.
+     *
+     * @return A JSON object constructed from the current JSONMap instance.
+     */
+    public JSON toJSON() {
+        normalize();
+        return new JSON(this);
+    }
+
     @Override
     public Object remove(Object o) {
         return map.remove(o);

@@ -5,8 +5,6 @@ import com.storedobject.core.*;
 import com.storedobject.ui.Transactional;
 import com.storedobject.vaadin.ActionForm;
 import com.storedobject.vaadin.DataForm;
-import java.util.HashMap;
-import java.util.Map;
 
 public class MigrateItem extends DataForm implements Transactional {
 
@@ -55,7 +53,7 @@ public class MigrateItem extends DataForm implements Transactional {
 
     private InventoryItem convert(InventoryItem item, InventoryItemType newPN) {
         InventoryItem newItem = newPN.createItem();
-        Map<String, Object> map = new HashMap<>();
+        JSONMap map = new JSONMap();
         try {
             item.save(map);
             map.remove("PartNumber");

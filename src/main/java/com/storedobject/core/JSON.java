@@ -45,7 +45,14 @@ public class JSON extends com.storedobject.common.JSON {
      * @param object JSON to construct from this Object.
      */
     public JSON(Object object) {
-        super(object);
+        super(m(object));
+    }
+
+    private static Object m(Object o) {
+        if(o instanceof JSONMap m) {
+            m.normalize();
+        }
+        return o;
     }
 
     @Override
@@ -429,8 +436,8 @@ public class JSON extends com.storedobject.common.JSON {
             if (utcDate == null) return null;
             java.sql.Date d = utcDate instanceof java.sql.Date sqlDate ? sqlDate : new java.sql.Date(utcDate.getTime());
             // Since we assume UTC input, we can safely convert
-            return d.toLocalDate().atStartOfDay(ZoneOffset.UTC)
-                    .format(DateTimeFormatter.ISO_INSTANT);
+            String s = d.toLocalDate().atStartOfDay(ZoneOffset.UTC).format(DateTimeFormatter.ISO_INSTANT);
+            return s.endsWith("T00:00:00Z") ? s.substring(0, s.indexOf('T')) : s;
         }
 
         /**

@@ -65,7 +65,7 @@ public class MigratePartNumber extends DataForm implements Transactional {
     private InventoryItemType convert(InventoryItemType pn, Class<?> to) {
         try {
             InventoryItemType newPN = (InventoryItemType) to.getConstructor().newInstance();
-            Map<String, Object> map = new HashMap<>();
+            JSONMap map = new JSONMap();
             pn.save(map, ClassAttribute.get(pn).getAttributes());
             newPN.load(map);
             migrate(pn, newPN);
@@ -78,7 +78,7 @@ public class MigratePartNumber extends DataForm implements Transactional {
 
     private InventoryItem convert(InventoryItem item, InventoryItemType newPN) {
         InventoryItem newItem = newPN.createItem();
-        Map<String, Object> map = new HashMap<>();
+        JSONMap map = new JSONMap();
         try {
             item.save(map);
             newItem.load(map);

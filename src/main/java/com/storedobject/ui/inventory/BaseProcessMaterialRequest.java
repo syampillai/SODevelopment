@@ -594,11 +594,34 @@ public class BaseProcessMaterialRequest<MR extends MaterialRequest, MRI extends 
                 message("Nothing to " + (mr.getReserved() ? "reserve" : "issue") + "!");
                 return;
             }
+            ELabel warn = inTransit(mi);
+            if(warn == null) {
+                issueInt();
+            } else {
+                warn.newLine().append("Do you really want to issue?", Application.COLOR_ERROR).update();
+                ActionForm.execute(warn, this::issueInt);
+            }
+        }
+
+        private void issueInt() {
             if(transact(t -> mi.issue(t))) {
                 close();
                 mr.reload();
                 BaseProcessMaterialRequest.this.refresh(mr);
+                message("Issued successfully");
             }
+        }
+
+        private ELabel inTransit(MaterialIssued mt) {
+            ELabel el = new ELabel("Items in Transit:");
+            AtomicInteger count = new AtomicInteger(0);
+            mt.listLinks(MaterialIssuedItem.class).forEach(mi -> {
+                InventoryItem ii = mi.getItem();
+                if(ii.getInTransit()) {
+                    el.newLine().append("(" + count.incrementAndGet() + ") " + ii.toDisplay());
+                }
+            });
+            return count.get() == 0 ? null : el;
         }
 
         private void pickingOrder() {

@@ -2,11 +2,6 @@ package com.storedobject.core;
 
 import com.storedobject.common.StringList;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 public abstract class JSONRetrieve implements JSONService {
 
     protected <T extends StoredObject> void execute(Device device, JSON json, JSONMap result, int type) {
@@ -36,18 +31,14 @@ public abstract class JSONRetrieve implements JSONService {
         StringList attributes = json.getStringList("attributes");
         try {
             if(so == null) {
-                List<Object> oList = new ArrayList<>();
-                Map<String, Object> value;
+                JSONMap.Array oList = result.array(dataLabel);
+                JSONMap value;
                 try(ObjectIterator<T> objList = p.list()) {
                     for(StoredObject object: objList) {
-                        value = new HashMap<>();
+                        value = oList.map();
                         object.save(value, attributes);
-                        oList.add(value);
                     }
-                    value = new HashMap<>();
-                    value.put(dataLabel, oList);
                 }
-                result.put(dataLabel, oList);
             } else {
                 so.save(result, attributes, dataLabel);
             }
@@ -56,26 +47,31 @@ public abstract class JSONRetrieve implements JSONService {
             result.error("Error while retrieving data");
         }
     }
-
+    
     private static class Parameters<T extends StoredObject> {
 
-        final String where, orderBy;
-        final boolean any, master;
+        final QueryBuilder<T> queryBuilder;
+        final boolean master;
         final Id thisId;
-        final Class<T> dataClass;
         final int linkType;
-
+        
         Parameters(JSON json) throws Exception {
             //noinspection unchecked
-            dataClass = (Class<T>) json.getDataClass("className");
-            where = json.getString("where");
-            orderBy = json.getString("order");
-            Boolean b = json.getBoolean("any");
-            any = b != null && b;
-            b = json.getBoolean("master");
+            queryBuilder = QueryBuilder.from((Class<T>) json.getDataClass("className"));
+            queryBuilder.where(json.getString("where")).orderBy(json.getString("order"))
+                    .any(json.getBoolean("any"));
+            Boolean b = json.getBoolean("master");
             master = b != null && b;
             Id id = json.getId("this");
-            Number n = json.getNumber("link");
+            Number n = json.getNumber("skip");
+            if(n != null) {
+                queryBuilder.skip(n.intValue());
+            }
+            n = json.getNumber("limit");
+            if(n != null) {
+                queryBuilder.limit(n.intValue());
+            }
+            n = json.getNumber("link");
             linkType = n == null ? (master ? 0 : -1) : n.intValue();
             if(id == null && (master || linkType >= 0)) {
                 com.storedobject.common.JSON curr = json.get("this");
@@ -97,22 +93,22 @@ public abstract class JSONRetrieve implements JSONService {
 
         boolean exists() {
             if(master) {
-                return thisId.existsMasters(linkType, dataClass, where, any);
+                return queryBuilder.existsMasters(thisId, linkType);
             } else if(linkType >= 0) {
-                return thisId.existsLinks(linkType, dataClass, where, any);
+                return queryBuilder.existsLinks(thisId, linkType);
             } else {
-                return StoredObject.exists(dataClass, where, any);
+                return queryBuilder.exists();
             }
         }
 
         T so() throws Exception {
             T so;
             if(master) {
-                so = thisId.getMaster(linkType, dataClass, where, orderBy, any);
+                so = queryBuilder.getMaster(thisId, linkType);
             } else if(linkType >= 0) {
-                so = thisId.listLinks(linkType, dataClass, where, orderBy, any).findFirst();
+                so = queryBuilder.getLink(thisId, linkType);
             } else {
-                so = StoredObject.get(dataClass, where, orderBy, any);
+                so = queryBuilder.get();
             }
             if (so == null) {
                 throw new Exception("Data not found");
@@ -122,21 +118,21 @@ public abstract class JSONRetrieve implements JSONService {
 
         ObjectIterator<T> list() {
             if(master) {
-                return thisId.listMasters(linkType, dataClass, where, orderBy, any);
+                return queryBuilder.listMasters(thisId, linkType);
             } else if(linkType >= 0) {
-                return thisId.listLinks(linkType, dataClass, where, orderBy, any);
+                return queryBuilder.listLinks(thisId, linkType);
             } else {
-                return StoredObject.list(dataClass, where, orderBy, any);
+                return queryBuilder.list();
             }
         }
 
         long count() {
             if(master) {
-                return thisId.countMasters(linkType, dataClass, where, any);
+                return queryBuilder.countMasters(thisId, linkType);
             } else if(linkType >= 0) {
-                return thisId.countLinks(linkType, dataClass, where, any);
+                return queryBuilder.countLinks(thisId, linkType);
             } else {
-                return StoredObject.count(dataClass, where, any);
+                return queryBuilder.count();
             }
         }
     }
