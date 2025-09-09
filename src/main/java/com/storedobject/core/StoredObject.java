@@ -731,6 +731,10 @@ public abstract class StoredObject implements Displayable, HasId, StringFiller {
         return getHistorical(SystemUser.class, userId());
     }
 
+    public StoredObject getContemporaryOf(StoredObject of) {
+        return this;
+    }
+
     public static <H extends StoredObject> H getHistorical(Class<H> objectClass, Id id) {
         if (id == null) {
             return null;

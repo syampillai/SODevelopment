@@ -11,7 +11,7 @@
     </parent>
 
     <artifactId>so-development</artifactId>
-    <version>15.0.0</version>
+    <version>15.0.1</version>
 
     <name>${project.groupId}:${project.artifactId}</name>
     <description>SO Development skeleton classes</description>
@@ -48,12 +48,6 @@
             <groupId>com.storedobject</groupId>
             <artifactId>so-client</artifactId>
             <version>3.1.0</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.storedobject</groupId>
-            <artifactId>so-ai</artifactId>
-            <version>${so-ai-version}</version>
         </dependency>
 
         <!-- Java Servlet -->

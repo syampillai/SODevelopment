@@ -796,13 +796,6 @@ public final class Money implements Storable, Comparable<Money> {
 		return getCurrency("");
 	}
 
-	public static Currency getDefaultUserCurrency() {
-		return getDefaultCurrency();
-	}
-
-	public static void setDefaultUserCurrency(Currency defaultUserCurrency) {
-	}
-
 	public static class List extends Hashtable<Currency, Money> {
 		
 		public List add(Money money) {

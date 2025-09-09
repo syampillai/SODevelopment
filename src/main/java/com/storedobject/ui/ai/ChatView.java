@@ -54,6 +54,7 @@ public class ChatView extends View implements CloseableView, Transactional {
     public Knowledge getKnowledge() {
         if(knowledge == null) {
             knowledge = new Knowledge(getTransactionManager());
+            knowledge.setTopic("Ask the user to select a topic");
         }
         return knowledge;
     }
@@ -63,6 +64,8 @@ public class ChatView extends View implements CloseableView, Transactional {
         if(chat == null) {
             try {
                 chat = getKnowledge().createChat();
+                Application a = Application.get();
+                chat.setChatClosedListener(() -> a.access(this::close));
             } catch (Exception e) {
                 error(e);
                 return;
