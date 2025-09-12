@@ -1,75 +1,48 @@
 package com.storedobject.ui;
 
+import com.storedobject.ai.Knowledge;
+import com.storedobject.ai.KnowledgeModule;
+import com.storedobject.common.Executable;
 import com.storedobject.core.*;
-import com.storedobject.vaadin.DataForm;
-import com.storedobject.vaadin.IntegerField;
+import com.storedobject.ui.ai.ChatView;
+import dev.langchain4j.agent.tool.P;
+import dev.langchain4j.agent.tool.Tool;
 
-public class Test extends DataForm {
+public class Test extends Knowledge implements Executable {
 
-    //  public ComputedInteger dayInteger;
-    public ComputedIntegerField dayIntegerField, fhField, flField;
-
-    public Test() {
-        super("Test");
+    public Test(Device device) {
+        super(device);
+        addDataClass(Person.class);
+        addDataClass("User", SystemUser.class);
+        addDataClass("Role", SystemUserGroup.class);
+        addDataClass("UserGroup", SystemUserGroup.class);
+        addModules(new KM());
     }
 
     @Override
-    protected void buildFields() {
-        ComputedDate date = ComputedDate.create(DateUtility.today());
-        ComputedDateField dateField = new ComputedDateField("Date ", date);
-
-        addField(dateField);
-
-        // ComputedInteger Field
-        ComputedInteger dayInteger = new ComputedInteger(30, true);
-        dayIntegerField = new ComputedIntegerField("Show for next ", dayInteger);
-        IntegerField x = new IntegerField("Integer", 0, 8, true, true);
-        addField(x);
-        addField(dayIntegerField);
-        //dayIntegerField.setValue(dayInteger);
-
-        dayInteger = new ComputedInteger(50);
-        dayInteger.consider(true);
-        fhField = new ComputedIntegerField(" FH Integer ", dayInteger);
-        addField(fhField);
-
-        flField = new ComputedIntegerField(" FL Integer ");
-        flField.setValue(dayInteger);
-        addField(flField);
-
-        // ComputedDouble Field
-        ComputedDoubleField fcField = new ComputedDoubleField("FC Double ");
-        fcField.setValue(6.0d);
-        addField(fcField);
-
-        ComputedDouble cd = new ComputedDouble(10.0d);
-        ComputedDoubleField totalFC = new ComputedDoubleField("Computed Double with value change listener");
-        totalFC.setValue(cd);
-        error(totalFC.getValue());
-        totalFC.addValueChangeListener(e -> error(e.getValue()));
-        addField(totalFC);
-
-        // ComputedLong Field
-        ComputedLongField totalFH = new ComputedLongField("Total FH Long");
-        ComputedLong cl = new ComputedLong(100);
-        totalFH.setValue(cl);
-        addField(totalFH);
-
-        // ComputedMinutes Field
-        ComputedMinute minute = new ComputedMinute(100, true);
-        ComputedMinutesField minutesField = new ComputedMinutesField("Aircraft FH");
-        minutesField.setValue(minute);
-        addField(minutesField);
-
-        // Phone
-        PhoneField phoneField = new PhoneField("Phone");
-        addField(phoneField);
-
-        super.buildFields();
+    public void execute() {
+        new ChatView(this, "Persons & Users").execute();
     }
 
-    @Override
-    protected boolean process() {
-        return false;
+    @SuppressWarnings("unused")
+    private class KM implements KnowledgeModule {
+
+        @Tool("Get roles/groups of the specified user Id as JSON")
+        public String listRoles(@P("User ID") String userId) {
+            JSONMap map = new JSONMap();
+            Id id = getId(map, userId);
+            if(id != null) {
+                SystemUser user = StoredObject.get(SystemUser.class, id);
+                if (user == null) {
+                    user = StoredObject.get(SystemUser.class, "Person.Id=" + id);
+                }
+                if (user == null) {
+                    map.put("error", "User not found for ID = " + userId);
+                } else {
+                    save(map, "roles", user.listGroups());
+                }
+            }
+            return map.toJSON().toString();
+        }
     }
 }

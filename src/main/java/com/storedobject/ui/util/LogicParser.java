@@ -300,6 +300,9 @@ public class LogicParser {
         if(SupplierInvoice.class.isAssignableFrom(objectClass)) {
             return BaseSupplierInvoiceEditor.class.getName();
         }
+        if(Consignment.class.isAssignableFrom(objectClass)) {
+            return ConsignmentEditor.class.getName();
+        }
         return ObjectEditor.class.getName();
     }
 
@@ -337,6 +340,10 @@ public class LogicParser {
         if(SupplierInvoice.class.isAssignableFrom(objectClass)) {
             Class<? extends SupplierInvoice> siClass = (Class<? extends SupplierInvoice>) objectClass;
             return (ObjectEditor<O>) new BaseSupplierInvoiceEditor<>(siClass, actions, title);
+        }
+        if(Consignment.class.isAssignableFrom(objectClass)) {
+            Class<? extends Consignment> consignmentClass = (Class<? extends Consignment>) objectClass;
+            return (ObjectEditor<O>) new ConsignmentEditor<>(consignmentClass);
         }
         return null;
     }

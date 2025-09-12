@@ -24,7 +24,7 @@ public final class InventoryGRN extends StoredObject implements HasChildren, Has
             "Initiated", "Processed", "Closed"
     };
     private final static String[] typeValues = new String[] {
-            "Purchase/Supplier", "External Owner", "Loaned from", "Items Repaired by", "Sales Return"
+            "Purchase/Supplier", "External Owner", "Loaned from", "Items Repaired by", "Sales Return", "Loan Return"
     };
     final Date date = DateUtility.today(), invoiceDate = DateUtility.today();
     private String referenceNumber = "";
@@ -501,7 +501,7 @@ public final class InventoryGRN extends StoredObject implements HasChildren, Has
         if(status != 0) {
             throw new Invalid_State("Already processed");
         }
-        if(type > 2) {
+        if(type < 0 || type > 5) {
             throw new Invalid_State("Unknown GRN type '" + type + "'");
         }
         List<InventoryGRNItem> grnItems = listLinks(transaction, InventoryGRNItem.class).toList();
@@ -513,7 +513,9 @@ public final class InventoryGRN extends StoredObject implements HasChildren, Has
             case 0 -> InventoryVirtualLocation.getForSupplier(supplierId);
             case 1 -> InventoryVirtualLocation.getForExternalOwner(supplierId);
             case 2 -> InventoryVirtualLocation.getForLoanFrom(supplierId);
-            case 3 -> InventoryVirtualLocation.getForConsumer(supplierId);
+            case 3 -> InventoryVirtualLocation.getForRepairOrganization(supplierId); // Repair return
+            case 4 -> InventoryVirtualLocation.getForConsumer(supplierId); // Sales return
+            case 5 -> InventoryVirtualLocation.getForLoanTo(supplierId); // Loan return
             default -> null;
         };
         Entity supplier = type != 0 ? getSupplier() : null;

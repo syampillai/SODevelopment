@@ -323,9 +323,20 @@ public abstract class InventoryTransfer extends StoredObject implements OfEntity
         checkItems(items);
         InventoryItem item;
         InventoryGRN grn = null;
-        if(!items.isEmpty() && from.getType() == 3 && to.getType() == 0) { // It's a repair order and items received at a store.
+        if(!items.isEmpty() && to.getType() == 0 // Received at a store
+                && switch(from.getType()) {
+            case 2, 3, 8, 9, 17 -> true; // Customer/consumer, Repair return, Loan return, Loan from, External customer
+            default -> false;
+        }) {
             grn = new InventoryGRN();
-            grn.setType(3);
+            grn.setType(switch(from.getType()) {
+                case 2 -> 4; // Sales return
+                case 3 -> 3; // Repair return
+                case 8 -> 5; // Loan return
+                case 9 -> 2; // Loan from
+                case 17 -> 1; // External customer
+                default -> -1;
+            });
             grn.setInvoiceNumber(referenceNumber);
             grn.setDate(date);
             grn.setInvoiceDate(invoiceDate);

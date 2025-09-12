@@ -371,4 +371,24 @@ public final class SystemUser extends StoredObject implements HasName, Notifye {
     public boolean notify(String templateName, TransactionManager tm, Object... messageParameters) {
         return MessageTemplate.notify(templateName, tm, ObjectIterator.create(getPerson()), messageParameters);
     }
+
+    /**
+     * Determines if the current user has access to a specified logic class.
+     *
+     * @param logicClass The class object representing the logic to be checked for access.
+     * @return True if the user has access to the specified logic class, otherwise false.
+     */
+    public boolean canAccess(Class<?> logicClass) {
+        return isAdmin();
+    }
+
+    /**
+     * Checks if the user has access to the specified logic by its name.
+     *
+     * @param logicName The name of the logic to check access for.
+     * @return True if the user has access to the specified logic, otherwise false.
+     */
+    public boolean canAccess(String logicName) {
+        return isAdmin();
+    }
 }

@@ -40,12 +40,6 @@ public abstract class StoredObject implements Displayable, HasId, StringFiller {
         return tranId;
     }
 
-    /**
-     * Make this instance a new instance by resetting its instance identifiers so that both {@link #getId()} and
-     * {@link #getTransactionId()} return <code>null</code> after this operation. Once done, it can be saved like any
-     * newly created object but all attribute values remains intact from the previous instance. The instance must
-     * not be participating any active transaction, otherwise, a {@link SORuntimeException} is raised.
-     */
     public void makeNew() {
         if (transacting() || (tran != null && tran.isActive())) {
             throw new SORuntimeException("In active transaction");
@@ -414,11 +408,13 @@ public abstract class StoredObject implements Displayable, HasId, StringFiller {
         save();
     }
 
-    public final void save(JSONMap map, StringList attributes, String valueName, boolean includeReferences, boolean includeClassInfo) throws Throwable {
+    public final void save(JSONMap map, StringList attributes, String valueName, boolean includeReferences,
+                           boolean includeClassInfo, boolean stringify) throws Throwable {
         save();
     }
 
-    public final void save(JSONMap map, StringList attributes, String valueName, boolean includeClassInfo,
+    public final void save(JSONMap map, String valueName, boolean includeClassInfo,
+                           boolean stringify,
                            Function<Class<? extends StoredObject>, StringList> allowedAttributes) throws Throwable {
     }
 

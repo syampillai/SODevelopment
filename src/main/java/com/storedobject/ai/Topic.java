@@ -16,7 +16,9 @@ import java.lang.reflect.Modifier;
 public final class Topic extends Name {
 
     private String logic;
-    private Class<? extends KnowledgeLogic> knowledgeClass;
+    private Class<?> knowledgeClass;
+    private Id userId = Id.ZERO;
+    private boolean canAccess;
 
     /**
      * Constructs a new, empty instance of the Topic class.
@@ -109,28 +111,24 @@ public final class Topic extends Name {
     }
 
     /**
-     * Returns the {@code Class} object representing the type of {@link KnowledgeLogic} associated with the topic.
-     * This method attempts to resolve the class based on the logic string stored in the topic.
-     * If the class has already been resolved and cached, it will return the cached value.
-     * Otherwise, it will dynamically resolve the class using a class loader.
-     * If the resolved class is abstract or an error occurs during class resolution, it returns null.
+     * Retrieves the knowledge logic class associated with this topic. If the class has already been resolved,
+     * it returns the cached class. Otherwise, it attempts to resolve the class using the logic field.
+     * If the class is abstract or any error occurs during resolution, it returns null.
      *
-     * @return the {@code Class} object representing the {@link KnowledgeLogic} type, or null if the logic class is abstract
-     *         or cannot be resolved.
+     * @return the {@code Class<?>} representing the knowledge logic class, or {@code null} if the logic class
+     *         cannot be resolved or is abstract.
      */
-    public <KL extends KnowledgeLogic> Class<KL> getKnowledgeLogicClass() {
+    public Class<?> getKnowledgeLogicClass() {
         if (this.knowledgeClass != null) {
-            //noinspection unchecked
-            return (Class<KL>) this.knowledgeClass;
+            return this.knowledgeClass;
         } else {
             try {
-                @SuppressWarnings("unchecked") Class<KL> kc = (Class<KL>) JavaClassLoader.getLogic(this.logic);
-                if (Modifier.isAbstract(kc.getModifiers())) {
+                knowledgeClass = JavaClassLoader.getLogic(this.logic);
+                if (Modifier.isAbstract(knowledgeClass.getModifiers())) {
+                    knowledgeClass = null;
                     return null;
-                } else {
-                    this.knowledgeClass = kc;
-                    return kc;
                 }
+                return knowledgeClass;
             } catch (Throwable var2) {
                 return null;
             }
@@ -147,5 +145,38 @@ public final class Topic extends Name {
         if (md.getFieldName().equals("Name")) {
             md.setCaption("Topic");
         }
+    }
+
+    /**
+     * Determines whether the specified {@code SystemUser} has access to the topic.
+     * If the user's ID matches the current ID, the stored access status is returned.
+     * Otherwise, the access permission is recalculated based on the user's ability to
+     * access the associated knowledge logic class.
+     *
+     * @param user the {@code SystemUser} whose access is being checked; may be {@code null}
+     * @return {@code true} if the user has access to the topic, {@code false} otherwise
+     */
+    public boolean casAccess(SystemUser user) {
+        if(user == null) {
+            return false;
+        }
+        if(user.getId().equals(userId)) {
+            return canAccess;
+        }
+        userId = user.getId();
+        canAccess = user.canAccess(getKnowledgeLogicClass());
+        return canAccess;
+    }
+
+    /**
+     * Retrieves an iterator of {@code Topic} objects that the specified {@code SystemUser}
+     * has access to. It filters the topics based on the user's access permissions.
+     *
+     * @param user the {@code SystemUser} whose access permissions are used to filter the topics;
+     *             may be {@code null}
+     * @return an iterator of {@code Topic} objects that the user has access to
+     */
+    public static ObjectIterator<Topic> list(SystemUser user) {
+        return StoredObject.list(Topic.class).filter(t -> t.casAccess(user));
     }
 }
