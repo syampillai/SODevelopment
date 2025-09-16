@@ -291,16 +291,25 @@ public class ItemContext {
     }
 
     public void viewGRN(InventoryItem item) {
+        viewGRN(item, false);
+    }
+
+    public void viewGRN(InventoryItem item, boolean includeSource) {
         if(item == null) {
             return;
         }
-        if(view instanceof DataGrid<?> dg) {
+        if(view instanceof ListGrid<?> dg) {
             dg.clearAlerts();
+        } else if(view instanceof View v) {
+            v.clearAlerts();
         }
         InventoryGRN grn = item.getGRN();
         if(grn == null) {
-            if(view instanceof DataGrid<?> dg) {
-                dg.message("No associated GRN found for " + item.toDisplay());
+            String m = "No associated GRN found for " + item.toDisplay();
+            if(view instanceof ListGrid<?> dg) {
+                dg.message(m);
+            } else if(view instanceof View v) {
+                v.message(m);
             }
             return;
         }
@@ -308,10 +317,21 @@ public class ItemContext {
             grnEditor = new GRNEditor();
         }
         grnEditor.viewObject(grn);
+        grnEditor.setCaption(grn.getReference());
+        if(!includeSource) {
+            return;
+        }
+        Application a = Application.get();
+        grn.listMasters(StoredObject.class, true)
+                .forEach(m -> a.view(grn.getReference() + " - " + StringUtility.makeLabel(m.getClass()), m));
     }
 
     public void viewGRN(HasInventoryItem hasItem) {
-        viewGRN(hasItem == null ? null : hasItem.getItem());
+        viewGRN(hasItem, false);
+    }
+
+    public void viewGRN(HasInventoryItem hasItem, boolean includeSource) {
+        viewGRN(hasItem == null ? null : hasItem.getItem(), includeSource);
     }
 
     public void viewCost(InventoryItem item) {

@@ -13,6 +13,7 @@ public class GRNEditor extends ObjectEditor<InventoryGRN> {
 
     public GRNEditor() {
         super(InventoryGRN.class, EditorAction.EDIT);
+        setCaption("GRN");
         addField("Reference");
         addField("Status", InventoryGRN::getStatus, (grn, v) -> {});
     }

@@ -561,6 +561,7 @@ public final class InventoryGRN extends StoredObject implements HasChildren, Has
                 case 2 -> it.loanFrom(item, null, bin, supplier);
                 case 3 -> throw new SORuntimeException("Can't process repair returns");
                 case 4 -> throw new SORuntimeException("Can't process sales returns");
+                case 5 -> throw new SORuntimeException("Can't process loan returns");
             }
         }
         internal = true;
@@ -713,7 +714,6 @@ public final class InventoryGRN extends StoredObject implements HasChildren, Has
             }
         }
         if(skip && newCost.equals(landedCost)) {
-            System.err.println("Going back");
             return;
         }
         grnItems.removeIf(grnItem -> grnItem.getItem().getPartNumber() instanceof AbstractServiceItemType);
@@ -737,7 +737,6 @@ public final class InventoryGRN extends StoredObject implements HasChildren, Has
             for(InventoryGRNItem grnItem: grnItems) {
                 gi = giMap.get(grnItem.getId());
                 if(skip && gi.incUC.isZero()) {
-                    System.err.println("Skipping");
                     continue;
                 }
                 updateGRNItemCost(gi, grnItem, t);

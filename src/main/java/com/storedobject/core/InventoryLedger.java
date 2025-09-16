@@ -5,7 +5,7 @@ import java.sql.Date;
 import java.util.Random;
 
 @SuppressWarnings("RedundantThrows")
-public final class InventoryLedger extends StoredObject {
+public final class InventoryLedger extends StoredObject implements HasInventoryItem, HasInventoryItemType {
 
     public static final Date dataPickupDate = DateUtility.create(2000, 1, 1);
     boolean illegal;
@@ -39,12 +39,9 @@ public final class InventoryLedger extends StoredObject {
         return new Id();
     }
 
+    @Override
     public InventoryItem getItem() {
         return new Random().nextBoolean() ? new InventoryItem() : null;
-    }
-
-    public InventoryItem getItemFromHistory() {
-        return getItem();
     }
 
     InventoryItem getItemAnyway() {
@@ -152,5 +149,10 @@ public final class InventoryLedger extends StoredObject {
     }
 
     public void increaseCost(DBTransaction t, Money incUC, Quantity quantity, Rate exchangeRate) {
+    }
+
+    @Override
+    public InventoryItemType getInventoryItemType() {
+        return getItemType();
     }
 }

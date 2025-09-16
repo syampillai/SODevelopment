@@ -46,6 +46,11 @@ public class ItemMovementView extends ListGrid<InventoryLedger> implements Close
             setCaption(NO_CAPTION);
         }
         itemField.addValueChangeListener(e -> loadItem(e.getValue()));
+        ItemContextMenu<InventoryLedger> contextMenu = new ItemContextMenu<>(this);
+        contextMenu.setHideGRNDetails(true);
+        contextMenu.setHideMovementDetails(true);
+        contextMenu.addItem("GRN Details -",
+                e -> e.getItem().ifPresent(ledger -> contextMenu.getContext().viewGRN(ledger.getItemFromHistory())));
     }
 
     private static Class<? extends InventoryItem> className(String className) {

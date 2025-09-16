@@ -21,4 +21,15 @@ public interface HasInventoryItem {
     default Quantity getQuantity() {
         return getItem().getQuantity();
     }
+
+    default InventoryItem getItemFromHistory() {
+        InventoryItem item = getItem();
+        if(item != null && this instanceof StoredObject so) {
+            StoredObject history = item.contemporary(so);
+            if(history instanceof InventoryItem) {
+                item = (InventoryItem) history;
+            }
+        }
+        return item;
+    }
 }

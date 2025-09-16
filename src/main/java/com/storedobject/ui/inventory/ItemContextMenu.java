@@ -10,9 +10,9 @@ import com.vaadin.flow.function.SerializablePredicate;
 public class ItemContextMenu<T extends HasInventoryItem> extends GridContextMenu<T> {
 
     private final ItemContext context = new ItemContext();
-    private boolean allowInspection, allowBreaking, allowEditCost, hideGRNDetails, hideViewStock;
+    private boolean allowInspection, allowBreaking, allowEditCost, hideGRNDetails, hideViewStock, hideMovementDetails;
     private GridMenuItem<T> itemAssembly, parentAssembly, viewFitment, viewFitmentLocations, inspect, split,
-            breakAssembly, movementDetails, grnDetails, editCost, itemDetails, costDetails, pnDetails, viewStock;
+            breakAssembly, movementDetails, grnDetails, editCost, itemDetails, costDetails, pnDetails, viewStock, viewSource;
     private SerializablePredicate<T> dynamicContentHandler;
 
     public ItemContextMenu(Grid<T> itemGrid) {
@@ -47,14 +47,15 @@ public class ItemContextMenu<T extends HasInventoryItem> extends GridContextMenu
             InventoryItem ii = hi.getItem();
             if(ii == null) {
                 hide(itemAssembly, parentAssembly, viewFitment, viewFitmentLocations, inspect, split,
-                        breakAssembly, movementDetails, grnDetails, editCost, itemDetails, costDetails, pnDetails,
-                        viewStock);
+                        breakAssembly, movementDetails, grnDetails, viewSource, editCost, itemDetails, costDetails,
+                        pnDetails, viewStock);
                 return dynamicContentHandler != null && dynamicContentHandler.test(hi);
             }
             pnDetails.setVisible(true);
             itemDetails.setVisible(true);
             costDetails.setVisible(true);
             grnDetails.setVisible(!hideGRNDetails);
+            viewSource.setVisible(!hideGRNDetails);
             viewStock.setVisible(!hideViewStock);
             itemGrid.select(hi);
             InventoryLocation loc = ii.getLocation();
@@ -67,7 +68,7 @@ public class ItemContextMenu<T extends HasInventoryItem> extends GridContextMenu
             viewFitment.setVisible(loc instanceof InventoryFitmentPosition);
             viewFitmentLocations.setVisible(loc instanceof InventoryFitmentPosition);
             breakAssembly.setVisible((this.allowInspection || this.allowBreaking) && loc instanceof InventoryFitmentPosition);
-            movementDetails.setVisible(ii.isSerialized());
+            movementDetails.setVisible(!hideMovementDetails && ii.isSerialized());
             InventoryItemType itemType = ii.getPartNumber();
             String item = ii.getPartNumber().getPartNumber() + " " + itemType.getSerialNumberShortName() + ": "
                     + ii.getSerialNumber();
@@ -97,6 +98,7 @@ public class ItemContextMenu<T extends HasInventoryItem> extends GridContextMenu
         breakAssembly = addItem("Break from Assembly -", e -> e.getItem().ifPresent(context::breakAssembly));
         movementDetails = addItem("Movement Details -", e -> e.getItem().ifPresent(context::viewMovements));
         grnDetails = addItem("GRN Details -", e -> e.getItem().ifPresent(context::viewGRN));
+        viewSource = addItem("GRN & Source Details -", e -> e.getItem().ifPresent(i -> context.viewGRN(i, true)));
         costDetails = addItem("Cost Details -", e -> e.getItem().ifPresent(context::viewCost));
         editCost = addItem("Edit Cost -", e -> e.getItem().ifPresent(item -> {
             close();
@@ -137,6 +139,10 @@ public class ItemContextMenu<T extends HasInventoryItem> extends GridContextMenu
 
     public void setHideViewStock(boolean hideViewStock) {
         this.hideViewStock = hideViewStock;
+    }
+
+    public void setHideMovementDetails(boolean hideMovementDetails) {
+        this.hideMovementDetails = hideMovementDetails;
     }
 
     public ItemContext getContext() {

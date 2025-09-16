@@ -16,7 +16,7 @@ public class CorrectUOM extends DataForm implements Transactional {
     public CorrectUOM() {
         super("Change UoM");
         pnField = new ObjectField<>("Part Number", InventoryItemType.class, true);
-        pnField.addValueChangeListener(e -> uom.setValue(e.getValue() == null ? "" :
+        pnField.addValueChangeListener(e -> uom.setValue(e.getValue() == null ? "N/A" :
                 pnField.getObject().getUnitOfMeasurement().getUnit().getUnit()));
         addField(pnField, uom, from, to);
         setFieldReadOnly(uom);
