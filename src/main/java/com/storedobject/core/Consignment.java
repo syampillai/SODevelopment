@@ -12,7 +12,7 @@ public class Consignment extends StoredObject implements HasReference {
     private static final ReferencePattern<Consignment> ref = new ReferencePattern<>();
     private String reference;
     private final static String[] typeValues = new String[] {
-            "Material Return", "Repair Return", "Transfer", "GRN"
+            "Material Return", "Repair", "Transfer", "GRN"
     };
     private final Date date = DateUtility.today();
     private int no = 0, type = 0;

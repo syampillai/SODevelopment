@@ -20,13 +20,27 @@ public class InventorySale extends InventoryTransfer implements TradeType {
         if(getType() >= 1000) {
             throw new Invalid_State("Invalid type");
         }
-        var loc = getToLocation();
-        if (loc == null || loc.getType() != 2) {
-            throw new Invalid_Value("Customer");
-        }
+    }
+
+    @Override
+    public String getActionDescription(ActionType actionType) {
+        return switch (actionType) {
+            case NOUN, VERB_PRESENT -> "Sell";
+            case VERB_PAST, VERB_PAST_PARTICIPLE -> "Sold";
+        };
+    }
+
+    @Override
+    public final int getToLocationType() {
+        return 2;
+    }
+
+    @Override
+    public String getToLocationName() {
+        return "Customer";
     }
 
     public Entity getCustomerEntity() {
-        return get(Entity.class, getToLocation().getEntityId());
+        return getRelated(Entity.class, getToLocation().getEntityId());
     }
 }

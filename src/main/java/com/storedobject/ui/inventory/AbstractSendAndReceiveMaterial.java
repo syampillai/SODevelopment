@@ -135,24 +135,27 @@ public abstract class AbstractSendAndReceiveMaterial<T extends InventoryTransfer
                         LocationField.create(this.otherLocation);
                 this.toField = new ObjectField<>("Return to", lf);
             } else {
+                T dummy;
+                try {
+                    dummy = transferClass.getConstructor().newInstance();
+                } catch (Exception ignored) {
+                    throw new SORuntimeException();
+                }
                 if(this.otherLocation == null) {
-                    if(transferClass == InventoryRO.class) {
-                        lf = new LocationField(3);
-                        ff = new LocationField(3);
-                    } else if(InventorySale.class.isAssignableFrom(transferClass)) {
-                        lf = new LocationField(2);
-                        ff = new LocationField(2);
-                    } else {
+                    int type;
+                    type = dummy.getToLocationType();
+                    if(type == -1) {
                         lf = new LocationField(ALL_TYPES).remove(this.fromOrTo);
                         ff = new LocationField(ALL_TYPES).remove(this.fromOrTo);
+                    } else {
+                        lf = new LocationField(type);
+                        ff = new LocationField(type);
                     }
                 } else {
                     lf = LocationField.create(this.otherLocation);
                     ff = LocationField.create(this.otherLocation);
                 }
-                this.toField = new ObjectField<>((transferClass == InventoryRO.class ? "Sent"
-                        : (InventorySale.class.isAssignableFrom(getDataClass()) ? "Sold" : "Transferred")) +
-                        " to", lf);
+                this.toField = new ObjectField<>(dummy.getActionDescription(ActionType.VERB_PAST) + " to", lf);
             }
             this.filterField = new ObjectField<>(this.toField.getLabel(), ff);
         }

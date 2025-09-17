@@ -7,6 +7,7 @@ import com.storedobject.core.StoredObject;
 import com.storedobject.core.SystemUser;
 import com.storedobject.ui.Application;
 import com.storedobject.ui.ObjectComboField;
+import com.storedobject.ui.SpeechRecognition;
 import com.storedobject.ui.Transactional;
 import com.storedobject.vaadin.*;
 import com.vaadin.flow.component.html.H2;
@@ -71,6 +72,7 @@ public class ChatView extends View implements CloseableView, Transactional {
         send.setDisableOnClick(true);
         v.add(send);
         setComponent(v);
+        new SpeechRecognition(input);
     }
 
     /**

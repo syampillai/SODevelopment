@@ -45,14 +45,22 @@ public final class InventoryRO extends InventoryTransfer implements TradeType {
     }
 
     @Override
-    public void validateData(TransactionManager tm) throws Exception {
-        super.validateData(tm);
-        InventoryLocation to = getToLocation();
-        if(to.getType() != 3) {
-            Entity ro = get(getTransaction(), Entity.class, to.getEntityId());
-            throw new Invalid_State("Not a repair/maintenance organization - " +
-                    (ro == null ? to.getEntityId() : ro.toDisplay()));
-        }
+    public String getActionDescription(ActionType actionType) {
+        return switch (actionType) {
+            case NOUN -> "Send for repair";
+            case VERB_PRESENT -> "Send";
+            case VERB_PAST, VERB_PAST_PARTICIPLE -> "Sent";
+        };
+    }
+
+    @Override
+    public int getToLocationType() {
+        return 3;
+    }
+
+    @Override
+    public String getToLocationName() {
+        return "Repair/Maintenance Organization";
     }
 
     @Override

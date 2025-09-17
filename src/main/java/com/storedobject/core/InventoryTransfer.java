@@ -276,7 +276,81 @@ public abstract class InventoryTransfer extends StoredObject implements OfEntity
         if(fromLocationId.equals(toLocationId)) {
             throw new Invalid_State("Locations should be different");
         }
+        if(getFromLocationType() != -1) {
+            validateLoc(getFromLocation(), true);
+        }
+        if(getToLocationType() != -1) {
+            validateLoc(getToLocation(), false);
+        }
         super.validateData(tm);
+    }
+
+    private void validateLoc(InventoryLocation location, boolean from) throws Invalid_State {
+        if(location == null) {
+            throw new Invalid_State(from ? getFromLocationName() : getToLocationName() + " - Cannot be null");
+        }
+        int type = from ? getFromLocationType() : getToLocationType();
+        if(type == -1) {
+            return;
+        }
+        if(location.getType() != type) {
+            Entity entity = get(getTransaction(), Entity.class, location.getEntityId());
+            throw new Invalid_State("Not a valid " + (from ? getFromLocationName() : getToLocationName()) + " - " +
+                    (entity == null ? location.getEntityId() : entity.toDisplay()));
+        }
+    }
+
+    /**
+     * Get the type of the location from which the items are being transferred.
+     * <p>Note: An overridden class should always return a constant value.</p>
+     * @return Location type. A negative value means that the location type is not known.
+     */
+    public int getFromLocationType() {
+        return -1;
+    }
+
+    /**
+     * Get the name of the location from which the items are being transferred.
+     * <p>Note: An overridden class should always return a constant value.</p>
+     * @return Location name.
+     */
+    public String getFromLocationName() {
+        return "Location From";
+    }
+
+    /**
+     * Get the type of the location to which the items are being transferred.
+     * <p>Note: An overridden class should always return a constant value.</p>
+     * @return Location type. A negative value means that the location type is not known.
+     */
+    public int getToLocationType() {
+        return -1;
+    }
+
+    /**
+     * Get the name of the location to which the items are being transferred.
+     * <p>Note: An overridden class should always return a constant value.</p>
+     * @return Location name.
+     */
+    public String getToLocationName() {
+        return "Location To";
+    }
+
+    /**
+     * Returns the action description based on the specified action type.
+     *
+     * @param actionType The type of the action, represented as an instance of {@link ActionType}.
+     *                   It could be one of the following:
+     *                   NOUN, VERB_PRESENT, VERB_PAST, or VERB_PAST_PARTICIPLE.
+     * @return A string representing the action description.
+     *         Returns "Transfer" for NOUN and VERB_PRESENT.
+     *         Returns "Transferred" for VERB_PAST and VERB_PAST_PARTICIPLE.
+     */
+    public String getActionDescription(ActionType actionType) {
+        return switch (actionType) {
+            case NOUN, VERB_PRESENT -> "Transfer";
+            case VERB_PAST, VERB_PAST_PARTICIPLE -> "Transferred";
+        };
     }
 
     @Override
@@ -343,6 +417,7 @@ public abstract class InventoryTransfer extends StoredObject implements OfEntity
             grn.setStore(((InventoryBin) to).getStoreId());
             grn.setSupplier(from.getEntityId());
             grn.setStatus(2);
+            grn.attachConsignmentFrom(transaction,this);
             grn.save(transaction);
             List<InventoryRO> ros = list(InventoryRO.class, "FromLocation=" + to.getId()
                     + " AND Status IN (1,2)").toList();

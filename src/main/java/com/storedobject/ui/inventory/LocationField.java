@@ -51,7 +51,7 @@ public class LocationField extends ObjectComboField<InventoryLocation> {
         super(label, InventoryLocation.class, list);
         locations = list;
         if(!list.isEmpty()) {
-            setValue(list.get(0));
+            setValue(list.getFirst());
         }
     }
 
@@ -206,7 +206,7 @@ public class LocationField extends ObjectComboField<InventoryLocation> {
         getDelegatedLoader().getData().remove(location);
         getDelegatedLoader().refreshAll();
         if(sameValue) {
-            setValue(locations.isEmpty() ? null : locations.get(0));
+            setValue(locations.isEmpty() ? null : locations.getFirst());
         }
         return this;
     }

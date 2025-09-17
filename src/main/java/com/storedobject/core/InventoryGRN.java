@@ -881,4 +881,14 @@ public final class InventoryGRN extends StoredObject implements HasChildren, Has
             throw e;
         }
     }
+
+    void attachConsignmentFrom(Transaction transaction, StoredObject from) throws Exception {
+        List<Consignment> consignments = from.listLinks(Consignment.class, "Type=3", true).toList();
+        for(Consignment c: consignments) {
+            if(c.getMaster(InventoryGRN.class) == null) {
+                addLink(transaction, c);
+                break;
+            }
+        }
+    }
 }
