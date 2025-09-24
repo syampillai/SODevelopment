@@ -221,4 +221,9 @@ class ParameterParser {
         String[] ps = parameters.split("\\|");
         return index >= 0 && index < ps.length ? ps[index] : null;
     }
+
+    static int number(String parameters, int index) {
+        String s = parameter(parameters, index);
+        return StringUtility.isDigit(s)? Integer.parseInt(s) : Integer.MIN_VALUE;
+    }
 }

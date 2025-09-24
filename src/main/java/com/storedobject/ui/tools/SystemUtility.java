@@ -119,6 +119,7 @@ public class SystemUtility extends View implements CloseableView, Transactional 
         form.add(label("Miscellaneous"));
         speech = new TextArea("Text to Speak out");
         form.add(speech);
+        new SpeechRecognition(speech);
         buttons = new ButtonLayout();
         buttons.add(new Button("Speak out", VaadinIcon.VOLUME_DOWN, e -> speakOut()));
         form.add(buttons);

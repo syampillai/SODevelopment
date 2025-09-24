@@ -1,8 +1,8 @@
 package com.storedobject.core;
 
-public final class InventoryRO extends InventoryReturn {
+public class InventoryLoanOut extends InventoryReturn {
 
-    public InventoryRO() {
+    public InventoryLoanOut() {
     }
 
     public static void columns(Columns columns) {
@@ -10,30 +10,26 @@ public final class InventoryRO extends InventoryReturn {
 
     public static String[] links() {
         return new String[]{
-                "Items|com.storedobject.core.InventoryROItem|||0",
+                "Items|com.storedobject.core.InventoryLoanOutItem|||0",
         };
-    }
-
-    public Entity getRepairEntity() {
-        return getReturningEntity();
     }
 
     @Override
     public String getActionDescription(ActionType actionType) {
-        return actionType == ActionType.NOUN ? "Send for repair" : super.getActionDescription(actionType);
+        return actionType == ActionType.NOUN ? "Loan out" : super.getActionDescription(actionType);
     }
 
     @Override
     public int getToLocationType() {
-        return 3;
+        return 8;
     }
 
     @Override
     public String getToLocationName() {
-        return "Repair/Maintenance Organization";
+        return "Loanee";
     }
 
     public static String actionPrefixForUI() {
-        return "RO";
+        return "LO";
     }
 }

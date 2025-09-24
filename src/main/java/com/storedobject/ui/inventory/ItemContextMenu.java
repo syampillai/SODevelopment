@@ -49,7 +49,20 @@ public class ItemContextMenu<T extends HasInventoryItem> extends GridContextMenu
                 hide(itemAssembly, parentAssembly, viewFitment, viewFitmentLocations, inspect, split,
                         breakAssembly, movementDetails, grnDetails, viewSource, editCost, itemDetails, costDetails,
                         pnDetails, viewStock);
-                return dynamicContentHandler != null && dynamicContentHandler.test(hi);
+                InventoryItemType iit = hi.getInventoryItemType();
+                if(iit == null) {
+                    return dynamicContentHandler != null && dynamicContentHandler.test(hi);
+                }
+                pnDetails.setVisible(true);
+                pnDetails.setText("P/N Details: " + iit.getPartNumber());
+                if(!hideViewStock) {
+                    viewStock.setVisible(true);
+                    viewStock.setText("View Stock: " + iit.getPartNumber());
+                }
+                if(dynamicContentHandler != null) {
+                    dynamicContentHandler.test(hi);
+                }
+                return true;
             }
             pnDetails.setVisible(true);
             itemDetails.setVisible(true);
@@ -70,13 +83,17 @@ public class ItemContextMenu<T extends HasInventoryItem> extends GridContextMenu
             breakAssembly.setVisible((this.allowInspection || this.allowBreaking) && loc instanceof InventoryFitmentPosition);
             movementDetails.setVisible(!hideMovementDetails && ii.isSerialized());
             InventoryItemType itemType = ii.getPartNumber();
-            String item = ii.getPartNumber().getPartNumber() + " " + itemType.getSerialNumberShortName() + ": "
-                    + ii.getSerialNumber();
+            String pnLabel = ii.getPartNumber().getPartNumber();
+            String itemLabel = pnLabel + " " + itemType.getSerialNumberShortName() + ": " + ii.getSerialNumber();
             getItems().forEach(mi -> {
                 String label = mi.getText();
                 int p = label.indexOf('-');
                 if(p > 0) {
-                    mi.setText(label.substring(0, p) + "- " + item);
+                    if(mi == pnDetails || mi == viewStock) {
+                        mi.setText(label.substring(0, p) + "- " + pnLabel);
+                    } else {
+                        mi.setText(label.substring(0, p) + "- " + itemLabel);
+                    }
                 }
             });
             if(dynamicContentHandler != null) {

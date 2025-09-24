@@ -18,6 +18,7 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Future;
+import java.util.function.Consumer;
 
 /**
  * The view used to display a chat with AI capabilities.
@@ -72,7 +73,10 @@ public class ChatView extends View implements CloseableView, Transactional {
         send.setDisableOnClick(true);
         v.add(send);
         setComponent(v);
-        new SpeechRecognition(input);
+        SpeechRecognition sr = new SpeechRecognition(input);
+        Consumer<String> sendCommand = text -> send.click();
+        sr.addCommand("send", sendCommand);
+        sr.addCommand("sent", sendCommand);
     }
 
     /**
@@ -155,6 +159,7 @@ public class ChatView extends View implements CloseableView, Transactional {
     private void process() {
         String text = input.getValue();
         if(text.isBlank()) {
+            send.setEnabled(true);
             input.focus();
             return;
         }

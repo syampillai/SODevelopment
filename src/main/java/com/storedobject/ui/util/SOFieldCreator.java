@@ -294,7 +294,7 @@ public class SOFieldCreator<T> implements ObjectFieldCreator<T> {
                     List<StoredObject> masters = new ArrayList<>();
                     ((StoredObject) o).listMasters(objectClass).forEach(masters::add);
                     if(masters.size() == 1) {
-                        master = masters.get(0);
+                        master = masters.getFirst();
                         objectId = ((StoredObject) o).getId();
                     } else if(masters.size() > 1) {
                         return "<Multiple>";
@@ -903,6 +903,7 @@ public class SOFieldCreator<T> implements ObjectFieldCreator<T> {
                 return new PopupTextField(label);
             } else {
                 TextArea field = new TextArea(label);
+                new SpeechRecognition(field);
                 int cols = md.getColumnSpan();
                 if(cols > 1) {
                     field.getElement().setAttribute("colspan", String.valueOf(cols));

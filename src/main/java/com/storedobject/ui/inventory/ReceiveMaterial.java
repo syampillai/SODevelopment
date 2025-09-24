@@ -1,10 +1,7 @@
 package com.storedobject.ui.inventory;
 
 import com.storedobject.common.SORuntimeException;
-import com.storedobject.core.InventoryLocation;
-import com.storedobject.core.InventoryStoreBin;
-import com.storedobject.core.JavaClassLoader;
-import com.storedobject.core.SOException;
+import com.storedobject.core.*;
 import com.storedobject.ui.HTMLText;
 import com.storedobject.vaadin.ChoiceField;
 import com.storedobject.vaadin.DataForm;
@@ -23,7 +20,7 @@ public class ReceiveMaterial extends DataForm {
             "Transferred from Other Stores",
             "Transferred from Other Stores (Against Requests)",
             "Returned from Repair/Maintenance Organizations",
-            "Lease Returns",
+            "Lease/Loan/Rental Returns",
             "GRN - From External Owners",
             "Tools Returned",
             "GRN - Loan from Lender",
@@ -172,9 +169,20 @@ public class ReceiveMaterial extends DataForm {
     private void grn(int type, InventoryLocation to) {
         GRN grn = new GRN(type, ((InventoryStoreBin) to).getStore());
         try {
-            grn.setPOClass(JavaClassLoader.createClassFromProperty("PO-BROWSER-LOGIC-" + type));
+            //noinspection unchecked
+            grn.setSource(label(type), JavaClassLoader.createClassFromProperty("PO-BROWSER-LOGIC-" + type),
+                    (Class<? extends StoredObject>) JavaClassLoader.createClassFromProperty("PO-CLASS-" + type));
         } catch(SOException ignored) {
         }
         grn.execute();
+    }
+
+    private String label(int type) {
+        return switch(type) {
+            case 0 -> "POs";
+            case 1 -> "From External Owners";
+            case 2 -> "Loans";
+            default -> "GRN Source";
+        };
     }
 }

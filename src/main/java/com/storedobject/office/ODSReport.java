@@ -1,10 +1,14 @@
 package com.storedobject.office;
 
+import com.storedobject.common.SORuntimeException;
 import com.storedobject.core.*;
 
 import java.io.InputStream;
 
 public class ODSReport extends ODS {
+
+    private final Device device;
+    private boolean executed = false;
 
     /**
      * Constructor.
@@ -13,6 +17,7 @@ public class ODSReport extends ODS {
      * This will create an blank ODS file and the content may be manipulated in the generateContent() method.
      */
     public ODSReport(Device device) {
+        this.device = device;
     }
 
     /**
@@ -23,6 +28,7 @@ public class ODSReport extends ODS {
      */
     public ODSReport(Device device, InputStream in) {
         super(in);
+        this.device = device;
     }
 
     /**
@@ -33,6 +39,7 @@ public class ODSReport extends ODS {
      */
     public ODSReport(Device device, String databaseFileName) {
         super(databaseFileName);
+        this.device = device;
     }
 
     /**
@@ -43,6 +50,7 @@ public class ODSReport extends ODS {
      */
     public ODSReport(Device device, FileData fileData) {
         super(fileData);
+        this.device = device;
     }
 
     /**
@@ -53,6 +61,7 @@ public class ODSReport extends ODS {
      */
     public ODSReport(Device device, Id templateId) {
         super(templateId);
+        this.device = device;
     }
 
     /**
@@ -63,6 +72,20 @@ public class ODSReport extends ODS {
      */
     public ODSReport(Device device, StreamData streamData) {
         super(streamData);
+        this.device = device;
+    }
+
+    @Override
+    public void execute() {
+        if(!executed) {
+            executed = true;
+            if(blocked()) {
+                throw new SORuntimeException(AccessControl.MESSAGE);
+            }
+            getDevice().view(this);
+            return;
+        }
+        super.execute();
     }
 
     public void view() {
@@ -71,22 +94,24 @@ public class ODSReport extends ODS {
 
     @Override
     public final void setTransactionManager(TransactionManager tm) {
-    }
-
-    public final void setEntity(Entity entity) {
+        super.setTransactionManager(tm);
     }
 
     @Override
-    public Entity getEntity() {
-        return null;
+    public final TransactionManager getTransactionManager() {
+        return super.getTransactionManager();
     }
 
-    public ReportFormat getReportFormat() {
-        return null;
+    public final void setEntity(Entity entity) {
+        this.entity = entity;
     }
 
     @Override
     public Device getDevice() {
-        return null;
+        return device;
+    }
+
+    private boolean blocked() {
+        return isBlocked("ODS");
     }
 }

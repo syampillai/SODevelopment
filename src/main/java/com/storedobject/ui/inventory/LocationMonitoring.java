@@ -20,9 +20,12 @@ public abstract class LocationMonitoring<I extends InventoryItem, L extends Inve
     }
 
     public LocationMonitoring(String caption, Class<I> itemClass, Class<L> locationClass) {
+        this(caption, itemClass, locationClass, StringList.create("Name", "PartNumber", "SerialNumber", "Location"));
+    }
+
+    public LocationMonitoring(String caption, Class<I> itemClass, Class<L> locationClass, StringList columns) {
         //noinspection unchecked
-        super(itemClass == null ? (Class<I>) InventoryItem.class : itemClass,
-                StringList.create("Name", "PartNumber", "SerialNumber", "Location"), true);
+        super(itemClass == null ? (Class<I>) InventoryItem.class : itemClass, columns, true);
         this.locationClass = locationClass;
         setCaption(caption);
     }

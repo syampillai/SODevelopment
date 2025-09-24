@@ -253,6 +253,9 @@ public abstract class InventoryTransfer extends StoredObject implements OfEntity
     }
 
     public String getStatusValue() {
+        if(getStatus() == 0) {
+            return getApprovalRequired() ? getStatusValue(0) : "Approved";
+        }
         return getStatusValue(status);
     }
 

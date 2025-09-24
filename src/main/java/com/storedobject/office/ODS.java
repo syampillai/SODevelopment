@@ -102,11 +102,6 @@ public class ODS extends AbstractSpreadSheet {
     }
 
     @Override
-    public Device getDevice() {
-        return null;
-    }
-
-    @Override
     protected Workbook createWorkbook(InputStream in) throws Exception {
         return null;
     }
@@ -114,7 +109,7 @@ public class ODS extends AbstractSpreadSheet {
     public final void setRawOutput(boolean raw) {
     }
 
-    public final boolean isRawOuput() {
+    public final boolean isRawOutput() {
         return false;
     }
 

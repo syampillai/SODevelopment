@@ -12,10 +12,13 @@ import com.vaadin.flow.component.grid.contextmenu.GridContextMenu;
 import com.vaadin.flow.component.grid.contextmenu.GridMenuItem;
 import com.vaadin.flow.component.icon.VaadinIcon;
 
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.function.BiFunction;
 
 /**
  * GRN - Create, edit and process GRNs.
@@ -24,15 +27,13 @@ import java.util.function.Consumer;
  */
 public class GRN extends ObjectBrowser<InventoryGRN> {
 
+    private BiFunction<InventoryStore, Boolean, ObjectBrowser<?>> source;
     private ObjectEditor<InventoryGRN> viewer;
     private final GRNEditor editor;
     private final ELabel storeDisplay = new ELabel("Store: Not selected");
     private final Button switchStore = new Button("Select", (String) null, e -> switchStore()).asSmall();
     private boolean allowSwitchStore = true;
     private final int type;
-    private ProducesGRN grnProducer;
-    private boolean fromPOs = false;
-    private Class<?> poClass;
     private final boolean landedCostModule;
     private boolean searching = false;
     private Search search;
@@ -84,6 +85,7 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
     /**
      * Constructor.
      *
+     * @param store Store.
      * @param actions Allowed edit actions (See {@link EditorAction}).
      * @param caption Caption.
      */
@@ -95,32 +97,19 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
      * Constructor.
      *
      * @param classNames Class names to be used.
-     *                   "Class Name of P/N|Store Name|PO browser logic or PO class name or RO class name".
+     *                   "Class Name of P/N|Store Name".
      */
     public GRN(String classNames) {
         this(type(classNames), ParameterParser.itemTypeClass(classNames), EditorAction.ALL, null,
                 ParameterParser.store(classNames));
-        String p = ParameterParser.parameter(classNames, 2);
-        if(ParameterParser.isClass(p)) {
-            try {
-                setPOClass(JavaClassLoader.getLogic(p));
-            } catch(ClassNotFoundException ignored) {
-            }
-        }
     }
 
     private static int type(String classNames) {
-        String p = ParameterParser.parameter(classNames, 2);
-        if(ParameterParser.isClass(p)) {
-            try {
-                Class<?> bClass = bClass(JavaClassLoader.getLogic(p));
-                if(InventoryRO.class.isAssignableFrom(bClass)) {
-                    return 3;
-                }
-            } catch(ClassNotFoundException ignored) {
-            }
-        }
-        return 0;
+        int type = ParameterParser.number(classNames, 2);
+        return switch (type) {
+            case 3, 5 -> type;
+            default -> 0;
+        };
     }
 
     /**
@@ -217,22 +206,6 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
         }
     }
 
-    public void setGRNProducer(ProducesGRN grnProducer) {
-        this.grnProducer = grnProducer;
-    }
-
-    public ProducesGRN getGRNProducer() {
-        return grnProducer;
-    }
-
-    public void setFromPOs() {
-        this.fromPOs = true;
-    }
-
-    public void setFromROs() {
-        this.fromPOs = true;
-    }
-
     public void setAllowSwitchStore(boolean allowSwitchStore) {
         this.allowSwitchStore = allowSwitchStore;
         switchStore.setVisible(allowSwitchStore);
@@ -273,63 +246,6 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
         if(edit != null) {
             edit.setText("Receive / Process");
         }
-        setPOClass(poClass);
-    }
-
-    public void setPOClass(Class<?> poClass) {
-        this.poClass = poClass;
-        Class<?> bClass = bClass(poClass);
-        if(bClass == null) {
-            this.poClass = null;
-        }
-        if(bClass == InventoryRO.class && type != 3) {
-            this.poClass = null;
-            bClass = null;
-        }
-        if(add != null) {
-            add.setVisible(bClass != null);
-            if(bClass != null) {
-                add.setText(poLabel(bClass) + "s");
-                add.setIcon(VaadinIcon.FILE_TABLE);
-            }
-        }
-    }
-
-    private static String poLabel(Class<?> poClass) {
-        if(InventoryRO.class.isAssignableFrom(poClass)) {
-            return "RO";
-        }
-        if(InventoryPO.class.isAssignableFrom(poClass)) {
-            try {
-                return switch(((InventoryPO) poClass.getDeclaredConstructor().newInstance()).getGRNType()) {
-                    case 0 -> "PO";
-                    case 1 -> "EO";
-                    case 2 -> "LO";
-                    default -> "?";
-                };
-            } catch(Throwable ignored) {
-            }
-        }
-        return "?";
-    }
-
-    private static Class<?> bClass(Class<?> poClass) {
-        if(poClass == null) {
-            return null;
-        }
-        if(InventoryPO.class.isAssignableFrom(poClass) || InventoryRO.class.isAssignableFrom(poClass)) {
-            return poClass;
-        }
-        if(POBrowser.class.isAssignableFrom(poClass)) {
-            try {
-                return ((POBrowser<?>) poClass.getDeclaredConstructor().newInstance()).getObjectClass();
-            } catch(Throwable ignored) {
-            }
-        }
-        if(SendItemsForRepair.class.isAssignableFrom(poClass)) {
-            return InventoryRO.class;
-        }
-        return null;
     }
 
     @Override
@@ -375,6 +291,7 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
         Checkbox h = new Checkbox("Include History");
         h.addValueChangeListener(e -> setFixedFilter("Type=" + type + (e.getValue() ? "" : " AND Status<2")));
         buttonPanel.add(new Button("Search", e -> searchFilter()), h);
+        buttonPanel.add(new Button("View Source", e -> viewSource()));
         super.addExtraButtons();
     }
 
@@ -390,60 +307,16 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
 
     @Override
     public void doAdd() {
-        SendItemsForRepair roBrowser = createROBrowser();
-        if(roBrowser != null) {
-            close();
-            if(!fromPOs) {
-                roBrowser.setCaption("Create GRNs");
-                roBrowser.setForGRNs();
-            }
-            roBrowser.execute();
-            roBrowser.load();
+        if(source == null) {
             return;
         }
-        POBrowser<?> poBrowser = createPOBrowser();
-        if(poBrowser == null) {
+        ObjectBrowser<?> source = this.source.apply(editor.store, allowSwitchStore);
+        if(source == null) {
             return;
         }
         close();
-        if(!fromPOs) {
-            poBrowser.setCaption("Create GRNs");
-            poBrowser.setForGRNs();
-            poBrowser.filter = "Status<4 AND Status>0";
-            poBrowser.setFixedFilter(poBrowser.filter, false);
-        }
-        if(editor.store != null) {
-            poBrowser.setStore(editor.store, allowSwitchStore);
-        } else {
-            poBrowser.setAllowSwitchStore(allowSwitchStore);
-        }
-        poBrowser.execute();
-        poBrowser.load();
-    }
-
-    public POBrowser<?> createPOBrowser() {
-        if(poClass == null) {
-            return null;
-        }
-        if(InventoryPO.class.isAssignableFrom(poClass)) {
-            return (POBrowser<?>) getApplication().getServer()
-                    .execute(new Logic("B:" + poClass.getName(), null), false);
-        }
-        try {
-            return (POBrowser<?>) poClass.getDeclaredConstructor().newInstance();
-        } catch(Throwable e) {
-            return null;
-        }
-    }
-
-    public SendItemsForRepair createROBrowser() {
-        if(type == 3 || SendItemsForRepair.class == poClass || poClass == InventoryRO.class) {
-            if(editor.store == null) {
-                return new SendItemsForRepair();
-            }
-            return new SendItemsForRepair(editor.store.getStoreBin());
-        }
-        return null;
+        source.execute();
+        source.load();
     }
 
     @Override
@@ -531,27 +404,6 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
                 map(InventoryVirtualLocation::getEntity).toList();
     }
 
-    public void setEditorProvider(ObjectEditorProvider editorProvider) {
-        if(editorProvider != null) {
-            editor.editorProvider = editorProvider;
-        }
-    }
-
-    /**
-     * This is invoked whenever the GRN status is changed.
-     *
-     * @param grn Current GRN.
-     */
-    protected void statusChanged(InventoryGRN grn) {
-    }
-
-    private void changedStatus(InventoryGRN grn) {
-        statusChanged(grn);
-        if(grnProducer != null) {
-            grnProducer.statusOfGRNChanged(grn);
-        }
-    }
-
     /**
      * This method is invoked when the button is pressed to mark the GRN as inspected/received. This method may show
      * appropriate messages and may return <code>false</code> if some other associated data is incomplete.
@@ -565,13 +417,12 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
 
     private class GRNEditor extends ObjectEditor<InventoryGRN> {
 
-        private ObjectEditorProvider editorProvider = new ObjectEditorProvider() {};
         private final int type;
         private ObjectField<Entity> supplierField;
         private ObjectLinkField<InventoryGRNItem> grnItemsField;
         private DateField dateField;
         private GRNItemGrid grnItemGrid;
-        private InventoryStore store;
+        private InventoryStore  store;
         private final NewGRNItemForm newGRNItemForm = new NewGRNItemForm();
         private final Button process = new Button("Mark as Inspected", VaadinIcon.CHECK, e -> process());
         private final Button close = new Button("Mark as Received", VaadinIcon.THUMBS_UP_O, e -> process());
@@ -717,7 +568,7 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
                 message("Already closed, no further action possible");
                 return;
             }
-            if(canFinalize(grn) && (grnProducer == null || grnProducer.canFinalize(grn))) {
+            if(canFinalize(grn)) {
                 if(grn.getStatus() == 1) {
                     preCloseGRN(grn);
                 } else {
@@ -903,7 +754,6 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
                 message("Status changed to: " + grn.getStatusValue());
                 ((GRN)getGrid()).refresh(grn);
             }
-            changedStatus(grn);
         }
 
         @Override
@@ -952,27 +802,6 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
         public void editingCancelled() {
             super.editingCancelled();
             enableExtraButtons();
-        }
-
-        @Override
-        public void extraInfoCreated(StoredObject extraInfo) {
-            if(grnProducer != null) {
-                grnProducer.extraGRNInfoCreated(getObject(), extraInfo);
-            }
-        }
-
-        @Override
-        public void extraInfoLoaded(StoredObject extraInfo) {
-            if(grnProducer != null) {
-                grnProducer.extraGRNInfoLoaded(getObject(), extraInfo);
-            }
-        }
-
-        @Override
-        public void savingExtraInfo(StoredObject extraInfo) throws Exception {
-            if(grnProducer != null) {
-                grnProducer.savingGRNExtraInfo(getObject(), extraInfo);
-            }
         }
 
         private void clearAlert() {
@@ -1227,7 +1056,7 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
                     itemEditor = null;
                 }
                 if(itemEditor == null) {
-                    itemEditor = editorProvider.createEditor(item.getClass());
+                    itemEditor = ObjectEditor.create(item.getClass());
                     itemEditor.setCaption("Inspect " + StringUtility.makeLabel(item.getPartNumber().getClass()));
                     itemEditor.setFieldHidden("Location");
                     itemEditor.setFieldReadOnly("Quantity", "Cost", "Location", "PartNumber");
@@ -1649,6 +1478,16 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
         countLabel.clearContent().append(String.valueOf(size()), Application.COLOR_SUCCESS).update();
     }
 
+    private void viewSource() {
+        InventoryGRN grn = selected();
+        if(grn == null) {
+            return;
+        }
+        Application a = Application.get();
+        grn.listMasters(StoredObject.class, true)
+                .forEach(m -> a.view(grn.getReference() + " - " + StringUtility.makeLabel(m.getClass()), m));
+    }
+
     @Override
     public boolean canSearch() {
         return false;
@@ -1745,6 +1584,54 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
                         .append(filter, Application.COLOR_INFO).update();
             }
             return true;
+        }
+    }
+
+    public void setSource(String label, Class<?> browserClass, Class<? extends StoredObject> soClass) {
+        this.source = null;
+        if(browserClass == null || label == null) {
+            return;
+        }
+        String sourceName = browserClass.getName();
+        Method m = null;
+        while (m == null) {
+            if(browserClass == Object.class) {
+                break;
+            }
+            try {
+                m = browserClass.getDeclaredMethod("createNew", Class.class, InventoryStore.class, boolean.class);
+                int modifier = m.getModifiers();
+                if(Modifier.isStatic(modifier) && Modifier.isPublic(modifier)) {
+                    break;
+                }
+            } catch (NoSuchMethodException ignored) {
+            }
+            browserClass = browserClass.getSuperclass();
+        }
+        if(m == null) {
+            error(label + " - Method not found:  public static void createNew(InventoryStore store, boolean allowSwitching) in "
+                    + sourceName);
+            return;
+        }
+        try {
+            Method finalM = m;
+            this.source = (store, allowed) -> {
+                Application a = Application.get();
+                try {
+                    Object ob = finalM.invoke(null, soClass, store, allowed);
+                    return (ObjectBrowser<?>) ob;
+                } catch (Throwable e) {
+                    a.access(() -> error("Unable to jump to " + label));
+                }
+                return null;
+            };
+        } catch (Exception e) {
+            error(e);
+        }
+        if(add != null) {
+            add.setVisible(true);
+            add.setText(label);
+            add.setIcon(VaadinIcon.FILE_TABLE);
         }
     }
 }

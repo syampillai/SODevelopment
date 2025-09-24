@@ -507,4 +507,9 @@ public final class InventoryGRNItem extends StoredObject implements Detail, HasI
     public List<Tax> computeTax(Date date, TaxRegion region, Currency localCurrency) {
         return region.computeTax(date, this, getItem(), quantity, unitCost, localCurrency);
     }
+
+    @Override
+    public InventoryItemType getInventoryItemType() {
+        return getPartNumber();
+    }
 }

@@ -1,12 +1,13 @@
 package com.storedobject.office;
 
+import com.storedobject.common.SORuntimeException;
 import com.storedobject.common.TextContentGenerator;
 import com.storedobject.core.*;
 
 public class TextReport extends TextContentProducer {
 
     private final Device device;
-    private Entity entity;
+    private boolean executed = false;
 
     /**
      * Constructor.
@@ -21,6 +22,14 @@ public class TextReport extends TextContentProducer {
 
     @Override
     public final void execute() {
+        if(!executed) {
+            executed = true;
+            if(isBlocked("Excel")) {
+                throw new SORuntimeException(AccessControl.MESSAGE);
+            }
+            getDevice().view(this);
+            return;
+        }
         super.execute();
     }
 
@@ -35,15 +44,6 @@ public class TextReport extends TextContentProducer {
 
     public final void setEntity(Entity entity) {
         this.entity = entity;
-    }
-
-    @Override
-    public final Entity getEntity() {
-        if(entity != null) {
-            return entity;
-        }
-        TransactionManager tm = getTransactionManager();
-        return tm == null ? null : tm.getEntity().getEntity();
     }
 
     public final Device getDevice() {
