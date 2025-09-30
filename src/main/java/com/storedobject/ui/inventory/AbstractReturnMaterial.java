@@ -122,7 +122,7 @@ public abstract class AbstractReturnMaterial<M extends MaterialReturned, L exten
             }
             close();
             if(grns.size() == 1) {
-                createFrom(grns.get(0));
+                createFrom(grns.getFirst());
             } else {
                 SelectGrid<InventoryGRN> select;
                 select = new SelectGrid<>(InventoryGRN.class, grns,

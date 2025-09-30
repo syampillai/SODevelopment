@@ -21,7 +21,6 @@ public class ChangePartNumber extends DataForm {
     public ChangePartNumber(InventoryItem item) {
         super("Change Part Number");
         currentPNField.setReadOnly(true);
-        itemField.setLoadFilter(InventoryItem::isSerialized);
         itemField.addValueChangeListener(e -> {
             this.item = itemField.getObject();
             if(this.item == null) {

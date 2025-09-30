@@ -111,6 +111,7 @@ public abstract class InventoryTransfer extends StoredObject implements OfEntity
     public String getTagPrefix() {
         return switch (this) {
             case InventoryRO ignored -> "RO-";
+            case InventoryLoanOut ignored -> "LO-";
             case MaterialReturned ignored -> "MR-";
             case MaterialTransferred ignored -> "MT-";
             case InventorySale ignored -> "IS-";
@@ -231,7 +232,7 @@ public abstract class InventoryTransfer extends StoredObject implements OfEntity
     }
 
     public void setStatus(int status) {
-        if((status == 4 && !(this instanceof InventoryRO)) || !loading()) {
+        if((status == 4 && !(this instanceof InventoryReturn)) || !loading()) {
             throw new Set_Not_Allowed("Status");
         }
         this.status = status;
@@ -393,7 +394,7 @@ public abstract class InventoryTransfer extends StoredObject implements OfEntity
         InventoryLocation to = getToLocation();
         InventoryLocation from = getFromLocation();
         if(items.isEmpty()) {
-            if(!(from.getType() == 0 && to.getType() == 3)) { // Not a RO
+            if(!(from.getType() == 0 && to.getType() == 3)) { // Not an RO
                 throw new Invalid_State("No items!");
             }
         }
@@ -402,7 +403,7 @@ public abstract class InventoryTransfer extends StoredObject implements OfEntity
         InventoryGRN grn = null;
         if(!items.isEmpty() && to.getType() == 0 // Received at a store
                 && switch(from.getType()) {
-            case 2, 3, 8, 9, 17 -> true; // Customer/consumer, Repair return, Loan return, Loan from, External customer
+            case 2, 3, 8, 9, 17 -> true; // Customer/consumer return, Repair return, Loan return, Loan from, From external customer
             default -> false;
         }) {
             grn = new InventoryGRN();
@@ -422,58 +423,48 @@ public abstract class InventoryTransfer extends StoredObject implements OfEntity
             grn.setStatus(2);
             grn.attachConsignmentFrom(transaction,this);
             grn.save(transaction);
-            List<InventoryRO> ros = list(InventoryRO.class, "FromLocation=" + to.getId()
-                    + " AND Status IN (1,2)").toList();
-            int n = ros.size();
-            InventoryRO amended;
+            List<InventoryTransfer> returns = list(getClass(), "FromLocation=" + to.getId()
+                    + " AND Status IN (1,2)").map(r -> (InventoryTransfer)r).toList();
+            int n = returns.size();
+            InventoryTransfer amended;
             for(int i = 0; i < n; i++) {
-                amended = ros.get(i);
+                amended = returns.get(i);
                 if(amended.getAmendment() > 0) {
                     while(true) {
-                        amended = amended.listLinks(InventoryRO.class).single(false);
+                        amended = amended.listLinks(getClass()).single(false);
                         if(amended == null) {
                             break;
                         }
-                        ros.add(amended);
+                        returns.add(amended);
                         if(amended.getAmendment() == 0) {
                             break;
                         }
                     }
                 }
             }
-            List<InventoryItem> roItems;
+            List<InventoryItem> returnItems;
             boolean link;
-            for(InventoryRO ro : ros) {
-                roItems = ro.listLinks(InventoryROItem.class).map(InventoryTransferItem::getItem).toList();
-                link = roItems.removeIf(items::contains);
-                roItems.removeIf(ii -> !ii.getLocationId().equals(ro.getToLocationId()));
-                if(roItems.isEmpty() && ro.status != 3) {
-                    ro.status = 3;
-                    ro.save(transaction);
+            for(InventoryTransfer r : returns) {
+                returnItems = r.listLinks(InventoryTransferItem.class, true).map(InventoryTransferItem::getItem).toList();
+                link = returnItems.removeIf(items::contains);
+                returnItems.removeIf(ii -> !ii.getLocationId().equals(r.getToLocationId()));
+                if(returnItems.isEmpty() && r.status != 3) {
+                    r.status = 3;
+                    r.save(transaction);
                 }
                 if(link) {
-                    ro.addLink(transaction, grn);
+                    r.addLink(transaction, grn);
                 }
             }
         }
         status = 1;
         save(transaction);
-        Entity repairEntity = this instanceof InventoryRO ro ? ro.getRepairEntity() : null;
-        Entity customerEntity = this instanceof InventorySale is ? is.getCustomerEntity() : null;
         InventoryTransaction it = new InventoryTransaction(transaction.getManager(), date, getReference());
         it.setGRN(grn);
         for(InventoryTransferItem mri : mris) {
             item = mri.getItem();
             item.setInTransit(true);
-            if(repairEntity == null) {
-                if(customerEntity == null) {
-                    it.moveTo(item, mri.getQuantity(), null, to);
-                } else {
-                    it.sale(item, mri.getQuantity(), null, customerEntity);
-                }
-            } else {
-                it.sendForRepair(item, mri.getQuantity(), null, repairEntity);
-            }
+            mri.move(it, item, to, getEntityTo());
         }
         it.save(transaction);
         Map<Id, Id> itemsChanged = it.getItemsChanged();
@@ -584,5 +575,13 @@ public abstract class InventoryTransfer extends StoredObject implements OfEntity
 
     public boolean getApprovalRequired() {
         return false;
+    }
+
+    public final Entity getEntityFrom() {
+        return get(Entity.class, getFromLocation().getEntityId());
+    }
+
+    public final Entity getEntityTo() {
+        return get(Entity.class, getToLocation().getEntityId());
     }
 }

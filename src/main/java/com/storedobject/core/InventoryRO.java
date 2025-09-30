@@ -15,7 +15,7 @@ public final class InventoryRO extends InventoryReturn {
     }
 
     public Entity getRepairEntity() {
-        return getReturningEntity();
+        return getEntityTo();
     }
 
     @Override

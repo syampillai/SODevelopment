@@ -49,24 +49,27 @@ public class ReceiveAndBin extends ListGrid<InventoryItem> implements Transactio
     }
 
     public ReceiveAndBin(Date date, String reference, List<InventoryItem> itemList, TransactionManager.Transact update,
-                         Runnable refresher, GRNEditor grnEditor, boolean allowPNChange) {
-        this(date, reference, itemList, update, refresher, grnEditor, allowPNChange, false);
+                         Runnable refresher, GRNEditor grnEditor, boolean allowSNChange) {
+        this(date, reference, itemList, update, refresher, grnEditor, allowSNChange, new Component[]{});
     }
 
     public ReceiveAndBin(Date date, String reference, List<InventoryItem> itemList, TransactionManager.Transact update,
-                         Runnable refresher, GRNEditor grnEditor, boolean allowPNChange, boolean allowSNChange) {
+                         Runnable refresher, GRNEditor grnEditor, boolean allowSNChange, Component... extraComponents) {
         super(InventoryItem.class, filtered(itemList),
                 StringList.create("PartNumber.Name AS Item", "PartNumber.PartNumber AS Part Number",
                         "SerialNumberDisplay as Serial/Batch", "Quantity", "InTransit", "Location"));
         this.update = update;
         this.refresher = refresher;
-        Button changePN = new Button("Change P/N", VaadinIcon.EXCHANGE, e -> changePN());
-        Button changeSN = new Button("Change S/N", VaadinIcon.BARCODE, e -> changeSN());
-        buttonLayout.add(new ELabel("Date"), dateField, new ELabel("Reference"), referenceField, process,
-                changePN, changeSN);
-        changePN.setVisible(allowPNChange);
-        changeSN.setVisible(allowSNChange);
-        if(grnEditor != null && grnEditor.getObject() != null) {
+        Button changeSN = allowSNChange ? new Button("Change S/N or B/N", VaadinIcon.BARCODE, e -> changeSN()) : null;
+        buttonLayout.add(new ELabel("Date"), dateField, new ELabel("Reference"), referenceField, process, changeSN);
+        if (extraComponents != null) {
+            for (Component c : extraComponents) {
+                if (c != null) {
+                    buttonLayout.add(c);
+                }
+            }
+        }
+        if (grnEditor != null && grnEditor.getObject() != null) {
             buttonLayout.add(new Button("GRN", VaadinIcon.FILE_TABLE, e -> {
                 grnEditor.abort();
                 grnEditor.execute(getView());
@@ -79,7 +82,7 @@ public class ReceiveAndBin extends ListGrid<InventoryItem> implements Transactio
         dateField.setValue(date);
         referenceField.setValue(reference);
         process.setVisible(update != null || refresher != null);
-        if(process.isVisible()) {
+        if (process.isVisible()) {
             process.setText("Receive");
         }
         new ItemContextMenu<>(this);
@@ -97,7 +100,7 @@ public class ReceiveAndBin extends ListGrid<InventoryItem> implements Transactio
 
     @Override
     public int getRelativeColumnWidth(String columnName) {
-        return switch(columnName) {
+        return switch (columnName) {
             case "PartNumber" -> 4;
             case "Location" -> 3;
             case "InTransit" -> 1;
@@ -116,8 +119,8 @@ public class ReceiveAndBin extends ListGrid<InventoryItem> implements Transactio
 
     @Override
     public void execute(View lock) {
-        if(isEmpty()) {
-            if(update == null && refresher == null) {
+        if (isEmpty()) {
+            if (update == null && refresher == null) {
                 warning("No items to inspect/bin");
             } else {
                 process();
@@ -129,7 +132,7 @@ public class ReceiveAndBin extends ListGrid<InventoryItem> implements Transactio
 
     private ButtonLayout actionButton(InventoryItem item) {
         ButtonLayout b = new ButtonLayout(new Button("Inspect", VaadinIcon.STOCK, e -> inspect(item)).asSmall());
-        if(item.getLocation() instanceof InventoryBin) {
+        if (item.getLocation() instanceof InventoryBin) {
             b.add(new Button("Bin", VaadinIcon.STORAGE, e -> binner.binItem(item)).asSmall());
         }
         return b;
@@ -138,7 +141,7 @@ public class ReceiveAndBin extends ListGrid<InventoryItem> implements Transactio
     public String getLocation(InventoryItem item) {
         StringBuilder s = new StringBuilder(item.getLocationDisplay());
         InventoryLocation newLoc = bins.get(item.getId());
-        if(newLoc != null && !newLoc.getId().equals(item.getLocationId())) {
+        if (newLoc != null && !newLoc.getId().equals(item.getLocationId())) {
             s.append(" -> ");
             s.append(newLoc.toDisplay());
         }
@@ -152,19 +155,19 @@ public class ReceiveAndBin extends ListGrid<InventoryItem> implements Transactio
     private void process(boolean check) {
         clearAlerts();
         Date d = dateField.getValue();
-        if(d.before(date)) {
+        if (d.before(date)) {
             warning("Date shouldn't be less than " + DateUtility.formatDate(date));
             return;
         }
         String reference = referenceField.getValue();
-        if(reference.isEmpty()) {
+        if (reference.isEmpty()) {
             warning("Reference can't be empty");
             return;
         }
         clearAlerts();
         List<InventoryItem> list = stream().filter(InventoryItem::getInTransit).toList();
-        if(check) {
-            if(!list.isEmpty()) {
+        if (check) {
+            if (!list.isEmpty()) {
                 new ActionGrid<>(InventoryItem.class, list, "The following items are not inspected!",
                         () -> process(false)) {
                     @Override
@@ -175,34 +178,34 @@ public class ReceiveAndBin extends ListGrid<InventoryItem> implements Transactio
                 return;
             }
         } else {
-            for(InventoryItem ii: list) {
+            for (InventoryItem ii : list) {
                 previousLocation = ii.getLocation();
                 ii.setInTransit(false);
-                if(!transact(ii::save) || !saveItem2(ii)) {
+                if (!transact(ii::save) || !saveItem2(ii)) {
                     return;
                 }
             }
         }
-        if(transact(t -> {
+        if (transact(t -> {
             InventoryTransaction it = new InventoryTransaction(getTransactionManager(), d, reference);
             boolean any = false;
             InventoryLocation newBin;
-            for(InventoryItem item: this) {
+            for (InventoryItem item : this) {
                 newBin = bins.get(item.getId());
-                if(newBin != null && !newBin.getId().equals(item.getLocationId())) {
+                if (newBin != null && !newBin.getId().equals(item.getLocationId())) {
                     any = true;
                     it.moveTo(StoredObject.get(item.getClass(), item.getId()), reference, newBin);
                 }
             }
-            if(any) {
+            if (any) {
                 it.save(t);
             }
-            if(update != null) {
+            if (update != null) {
                 update.transact(t);
             }
         })) {
             close();
-            if(refresher != null) {
+            if (refresher != null) {
                 refresher.run();
             }
             message("Done");
@@ -215,10 +218,10 @@ public class ReceiveAndBin extends ListGrid<InventoryItem> implements Transactio
 
     private void inspect(InventoryItem item, boolean editSN) {
         clearAlerts();
-        if(itemEditor != null && itemEditor.getObjectClass() != item.getClass()) {
+        if (itemEditor != null && itemEditor.getObjectClass() != item.getClass()) {
             itemEditor = null;
         }
-        if(itemEditor == null) {
+        if (itemEditor == null) {
             itemEditor = ObjectEditor.create(item.getClass());
             itemEditor.setCaption("Inspect Item");
             itemEditor.setFieldHidden("Location");
@@ -234,18 +237,18 @@ public class ReceiveAndBin extends ListGrid<InventoryItem> implements Transactio
     }
 
     private boolean saveItem(InventoryItem item) {
-        if(!transact(t -> itemEditor.save(t))) {
+        if (!transact(t -> itemEditor.save(t))) {
             return false;
         }
         return saveItem2(item);
     }
 
     private boolean saveItem2(InventoryItem item) {
-        if(item.isSerialized()) {
+        if (item.isSerialized()) {
             refresh(item);
         } else {
             removeIf(i -> {
-                if(i.getId().equals(item.getId()) ||
+                if (i.getId().equals(item.getId()) ||
                         !i.getPartNumberId().equals(item.getPartNumberId()) ||
                         !i.getLocationId().equals(item.getLocationId()) ||
                         !i.getOwnerId().equals(item.getOwnerId())) {
@@ -256,11 +259,11 @@ public class ReceiveAndBin extends ListGrid<InventoryItem> implements Transactio
             refresh();
         }
         InventoryLocation bin = bins.get(item.getId());
-        if(bin != null && !bin.canBin(item)) {
+        if (bin != null && !bin.canBin(item)) {
             warning("This item can't be stored at location '" + bin.toDisplay() +
                     "'. Please choose a suitable location.");
         }
-        if(!item.getLocationId().equals(previousLocation.getId())) {
+        if (!item.getLocationId().equals(previousLocation.getId())) {
             warning("Due to change in serviceability status, item is removed from '" + previousLocation.toDisplay()
                     + "'. Please move it to suitable location.");
         }
@@ -270,10 +273,10 @@ public class ReceiveAndBin extends ListGrid<InventoryItem> implements Transactio
     private InventoryItem selected() {
         clearAlerts();
         InventoryItem item = getSelected();
-        if(item == null && size() == 1) {
+        if (item == null && size() == 1) {
             item = get(0);
         }
-        if(item == null) {
+        if (item == null) {
             warning("Please select an item");
             return null;
         }
@@ -282,23 +285,10 @@ public class ReceiveAndBin extends ListGrid<InventoryItem> implements Transactio
 
     private void changeSN() {
         InventoryItem item = selected();
-        if(item == null) {
+        if (item == null) {
             return;
         }
         inspect(item, true);
-    }
-
-    private void changePN() {
-        InventoryItem item = selected();
-        if(item == null) {
-            return;
-        }
-        ChangePartNumber cpn = new ChangePartNumber(item);
-        cpn.setRefresher(() -> {
-            item.reload();
-            refresh(item);
-        });
-        cpn.execute(getView());
     }
 
     private class BinEditor extends DataForm {
@@ -321,12 +311,12 @@ public class ReceiveAndBin extends ListGrid<InventoryItem> implements Transactio
             InventoryLocation loc = item.getLocation();
             currentLocField.clearContent().append(loc.toDisplay());
             InventoryBin bin = bins.get(item.getId());
-            if(loc instanceof InventoryBin) {
+            if (loc instanceof InventoryBin) {
                 InventoryStore store = ((InventoryBin) loc).getStore();
                 binField.setStore(store);
-                if(bin == null) {
+                if (bin == null) {
                     bin = store.findBin(item);
-                    if(bin == null) {
+                    if (bin == null) {
                         message("Unable to suggest a suitable storage location from prior experience!");
                     }
                 }
@@ -341,7 +331,7 @@ public class ReceiveAndBin extends ListGrid<InventoryItem> implements Transactio
         }
 
         private boolean invalidBin(InventoryBin bin) {
-            if(bin != null && (bin instanceof InventoryReservedBin || (item != null && !bin.canBin(item)))) {
+            if (bin != null && (bin instanceof InventoryReservedBin || (item != null && !bin.canBin(item)))) {
                 warning("Can't store it there!");
                 binField.focus();
                 return true;
@@ -359,17 +349,17 @@ public class ReceiveAndBin extends ListGrid<InventoryItem> implements Transactio
         protected boolean process() {
             clearAlerts();
             InventoryBin bin = binField.getValue();
-            if(invalidBin(bin)) {
+            if (invalidBin(bin)) {
                 return false;
             }
-            if(bin == null) {
+            if (bin == null) {
                 bins.remove(item.getId());
             } else {
                 bins.put(item.getId(), bin);
             }
             refresh(item);
             recalculateColumnWidths();
-            if(!process.isVisible()) {
+            if (!process.isVisible()) {
                 process.setVisible(true);
             }
             return true;

@@ -2,6 +2,11 @@ package com.storedobject.core;
 
 import com.storedobject.core.annotation.Column;
 
+/**
+ * Class that represents a type of inventory transfer that is returned later.
+ *
+ * @author Syam
+ */
 public abstract class InventoryReturn extends InventoryTransfer implements TradeType {
 
     private boolean approvalRequired = true;
@@ -32,10 +37,6 @@ public abstract class InventoryReturn extends InventoryTransfer implements Trade
     @Override
     public boolean getApprovalRequired() {
         return approvalRequired;
-    }
-
-    public Entity getReturningEntity() {
-        return get(Entity.class, getToLocation().getEntityId());
     }
 
     /**

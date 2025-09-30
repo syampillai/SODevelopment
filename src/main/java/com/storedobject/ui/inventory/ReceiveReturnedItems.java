@@ -5,7 +5,6 @@ import com.storedobject.common.StringList;
 import com.storedobject.core.*;
 import com.storedobject.ui.Application;
 import com.storedobject.ui.ELabel;
-import com.storedobject.ui.Transactional;
 import com.storedobject.vaadin.*;
 import com.vaadin.flow.component.icon.VaadinIcon;
 
@@ -13,7 +12,6 @@ import java.sql.Date;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Return items from an external organization / custody that were sent to them earlier
@@ -21,13 +19,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * 
  * @author Syam
  */
-public class ReceiveReturnedItems extends DataForm implements Transactional {
+public class ReceiveReturnedItems extends HandleReturnedItems {
 
-    private InventoryStoreBin storeBin;
-    private InventoryLocation eo; // External organization or custody
-    private final LocationField storeField;
-    private final LocationField eoField;
-    private final int type;
     private Date date, invoiceDate;
     private String invoiceRef;
     private Runnable cancelAction;
@@ -53,40 +46,7 @@ public class ReceiveReturnedItems extends DataForm implements Transactional {
     }
 
     public ReceiveReturnedItems(int type, InventoryStoreBin storeBin, InventoryLocation eo) {
-        super(caption(type));
-        this.type = type;
-        this.storeBin = storeBin;
-        this.eo = eo;
-        if(storeBin == null) {
-            storeField = LocationField.create(0);
-            if(storeField.getLocationCount() == 1) {
-                this.storeBin = (InventoryStoreBin) storeField.getValue();
-            }
-        } else {
-            storeField = LocationField.create(storeBin);
-        }
-        storeField.setLabel("Select Store");
-        if(eo == null) {
-            eoField = LocationField.create(type);
-            if(eoField.getLocationCount() == 1) {
-                this.eo = eoField.getValue();
-            }
-        } else {
-            if(eo.getType() != type) {
-                throw new SORuntimeException("Incorrect - " + eo.getTypeValue());
-            }
-            eoField = LocationField.create(eo);
-        }
-        eoField.setLabel(type == 18 ? "Custodian" : "Organization");
-        addField(storeField, eoField);
-        if(storeBin != null) {
-            setFieldReadOnly(storeField);
-        }
-        if(eo != null) {
-            setFieldReadOnly(eoField);
-        }
-        setRequired(storeField);
-        setRequired(eoField);
+        super(caption(type), type, storeBin, eo, true);
     }
 
     public void setCancelAction(Runnable cancelAction) {
@@ -101,15 +61,10 @@ public class ReceiveReturnedItems extends DataForm implements Transactional {
         }
     }
 
-    @Override
-    public int getMinimumContentWidth() {
-        return 55;
-    }
-
     private static String caption(int type) {
         String caption = switch(type) {
             case 3 -> "Receive Repaired Items";
-            case 8 -> "Receive Lease Returns";
+            case 8 -> "Receive Loan/Rent/Lease Returns";
             case 18 -> "Receive Tools Returned";
             default -> null;
         };
@@ -119,87 +74,9 @@ public class ReceiveReturnedItems extends DataForm implements Transactional {
         return caption;
     }
 
-    private static InventoryLocation eoName(String storeAndEOName, int type) {
-        if(storeAndEOName == null || !storeAndEOName.contains("|")) {
-            return null;
-        }
-        storeAndEOName = storeAndEOName.substring(storeAndEOName.indexOf('|') + 1).trim();
-        if(storeAndEOName.isEmpty()) {
-            return null;
-        }
-        return LocationField.getLocation(storeAndEOName, type);
-    }
-
     @Override
-    protected void execute(View parent, boolean doNotLock) {
-        if(storeBin != null && eo != null) {
-            proceed();
-            return;
-        }
-        super.execute(parent, doNotLock);
-    }
-
-    @Override
-    protected boolean process() {
-        close();
-        if(storeBin == null) {
-            storeBin = (InventoryStoreBin) storeField.getValue();
-        }
-        if(eo == null) {
-            eo = eoField.getValue();
-        }
-        proceed();
-        return true;
-    }
-
-    private void proceed() {
-        List<Id> amends = new ArrayList<>();
-        StoredObject.list(InventoryTransfer.class,
-                "Status=0 AND Amendment>0 AND ToLocation=" + eo.getId(), true)
-                .forEach(it -> it.listLinks(InventoryTransferItem.class, true)
-                        .forEach(iti -> amends.add(iti.getItemId())));
-        AtomicBoolean amended = new AtomicBoolean(false);
-        List<InventoryItem> items = StoredObject.list(InventoryItem.class, "Location=" + eo.getId(), true)
-                .filter(i -> {
-                    if(validLoc(i)) {
-                        if(!amends.contains(i.getId())) {
-                            return true;
-                        }
-                        amended.set(true);
-                    }
-                    return false;
-                })
-                .filter( i -> !amends.contains(i.getId()) && validLoc(i)).toList();
-        if(items.isEmpty()) {
-            processOld();
-            message("For this store, no items pending to be received from:<BR/>" + eo.toDisplay());
-            if(amended.get()) {
-                warning("Note: Amended entries exist that require attention!");
-            }
-            return;
-        }
+    protected void proceed(List<InventoryItem> items) {
         new Select(items, true).execute();
-    }
-
-    private boolean validLoc(InventoryItem ii) {
-        InventoryLocation pLoc = ii.getPreviousLocation();
-        if(pLoc == null) {
-            return true; // Should not happen
-        }
-        // The previous location was a repair location:
-        // Check if it was moved from there to the current repair location.
-        // This can happen if the repair location was not correct and the RO was amended to correct it.
-        if(pLoc.getType() == 3) {
-            int step = 0;
-            while (pLoc.getType() == 3) {
-                ++step;
-                pLoc = ii.getPreviousLocation(step);
-                if (pLoc == null) {
-                    return false; // Should not happen
-                }
-            }
-        }
-        return pLoc instanceof InventoryBin bin && bin.getStoreId().equals(storeBin.getStoreId());
     }
 
     private void process(List<InventoryItem> allItems, Set<InventoryItem> selectedItems, boolean confirm) {
@@ -207,11 +84,11 @@ public class ReceiveReturnedItems extends DataForm implements Transactional {
         InventoryItem item;
         List<MaterialReturnedItem> returnedItems;
         List<MaterialReturned> returns = StoredObject.list(MaterialReturned.class,
-                "FromLocation=" + eo.getId() + " AND Status<2").toList();
+                "FromLocation=" + eo.getId() + " AND Status<2", true).toList();
         for(MaterialReturned returned: returns) {
-            returnedItems = returned.listLinks(MaterialReturnedItem.class).toList();
-            for(InventoryTransferItem grnItem: returnedItems) {
-                item = grnItem.getItem();
+            returnedItems = returned.listLinks(MaterialReturnedItem.class, true).toList();
+            for(MaterialReturnedItem mri: returnedItems) {
+                item = mri.getItem();
                 if(item == null) {
                     continue;
                 }
@@ -271,7 +148,7 @@ public class ReceiveReturnedItems extends DataForm implements Transactional {
         v.receive(returnedToProcess);
     }
 
-    private void processOld() {
+    protected void processOld() {
         new ReceiveMaterialReturned(storeBin, eo).execute();
     }
 
@@ -324,20 +201,23 @@ public class ReceiveReturnedItems extends DataForm implements Transactional {
 
         @Override
         public void createHeaders() {
+            SearchField searchField = new SearchField(this::search).toUpperCase().trim();
+            searchField.setPlaceholder("P/N or S/N");
             if(type == 3) { // RO
-                SearchField searchField = new SearchField(this::search).toUpperCase().trim();
-                searchField.setPlaceholder("P/N or S/N");
                 prependHeader().join().setComponent(new ButtonLayout(new ELabel("Search: "), searchField,
                         new ELabel("Date: "), dateField,
                         new ELabel(" Invoice No.: "), invoiceRefField,
                         new ELabel(" Invoice Date: "),
                         invoiceDateField));
+            } else {
+                prependHeader().join().setComponent(new ButtonLayout(new ELabel("Search: "), searchField));
             }
-            if(confirm) {
-                return;
-            }
+            prependHeader().join()
+                    .setComponent(new ELabel("If you are receiving replacements or lesser quantities, please define the replacement items first before going ahead with this.",
+                            Application.COLOR_ERROR));
+            if(confirm) return;
             ELabel h = new ELabel(
-                    "These items will be received, please double-check and confirm! Undo not possible after this step!!",
+                    "Warning: These items will be received, please double-check and confirm! Undo not possible after this step!!",
                     Application.COLOR_ERROR);
             prependHeader().join().setComponent(h);
         }

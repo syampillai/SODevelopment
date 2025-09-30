@@ -101,6 +101,10 @@ public final class InventoryVirtualLocation extends InventoryLocation {
         return getFor(systemEntity.getEntityId(), 16);
     }
 
+    public static InventoryVirtualLocation getConsumptionLocation(Entity entity) {
+        return getFor(entity.getId(), 21);
+    }
+
     public static InventoryVirtualLocation getRecycleLocation() {
         return new InventoryVirtualLocation();
     }

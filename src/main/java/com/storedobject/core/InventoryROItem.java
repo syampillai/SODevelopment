@@ -2,7 +2,7 @@ package com.storedobject.core;
 
 import com.storedobject.core.annotation.Column;
 
-public final class InventoryROItem extends InventoryReturnItem {
+public class InventoryROItem extends InventoryReturnItem {
 
     private String repairDetail;
     private Money costOfRepair = new Money();
@@ -21,8 +21,6 @@ public final class InventoryROItem extends InventoryReturnItem {
                 "Item.PartNumber.PartNumber AS Part Number",
                 "Item.SerialNumber AS Serial/Batch Number",
                 "Quantity",
-                "OriginalItem.PartNumber.PartNumber AS Original Part Number",
-                "OriginalItem.SerialNumber AS Original Serial/Batch Number",
                 "CostOfRepair",
                 "RepairDetail",
                 "ItemType",
@@ -55,5 +53,10 @@ public final class InventoryROItem extends InventoryReturnItem {
     public String getItemType() {
         InventoryItem item = getItem();
         return item.isConsumable() ? "Consumable" : (item.isRepairAllowed() ? "For repair" : "?");
+    }
+
+    @Override
+    protected void  move(InventoryTransaction transaction, InventoryItem item, InventoryLocation toLocation, Entity toEntity) {
+        transaction.sendForRepair(item, getQuantity(), null, toEntity);
     }
 }

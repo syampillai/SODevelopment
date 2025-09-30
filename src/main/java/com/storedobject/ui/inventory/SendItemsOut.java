@@ -1,5 +1,6 @@
 package com.storedobject.ui.inventory;
 
+import com.storedobject.common.SORuntimeException;
 import com.storedobject.core.*;
 import com.storedobject.ui.ObjectBrowser;
 import com.storedobject.ui.ObjectEditorProvider;
@@ -31,7 +32,7 @@ public abstract class SendItemsOut<R extends InventoryReturn, RI extends Invento
     private static int type(Class<?> rClass) {
         int type = InventoryRO.class.isAssignableFrom(rClass) ? 3 : (InventoryLoanOut.class.isAssignableFrom(rClass) ? 8 : -1);
         if(type < 0) {
-            throw new IllegalStateException("Not a return object: " + rClass.getName());
+            throw new SORuntimeException("Not a return type: " + rClass.getName());
         }
         return type;
     }

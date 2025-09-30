@@ -99,13 +99,10 @@ public final class InventoryTransaction {
     public void reverse(InventoryItem item, String reference) {
     }
 
-    public void sendForRepair(InventoryItem item, String reference, Entity repairEntity) {
-    }
-
     public void sendForRepair(InventoryItem item, Quantity quantity, String reference, Entity repairEntity) {
     }
 
-    public void loanTo(InventoryItem item, String reference, Entity entity) {
+    public void loanTo(InventoryItem item, Quantity quantity, String reference, Entity entity) {
     }
 
     public void receiveFromExternal(InventoryItem item, String reference, InventoryLocation to, Entity entity) {

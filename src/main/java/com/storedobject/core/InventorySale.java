@@ -41,6 +41,6 @@ public class InventorySale extends InventoryTransfer implements TradeType {
     }
 
     public Entity getCustomerEntity() {
-        return getRelated(Entity.class, getToLocation().getEntityId());
+        return getEntityTo();
     }
 }

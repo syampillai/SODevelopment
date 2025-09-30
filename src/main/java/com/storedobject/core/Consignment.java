@@ -12,7 +12,7 @@ public class Consignment extends StoredObject implements HasReference {
     private static final ReferencePattern<Consignment> ref = new ReferencePattern<>();
     private String reference;
     private final static String[] typeValues = new String[] {
-            "Material Return", "Repair", "Transfer", "GRN"
+            "Material Return", "Repair", "Transfer", "GRN", "Loan out"
     };
     private final Date date = DateUtility.today();
     private int no = 0, type = 0;
@@ -36,6 +36,8 @@ public class Consignment extends StoredObject implements HasReference {
             type = 0;
         } else if(InventoryRO.class.isAssignableFrom(parentClass)) {
             type = 1;
+        } else if(InventoryLoanOut.class.isAssignableFrom(parentClass)) {
+            type = 4;
         } else if(InventoryTransfer.class.isAssignableFrom(parentClass)) {
             type = 2;
         } else if(InventoryGRN.class.isAssignableFrom(parentClass)) {
@@ -207,22 +209,22 @@ public class Consignment extends StoredObject implements HasReference {
                 mt = (MaterialReturned) parent;
             }
             return mt == null ? null : mt.getSystemEntity();
-        } else if(type == 2) {
-            InventoryTransfer it;
+        } else if(type == 3) {
+            InventoryGRN grn;
             if(parent == null) {
-                it = listMasters(InventoryTransfer.class, true).findFirst();
+                grn = listMasters(InventoryGRN.class).findFirst();
             } else {
-                it = (InventoryTransfer) parent;
+                grn = (InventoryGRN) parent;
             }
-            return it == null ? null : it.getSystemEntity();
+            return grn == null ? null : grn.getSystemEntity();
         }
-        InventoryRO ro;
+        InventoryTransfer it;
         if(parent == null) {
-            ro = listMasters(InventoryRO.class).findFirst();
+            it = listMasters(InventoryTransfer.class, true).findFirst();
         } else {
-            ro = (InventoryRO) parent;
+            it = (InventoryTransfer) parent;
         }
-        return ro == null ? null : ro.getSystemEntity();
+        return it == null ? null : it.getSystemEntity();
     }
 
     Id loc() {

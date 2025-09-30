@@ -108,7 +108,7 @@ public class ItemField<I extends InventoryItem> extends ObjectGetField<I> implem
 
     /**
      * Fix the part number (an instance of {@link InventoryItemType}). If a non-null value is set,
-     * "part number" portion will be locked with that value. A <code>null</code> value may be set later
+     *  the "part number" portion will be locked with that value. A <code>null</code> value may be set later
      * to unlock it.
      *
      * @param partNumber Part number to set.
@@ -407,7 +407,7 @@ public class ItemField<I extends InventoryItem> extends ObjectGetField<I> implem
             if(Id.isNull(pnId)) {
                 return "false";
             }
-            List<InventoryItemType> apns = InventoryItemType.listAPNs(pnId);
+            List<InventoryItemType> apns = typeField.getObject().listAPNs();
             final StringBuilder f = new StringBuilder("T.PartNumber");
             if(apns.isEmpty()) {
                 f.append('=').append(pnId);

@@ -53,6 +53,7 @@ public class LocationField extends ObjectComboField<InventoryLocation> {
         if(!list.isEmpty()) {
             setValue(list.getFirst());
         }
+        setClearButtonVisible(true);
     }
 
     /**
@@ -134,29 +135,29 @@ public class LocationField extends ObjectComboField<InventoryLocation> {
 
     private static List<InventoryLocation> locations(int... types) {
         ArrayList<InventoryLocation> locations = new ArrayList<>();
-        StringBuilder stypes = new StringBuilder("Type IN (");
+        StringBuilder sTypes = new StringBuilder("Type IN (");
         boolean includeZero = false, includeCustodians = false;
         if(types == null || types.length == 0) {
             includeZero = true;
             includeCustodians = true;
-            stypes.append("10,14");
+            sTypes.append("10,14");
         } else if(types.length == 1 && types[0] == 0) {
             includeZero = true;
-            stypes = null;
+            sTypes = null;
         } else if(types.length == 1 && types[0] == 18) {
             includeCustodians = true;
-            stypes = null;
+            sTypes = null;
         } else {
-            int len = stypes.length();
+            int len = sTypes.length();
             for(int t: types) {
                 if(!includeZero) {
                     includeZero = t == 0;
                 }
                 if(t != 0) {
-                    if(stypes.length() > len) {
-                        stypes.append(',');
+                    if(sTypes.length() > len) {
+                        sTypes.append(',');
                     }
-                    stypes.append(t);
+                    sTypes.append(t);
                 }
             }
         }
@@ -166,11 +167,11 @@ public class LocationField extends ObjectComboField<InventoryLocation> {
         if(includeCustodians) {
             StoredObject.list(InventoryCustodyLocation.class).forEach(locations::add);
         }
-        if(stypes == null) {
+        if(sTypes == null) {
             return locations;
         }
-        stypes.append(')');
-        StoredObject.list(InventoryVirtualLocation.class, stypes + " AND Status=0").forEach(locations::add);
+        sTypes.append(')');
+        StoredObject.list(InventoryVirtualLocation.class, sTypes + " AND Status=0").forEach(locations::add);
         return locations;
     }
 
@@ -196,7 +197,7 @@ public class LocationField extends ObjectComboField<InventoryLocation> {
      * Remove a location from the list of allowed locations.
      *
      * @param location Location to be removed.
-     * @return Self reference.
+     * @return Self-reference.
      */
     public LocationField remove(InventoryLocation location) {
         if(location == null) {
@@ -215,7 +216,7 @@ public class LocationField extends ObjectComboField<InventoryLocation> {
      * Get the store for the given store name.
      *
      * @param storeName Name of the store.
-     * @return Store or null if store can't be identified from the name.
+     * @return Store or null if the store can't be identified from the name.
      */
     public static InventoryStore getStore(String storeName) {
         if(storeName == null) {
@@ -241,7 +242,7 @@ public class LocationField extends ObjectComboField<InventoryLocation> {
      * Get the location for the given location name. A run-time exception is raised if the location can't be found.
      *
      * @param locationName Name of the location.
-     * @return Location or null if empty location name is passed.
+     * @return Location or null if the empty location name is passed.
      */
     public static InventoryLocation getLocation(String locationName, int... types) {
         return getLocation(locationName, true, types);
@@ -252,7 +253,7 @@ public class LocationField extends ObjectComboField<InventoryLocation> {
      *
      * @param locationName Name of the location.
      * @param allowEmptyName If true, null will be returned if the location name passed is null or empty.
-     * @return Location or null if empty location name is passed and the parameter allowEmptyName is true.
+     * @return Location or null if an empty location name is passed and the parameter allowEmptyName is true.
      */
     public static InventoryLocation getLocation(String locationName, boolean allowEmptyName, int... types) {
         return location(allowEmptyName, locationName, types);

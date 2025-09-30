@@ -24,7 +24,6 @@ public class ReceiveMaterial extends DataForm {
             "GRN - From External Owners",
             "Tools Returned",
             "GRN - Loan from Lender",
-            //"Consumption Returns",
     };
     private static final String[] TYPE_4_LOCATIONS = new String[] {
             "Issued from Stores",
@@ -75,12 +74,13 @@ public class ReceiveMaterial extends DataForm {
         super("Receive Materials/Tools");
         if(toField == null) {
             if(to == null) {
-                this.toField = LocationField.create("Receive to", 0, 4, 5, 10, 11);
+                this.toField = LocationField.create("x", 0, 4, 5, 10, 11);
             } else {
-                this.toField = LocationField.create("To", to);
+                this.toField = LocationField.create("x", to);
                 setFieldReadOnly(this.toField);
             }
             this.toField.setLabel("Receive to");
+            this.toField.setValue((Id)null);
         } else {
             this.toField = toField;
             if(to != null) {
@@ -155,7 +155,6 @@ public class ReceiveMaterial extends DataForm {
                 case 6 -> grn(1, to);
                 case 7 -> new ReceiveReturnedItems(18, (InventoryStoreBin) to).execute();
                 case 8 -> grn(2, to);
-                case 9 -> new ConsumptionReturn((InventoryStoreBin) to).execute();
             }
         } else {
             switch(typeFieldForLocations.getValue()) {
@@ -170,14 +169,14 @@ public class ReceiveMaterial extends DataForm {
         GRN grn = new GRN(type, ((InventoryStoreBin) to).getStore());
         try {
             //noinspection unchecked
-            grn.setSource(label(type), JavaClassLoader.createClassFromProperty("PO-BROWSER-LOGIC-" + type),
+            grn.setSource(grnSourceLabel(type), JavaClassLoader.createClassFromProperty("PO-BROWSER-LOGIC-" + type),
                     (Class<? extends StoredObject>) JavaClassLoader.createClassFromProperty("PO-CLASS-" + type));
         } catch(SOException ignored) {
         }
         grn.execute();
     }
 
-    private String label(int type) {
+    private String grnSourceLabel(int type) {
         return switch(type) {
             case 0 -> "POs";
             case 1 -> "From External Owners";

@@ -137,4 +137,17 @@ public abstract class InventoryTransferItem extends StoredObject implements Deta
     public final boolean isDetailOf(Class<? extends StoredObject> masterClass) {
         return getClass().getName().equals(masterClass.getName() + "Item");
     }
+
+    /**
+     * Move the item to the specified location.
+     * <p>Note: The default implementation just moves the item vy invoking
+     * {@link InventoryTransaction#moveTo(InventoryItem, Quantity, String, InventoryLocation)} method.</p>
+     * @param transaction Transaction to be used.
+     * @param item Item to be moved (This is the same as the {@link #getItem()}, but its transit flag is already set.
+     * @param toEntity Target entity.
+     * @param toLocation Target location.
+     */
+    protected void  move(InventoryTransaction transaction, InventoryItem item, InventoryLocation toLocation, Entity toEntity) {
+        transaction.moveTo(item, quantity, null, toLocation);
+    }
 }

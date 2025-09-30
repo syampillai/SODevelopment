@@ -19,6 +19,7 @@ import java.util.function.Predicate;
 @SuppressWarnings({"resource", "UnusedReturnValue"})
 public class InventoryItem extends StoredObject implements HasInventoryItem {
 
+    static final WeakHashMap<Id, InventoryItemType> cachePN = new WeakHashMap<>();
     private static final Map<Id, Entity> owners = new HashMap<>();
     private Id partNumberId;
     private InventoryItemType partNumber;
@@ -110,7 +111,13 @@ public class InventoryItem extends StoredObject implements HasInventoryItem {
 
     public InventoryItemType getPartNumber() {
         if(partNumber == null) {
-            partNumber = get(getTransaction(), InventoryItemType.class, partNumberId, true);
+            synchronized (cachePN) {
+                partNumber = cachePN.get(partNumberId);
+                if(partNumber == null) {
+                    partNumber = get(getTransaction(), InventoryItemType.class, partNumberId, true);
+                    cachePN.put(partNumberId, partNumber);
+                }
+            }
         }
         return partNumber;
     }
@@ -135,6 +142,21 @@ public class InventoryItem extends StoredObject implements HasInventoryItem {
             return "";
         }
         return getSerialNumberShortName() + ": " + serialNumber;
+    }
+
+    /**
+     * Get the serial number for display purposes.
+     *
+     * @param includePN Include the part number in the display string.
+     * @return By default, the {@link #serialNumber} value is returned with the appropriate name prefix.
+     * But it can be overridden to display other details.
+     */
+    public String getSerialNumberDisplay(boolean includePN) {
+        String s = getSerialNumberDisplay();
+        if(includePN) {
+            s = getPartNumberShortName() + ": " + getPartNumber().getPartNumber() + ", " + s;
+        }
+        return s;
     }
 
     public void setBatchTag(String batchTag) {
@@ -217,7 +239,17 @@ public class InventoryItem extends StoredObject implements HasInventoryItem {
 
     private InventoryLocation getLocation(Transaction transaction) {
         if(location == null) {
-            location = get(transaction, InventoryLocation.class, locationId, true);
+            synchronized (InventoryVirtualLocation.cache) {
+                location = InventoryVirtualLocation.cache.get(locationId);
+            }
+            if(location == null) {
+                location = get(transaction, InventoryLocation.class, locationId, true);
+            }
+            if(location instanceof InventoryVirtualLocation vl) {
+                synchronized (InventoryVirtualLocation.cache) {
+                    InventoryVirtualLocation.cache.put(locationId, vl);
+                }
+            }
         }
         return location;
     }
