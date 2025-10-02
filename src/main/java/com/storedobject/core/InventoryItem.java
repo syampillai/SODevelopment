@@ -687,7 +687,10 @@ public class InventoryItem extends StoredObject implements HasInventoryItem {
         InventoryItem old = get(getClass(), getId());
         if(old == null) {
             if(!location.infiniteSource()) {
-                error = "Location: " + location.toDisplay();
+                error = switch (location.getType()) {
+                    case 3, 8 -> null; // Allows at: Repair locations, Loan out locations
+                    default -> "Location: " + location.toDisplay();
+                };
             }
         } else {
             if(!locationId.equals(old.locationId)) {

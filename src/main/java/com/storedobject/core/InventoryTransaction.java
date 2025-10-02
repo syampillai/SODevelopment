@@ -50,6 +50,14 @@ public final class InventoryTransaction {
         return new InventoryVirtualLocation();
     }
 
+    public static InventoryLocation createConsumptionLocation(TransactionManager tm, Entity entity) {
+        return new InventoryVirtualLocation();
+    }
+
+    public static InventoryLocation createConsumptionLocation(TransactionManager tm, SystemEntity systemEntity) {
+        return new InventoryVirtualLocation();
+    }
+
     public static InventoryLocation createRepairLocation(TransactionManager tm, Entity repairEntity) {
         return new InventoryVirtualLocation();
     }

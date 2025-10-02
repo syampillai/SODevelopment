@@ -78,10 +78,8 @@ public class MigratePartNumber extends DataForm implements Transactional {
 
     private InventoryItem convert(InventoryItem item, InventoryItemType newPN) {
         InventoryItem newItem = newPN.createItem();
-        JSONMap map = new JSONMap();
         try {
-            item.save(map);
-            newItem.load(map);
+            newItem.loadAttributesFrom(item);
         } catch(Throwable e) {
             error(e);
             throw new SORuntimeException(e);

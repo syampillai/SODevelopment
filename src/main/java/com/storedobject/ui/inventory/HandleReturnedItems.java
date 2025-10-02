@@ -4,6 +4,7 @@ import com.storedobject.common.SORuntimeException;
 import com.storedobject.core.*;
 import com.storedobject.ui.Transactional;
 import com.storedobject.vaadin.*;
+import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.icon.VaadinIcon;
 
 import java.util.ArrayList;
@@ -24,6 +25,8 @@ public abstract class HandleReturnedItems extends DataForm implements Transactio
     final LocationField eoField;
     final int type;
     private Button goToOld;
+    private boolean includeOnlyForStore;
+    private boolean defineReplacements = false;
 
     public HandleReturnedItems(String caption, int type, InventoryStoreBin storeBin, InventoryLocation eo, boolean allowJumpToOld) {
         super(caption);
@@ -65,13 +68,20 @@ public abstract class HandleReturnedItems extends DataForm implements Transactio
         if(allowJumpToOld) {
             goToOld = new Button("Previous Entries", VaadinIcon.COG_O, e -> goToOld());
         }
+        Checkbox includeOnlyForStore = new Checkbox("Include only items sent from the selected store and replacements");
+        includeOnlyForStore.addValueChangeListener(e -> this.includeOnlyForStore = e.getValue());
+        add(includeOnlyForStore);
     }
 
     @Override
     protected void buildButtons() {
         super.buildButtons();
+        if(goToOld == null) {
+            return;
+        }
         buttonPanel.remove(cancel);
-        buttonPanel.add(goToOld, cancel);
+        Button defineReplacements = new Button("Define Replacements", VaadinIcon.EXCHANGE, e -> defineReplacements());
+        buttonPanel.add(goToOld, defineReplacements, cancel);
     }
 
     @Override
@@ -100,31 +110,42 @@ public abstract class HandleReturnedItems extends DataForm implements Transactio
     }
 
     private void goToOld() {
-        set();
-        clearAlerts();
-        if(storeBin == null || eo == null) {
-            message("Please select both the store and " + (type == 18 ? "custodian" : "organization") + "!");
-            return;
+        if(set()) {
+            processOld();
         }
-        close();
-        processOld();
     }
 
-    private void set() {
+    private boolean set() {
         if(storeBin == null) {
             storeBin = (InventoryStoreBin) storeField.getValue();
         }
         if(eo == null) {
             eo = eoField.getValue();
         }
+        clearAlerts();
+        if(storeBin == null || eo == null) {
+            message("Please select both the store and " + (type == 18 ? "custodian" : "organization") + "!");
+            return false;
+        }
+        close();
+        return true;
+    }
+
+    private void defineReplacements() {
+        if(set()) {
+            defineReplacements = true;
+            proceed();
+        }
     }
 
     @Override
     protected boolean process() {
-        close();
-        set();
-        proceed();
-        return true;
+        defineReplacements = false;
+        if(set()) {
+            proceed();
+            return true;
+        }
+        return false;
     }
 
     private void proceed() {
@@ -153,7 +174,11 @@ public abstract class HandleReturnedItems extends DataForm implements Transactio
             }
             return;
         }
-        proceed(items);
+        if(defineReplacements) {
+            new DefineReplacementItems.ReplacementGrid(items, eo, getTransactionManager()).execute();
+        } else {
+            proceed(items);
+        }
     }
 
     protected abstract void processOld();
@@ -161,6 +186,9 @@ public abstract class HandleReturnedItems extends DataForm implements Transactio
     protected abstract void proceed(List<InventoryItem> items);
 
     private boolean validLoc(InventoryItem ii) {
+        if(!includeOnlyForStore) {
+            return true;
+        }
         InventoryLocation pLoc = ii.getPreviousLocation();
         if(pLoc == null) {
             return true; // Should not happen

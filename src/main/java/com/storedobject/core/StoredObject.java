@@ -433,6 +433,19 @@ public abstract class StoredObject implements Displayable, HasId, StringFiller {
     }
 
     /**
+     * Loads the compatible attribute values from another object. It could be of totally different type.
+     *
+     * @param another the StoredObject whose attribute values to be loaded
+     * @throws Throwable if an error occurs during the loading process
+     */
+    public final void loadAttributesFrom(StoredObject another) throws Throwable {
+        JSONMap map = new JSONMap();
+        map.setRawMode(true);
+        another.save(map);
+        load(map);
+    }
+
+    /**
      * Load the values from a map of attribute names and its values. The map may contain extra attributes than are
      * not matching with any attributes of this class and those values will be ignored.
      *

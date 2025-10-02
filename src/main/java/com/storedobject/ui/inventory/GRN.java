@@ -1064,7 +1064,7 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
                         itemEditor.setFieldReadOnly("SerialNumber");
                     }
                     //noinspection unchecked
-                    itemEditor.setSaver(e -> saveItem());
+                    itemEditor.setSaver(o -> saveItem());
                 }
                 //noinspection unchecked
                 itemEditor.editObject(item,GRNEditor.this);

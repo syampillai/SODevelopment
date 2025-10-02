@@ -323,7 +323,13 @@ public class ItemContext {
         }
         Application a = Application.get();
         grn.listMasters(StoredObject.class, true)
-                .forEach(m -> a.view(grn.getReference() + " - " + StringUtility.makeLabel(m.getClass()), m));
+                .forEach(m -> a.view(grn.getReference() + " - " + makeLabel(m), m));
+    }
+
+    private static String  makeLabel(StoredObject so) {
+        if(so instanceof InventoryTransfer transfer) return transfer.getReference();
+        if(so instanceof InventoryPO po) return po.getReference();
+        return StringUtility.makeLabel(so.getClass());
     }
 
     public void viewGRN(HasInventoryItem hasItem) {

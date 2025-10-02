@@ -16,6 +16,7 @@ import java.util.stream.Stream;
 public class JSONMap implements Map<String, Object>, Serializable {
 
     private final HashMap<String, Object> map = new HashMap<>();
+    private boolean rawMode = false;
 
     public JSONMap() {
         this(false);
@@ -25,6 +26,10 @@ public class JSONMap implements Map<String, Object>, Serializable {
         if(withErrorCode) {
             put("errorCode", Integer.MAX_VALUE);
         }
+    }
+
+    public void setRawMode(boolean rawMode) {
+        this.rawMode = rawMode;
     }
 
     @Override
@@ -54,7 +59,7 @@ public class JSONMap implements Map<String, Object>, Serializable {
 
     @Override
     public Object put(String key, Object object) {
-        return map.put(key, value(key, object, null));
+        return map.put(key, rawMode ? object : value(key, object, null));
     }
 
     /**
@@ -199,6 +204,9 @@ public class JSONMap implements Map<String, Object>, Serializable {
      * Normalize the map so that it will contain only valid JSON values.
      */
     public void normalize() {
+        if(rawMode) {
+            return;
+        }
         normalize(this, null);
     }
 
@@ -207,6 +215,9 @@ public class JSONMap implements Map<String, Object>, Serializable {
      * Normalize the map so that it will contain only valid JSON values.
      */
     public void normalize(BiFunction<String, ContentProducer, String> contentToString) {
+        if(rawMode) {
+            return;
+        }
         normalize(this, contentToString);
     }
 
@@ -251,6 +262,11 @@ public class JSONMap implements Map<String, Object>, Serializable {
         Array a = new Array();
         put(key, a.list);
         return a;
+    }
+
+    @Override
+    public String toString() {
+        return new JSON(this).toPrettyString();
     }
 
     public static class Array {

@@ -213,8 +213,14 @@ public class ReceiveReturnedItems extends HandleReturnedItems {
                 prependHeader().join().setComponent(new ButtonLayout(new ELabel("Search: "), searchField));
             }
             prependHeader().join()
-                    .setComponent(new ELabel("If you are receiving replacements or lesser quantities, please define the replacement items first before going ahead with this.",
-                            Application.COLOR_ERROR));
+                    .setComponent(new ButtonLayout(
+                            new ELabel("If you are receiving replacements or lesser quantities, please define the replacement items first before going ahead with this.",
+                                    Application.COLOR_ERROR),
+                            new Button("Define Replacements", e -> {
+                                close();
+                                new DefineReplacementItems.ReplacementItems(type, storeBin, eo).execute();
+                            })
+                    ));
             if(confirm) return;
             ELabel h = new ELabel(
                     "Warning: These items will be received, please double-check and confirm! Undo not possible after this step!!",
