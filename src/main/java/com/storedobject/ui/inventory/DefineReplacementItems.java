@@ -255,6 +255,10 @@ public class DefineReplacementItems extends DataForm {
 
         private void createNewItem(InventoryItemType pn, String sn, Quantity quantity) {
             InventoryItem item = pn.createItem(sn);
+            if(item == null) {
+                warning("Unable to create item with P/N = " + pn.getPartNumber() + ", S/N = " + sn);
+                return;
+            }
             item.setQuantity(quantity);
             item.setLocation(eo);
             @SuppressWarnings("rawtypes") ObjectEditor itemEditor;
