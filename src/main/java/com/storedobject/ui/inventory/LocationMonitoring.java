@@ -20,7 +20,7 @@ public abstract class LocationMonitoring<I extends InventoryItem, L extends Inve
     }
 
     public LocationMonitoring(String caption, Class<I> itemClass, Class<L> locationClass) {
-        this(caption, itemClass, locationClass, StringList.create("Name", "PartNumber", "SerialNumber", "Location"));
+        this(caption, itemClass, locationClass, StringList.create("Name", "PartNumber", "SerialNumber AS Serial/bBatch/Lot No.", "Location"));
     }
 
     public LocationMonitoring(String caption, Class<I> itemClass, Class<L> locationClass, StringList columns) {

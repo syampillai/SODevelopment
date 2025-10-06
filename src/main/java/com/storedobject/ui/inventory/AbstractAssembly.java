@@ -4,11 +4,10 @@ import com.storedobject.common.SORuntimeException;
 import com.storedobject.common.StringList;
 import com.storedobject.core.*;
 import com.storedobject.pdf.*;
-import com.storedobject.ui.HTMLText;
-import com.storedobject.ui.TreeSearchField;
+import com.storedobject.ui.*;
+import com.storedobject.ui.Application;
 import com.storedobject.ui.DataTreeGrid;
 import com.storedobject.ui.util.ChildVisitor;
-import com.storedobject.ui.Application;
 import com.storedobject.vaadin.*;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasValue;
@@ -18,10 +17,7 @@ import com.vaadin.flow.data.provider.hierarchy.HierarchicalQuery;
 import com.vaadin.flow.shared.Registration;
 
 import java.sql.Date;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Stream;
 
 public abstract class AbstractAssembly<T extends InventoryItem, C extends InventoryItem>
@@ -395,16 +391,6 @@ public abstract class AbstractAssembly<T extends InventoryItem, C extends Invent
 
     abstract RemoveItem createRemoveItem();
 
-    interface FitItem {
-        void setAssemblyPosition(InventoryFitmentPosition fitmentPosition, Quantity quantityAlreadyFitted);
-        void execute(View lock);
-    }
-
-    interface RemoveItem {
-        void setAssemblyPosition(InventoryFitmentPosition fitmentPosition);
-        void execute(View lock);
-    }
-
     private class FitList extends PDFReport {
 
         private PDFTable table;
@@ -513,5 +499,190 @@ public abstract class AbstractAssembly<T extends InventoryItem, C extends Invent
     @Override
     public List<InventoryFitmentPosition> listChildren(InventoryFitmentPosition parent) {
         return subassemblies(parent);
+    }
+
+    interface FitItem {
+        void setAssemblyPosition(InventoryFitmentPosition fitmentPosition, Quantity quantityAlreadyFitted);
+        void execute(View lock);
+    }
+
+    interface RemoveItem {
+        void setAssemblyPosition(InventoryFitmentPosition fitmentPosition);
+        void execute(View lock);
+    }
+
+    abstract class AssembleItem extends DataForm {
+
+        protected final ELabelField assemblyDetails = new ELabelField("Assembly Position");
+        protected InventoryTransaction inventoryTransaction;
+        protected InventoryItem item;
+
+        public AssembleItem(String caption) {
+            super(caption, false);
+            addField(assemblyDetails);
+        }
+
+        protected void setAssemblyPosition(InventoryFitmentPosition fitmentPosition) {
+            assemblyDetails.clearContent().append(fitmentPosition.toDisplay()).update();
+        }
+
+        boolean moveItem() {
+            try {
+                Transaction t = getTransactionManager().createTransaction();
+                try {
+                    item.save(t);
+                    inventoryTransaction.save(t);
+                    t.commit();
+                    refresh();
+                } catch (Exception error) {
+                    t.rollback();
+                    throw error;
+                }
+                return true;
+            } catch (Exception error) {
+                error(error);
+            }
+            return false;
+        }
+    }
+
+    abstract class AbstractItemFit extends AssembleItem implements FitItem {
+
+        protected final ItemInput<C> itemField;
+        protected InventoryFitmentPosition fitmentPosition;
+        protected final ObjectListField<InventoryItemType> partNumbersField;
+        protected final QuantityField requiredQuantityField = new QuantityField("Quantity Required");
+        protected Quantity quantityRequired;
+        protected InventoryItemType itemType;
+
+        public AbstractItemFit(Class<C> itemClass) {
+            this(itemClass, null);
+        }
+
+        public AbstractItemFit(ItemInput<C> itemInput) {
+            this(null, itemInput);
+        }
+
+        protected AbstractItemFit(Class<C> itemClass, ItemInput<C> itemInput) {
+            super("Fit Item");
+            requiredQuantityField.setEnabled(false);
+            itemField = Objects.requireNonNullElseGet(itemInput, () -> new ItemField<>(StringUtility.makeLabel(itemClass), itemClass, true));
+            itemField.setEnabled(false);
+            List<InventoryItemType> pns = new ArrayList<>();
+            partNumbersField = new ObjectListField<>("Part Number", InventoryItemType.class, pns);
+        }
+
+        @Override
+        public void setAssemblyPosition(InventoryFitmentPosition fitmentPosition, Quantity quantityAlreadyFitted) {
+            super.setAssemblyPosition(fitmentPosition);
+            this.fitmentPosition = fitmentPosition;
+            itemField.clear();
+            InventoryAssembly assembly = fitmentPosition.getAssembly();
+            itemType = assembly.getItemType();
+            quantityRequired = assembly.getQuantity();
+            if(quantityAlreadyFitted != null) {
+                quantityRequired = quantityRequired.subtract(quantityAlreadyFitted);
+            }
+            requiredQuantityField.setValue(quantityRequired);
+            itemField.fixPartNumber(itemType);
+            List<InventoryItemType> pns = new ArrayList<>(itemType.listAPNs());
+            pns.addFirst(itemType);
+            partNumbersField.setItems(pns);
+            partNumbersField.setValue(itemType);
+            partNumbersField.setEnabled(pns.size() > 1);
+            trackValueChange(partNumbersField);
+        }
+    }
+
+    abstract class AbstractAssemblyFit extends AbstractItemFit {
+
+        protected final QuantityField availableQuantityField = new QuantityField("Quantity Available");
+        protected final QuantityField toFitQuantityField = new QuantityField("Quantity to Fit");
+
+        public AbstractAssemblyFit(Class<C> itemClass) {
+            this(itemClass, null);
+        }
+
+        public AbstractAssemblyFit(ItemInput<C> itemInput) {
+            this(null, itemInput);
+        }
+
+        private AbstractAssemblyFit(Class<C> itemClass, ItemInput<C> itemInput) {
+            super(itemClass, itemInput);
+            setRequired(toFitQuantityField);
+            availableQuantityField.setEnabled(false);
+            trackValueChange((HasValue<?, ?>) itemField);
+        }
+
+        protected InventoryItem itemValueChanged() {
+            InventoryItem item = itemField.getValue();
+            if(item == null) {
+                availableQuantityField.clear();
+                return null;
+            }
+            Quantity q = item.getQuantity();
+            availableQuantityField.setValue(q);
+            if(item.isSerialized()) {
+                toFitQuantityField.setValue(q);
+            } else {
+                if(q.isLessThan(quantityRequired)) {
+                    toFitQuantityField.setValue(q);
+                } else {
+                    toFitQuantityField.setValue(quantityRequired);
+                }
+            }
+            return item;
+        }
+
+        protected boolean process(Date date, String reference) {
+            InventoryItem item = itemField.getValue();
+            Quantity qFit = toFitQuantityField.getValue();
+            if(!item.isSerialized()) {
+                if(qFit.isGreaterThan(item.getQuantity())) {
+                    warning("Only " + item.getQuantity() + " is available, can't take out " + qFit);
+                    toFitQuantityField.focus();
+                    return false;
+                }
+                if(qFit.isGreaterThan(quantityRequired)) {
+                    warning("Only " + quantityRequired + " is required, should not take out more");
+                    toFitQuantityField.focus();
+                    return false;
+                }
+            }
+            AbstractAssembly.this.date = date;
+            if(inventoryTransaction == null || !inventoryTransaction.getDate().equals(date)) {
+                inventoryTransaction = new InventoryTransaction(getTransactionManager(), date);
+            } else {
+                inventoryTransaction.abandon();
+            }
+            AbstractAssembly.this.reference = reference;
+            inventoryTransaction.moveTo(item, qFit, reference, fitmentPosition);
+            if(transact(t -> inventoryTransaction.save(t))) {
+                refresh();
+                return true;
+            }
+            return false;
+        }
+    }
+
+    abstract class AbstractItemRemove extends AssembleItem implements RemoveItem {
+
+        protected final ItemField<InventoryItem> itemField;
+        protected final QuantityField fittedQuantityField = new QuantityField("Fitted Quantity");
+
+        public AbstractItemRemove() {
+            super("Item Removal");
+            itemField = new ItemField<>("To Remove", InventoryItem.class, true);
+            itemField.setEnabled(false);
+            fittedQuantityField.setEnabled(false);
+        }
+
+        @Override
+        public void setAssemblyPosition(InventoryFitmentPosition fitmentPosition) {
+            super.setAssemblyPosition(fitmentPosition);
+            this.item = fitmentPosition.getFittedItem();
+            itemField.setValue(item);
+            fittedQuantityField.setValue(item.getQuantity());
+        }
     }
 }

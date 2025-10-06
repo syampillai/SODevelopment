@@ -13,6 +13,7 @@ public abstract class InventoryReturnItem extends InventoryTransferItem {
     @Override
     public void validateData(TransactionManager tm) throws Exception {
         if(deleted()) {
+            super.validateData(tm);
             return;
         }
         itemId = tm.checkTypeAny(this, itemId, InventoryItem.class, false);

@@ -80,6 +80,11 @@ public abstract class AbstractObjectField<T extends StoredObject> extends Custom
     }
 
     @Override
+    public void clear() {
+        super.clear();
+    }
+
+    @Override
     protected void onAttach(AttachEvent attachEvent) {
         getContent();
         super.onAttach(attachEvent);

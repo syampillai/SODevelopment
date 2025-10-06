@@ -103,7 +103,7 @@ public class ObjectListField<T extends StoredObject> extends ListField<T>
         if(objectClass == null) {
             if(list != null && !list.isEmpty()) {
                 //noinspection unchecked
-                objectClass = (Class<O>) list.get(0).getClass();
+                objectClass = (Class<O>) list.getFirst().getClass();
             }
         }
         if(objectClass == null) {

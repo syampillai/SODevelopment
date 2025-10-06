@@ -85,15 +85,15 @@ public class ObjectField<T extends StoredObject> extends CustomField<Id>
          */
         AUDIO,
         /**
-         * Still-camera type. (Used for capturing an image via computer's camera).
+         * Still-camera type. (Used for capturing an image via a computer's camera).
          */
         STILL_CAMERA,
         /**
-         * Video-camera type. (Used for capturing a video via computer's video camera).
+         * Video-camera type. (Used for capturing a video via a computer's video camera).
          */
         VIDEO_CAMERA,
         /**
-         * Microphone type. (Used for capturing an audio via computer's microphone).
+         * Microphone type. (Used for capturing an audio via a computer's microphone).
          */
         MIC
     }
@@ -329,9 +329,8 @@ public class ObjectField<T extends StoredObject> extends CustomField<Id>
      * @param list Values will be allowed for this list only.
      * @param any Whether subclasses should be allowed or not.
      */
-    @SuppressWarnings("unchecked")
     public ObjectField(String label, List<T> list, boolean any) {
-        this(label, (Class<T>)list.get(0).getClass(), any, new ObjectComboField<>(list));
+        this(label, null, list, any);
     }
 
     /**
@@ -343,7 +342,7 @@ public class ObjectField<T extends StoredObject> extends CustomField<Id>
      * @param any Whether subclasses should be allowed or not.
      */
     public ObjectField(String label, Class<T> objectClass, List<T> list, boolean any) {
-        this(label, objectClass, any, new ObjectComboField<>(objectClass, list));
+        this(label, ObjectListField.checkClass(objectClass, list), any, new ObjectComboField<>(objectClass, list));
     }
 
     /**
@@ -437,6 +436,11 @@ public class ObjectField<T extends StoredObject> extends CustomField<Id>
             }
             throw new Design_Error(null, "Can not create new instance of the Detail class: " + m);
         }
+    }
+
+    @Override
+    public void clear() {
+        super.clear();
     }
 
     @Override
@@ -642,7 +646,7 @@ public class ObjectField<T extends StoredObject> extends CustomField<Id>
     /**
      * Get the internal field.
      *
-     * @return The internal field that is accepting the object values.
+     * @return The internal field that accepts the object values.
      */
     public ObjectInput<T> getField() {
         return field;
@@ -791,7 +795,7 @@ public class ObjectField<T extends StoredObject> extends CustomField<Id>
      *
      * @param label Field label.
      * @param object Pre-selected value. (Must be non-null).
-     * @return A read-only field with value already set.
+     * @return A read-only field with a value already set.
      * @param <O> Type of the object accepted.
      */
     public static <O extends StoredObject> ObjectField<O> createSingle(String label, O object) {
@@ -820,7 +824,7 @@ public class ObjectField<T extends StoredObject> extends CustomField<Id>
 
         private SingleField(String label, List<O> list) {
             super(label, list);
-            setValue(list.get(0));
+            setValue(list.getFirst());
             super.setReadOnly(true);
         }
 

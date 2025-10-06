@@ -113,6 +113,7 @@ public class ItemField<I extends InventoryItem> extends ObjectGetField<I> implem
      *
      * @param partNumber Part number to set.
      */
+    @Override
     public void fixPartNumber(InventoryItemType partNumber) {
         typeField.setObject(partNumber);
         pnEnabled = partNumber == null;
@@ -416,14 +417,18 @@ public class ItemField<I extends InventoryItem> extends ObjectGetField<I> implem
                 apns.forEach(pn -> f.append(',').append(pn.getId()));
                 f.append(')');
             }
-            filterCondition(f, extraFilterProvider, locationField, storeField);
+            filterCondition(f, extraFilterProvider, locationField, storeField, null);
             return f.toString();
         }
     }
 
     static void filterCondition(StringBuilder f, FilterProvider extraFilterProvider,
                                 ObjectProvider<? extends InventoryLocation> locationField,
-                                ObjectProvider<? extends InventoryStore> storeField) {
+                                ObjectProvider<? extends InventoryStore> storeField,
+                                InventoryItemType fixedPartNumber) {
+        if(fixedPartNumber != null) {
+            f.append(" AND T.PartNumber=").append(fixedPartNumber.getId());
+        }
         if(extraFilterProvider != null) {
             f.append(" AND (").append(extraFilterProvider.getFilterCondition()).append(')');
         }

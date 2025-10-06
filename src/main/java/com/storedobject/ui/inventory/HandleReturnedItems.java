@@ -80,8 +80,10 @@ public abstract class HandleReturnedItems extends DataForm implements Transactio
             return;
         }
         buttonPanel.remove(cancel);
-        Button defineReplacements = new Button("Define Replacements", VaadinIcon.EXCHANGE, e -> defineReplacements());
-        buttonPanel.add(goToOld, defineReplacements, cancel);
+        buttonPanel.add(goToOld,
+                new Button("Define Replacements", VaadinIcon.EXCHANGE, e -> defineReplacements()),
+                new Button("Mark Consumption", VaadinIcon.CROSS_CUTLERY, e -> defineReplacements()),
+                cancel);
     }
 
     @Override

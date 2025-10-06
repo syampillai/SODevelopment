@@ -46,6 +46,15 @@ public interface ItemInput<T extends InventoryItem> extends ObjectInput<T> {
     void setLocation(InventoryLocation location);
 
     /**
+     * Fix the part number (an instance of {@link InventoryItemType}). If a non-null value is set,
+     *  the "part number" portion will be locked with that value. A <code>null</code> value may be set later
+     * to unlock it.
+     *
+     * @param partNumber Part number to set.
+     */
+    void fixPartNumber(InventoryItemType partNumber);
+
+    /**
      * Set extra filters that need to be added to other filters when item's accessibility is checked.
      *
      * @param extraFilterProvider Extra filter to be set.

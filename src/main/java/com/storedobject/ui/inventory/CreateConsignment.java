@@ -36,10 +36,13 @@ public class CreateConsignment<C extends Consignment> implements Executable {
         }
         if(parent != null) {
             consignmentType = switch (parent) {
+                case InventorySale ignored -> 5;
+                case InventoryLoanOut ignored -> 4;
                 case MaterialReturned ignored -> 0;
                 case InventoryRO ignored -> 1;
                 case InventoryTransfer ignored -> 2;
                 case InventoryGRN ignored -> 3;
+                case MaterialIssued ignored -> 6;
                 default -> -1;
             };
         } else {

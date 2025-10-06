@@ -111,6 +111,11 @@ public class ObjectFormField<T extends StoredObject> extends CustomField<T>
     }
 
     @Override
+    public void clear() {
+        super.clear();
+    }
+
+    @Override
     public void setRequired(boolean required) {
         this.required = required;
     }
@@ -234,10 +239,6 @@ public class ObjectFormField<T extends StoredObject> extends CustomField<T>
     @Override
     public T getObject(Id objectId) {
         return object;
-    }
-
-    @Override
-    public void setCached(T cached) {
     }
 
     @Override

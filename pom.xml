@@ -11,7 +11,7 @@
     </parent>
 
     <artifactId>so-development</artifactId>
-    <version>15.0.8</version>
+    <version>15.0.9</version>
 
     <name>${project.groupId}:${project.artifactId}</name>
     <description>SO Development skeleton classes</description>
@@ -46,7 +46,7 @@
             <dependency>
                 <groupId>dev.langchain4j</groupId>
                 <artifactId>langchain4j-bom</artifactId>
-                <version>1.4.0</version>
+                <version>1.7.1</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>

@@ -127,6 +127,11 @@ public class ObjectCodeField<T extends StoredObject> extends CustomTextField<T> 
     }
 
     @Override
+    public void clear() {
+        super.clear();
+    }
+
+    @Override
     public void setInternalLabel(String label) {
     }
 

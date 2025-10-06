@@ -20,6 +20,10 @@ public class ConsignmentItem extends StoredObject implements Detail {
         columns.add("BoxNumber", "int");
     }
 
+    public static String[] browseColumns() {
+        return new String[] {"Item", "Quantity", "UnitCost", "BoxNumber AS Package Number"};
+    }
+
     public void setItem(Id itemId) {
         this.itemId = itemId;
     }
@@ -71,7 +75,7 @@ public class ConsignmentItem extends StoredObject implements Detail {
         this.boxNumber = boxNumber;
     }
 
-    @Column(order = 400, caption = "Packet/Box Number")
+    @Column(order = 400, caption = "Package Number")
     public int getBoxNumber() {
         return boxNumber;
     }
@@ -79,7 +83,7 @@ public class ConsignmentItem extends StoredObject implements Detail {
     @Override
     public void validateData(TransactionManager tm) throws Exception {
         if(boxNumber <= 0) {
-            throw new Invalid_Value("Box Number");
+            throw new Invalid_Value("Package Number");
         }
         itemId = tm.checkTypeAny(this, itemId, InventoryItem.class, false);
         super.validateData(tm);

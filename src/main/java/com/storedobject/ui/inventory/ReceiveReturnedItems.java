@@ -216,16 +216,19 @@ public class ReceiveReturnedItems extends HandleReturnedItems {
                     .setComponent(new ButtonLayout(
                             new ELabel("If you are receiving replacements or lesser quantities, please define the replacement items first before going ahead with this.",
                                     Application.COLOR_ERROR),
-                            new Button("Define Replacements", e -> {
-                                close();
-                                new DefineReplacementItems.ReplacementItems(type, storeBin, eo).execute();
-                            })
+                            new Button("Define Replacements", VaadinIcon.EXCHANGE, e -> defineReplacements()),
+                            new Button("Mark Consumption", VaadinIcon.CROSS_CUTLERY, e -> defineReplacements())
                     ));
             if(confirm) return;
             ELabel h = new ELabel(
                     "Warning: These items will be received, please double-check and confirm! Undo not possible after this step!!",
                     Application.COLOR_ERROR);
             prependHeader().join().setComponent(h);
+        }
+
+        private void defineReplacements() {
+            close();
+            new DefineReplacementItems.ReplacementItems(type, storeBin, eo).execute();
         }
 
         private void search(String text) {

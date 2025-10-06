@@ -3,9 +3,7 @@ package com.storedobject.ui.inventory;
 import com.storedobject.core.*;
 import com.storedobject.ui.*;
 import com.storedobject.vaadin.*;
-
-import java.util.ArrayList;
-import java.util.List;
+import com.vaadin.flow.component.HasValue;
 
 public class AssemblyReceipt<T extends InventoryItem, C extends InventoryItem> extends Assembly<T, C> {
 
@@ -34,30 +32,17 @@ public class AssemblyReceipt<T extends InventoryItem, C extends InventoryItem> e
         return new ItemRemove();
     }
 
-    private class ItemFit extends DataForm implements FitItem {
+    private class ItemFit extends AbstractItemFit {
 
         private final ELabelField grnField = new ELabelField("GRN");
-        private final ELabelField assemblyDetails = new ELabelField("Assembly Position");
-        private final ObjectListField<InventoryItemType> partNumbersField = new ObjectListField<>("Part Number", InventoryItemType.class);
-        private final ItemField<C> itemField;
-        private final QuantityField qRequiredField = new QuantityField("Quantity Required");
-        private Quantity qRequired;
-        private InventoryTransaction inventoryTransaction;
-        private InventoryFitmentPosition fitmentPosition;
         private final TextField snField = new TextField("Serial Number");
-        private InventoryItemType itemType;
-        private InventoryItem item;
         @SuppressWarnings("rawtypes")
         private ObjectEditor editor;
 
         public ItemFit(Class<C> itemClass) {
-            super("Select Item to Fit", false);
+            super(itemClass);
             setButtonsAtTop(true);
-            itemField = new ItemField<>(StringUtility.makeLabel(itemClass), itemClass, true);
-            addField(grnField, assemblyDetails, partNumbersField, snField, itemField, qRequiredField);
-            itemField.setEnabled(false);
-            qRequiredField.setEnabled(false);
-            trackValueChange(partNumbersField);
+            addField(grnField, partNumbersField, snField, (HasValue<?, ?>) itemField, requiredQuantityField);
         }
 
         @Override
@@ -84,7 +69,7 @@ public class AssemblyReceipt<T extends InventoryItem, C extends InventoryItem> e
             if(item == null) {
                 warning("Duplicate item for S/N = " + sn + " exists. Item " + inventoryItemType.toDisplay());
             }
-            item.setQuantity(qRequired);
+            item.setQuantity(quantityRequired);
             inventoryTransaction.purchase(item, reference, fitmentPosition, grn.getSupplier());
             if(editor != null && editor.getObjectClass() != item.getClass()) {
                 editor = null;
@@ -96,80 +81,33 @@ public class AssemblyReceipt<T extends InventoryItem, C extends InventoryItem> e
                 editor.setFieldReadOnly("Quantity", "Cost", "Location", "PartNumber", "SerialNumber");
             }
             //noinspection unchecked
-            editor.setSaver(e -> move());
+            editor.setSaver(e -> moveItem());
             close();
             //noinspection unchecked
             editor.editObject(item, AssemblyReceipt.this.getView());
             return true;
         }
 
-        private boolean move() {
-            try {
-                moveTo();
-                return true;
-            } catch(Exception error) {
-                error(error);
-            }
-            return false;
-        }
-
-        private void moveTo() throws Exception {
-            Transaction t = getTransactionManager().createTransaction();
-            try {
-                item.save(t);
-                inventoryTransaction.save(t);
-                t.commit();
-                refresh();
-            } catch(Exception error) {
-                t.rollback();
-                throw error;
-            }
-        }
-
         @Override
-        public void setAssemblyPosition(InventoryFitmentPosition fitmentPosition, Quantity qAlreadyFitted) {
+        public void setAssemblyPosition(InventoryFitmentPosition fitmentPosition, Quantity quantityAlreadyFitted) {
+            super.setAssemblyPosition(fitmentPosition, quantityAlreadyFitted);
             grnField.clearContent().append(grn.getReference()).append(" dated ").append(grn.getDate()).update();
-            assemblyDetails.clearContent().append(fitmentPosition.toDisplay()).update();
-            this.fitmentPosition = fitmentPosition;
-            itemField.clear();
-            InventoryAssembly assembly = fitmentPosition.getAssembly();
-            itemType = assembly.getItemType();
-            qRequired = assembly.getQuantity();
-            if(qAlreadyFitted != null) {
-                qRequired = qRequired.subtract(qAlreadyFitted);
-            }
-            qRequiredField.setValue(qRequired);
-            itemField.fixPartNumber(itemType);
-            List<InventoryItemType> pns = new ArrayList<>(itemType.listAPNs());
-            pns.add(0, itemType);
-            partNumbersField.setItems(pns);
-            partNumbersField.setValue(itemType);
-            partNumbersField.setEnabled(pns.size() > 1);
             snField.setValue("");
         }
     }
 
-    private class ItemRemove extends DataForm implements RemoveItem {
+    private class ItemRemove extends AbstractItemRemove {
 
         private final ELabelField grnField = new ELabelField("GRN");
-        private final ELabelField assemblyDetails = new ELabelField("Assembly Position");
-        private final ItemField<InventoryItem> itemField;
-        private final QuantityField qFittedField = new QuantityField("Fitted Quantity");
-        private InventoryTransaction inventoryTransaction;
-        private InventoryItem item;
 
         public ItemRemove() {
-            super("Item Removal", false);
-            itemField = new ItemField<>("To remove", InventoryItem.class, true);
-            itemField.setEnabled(false);
-            qFittedField.setEnabled(false);
-            addField(grnField, assemblyDetails, itemField, qFittedField);
-            qFittedField.setEnabled(false);
+            addField(grnField, itemField, fittedQuantityField);
+            fittedQuantityField.setEnabled(false);
         }
 
         @Override
         protected boolean process() {
-            Quantity qToRemove = qFittedField.getValue();
+            Quantity qToRemove = fittedQuantityField.getValue();
             if(!item.isSerialized()) {
                 if(!qToRemove.equals(item.getQuantity())) {
                     warning("Quantity mismatch " + item.getQuantity() + " ≠ " + qToRemove);
@@ -192,11 +130,7 @@ public class AssemblyReceipt<T extends InventoryItem, C extends InventoryItem> e
         @Override
         public void setAssemblyPosition(InventoryFitmentPosition fitmentPosition) {
             grnField.append(grn.getReference()).append(" dated ").append(grn.getDate()).update();
-            assemblyDetails.clearContent().append(fitmentPosition.toDisplay()).update();
-            this.item = fitmentPosition.getFittedItem();
-            itemField.setValue(item);
-            Quantity q = item.getQuantity();
-            qFittedField.setValue(q);
+            super.setAssemblyPosition(fitmentPosition);
         }
     }
 }

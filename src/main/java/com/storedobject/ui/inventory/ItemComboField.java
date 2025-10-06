@@ -18,6 +18,7 @@ public class ItemComboField<I extends InventoryItem> extends ObjectComboField<I>
     private ObjectProvider<? extends InventoryLocation> locationField;
     private FilterProvider extraFilterProvider;
     private final InventoryFilterProvider filter = new InventoryFilterProvider();
+    private InventoryItemType fixedPartNumber;
     private Registration forStore, forLocation;
 
     public ItemComboField(Class<I> objectClass) {
@@ -74,6 +75,19 @@ public class ItemComboField<I extends InventoryItem> extends ObjectComboField<I>
 
     public ItemComboField(String label, List<I> list) {
         super(label, list);
+    }
+
+    public ItemComboField(Class<I> itemClass, List<I> list) {
+        super(itemClass, list);
+    }
+
+    public ItemComboField(String label, Class<I> itemClass, List<I> list) {
+        super(label, itemClass, list);
+    }
+
+    @Override
+    public void fixPartNumber(InventoryItemType partNumber) {
+        this.fixedPartNumber = partNumber;
     }
 
     @Override
@@ -146,10 +160,13 @@ public class ItemComboField<I extends InventoryItem> extends ObjectComboField<I>
                 f = "(" + extraFilterProvider.getFilterCondition() + ")";
             }
             if(locationField != null) {
-                return (f == null ? "" : " AND ") + "Location=" + locationField.getObjectId();
+                return (f == null ? "" : " AND ") + "T.Location=" + locationField.getObjectId();
             }
             if(storeField != null) {
-                return (f == null ? "" : " AND ") + "Store=" + storeField.getObjectId();
+                return (f == null ? "" : " AND ") + "T.Store=" + storeField.getObjectId();
+            }
+            if(fixedPartNumber != null) {
+                return (f == null ? "" : " AND ") + "T.PartNumber=" + fixedPartNumber.getId();
             }
             return f;
         }

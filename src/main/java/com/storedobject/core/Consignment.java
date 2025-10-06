@@ -12,7 +12,7 @@ public class Consignment extends StoredObject implements HasReference {
     private static final ReferencePattern<Consignment> ref = new ReferencePattern<>();
     private String reference;
     private final static String[] typeValues = new String[] {
-            "Material Return", "Repair", "Transfer", "GRN", "Loan out"
+            "Material Return", "Repair", "Transfer", "GRN", "Loan out", "Sale", "Material Issued",
     };
     private final Date date = DateUtility.today();
     private int no = 0, type = 0;
@@ -32,16 +32,20 @@ public class Consignment extends StoredObject implements HasReference {
         if(parentClass == null) {
             throw new IllegalArgumentException("Parent class must not be null");
         }
-        if(MaterialReturned.class.isAssignableFrom(parentClass)) {
+        if(InventorySale.class.isAssignableFrom(parentClass)) {
+            type = 5;
+        } else if(InventoryLoanOut.class.isAssignableFrom(parentClass)) {
+            type = 4;
+        } else if(MaterialReturned.class.isAssignableFrom(parentClass)) {
             type = 0;
         } else if(InventoryRO.class.isAssignableFrom(parentClass)) {
             type = 1;
-        } else if(InventoryLoanOut.class.isAssignableFrom(parentClass)) {
-            type = 4;
         } else if(InventoryTransfer.class.isAssignableFrom(parentClass)) {
             type = 2;
         } else if(InventoryGRN.class.isAssignableFrom(parentClass)) {
             type = 3;
+        } else if(MaterialIssued.class.isAssignableFrom(parentClass)) {
+            type = 6;
         } else {
             throw new SORuntimeException("Consignment not configured for: " + StringUtility.makeLabel(parentClass));
         }

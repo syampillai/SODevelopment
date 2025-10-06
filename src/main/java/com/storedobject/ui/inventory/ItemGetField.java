@@ -18,6 +18,7 @@ public class ItemGetField<I extends InventoryItem> extends ObjectGetField<I> imp
     private ObjectProvider<? extends InventoryLocation> locationField;
     private FilterProvider extraFilterProvider;
     private final InventoryFilterProvider filterProvider;
+    private InventoryItemType fixedPartNumber;
 
     /**
      * Constructor.
@@ -59,6 +60,11 @@ public class ItemGetField<I extends InventoryItem> extends ObjectGetField<I> imp
         super(objectClass, allowAny);
         filterProvider = new InventoryFilterProvider();
         setLabel(label);
+    }
+
+    @Override
+    public void fixPartNumber(InventoryItemType partNumber) {
+        this.fixedPartNumber = partNumber;
     }
 
     @Override
@@ -105,7 +111,7 @@ public class ItemGetField<I extends InventoryItem> extends ObjectGetField<I> imp
         @Override
         public String getFilterCondition() {
             final StringBuilder f = new StringBuilder("(T.Quantity).Quantity>0");
-            ItemField.filterCondition(f, extraFilterProvider, locationField, storeField);
+            ItemField.filterCondition(f, extraFilterProvider, locationField, storeField, fixedPartNumber);
             return f.toString();
         }
     }

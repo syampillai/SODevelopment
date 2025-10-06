@@ -195,6 +195,9 @@ public abstract class StoredObject implements Displayable, HasId, StringFiller {
         return r;
     }
 
+    public static int family(Id id, Transaction transaction) {
+        return family(id);
+    }
 
     /**
      * Migrate this instance to another class instance. Please note that there is no error checking or validations when

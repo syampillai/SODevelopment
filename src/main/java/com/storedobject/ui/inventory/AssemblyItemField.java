@@ -83,6 +83,15 @@ public class AssemblyItemField<I extends InventoryItem> extends CustomField<I> i
         itemCombo.setPlaceholder(getSNName());
     }
 
+    @Override
+    public void clear() {
+        super.clear();
+    }
+
+    @Override
+    public void fixPartNumber(InventoryItemType partNumber) {
+    }
+
     private Class<? extends InventoryItemType> typeClass() {
         try {
             return getObjectClass().getDeclaredConstructor().newInstance().getItemType();

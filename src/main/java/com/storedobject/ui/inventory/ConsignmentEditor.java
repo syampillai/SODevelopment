@@ -12,7 +12,7 @@ import java.util.List;
 
 public class ConsignmentEditor<C extends Consignment> extends ObjectEditor<C> {
 
-    private final Button assignBoxes = new Button("Assign Boxes", VaadinIcon.PACKAGE, e -> assignBoxes());
+    private final Button assignPackages = new Button("Assign Packages", VaadinIcon.PACKAGE, e -> assignPackages());
     private C consignment;
     List<HasInventoryItem> items;
     Class<? extends ConsignmentItem> itemClass;
@@ -29,7 +29,7 @@ public class ConsignmentEditor<C extends Consignment> extends ObjectEditor<C> {
 
     @Override
     protected void addExtraButtons() {
-        buttonPanel.add(assignBoxes);
+        buttonPanel.add(assignPackages);
     }
 
     @Override
@@ -40,7 +40,7 @@ public class ConsignmentEditor<C extends Consignment> extends ObjectEditor<C> {
         return super.includeField(fieldName);
     }
 
-    private <I extends ConsignmentItem, P extends ConsignmentPacket> void assignBoxes() {
+    private <I extends ConsignmentItem, P extends ConsignmentPacket> void assignPackages() {
         clearAlerts();
         @SuppressWarnings("unchecked") List<P> packets = consignment.listLinks(packetClass, null,"Number")
                 .map(p -> (P) p).toList();
@@ -123,7 +123,7 @@ public class ConsignmentEditor<C extends Consignment> extends ObjectEditor<C> {
         public void validateData(ConsignmentItem item) throws Exception {
             int no = item.getBoxNumber();
             if(no <= 0 || packets.stream().noneMatch(p -> p.getNumber() == no)) {
-                throw new Invalid_Value("Box #" + no + " not found");
+                throw new Invalid_Value("Package #" + no + " not found");
             }
         }
 

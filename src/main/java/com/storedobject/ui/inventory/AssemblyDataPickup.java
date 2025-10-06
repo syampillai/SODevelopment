@@ -3,9 +3,7 @@ package com.storedobject.ui.inventory;
 import com.storedobject.core.*;
 import com.storedobject.ui.*;
 import com.storedobject.vaadin.*;
-
-import java.util.ArrayList;
-import java.util.List;
+import com.vaadin.flow.component.HasValue;
 
 public class AssemblyDataPickup<T extends InventoryItem, C extends InventoryItem> extends Assembly<T, C> {
 
@@ -73,39 +71,20 @@ public class AssemblyDataPickup<T extends InventoryItem, C extends InventoryItem
         return new ItemRemove();
     }
 
-    private class ItemFit extends DataForm implements FitItem {
+    private class ItemFit extends AbstractAssemblyFit {
 
-        private final ELabelField assemblyDetails = new ELabelField("Assembly Position");
-        private final ObjectListField<InventoryItemType> partNumbersField = new ObjectListField<>("Part Number", InventoryItemType.class);
-        private final ItemField<C> itemField;
-        private final QuantityField qRequiredField = new QuantityField("Quantity Required");
-        private final QuantityField qAvailableField = new QuantityField("Quantity Available");
-        private final QuantityField qFitField = new QuantityField("Quantity to Fit");
-        private Quantity qRequired;
-        private InventoryTransaction inventoryTransaction;
-        private InventoryFitmentPosition fitmentPosition;
         private final MoneyField costField = new MoneyField("Cost");
         private final BooleanField previousData = new BooleanField("Select from Previously Picked-up Data");
         private final TextField snField = new TextField("Serial Number");
-        private InventoryItemType itemType;
-        private InventoryItem item;
         @SuppressWarnings("rawtypes")
         private ObjectEditor editor;
 
         public ItemFit(Class<C> itemClass) {
-            super("Select Item to Fit", false);
+            super(itemClass);
             setButtonsAtTop(true);
-            itemField = new ItemField<>(StringUtility.makeLabel(itemClass), itemClass, true);
-            addField(assemblyDetails, partNumbersField, previousData, snField, itemField,
-                    qRequiredField, qAvailableField, qFitField, costField);
-            itemField.setEnabled(false);
-            qRequiredField.setEnabled(false);
-            qAvailableField.setEnabled(false);
-            //setRequired(refField);
-            setRequired(qFitField);
+            addField(partNumbersField, previousData, snField, (HasValue<?, ?>) itemField,
+                    requiredQuantityField, availableQuantityField, toFitQuantityField, costField);
             trackValueChange(previousData);
-            trackValueChange(partNumbersField);
-            trackValueChange(itemField);
             InventoryLocation location = locationField.getValue();
             if(location instanceof InventoryBin) {
                 itemField.setStore(((InventoryBin) location).getStore());
@@ -121,24 +100,11 @@ public class AssemblyDataPickup<T extends InventoryItem, C extends InventoryItem
                 return;
             }
             if(changedValues.getChanged() == itemField) {
-                InventoryItem item = itemField.getValue();
-                if(item == null) {
-                    qAvailableField.clear();
-                    return;
+                InventoryItem item = itemValueChanged();
+                if(item != null) {
+                    costField.setLabel("Cost of " + item.getQuantity());
+                    costField.setValue(item.getCost());
                 }
-                Quantity q = item.getQuantity();
-                qAvailableField.setValue(q);
-                if(item.isSerialized()) {
-                    qFitField.setValue(q);
-                } else {
-                    if(q.isLessThan(qRequired)) {
-                        qFitField.setValue(q);
-                    } else {
-                        qFitField.setValue(qRequired);
-                    }
-                }
-                costField.setLabel("Cost of " + q);
-                costField.setValue(item.getCost());
                 return;
             }
             if(changedValues.getChanged() == previousData) {
@@ -158,10 +124,10 @@ public class AssemblyDataPickup<T extends InventoryItem, C extends InventoryItem
 
         @Override
         protected boolean process() {
-            Quantity qFit = qFitField.getValue();
-            if(qFit.isGreaterThan(qRequired)) {
-                warning("Only " + qRequired + " is required");
-                qFitField.focus();
+            Quantity qFit = toFitQuantityField.getValue();
+            if(qFit.isGreaterThan(quantityRequired)) {
+                warning("Only " + quantityRequired + " is required");
+                toFitQuantityField.focus();
                 return false;
             }
             if(inventoryTransaction == null) {
@@ -183,7 +149,7 @@ public class AssemblyDataPickup<T extends InventoryItem, C extends InventoryItem
                 if(!item.isSerialized()) {
                     if(qFit.isGreaterThan(item.getQuantity())) {
                         warning("Only " + item.getQuantity() + " is available, can't take out " + qFit);
-                        qFitField.focus();
+                        toFitQuantityField.focus();
                         return false;
                     }
                 }
@@ -219,57 +185,19 @@ public class AssemblyDataPickup<T extends InventoryItem, C extends InventoryItem
                 editor.setFieldReadOnly("Quantity", "Cost", "Location", "PartNumber", "SerialNumber");
             }
             //noinspection unchecked
-            editor.setSaver(e -> move());
+            editor.setSaver(e -> moveItem());
             close();
             //noinspection unchecked
             editor.editObject(item, AssemblyDataPickup.this.getView());
             return true;
         }
 
-        private boolean move() {
-            try {
-                moveTo();
-                return true;
-            } catch(Exception error) {
-                error(error);
-            }
-            return false;
-        }
-
-        private void moveTo() throws Exception {
-            Transaction t = getTransactionManager().createTransaction();
-            try {
-                item.save(t);
-                inventoryTransaction.save(t);
-                t.commit();
-                refresh();
-            } catch(Exception error) {
-                t.rollback();
-                throw error;
-            }
-        }
-
         @Override
-        public void setAssemblyPosition(InventoryFitmentPosition fitmentPosition, Quantity qAlreadyFitted) {
-            assemblyDetails.clearContent().append(fitmentPosition.toDisplay()).update();
-            this.fitmentPosition = fitmentPosition;
-            itemField.clear();
-            InventoryAssembly assembly = fitmentPosition.getAssembly();
-            itemType = assembly.getItemType();
-            qRequired = assembly.getQuantity();
-            if(qAlreadyFitted != null) {
-                qRequired = qRequired.subtract(qAlreadyFitted);
-            }
-            qRequiredField.setValue(qRequired);
-            qAvailableField.setValue(qRequired.zero());
-            qFitField.setEnabled(!itemType.isSerialized());
-            qFitField.setValue(itemType.isSerialized() ? Count.ONE : qRequired.zero());
-            itemField.fixPartNumber(itemType);
-            List<InventoryItemType> pns = new ArrayList<>(itemType.listAPNs());
-            pns.add(0, itemType);
-            partNumbersField.setItems(pns);
-            partNumbersField.setValue(itemType);
-            partNumbersField.setEnabled(pns.size() > 1);
+        public void setAssemblyPosition(InventoryFitmentPosition fitmentPosition, Quantity quantityAlreadyFitted) {
+            super.setAssemblyPosition(fitmentPosition, quantityAlreadyFitted);
+            availableQuantityField.setValue(quantityRequired.zero());
+            toFitQuantityField.setEnabled(!itemType.isSerialized());
+            toFitQuantityField.setValue(itemType.isSerialized() ? Count.ONE : quantityRequired.zero());
             previousData.setValue(false);
             snField.setValue("");
             costField.setLabel("Unit Cost");
@@ -277,23 +205,14 @@ public class AssemblyDataPickup<T extends InventoryItem, C extends InventoryItem
         }
     }
 
-    private class ItemRemove extends DataForm implements RemoveItem {
+    private class ItemRemove extends AbstractItemRemove {
 
-        private final ELabelField assemblyDetails = new ELabelField("Assembly Position");
         private final TextField refField = new TextField("Reference");
-        private final ItemField<InventoryItem> itemField;
-        private final QuantityField qFittedField = new QuantityField("Fitted Quantity");
         private final QuantityField qToRemoveField = new QuantityField("Quantity to Remove");
-        private InventoryTransaction inventoryTransaction;
-        private InventoryItem item;
 
         public ItemRemove() {
-            super("Item Removal", false);
-            itemField = new ItemField<>("To remove", InventoryItem.class, true);
-            itemField.setEnabled(false);
-            qFittedField.setEnabled(false);
-            addField(assemblyDetails, refField, itemField, qFittedField, qToRemoveField);
-            qFittedField.setEnabled(false);
+            addField(refField, itemField, fittedQuantityField, qToRemoveField);
+            fittedQuantityField.setEnabled(false);
             setRequired(refField);
             setRequired(qToRemoveField);
         }
@@ -332,11 +251,8 @@ public class AssemblyDataPickup<T extends InventoryItem, C extends InventoryItem
 
         @Override
         public void setAssemblyPosition(InventoryFitmentPosition fitmentPosition) {
-            assemblyDetails.clearContent().append(fitmentPosition.toDisplay()).update();
-            this.item = fitmentPosition.getFittedItem();
-            itemField.setValue(item);
+            super.setAssemblyPosition(fitmentPosition);
             Quantity q = item.getQuantity();
-            qFittedField.setValue(q);
             qToRemoveField.setValue(q);
             qToRemoveField.setEnabled(!item.isSerialized() && !item.isConsumable());
             refField.setValue(reference);

@@ -38,7 +38,7 @@ public class ConsignmentPacket extends StoredObject implements Detail {
         this.number = number;
     }
 
-    @Column(caption = "Box Number", order = 200)
+    @Column(caption = "Package Number", order = 200)
     public int getNumber() {
         return number;
     }

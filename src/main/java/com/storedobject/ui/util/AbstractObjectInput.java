@@ -21,6 +21,11 @@ public interface AbstractObjectInput<T extends StoredObject>
         FilterMethods<T> {
 
     /**
+     * Clear the field value.
+     */
+    void clear();
+
+    /**
      * Class of the object supported in this input field.
      *
      * @return Class of the supported object.

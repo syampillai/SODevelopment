@@ -541,7 +541,7 @@ public class InventoryItem extends StoredObject implements HasInventoryItem {
             boolean binError = true;
             if(location instanceof InventoryBin && isSerialized()) { // It's in a store
                 InventoryItem p = get(getClass(), getId());
-                if(p != null && p.getLocationId().equals(locationId)) { // Bin not changed, rejection maybe due to change in serviceability
+                if(p != null && p.getLocationId().equals(locationId)) { // Bin didn't change, rejection maybe due to the  change in serviceability
                     binError = false; // Allowing
                 }
             }

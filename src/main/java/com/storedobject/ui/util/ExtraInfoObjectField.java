@@ -40,6 +40,11 @@ class ExtraInfoObjectField<T extends StoredObject> extends CustomField<T>
     }
 
     @Override
+    public void clear() {
+        super.clear();
+    }
+
+    @Override
     public void setRequired(boolean required) {
         this.required = required;
     }
@@ -146,6 +151,7 @@ class ExtraInfoObjectField<T extends StoredObject> extends CustomField<T>
                         }
                         masterView.savingExtraInfo(object);
                         Grid<?> grid = masterView.getGrid();
+                        //noinspection rawtypes
                         if(grid instanceof ObjectBrowser ob) {
                             //noinspection unchecked
                             ob.extraInfoLoaded(masterView.getObject(), object);
@@ -172,10 +178,6 @@ class ExtraInfoObjectField<T extends StoredObject> extends CustomField<T>
     @Override
     public T getObject(Id objectId) {
         return object;
-    }
-
-    @Override
-    public void setCached(T cached) {
     }
 
     @Override

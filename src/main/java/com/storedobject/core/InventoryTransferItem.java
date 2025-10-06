@@ -88,6 +88,10 @@ public abstract class InventoryTransferItem extends StoredObject implements Deta
 
     @Override
     public void validateData(TransactionManager tm) throws Exception {
+        if(deleted()) {
+            super.validateData(tm);
+            return;
+        }
         itemId = tm.checkTypeAny(this, itemId, InventoryItem.class, false);
         if(getItem().isSerialized()) {
             quantity = Count.ONE;

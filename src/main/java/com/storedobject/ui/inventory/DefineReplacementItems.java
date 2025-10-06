@@ -7,6 +7,7 @@ import com.storedobject.ui.*;
 import com.storedobject.ui.Application;
 import com.storedobject.vaadin.*;
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.HasValue;
 import com.vaadin.flow.component.icon.VaadinIcon;
 
 import java.util.ArrayList;
@@ -66,7 +67,7 @@ public class DefineReplacementItems extends DataForm {
     }
 
     private DefineReplacementItems(LocationField sentFromField, InventoryLocation fromStore, int type) {
-        super("Define Replacement Items / Quantities");
+        super("Define Replacements / Consumption");
         if(sentFromField == null) {
             if(fromStore == null) {
                 this.sentFromField = LocationField.create("Items Sent from", 0);
@@ -227,7 +228,7 @@ public class DefineReplacementItems extends DataForm {
         @Override
         public void createHeaders() {
             prependHeader().join().setComponent(new ButtonLayout(
-                    new ELabel("Set Replacement Items at " + title, Application.COLOR_SUCCESS),
+                    new ELabel("Define Replacements / Consumption at " + title, Application.COLOR_SUCCESS),
                     new ELabel(" | ", Application.COLOR_INFO),
                     new ELabel("Right-click on the respective row to see options", Application.COLOR_SUCCESS)
             ));
@@ -286,7 +287,9 @@ public class DefineReplacementItems extends DataForm {
 
         private void assembly(InventoryItem item) {
             clearAlerts();
-            warning("Not implemented yet!");
+            close();
+            //noinspection rawtypes,unchecked
+            new ManageAssembly(item).execute();
         }
 
         private void addItem(InventoryItem item) {
@@ -346,23 +349,15 @@ public class DefineReplacementItems extends DataForm {
             }
             String itemDisplay = item.toDisplay();
             clearAlerts();
-            InventoryItem newItem = pn.createItem(sn);
             try {
-                newItem.loadAttributesFrom(item);
-                newItem.setSerialNumber(sn);
-                newItem.setQuantity(toReturn);
-                newItem.setGRN((Id)null);
-                newItem.setPurchaseDate(DateUtility.today());
                 InventoryTransaction it = new InventoryTransaction(tm, DateUtility.today(), "Consumed");
                 tm.transact(t -> {
                     it.moveTo(item, consumed, null, consumption);
-                    newItem.save(t);
                     it.save(t);
                 });
                 message(itemDisplay + " - Item marked as consumed! Consumed: " + consumed + ", To Return: " + toReturn);
                 items.remove(item);
-                items.addFirst(newItem);
-                addItem((InventoryItem) item.reload());
+                items.addFirst(StoredObject.get(item.getClass(), item.getId()));
             } catch (Throwable e) {
                 warning(e);
             }
@@ -437,27 +432,63 @@ public class DefineReplacementItems extends DataForm {
 
         private class ConsumptionForm extends AbstractReplacementForm {
 
-            private final QuantityField returnField = new QuantityField("Returning Quantity after Consumption");
+            private final QuantityField consumptionField = new QuantityField("Consumption");
+            private final QuantityField returnField = new QuantityField("Returning Quantity");
 
             ConsumptionForm(InventoryItem item) {
                 super("Consumption", item);
-                addField(returnField);
-                returnField.setValue(item.getQuantity());
+                addField(consumptionField, returnField);
+                consumptionField.setValue(item.getQuantity());
+                setFieldReadOnly(snField);
+                consumptionField.addValueChangeListener(e -> {
+                    if(e.isFromClient()) {
+                        Quantity total = item.getQuantity();
+                        Quantity q = consumptionField.getValue();
+                        if(q.isZero()) {
+                            warning("Consumption cannot be zero!");
+                            consumptionField.focus();
+                            return;
+                        }
+                        if(q.isGreaterThan(total)) {
+                            warning("Consumption cannot be greater than the available quantity!");
+                            consumptionField.focus();
+                            return;
+                        }
+                        if(q.equals(total)) returnField.clear(); else returnField.setValue(total.subtract(q));
+                    }
+                });
+                returnField.addValueChangeListener(e -> {
+                    if(e.isFromClient()) {
+                        Quantity total = item.getQuantity();
+                        Quantity q = returnField.getValue();
+                        if(q.isGreaterThan(total)) {
+                            warning("Returning quantity cannot be greater than the available quantity!");
+                            returnField.focus();
+                            return;
+                        }
+                        if(q.equals(total)) consumptionField.clear(); else consumptionField.setValue(total.subtract(q));
+                    }
+                });
             }
 
             @Override
             protected boolean process() {
                 clearAlerts();
-                Quantity returnQuantity = returnField.getValue();
-                if(returnQuantity.isGreaterThan(item.getQuantity())) {
+                Quantity totalQuantity = item.getQuantity(), returnQuantity = returnField.getValue();
+                if(returnQuantity.isGreaterThan(totalQuantity)) {
                     warning("Returning quantity cannot be greater than the existing quantity!");
                     return false;
+                }
+                if(totalQuantity.equals(returnQuantity)) {
+                    close();
+                    message("No changes made!");
+                    return true;
                 }
                 String sn = snField.getValue();
                 InventoryItemType pn = pnField.getValue();
                 close();
                 new ActionForm("Item: " + item.toDisplay()
-                        + "\nConsumed: " + item.getQuantity().subtract(returnQuantity)
+                        + "\nConsumed: " + totalQuantity.subtract(returnQuantity)
                         + ", Returning quantity: " + returnQuantity
                         + "\nReturning P/N: " + pn.getPartNumber() + ", B/N: " + sn
                         + "\nThis step cannot be undone. Are you sure?",
@@ -540,6 +571,126 @@ public class DefineReplacementItems extends DataForm {
                             "PartNumber=" + pn.getId() + " AND SerialNumber='" + sn + "'", true)
                     .filter(i -> !i.getLocation().canResurrect()).findFirst();
             return ii == null ? null : ("Such an item already exists at " + ii.getLocation().toDisplay());
+        }
+
+        private class ManageAssembly<T extends InventoryItem, C extends InventoryItem> extends AbstractAssembly<T, C> {
+
+            public ManageAssembly(T item) {
+                //noinspection unchecked
+                this(null, item, (Class<T>) item.getClass(), null);
+            }
+
+            private ManageAssembly(InventoryLocation location, T item, Class<T> itemClass, Class<C> componentClass) {
+                super(location, item, itemClass, componentClass);
+                if(item == null) {
+                    Application a = Application.get();
+                    if(a != null) {
+                        String caption = a.getLogicTitle(null);
+                        if(caption != null) {
+                            setCaption(caption);
+                        }
+                    }
+                }
+            }
+
+            @Override
+            FitItem createFitItem(Class<C> itemClass) {
+                return new ItemFit(itemClass);
+            }
+
+            @Override
+            RemoveItem createRemoveItem() {
+                return new ItemRemove();
+            }
+
+            private class ItemFit extends AbstractAssemblyFit {
+
+                public ItemFit(Class<C> itemClass) {
+                    super(new ItemComboField<>(itemClass, new ArrayList<>()));
+                    itemField.setEnabled(true);
+                    addField(partNumbersField, (HasValue<?, ?>) itemField, requiredQuantityField,
+                            availableQuantityField, toFitQuantityField);
+                    setRequired((HasValue<?, ?>) itemField);
+                    itemField.setStore(() -> {
+                        InventoryLocation loc = locationField.getValue();
+                        return loc instanceof InventoryBin ? ((InventoryBin) loc).getStore() : null;
+                    });
+                }
+
+                @Override
+                protected boolean process() {
+                    return process(date, "Fitted");
+                }
+
+                public void setAssemblyPosition(InventoryFitmentPosition fitmentPosition, Quantity quantityAlreadyFitted) {
+                    super.setAssemblyPosition(fitmentPosition, quantityAlreadyFitted);
+                    availableQuantityField.setValue(quantityRequired.zero());
+                    toFitQuantityField.setEnabled(!itemType.isSerialized());
+                    toFitQuantityField.setValue(itemType.isSerialized() ? Count.ONE : quantityRequired.zero());
+                }
+
+                @Override
+                public void valueChanged(ChangedValues changedValues) {
+                    if(changedValues.isFromClient() && changedValues.getChanged() == partNumbersField) {
+                        InventoryItemType pn = partNumbersField.getValue();
+                        if(pn == null) {
+                            itemField.clear();
+                            partNumbersField.focus();
+                            return;
+                        }
+                        @SuppressWarnings("unchecked") List<C> items = StoredObject.list(InventoryItem.class,
+                                        "PartNumber=" + pn.getId() + " AND Location=" + eo.getId(), true)
+                                .map(i -> (C)i).toList();
+                        ((ItemComboField<C>)itemField).setItems(items);
+                        return;
+                    }
+                    if(changedValues.getChanged() == itemField) {
+                        itemValueChanged();
+                    }
+                }
+            }
+
+            private class ItemRemove extends AbstractItemRemove {
+
+                private final QuantityField qToRemoveField = new QuantityField("Quantity to Remove");
+
+                public ItemRemove() {
+                    addField(itemField, fittedQuantityField, qToRemoveField);
+                    fittedQuantityField.setEnabled(false);
+                    setRequired(qToRemoveField);
+                }
+
+                @Override
+                protected boolean process() {
+                    Quantity qToRemove = qToRemoveField.getValue();
+                    if(!item.isSerialized()) {
+                        if(qToRemove.isGreaterThan(item.getQuantity())) {
+                            warning("Fitted quantity is only " + item.getQuantity() + ", can't remove " + qToRemove);
+                            return false;
+                        }
+                    }
+                    if(inventoryTransaction == null || !inventoryTransaction.getDate().equals(date)) {
+                        inventoryTransaction = new InventoryTransaction(getTransactionManager(), date);
+                    } else {
+                        inventoryTransaction.abandon();
+                    }
+                    reference = "Removed";
+                    inventoryTransaction.moveTo(item, qToRemove, reference, eo);
+                    if(transact(t -> inventoryTransaction.save(t))) {
+                        refresh();
+                        return true;
+                    }
+                    return false;
+                }
+
+                @Override
+                public void setAssemblyPosition(InventoryFitmentPosition fitmentPosition) {
+                    super.setAssemblyPosition(fitmentPosition);
+                    Quantity q = item.getQuantity();
+                    qToRemoveField.setValue(q);
+                    qToRemoveField.setEnabled(!item.isSerialized() && !item.isConsumable());
+                }
+            }
         }
     }
 }
