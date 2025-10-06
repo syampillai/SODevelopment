@@ -322,6 +322,10 @@ public class DefineReplacementItems extends DataForm {
             clearAlerts();
             InventoryItem newItem = pn.createItem(sn);
             try {
+                if(newItem == null) {
+                    warning("Unable to create item with P/N = " + pn.getPartNumber() + ", S/N = " + sn);
+                    return;
+                }
                 newItem.loadAttributesFrom(item);
                 newItem.setSerialNumber(sn);
                 newItem.setGRN((Id)null);

@@ -128,10 +128,6 @@ public abstract class InventoryTransferItem extends StoredObject implements Deta
         super.savedCore();
     }
 
-    boolean getNotSent() {
-        return true;
-    }
-
     @Override
     public final Id getUniqueId() {
         return itemId;
