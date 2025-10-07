@@ -30,9 +30,8 @@ public class TicketingSystem extends MemoSystem {
         super.checkMemoType(type);
         if(ticketManager != null) return;
         SystemUserGroup group = SystemUserGroup.get("Ticket Manager");
-        if(group == null) {
-            group = SystemUserGroup.get("TicketManager");
-        }if(group == null) throw new SORuntimeException("Ticket Manager group not defined!");
+        if(group == null) group = SystemUserGroup.get("TicketManager");
+        if(group == null) throw new SORuntimeException("Ticket Manager group not defined!");
         ticketManager = group.listUsers().findFirst();
         if(ticketManager == null) throw new SORuntimeException("No users in Ticket Manager group!");
     }
