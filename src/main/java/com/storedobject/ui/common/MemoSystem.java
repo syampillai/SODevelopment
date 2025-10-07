@@ -697,6 +697,10 @@ public class MemoSystem extends ObjectGrid<MemoComment> implements CloseableView
         return true;
     }
 
+    protected boolean createNewMemo(Transaction transaction, MemoComment comment) throws Exception {
+        return false;
+    }
+
     private void recallMemo(MemoComment mc) {
         if(transact(mc::recallMemo)) {
             loadMemos();
@@ -822,6 +826,7 @@ public class MemoSystem extends ObjectGrid<MemoComment> implements CloseableView
 
         @Override
         protected void saveObject(Transaction t, MemoComment object) throws Exception {
+            if(object.getCommentCount() == 0 && createNewMemo(t, object)) return;
             switch(action) {
                 case 1 -> object.returnMemo(t, object.getComment());
                 case 2 -> object.forwardMemo(t, object.getComment(), su);

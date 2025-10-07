@@ -546,7 +546,7 @@ public class InventoryItem extends StoredObject implements HasInventoryItem {
                 }
             }
             if(binError) {
-                throw new Invalid_State("Item: " + toDisplay() + ", Not allowed here: " + location.toDisplay());
+                throw new Invalid_State("Item: " + toDisplay() + " cannot be here: " + location.toDisplay());
             }
         }
         MeasurementUnit u = partNumber.getUnitOfMeasurement().getUnit();
@@ -721,7 +721,7 @@ public class InventoryItem extends StoredObject implements HasInventoryItem {
         }
         boolean notAllowed = true;
         if(getLocation() instanceof InventoryBin && isSerialized() && !canBin(location)) { // Binning rejected
-            if(old.getLocationId().equals(locationId)) { // Bin not changed, rejection maybe due to change in serviceability
+            if(old.getLocationId().equals(locationId)) { // Bin didn't change, rejection maybe due to change in serviceability
                 InventoryLocation from = location;
                 location = InventoryStoreBin.getForStore(((InventoryBin) location).getStoreId());
                 //noinspection ConstantConditions
@@ -730,7 +730,7 @@ public class InventoryItem extends StoredObject implements HasInventoryItem {
                 notAllowed = false; // Allowing
             }
             if(notAllowed) {
-                throw new Invalid_State("Item: " + toDisplay() + ", Not allowed here: " + location.toDisplay());
+                throw new Invalid_State("Item: " + toDisplay() + ", is allowed here: " + location.toDisplay());
             }
         }
     }
