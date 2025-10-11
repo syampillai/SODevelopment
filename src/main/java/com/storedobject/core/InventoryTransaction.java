@@ -95,6 +95,9 @@ public final class InventoryTransaction {
     public void sale(InventoryItem item, Quantity quantity, String reference, Entity toEntity) {
     }
 
+    public void changeOwner(InventoryItem item, String reference, Entity toEntity) {
+    }
+
     public void splitQuantity(InventoryItem item, Quantity quantity, String reference) {
     }
 

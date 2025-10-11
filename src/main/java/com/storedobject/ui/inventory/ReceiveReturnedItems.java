@@ -21,6 +21,7 @@ import java.util.Set;
  */
 public class ReceiveReturnedItems extends HandleReturnedItems {
 
+    private final Application application;
     private Date date, invoiceDate;
     private String invoiceRef;
     private Runnable cancelAction;
@@ -46,7 +47,12 @@ public class ReceiveReturnedItems extends HandleReturnedItems {
     }
 
     public ReceiveReturnedItems(int type, InventoryStoreBin storeBin, InventoryLocation eo) {
-        super(caption(type), type, storeBin, eo, true);
+        this(type, storeBin, eo, true);
+    }
+
+    public ReceiveReturnedItems(int type, InventoryStoreBin storeBin, InventoryLocation eo, boolean autoMode) {
+        super(caption(type), type, storeBin, eo, true, autoMode);
+        this.application = getApplication();
     }
 
     public void setCancelAction(Runnable cancelAction) {
@@ -143,13 +149,18 @@ public class ReceiveReturnedItems extends HandleReturnedItems {
         if(!transact(returnedToProcess::send)) {
             return;
         }
+        recRet().receive(returnedToProcess);
+    }
+
+    private ReceiveMaterialReturned recRet() {
         ReceiveMaterialReturned v = new ReceiveMaterialReturned(storeBin, eo);
+        v.setExitAction(() -> new ReceiveReturnedItems(type, storeBin, eo).execute());
         v.execute();
-        v.receive(returnedToProcess);
+        return v;
     }
 
     protected void processOld() {
-        new ReceiveMaterialReturned(storeBin, eo).execute();
+        recRet();
     }
 
     private class Select extends MultiSelectGrid<InventoryItem> {
@@ -161,8 +172,9 @@ public class ReceiveReturnedItems extends HandleReturnedItems {
 
         public Select(List<InventoryItem> items, boolean confirm) {
             super(InventoryItem.class, items,
-                    StringList.create("PartNumber", "SerialNumberDisplay AS Serial Number", "Quantity", "Location"),
+                    StringList.create("PartNumber", "SerialNumberDisplay AS Serial/Batch Number", "Quantity"),
                     selectedSet -> ReceiveReturnedItems.this.process(items, selectedSet, confirm));
+            addConstructedListener(o -> con());
             invoiceRefField.uppercase();
             invoiceRefField.addValueChangeListener(e -> {
                if(e.isFromClient()) {
@@ -179,6 +191,12 @@ public class ReceiveReturnedItems extends HandleReturnedItems {
                     invoiceDateField.setValue(invoiceDate);
                 }
             }
+            setWidth("75vw");
+        }
+
+        private void con() {
+            getColumn("Quantity").setFlexGrow(0).setWidth("100%");
+            getColumn("SerialNumberDisplay").setFlexGrow(0).setWidth("100px");
         }
 
         @Override
@@ -191,12 +209,21 @@ public class ReceiveReturnedItems extends HandleReturnedItems {
                 return;
             }
             proceed.setText("Process Selected Entries");
+            proceed.asSmall();
+            cancel.asSmall();
             Button b = new Button("Show Previous Entries", VaadinIcon.COG_O, e -> {
                 clearAlerts();
                 close();
                 processOld();
-            });
-            buttonLayout.add(new ELabel("Process: "), b);
+            }).asSmall();
+            Button eoButton = new Button(((InventoryVirtualLocation)eo).getEntity().toDisplay(), (String)null, e -> cancel())
+                    .asSmall();
+            eoButton.getElement().setAttribute("title", "Click to change");
+            buttonLayout.add(new ELabel("Location: "),
+                    eoButton,
+                    new ELabel(" | ", Application.COLOR_INFO),
+                    new ELabel("Process:"),
+                    b);
         }
 
         @Override
@@ -212,12 +239,13 @@ public class ReceiveReturnedItems extends HandleReturnedItems {
             } else {
                 prependHeader().join().setComponent(new ButtonLayout(new ELabel("Search: "), searchField));
             }
+            ELabel warn = new ELabel("If you are receiving replacements or lesser quantities, please define the", Application.COLOR_ERROR);
+            warn.newLine().append("replacement items or input consumption details before going ahead with this.",
+                    Application.COLOR_ERROR).update();
             prependHeader().join()
                     .setComponent(new ButtonLayout(
-                            new ELabel("If you are receiving replacements or lesser quantities, please define the replacement items first before going ahead with this.",
-                                    Application.COLOR_ERROR),
-                            new Button("Define Replacements", VaadinIcon.EXCHANGE, e -> defineReplacements()),
-                            new Button("Mark Consumption", VaadinIcon.CROSS_CUTLERY, e -> defineReplacements())
+                            warn,
+                            new Button("Define Replacements / Mark Consumption", VaadinIcon.EXCHANGE, e -> defineReplacements()).asSmall()
                     ));
             if(confirm) return;
             ELabel h = new ELabel(
@@ -262,7 +290,9 @@ public class ReceiveReturnedItems extends HandleReturnedItems {
         protected void cancel() {
             super.cancel();
             if(cancelAction != null) {
-                getApplication().access(() -> cancelAction.run());
+                application.access(() -> cancelAction.run());
+            } else {
+                application.access(() -> new ReceiveReturnedItems(type, storeBin, eo, false).execute());
             }
         }
     }

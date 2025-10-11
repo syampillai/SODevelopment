@@ -51,7 +51,7 @@ public class ItemContext {
     }
 
     public void inspect(HasInventoryItem hasItem) {
-        inspect(hasItem == null ? null : hasItem.getItem());
+        inspect(hasItem == null ? null : hasItem.getInventoryItem());
     }
 
     public void split(InventoryItem item) {
@@ -65,7 +65,7 @@ public class ItemContext {
     }
 
     public void split(HasInventoryItem hasItem) {
-        split(hasItem == null ? null : hasItem.getItem());
+        split(hasItem == null ? null : hasItem.getInventoryItem());
     }
 
     public void breakAssembly(InventoryItem item) {
@@ -83,7 +83,7 @@ public class ItemContext {
     }
 
     public void breakAssembly(HasInventoryItem hasItem) {
-        breakAssembly(hasItem == null ? null : hasItem.getItem());
+        breakAssembly(hasItem == null ? null : hasItem.getInventoryItem());
     }
 
     public void view(InventoryItem item) {
@@ -94,7 +94,7 @@ public class ItemContext {
     }
 
     public void view(HasInventoryItem hasItem) {
-        view(hasItem == null ? null : hasItem.getItem());
+        view(hasItem == null ? null : hasItem.getInventoryItem());
     }
 
     public void view(InventoryItemType itemType) {
@@ -115,7 +115,7 @@ public class ItemContext {
     }
 
     public void viewMovements(HasInventoryItem hasItem) {
-        viewMovements(hasItem == null ? null : hasItem.getItem());
+        viewMovements(hasItem == null ? null : hasItem.getInventoryItem());
     }
 
     public void viewAssembly(InventoryItem item) {
@@ -125,7 +125,7 @@ public class ItemContext {
     }
 
     public void viewAssembly(HasInventoryItem hasItem) {
-        viewAssembly(hasItem == null ? null : hasItem.getItem());
+        viewAssembly(hasItem == null ? null : hasItem.getInventoryItem());
     }
 
     public void viewParentAssembly(InventoryItem item) {
@@ -138,7 +138,7 @@ public class ItemContext {
     }
 
     public void viewParentAssembly(HasInventoryItem hasItem) {
-        viewParentAssembly(hasItem == null ? null : hasItem.getItem());
+        viewParentAssembly(hasItem == null ? null : hasItem.getInventoryItem());
     }
 
     public void viewStock(InventoryItem item) {
@@ -153,7 +153,7 @@ public class ItemContext {
     }
 
     public void viewStock(HasInventoryItem hasItem) {
-        viewStock(hasItem == null ? null : hasItem.getItem());
+        viewStock(hasItem == null ? null : hasItem.getInventoryItem());
     }
 
     public void viewStock(HasInventoryItemType hasInventoryItemType) {
@@ -276,7 +276,7 @@ public class ItemContext {
     }
 
     public void viewFitment(HasInventoryItem hasItem) {
-        viewFitment(hasItem == null ? null : hasItem.getItem());
+        viewFitment(hasItem == null ? null : hasItem.getInventoryItem());
     }
 
     public void viewFitmentLocations(InventoryItem item) {
@@ -287,7 +287,7 @@ public class ItemContext {
     }
 
     public void viewFitmentLocations(HasInventoryItem hasItem) {
-        viewFitmentLocations(hasItem == null ? null : hasItem.getItem());
+        viewFitmentLocations(hasItem == null ? null : hasItem.getInventoryItem());
     }
 
     public void viewGRN(InventoryItem item) {
@@ -337,7 +337,7 @@ public class ItemContext {
     }
 
     public void viewGRN(HasInventoryItem hasItem, boolean includeSource) {
-        viewGRN(hasItem == null ? null : hasItem.getItem(), includeSource);
+        viewGRN(hasItem == null ? null : hasItem.getInventoryItem(), includeSource);
     }
 
     public void viewCost(InventoryItem item) {
@@ -345,7 +345,7 @@ public class ItemContext {
     }
 
     public void viewCost(HasInventoryItem hasItem) {
-        viewCost(hasItem == null ? null : hasItem.getItem());
+        viewCost(hasItem == null ? null : hasItem.getInventoryItem());
     }
 
     public void editCost(InventoryItem item) {
@@ -353,7 +353,7 @@ public class ItemContext {
     }
 
     public void editCost(HasInventoryItem hasItem) {
-        editCost(hasItem == null ? null : hasItem.getItem());
+        editCost(hasItem == null ? null : hasItem.getInventoryItem());
     }
 
     private void cost(InventoryItem item, boolean viewMode) {

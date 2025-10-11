@@ -885,7 +885,9 @@ public final class InventoryGRN extends StoredObject implements HasChildren, Has
     void attachConsignmentFrom(Transaction transaction, StoredObject from) throws Exception {
         List<Consignment> consignments = from.listLinks(Consignment.class, "Type=3", true).toList();
         for(Consignment c: consignments) {
-            if(c.getMaster(InventoryGRN.class) == null) {
+            Set<Id> masters = new HashSet<>();
+            c.listMasters(InventoryGRN.class).forEach(m -> masters.add(m.getId()));
+            if(!masters.contains(getId())) {
                 addLink(transaction, c);
                 break;
             }

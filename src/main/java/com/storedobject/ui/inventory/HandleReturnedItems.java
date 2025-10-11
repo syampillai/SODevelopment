@@ -27,24 +27,34 @@ public abstract class HandleReturnedItems extends DataForm implements Transactio
     private Button goToOld;
     private boolean includeOnlyForStore;
     private boolean defineReplacements = false;
+    private final boolean autoMode;
 
     public HandleReturnedItems(String caption, int type, InventoryStoreBin storeBin, InventoryLocation eo, boolean allowJumpToOld) {
+        this(caption, type, storeBin, eo, allowJumpToOld, true);
+    }
+
+    public HandleReturnedItems(String caption, int type, InventoryStoreBin storeBin, InventoryLocation eo, boolean allowJumpToOld, boolean autoMode) {
         super(caption);
         this.type = type;
+        this.autoMode = autoMode;
         this.storeBin = storeBin;
         this.eo = eo;
-        if(storeBin == null) {
+        if(storeBin == null || !autoMode) {
             storeField = LocationField.create(0);
-            if(storeField.getLocationCount() == 1) {
+            if(storeBin != null) {
+                storeField.setValue(storeBin);
+            } else if(storeField.getLocationCount() == 1) {
                 this.storeBin = (InventoryStoreBin) storeField.getValue();
             }
         } else {
             storeField = LocationField.create(storeBin);
         }
         storeField.setLabel("Items Sent from");
-        if(eo == null) {
+        if(eo == null || !autoMode) {
             eoField = LocationField.create(type);
-            if(eoField.getLocationCount() == 1) {
+            if(eo != null) {
+                eoField.setValue(eo);
+            } else if(eoField.getLocationCount() == 1) {
                 this.eo = eoField.getValue();
             } else {
                 eoField.setValue((Id)null);
@@ -57,10 +67,10 @@ public abstract class HandleReturnedItems extends DataForm implements Transactio
         }
         eoField.setLabel(type == 18 ? "Custodian" : "Organization");
         addField(storeField, eoField);
-        if(storeBin != null) {
+        if(storeBin != null && autoMode) {
             setFieldReadOnly(storeField);
         }
-        if(eo != null) {
+        if(eo != null && autoMode) {
             setFieldReadOnly(eoField);
         }
         setRequired(storeField);
@@ -81,8 +91,7 @@ public abstract class HandleReturnedItems extends DataForm implements Transactio
         }
         buttonPanel.remove(cancel);
         buttonPanel.add(goToOld,
-                new Button("Define Replacements", VaadinIcon.EXCHANGE, e -> defineReplacements()),
-                new Button("Mark Consumption", VaadinIcon.CROSS_CUTLERY, e -> defineReplacements()),
+                new Button("Define Replacements / Mark Consumption", VaadinIcon.EXCHANGE, e -> defineReplacements()),
                 cancel);
     }
 
@@ -104,7 +113,7 @@ public abstract class HandleReturnedItems extends DataForm implements Transactio
 
     @Override
     protected void execute(View parent, boolean doNotLock) {
-        if(storeBin != null && eo != null) {
+        if(autoMode && storeBin != null && eo != null) {
             proceed();
             return;
         }
@@ -177,7 +186,7 @@ public abstract class HandleReturnedItems extends DataForm implements Transactio
             return;
         }
         if(defineReplacements) {
-            new DefineReplacementItems.ReplacementGrid(items, eo, getTransactionManager()).execute();
+            new DefineReplacementItems.ReplacementGrid(items, eo, getTransactionManager(), storeBin).execute();
         } else {
             proceed(items);
         }

@@ -255,9 +255,7 @@ public final class InventoryAssembly extends StoredObject implements HasInventor
         if(partNumber == null) {
             return false;
         }
-        Id partNumberId = partNumber.getId();
-        return !Id.isNull(partNumberId) && (partNumberId.equals(itemTypeId) ||
-                partNumber.listAPNs().stream().anyMatch(it -> it.getId().equals(partNumberId)));
+        return canFit(partNumber.getId());
     }
 
     /**
@@ -270,7 +268,11 @@ public final class InventoryAssembly extends StoredObject implements HasInventor
         if(Id.isNull(partNumberId)) {
             return false;
         }
-        return  canFit(get(InventoryItemType.class, partNumberId, true));
+        if(partNumberId.equals(itemTypeId)) {
+            return true;
+        }
+        InventoryItemType iit = getItemType();
+        return iit != null && iit.listAPNs().stream().anyMatch(it -> it.getId().equals(partNumberId));
     }
 
     /**

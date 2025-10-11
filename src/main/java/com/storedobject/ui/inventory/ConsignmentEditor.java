@@ -48,12 +48,16 @@ public class ConsignmentEditor<C extends Consignment> extends ObjectEditor<C> {
             message("No packages defined!");
             return;
         }
+        if(items.stream().anyMatch(i -> i.getInventoryItem() == null)) {
+            message("Please make sure that all items are created/inspected");
+            return;
+        }
         @SuppressWarnings("unchecked") List<I> previousItems = consignment.listLinks(itemClass)
                 .map(i -> (I)i).toList();
         List<I> currentItems = new ArrayList<>();
         items.forEach(i -> {
             I ci = previousItems.stream()
-                    .filter(c -> i.getItem().getId().equals(c.getItemId()))
+                    .filter(c -> i.getInventoryItem().getId().equals(c.getItemId()))
                     .findAny().orElse(null);
             if(ci == null) {
                 try {

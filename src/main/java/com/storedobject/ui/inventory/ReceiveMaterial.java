@@ -75,12 +75,12 @@ public class ReceiveMaterial extends DataForm {
         if(toField == null) {
             if(to == null) {
                 this.toField = LocationField.create("x", 0, 4, 5, 10, 11);
+                this.toField.setValue((Id)null);
             } else {
                 this.toField = LocationField.create("x", to);
                 setFieldReadOnly(this.toField);
             }
             this.toField.setLabel("Receive to");
-            this.toField.setValue((Id)null);
         } else {
             this.toField = toField;
             if(to != null) {
@@ -150,10 +150,10 @@ public class ReceiveMaterial extends DataForm {
                 case 1 -> new ReceiveMaterialReturned(to).execute();
                 case 2 -> new ReceiveMaterialTransferred(to).execute();
                 case 3 -> new ReceiveMaterialRequested(to).execute();
-                case 4 -> new ReceiveReturnedItems(3, (InventoryStoreBin) to).execute();
-                case 5 -> new ReceiveReturnedItems(8, (InventoryStoreBin) to).execute();
+                case 4 -> new ReceiveReturnedItems(3, (InventoryStoreBin) to, null, false).execute();
+                case 5 -> new ReceiveReturnedItems(8, (InventoryStoreBin) to, null, false).execute();
                 case 6 -> grn(1, to);
-                case 7 -> new ReceiveReturnedItems(18, (InventoryStoreBin) to).execute();
+                case 7 -> new ReceiveReturnedItems(18, (InventoryStoreBin) to, null, false).execute();
                 case 8 -> grn(2, to);
             }
         } else {

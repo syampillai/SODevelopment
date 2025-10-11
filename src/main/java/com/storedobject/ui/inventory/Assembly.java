@@ -6,7 +6,6 @@ import com.storedobject.ui.ObjectListField;
 import com.storedobject.ui.QuantityField;
 import com.storedobject.vaadin.ChangedValues;
 import com.storedobject.vaadin.DateField;
-import com.storedobject.vaadin.TextField;
 import com.vaadin.flow.component.HasValue;
 
 public class Assembly<T extends InventoryItem, C extends InventoryItem> extends AbstractAssembly<T, C> {
@@ -76,14 +75,13 @@ public class Assembly<T extends InventoryItem, C extends InventoryItem> extends 
     private class ItemFit extends AbstractAssemblyFit {
 
         private final DateField dateField = new DateField("Date");
-        private final TextField refField = new TextField("Reference");
 
         public ItemFit(Class<C> itemClass) {
             super(itemClass);
             itemField.setEnabled(true);
-            addField(dateField, refField, partNumbersField, (HasValue<?, ?>) itemField, requiredQuantityField,
+            addField(dateField, partNumbersField, (HasValue<?, ?>) itemField, requiredQuantityField,
                     availableQuantityField, toFitQuantityField);
-            setRequired(refField);
+            setRequired(remarksField);
             setRequired((HasValue<?, ?>) itemField);
             itemField.setStore(() -> {
                 InventoryLocation loc = locationField.getValue();
@@ -93,7 +91,7 @@ public class Assembly<T extends InventoryItem, C extends InventoryItem> extends 
 
         @Override
         protected boolean process() {
-            return process(dateField.getValue(), refField.getValue());
+            return process(dateField.getValue(), reference(null));
         }
 
         public void setAssemblyPosition(InventoryFitmentPosition fitmentPosition, Quantity quantityAlreadyFitted) {
@@ -102,7 +100,6 @@ public class Assembly<T extends InventoryItem, C extends InventoryItem> extends 
             toFitQuantityField.setEnabled(!itemType.isSerialized());
             toFitQuantityField.setValue(itemType.isSerialized() ? Count.ONE : quantityRequired.zero());
             dateField.setValue(date);
-            refField.setValue(reference);
         }
 
         @Override
@@ -120,7 +117,6 @@ public class Assembly<T extends InventoryItem, C extends InventoryItem> extends 
     private class ItemRemove extends AbstractItemRemove {
 
         private final DateField dateField = new DateField("Date");
-        private final TextField refField = new TextField("Reference");
         private final QuantityField qToRemoveField = new QuantityField("Quantity to Remove");
         private final InventoryLocation scrap = new InventoryStoreBin(), specificBin = new InventoryStoreBin();
         private final ObjectListField<InventoryLocation> binField =
@@ -129,7 +125,7 @@ public class Assembly<T extends InventoryItem, C extends InventoryItem> extends 
         private final BinField specificBinField = new BinField("Specific Bin");
 
         public ItemRemove() {
-            addField(dateField, refField, itemField, fittedQuantityField, qToRemoveField, binField,
+            addField(dateField, itemField, fittedQuantityField, qToRemoveField, binField,
                     specificBinField);
             setFieldHidden(specificBinField);
             binField.addValueChangeListener(e -> {
@@ -146,7 +142,7 @@ public class Assembly<T extends InventoryItem, C extends InventoryItem> extends 
                }
             });
             fittedQuantityField.setEnabled(false);
-            setRequired(refField);
+            setRequired(remarksField);
             setRequired(qToRemoveField);
             scrap.setName("<Scrap>");
             scrap.makeVirtual();
@@ -182,11 +178,10 @@ public class Assembly<T extends InventoryItem, C extends InventoryItem> extends 
             } else {
                 inventoryTransaction.abandon();
             }
-            reference = refField.getValue().trim();
             if(location == scrap) {
-                inventoryTransaction.scrap(item, qToRemove, reference);
+                inventoryTransaction.scrap(item, qToRemove, reference(null));
             } else {
-                inventoryTransaction.moveTo(item, qToRemove, reference, location);
+                inventoryTransaction.moveTo(item, qToRemove, reference(null), location);
             }
             if(transact(t -> inventoryTransaction.save(t))) {
                 refresh();
@@ -202,7 +197,6 @@ public class Assembly<T extends InventoryItem, C extends InventoryItem> extends 
             qToRemoveField.setValue(q);
             qToRemoveField.setEnabled(!item.isSerialized() && !item.isConsumable());
             dateField.setValue(date);
-            refField.setValue(reference);
             if(!binPopulated) {
                 binPopulated = true;
                 InventoryLocation location = locationField.getValue();

@@ -39,7 +39,7 @@ public final class Person extends StoredObject implements HasContacts, Comparabl
             "Unknown", "Unmarried", "Married", "Divorced", "Widowed", "Living Together", "Common Law Partner"
     };
     private String firstName = "", middleName, lastName, shortName;
-    private Date dateOfBirth = DateUtility.today();
+    private Date dateOfBirth = Utility.BLANK_DATE;
     private int maritalStatus = 0, gender = 0, title = 0, suffix = 0;
 
     /**
@@ -303,7 +303,7 @@ public final class Person extends StoredObject implements HasContacts, Comparabl
     /**
      * Gets the suffix value of this person.
      *
-     * @return Suffix value of this person.
+     * @return Suffix the value of this person.
      */
     public String getSuffixValue() {
         return getSuffixValue(suffix);
@@ -329,7 +329,7 @@ public final class Person extends StoredObject implements HasContacts, Comparabl
 
     /**
      * Sets the title value of this person. A gender-specific index is passed as the parameter. This method is useful
-     * to pass an index value selected from the array returned by getTitleValues(int gender) method.
+     * to pass an index value selected from the array returned by the getTitleValues (int gender) method.
      *
      * @param index Index to the gender-specific title values
      * @exception Invalid_Value If the index value is out-of-range
@@ -402,6 +402,7 @@ public final class Person extends StoredObject implements HasContacts, Comparabl
      *
      * @return Date of birth
      */
+    @Column(required = false)
     public Date getDateOfBirth() {
         return new Date(dateOfBirth.getTime());
     }
@@ -897,8 +898,8 @@ public final class Person extends StoredObject implements HasContacts, Comparabl
      * <p>Note: If the template doesn't exist, the default template is used.</p>
      * @param templateName Name of the template to create the message.
      * @param tm Transaction manager.
-     * @param messageParameters Parameters for creating message from the associated template.
-     * @return True the message is successfully created for delivery.
+     * @param messageParameters Parameters for creating a message from the associated template.
+     * @return True if the message is successfully created for delivery.
      */
     @Override
     public boolean notify(String templateName, TransactionManager tm, Object... messageParameters) {

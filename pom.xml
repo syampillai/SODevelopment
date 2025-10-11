@@ -11,7 +11,7 @@
     </parent>
 
     <artifactId>so-development</artifactId>
-    <version>15.0.10</version>
+    <version>15.0.11</version>
 
     <name>${project.groupId}:${project.artifactId}</name>
     <description>SO Development skeleton classes</description>

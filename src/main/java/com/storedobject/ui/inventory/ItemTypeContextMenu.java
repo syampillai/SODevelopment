@@ -2,6 +2,8 @@ package com.storedobject.ui.inventory;
 
 import com.storedobject.core.HasInventoryItemType;
 import com.storedobject.core.InventoryItemType;
+import com.storedobject.ui.Application;
+import com.storedobject.ui.Transactional;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.contextmenu.GridContextMenu;
 import com.vaadin.flow.component.grid.contextmenu.GridMenuItem;
@@ -15,13 +17,15 @@ public class ItemTypeContextMenu<T extends HasInventoryItemType> extends GridCon
 
     public ItemTypeContextMenu(Grid<T> itemTypeGrid) {
         super(itemTypeGrid);
+        boolean isAdmin = itemTypeGrid instanceof Transactional transactional
+                && transactional.getTransactionManager().getUser().isAdmin();
         super.setDynamicContentHandler(hit -> {
             itemTypeGrid.deselectAll();
             if(hit == null) {
                 return false;
             }
             if(pnDetails == null) {
-                build();
+                build(isAdmin);
             }
             itemTypeGrid.select(hit);
             InventoryItemType it = hit.getInventoryItemType();
@@ -46,9 +50,17 @@ public class ItemTypeContextMenu<T extends HasInventoryItemType> extends GridCon
         });
     }
 
-    private void build() {
+    private void build(boolean isAdmin) {
         pnDetails = addItem("Details -", e -> e.getItem().ifPresent(context::view));
         viewStock = addItem("View Stock -", e -> e.getItem().ifPresent(context::viewStock));
+        if(!isAdmin) return;
+        addItem("View System ID", e -> e.getItem().ifPresent(i -> {
+            InventoryItemType it = i.getInventoryItemType();
+            if(it == null) {
+                return;
+            }
+            Application.error(it.getId() + " : " + it.getClass().getName());
+        }));
     }
 
     @SafeVarargs

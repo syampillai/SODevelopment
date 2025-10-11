@@ -37,10 +37,11 @@ public abstract class AbstractAssembly<T extends InventoryItem, C extends Invent
     final LocationField locationField;
     private Registration registration;
     Date date = DateUtility.today();
-    String reference = "";
+    private Runnable exitAction;
 
     AbstractAssembly(InventoryLocation location, T item, Class<T> itemClass, Class<C> componentClass) {
         super(InventoryFitmentPosition.class, COLUMNS);
+        new ItemContextMenu<>(this);
         locationField = new LocationField("Location", 0);
         if(item == null) {
             selectRootItem = new SelectRootItem(location, itemClass);
@@ -141,7 +142,7 @@ public abstract class AbstractAssembly<T extends InventoryItem, C extends Invent
         //noinspection resource
         buttonLayout.add(new Button("Print", e -> new FitList()),
                 new TreeSearchField<>(this),
-                new Button("Exit", e -> close()));
+                new Button("Exit", e -> exit()));
         return buttonLayout;
     }
 
@@ -514,16 +515,26 @@ public abstract class AbstractAssembly<T extends InventoryItem, C extends Invent
     abstract class AssembleItem extends DataForm {
 
         protected final ELabelField assemblyDetails = new ELabelField("Assembly Position");
+        protected final TextField remarksField = new TextField("Reference/Remarks");
         protected InventoryTransaction inventoryTransaction;
         protected InventoryItem item;
 
         public AssembleItem(String caption) {
             super(caption, false);
-            addField(assemblyDetails);
+            addField(assemblyDetails, remarksField);
         }
 
         protected void setAssemblyPosition(InventoryFitmentPosition fitmentPosition) {
             assemblyDetails.clearContent().append(fitmentPosition.toDisplay()).update();
+        }
+
+        String reference(String reference) {
+            String remarks = remarksField.getText().trim();
+            if(reference == null || reference.isEmpty()) {
+                return remarks;
+            }
+            if(remarks.isEmpty()) return reference;
+            return reference + " - " + remarks;
         }
 
         boolean moveItem() {
@@ -591,6 +602,10 @@ public abstract class AbstractAssembly<T extends InventoryItem, C extends Invent
             partNumbersField.setValue(itemType);
             partNumbersField.setEnabled(pns.size() > 1);
             trackValueChange(partNumbersField);
+            pnChanged();
+        }
+
+        protected void pnChanged() {
         }
     }
 
@@ -655,7 +670,6 @@ public abstract class AbstractAssembly<T extends InventoryItem, C extends Invent
             } else {
                 inventoryTransaction.abandon();
             }
-            AbstractAssembly.this.reference = reference;
             inventoryTransaction.moveTo(item, qFit, reference, fitmentPosition);
             if(transact(t -> inventoryTransaction.save(t))) {
                 refresh();
@@ -683,6 +697,17 @@ public abstract class AbstractAssembly<T extends InventoryItem, C extends Invent
             this.item = fitmentPosition.getFittedItem();
             itemField.setValue(item);
             fittedQuantityField.setValue(item.getQuantity());
+        }
+    }
+
+    public void setExitAction(Runnable exitAction) {
+        this.exitAction = exitAction;
+    }
+
+    private void exit() {
+        close();
+        if(exitAction != null) {
+            Application.get().access(() -> exitAction.run());
         }
     }
 }

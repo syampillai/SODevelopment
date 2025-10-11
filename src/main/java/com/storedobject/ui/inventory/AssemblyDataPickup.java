@@ -153,7 +153,7 @@ public class AssemblyDataPickup<T extends InventoryItem, C extends InventoryItem
                         return false;
                     }
                 }
-                inventoryTransaction.moveTo(item, qFit, reference, fitmentPosition);
+                inventoryTransaction.moveTo(item, qFit, reference(null), fitmentPosition);
                 if(transact(t -> inventoryTransaction.save(t))) {
                     refresh();
                     return true;
@@ -207,13 +207,12 @@ public class AssemblyDataPickup<T extends InventoryItem, C extends InventoryItem
 
     private class ItemRemove extends AbstractItemRemove {
 
-        private final TextField refField = new TextField("Reference");
         private final QuantityField qToRemoveField = new QuantityField("Quantity to Remove");
 
         public ItemRemove() {
-            addField(refField, itemField, fittedQuantityField, qToRemoveField);
+            addField(itemField, fittedQuantityField, qToRemoveField);
             fittedQuantityField.setEnabled(false);
-            setRequired(refField);
+            setRequired(remarksField);
             setRequired(qToRemoveField);
         }
 
@@ -231,8 +230,7 @@ public class AssemblyDataPickup<T extends InventoryItem, C extends InventoryItem
             } else {
                 inventoryTransaction.abandon();
             }
-            reference = refField.getValue().trim();
-            inventoryTransaction.thrash(item, qToRemove, reference);
+            inventoryTransaction.thrash(item, qToRemove, reference(null));
             if(transact(t -> inventoryTransaction.save(t))) {
                 refresh();
                 return true;
@@ -255,7 +253,6 @@ public class AssemblyDataPickup<T extends InventoryItem, C extends InventoryItem
             Quantity q = item.getQuantity();
             qToRemoveField.setValue(q);
             qToRemoveField.setEnabled(!item.isSerialized() && !item.isConsumable());
-            refField.setValue(reference);
         }
     }
 }

@@ -1,6 +1,8 @@
 package com.storedobject.ui.inventory;
 
 import com.storedobject.core.*;
+import com.storedobject.ui.Application;
+import com.storedobject.ui.Transactional;
 import com.storedobject.vaadin.ExecutableView;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.contextmenu.GridContextMenu;
@@ -31,6 +33,8 @@ public class ItemContextMenu<T extends HasInventoryItem> extends GridContextMenu
     public ItemContextMenu(Grid<T> itemGrid, boolean canInspect, boolean allowBreaking,
                            boolean allowEditCost, Runnable refresher) {
         super(itemGrid);
+        boolean isAdmin = itemGrid instanceof Transactional transactional
+                && transactional.getTransactionManager().getUser().isAdmin();
         this.allowInspection = canInspect;
         this.allowBreaking = allowBreaking;
         this.allowEditCost = allowEditCost;
@@ -42,9 +46,9 @@ public class ItemContextMenu<T extends HasInventoryItem> extends GridContextMenu
                 return false;
             }
             if(itemAssembly == null) {
-                build();
+                build(isAdmin);
             }
-            InventoryItem ii = hi.getItem();
+            InventoryItem ii = hi.getInventoryItem();
             if(ii == null) {
                 hide(itemAssembly, parentAssembly, viewFitment, viewFitmentLocations, inspect, split,
                         breakAssembly, movementDetails, grnDetails, viewSource, editCost, itemDetails, costDetails,
@@ -103,7 +107,7 @@ public class ItemContextMenu<T extends HasInventoryItem> extends GridContextMenu
         });
     }
 
-    private void build() {
+    private void build(boolean isAdmin) {
         itemDetails = addItem("Item Details -", e -> e.getItem().ifPresent(context::view));
         itemAssembly = addItem("Item Assembly -", e -> e.getItem().ifPresent(context::viewAssembly));
         parentAssembly = addItem("Parent Assembly -", e -> e.getItem().ifPresent(context::viewParentAssembly));
@@ -115,15 +119,32 @@ public class ItemContextMenu<T extends HasInventoryItem> extends GridContextMenu
         breakAssembly = addItem("Break from Assembly -", e -> e.getItem().ifPresent(context::breakAssembly));
         movementDetails = addItem("Movement Details -", e -> e.getItem().ifPresent(context::viewMovements));
         grnDetails = addItem("GRN Details -", e -> e.getItem().ifPresent(context::viewGRN));
-        viewSource = addItem("GRN & Source Details -", e -> e.getItem().ifPresent(i -> context.viewGRN(i, true)));
+        viewSource = addItem("GRN & Source Details -", e -> e.getItem()
+                .ifPresent(i -> context.viewGRN(i, true)));
         costDetails = addItem("Cost Details -", e -> e.getItem().ifPresent(context::viewCost));
         editCost = addItem("Edit Cost -", e -> e.getItem().ifPresent(item -> {
             close();
             context.editCost(item);
         }));
         pnDetails = addItem("P/N Details -", e -> e.getItem()
-                .ifPresent(i -> context.view(i.getItem().getPartNumber())));
-        viewStock = addItem("View Stock -", e -> e.getItem().ifPresent(context::viewStock));
+                .ifPresent(i -> context.view(i.getInventoryItemType())));
+        viewStock = addItem("View Stock -", e -> e.getItem()
+                .ifPresent(i -> context.viewStock(i.getInventoryItemType())));
+        if(!isAdmin) return;
+        addItem("View System IDs", e -> e.getItem().ifPresent(i -> {
+            InventoryItem ii = i.getInventoryItem();
+            InventoryItemType iit = i.getInventoryItemType();
+            String m;
+            if(ii == null && iit == null) {
+                m = "No item or item type!";
+            } else {
+                m = iit.getId() + " : " + iit.getClass().getName();
+                if(ii != null) {
+                    m += "\n" + ii.getId() + " : " + ii.getClass().getName();
+                }
+            }
+            Application.error(m);
+        }));
     }
 
     @SafeVarargs

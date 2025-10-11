@@ -45,6 +45,7 @@ public class DefineAssembly<T extends InventoryItemType, C extends InventoryItem
     @SafeVarargs
     public DefineAssembly(Class<T> itemTypeClass, Class<C> componentTypeClass, Class<? extends C>... childrenType) {
         super(InventoryAssembly.class, COLUMNS);
+        new ItemTypeContextMenu<>(this);
         this.childrenType = childrenType == null || childrenType.length == 0 ? null : childrenType;
         //noinspection unchecked
         this.componentTypeClass = componentTypeClass == null ? (Class<C>)itemTypeClass : componentTypeClass;

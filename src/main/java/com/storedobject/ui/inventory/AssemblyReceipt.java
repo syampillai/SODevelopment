@@ -8,6 +8,7 @@ import com.vaadin.flow.component.HasValue;
 public class AssemblyReceipt<T extends InventoryItem, C extends InventoryItem> extends Assembly<T, C> {
 
     private final InventoryGRN grn;
+    private final String reference;
 
     @SuppressWarnings("unchecked")
     public AssemblyReceipt(InventoryGRNItem grnItem) {
@@ -55,7 +56,7 @@ public class AssemblyReceipt<T extends InventoryItem, C extends InventoryItem> e
         @Override
         protected boolean process() {
             if(inventoryTransaction == null) {
-                inventoryTransaction = new InventoryTransaction(getTransactionManager(), grn.getDate(), reference);
+                inventoryTransaction = new InventoryTransaction(getTransactionManager(), grn.getDate(), reference(reference));
             } else {
                 inventoryTransaction.abandon();
             }
@@ -70,7 +71,7 @@ public class AssemblyReceipt<T extends InventoryItem, C extends InventoryItem> e
                 warning("Duplicate item for S/N = " + sn + " exists. Item " + inventoryItemType.toDisplay());
             }
             item.setQuantity(quantityRequired);
-            inventoryTransaction.purchase(item, reference, fitmentPosition, grn.getSupplier());
+            inventoryTransaction.purchase(item, reference(reference), fitmentPosition, grn.getSupplier());
             if(editor != null && editor.getObjectClass() != item.getClass()) {
                 editor = null;
             }
@@ -115,11 +116,11 @@ public class AssemblyReceipt<T extends InventoryItem, C extends InventoryItem> e
                 }
             }
             if(inventoryTransaction == null) {
-                inventoryTransaction = new InventoryTransaction(getTransactionManager(), grn.getDate(), reference);
+                inventoryTransaction = new InventoryTransaction(getTransactionManager(), grn.getDate(), reference(reference));
             } else {
                 inventoryTransaction.abandon();
             }
-            inventoryTransaction.thrash(item, reference);
+            inventoryTransaction.thrash(item, reference(reference));
             if(transact(t -> inventoryTransaction.save(t))) {
                 refresh();
                 return true;

@@ -292,6 +292,9 @@ public class InventoryItem extends StoredObject implements HasInventoryItem {
     }
 
     public void setQuantity(Quantity quantity) {
+        if(Objects.equals(quantity, this.quantity)) {
+            return;
+        }
         if(!loading() && illegal) {
             throw new Set_Not_Allowed("Quantity");
         }
@@ -435,6 +438,9 @@ public class InventoryItem extends StoredObject implements HasInventoryItem {
     }
 
     public void setOwner(Id ownerId) {
+        if(Objects.equals(ownerId, this.ownerId)) {
+            return;
+        }
         if(!loading() && illegal) {
             throw new Set_Not_Allowed("Owner");
         }
@@ -602,17 +608,17 @@ public class InventoryItem extends StoredObject implements HasInventoryItem {
         }
         switch (location.getType()) {
             // Store
-            case 0 -> {
+            // Repair organization
+            // Rented out to
+            case 0, 3, 8 -> {
                 if (Id.isNull(ownerId)) { // Set to us if not yet done
                     ownerId = tm.getEntity().getEntityId();
                 }
             }
-            // Repair organization
             // Maintenance unit
-            // Rented out to
             // Service unit
             // Repair unit
-            case 3, 5, 8, 10, 11 -> {
+            case 5, 10, 11 -> {
             }
             // Production unit
             // Scrap

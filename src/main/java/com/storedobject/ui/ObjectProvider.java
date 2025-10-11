@@ -18,7 +18,8 @@ public interface ObjectProvider<T extends StoredObject> {
      * @return Id of the object.
      */
     default Id getObjectId() {
-        return getObject().getId();
+        T object = getObject();
+        return object == null ? Id.ZERO : object.getId();
     }
 
     /**
@@ -34,7 +35,15 @@ public interface ObjectProvider<T extends StoredObject> {
      * @return Class of the object.
      */
     default Class<T> getObjectClass() {
+        T object = getObject();
+        if(object == null) {
+            Id id = getObjectId();
+            if(!Id.isNull(id)) {
+                //noinspection unchecked
+                object = (T)StoredObject.get(id);
+            }
+        }
         //noinspection unchecked
-        return (Class<T>) getObject().getClass();
+        return object == null ? null : (Class<T>) object.getClass();
     }
 }

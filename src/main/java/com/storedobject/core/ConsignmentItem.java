@@ -21,7 +21,7 @@ public class ConsignmentItem extends StoredObject implements Detail {
     }
 
     public static String[] browseColumns() {
-        return new String[] {"Item", "Quantity", "UnitCost", "BoxNumber AS Package Number"};
+        return new String[] {"Item", "Quantity", "UnitCost AS Unit Value", "BoxNumber AS Package Number"};
     }
 
     public void setItem(Id itemId) {
@@ -66,7 +66,7 @@ public class ConsignmentItem extends StoredObject implements Detail {
         setUnitCost(Money.create(moneyValue));
     }
 
-    @Column(required = false, order = 300)
+    @Column(required = false, order = 300, caption = "Unit Value")
     public Money getUnitCost() {
         return unitCost;
     }

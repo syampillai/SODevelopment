@@ -137,6 +137,7 @@ public class ObjectBrowser<T extends StoredObject> extends ObjectGrid<T>
     private SplitLayout layout;
     private final boolean anchorsExist;
     private final InternalObjectChangedListener internalObjectChangedListener = new InternalObjectChangedListener();
+    private Runnable exitAction;
 
     /**
      * Creates an instance of the ObjectBrowser with a specified object class.
@@ -866,7 +867,11 @@ public class ObjectBrowser<T extends StoredObject> extends ObjectGrid<T>
     public void clicked(Component c) {
         clearAlerts();
         if(c == exit) {
+            Application a = Application.get();
             close();
+            if(exitAction != null) {
+                a.access(() -> exitAction.run());
+            }
             return;
         }
         if(c == add) {
@@ -1647,5 +1652,14 @@ public class ObjectBrowser<T extends StoredObject> extends ObjectGrid<T>
     @Override
     public boolean actionAllowed(String action) {
         return (allowedActions == null || allowedActions.contains(action)) && super.actionAllowed(action);
+    }
+
+    /**
+     * Sets the action to be executed when an exit event is triggered.
+     *
+     * @param exitAction a {@code Runnable} that defines the action to be performed on exit
+     */
+    public void setExitAction(Runnable exitAction) {
+        this.exitAction = exitAction;
     }
 }

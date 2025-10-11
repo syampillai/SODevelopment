@@ -6,6 +6,16 @@ package com.storedobject.core;
  * @author Syam
  */
 public interface HasInventoryItem extends HasInventoryItemType {
+
+    /**
+     * Retrieves the inventory item associated with this entity.
+     *
+     * @return the associated InventoryItem instance
+     */
+    default InventoryItem getInventoryItem() {
+        return getItem();
+    }
+
     /**
      * Retrieves the inventory item associated with this entity.
      *
@@ -24,7 +34,7 @@ public interface HasInventoryItem extends HasInventoryItemType {
 
     @Override
     default InventoryItemType getInventoryItemType() {
-        InventoryItem item = getItem();
+        InventoryItem item = getInventoryItem();
         return item == null ? null : item.getPartNumber();
     }
 
@@ -39,7 +49,7 @@ public interface HasInventoryItem extends HasInventoryItemType {
      *         InventoryItem if no historical version exists.
      */
     default InventoryItem getItemFromHistory() {
-        InventoryItem item = getItem();
+        InventoryItem item = getInventoryItem();
         if(item != null && this instanceof StoredObject so) {
             StoredObject history = item.contemporary(so);
             if(history instanceof InventoryItem) {

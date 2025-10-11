@@ -11,7 +11,7 @@ import java.util.List;
  *
  * @author Syam
  */
-public final class InventoryFitmentPosition extends InventoryLocation {
+public final class InventoryFitmentPosition extends InventoryLocation implements HasInventoryItem {
 
     private Id itemId;
     private Id assemblyId;
@@ -149,7 +149,7 @@ public final class InventoryFitmentPosition extends InventoryLocation {
         if(fi == null) {
             return tc.delete(this);
         }
-        // Can we update assembly? ok
+        // Can we update the assembly? ok
         boolean ok = true;
         for(InventoryFitmentPosition f: list(InventoryFitmentPosition.class, "Assembly=" + assemblyId)) {
             if(f.getItem().getPartNumberId().equals(itemPN)) {
@@ -166,7 +166,7 @@ public final class InventoryFitmentPosition extends InventoryLocation {
                 "ParentItemType=" + itemPN + " AND Position='"+ assembly.getPosition() + "'").toList();
         // Check if we have a fully matching one
         for(InventoryAssembly a: as) {
-            if(a.getItemTypeId().equals(fi.getPartNumberId())) { // Matching with currently fitted item
+            if(a.getItemTypeId().equals(fi.getPartNumberId())) { // Matching with the currently fitted item
                 assembly = null;
                 assemblyId = a.getId();
                 break;
@@ -197,7 +197,7 @@ public final class InventoryFitmentPosition extends InventoryLocation {
             }
             return tc.save(this);
         }
-        // Create new assembly
+        // Create a new assembly
         assembly.makeNew();
         //assembly.parentItemTypeId = itemPN;
         if(!tc.save(assembly)) {
@@ -268,7 +268,6 @@ public final class InventoryFitmentPosition extends InventoryLocation {
     public String toDisplay(boolean includeFittedItem) {
         InventoryItem item = getItem();
         String it = item.toDisplay();
-        InventoryAssembly ia = getAssembly();
         String position = getPosition();
         if(!position.isEmpty() && !position.startsWith("-") && !"*".equals(position)) {
             it = "(" + position + ") " + it;
@@ -279,6 +278,7 @@ public final class InventoryFitmentPosition extends InventoryLocation {
         it += " ⇐ ";
         InventoryItem fittedItem = getFittedItem();
         if(fittedItem == null) {
+            InventoryAssembly ia = getAssembly();
             if(ia == null) {
                 it += "(ERROR)";
             } else {
@@ -306,7 +306,7 @@ public final class InventoryFitmentPosition extends InventoryLocation {
     }
 
     /**
-     * Get the item that is fitted at this position.
+     * Get the item fitted at this position.
      *
      * @return The item that is fitted at this position. Null is returned if nothing is fitted there.
      */
@@ -315,7 +315,7 @@ public final class InventoryFitmentPosition extends InventoryLocation {
     }
 
     /**
-     * Get the item that is fitted at this position (checks within a transaction).
+     * Get the item fitted at this position (checks within a transaction).
      *
      * @param transaction Transaction.
      * @return The item that is fitted at this position. Null is returned if nothing is fitted there.
@@ -348,7 +348,7 @@ public final class InventoryFitmentPosition extends InventoryLocation {
     /**
      * Get a fitment position for the given item and assembly. If the position doesn't exist, it will be created
      * if the transaction is non-null, otherwise, a virtual instance will be created. Also, if the transaction is
-     * non-null and the creation fails, transaction will be rolled back and a virtual instance will be returned.
+     * non-null and the creation fails, the transaction will be rolled back and a virtual instance will be returned.
      *
      * @param transaction Transaction
      * @param item Item.
@@ -407,5 +407,20 @@ public final class InventoryFitmentPosition extends InventoryLocation {
             return getAssembly().listImmediateAssemblies();
         }
         return item.getPartNumber().listImmediateAssemblies();
+    }
+
+    @Override
+    public InventoryItem getInventoryItem() {
+        return getFittedItem();
+    }
+
+    @Override
+    public InventoryItemType getInventoryItemType() {
+        InventoryItem item = getFittedItem();
+        if(item != null) {
+            return item.getPartNumber();
+        }
+        InventoryAssembly assembly = getAssembly();
+        return assembly == null ? null : assembly.getItemType();
     }
 }
