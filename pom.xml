@@ -59,7 +59,7 @@
         <dependency>
             <groupId>com.storedobject</groupId>
             <artifactId>so-client</artifactId>
-            <version>3.1.0</version>
+            <version>3.1.2</version>
         </dependency>
 
         <!-- Java Servlet -->
@@ -93,7 +93,7 @@
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
-            <version>42.7.7</version>
+            <version>42.7.8</version>
         </dependency>
 
         <!-- Java mail -->
