@@ -134,6 +134,9 @@ public abstract class InventoryTransfer extends StoredObject implements OfEntity
     }
 
     public final void setAmendment(int amendment) {
+        if(amendment == this.amendment) {
+            return;
+        }
         if(!loading()) {
             throw new Set_Not_Allowed("Amendment");
         }
@@ -183,13 +186,15 @@ public abstract class InventoryTransfer extends StoredObject implements OfEntity
         this.invoiceDate.setTime(invoiceDate.getTime());
     }
 
-    @SetNotAllowed
     @Column(order = 300)
     public Date getInvoiceDate() {
         return new Date(invoiceDate.getTime());
     }
 
     public void setFromLocation(Id fromLocationId) {
+        if(!loading() && status > 0) {
+            throw new Set_Not_Allowed("From Location");
+        }
         this.fromLocationId = fromLocationId;
     }
 
@@ -211,6 +216,9 @@ public abstract class InventoryTransfer extends StoredObject implements OfEntity
     }
 
     public void setToLocation(Id toLocationId) {
+        if(!loading() && status > 0) {
+            throw new Set_Not_Allowed("To Location");
+        }
         this.toLocationId = toLocationId;
     }
 

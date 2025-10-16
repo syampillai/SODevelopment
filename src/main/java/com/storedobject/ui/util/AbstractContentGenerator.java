@@ -21,7 +21,7 @@ public abstract class AbstractContentGenerator implements Runnable {
     private final Consumer<Long> timeTracker;
     private long startedAt = 0;
     private InputStream in;
-    private Thread thread;
+    protected Thread thread;
 
     protected AbstractContentGenerator(Application application, ContentProducer producer,
                                        Consumer<AbstractContentGenerator> inform, Consumer<Long> timeTracker,
@@ -85,6 +85,7 @@ public abstract class AbstractContentGenerator implements Runnable {
 
     public InputStream getContentStream() {
         startedAt = System.currentTimeMillis();
+        producer.ready();
         try {
             int time = 180;
             while ((in = producer.getContent()) == null && time-- > 0) {

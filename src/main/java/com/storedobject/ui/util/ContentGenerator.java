@@ -27,7 +27,7 @@ public class ContentGenerator extends AbstractContentGenerator {
     private DocumentViewer viewer;
     private final boolean windowMode;
     private final Component[] extraHeaderButtons;
-    private InputStream content;
+    private DownloadStream downloadStream;
 
     public ContentGenerator(Application application, ContentProducer producer, String caption,
                             Consumer<AbstractContentGenerator> inform, Consumer<Long> timeTracker,
@@ -106,7 +106,8 @@ public class ContentGenerator extends AbstractContentGenerator {
         viewer.setWindowMode(windowMode);
         viewer.setExtraButtons(extraHeaderButtons);
         if(canView()) {
-            viewer.view(resource(getContentType()), getContentStream(), caption);
+            InputStream contentStream = getContentStream();
+            viewer.view(resource(getContentType(), contentStream), contentStream, caption);
             if(producer.isMedia()) {
                 application.access(application::closeWaitMessage);
             }
@@ -128,8 +129,8 @@ public class ContentGenerator extends AbstractContentGenerator {
         }
     }
 
-    private StreamResource resource(String contentType) {
-        StreamResource sr = new StreamResource(getFile() + getExt(), this::getContentStream);
+    private StreamResource resource(String contentType, InputStream contentStream) {
+        StreamResource sr = new StreamResource(getFile() + getExt(), () -> contentStream);
         sr.setContentType(contentType);
         return sr;
     }
@@ -150,9 +151,24 @@ public class ContentGenerator extends AbstractContentGenerator {
             application.addContent(fileId, this);
             link = "so" + fileId;
         }
-        String toOpen = link;
+        String finalLink = link;
+        Thread.startVirtualThread(() -> openPage(finalLink));
+    }
+
+    private void openPage(String link) {
+        try {
+            createDownload();
+            producer.ready();
+        } catch (Exception e) {
+            application.access(() -> {
+                application.log(e);
+                application.showNotification(e);
+            });
+            generated();
+            return;
+        }
         application.access(() -> {
-            application.getPage().open(toOpen);
+            application.getPage().open(link);
             generated();
         });
     }
@@ -165,14 +181,17 @@ public class ContentGenerator extends AbstractContentGenerator {
      */
     @Override
     public DownloadStream getContent() throws Exception {
+        return downloadStream;
+    }
+
+    private void createDownload() {
         kick();
         String fileName = getFile(), ext = getExt();
         if(!fileName.endsWith(ext)) {
             fileName += ext;
         }
         String ct = getContentType();
-        content = producer.getContent();
-        DownloadStream ds = new DownloadStream(content, ct, fileName);
+        downloadStream = new DownloadStream(producer, ct, fileName);
         if(!download) {
             if (!producer.isPDF()) {
                 application.log("File: " + fileName + ", Type: " + ct);
@@ -180,15 +199,22 @@ public class ContentGenerator extends AbstractContentGenerator {
             }
         }
         if(download) {
-            ds.setParameter("Content-Disposition", "attachment;filename=\"" + fileName + "\";");
+            downloadStream.setParameter("Content-Disposition", "attachment;filename=\"" + fileName + "\";");
         }
-        ds.setCacheTime(0L);
-        return ds;
+        downloadStream.setCacheTime(0L);
+    }
+
+    private InputStream content() {
+        try {
+            return producer.getContent();
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     @Override
     public void abort(Throwable error) {
         super.abort(error);
-        IO.close(content);
+        IO.close(content());
     }
 }

@@ -29,6 +29,12 @@ public abstract class JSONRetrieve implements JSONService {
             return;
         }
         StringList attributes = json.getStringList("attributes");
+        Boolean b = json.getBoolean("includeReferences");
+        boolean includeReferences = b != null && b;
+        b = json.getBoolean("includeClassInfo");
+        boolean includeClassInfo = b != null && b;
+        b = json.getBoolean("stringify");
+        boolean stringify = b != null && b;
         try {
             if(so == null) {
                 JSONMap.Array oList = result.array(dataLabel);
@@ -36,11 +42,11 @@ public abstract class JSONRetrieve implements JSONService {
                 try(ObjectIterator<T> objList = p.list()) {
                     for(StoredObject object: objList) {
                         value = oList.map();
-                        object.save(value, attributes);
+                        object.save(value, attributes, null, includeReferences, includeClassInfo, stringify);
                     }
                 }
             } else {
-                so.save(result, attributes, dataLabel);
+                so.save(result, attributes, dataLabel, includeReferences, includeClassInfo, stringify);
             }
         } catch (Throwable e) {
             device.log(e);

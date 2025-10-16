@@ -5,6 +5,7 @@ import com.storedobject.common.InputOutputStream;
 
 import java.io.*;
 import java.util.HashMap;
+import java.util.concurrent.CountDownLatch;
 
 public abstract class StreamContentProducer implements ContentProducer, Closeable {
 
@@ -12,11 +13,12 @@ public abstract class StreamContentProducer implements ContentProducer, Closeabl
     protected OutputStream out;
     private Writer outWriter;
     private InputStream in;
-    private InputOutputStream io;
+    private final InputOutputStream io = new InputOutputStream();
     private boolean executing = false;
     private TransactionManager tm;
     protected Entity entity;
     private Throwable error;
+    private final CountDownLatch ready = new CountDownLatch(1);
 
     public StreamContentProducer() {
         this(null);
@@ -24,6 +26,11 @@ public abstract class StreamContentProducer implements ContentProducer, Closeabl
 
     public StreamContentProducer(OutputStream out) {
         this.out = out;
+        io.setReusable(true);
+        io.setDataListener(() -> {
+            ready.countDown();
+            io.setDataListener(null);
+        });
     }
 
     @Override
@@ -38,13 +45,9 @@ public abstract class StreamContentProducer implements ContentProducer, Closeabl
             Thread.yield();
         }
         if(out == null) {
-            if(io == null) {
-                io = new InputOutputStream();
-                io.setReusable(true);
-            }
             out = io.getOutputStream();
-            in = io.getInputStream();
         }
+        getContent();
         try {
             generateContent();
             close();
@@ -54,6 +57,14 @@ public abstract class StreamContentProducer implements ContentProducer, Closeabl
         }
         synchronized (this) {
             executing = false;
+        }
+    }
+
+    @Override
+    public void ready() {
+        try {
+            ready.await();
+        } catch (InterruptedException ignored) {
         }
     }
 
@@ -71,6 +82,9 @@ public abstract class StreamContentProducer implements ContentProducer, Closeabl
 
     @Override
     public InputStream getContent() {
+        if(in == null) {
+            in = io.getInputStream();
+        }
         return in;
     }
 
@@ -84,7 +98,7 @@ public abstract class StreamContentProducer implements ContentProducer, Closeabl
     }
 
     protected Writer getWriter() {
-        if(outWriter == null) {
+        if(outWriter == null && out != null) {
             outWriter = IO.getWriter(out);
         }
         return outWriter;
@@ -107,7 +121,6 @@ public abstract class StreamContentProducer implements ContentProducer, Closeabl
     public Throwable getError() {
         return error;
     }
-
 
     public final ReportFormat getReportFormat() {
         TransactionManager tm = getTransactionManager();

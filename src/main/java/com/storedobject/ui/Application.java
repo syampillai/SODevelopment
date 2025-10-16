@@ -101,10 +101,10 @@ public class Application extends com.storedobject.vaadin.Application implements 
     }
 
     public Application(ApplicationLayout applicationLayout, boolean singleLogicMode, boolean abortOnLogicSwitch) {
-        waitMessage = new Notification("Please wait...");
+        waitMessage = new Notification("Generating report... Please wait...");
         waitMessage.addThemeVariants(NotificationVariant.LUMO_CONTRAST);
         waitMessage.setDuration(Integer.MAX_VALUE);
-        waitMessage.setPosition(Notification.Position.MIDDLE);
+        waitMessage.setPosition(Notification.Position.BOTTOM_START);
         this.mainLayout = applicationLayout;
         if(ApplicationServer.getGlobalBooleanProperty("application.allow.deprecated", false)) {
             HTMLText.setAllowTopLevelHTML();
@@ -2297,7 +2297,8 @@ public class Application extends com.storedobject.vaadin.Application implements 
             }
             try {
                 generator.getContent().writeResponse(vaadinRequest, vaadinResponse);
-            } catch(Exception e) {
+                access(() -> warning("Report generated and downloaded!"));
+            } catch(Throwable e) {
                 generator.abort(e);
                 access(() -> error(e));
                 Application.this.log("Content Generator - " + getTransactionManager().getUser().getLogin(), e);

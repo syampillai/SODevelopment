@@ -7,10 +7,17 @@ import java.io.OutputStream;
 
 public interface ContentProducer extends Executable, ContentType, RequiresTransactionManager {
 
+    /**
+     * Produce the content.
+     */
     void produce();
+
     InputStream getContent() throws Exception;
     String getFileExtension();
     String getFileName();
+
+    default void ready() {
+    }
 
     @Override
     default TransactionManager getTransactionManager() {

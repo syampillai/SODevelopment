@@ -12,11 +12,12 @@ import java.util.List;
 public final class Stock {
 
     private final List<InventoryLocation> locations = new ArrayList<>();
-    private final List<InventoryItem> stocks = new ArrayList<>();
+    private final List<StockHistory> stocks = new ArrayList<>(), saveStocks = new ArrayList<>();
     private final Date date;
     private InventoryItemType pn;
     private boolean computed = false;
     private final boolean allStores;
+    private TransactionManager tm;
 
     public Stock() {
         this((InventoryLocation) null, null);
@@ -39,7 +40,7 @@ public final class Stock {
     }
 
     public Stock(InventoryLocation location, Date date) {
-        if(date != null && date.equals(DateUtility.today())) {
+        if(date != null && !date.before(DateUtility.today())) {
             date= null;
         }
         this.date = date;
@@ -75,12 +76,37 @@ public final class Stock {
         return pn;
     }
 
-    public List<InventoryItem> getStocks() {
+    public List<StockHistory> getStocks() {
         synchronized(stocks) {
             if(!computed) {
                 compute();
             }
             return stocks;
+        }
+    }
+
+    public void setTransactionManager(TransactionManager tm) {
+        this.tm = tm;
+    }
+
+    private void save() {
+        try {
+            List<StockHistory> toSave;
+            synchronized (saveStocks) {
+                if (saveStocks.isEmpty()) {
+                    return;
+                }
+                toSave = new ArrayList<>(saveStocks);
+                saveStocks.clear();
+            }
+            tm.transact(t -> {
+                for (StockHistory s : toSave) {
+                    s.makeNew();
+                    s.save(t);
+                }
+            });
+        } catch (Exception e) {
+            tm.log(e);
         }
     }
 
@@ -94,11 +120,42 @@ public final class Stock {
             if(pn == null) {
                 return;
             }
+            List<InventoryItem> items = null;
+            boolean binSave = false;
             for(InventoryLocation location: locations) {
+                if(date != null) {
+                    binSave = location instanceof InventoryStoreBin || location.getType() != 0;
+                    ObjectIterator<StockHistory> ss = location instanceof InventoryStoreBin sb
+                            ? StockHistory.listForStore(pn, date, sb.getStoreId())
+                            : StockHistory.listForLocation(pn, date, location.getId());
+                    boolean found = false;
+                    for (StockHistory s : ss) {
+                        found = true;
+                        if (!s.getQuantity().isZero()) {
+                            stocks.add(s);
+                        }
+                    }
+                    if (found) {
+                        continue;
+                    }
+                }
+                if(items == null) {
+                    items = new ArrayList<>();
+                }
+                int n = items.size();
                 (location instanceof InventoryStoreBin b ? pn.listStock(b.getStore()) : pn.listStock(location))
-                        .collectAll(stocks);
+                        .collectAll(items);
+                if(date != null && tm != null && n == items.size() && binSave) { // Nothing new is added
+                    createStockHistory(location); // saving zeroed entry for the location
+                }
             }
-            if(date == null) {
+            if(date == null || items == null) {
+                return;
+            }
+            if(items.isEmpty()) {
+                if(!saveStocks.isEmpty()) {
+                    Thread.startVirtualThread(this::save);
+                }
                 return;
             }
             List<InventoryLedger> ledger = StoredObject.list(InventoryLedger.class, "ItemType=" + pn.getId()
@@ -108,13 +165,13 @@ public final class Stock {
             InventoryLocation from, fromS, toS;
             InventoryItem ii;
             while(!ledger.isEmpty()) {
-                m = ledger.remove(ledger.size() - 1);
+                m = ledger.removeLast();
                 fromS = storeBin(from = m.getLocationFrom());
                 toS = storeBin(m.getLocationTo());
                 if(!locations.contains(fromS) && !locations.contains(toS)) {
                     continue;
                 }
-                ii = item(m.getItemId());
+                ii = item(items, m.getItemId());
                 if(ii != null) {
                     ii.location(from);
                 }
@@ -129,23 +186,23 @@ public final class Stock {
                             ii.makeVirtual();
                         }
                     }
-                    stocks.add(ii);
+                    items.add(ii);
                 } else if(!locations.contains(fromS) && locations.contains(toS)) {
                     if(qtyMatched) {
                         if(ii != null) { // Must be always true for serialized items
                             Id id = ii.getId();
-                            stocks.removeIf(s -> s.getId().equals(id));
+                            items.removeIf(s -> s.getId().equals(id));
                         }
                     } else {
                         if(ii != null) {
                             ii.quantity(ii.getQuantity().subtract(m.getQuantity()));
                             if(!ii.getQuantity().isPositive()) {
-                                stocks.remove(ii);
+                                items.remove(ii);
                             }
                         } else {
                             Quantity q = m.getQuantity();
                             while(q.isPositive()) {
-                                for(InventoryItem s : stocks) {
+                                for(InventoryItem s : items) {
                                     InventoryItem iim = m.getItemAnyway();
                                     if(s.getPartNumberId().equals(m.getItemTypeId())
                                             && s.getSerialNumber().equals(iim.getSerialNumber())) {
@@ -154,7 +211,7 @@ public final class Stock {
                                     }
                                 }
                                 if(ii == null) {
-                                    for(InventoryItem s : stocks) {
+                                    for(InventoryItem s : items) {
                                         if(s.getPartNumberId().equals(m.getItemTypeId())
                                                 && s.getQuantity().isGreaterThanOrEqual(q)) {
                                             ii = s;
@@ -163,7 +220,7 @@ public final class Stock {
                                     }
                                 }
                                 if(ii == null) {
-                                    for(InventoryItem s : stocks) {
+                                    for(InventoryItem s : items) {
                                         if(s.getPartNumberId().equals(m.getItemTypeId())) {
                                             ii = s;
                                             break;
@@ -176,33 +233,63 @@ public final class Stock {
                                 if(ii.getQuantity().isGreaterThanOrEqual(q)) {
                                     ii.quantity(ii.getQuantity().subtract(q));
                                     if (!ii.getQuantity().isPositive()) {
-                                        stocks.remove(ii);
+                                        items.remove(ii);
                                     }
                                     break;
                                 }
-                                stocks.remove(ii);
+                                items.remove(ii);
                                 q = q.subtract(ii.getQuantity());
                             }
                         }
                     }
                 }
             }
-            stocks.sort(this::compare);
+            items.forEach(i -> stocks.add(createStockHistory(i)));
+        }
+        if(tm != null && !saveStocks.isEmpty()) {
+            Thread.startVirtualThread(this::save);
         }
     }
 
-    private int compare(InventoryItem i1, InventoryItem i2) {
-        InventoryLocation loc1 = i1.getLocation(), loc2 = i2.getLocation();
-        if(loc1.getId().equals(loc2.getId())) {
-            return 0;
+    private StockHistory createStockHistory(InventoryItem i) {
+        StockHistory s = new StockHistory();
+        s.setDate(date);
+        s.setPartNumber(pn);
+        s.setSerialNumber(i.getSerialNumber());
+        s.setQuantity(i.getQuantity());
+        s.setCost(i.getCost());
+        InventoryLocation location = i.getLocation();
+        s.setLocation(location);
+        if(location instanceof InventoryBin b) {
+            s.setStore(b.getStore());
         }
-        if(loc1 instanceof InventoryBin b1 && loc2 instanceof InventoryBin b2) {
-            return Id.compare(b1.getStoreId(), b2.getStoreId());
+        if(i.getInTransit()) {
+            s.setPreviousLocation(i.getPreviousLocation());
         }
-        return Id.compare(loc1.getId(), loc2.getId());
+        s.makeVirtual();
+        synchronized (saveStocks) {
+            saveStocks.add(s);
+        }
+        return s;
     }
 
-    private InventoryItem item(Id id) {
+    private void createStockHistory(InventoryLocation location) {
+        StockHistory s = new StockHistory();
+        s.setDate(date);
+        s.setPartNumber(pn);
+        s.setQuantity(Count.ZERO);
+        s.setCost(new Money());
+        s.setLocation(location);
+        if(location instanceof InventoryBin b) {
+            s.setStore(b.getStore());
+        }
+        s.makeVirtual();
+        synchronized (saveStocks) {
+            saveStocks.add(s);
+        }
+    }
+
+    private static InventoryItem item(List<InventoryItem> stocks, Id id) {
         return stocks.stream().filter(ii -> ii.getId().equals(id)).findAny().orElse(null);
     }
 
@@ -219,7 +306,7 @@ public final class Stock {
                 s.append(" + Other Locations");
             }
         } else if(locations.size() == 1) {
-            InventoryLocation location = locations.get(0);
+            InventoryLocation location = locations.getFirst();
             if(location instanceof InventoryStoreBin) {
                 s.append("Store");
             } else if(location instanceof InventoryFitmentPosition) {

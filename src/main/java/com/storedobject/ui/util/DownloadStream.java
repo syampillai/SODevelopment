@@ -1,6 +1,7 @@
 package com.storedobject.ui.util;
 
 import com.storedobject.common.IO;
+import com.storedobject.core.ContentProducer;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 
@@ -20,7 +21,7 @@ public class DownloadStream implements Serializable {
     public static final long DEFAULT_CACHE_TIME = 1000 * 60 * 60 * 24;
     public static final int DEFAULT_BUFFER_SIZE = 32 * 1024;
     private static final int MAX_BUFFER_SIZE = 64 * 1024;
-    private InputStream stream;
+    private final ContentProducer producer;
     private String contentType;
     private String fileName;
     private Map<String, String> params;
@@ -30,32 +31,14 @@ public class DownloadStream implements Serializable {
     /**
      * Creates a new instance of DownloadStream.
      *
-     * @param stream Input stream
+     * @param producer Content producer
      * @param contentType Mime type of the content
      * @param fileName Name of the file (for the browser to save the content)
      */
-    public DownloadStream(InputStream stream, String contentType, String fileName) {
-        setStream(stream);
+    public DownloadStream(ContentProducer producer, String contentType, String fileName) {
+        this.producer = producer;
         setContentType(contentType);
         setFileName(fileName);
-    }
-
-    /**
-     * Gets downloadable stream.
-     *
-     * @return output stream.
-     */
-    public InputStream getStream() {
-        return stream;
-    }
-
-    /**
-     * Sets the stream.
-     *
-     * @param stream The stream to set
-     */
-    public void setStream(InputStream stream) {
-        this.stream = stream;
     }
 
     /**
@@ -185,8 +168,7 @@ public class DownloadStream implements Serializable {
      * Writes this download stream to a Vaadin response. This takes care of
      * setting response headers according to what is defined in this download
      * stream ({@link #getContentType()}, {@link #getCacheTime()},
-     * {@link #getFileName()}) and transferring the data from the stream (
-     * {@link #getStream()}) to the response. Defined parameters (
+     * {@link #getFileName()}) and transferring the data from the stream to the response. Defined parameters (
      * {@link #getParameterNames()}) are also included as headers in the
      * response. If there is a parameter named <code>Location</code>, a
      * redirect (302 Moved temporarily) is sent instead of the contents of this
@@ -205,7 +187,12 @@ public class DownloadStream implements Serializable {
         }
 
         // Download from given stream
-        final InputStream data = getStream();
+        InputStream data;
+        try {
+            data = producer.getContent();
+        } catch (Exception e) {
+            data = null;
+        }
         if (data == null) {
             response.setStatus(HttpServletResponse.SC_NOT_FOUND);
             return;

@@ -600,11 +600,7 @@ public abstract class AbstractSendAndReceiveMaterial<T extends InventoryTransfer
                     return mt;
                 });
             }
-            if(getObjectClass() == InventoryRO.class) {
-                setCaption("Send Items for Repair");
-            } else {
-                setCaption(AbstractSendAndReceiveMaterial.this.getCaption());
-            }
+            setCaption(ActionType.getDescription(ActionType.NOUN, getObjectClass()));
             setColumns(3);
             addField("Reference");
         }
@@ -686,8 +682,10 @@ public abstract class AbstractSendAndReceiveMaterial<T extends InventoryTransfer
         @Override
         public boolean canEdit() {
             T mt = getObject();
-            setFieldReadOnly(mt != null && mt.getAmendment() > 0, "SystemEntity", "FromLocation",
-                    "ToLocation");
+            setFieldReadOnly(mt != null && mt.getAmendment() > 0, "SystemEntity", "FromLocation", "ToLocation");
+            if(!receiveMode) {
+                setFieldReadOnly(mt != null && mt.getStatus() > 0, toField);
+            }
             return super.canEdit();
         }
 

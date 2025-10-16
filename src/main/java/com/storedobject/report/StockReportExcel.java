@@ -3,7 +3,6 @@ package com.storedobject.report;
 import com.storedobject.common.StyledString;
 import com.storedobject.core.*;
 import com.storedobject.office.ExcelReport;
-import org.apache.poi.ss.usermodel.Cell;
 
 import java.sql.Date;
 import java.util.ArrayList;
@@ -20,8 +19,9 @@ public class StockReportExcel extends ExcelReport {
     private boolean costInLocalCurrency = true;
     SystemEntity se;
     private int maxRow = -1;
-    private Predicate<InventoryItem> itemFilter;
+    private Predicate<StockHistory> itemFilter;
     private final Stock stock;
+    private int itemCount = 0;
 
     public StockReportExcel(Device device) {
         this(device, (InventoryLocation)null, null, null);
@@ -66,6 +66,7 @@ public class StockReportExcel extends ExcelReport {
                             ObjectIterator<? extends InventoryItemType> partNumbers, Date date) {
         super(device);
         this.stock = new Stock(location, date);
+        this.stock.setTransactionManager(getTransactionManager());
         this.partNumbers = partNumbers;
         separateCategories = partNumbers == null;
     }
@@ -148,8 +149,8 @@ public class StockReportExcel extends ExcelReport {
         StyledString stockLocation, sno;
         List<Quantity> quantities = new ArrayList<>();
         List<Money> costs = new ArrayList<>();
-        ObjectIterator<InventoryItem> stockList;
-        String s, error = null;
+        ObjectIterator<StockHistory> stockList;
+        String error = null;
         Class<? extends InventoryItemType> type, currentType = null;
         boolean categoryHeaderPrinted = categoryHeading == null, headerPrinted = false;
         for(InventoryItemType itemType: partNumbers) {
@@ -175,7 +176,7 @@ public class StockReportExcel extends ExcelReport {
             if(itemFilter != null) {
                 stockList = stockList.filter(itemFilter);
             }
-            for(InventoryItem ii : stockList) {
+            for(StockHistory ii : stockList) {
                 q = ii.getQuantity();
                 if(costInLocalCurrency) {
                     c = ii.getCost().toLocal(stock.getDate(), se);
@@ -188,10 +189,10 @@ public class StockReportExcel extends ExcelReport {
                 } catch(Throwable e) {
                     error = e.getMessage();
                 }
-                if(!ii.getInTransit()) {
+                if(!ii.inTransit()) {
                     stockLocation.append(ii.getLocation());
                 }
-                if(ii.getInTransit()) {
+                if(ii.inTransit()) {
                     stockLocation.append(" (In Transit)");
                     inTransitQuantity = inTransitQuantity.add(q);
                     if(costInLocalCurrency) {
@@ -199,8 +200,7 @@ public class StockReportExcel extends ExcelReport {
                     }
                 }
                 stockLocation.newLine();
-                s = ii.getSerialNumber();
-                sno.append(s == null ? "" : s).newLine();
+                sno.append(itemType.getSerialNumberShortName() + " "  + ii.getSerialNumber()).newLine();
                 quantities.add(q);
                 if(costInLocalCurrency) {
                     costs.add(c);
@@ -238,79 +238,50 @@ public class StockReportExcel extends ExcelReport {
                 categoryHeading = null;
             }
             if(!headerPrinted) {
-                tcell("Item");
-                tcell("Part Number");
-                tcell("Serial/Batch Number");
-                tcell("Location");
-                tcellR();
-                tcell("Unit");
-                if(costInLocalCurrency) {
-                    tcell("Cost");
-                }
+                setCellValues("Item", "Part Number", "Serial/Batch Number", "Location", "Quantity", "Unit", costInLocalCurrency ? "Cost" : null);
                 getNextRow();
                 headerPrinted = true;
             }
-            tcell(itemType.getName());
-            tcell(itemType.getPartNumber());
+            setCellValues(itemType.getName(), itemType.getPartNumber());
             maxRow = getRowIndex();
-            createCell(sno);
             if(error != null) {
                 stockLocation.append(" (").append(error).append(')');
                 error = null;
             }
-            createCell(stockLocation);
-            createCell(quantities, costs);
+            createCell(cellValues(sno), cellValues(stockLocation), quantities, costs);
             goToCell(0, maxRow + 1);
         }
     }
 
-    private void createCell(StyledString s) {
+    private String[] cellValues(StyledString s) {
         String string = s.toString();
         while(string.endsWith("\n")) {
             string = string.substring(0, string.length() - 1);
         }
         if(string.indexOf('\n') < 0) {
-            tcell(string);
-            return;
+            return new String[] { string };
         }
-        int c = getCellIndex() + 1, r = getRowIndex();
-        String[] strings = string.split("\\n");
-        for (String item : strings) {
-            getCell().setCellValue(item);
-            if(getRowIndex() > maxRow) {
-                maxRow = getRowIndex();
-            }
-            goToCell(getCellIndex(), getRowIndex() + 1);
-        }
-        goToCell(c, r);
+        return string.split("\\n");
     }
 
-    private void createCell(List<Quantity> quantities, List<Money> costs) {
+    private void createCell(String[] sno, String[] locations, List<Quantity> quantities, List<Money> costs) {
+        ++itemCount;
         int colIndex = getCellIndex();
         Quantity q;
-        for(int i = 0; i < quantities.size(); i++) {
-            q = quantities.get(i);
-            getCell().setCellValue(q.getValue().doubleValue());
-            getNextCell().setCellValue(q.getUnit().getUnit());
-            if(costInLocalCurrency) {
-                getNextCell().setCellValue(costs.get(i).toString());
-            }
+        int n = Math.max(sno.length, Math.max(quantities.size(), locations.length));
+        for(int i = 0; i < n; i++) {
+            q = i < quantities.size() ? quantities.get(i) : null;
+            setCellValues(i < sno.length ? sno[i] : null, i < locations.length ? locations[i] : null,
+                    q == null ? null : q.getValue().doubleValue(), q == null ? null : q.getUnit().getUnit(),
+                    costInLocalCurrency && q != null ? costs.get(i) : null);
             if(getRowIndex() > maxRow) {
                 maxRow = getRowIndex();
             }
-            goToCell(colIndex, getRowIndex() + 1);
+            if((getRowIndex() + 1) % 100 == 0) {
+                feedback("Processed " + (getRowIndex() + 1)  + " rows, " + itemCount + " items");
+            }
+            if(i != (n - 1)) goToCell(colIndex, getRowIndex() + 1);
         }
-    }
-
-    private void tcell(String s) {
-        getCell().setCellValue(s);
-        getNextCell();
-    }
-
-    private void tcellR() {
-        Cell c = getCell();
-        c.setCellValue("Quantity");
-        getNextCell();
     }
 
     @SuppressWarnings("unused")
@@ -318,7 +289,7 @@ public class StockReportExcel extends ExcelReport {
         return false;
     }
 
-    public void setItemFilter(Predicate<InventoryItem> itemFilter) {
+    public void setItemFilter(Predicate<StockHistory> itemFilter) {
         this.itemFilter = itemFilter;
     }
 }

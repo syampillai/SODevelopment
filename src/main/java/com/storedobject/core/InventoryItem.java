@@ -820,7 +820,8 @@ public class InventoryItem extends StoredObject implements HasInventoryItem {
         if(i != null) {
             return i;
         }
-        return list(itemClass, s + " LIKE '"+ serialNumber + "%'", any).single(false);
+        return list(null, itemClass, s + " LIKE '"+ serialNumber + "%'", null, any, 0, 1, null)
+                .single(false);
     }
 
     public static <T extends InventoryItem> T getByPartNumberId(Class<T> itemClass, String serialNumber,

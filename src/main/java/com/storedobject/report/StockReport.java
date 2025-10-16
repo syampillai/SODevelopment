@@ -19,7 +19,7 @@ public class StockReport extends PDFReport {
     private boolean separateCategories;
     private boolean costInLocalCurrency = true;
     private int count;
-    private Predicate<InventoryItem> itemFilter;
+    private Predicate<StockHistory> itemFilter;
     private final Stock stock;
 
     public StockReport(Device device) {
@@ -64,6 +64,7 @@ public class StockReport extends PDFReport {
                        ObjectIterator<? extends InventoryItemType> partNumbers, Date date) {
         super(device);
         stock = new Stock(location, date);
+        stock.setTransactionManager(getTransactionManager());
         this.partNumbers = partNumbers;
         separateCategories = partNumbers == null;
         setPageSizeIndex(2);
@@ -159,12 +160,12 @@ public class StockReport extends PDFReport {
         if(!newPage && needGap) {
             table.setSkipFirstHeader(true);
         }
-        ObjectIterator<InventoryItem> stockList;
+        ObjectIterator<StockHistory> stockList;
         String s, s1, error = null;
         Class<? extends InventoryItemType> type, currentType = null;
         boolean categoryHeaderPrinted = categoryHeading == null, headerPrinted = false, wide;
         for(InventoryItemType itemType: partNumbers) {
-            setError("Printing " + itemType.toDisplay());
+            setError("Printing P/N " + itemType.getPartNumber());
             stock.setPartNumber(itemType);
             if(separateCategories) {
                 type = itemType.getClass();
@@ -194,7 +195,7 @@ public class StockReport extends PDFReport {
             if(itemFilter != null) {
                 stockList = stockList.filter(itemFilter);
             }
-            for(InventoryItem ii : stockList) {
+            for(StockHistory ii : stockList) {
                 qty = ii.getQuantity();
                 cost = ii.getCost();
                 if(costInLocalCurrency) {
@@ -214,31 +215,27 @@ public class StockReport extends PDFReport {
                 }
                 stockLocation.append(s = trim(ii.getLocation()));
                 wide = false;
-                if(ii.getInTransit()) {
+                if(ii.inTransit()) {
+                    stockLocation.append(PDFColor.RED);
                     s1 = " - In transit";
+                    if((s.length() + s1.length()) <= LOC_WIDTH) {
+                        stockLocation.append(s1);
+                        s1 = "";
+                    } else {
+                        s1 += " ";
+                    }
                     tLoc = ii.getPreviousLocation();
                     if(tLoc != null) {
-                        s1 += " from " + tLoc.toDisplay();
-                    }
-                    if(s.length() <= (LOC_WIDTH >> 1)) {
-                        s = trim(s1, LOC_WIDTH - s.length());
-                    } else {
+                        s1 += "from " + tLoc.toDisplay();
+                        stockLocation.newLine(true).append(trim(s1));
                         wide = true;
-                        s = trim(s1, LOC_WIDTH);
-                        stockLocation.newLine(true);
                     }
-                    stockLocation.append(PDFColor.RED).append(s).append(PDFColor.BLACK);
+                    stockLocation.append(PDFColor.BLACK);
                     qtyInTransit = qtyInTransit.add(qty);
                     costInTransit = costInTransit.add(cost);
                 }
                 stockLocation.newLine(true);
-                s = ii.getSerialNumber();
-                if(s == null || s.isBlank()) {
-                    s = "";
-                } else {
-                    s = ii.getSerialNumberShortName() + " " + s;
-                }
-                sno.append(s).newLine(true);
+                sno.append(itemType.getSerialNumberShortName() + " " + ii.getSerialNumber()).newLine(true);
                 qtyStr.append(qty).newLine(true);
                 costStr.append(cost).newLine(true);
                 if(wide) {
@@ -328,11 +325,11 @@ public class StockReport extends PDFReport {
     }
 
     private static String trim(StoredObject so) {
-        return trim(so.toDisplay(), LOC_WIDTH);
+        return trim(so.toDisplay());
     }
 
-    private static String trim(String s, int width) {
-        if(width <= 0) {
+    private static String trim(String s) {
+        if(StockReport.LOC_WIDTH <= 0) {
             return "";
         }
         int i = 0, len = s.length(), w = 0;
@@ -340,7 +337,7 @@ public class StockReport extends PDFReport {
         while(i < len) {
             c = s.charAt(i);
             w += c >= 'a' && c <= 'z' ? 4 : 5;
-            if((w >> 2) > width) {
+            if((w >> 2) > StockReport.LOC_WIDTH) {
                 return s.substring(0, i - 3) + "...";
             }
             i++;
@@ -378,7 +375,7 @@ public class StockReport extends PDFReport {
         return c;
     }
 
-    public void setItemFilter(Predicate<InventoryItem> itemFilter) {
+    public void setItemFilter(Predicate<StockHistory> itemFilter) {
         this.itemFilter = itemFilter;
     }
 }

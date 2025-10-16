@@ -37,6 +37,7 @@ public class StockReport extends DataForm {
                 new Button("Custom Selection", VaadinIcon.STOCK, e -> customLocations()),
                 locInfo));
         dateField = new DateField("As of");
+        dateField.setValue(DateUtility.addDay(DateUtility.startOfMonth(), -1));
         addField(dateField);
         zerosField = new BooleanField("Print Zero-Quantity Items");
         addField(zerosField);
@@ -77,7 +78,7 @@ public class StockReport extends DataForm {
         if(locations.isEmpty()) {
             locInfo.append("All stores");
         } else if(locations.size() == 1) {
-            locInfo.append(locations.get(0).toDisplay());
+            locInfo.append(locations.getFirst().toDisplay());
         } else {
             int stores = (int) locations.stream().filter(loc -> loc instanceof InventoryStoreBin).count();
             int locs = (int) locations.stream().filter(loc -> !(loc instanceof InventoryStoreBin)).count();
@@ -105,7 +106,7 @@ public class StockReport extends DataForm {
             locations.clear();
         } else {
             if(!locations.isEmpty()) {
-                loc = locations.remove(0);
+                loc = locations.removeFirst();
             }
         }
         switch(outputField.getValue()) {
@@ -160,7 +161,7 @@ public class StockReport extends DataForm {
     public void configure(com.storedobject.report.StockReportExcel report) {
     }
 
-    public boolean canPrint(InventoryItem item) {
+    public boolean canPrint(StockHistory item) {
         return true;
     }
 
@@ -207,6 +208,9 @@ public class StockReport extends DataForm {
 
         public ExReport(Device device, InventoryLocation location, Date date) {
             super(device, location, date);
+            if(device instanceof Application a) {
+                setFeedback(s -> a.access(() -> message("Stock Report - " + s)));
+            }
             printZeros(zerosField.getValue());
             printCostInLocalCurrency(localCurrencyField.getValue());
             setCaption(getCaption());
