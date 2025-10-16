@@ -7,6 +7,7 @@ import org.apache.poi.ss.usermodel.*;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.function.Consumer;
 
 @SuppressWarnings("BooleanMethodIsAlwaysInverted")
 public abstract class AbstractSpreadSheet extends StreamContentProducer {
@@ -252,5 +253,11 @@ public abstract class AbstractSpreadSheet extends StreamContentProducer {
 
     public Device getDevice() {
         return null;
+    }
+
+    public void setFeedback(Consumer<String> feedback) {
+    }
+
+    public final void feedback(String message) {
     }
 }
