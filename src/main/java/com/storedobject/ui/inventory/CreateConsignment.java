@@ -1,6 +1,7 @@
 package com.storedobject.ui.inventory;
 
 import com.storedobject.common.Executable;
+import com.storedobject.common.SORuntimeException;
 import com.storedobject.common.StringList;
 import com.storedobject.core.*;
 import com.storedobject.ui.*;
@@ -14,7 +15,7 @@ import java.util.List;
 public class CreateConsignment<C extends Consignment> implements Executable {
 
     private final TransactionManager tm;
-    private final StoredObject parent;
+    private final OfEntity parent;
     private final List<HasInventoryItem> items = new ArrayList<>();
     private final Class<C> consignmentClass;
     private final Class<? extends ConsignmentItem> itemClass;
@@ -25,7 +26,7 @@ public class CreateConsignment<C extends Consignment> implements Executable {
     @SuppressWarnings("rawtypes")
     private final ObjectBrowser parentBrowser;
 
-    public CreateConsignment(Application application, StoredObject parent) {
+    public CreateConsignment(Application application, OfEntity parent) {
         tm = application.getTransactionManager();
         this.parent = parent;
         parentView = application.getActiveView();
@@ -34,20 +35,15 @@ public class CreateConsignment<C extends Consignment> implements Executable {
         } else {
             parentBrowser = null;
         }
+        int ct = -1;
         if(parent != null) {
-            consignmentType = switch (parent) {
-                case InventorySale ignored -> 5;
-                case InventoryLoanOut ignored -> 4;
-                case MaterialReturned ignored -> 0;
-                case InventoryRO ignored -> 1;
-                case InventoryTransfer ignored -> 2;
-                case InventoryGRN ignored -> 3;
-                case MaterialIssued ignored -> 6;
-                default -> -1;
-            };
-        } else {
-            consignmentType = -1;
+            try {
+                ct = Consignment.findTypeFor(parent.getClass());
+            } catch (SORuntimeException e) {
+                Application.error(e);
+            }
         }
+        consignmentType = ct;
         if(parent != null && consignmentType == -1) {
             Application.error("No consignment editor configured for - \"" + StringUtility.makeLabel(parent.getClass()) + "\"");
         }
@@ -81,7 +77,7 @@ public class CreateConsignment<C extends Consignment> implements Executable {
         if(parent == null || tm == null || consignmentType == -1) {
             return;
         }
-        consignment = parent.listLinks(consignmentClass).single(false);
+        consignment = ((StoredObject)parent).listLinks(consignmentClass).single(false);
         try {
             items();
         } catch(Throwable e) {
@@ -128,7 +124,7 @@ public class CreateConsignment<C extends Consignment> implements Executable {
 
     private void createConsignment() throws NoSuchMethodException, InvocationTargetException, InstantiationException,
             IllegalAccessException {
-        consignment = consignmentClass.getConstructor(StoredObject.class).newInstance(parent);
+        consignment = consignmentClass.getConstructor(OfEntity.class).newInstance(parent);
         attachConsignment(true);
     }
 
@@ -138,7 +134,7 @@ public class CreateConsignment<C extends Consignment> implements Executable {
                 if(saveConsignment) {
                     consignment.save(t);
                 }
-                parent.addLink(t, consignment);
+                ((StoredObject)parent).addLink(t, consignment);
                 if(parentBrowser != null) {
                     //noinspection unchecked
                     parentBrowser.refresh(parent);
@@ -158,9 +154,9 @@ public class CreateConsignment<C extends Consignment> implements Executable {
         items.clear();
         List<StoredObject> parents = new ArrayList<>();
         if(consignment == null) {
-            parents.add(parent);
+            parents.add((StoredObject) parent);
         } else {
-            consignment.listMasters(parent.getClass()).map(o -> (StoredObject) o).collectAll(parents);
+            consignment.listMasters(((StoredObject)parent).getClass()).map(o -> (StoredObject) o).collectAll(parents);
         }
         @SuppressWarnings("unchecked")
         Class<T> itemClass = (Class<T>) JavaClassLoader.getLogic(parent.getClass().getName() + "Item");
@@ -225,8 +221,8 @@ public class CreateConsignment<C extends Consignment> implements Executable {
             List<C> consignments = StoredObject.list(consignmentClass,
                     "Type=" + type + " AND No=" + no + " AND Date='"
                             + Database.format(dateField.getValue()) + "'")
-                    .filter(c -> c.listMasters(parent.getClass())
-                            .filter(p -> !p.getId().equals(parent.getId()))
+                    .filter(c -> c.listMasters(((StoredObject)parent).getClass())
+                            .filter(p -> !p.getId().equals(((StoredObject)parent).getId()))
                             .findFirst() != null).toList();
             if(consignments.isEmpty()) {
                 warning("No such consignment found!");

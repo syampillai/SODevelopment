@@ -5,6 +5,7 @@ package com.storedobject.core;
  *
  * @author Syam
  */
+@SuppressWarnings("ClassCanBeRecord")
 public final class DataChanged {
 
     /**
@@ -78,7 +79,7 @@ public final class DataChanged {
     /**
      * Retrieves the TransactionManager that can be used for further processing.
      *
-     * @return the TransactionManager that can be used fr further processing.
+     * @return the TransactionManager that can be used for further processing.
      */
     public TransactionManager getTransactionManager() {
         return tm;

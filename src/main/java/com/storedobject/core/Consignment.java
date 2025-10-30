@@ -18,19 +18,24 @@ public class Consignment extends StoredObject implements HasReference {
     private int no = 0, type = 0;
     private String portOfLoading = "", portOfDischarge = "", airwayBillNumber = "", remark = "";
     private Id buyerId = Id.ZERO;
-    private StoredObject parent;
+    private OfEntity parent;
 
     public Consignment() {
     }
 
-    public Consignment(StoredObject parent) {
+    public Consignment(OfEntity parent) {
         this(parent.getClass());
         this.parent = parent;
     }
 
-    public <T extends StoredObject> Consignment(Class<T> parentClass) {
+    public <T extends StoredObject> Consignment(Class<? extends OfEntity> parentClass) {
+        type = findTypeFor(parentClass);
+    }
+
+    public static int findTypeFor(Class<? extends OfEntity> parentClass) {
+        int type;
         if(parentClass == null) {
-            throw new IllegalArgumentException("Parent class must not be null");
+            throw new SORuntimeException("Parent class must not be null");
         }
         if(InventorySale.class.isAssignableFrom(parentClass)) {
             type = 5;
@@ -49,6 +54,7 @@ public class Consignment extends StoredObject implements HasReference {
         } else {
             throw new SORuntimeException("Consignment not configured for: " + StringUtility.makeLabel(parentClass));
         }
+        return type;
     }
 
     public static void columns(Columns columns) {
@@ -205,30 +211,22 @@ public class Consignment extends StoredObject implements HasReference {
     }
 
     public SystemEntity getSystemEntity() {
+        if(parent != null) {
+            return parent.getSystemEntity();
+        }
         if(type == 0) {
-            MaterialReturned mt;
-            if(parent == null) {
-                mt = listMasters(MaterialReturned.class, true).findFirst();
-            } else {
-                mt = (MaterialReturned) parent;
-            }
-            return mt == null ? null : mt.getSystemEntity();
+            parent = listMasters(MaterialReturned.class, true).findFirst();
         } else if(type == 3) {
-            InventoryGRN grn;
-            if(parent == null) {
-                grn = listMasters(InventoryGRN.class).findFirst();
-            } else {
-                grn = (InventoryGRN) parent;
-            }
-            return grn == null ? null : grn.getSystemEntity();
+            parent = listMasters(InventoryGRN.class).findFirst();
         }
-        InventoryTransfer it;
-        if(parent == null) {
-            it = listMasters(InventoryTransfer.class, true).findFirst();
-        } else {
-            it = (InventoryTransfer) parent;
+        parent = listMasters(InventoryTransfer.class, true).findFirst();
+        return parent == null ? null : parent.getSystemEntity();
+    }
+
+    public void setParent(OfEntity parent) {
+        if(findTypeFor(parent.getClass()) == type) {
+            this.parent = parent;
         }
-        return it == null ? null : it.getSystemEntity();
     }
 
     Id loc() {

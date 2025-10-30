@@ -216,8 +216,15 @@ public abstract class AbstractSendAndReceiveMaterial<T extends InventoryTransfer
     }
 
     public String getConsignment(T it) {
-        Consignment consignment = it.listLinks(Consignment.class, true).findFirst();
-        return consignment == null ? "" : consignment.getReference();
+        StringBuilder sb = new StringBuilder();
+        it.listLinks(Consignment.class, true).forEach(c -> {
+            c.setParent(it);
+            if(!sb.isEmpty()) {
+                sb.append(", ");
+            }
+            sb.append(c.getReference());
+        });
+        return sb.toString();
     }
 
     public Class<L> getItemClass() {

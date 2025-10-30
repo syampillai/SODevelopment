@@ -154,7 +154,7 @@ public class ReceiveReturnedItems extends HandleReturnedItems {
 
     private ReceiveMaterialReturned recRet() {
         ReceiveMaterialReturned v = new ReceiveMaterialReturned(storeBin, eo);
-        v.setExitAction(() -> new ReceiveReturnedItems(type, storeBin, eo).execute());
+        v.setExitAction(() -> new ReceiveReturnedItems(type, storeBin, eo, false).execute());
         v.execute();
         return v;
     }

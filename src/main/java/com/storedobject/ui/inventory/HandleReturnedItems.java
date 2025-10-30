@@ -27,7 +27,7 @@ public abstract class HandleReturnedItems extends DataForm implements Transactio
     private Button goToOld;
     private boolean includeOnlyForStore;
     private boolean defineReplacements = false;
-    private final boolean autoMode;
+    final boolean autoMode;
 
     public HandleReturnedItems(String caption, int type, InventoryStoreBin storeBin, InventoryLocation eo, boolean allowJumpToOld) {
         this(caption, type, storeBin, eo, allowJumpToOld, true);

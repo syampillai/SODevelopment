@@ -17,7 +17,7 @@ import java.util.*;
  * @author Syam
  */
 @Table(anchors = "Store")
-public final class InventoryGRN extends StoredObject implements HasChildren, HasReference, TriggerChangeEvent {
+public final class InventoryGRN extends StoredObject implements OfEntity, HasChildren, HasReference, TriggerChangeEvent {
 
     private static final ReferencePattern<InventoryGRN> ref = new ReferencePattern<>();
     private final static String[] statusValues = new String[] {

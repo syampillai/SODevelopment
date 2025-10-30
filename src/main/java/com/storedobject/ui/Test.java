@@ -21,7 +21,6 @@ public class Test extends Knowledge implements Executable {
 
     @Override
     public void execute() {
-        //RawSQL.debug = !RawSQL.debug;
         new ChatView(this, "Persons & Users").execute();
     }
 
