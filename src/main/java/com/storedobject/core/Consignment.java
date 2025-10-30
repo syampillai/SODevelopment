@@ -28,7 +28,7 @@ public class Consignment extends StoredObject implements HasReference {
         this.parent = parent;
     }
 
-    public <T extends StoredObject> Consignment(Class<? extends OfEntity> parentClass) {
+    public <T extends OfEntity> Consignment(Class<T> parentClass) {
         type = findTypeFor(parentClass);
     }
 
