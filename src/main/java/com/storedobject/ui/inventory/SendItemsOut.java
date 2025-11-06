@@ -60,16 +60,6 @@ public abstract class SendItemsOut<R extends InventoryReturn, RI extends Invento
         return new Button("Change", (String) null, e -> new SwitchStore().execute());
     }
 
-    @Override
-    protected boolean canAmend() {
-        return actionAllowed("AMEND");
-    }
-
-    @Override
-    protected boolean canClose() {
-        return actionAllowed("CLOSE");
-    }
-
     private void closeR() {
         R r = selected();
         if(r == null) {
@@ -88,7 +78,7 @@ public abstract class SendItemsOut<R extends InventoryReturn, RI extends Invento
 
     protected String getGRNBrowserLabel() {
         return switch (type) {
-            case 3 -> "POs";
+            case 3 -> "ROs";
             case 5 -> "LOs";
             default -> "Rs";
         };

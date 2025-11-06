@@ -1,8 +1,10 @@
 package com.storedobject.ui.inventory;
 
 import com.storedobject.common.SORuntimeException;
+import com.storedobject.common.StringList;
 import com.storedobject.core.*;
 import com.storedobject.ui.HTMLText;
+import com.storedobject.ui.Transactional;
 import com.storedobject.vaadin.ChoiceField;
 import com.storedobject.vaadin.DataForm;
 import com.storedobject.vaadin.View;
@@ -12,7 +14,7 @@ import com.storedobject.vaadin.View;
  *
  * @author Syam
  */
-public class ReceiveMaterial extends DataForm {
+public class ReceiveMaterial extends DataForm implements Transactional {
 
     private static final String[] TYPE_4_STORES = new String[] {
             "GRN - Purchases",
@@ -166,22 +168,98 @@ public class ReceiveMaterial extends DataForm {
     }
 
     private void grn(int type, InventoryLocation to) {
-        GRN grn = new GRN(type, ((InventoryStoreBin) to).getStore());
-        try {
-            //noinspection unchecked
-            grn.setSource(grnSourceLabel(type), JavaClassLoader.createClassFromProperty("PO-BROWSER-LOGIC-" + type),
-                    (Class<? extends StoredObject>) JavaClassLoader.createClassFromProperty("PO-CLASS-" + type));
-        } catch(SOException ignored) {
-        }
-        grn.execute();
+        new GRNSourceType(type, to).execute();
     }
 
-    private String grnSourceLabel(int type) {
+    private void grn(int type, InventoryLocation to, int category) {
+        GRN grn = new GRN(type, ((InventoryStoreBin) to).getStore());
+        try {
+            String label = grnSourceLabel(type);
+            String prefix = grnSourcePrefix(type);
+            String property = prefix + "-BROWSER-LOGIC-" + category;
+            Class<?> browserClass = JavaClassLoader.createClassFromProperty(property);
+            if(browserClass == null) {
+                m(label, property);
+            } else {
+                property = prefix + "-CLASS-" + category;
+                Class<?> dataClass = JavaClassLoader.createClassFromProperty(property);
+                if(dataClass == null) {
+                    String className = browserClass.getName().replace(".logic.", ".").replace("Browser", "");
+                    try {
+                        dataClass = JavaClassLoader.getLogic(className);
+                    } catch (ClassNotFoundException ignored) {
+                    }
+                }
+                if(dataClass == null) {
+                    m(label, property);
+                } else {
+                    //noinspection unchecked
+                    grn.setSource(label, browserClass, (Class<? extends StoredObject>) dataClass);
+                }
+            }
+        } catch(SOException e) {
+            log(e);
+        } finally {
+            grn.execute();
+        }
+    }
+
+    private void m(String label, String property) {
+        warning("Unable to determine the class for '" + label + "'. Please contact technical support to set global property: " + property);
+    }
+
+    private static String grnSourcePrefix(int type) {
+        return switch(type) {
+            case 0 -> "PO";
+            case 1 -> "FROM-EXTERNAL-OWNERS";
+            case 2 -> "LOANS-IN";
+            default -> "UNKNOWN";
+        };
+    }
+
+    private static String grnSourceLabel(int type) {
         return switch(type) {
             case 0 -> "POs";
             case 1 -> "From External Owners";
             case 2 -> "Loans";
             default -> "GRN Source";
         };
+    }
+
+    private class GRNSourceType extends DataForm {
+
+        private final int type;
+        private final InventoryLocation to;
+        private final ChoiceField choice;
+        private final int choiceCount;
+
+        public GRNSourceType(int type, InventoryLocation location) {
+            super(grnSourceLabel(type) + " - Choose Type");
+            this.type = type;
+            to = location;
+            StringList choices = StringList.create(
+                    ApplicationServer.getGlobalProperty(grnSourcePrefix(type) + "-TYPES", "None", true).
+                    replace('\n', ','));
+            choiceCount = choices.size();
+            choice = new ChoiceField("Type", choices);
+            addField(choice);
+            choice.setValue(0);
+        }
+
+        @Override
+        protected void execute(View parent, boolean doNotLock) {
+            if(choiceCount == 1) {
+                process();
+                return;
+            }
+            super.execute(parent, doNotLock);
+        }
+
+        @Override
+        protected boolean process() {
+            close();
+            grn(type, to, choice.getValue());
+            return true;
+        }
     }
 }

@@ -15,7 +15,8 @@ public class Organization extends EntityRole {
 
     public static String[] links() {
         return new String[] {
-                "Products|com.storedobjects.support.Product|||0",
+                "Product Type|com.storedobjects.support.Product|||0",
+                "Products|com.storedobject.core.InventoryItem/Any|||0",
         };
     }
 

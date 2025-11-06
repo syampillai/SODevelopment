@@ -129,6 +129,7 @@ public class StockReport extends PDFReport {
     public void generateContent() throws Exception {
         count = 0;
         printStock(partNumbers);
+        stock.close();
     }
 
     public void printStock(ObjectIterator<? extends InventoryItemType> partNumbers) {

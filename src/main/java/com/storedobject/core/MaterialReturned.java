@@ -14,4 +14,8 @@ public class MaterialReturned extends InventoryTransfer {
                 "Items|com.storedobject.core.MaterialReturnedItem|||0",
         };
     }
+
+    public static String actionPrefixForUI() {
+        return "MR";
+    }
 }

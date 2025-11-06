@@ -27,6 +27,7 @@ public class DataGrid<T> extends com.storedobject.vaadin.ListGrid<T>
     static final String ACTION_NOT_ALLOWED = "Your profile doesn't allow the requested action";
     private GridListDataView<T> dataView;
     private String actionPrefix = null;
+    private byte admin = -1;
 
     public DataGrid(Class<T> objectClass) {
         this(objectClass, null);
@@ -232,7 +233,7 @@ public class DataGrid<T> extends com.storedobject.vaadin.ListGrid<T>
      * any exception.
      *
      * @param object Item that is appended.
-     * @throws Exception The exception should be a user-friendly one because it will be displayed on the screen.
+     * @throws Exception The exception should be user-friendly because it will be displayed on the screen.
      */
     protected void validateAppend(T object) throws Exception {
     }
@@ -293,7 +294,7 @@ public class DataGrid<T> extends com.storedobject.vaadin.ListGrid<T>
      * any exception.
      *
      * @param object Item that is newly added.
-     * @throws Exception The exception should be a user-friendly one because it will be displayed on the screen.
+     * @throws Exception The exception should be user-friendly because it will be displayed on the screen.
      */
     protected void validateInsert(T object) throws Exception {
     }
@@ -342,7 +343,7 @@ public class DataGrid<T> extends com.storedobject.vaadin.ListGrid<T>
      * any exception.
      *
      * @param object Item that is updated.
-     * @throws Exception The exception should be a user-friendly one because it will be displayed on the screen.
+     * @throws Exception The exception should be user-friendly because it will be displayed on the screen.
      */
     protected void validateUpdate(T object) throws Exception {
     }
@@ -441,7 +442,7 @@ public class DataGrid<T> extends com.storedobject.vaadin.ListGrid<T>
      * any exception.
      *
      * @param object Item that is undeleted.
-     * @throws Exception The exception should be a user-friendly one because it will be displayed on the screen.
+     * @throws Exception The exception should be user-friendly because it will be displayed on the screen.
      */
     protected void validateUndelete(T object) throws Exception {
     }
@@ -486,7 +487,7 @@ public class DataGrid<T> extends com.storedobject.vaadin.ListGrid<T>
     }
 
     /**
-     * Carry out the "reload all" action. All validation are already done before invoking this.
+     * Carry out the "reload all" action. All validations are already done before invoking this.
      */
     protected void doReloadAllAction() {
         refresh();
@@ -497,7 +498,7 @@ public class DataGrid<T> extends com.storedobject.vaadin.ListGrid<T>
      * any exception.
      *
      * @param object Item that is undeleted.
-     * @throws Exception The exception should be a user-friendly one because it will be displayed on the screen.
+     * @throws Exception The exception should be user-friendly because it will be displayed on the screen.
      */
     protected void validateReload(T object) throws Exception {
     }
@@ -507,7 +508,7 @@ public class DataGrid<T> extends com.storedobject.vaadin.ListGrid<T>
      * {@link #actionAllowed(String)}. For example, {@link com.storedobject.ui.inventory.POBrowser} returns the value
      * "PO" for this method.
      *
-     * @return Prefix string. Default implementation returns null unless a static public method named
+     * @return Prefix string. The default implementation returns null unless a static public method named
      * "actionPrefixForUI" exists in the object class. If the method exists, its return value is returned. Returning
      * a null means that all the actions are allowed.
      */
@@ -516,13 +517,17 @@ public class DataGrid<T> extends com.storedobject.vaadin.ListGrid<T>
             Class<T> oc = getObjectClass();
             try {
                 Method m = oc.getMethod("actionPrefixForUI");
-                if(m.getDeclaringClass() == oc) {
-                    int modifiers = m.getModifiers();
-                    if (Modifier.isStatic(modifiers) && Modifier.isPublic(modifiers) && m.getReturnType() == String.class) {
-                        actionPrefix = (String) m.invoke(null);
-                    }
+                int modifiers = m.getModifiers();
+                if (Modifier.isStatic(modifiers) && Modifier.isPublic(modifiers) && m.getReturnType() == String.class) {
+                    actionPrefix = (String) m.invoke(null);
                 }
             } catch (Throwable ignored) {
+                if(admin == -1) {
+                    admin = (byte) (getTransactionManager().getUser().isAdmin() ? 1 : 0);
+                }
+                if(admin == 1) {
+                    log("No action prefix defined for " + oc.getName());
+                }
             }
             if(actionPrefix == null) {
                 actionPrefix = "";
@@ -539,7 +544,7 @@ public class DataGrid<T> extends com.storedobject.vaadin.ListGrid<T>
      * However, it is up to the logic to decide the course of action.
      * <p>The user's groups can be configured to allow various UI actions ({@link com.storedobject.core.UIAction}.
      * Each {@link com.storedobject.core.UIAction} represents a unique "action" string ({@link UIAction#getAction()})
-     * and that value should be equal to {@link #getActionPrefix()} + "-" + action in order to allow that action.</p>
+     * and that value should be equal to {@link #getActionPrefix()} + "-" + action to allow that action.</p>
      *
      * @param action Action string.
      * @return True/false. Please note that it will always return <code>true</code> if {@link #getActionPrefix()}

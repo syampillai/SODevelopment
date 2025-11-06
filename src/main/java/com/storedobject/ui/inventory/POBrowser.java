@@ -605,11 +605,21 @@ public class POBrowser<T extends InventoryPO> extends ObjectBrowser<T> implement
         }
 
         private void apn(InventoryPOItem item) {
+            if(!actionAllowed("SET-APN")) {
+                message("Set APN - Not authorized");
+                return;
+            }
+            clearAlerts();
             close();
             setAPN(po, item);
         }
 
         private void createAPN(InventoryItemType pn) {
+            if(!actionAllowed("CREATE-APN")) {
+                message("Create APN - Not authorized");
+                return;
+            }
+            clearAlerts();
             close();
             new CreateAPN(pn, getTransactionManager()).execute();
         }

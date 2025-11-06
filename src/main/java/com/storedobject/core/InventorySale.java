@@ -43,4 +43,8 @@ public class InventorySale extends InventoryTransfer implements TradeType {
     public Entity getCustomerEntity() {
         return getEntityTo();
     }
+
+    public static String actionPrefixForUI() {
+        return "SALE";
+    }
 }

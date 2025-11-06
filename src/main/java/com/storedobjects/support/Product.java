@@ -9,6 +9,12 @@ public class Product extends Name {
 
     public static void columns(Columns columns) {}
 
+    public static String[] links() {
+        return new String[] {
+                "Product Types|com.storedobject.core.InventoryItemType/Any|||0",
+        };
+    }
+
     public static Product get(String name) {
         return StoredObjectUtility.get(Product.class, "Name", name, false);
     }

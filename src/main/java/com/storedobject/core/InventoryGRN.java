@@ -893,4 +893,8 @@ public final class InventoryGRN extends StoredObject implements OfEntity, HasChi
             }
         }
     }
+
+    public static String actionPrefixForUI() {
+        return "GRN";
+    }
 }

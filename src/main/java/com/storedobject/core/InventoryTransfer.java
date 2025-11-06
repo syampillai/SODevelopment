@@ -395,10 +395,10 @@ public abstract class InventoryTransfer extends StoredObject implements OfEntity
         if(getApprovalRequired()) {
             throw new Invalid_State("Approval required");
         }
-        List<InventoryTransferItem> mris = listLinks(transaction, InventoryTransferItem.class,
+        List<InventoryTransferItem> mtis = listLinks(transaction, InventoryTransferItem.class,
                 "Amendment=" + amendment, true)
                 .toList();
-        List<InventoryItem> items = mris.stream().map(InventoryTransferItem::getItem).toList();
+        List<InventoryItem> items = mtis.stream().map(InventoryTransferItem::getItem).toList();
         InventoryLocation to = getToLocation();
         InventoryLocation from = getFromLocation();
         if(items.isEmpty()) {
@@ -429,17 +429,16 @@ public abstract class InventoryTransfer extends StoredObject implements OfEntity
             grn.setStore(((InventoryBin) to).getStoreId());
             grn.setSupplier(from.getEntityId());
             grn.setStatus(2);
-            grn.attachConsignmentFrom(transaction,this);
             grn.save(transaction);
-            List<InventoryTransfer> returns = list(getClass(), "FromLocation=" + to.getId()
-                    + " AND Status IN (1,2)").map(r -> (InventoryTransfer)r).toList();
+            List<InventoryReturn> returns = list(InventoryReturn.class, "FromLocation=" + to.getId()
+                    + " AND Status IN (1,2)", true).toList();
             int n = returns.size();
-            InventoryTransfer amended;
+            InventoryReturn amended;
             for(int i = 0; i < n; i++) {
                 amended = returns.get(i);
                 if(amended.getAmendment() > 0) {
                     while(true) {
-                        amended = amended.listLinks(getClass()).single(false);
+                        amended = amended.listLinks(amended.getClass()).single(false);
                         if(amended == null) {
                             break;
                         }
@@ -452,8 +451,8 @@ public abstract class InventoryTransfer extends StoredObject implements OfEntity
             }
             List<InventoryItem> returnItems;
             boolean link;
-            for(InventoryTransfer r : returns) {
-                returnItems = r.listLinks(InventoryTransferItem.class, true).map(InventoryTransferItem::getItem).toList();
+            for(InventoryReturn r : returns) {
+                returnItems = r.listLinks(InventoryReturnItem.class, true).map(InventoryReturnItem::getItem).toList();
                 link = returnItems.removeIf(items::contains);
                 returnItems.removeIf(ii -> !ii.getLocationId().equals(r.getToLocationId()));
                 if(returnItems.isEmpty() && r.status != 3) {
@@ -462,6 +461,7 @@ public abstract class InventoryTransfer extends StoredObject implements OfEntity
                 }
                 if(link) {
                     r.addLink(transaction, grn);
+                    grn.attachConsignmentFrom(transaction, r);
                 }
             }
         }
@@ -469,19 +469,22 @@ public abstract class InventoryTransfer extends StoredObject implements OfEntity
         save(transaction);
         InventoryTransaction it = new InventoryTransaction(transaction.getManager(), date, getReference());
         it.setGRN(grn);
-        for(InventoryTransferItem mri : mris) {
-            item = mri.getItem();
+        for(InventoryTransferItem mti : mtis) {
+            item = mti.getItem();
             item.setInTransit(true);
-            mri.move(it, item, to, getEntityTo());
+            mti.move(it, item, to, getEntityTo());
         }
         it.save(transaction);
         Map<Id, Id> itemsChanged = it.getItemsChanged();
+        System.err.println("Changed item count: " + itemsChanged.size());
         for(Id id : itemsChanged.keySet()) {
-            for(InventoryTransferItem mri : mris) {
-                if(mri.getItemId().equals(id)) {
-                    mri.internal = true;
-                    mri.setItem(itemsChanged.get(id));
-                    mri.save(transaction);
+            System.err.println(id + " -> " + itemsChanged.get(id));
+            for(InventoryTransferItem mti : mtis) {
+                if(mti.getItemId().equals(id)) {
+                    mti.internal = true;
+                    mti.setItem(itemsChanged.get(id));
+                    mti.save(transaction);
+                    System.err.println("Replaced: " + mti.getItemId() + " with " + itemsChanged.get(id));
                 }
             }
         }
@@ -491,13 +494,13 @@ public abstract class InventoryTransfer extends StoredObject implements OfEntity
         addLink(transaction, grn);
         InventoryGRNItem grnItem;
         InventoryItem ii;
-        for(InventoryTransferItem mri : mris) {
-            ii = mri.getItem();
+        for(InventoryTransferItem mti : mtis) {
+            ii = mti.getItem();
             grnItem = new InventoryGRNItem();
             grnItem.setItem(ii.getId());
             grnItem.setPartNumber(ii.getPartNumberId());
             grnItem.setSerialNumber(ii.getSerialNumber());
-            grnItem.setQuantity(mri.getQuantity());
+            grnItem.setQuantity(mti.getQuantity());
             grnItem.setInspected(true);
             grnItem.internal = true;
             grnItem.save(transaction);

@@ -1621,6 +1621,7 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
                     Object ob = finalM.invoke(null, soClass, store, allowed);
                     return (ObjectBrowser<?>) ob;
                 } catch (Throwable e) {
+                    log(e);
                     a.access(() -> error("Unable to jump to " + label));
                 }
                 return null;

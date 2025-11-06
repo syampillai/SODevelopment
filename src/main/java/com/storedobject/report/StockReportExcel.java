@@ -122,6 +122,7 @@ public class StockReportExcel extends ExcelReport {
     @Override
     public void generateContent() throws Exception {
         printStock(partNumbers);
+        stock.close();
     }
 
     private void printTitle() {

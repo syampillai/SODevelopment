@@ -26,9 +26,12 @@ public class CreateConsignment<C extends Consignment> implements Executable {
     @SuppressWarnings("rawtypes")
     private final ObjectBrowser parentBrowser;
 
-    public CreateConsignment(Application application, OfEntity parent) {
+    public CreateConsignment(Application application, StoredObject parentObject) {
+        if(parentObject != null && !(parentObject instanceof OfEntity)) {
+            throw new SORuntimeException("Invalid parent object type");
+        }
         tm = application.getTransactionManager();
-        this.parent = parent;
+        this.parent = parentObject == null ? null : (OfEntity) parentObject;
         parentView = application.getActiveView();
         if(parentView instanceof WrappedView wv && wv.getComponent() instanceof ObjectBrowser<?> b) {
             parentBrowser = b;
@@ -77,7 +80,8 @@ public class CreateConsignment<C extends Consignment> implements Executable {
         if(parent == null || tm == null || consignmentType == -1) {
             return;
         }
-        consignment = ((StoredObject)parent).listLinks(consignmentClass).single(false);
+        consignment = ((StoredObject)parent).listLinks(consignmentClass, "Type=" + consignmentType)
+                .single(false);
         try {
             items();
         } catch(Throwable e) {
@@ -85,13 +89,8 @@ public class CreateConsignment<C extends Consignment> implements Executable {
             return;
         }
         if(consignment == null) {
-            new AskUser(consignmentType).execute(parentView);
+            new AskUser().execute(parentView);
             return;
-        } else {
-            if(consignment.getType() != consignmentType) {
-                Application.message("Consistency error, please contact Technical Support!");
-                return;
-            }
         }
         editConsignment();
     }
@@ -177,15 +176,13 @@ public class CreateConsignment<C extends Consignment> implements Executable {
 
     private class AskUser extends DataForm {
 
-        private final int type;
         private final RadioChoiceField choice = new RadioChoiceField("Choose",
                 StringList.create("Create a New Consignment", "Add to an Existing Consignment"));
         private final DateField dateField = new DateField("Consignment Date");
         private final IntegerField noField = new IntegerField("Consignment No.");
 
-        public AskUser(int type) {
+        public AskUser() {
             super("");
-            this.type = type;
             String caption = "Consignment";
             try {
                 caption += " for " + parent.getClass().getMethod("getReference")
@@ -219,7 +216,7 @@ public class CreateConsignment<C extends Consignment> implements Executable {
                 return false;
             }
             List<C> consignments = StoredObject.list(consignmentClass,
-                    "Type=" + type + " AND No=" + no + " AND Date='"
+                    "Type=" + consignmentType + " AND No=" + no + " AND Date='"
                             + Database.format(dateField.getValue()) + "'")
                     .filter(c -> c.listMasters(((StoredObject)parent).getClass())
                             .filter(p -> !p.getId().equals(((StoredObject)parent).getId()))

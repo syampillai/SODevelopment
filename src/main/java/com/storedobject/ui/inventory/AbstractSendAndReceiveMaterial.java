@@ -109,9 +109,9 @@ public abstract class AbstractSendAndReceiveMaterial<T extends InventoryTransfer
         if(this.fromOrTo == null) {
             throw new LogicRedirected(this::selectLocation);
         }
-        approve.setVisible(!receiveMode && actionAllowed("APPROVE"));
-        send.setVisible(!receiveMode && actionAllowed("SEND-ITEMS"));
-        receive.setVisible(receiveMode && actionAllowed("RECEIVE-ITEMS"));
+        approve.setVisible(!receiveMode && canApprove());
+        send.setVisible(!receiveMode && canSend());
+        receive.setVisible(receiveMode && canReceive());
         this.otherLocation = otherLocation;
         if(this.otherLocation != null && this.otherLocation.equals(this.fromOrTo)) {
             throw new SORuntimeException("Both locations can't be the same - " + this.fromOrTo.toDisplay());
@@ -161,9 +161,9 @@ public abstract class AbstractSendAndReceiveMaterial<T extends InventoryTransfer
         }
         setOrderBy("Date DESC,No DESC");
         GridContextMenu<T> cm = new GridContextMenu<>(this);
-        final boolean approvalAllowed = !receiveMode && actionAllowed("APPROVE");
+        final boolean approvalAllowed = !receiveMode && canApprove();
         final GridMenuItem<T> approvalMenu = approvalAllowed ? cm.addItem("Approve", e ->  approve()) : null;
-        final boolean actionAllowed = actionAllowed((receiveMode ? "RECEIVE" : "SEND") + "-ITEMS");
+        final boolean actionAllowed = receiveMode ? canReceive() : canSend();
         final GridMenuItem<T> actionMenu = actionAllowed ? cm.addItem((receiveMode ? "Receive" : "Send")
                 + " Items", e -> e.getItem().ifPresent(this::rowDoubleClicked)) : null;
         GridMenuItem<T> grnMenu = cm.addItem("Associated GRN", e ->  grn());
@@ -183,7 +183,7 @@ public abstract class AbstractSendAndReceiveMaterial<T extends InventoryTransfer
             grnMenu.setVisible(grn != null);
             return grn != null || (actionAllowed && (receiveMode ? o.getStatus() == 1 : o.getStatus() == 0));
         });
-        if(receiveMode) {
+        if(receiveMode && actionAllowed("GO-TO-GRN")) {
             grnButton = new Button("GRN", VaadinIcon.FILE_TABLE, e -> grnSel());
         } else {
             grnButton = null;
@@ -358,19 +358,31 @@ public abstract class AbstractSendAndReceiveMaterial<T extends InventoryTransfer
             add.setVisible(false);
             edit.setVisible(false);
         } else {
-            if(!InventorySale.class.isAssignableFrom(getDataClass())) {
+            if(!InventorySale.class.isAssignableFrom(getDataClass()) && canAmend()) {
                 amend = new ConfirmButton("Amend", e -> amend());
             }
         }
         buttonPanel.add(new Button("Search", e -> searchFilter()), approve, send, amend, receive, grnButton);
     }
 
-    protected boolean canAmend() {
-        return false;
+    protected final boolean canReceive() {
+        return actionAllowed("RECEIVE-ITEMS");
     }
 
-    protected boolean canClose() {
-        return false;
+    protected final boolean canSend() {
+        return actionAllowed("SEND-ITEMS");
+    }
+
+    protected final boolean canApprove() {
+        return actionAllowed("APPROVE");
+    }
+
+    protected final boolean canAmend() {
+        return actionAllowed("AMEND");
+    }
+
+    protected final boolean canClose() {
+        return actionAllowed("CLOSE");
     }
 
     @Override

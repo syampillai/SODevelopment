@@ -143,7 +143,8 @@ public final class ReferencePattern<O extends StoredObject> {
                 IT extends InventoryTransfer,
                 IS extends InventorySale,
                 MR extends MaterialRequest,
-                JV extends JournalVoucher
+                JV extends JournalVoucher,
+                C extends Consignment
                 >
         BiFunction<Class<O>, Boolean, Function<O, String>> tagGenerator(Class<O> objectClass) {
             if(objectClass == InventoryGRN.class) {
@@ -168,8 +169,9 @@ public final class ReferencePattern<O extends StoredObject> {
             if(MaterialIssued.class == objectClass) {
                 return (clazz, pattern) -> (Function<O, String>) tagMI(pattern);
             }
-            if(Consignment.class == objectClass) {
-                return (clazz, pattern) -> (Function<O, String>) tagCON(pattern);
+            if(Consignment.class.isAssignableFrom(objectClass)) {
+                Class<C> conClass = (Class<C>) objectClass;
+                return (clazz, pattern) -> (Function<O, String>) tagCON(conClass, pattern);
             }
             if(JournalVoucher.class.isAssignableFrom(objectClass)) {
                 Class<JV> jvClass = (Class<JV>) objectClass;
@@ -270,8 +272,8 @@ public final class ReferencePattern<O extends StoredObject> {
             return o -> String.valueOf(o.getSystemEntityId());
         }
 
-        private static Function<Consignment, String> tagCON(boolean pattern) {
-            SerialConfigurator sc = SerialConfigurator.getFor(Consignment.class);
+        private static <C extends Consignment> Function<C, String> tagCON(Class<C> conClass, boolean pattern) {
+            SerialConfigurator sc = SerialConfigurator.getFor(conClass);
             return switch(pattern ? sc.getPatternType() : sc.getType()) {
                 case 3 -> c -> c.loc() + "-" + c.getType();
                 case 2 -> c -> String.valueOf(c.loc());
