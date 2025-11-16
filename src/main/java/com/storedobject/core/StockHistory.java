@@ -51,7 +51,8 @@ public class StockHistory extends StoredObject implements DBTransaction.NoHistor
     }
 
     public InventoryItemType getPartNumber() {
-        return getRelated(InventoryItemType.class, partNumberId, true);
+        InventoryItemType pn = getRelated(InventoryItemType.class, partNumberId, true);
+        return pn == null ? getDeleted(InventoryItemType.class, partNumberId) : pn;
     }
 
     public void setDate(Date date) {
@@ -116,7 +117,8 @@ public class StockHistory extends StoredObject implements DBTransaction.NoHistor
     }
 
     public InventoryStore getStore() {
-        return getRelated(InventoryStore.class, storeId, true);
+        InventoryStore store = getRelated(InventoryStore.class, storeId, true);
+        return store == null ? getDeleted(InventoryStore.class, storeId) : store;
     }
 
     public void setLocation(Id locationId) {
@@ -137,7 +139,8 @@ public class StockHistory extends StoredObject implements DBTransaction.NoHistor
     }
 
     public InventoryLocation getLocation() {
-        return getRelated(InventoryLocation.class, locationId, true);
+        InventoryLocation location = getRelated(InventoryLocation.class, locationId, true);
+        return location == null ? getDeleted(InventoryLocation.class, locationId) : location;
     }
 
     public void setPreviousLocation(Id previousLocationId) {
@@ -158,7 +161,8 @@ public class StockHistory extends StoredObject implements DBTransaction.NoHistor
     }
 
     public InventoryLocation getPreviousLocation() {
-        return getRelated(InventoryLocation.class, previousLocationId, true);
+        InventoryLocation location = getRelated(InventoryLocation.class, previousLocationId, true);
+        return location == null ? getDeleted(InventoryLocation.class, previousLocationId) : location;
     }
 
     @Override
@@ -170,9 +174,6 @@ public class StockHistory extends StoredObject implements DBTransaction.NoHistor
         if (StringUtility.isWhite(serialNumber)) {
             serialNumber = "N/A";
         }
-        storeId = tm.checkTypeAny(this, storeId, InventoryStore.class, true);
-        locationId = tm.checkTypeAny(this, locationId, InventoryLocation.class, false);
-        previousLocationId = tm.checkTypeAny(this, previousLocationId, InventoryLocation.class, true);
         super.validateData(tm);
     }
 

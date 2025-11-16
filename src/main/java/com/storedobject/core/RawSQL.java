@@ -160,7 +160,7 @@ public final class RawSQL implements ResourceOwner {
      * @param databaseName Database name (if null is passed, current DB is dumped).
      * @return Data dumping process. The {@link java.io.OutputStream} of the process will stream out the data.
      */
-    public static Process dumpDatabase(String securityPassword, boolean sql, String databaseName) {
+    public static Process dumpDatabase(char[] securityPassword, boolean sql, String databaseName) {
         try {
             return new ProcessBuilder("").start();
         } catch(IOException e) {
@@ -176,7 +176,7 @@ public final class RawSQL implements ResourceOwner {
      * @return Data loading process. The {@link java.io.InputStream} of the process can accept SQL commands for
      * restoring the data.
      */
-    public static Process restoreDatabase(String securityPassword, String databaseName) {
+    public static Process restoreDatabase(char[] securityPassword, String databaseName) {
         try {
             return new ProcessBuilder("").start();
         } catch(IOException e) {

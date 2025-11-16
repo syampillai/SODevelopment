@@ -12,15 +12,16 @@ import java.sql.Date;
 
 public class ComputeStockHistory extends DataForm implements Transactional {
 
-    private final DateField dateField = new DateField("Compute Stock History as of");
+    private final DateField dateField = new DateField("Select Date:");
 
     public ComputeStockHistory() {
         super("Compute Stock History");
-        ELabelField label = new ELabelField("This will compute the stock history for the selected date.");
-        label.newLine().append("This could take a while!", Application.COLOR_ERROR)
+        ELabelField label = new ELabelField("Notes:", "This will compute the stock history for the selected date.");
+        label.newLine().append("This could take a while!", Application.COLOR_ERROR).newLine()
                 .append("This will be processed in the background.")
                 .update();
         addField(label, dateField);
+        dateField.setValue(DateUtility.yesterday());
     }
 
     @Override

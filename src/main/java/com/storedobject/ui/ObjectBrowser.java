@@ -1662,4 +1662,13 @@ public class ObjectBrowser<T extends StoredObject> extends ObjectGrid<T>
     public void setExitAction(Runnable exitAction) {
         this.exitAction = exitAction;
     }
+
+    /**
+     * Gets the action to be executed when an exit event is triggered.
+     *
+     * @return the {@code Runnable} that defines the action to be performed on exit
+     */
+    public Runnable getExitAction() {
+        return exitAction;
+    }
 }

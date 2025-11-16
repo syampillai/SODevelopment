@@ -73,7 +73,7 @@ public class DataChangeNotifierLogic extends DataLogic {
      * or the dataClass is not assignable from StoredObject class
      */
     public static Class<DataChangeNotifier> getFor(Class<?> dataClass) {
-        if(dataClass == null || dataClass == StoredObject.class || !dataClass.isAssignableFrom(StoredObject.class)) {
+        if(dataClass == null || dataClass == StoredObject.class || !StoredObject.class.isAssignableFrom(dataClass)) {
             return null;
         }
         DataChangeNotifierLogic logic = get(DataChangeNotifierLogic.class, "DataClassName='"

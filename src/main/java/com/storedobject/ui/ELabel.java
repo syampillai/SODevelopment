@@ -35,21 +35,25 @@ public class ELabel extends StyledText implements StyledBuilder, HasText {
     }
 
     private static Object convert(Object object) {
-        if(object == null) {
-            return "";
-        }
-        if(object instanceof Icon) {
-            HTMLText h = new HTMLText();
-            h.appendHTML("<vaadin-icon icon=\"" + ((Icon)object).getElement().getAttribute("icon") + "\"></vaadin-icon>");
-            return h;
-        }
-        if(object instanceof com.storedobject.vaadin.Icon icon) {
-            HTMLText h = new HTMLText();
-            h.appendHTML("<iron-icon icon=\"" + icon.getInternalElement().getAttribute("icon") + "\"></iron-icon>");
-            return h;
-        }
-        if(object instanceof ELabel) {
-            return ((ELabel)object).label;
+        switch (object) {
+            case null -> {
+                return "";
+            }
+            case Icon icon1 -> {
+                HTMLText h = new HTMLText();
+                h.appendHTML("<vaadin-icon icon=\"" + icon1.getElement().getAttribute("icon") + "\"></vaadin-icon>");
+                return h;
+            }
+            case com.storedobject.vaadin.Icon icon -> {
+                HTMLText h = new HTMLText();
+                h.appendHTML("<iron-icon icon=\"" + icon.getInternalElement().getAttribute("icon") + "\"></iron-icon>");
+                return h;
+            }
+            case ELabel eLabel -> {
+                return eLabel.label;
+            }
+            default -> {
+            }
         }
         Application a = Application.get();
         if(a != null) {
@@ -101,7 +105,7 @@ public class ELabel extends StyledText implements StyledBuilder, HasText {
 
     @Override
     public ELabel space(int count) {
-        label.space(count);
+        appendHTML("&nbsp;".repeat(count));
         return this;
     }
 

@@ -107,7 +107,7 @@ public final class JavaClass extends JavaInnerClass {
 		return new ArrayList<>();
 	}
 
-	public static List<String> listSystemClasses(String securityPassword) {
+	public static List<String> listSystemClasses(char[] securityPassword) {
 		return new ArrayList<>();
 	}
 }

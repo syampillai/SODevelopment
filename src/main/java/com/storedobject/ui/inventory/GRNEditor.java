@@ -3,12 +3,9 @@ package com.storedobject.ui.inventory;
 import com.storedobject.core.EditorAction;
 import com.storedobject.core.Entity;
 import com.storedobject.core.InventoryGRN;
-import com.storedobject.core.InventoryGRNItem;
 import com.storedobject.ui.ObjectEditor;
 import com.storedobject.ui.ObjectField;
-import com.storedobject.ui.ObjectLinkField;
 import com.vaadin.flow.component.HasValue;
-import com.vaadin.flow.component.grid.Grid;
 
 public class GRNEditor extends ObjectEditor<InventoryGRN> {
 
@@ -34,15 +31,6 @@ public class GRNEditor extends ObjectEditor<InventoryGRN> {
             supplierField = (ObjectField<Entity>) field;
         }
         super.customizeField(fieldName, field);
-    }
-
-    @Override
-    protected void customizeLinkField(ObjectLinkField<?> field) {
-        if(field.getFieldName().equals("Items.l")) {
-            @SuppressWarnings("unchecked") ItemContextMenu<InventoryGRNItem> m = new ItemContextMenu<>((Grid<InventoryGRNItem>) field.getGrid());
-            m.setHideGRNDetails(true);
-        }
-        super.customizeLinkField(field);
     }
 
     @Override

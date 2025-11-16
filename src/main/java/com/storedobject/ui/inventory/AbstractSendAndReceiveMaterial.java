@@ -745,7 +745,6 @@ public abstract class AbstractSendAndReceiveMaterial<T extends InventoryTransfer
             if(canAmend()) {
                 createColumn("Status");
             }
-            new ItemContextMenu<>(this);
         }
 
         @Override

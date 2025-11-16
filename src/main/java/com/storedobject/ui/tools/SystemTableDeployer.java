@@ -190,9 +190,9 @@ public class SystemTableDeployer extends View implements Transactional {
         }
     }
 
-    private String password() {
-        String password;
-        if((password = adminPassword.getValue()).isEmpty()) {
+    private char[] password() {
+        char[] password;
+        if((password = adminPassword.getValue().toCharArray()).length == 0) {
             error("Please enter administrator password");
             return null;
         }
@@ -260,7 +260,7 @@ public class SystemTableDeployer extends View implements Transactional {
             new ObjectEditor<>(Logic.class, EditorAction.ALL).editObject(logic);
             return;
         }
-        String password = password();
+        char[] password = password();
         if(password == null) {
             return;
         }
@@ -335,11 +335,11 @@ public class SystemTableDeployer extends View implements Transactional {
         }
     }
 
-    private static boolean schemaNotCreated(ClassAttribute<?> ca, String password) {
+    private static boolean schemaNotCreated(ClassAttribute<?> ca, char[] password) {
         return !Database.get().createSchema(ca.getModuleName(), password);
     }
 
-    private void dropTable(ClassAttribute<?> ca, String password) throws Exception {
+    private void dropTable(ClassAttribute<?> ca, char[] password) throws Exception {
         ArrayList<String> commands = new ArrayList<>();
         String command = "DROP TABLE " + ca.getModuleName() + ".", table = ca.getTableName();
         commands.add(command + table);
@@ -349,7 +349,7 @@ public class SystemTableDeployer extends View implements Transactional {
         currentClassName = null;
     }
 
-    private void dropTable(ClassAttribute<?> ca, String password, String attribute) {
+    private void dropTable(ClassAttribute<?> ca, char[] password, String attribute) {
         try {
             ArrayList<String> commands = new ArrayList<>();
             String command = "ALTER TABLE " + ca.getModuleName() + ".", table = ca.getTableName() + " DROP COLUMN "
@@ -363,18 +363,18 @@ public class SystemTableDeployer extends View implements Transactional {
         }
     }
 
-    private void dropColumn(ClassAttribute<?> ca, String password) {
+    private void dropColumn(ClassAttribute<?> ca, char[] password) {
         new DropColumn(ca, password).execute();
     }
 
-    private boolean createTable(ClassAttribute<?> ca, String password) throws Exception {
+    private boolean createTable(ClassAttribute<?> ca, char[] password) throws Exception {
         if(isSU) {
             trace(StringList.create(StoredObjectUtility.createDDL(ca.getObjectClass())));
         }
         return Database.get().createTable(ca.getObjectClass(), password);
     }
 
-    private static void execCommands(Iterable<String> commands, String password) throws Exception {
+    private static void execCommands(Iterable<String> commands, char[] password) throws Exception {
         for(String comm: commands) {
             if(!Database.get().executeSQL(comm, password)) {
                 throw new Exception(comm);
@@ -498,7 +498,7 @@ public class SystemTableDeployer extends View implements Transactional {
     }
 
     private void processMulti(Component c) {
-        String p = password();
+        char[] p = password();
         if(p == null) {
             return;
         }
@@ -517,7 +517,7 @@ public class SystemTableDeployer extends View implements Transactional {
         }
     }
 
-    private void process(List<String> list, String password, boolean reindex, Message m, boolean system) {
+    private void process(List<String> list, char[] password, boolean reindex, Message m, boolean system) {
         m.m((reindex ? "Re-index" : "Creating/updating/index") + "ing...");
         boolean error;
         for(String klass: list) {
@@ -590,11 +590,11 @@ public class SystemTableDeployer extends View implements Transactional {
 
     private class MultipleClasses extends UploadProcessorView {
 
-        private final String password;
+        private final char[] password;
         private final boolean reindex;
         private final boolean system;
 
-        public MultipleClasses(String password, boolean reindex, boolean system) {
+        public MultipleClasses(char[] password, boolean reindex, boolean system) {
             super((reindex ? "Re-index" : "Process") + " Multiple Classes",
                     "File containing list of classes");
             this.password = password;
@@ -706,10 +706,10 @@ public class SystemTableDeployer extends View implements Transactional {
     private class DropColumn extends DataForm {
 
         private final ClassAttribute<?> ca;
-        private final String password;
+        private final char[] password;
         private final ComboField<String> attribute;
 
-        public DropColumn(ClassAttribute<?> ca, String password) {
+        public DropColumn(ClassAttribute<?> ca, char[] password) {
             super("Drop Attribute");
             this.ca = ca;
             this.password = password;

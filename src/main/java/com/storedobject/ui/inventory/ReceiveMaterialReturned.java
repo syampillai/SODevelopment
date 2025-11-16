@@ -29,7 +29,7 @@ public final class ReceiveMaterialReturned extends AbstractReceiveMaterialReturn
 
     private class SwitchStore extends DataForm {
 
-        private final LocationField currentLoc = LocationField.create("Current Store", getLocationFrom());
+        private final LocationField currentLoc = LocationField.create("Current Store", getLocationTo());
         private final LocationField newLoc = LocationField.create("Change to", 0);
 
         public SwitchStore() {
@@ -48,8 +48,12 @@ public final class ReceiveMaterialReturned extends AbstractReceiveMaterialReturn
             }
             message("Store changed to '" + loc.toDisplay() + "'");
             close();
+            var action = ReceiveMaterialReturned.this.getExitAction();
+            ReceiveMaterialReturned.this.setExitAction(null);
             ReceiveMaterialReturned.this.close();
-            new ReceiveMaterialReturned(loc).execute();
+            ReceiveMaterialReturned r = new ReceiveMaterialReturned(loc);
+            r.setExitAction(action);
+            r.execute();
             return true;
         }
     }

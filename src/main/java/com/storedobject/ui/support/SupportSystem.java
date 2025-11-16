@@ -43,7 +43,7 @@ public class SupportSystem extends MemoSystem {
 
     @Override
     protected String whoName(SystemUser who) {
-        return user ? (who.getName() + " (" + organizations.get(0).getName() + ")") : super.whoName(who);
+        return user ? (who.getName() + " (" + organizations.getFirst().getName() + ")") : super.whoName(who);
     }
 
     @Override
@@ -52,7 +52,7 @@ public class SupportSystem extends MemoSystem {
             return false;
         }
         SupportUser supportUser = StoredObject.get(SupportUser.class, "SupportUser=" + who.getId());
-        return supportUser != null && supportUser.getOrganizationId().equals(organizations.get(0).getId());
+        return supportUser != null && supportUser.getOrganizationId().equals(organizations.getFirst().getId());
     }
 
     @Override
@@ -114,7 +114,7 @@ public class SupportSystem extends MemoSystem {
         }
         this.productField = field;
         if(organizations != null && user) {
-            Organization organization = organizations.get(0);
+            Organization organization = organizations.getFirst();
             productField.setLoadFilter(p -> organization.existsLinks(Product.class, "Id=" + p.getId()));
         }
     }

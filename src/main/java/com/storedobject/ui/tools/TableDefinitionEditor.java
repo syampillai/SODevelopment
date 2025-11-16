@@ -24,7 +24,7 @@ public class TableDefinitionEditor extends ObjectEditor<TableDefinition> {
     private Button loadParent, viewChildren, viewSource, editSource, compileSource, deploy, upload, deployAll, download,
             downloadAll, createSourceAll, compileSourceAll, viewAll, reorderFields, uploadUpdate, uploadCompare, report;
     private ClassTreeBrowser classTree = null, fullClassTree = null;
-    private String adminPassword;
+    private char[] adminPassword;
 
     public TableDefinitionEditor() {
         this(EditorAction.ALL);
@@ -593,9 +593,11 @@ public class TableDefinitionEditor extends ObjectEditor<TableDefinition> {
 
     private void command(Runnable command) {
         if(adminPassword == null) {
-            AdminPasswordForm apf = new AdminPasswordForm();
-            apf.command = command;
-            apf.execute(this);
+            AdministratorPassword ap = new AdministratorPassword();
+            ap.execute(p -> {
+                TableDefinitionEditor.this.adminPassword = p;
+                command.run();
+            });
         } else {
             command.run();
         }
@@ -1118,41 +1120,6 @@ public class TableDefinitionEditor extends ObjectEditor<TableDefinition> {
             }
             table.addCell(createCell(caption));
             table.addCell(createCell(value));
-        }
-    }
-
-    private class AdminPasswordForm extends DataForm {
-
-        private final PasswordField adminPassword = new PasswordField("Administrator Password");
-        private Runnable command;
-
-        public AdminPasswordForm() {
-            super("Password");
-            addField(adminPassword);
-            setRequired(adminPassword);
-        }
-
-        @Override
-        protected boolean process() {
-            clearAlerts();
-            String password = adminPassword.getValue();
-            try {
-                if(!Database.get().validateSecurityPassword(password)) {
-                    message("Invalid administrator password");
-                    return false;
-                }
-            } catch(Exception e) {
-                error(e);
-                return true;
-            }
-            TableDefinitionEditor.this.adminPassword = password;
-            close();
-            if(command != null) {
-                Runnable r = command;
-                command = null;
-                r.run();
-            }
-            return true;
         }
     }
 

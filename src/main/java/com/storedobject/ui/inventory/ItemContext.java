@@ -68,6 +68,17 @@ public class ItemContext {
         split(hasItem == null ? null : hasItem.getInventoryItem());
     }
 
+    public void assemble(InventoryItem item) {
+        if(item == null) {
+            return;
+        }
+        new Assembly<>(item).execute();
+    }
+
+    public void assemble(HasInventoryItem hasItem) {
+        assemble(hasItem == null ? null : hasItem.getInventoryItem());
+    }
+
     public void breakAssembly(InventoryItem item) {
         if(view != null) {
             return;

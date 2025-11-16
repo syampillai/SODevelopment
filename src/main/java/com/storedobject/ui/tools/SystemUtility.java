@@ -421,8 +421,15 @@ public class SystemUtility extends View implements CloseableView, Transactional 
         if(queryBuilder() == null) {
             return;
         }
+        String q;
+        try {
+            q = queryBuilder.querySQL();
+        } catch(Throwable e) {
+            QueryBuilder<?> qb = QueryBuilder.from(objectClass);
+            q = qb.querySQL();
+        }
         TextView tv = new TextView("SQL");
-        tv.append(queryBuilder.querySQL()).update();
+        tv.append(q).update();
         tv.execute();
     }
 

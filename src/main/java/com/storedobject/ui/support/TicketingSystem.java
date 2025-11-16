@@ -1,11 +1,10 @@
 package com.storedobject.ui.support;
 
-import com.storedobject.common.SORuntimeException;
 import com.storedobject.core.*;
 
 public class TicketingSystem extends SupportSystem {
 
-    private static SystemUser ticketManager;
+    private SystemUser ticketManager;
 
     public TicketingSystem() {}
 
@@ -15,25 +14,43 @@ public class TicketingSystem extends SupportSystem {
 
     public TicketingSystem(String memoTypeShortName) {
         super(memoTypeShortName);
+        int p;
+        if(memoTypeShortName != null && (p = memoTypeShortName.indexOf('|')) > 0) {
+            manager(memoTypeShortName.substring(p).trim());
+        }
     }
 
     public TicketingSystem(MemoType memoType, boolean load) {
         super(memoType, load);
     }
 
-    @Override
-    protected void checkMemoType(MemoType type) {
-        super.checkMemoType(type);
+    private void manager(String name) {
         if(ticketManager != null) return;
-        SystemUserGroup group = SystemUserGroup.get("Ticket Manager");
-        if(group == null) throw new SORuntimeException("Ticket Manager group not defined!");
+        if(name == null || name.isEmpty()) {
+            name = "Ticket Manager";
+        }
+        SystemUserGroup group = SystemUserGroup.get(name);
+        if(group == null) {
+            error("Ticket Manager group '" + name + "' not defined!");
+            return;
+        }
         ticketManager = group.listUsers().findFirst();
-        if(ticketManager == null) throw new SORuntimeException("No users in Ticket Manager group!");
+        if(ticketManager == null) error("No users in group '" + name + "'");
     }
 
     @Override
-    protected boolean createNewMemo(Transaction transaction, MemoComment comment) throws Exception {
-        comment.forwardMemo(transaction, comment.getComment(), ticketManager);
-        return true;
+    protected void memoCreated(Memo memo) {
+        if(ticketManager == null) {
+            manager(null);
+            if(ticketManager == null) {
+                return;
+            }
+        }
+        MemoComment comment = memo.getLatestComment();
+        if(comment == null || comment.getCommentCount() != 0) {
+            error("Memo must have at least one comment!");
+            return;
+        }
+        transact((transaction -> comment.forwardMemo(transaction, comment.getComment(), ticketManager)));
     }
 }

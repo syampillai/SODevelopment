@@ -2,6 +2,7 @@ package com.storedobject.ui.inventory;
 
 import com.storedobject.core.*;
 import com.storedobject.ui.Application;
+import com.storedobject.ui.DetailLinkGrid;
 import com.storedobject.ui.Transactional;
 import com.storedobject.vaadin.ExecutableView;
 import com.vaadin.flow.component.grid.Grid;
@@ -12,8 +13,8 @@ import com.vaadin.flow.function.SerializablePredicate;
 public class ItemContextMenu<T extends HasInventoryItem> extends GridContextMenu<T> {
 
     private final ItemContext context = new ItemContext();
-    private boolean allowInspection, allowBreaking, allowEditCost, hideGRNDetails, hideViewStock, hideMovementDetails;
-    private GridMenuItem<T> itemAssembly, parentAssembly, viewFitment, viewFitmentLocations, inspect, split,
+    private boolean allowInspection, allowBreaking, allowAssemble, allowEditCost, hideGRNDetails, hideViewStock, hideMovementDetails;
+    private GridMenuItem<T> itemAssembly, parentAssembly, viewFitment, viewFitmentLocations, inspect, split, assemble,
             breakAssembly, movementDetails, grnDetails, editCost, itemDetails, costDetails, pnDetails, viewStock, viewSource;
     private SerializablePredicate<T> dynamicContentHandler;
 
@@ -25,14 +26,16 @@ public class ItemContextMenu<T extends HasInventoryItem> extends GridContextMenu
         this(itemGrid, false, false, false, refresher);
     }
 
-    public ItemContextMenu(Grid<T> itemGrid, boolean canInspect, boolean allowBreaking,
-                           boolean allowEditCost) {
+    public ItemContextMenu(Grid<T> itemGrid, boolean canInspect, boolean allowBreaking, boolean allowEditCost) {
         this(itemGrid, canInspect, allowBreaking, allowEditCost, null);
     }
 
     public ItemContextMenu(Grid<T> itemGrid, boolean canInspect, boolean allowBreaking,
                            boolean allowEditCost, Runnable refresher) {
         super(itemGrid);
+        if(itemGrid instanceof DetailLinkGrid<?> linkGrid && linkGrid.getDataClass() == InventoryGRNItem.class) {
+            setHideGRNDetails(true);
+        }
         boolean isAdmin = itemGrid instanceof Transactional transactional
                 && transactional.getTransactionManager().getUser().isAdmin();
         this.allowInspection = canInspect;
@@ -50,7 +53,7 @@ public class ItemContextMenu<T extends HasInventoryItem> extends GridContextMenu
             }
             InventoryItem ii = hi.getInventoryItem();
             if(ii == null) {
-                hide(itemAssembly, parentAssembly, viewFitment, viewFitmentLocations, inspect, split,
+                hide(itemAssembly, parentAssembly, viewFitment, viewFitmentLocations, inspect, split, assemble,
                         breakAssembly, movementDetails, grnDetails, viewSource, editCost, itemDetails, costDetails,
                         pnDetails, viewStock);
                 InventoryItemType iit = hi.getInventoryItemType();
@@ -76,7 +79,9 @@ public class ItemContextMenu<T extends HasInventoryItem> extends GridContextMenu
             viewStock.setVisible(!hideViewStock);
             itemGrid.select(hi);
             InventoryLocation loc = ii.getLocation();
-            itemAssembly.setVisible(ii.getPartNumber().isAssembly());
+            boolean a = ii.getPartNumber().isAssembly();
+            assemble.setVisible(a && (this.allowInspection || this.allowAssemble));
+            itemAssembly.setVisible(a);
             parentAssembly.setVisible(loc instanceof InventoryFitmentPosition);
             inspect.setVisible(this.allowInspection || this.allowBreaking);
             split.setVisible(this.allowInspection && !ii.isSerialized() && ii.getQuantity().isPositive()
@@ -116,6 +121,7 @@ public class ItemContextMenu<T extends HasInventoryItem> extends GridContextMenu
                 e -> e.getItem().ifPresent(context::viewFitmentLocations));
         inspect = addItem("Inspect & Bin -", e -> e.getItem().ifPresent(context::inspect));
         split = addItem("Split Quantity -", e -> e.getItem().ifPresent(context::split));
+        assemble = addItem("Assemble -", e -> e.getItem().ifPresent(context::assemble));
         breakAssembly = addItem("Break from Assembly -", e -> e.getItem().ifPresent(context::breakAssembly));
         movementDetails = addItem("Movement Details -", e -> e.getItem().ifPresent(context::viewMovements));
         grnDetails = addItem("GRN Details -", e -> e.getItem().ifPresent(context::viewGRN));
@@ -169,6 +175,10 @@ public class ItemContextMenu<T extends HasInventoryItem> extends GridContextMenu
 
     public void setAllowInspection(boolean allowInspection) {
         this.allowInspection = allowInspection;
+    }
+
+    public void setAllowAssemble(boolean allowAssemble) {
+        this.allowAssemble = allowAssemble;
     }
 
     public void setHideGRNDetails(boolean hideGRNDetails) {

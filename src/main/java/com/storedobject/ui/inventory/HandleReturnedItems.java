@@ -81,6 +81,8 @@ public abstract class HandleReturnedItems extends DataForm implements Transactio
         Checkbox includeOnlyForStore = new Checkbox("Include only items sent from the selected store and replacements");
         includeOnlyForStore.addValueChangeListener(e -> this.includeOnlyForStore = e.getValue());
         add(includeOnlyForStore);
+        storeField.addValueChangeListener(e -> this.storeBin = (InventoryStoreBin) e.getValue());
+        eoField.addValueChangeListener(e -> this.eo = e.getValue());
     }
 
     @Override
@@ -151,7 +153,6 @@ public abstract class HandleReturnedItems extends DataForm implements Transactio
 
     @Override
     protected boolean process() {
-        defineReplacements = false;
         if(set()) {
             proceed();
             return true;
@@ -178,12 +179,14 @@ public abstract class HandleReturnedItems extends DataForm implements Transactio
                 })
                 .filter( i -> !amends.contains(i.getId()) && validLoc(i)).toList();
         if(items.isEmpty()) {
-            processOld();
-            message("For this store, no items pending to be received from:<BR/>" + eo.toDisplay());
+            message("No items pending to be received from:<BR/>" + eo.toDisplay());
             if(amended.get()) {
                 warning("Note: Amended entries exist that require attention!");
             }
-            return;
+            if(!defineReplacements) {
+                processOld();
+                return;
+            }
         }
         if(defineReplacements) {
             new DefineReplacementItems.ReplacementGrid(items, eo, getTransactionManager(), storeBin).execute();

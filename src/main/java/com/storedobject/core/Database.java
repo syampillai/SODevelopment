@@ -11,8 +11,7 @@ public abstract class Database {
 
 	public static void login(String driver, String ip, int port, String database, String databaseMaster,
 							 String user, String password, String securityLogin) throws Exception {
-		db = get();
-	}
+    }
 
 	public static Database get() {
 		return db;
@@ -94,23 +93,23 @@ public abstract class Database {
 	}
 
 	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
-	public final boolean executeSQL(String sql, String securityPassword) {
+	public final boolean executeSQL(String sql, char[] securityPassword) {
 		return false;
 	}
 
-	protected final boolean executeSQL(String sql, String user, String password) {
+	protected final boolean executeSQL(String sql, String user, char[] password) {
 		return false;
 	}
 
-	protected final boolean executeSQL(String sql, String user, String password, boolean ignoreErrors) {
+	protected final boolean executeSQL(String sql, String user, char[] password, boolean ignoreErrors) {
 		return false;
 	}
 
-	protected final boolean executeSQL(String[] sql, String user, String password) {
+	protected final boolean executeSQL(String[] sql, String user, char[] password) {
 		return false;
 	}
 
-	protected final boolean executeSQL(String[] sql, String user, String password, boolean ignoreErrors) {
+	protected final boolean executeSQL(String[] sql, String user, char[] password, boolean ignoreErrors) {
 		return false;
 	}
 
@@ -161,7 +160,7 @@ public abstract class Database {
 
 	protected abstract String dropDatabaseDDL(String databaseName);
 
-	public boolean dropDatabase(String databaseName, String securityPassword) {
+	public boolean dropDatabase(String databaseName, char[] securityPassword) {
 		return false;
 	}
 
@@ -176,15 +175,15 @@ public abstract class Database {
 	protected abstract String[] createSchemaDDL(String schemaName);
 
 	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
-	public boolean createSchema(String schemaName, String securityPassword) {
+	public boolean createSchema(String schemaName, char[] securityPassword) {
 		return false;
 	}
 
-	public boolean createTable(Class<? extends StoredObject> objectClass, String securityPassword) throws Exception {
+	public boolean createTable(Class<? extends StoredObject> objectClass, char[] securityPassword) throws Exception {
 		return false;
 	}
 
-	public boolean validateSecurityPassword(String password) throws Exception {
+	public boolean validateSecurityPassword(char[] password) throws Exception {
 		if(new Random().nextBoolean()) {
 			throw new SOException();
 		}

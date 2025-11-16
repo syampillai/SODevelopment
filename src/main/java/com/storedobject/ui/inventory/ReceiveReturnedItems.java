@@ -159,8 +159,10 @@ public class ReceiveReturnedItems extends HandleReturnedItems {
         return v;
     }
 
+    @Override
     protected void processOld() {
         recRet();
+        message("Searched for earlier entries that are not yet processed.");
     }
 
     private class Select extends MultiSelectGrid<InventoryItem> {

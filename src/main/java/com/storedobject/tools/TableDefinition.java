@@ -234,11 +234,11 @@ public class TableDefinition extends StoredObject {
 		return false;
 	}
 
-	public boolean deploy(TransactionManager tm, String securityPassword) throws Exception {
+	public boolean deploy(TransactionManager tm, char[] securityPassword) throws Exception {
 		return false;
 	}
 
-	public boolean deploy(TransactionManager tm, String securityPassword, boolean checkOldLoaded) throws Exception {
+	public boolean deploy(TransactionManager tm, char[] securityPassword, boolean checkOldLoaded) throws Exception {
 		return false;
 	}
 
@@ -250,7 +250,7 @@ public class TableDefinition extends StoredObject {
 		return false;
 	}
 
-	public boolean deployTable(TransactionManager tm, String securityPassword) throws Exception {
+	public boolean deployTable(TransactionManager tm, char[] securityPassword) throws Exception {
 		return false;
 	}
 

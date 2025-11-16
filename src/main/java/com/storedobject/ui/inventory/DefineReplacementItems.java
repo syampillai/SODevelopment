@@ -290,7 +290,12 @@ public class DefineReplacementItems extends DataForm {
                 InventoryItem item = (InventoryItem) itemEditor.getObject();
                 itemEditor.close();
                 InventoryTransaction it = new InventoryTransaction(tm, DateUtility.today(), remarks(remarks, "Created"));
-                it.changeOwner(item, null, StoredObject.get(Entity.class, storeBin.getStore().getSystemEntity().getEntityId()));
+                try {
+                    it.changeOwner(item, null, StoredObject.get(Entity.class, storeBin.getStore().getSystemEntity().getEntityId()));
+                } catch (Throwable e) {
+                    error(e);
+                    return false;
+                }
                 try {
                     it.save();
                     item = StoredObject.get(item.getClass(), item.getId());
@@ -321,7 +326,7 @@ public class DefineReplacementItems extends DataForm {
         }
 
         private void removeItem(InventoryItem item) {
-            items.remove(item);
+            items.removeIf(i -> i.getId().equals(item.getId()));
             load(items);
             scrollToStart();
         }
@@ -382,7 +387,7 @@ public class DefineReplacementItems extends DataForm {
                     it.save(t);
                 });
                 message(item.toDisplay() + " - Item replaced successfully! Remarks: " + remarks);
-                items.remove(item);
+                items.removeIf(i -> i.getId().equals(item.getId()));
                 addItem(newItem);
             } catch (Throwable e) {
                 warning(e);
@@ -406,8 +411,8 @@ public class DefineReplacementItems extends DataForm {
                 });
                 message(itemDisplay + " - Item marked as consumed! Consumed: " + consumed + ", To Return: " + toReturn
                         + ", Remarks: " + remarks);
-                items.remove(item);
-                items.addFirst(StoredObject.get(item.getClass(), item.getId()));
+                items.removeIf(i -> i.getId().equals(item.getId()));
+                addItem(StoredObject.get(item.getClass(), item.getId()));
             } catch (Throwable e) {
                 warning(e);
             }
@@ -490,7 +495,21 @@ public class DefineReplacementItems extends DataForm {
             SerializedConsumptionForm(InventoryItem item) {
                 super("Consumption", item);
                 snField.setValue(item.getSerialNumber());
-                setFieldReadOnly(snField);
+                setFieldReadOnly(snField, pnField);
+                if(item.getPartNumber().isAssembly()) {
+                    addField(new CompoundField("Waring",
+                            new ELabel("This is an assembly and the whole assembly will be consumed.",
+                                    Application.COLOR_ERROR)
+                                    .space(1)
+                                    .append("Click on the \"Manage Assembly\" button if you want to disassemble any parts.",
+                                            Application.COLOR_SUCCESS)
+                                    .update(),
+                            new Button("Manage Assembly", VaadinIcon.WRENCH, e -> {
+                                close();
+                                assembly(item);
+                            })
+                    ));
+                }
             }
 
             @Override
@@ -518,7 +537,7 @@ public class DefineReplacementItems extends DataForm {
                 super("Consumption", item);
                 addField(consumptionField, returnField);
                 consumptionField.setValue(item.getQuantity());
-                setFieldReadOnly(snField);
+                setFieldReadOnly(snField, pnField);
                 consumptionField.addValueChangeListener(e -> {
                     if(e.isFromClient()) {
                         Quantity total = item.getQuantity();
@@ -593,22 +612,20 @@ public class DefineReplacementItems extends DataForm {
                     if(e.isFromClient()) snField.setValue(StoredObject.toCode(e.getValue()));
                 });
                 pnField.addValueChangeListener(e -> {
-                    if(e.isFromClient()) {
-                        InventoryItemType pn = pnField.getValue();
-                        if(pn == null) {
-                            snField.setLabel("Serial/Batch/Lot Number");
-                            pnField.focus();
-                            return;
-                        }
-                        snField.setLabel(pn.isSerialized() ? "Serial Number" : "Batch/Lot Number");
-                        snField.focus();
-                        if(pn.isSerialized()) {
-                            quantityField.setValue(Count.ONE);
-                            setFieldReadOnly(quantityField);
-                        } else {
-                            setFieldReadOnly(false, quantityField);
-                            quantityField.setValue(Quantity.create(quantityField.getValue().getValue(), pn.getUnitOfMeasurement().getUnit()));
-                        }
+                    InventoryItemType pn = pnField.getValue();
+                    if(pn == null) {
+                        snField.setLabel("Serial/Batch/Lot Number");
+                        pnField.focus();
+                        return;
+                    }
+                    snField.setLabel(pn.isSerialized() ? "Serial Number" : "Batch/Lot Number");
+                    snField.focus();
+                    if(pn.isSerialized()) {
+                        quantityField.setValue(Count.ONE);
+                        setFieldReadOnly(quantityField);
+                    } else {
+                        setFieldReadOnly(false, quantityField);
+                        quantityField.setValue(Quantity.create(quantityField.getValue().getValue(), pn.getUnitOfMeasurement().getUnit()));
                     }
                 });
                 setRequired(pnField);
@@ -698,7 +715,12 @@ public class DefineReplacementItems extends DataForm {
 
                 @Override
                 protected boolean process() {
-                    return process(date, reference("Fitted"));
+                    if(!process(date, reference("Fitted"))) {
+                        return false;
+                    }
+                    InventoryItem ii = itemField.getValue();
+                    items.removeIf(i -> i.getId().equals(ii.getId()));
+                    return true;
                 }
 
                 public void setAssemblyPosition(InventoryFitmentPosition fitmentPosition, Quantity quantityAlreadyFitted) {
@@ -760,6 +782,16 @@ public class DefineReplacementItems extends DataForm {
                     }
                     inventoryTransaction.moveTo(item, qToRemove, reference("Removed"), eo);
                     if(transact(t -> inventoryTransaction.save(t))) {
+                        if(item.isSerialized()) {
+                            items.addFirst(item);
+                        } else {
+                            Id id = inventoryTransaction.getItemsChanged().get(item.getId());
+                            if(id != null) {
+                                items.addFirst(StoredObject.get(item.getClass(), id));
+                            } else {
+                                items.addFirst(item);
+                            }
+                        }
                         refresh();
                         return true;
                     }

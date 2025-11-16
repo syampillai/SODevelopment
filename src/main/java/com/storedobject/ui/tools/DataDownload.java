@@ -53,7 +53,7 @@ public class DataDownload extends DataForm implements Transactional {
     @Override
     protected boolean process() {
         clearAlerts();
-        String password = adminPassword.getValue();
+        char[] password = adminPassword.getValue().toCharArray();
         try {
             if(!Database.get().validateSecurityPassword(password)) {
                 throw new SOException("Administrator password is invalid");

@@ -21,9 +21,8 @@ public class ReceiveAndBin extends ListGrid<InventoryItem> implements Transactio
     @SuppressWarnings("rawtypes")
     private ObjectEditor itemEditor;
     private InventoryLocation previousLocation;
-    private final BinEditor binner = new BinEditor();
+    private final BinEditor binEditor = new BinEditor();
     protected final Button process = new ConfirmButton("Accept Bin Changes", VaadinIcon.STOCK, e -> process());
-    protected final Button exit = new Button("Exit", e -> close());
     protected ButtonLayout buttonLayout = new ButtonLayout();
     private final DateField dateField = new DateField();
     private final Date date;
@@ -41,7 +40,6 @@ public class ReceiveAndBin extends ListGrid<InventoryItem> implements Transactio
                          Runnable refresher) {
         this(date, reference, itemList, update, refresher, null);
     }
-
 
     public ReceiveAndBin(Date date, String reference, List<InventoryItem> itemList, TransactionManager.Transact update,
                          Runnable refresher, GRNEditor grnEditor) {
@@ -75,7 +73,7 @@ public class ReceiveAndBin extends ListGrid<InventoryItem> implements Transactio
                 grnEditor.execute(getView());
             }));
         }
-        buttonLayout.add(exit);
+        buttonLayout.add(new Button("Exit", e -> close()));
         addConstructedListener((g) -> con());
         setCaption("Receive Items");
         this.date = date;
@@ -85,7 +83,8 @@ public class ReceiveAndBin extends ListGrid<InventoryItem> implements Transactio
         if (process.isVisible()) {
             process.setText("Receive");
         }
-        new ItemContextMenu<>(this);
+        ItemContextMenu<InventoryItem> contextMenu = new ItemContextMenu<>(this);
+        contextMenu.setAllowAssemble(true);
     }
 
     public ReceiveAndBin(List<InventoryItem> itemList) {
@@ -133,7 +132,7 @@ public class ReceiveAndBin extends ListGrid<InventoryItem> implements Transactio
     private ButtonLayout actionButton(InventoryItem item) {
         ButtonLayout b = new ButtonLayout(new Button("Inspect", VaadinIcon.STOCK, e -> inspect(item)).asSmall());
         if (item.getLocation() instanceof InventoryBin) {
-            b.add(new Button("Bin", VaadinIcon.STORAGE, e -> binner.binItem(item)).asSmall());
+            b.add(new Button("Bin", VaadinIcon.STORAGE, e -> binEditor.binItem(item)).asSmall());
         }
         return b;
     }

@@ -148,6 +148,10 @@ public class MemoSystem extends ObjectGrid<MemoComment> implements CloseableView
     }
 
     private static MemoType memoType(String shortName) {
+        int p;
+        if(shortName != null && (p = shortName.indexOf('|')) > 0) {
+            shortName = shortName.substring(0, p);
+        }
         shortName = StoredObject.toCode(shortName);
         MemoType t = StoredObject.get(MemoType.class, "ShortPrefix='" + shortName + "'");
         if(t == null) {
@@ -639,10 +643,18 @@ public class MemoSystem extends ObjectGrid<MemoComment> implements CloseableView
         }
 
         @Override
+        public void inserted(M object) {
+            memoSystem.memoCreated(object);
+        }
+
+        @Override
         public void setObject(M object, boolean load) {
             super.setObject(object, load);
             setCaption(object == null ? "Memo" : object.getReference());
         }
+    }
+
+    protected void memoCreated(Memo memo) {
     }
 
     private boolean canComment(MemoComment mc) {
@@ -695,10 +707,6 @@ public class MemoSystem extends ObjectGrid<MemoComment> implements CloseableView
 
     protected boolean canReject() {
         return true;
-    }
-
-    protected boolean createNewMemo(Transaction transaction, MemoComment comment) throws Exception {
-        return false;
     }
 
     private void recallMemo(MemoComment mc) {
@@ -826,7 +834,7 @@ public class MemoSystem extends ObjectGrid<MemoComment> implements CloseableView
 
         @Override
         protected void saveObject(Transaction t, MemoComment object) throws Exception {
-            if(object.getCommentCount() == 0 && createNewMemo(t, object)) return;
+            if(object.getCommentCount() == 0) return;
             switch(action) {
                 case 1 -> object.returnMemo(t, object.getComment());
                 case 2 -> object.forwardMemo(t, object.getComment(), su);

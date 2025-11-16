@@ -49,16 +49,14 @@ public class StockHistoryDate extends StoredObject implements DBTransaction.NoHi
     }
 
     public InventoryLocation getLocation() {
-        return getRelated(InventoryLocation.class, locationId, true);
+        InventoryLocation location = getRelated(InventoryLocation.class, locationId, true);
+        return location == null ? getDeleted(InventoryLocation.class, locationId) : location;
     }
 
     @Override
     public void validateData(TransactionManager tm) throws Exception {
         if (Utility.isEmpty(date)) {
             throw new Invalid_Value("Date");
-        }
-        if(!Id.ZERO.equals(locationId)) {
-            locationId = tm.checkTypeAny(this, locationId, InventoryLocation.class, false);
         }
         super.validateData(tm);
     }
