@@ -5,24 +5,38 @@ import com.storedobject.ui.Application;
 import com.storedobject.ui.ObjectComboField;
 import com.storedobject.vaadin.DataForm;
 import java.util.List;
+import java.util.function.Consumer;
 
 public class SelectStore extends DataForm {
 
     private final Logic logic;
     private final boolean utility;
+    private final Consumer<InventoryStore> storeConsumer;
 
     private final ObjectComboField<InventoryStore> storeField;
 
     public SelectStore() {
-        this("Select Store", true);
+        this("Select Store");
     }
 
     public SelectStore(String caption) {
-        this(caption, false);
+        this(caption, false, null);
     }
 
-    private SelectStore(String caption, boolean utility) {
+    public SelectStore(Consumer<InventoryStore> storeConsumer) {
+        this("Select Store", storeConsumer);
+    }
+
+    public SelectStore(String caption, Consumer<InventoryStore> storeConsumer) {
+        this(caption, false, storeConsumer);
+    }
+
+    private SelectStore(String caption, boolean utility, Consumer<InventoryStore> storeConsumer) {
         super(caption);
+        this.storeConsumer = storeConsumer;
+        if(storeConsumer != null) {
+            utility = true;
+        }
         this.utility = utility;
         List<InventoryStore> stores = Application.get().getTransactionManager().getUser()
                 .listLinks(InventoryStore.class, true).toList();
@@ -33,7 +47,7 @@ public class SelectStore extends DataForm {
         addField(storeField);
         setRequired(storeField);
         Application a = Application.get();
-        this.logic = utility ? a.getRunningLogic() : null;
+        this.logic = utility && storeConsumer == null ? a.getRunningLogic() : null;
         SelectStore.Assignment assignment = a.getData(SelectStore.Assignment.class);
         if(assignment != null && assignment.store != null) {
             storeField.setValue(assignment.store);
@@ -51,9 +65,14 @@ public class SelectStore extends DataForm {
             assignment = new SelectStore.Assignment();
             a.setData(SelectStore.Assignment.class, assignment);
         }
-        assignment.store = storeField.getValue();
-        if(utility && logic != null) {
-            Application.get().execute(logic);
+        InventoryStore store = storeField.getValue();
+        assignment.store = store;
+        if(utility) {
+            if (logic != null) {
+                a.access(() -> a.execute(logic));
+            } else if(storeConsumer != null) {
+                a.access(() -> storeConsumer.accept(store));
+            }
         }
         return true;
     }

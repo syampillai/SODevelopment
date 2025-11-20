@@ -478,7 +478,7 @@ public abstract class AbstractSendAndReceiveMaterial<T extends InventoryTransfer
         mt.setApprovalRequired(false);
         return transact(t -> {
             mt.save(t);
-            mt.addLink(t, getTransactionManager().getUser());
+            mt.addLink(t, UserAction.get(getTransactionManager(), getActionPrefix() + "-APPROVE"));
         });
     }
 

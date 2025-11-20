@@ -27,6 +27,7 @@ public class ReceiveAndBin extends ListGrid<InventoryItem> implements Transactio
     private final DateField dateField = new DateField();
     private final Date date;
     private final TextField referenceField = new TextField();
+    private Runnable closeAction;
 
     public ReceiveAndBin(Date date, String reference, List<InventoryItem> itemList) {
         this(date, reference, itemList, null, null);
@@ -362,6 +363,23 @@ public class ReceiveAndBin extends ListGrid<InventoryItem> implements Transactio
                 process.setVisible(true);
             }
             return true;
+        }
+    }
+
+    public void setCloseAction(Runnable closeAction) {
+        this.closeAction = closeAction;
+    }
+
+    @Override
+    public void close() {
+        Application a = Application.get();
+        super.close();
+        if(closeAction != null) {
+            if(a != null) {
+                a.access(() -> closeAction.run());
+            } else {
+                closeAction.run();
+            }
         }
     }
 }

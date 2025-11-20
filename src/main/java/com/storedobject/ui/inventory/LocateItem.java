@@ -9,6 +9,8 @@ import com.storedobject.vaadin.*;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.Component;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 /**
  * For locating stocks of a given "Part Number" and its APNs. The result includes all locations, including items
  * fitted on assemblies, items sent for repair etc. However, items that are already scrapped are not included.
@@ -35,6 +37,7 @@ public class LocateItem extends DataGrid<InventoryItem> implements CloseableView
     private InventoryStore store;
     private final ItemContextMenu<InventoryItem> contextMenu;
     private final ELabel help = new ELabel("Right-click on the row to see more options", Application.COLOR_SUCCESS);
+    private final Button selectStore = new Button("Select Store", (String)null, e -> selectStore());
 
     /**
      * Constructor.
@@ -147,6 +150,7 @@ public class LocateItem extends DataGrid<InventoryItem> implements CloseableView
     private LocateItem(String caption, InventoryItemType partNumber, Class<? extends InventoryItem> itemClass,
                        Class<? extends InventoryItemType> itemTypeClass, boolean canInspect, String originalCaption) {
         super(InventoryItem.class, ItemField.COLUMNS);
+        selectStore.asSmall().setVisible(false);
         if(originalCaption == null) {
             originalCaption = "";
         }
@@ -282,7 +286,8 @@ public class LocateItem extends DataGrid<InventoryItem> implements CloseableView
 
     @Override
     public void createFooters() {
-        appendFooter().join().setComponent(help);
+        ButtonLayout b = new ButtonLayout(selectStore, help);
+        appendFooter().join().setComponent(b);
         help.setVisible(!isEmpty());
     }
 
@@ -302,7 +307,7 @@ public class LocateItem extends DataGrid<InventoryItem> implements CloseableView
         return ItemContext.locationDisplay(item);
     }
 
-    private void loadItems() {
+    void loadItems() {
         clearAlerts();
         String sn = snField == null ? "" : StoredObject.toCode(snField.getValue());
         if(!sn.isEmpty()) {
@@ -383,10 +388,20 @@ public class LocateItem extends DataGrid<InventoryItem> implements CloseableView
         objects = objects.filter(ii -> switch(ii.getLocation().getType()) {
             case 1, 2, 7, 9, 12, 15, 16, 17 -> false;
             default -> true;
-        }).limit(500);
-        objects.forEach(this::add);
+        }).limit(501);
+        AtomicInteger n = new AtomicInteger(0);
+        objects.forEach(ii -> {
+            if(n.getAndIncrement() <= 500) {
+                add(ii);
+            }
+        });
         objects.close();
-        help.setVisible(!isEmpty());
+        help.setVisible(n.get() > 0);
+        if(n.get() > 500) {
+            warning("More than 500 items found but only 500 are displayed!");
+        } else if(n.get() == 0) {
+            message("No items found!");
+        }
     }
 
     /**
@@ -397,6 +412,8 @@ public class LocateItem extends DataGrid<InventoryItem> implements CloseableView
     public void setStore(InventoryStore store) {
         this.store = store;
         locFilter.setVisible(false);
+        selectStore.setText(store.toDisplay());
+        selectStore.setVisible(true);
     }
 
     /**
@@ -424,5 +441,12 @@ public class LocateItem extends DataGrid<InventoryItem> implements CloseableView
      */
     public void setAllowInspection(boolean allowInspection) {
         contextMenu.setAllowInspection(allowInspection);
+    }
+
+    private void selectStore() {
+        new SelectStore(s -> {
+            setStore(s);
+            loadItems();
+        }).execute();
     }
 }

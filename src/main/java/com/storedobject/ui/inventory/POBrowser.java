@@ -341,14 +341,17 @@ public class POBrowser<T extends InventoryPO> extends ObjectBrowser<T> implement
         po.setApprovalRequired(false);
         return transact(t -> {
             po.save(t);
-            po.addLink(t, getTransactionManager().getUser());
+            po.addLink(t, UserAction.get(getTransactionManager(), getActionPrefix() + "-APPROVE"));
         });
     }
 
     private void placeOrder() {
         T po = check0(false);
         if(po != null) {
-            if(canPlaceOrder(po) && transact(po::placeOrder)) {
+            if(canPlaceOrder(po) && transact(t -> {
+                po.placeOrder(t);
+                po.addLink(t, UserAction.get(getTransactionManager(), getActionPrefix() + "-PLACE-ORDER"));
+            })) {
                 refresh(po);
                 message("Order placed");
             }

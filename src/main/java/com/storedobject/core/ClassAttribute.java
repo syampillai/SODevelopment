@@ -129,4 +129,8 @@ public final class ClassAttribute<T extends StoredObject> {
     public int getFamily() {
         return 12;
     }
+
+    public String getActionPrefix() {
+        return "";
+    }
 }

@@ -160,6 +160,12 @@ public class MemoSystem extends ObjectGrid<MemoComment> implements CloseableView
         return t;
     }
 
+    @Override
+    public void execute(View lock) {
+        super.execute(lock);
+        Application.get().closeMenu();
+    }
+
     protected void checkMemoType(MemoType type) {
     }
 
@@ -593,6 +599,12 @@ public class MemoSystem extends ObjectGrid<MemoComment> implements CloseableView
                 public void saved(M object) {
                     memoSystem.loadMemos();
                 }
+
+                @Override
+                public void inserted(M object) {
+                    memoSystem.memoCreated(object);
+                    memoSystem.loadMemos();
+                }
             });
         }
 
@@ -709,10 +721,16 @@ public class MemoSystem extends ObjectGrid<MemoComment> implements CloseableView
         return true;
     }
 
-    private void recallMemo(MemoComment mc) {
+    protected void recallMemo(MemoComment mc) {
         if(transact(mc::recallMemo)) {
             loadMemos();
         }
+    }
+
+    protected void forwardMemo(MemoComment mc, SystemUser to) {
+        memoAction(mc, 2);
+        commentEditor.suField.setValue(to);
+        commentEditor.suField.setReadOnly(true);
     }
 
     private void reason(MemoComment mc, boolean escalate) {
@@ -726,6 +744,7 @@ public class MemoSystem extends ObjectGrid<MemoComment> implements CloseableView
         if(commentEditor == null) {
             commentEditor = new CommentEditor();
         }
+        commentEditor.suField.setReadOnly(false);
         commentEditor.action = action;
         commentEditor.editObject(mc, getView());
     }
@@ -834,7 +853,7 @@ public class MemoSystem extends ObjectGrid<MemoComment> implements CloseableView
 
         @Override
         protected void saveObject(Transaction t, MemoComment object) throws Exception {
-            if(object.getCommentCount() == 0) return;
+            //if(object.getCommentCount() == 0) return;
             switch(action) {
                 case 1 -> object.returnMemo(t, object.getComment());
                 case 2 -> object.forwardMemo(t, object.getComment(), su);
@@ -922,6 +941,7 @@ public class MemoSystem extends ObjectGrid<MemoComment> implements CloseableView
             removeAll();
             comments.clear();
             add(buttons);
+            add(new Badge("Pending with " + mc.getMemo().getPendingWith()));
             StoredObject.list(MemoComment.class, "Memo=" + mc.getMemoId(), "CommentCount")
                     .forEach(this::addComment);
             orderButton.setIcon(ascending ? VaadinIcon.ANGLE_DOUBLE_UP : VaadinIcon.ANGLE_DOUBLE_DOWN);

@@ -1,6 +1,7 @@
 package com.storedobject.ui.support;
 
 import com.storedobject.core.*;
+import com.storedobject.vaadin.View;
 
 public class TicketingSystem extends SupportSystem {
 
@@ -39,6 +40,12 @@ public class TicketingSystem extends SupportSystem {
     }
 
     @Override
+    public void execute(View lock) {
+        setCaption("Ticketing System");
+        super.execute(lock);
+    }
+
+    @Override
     protected void memoCreated(Memo memo) {
         if(ticketManager == null) {
             manager(null);
@@ -51,6 +58,6 @@ public class TicketingSystem extends SupportSystem {
             error("Memo must have at least one comment!");
             return;
         }
-        transact((transaction -> comment.forwardMemo(transaction, comment.getComment(), ticketManager)));
+        forwardMemo(comment, ticketManager);
     }
 }

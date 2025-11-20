@@ -259,7 +259,7 @@ public class ApplicationFrame extends com.storedobject.vaadin.ApplicationFrame i
             super(user.getName());
             count = entities.size();
             this.entities = new ObjectComboField<>("Select Organization", SystemEntity.class, entities);
-            this.entities.setValue(entities.getFirst());
+            if(count > 0) this.entities.setValue(entities.getFirst());
             addConstructedListener(o -> setColumns(1));
         }
 

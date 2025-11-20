@@ -2376,4 +2376,8 @@ public abstract class StoredObject implements Displayable, HasId, StringFiller {
                             boolean header, int skip, int limit, int[] distinct) {
         return "";
     }
+
+    public SystemUser getActor(String action) {
+        return UserAction.getActor(this, action);
+    }
 }

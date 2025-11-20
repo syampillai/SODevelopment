@@ -47,7 +47,14 @@ public class ItemContext {
         }
         List<InventoryItem> list = new ArrayList<>();
         list.add(item);
-        new ReceiveAndBin(list).execute();
+        ReceiveAndBin bin = new ReceiveAndBin(list);
+        if(view instanceof LocateItem locateItem) {
+            bin.setCloseAction(() -> {
+                view.execute();
+                locateItem.loadItems();
+            });
+        }
+        bin.execute();
     }
 
     public void inspect(HasInventoryItem hasItem) {
@@ -398,7 +405,7 @@ public class ItemContext {
         }
     }
 
-    private static class SplitQuantity extends DataForm implements Transactional {
+    private class SplitQuantity extends DataForm implements Transactional {
 
         private final InventoryItem item;
         private final QuantityField splitQuantityField;
@@ -443,6 +450,15 @@ public class ItemContext {
                 message("Quantity split successfully");
             }
             return true;
+        }
+
+        @Override
+        public void clean() {
+            super.clean();
+            if(view instanceof LocateItem locateItem) {
+                locateItem.execute();
+                locateItem.loadItems();
+            }
         }
     }
 }

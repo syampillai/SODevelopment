@@ -2,7 +2,6 @@ package com.storedobject.ui.support;
 
 import com.storedobject.common.SORuntimeException;
 import com.storedobject.core.*;
-import com.storedobject.ui.Application;
 import com.storedobject.ui.ObjectField;
 import com.storedobject.ui.common.MemoSystem;
 import com.storedobject.vaadin.View;
@@ -105,7 +104,6 @@ public class SupportSystem extends MemoSystem {
             }
         }
         super.execute(lock);
-        Application.get().closeMenu();
     }
 
     private void setProductField(ObjectField<Product> field) {
@@ -151,7 +149,7 @@ public class SupportSystem extends MemoSystem {
             super(objectClass);
             if(checkAlertHandler) {
                 checkAlertHandler = false;
-                if (!StoredObject.exists(ApplicationAlertHandler.class, "DataClassName='com.storedobjects.support.Issue")) {
+                if (!StoredObject.exists(ApplicationAlertHandler.class, "DataClassName='com.storedobjects.support.Issue'")) {
                     ApplicationAlertHandler aah = new ApplicationAlertHandler();
                     aah.setDataClassName(Issue.class.getName());
                     aah.setLogicClassName(SupportSystem.class.getName());

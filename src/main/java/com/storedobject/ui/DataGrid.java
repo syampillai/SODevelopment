@@ -11,8 +11,6 @@ import com.vaadin.flow.component.grid.dataview.GridListDataView;
 import com.vaadin.flow.component.grid.editor.Editor;
 import com.vaadin.flow.data.provider.*;
 
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
@@ -27,7 +25,6 @@ public class DataGrid<T> extends com.storedobject.vaadin.ListGrid<T>
     static final String ACTION_NOT_ALLOWED = "Your profile doesn't allow the requested action";
     private GridListDataView<T> dataView;
     private String actionPrefix = null;
-    private byte admin = -1;
 
     public DataGrid(Class<T> objectClass) {
         this(objectClass, null);
@@ -512,22 +509,12 @@ public class DataGrid<T> extends com.storedobject.vaadin.ListGrid<T>
      * "actionPrefixForUI" exists in the object class. If the method exists, its return value is returned. Returning
      * a null means that all the actions are allowed.
      */
-    protected String getActionPrefix() {
+    protected <O extends StoredObject> String getActionPrefix() {
         if(actionPrefix == null) {
-            Class<T> oc = getObjectClass();
-            try {
-                Method m = oc.getMethod("actionPrefixForUI");
-                int modifiers = m.getModifiers();
-                if (Modifier.isStatic(modifiers) && Modifier.isPublic(modifiers) && m.getReturnType() == String.class) {
-                    actionPrefix = (String) m.invoke(null);
-                }
-            } catch (Throwable ignored) {
-                if(admin == -1) {
-                    admin = (byte) (getTransactionManager().getUser().isAdmin() ? 1 : 0);
-                }
-                if(admin == 1) {
-                    log("No action prefix defined for " + oc.getName());
-                }
+            Class<?> c = getObjectClass();
+            if(StoredObject.class.isAssignableFrom(c)) {
+                @SuppressWarnings("unchecked") Class<O> oc = (Class<O>) c;
+                actionPrefix = ClassAttribute.get(oc).getActionPrefix();
             }
             if(actionPrefix == null) {
                 actionPrefix = "";

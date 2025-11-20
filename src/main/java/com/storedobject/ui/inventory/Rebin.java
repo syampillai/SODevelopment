@@ -1,25 +1,16 @@
 package com.storedobject.ui.inventory;
 
-import com.storedobject.core.InventoryStoreBin;
-import com.storedobject.ui.Transactional;
-import com.storedobject.vaadin.DataForm;
+import com.storedobject.core.InventoryStore;
 
-public class Rebin extends DataForm implements Transactional {
-
-    private final LocationField locationField = LocationField.create("Store", 0);
+public class Rebin extends SelectStore {
 
     public Rebin() {
-        super("Re-bin");
-        addField(locationField);
-        setRequired(locationField);
+        super("Re-bin", Rebin::rebin);
     }
 
-    @Override
-    protected boolean process() {
+    private static void rebin(InventoryStore store) {
         LocateItem locateItem = new LocateItem(true);
-        locateItem.setStore(((InventoryStoreBin) locationField.getValue()).getStore());
-        close();
+        locateItem.setStore(store);
         locateItem.execute();
-        return true;
     }
 }
