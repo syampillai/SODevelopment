@@ -14,7 +14,7 @@ public class ItemContextMenu<T extends HasInventoryItem> extends GridContextMenu
 
     private final ItemContext context = new ItemContext();
     private boolean allowInspection, allowBreaking, allowAssemble, allowEditCost, hideGRNDetails, hideViewStock, hideMovementDetails;
-    private GridMenuItem<T> itemAssembly, parentAssembly, viewFitment, viewFitmentLocations, inspect, split, assemble,
+    private GridMenuItem<T> itemAssembly, parentAssembly, viewFitment, viewFitmentLocations, inspect, split, assemble, inspectAssembly,
             breakAssembly, movementDetails, grnDetails, editCost, itemDetails, costDetails, pnDetails, viewStock, viewSource;
     private SerializablePredicate<T> dynamicContentHandler;
 
@@ -54,6 +54,7 @@ public class ItemContextMenu<T extends HasInventoryItem> extends GridContextMenu
             InventoryItem ii = hi.getInventoryItem();
             if(ii == null) {
                 hide(itemAssembly, parentAssembly, viewFitment, viewFitmentLocations, inspect, split, assemble,
+                        inspectAssembly,
                         breakAssembly, movementDetails, grnDetails, viewSource, editCost, itemDetails, costDetails,
                         pnDetails, viewStock);
                 InventoryItemType iit = hi.getInventoryItemType();
@@ -80,10 +81,11 @@ public class ItemContextMenu<T extends HasInventoryItem> extends GridContextMenu
             itemGrid.select(hi);
             InventoryLocation loc = ii.getLocation();
             boolean a = ii.getPartNumber().isAssembly();
-            assemble.setVisible(a && (this.allowInspection || this.allowAssemble));
+            assemble.setVisible(a && (this.allowAssemble || this.allowBreaking));
+            inspectAssembly.setVisible(a && (this.allowInspection || this.allowBreaking || this.allowAssemble));
             itemAssembly.setVisible(a);
             parentAssembly.setVisible(loc instanceof InventoryFitmentPosition);
-            inspect.setVisible(this.allowInspection || this.allowBreaking);
+            inspect.setVisible((this.allowInspection || this.allowBreaking || this.allowAssemble) && !(itemGrid instanceof ReceiveAndBin));
             split.setVisible(this.allowInspection && !ii.isSerialized() && ii.getQuantity().isPositive()
                     && !ii.getQuantity().equals(Count.ONE));
             editCost.setVisible(this.allowEditCost);
@@ -122,6 +124,7 @@ public class ItemContextMenu<T extends HasInventoryItem> extends GridContextMenu
         inspect = addItem("Inspect & Bin -", e -> e.getItem().ifPresent(context::inspect));
         split = addItem("Split Quantity -", e -> e.getItem().ifPresent(context::split));
         assemble = addItem("Assemble -", e -> e.getItem().ifPresent(context::assemble));
+        inspectAssembly = addItem("Inspect Assembly -", e -> e.getItem().ifPresent(context::inspectAssembly));
         breakAssembly = addItem("Break from Assembly -", e -> e.getItem().ifPresent(context::breakAssembly));
         movementDetails = addItem("Movement Details -", e -> e.getItem().ifPresent(context::viewMovements));
         grnDetails = addItem("GRN Details -", e -> e.getItem().ifPresent(context::viewGRN));

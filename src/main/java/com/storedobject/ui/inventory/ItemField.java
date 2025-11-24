@@ -370,12 +370,12 @@ public class ItemField<I extends InventoryItem> extends ObjectGetField<I> implem
 
         @Override
         public I getTextObject(SystemEntity systemEntity, String value) {
-            return convert(InventoryItem.get(getObjectClass(), value, typeField.getObject(), isAllowAny()));
+            return convert(InventoryItem.get(getObjectClass(), value, typeField.getObject()));
         }
 
         @Override
         public ObjectIterator<I> listTextObjects(SystemEntity systemEntity, String value) {
-            return InventoryItem.list(getObjectClass(), value, typeField.getObject(), isAllowAny())
+            return InventoryItem.list(getObjectClass(), value, typeField.getObject())
                     .convert(this);
         }
 

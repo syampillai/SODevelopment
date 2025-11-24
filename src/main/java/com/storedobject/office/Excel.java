@@ -109,6 +109,10 @@ public class Excel extends AbstractSpreadSheet {
         return null;
     }
 
+    protected Workbook createWorkbook() {
+        return null;
+    }
+
     @Override
     public String getContentType() {
         return null;

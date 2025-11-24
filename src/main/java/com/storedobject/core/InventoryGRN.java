@@ -292,12 +292,16 @@ public final class InventoryGRN extends StoredObject implements OfEntity, HasChi
         this.currency = currency;
     }
 
+    @SetNotAllowed
     @Column(order = 800, style = "(currency)", caption = "Original Currency")
     public String getCurrency() {
         return currency;
     }
 
     public void setCurrencyObject(Currency currency) {
+        if(!loading()) {
+            throw new Set_Not_Allowed("Currency");
+        }
         if(currency != null) {
             setCurrency(currency.getCurrencyCode());
         }
@@ -308,6 +312,9 @@ public final class InventoryGRN extends StoredObject implements OfEntity, HasChi
     }
 
     public void setExchangeRate(Rate exchangeRate) {
+        if(!loading()) {
+            throw new Set_Not_Allowed("Exchange Rate");
+        }
         this.exchangeRate = exchangeRate;
     }
 
@@ -315,6 +322,7 @@ public final class InventoryGRN extends StoredObject implements OfEntity, HasChi
         setExchangeRate(Rate.create(value, 6));
     }
 
+    @SetNotAllowed
     @Column(order = 900)
     public Rate getExchangeRate() {
         return exchangeRate;
@@ -445,7 +453,7 @@ public final class InventoryGRN extends StoredObject implements OfEntity, HasChi
                 }
             }
             if(status == 0) {
-                if(grnItem.inspected) {
+                if(!internal && grnItem.inspected) {
                     throw new Invalid_State("Can't inspect items before processing");
                 }
                 return;
@@ -523,11 +531,16 @@ public final class InventoryGRN extends StoredObject implements OfEntity, HasChi
         InventoryStoreBin storeBin = null;
         InventoryBin bin;
         InventoryTransaction it = null;
+        HashSet<Id> itemIds = new HashSet<>();
         for(InventoryGRNItem grnItem: grnItems) {
             item = grnItem.getItem();
             if(item == null) {
                 throw new Invalid_State("Item not inspected! " + grnItem.getPartNumber().toDisplay());
             }
+            if(itemIds.contains(item.getId())) {
+                throw new Invalid_State("Duplicate item found! " + item.toDisplay());
+            }
+            itemIds.add(item.getId());
             if(item.isBlocked() && item.isServiceable()) {
                 throw new Invalid_State("Blocked item is marked as serviceable! " + item.toDisplay());
             }
@@ -896,5 +909,50 @@ public final class InventoryGRN extends StoredObject implements OfEntity, HasChi
 
     public static String actionPrefixForUI() {
         return "GRN";
+    }
+
+    public void correctExchangeRate(Transaction transaction, Rate exchangeRate) throws Exception {
+        if(status > 0) {
+            throw new Invalid_State("GRN status is '" + getStatusValue() + "', can't correct exchange rate");
+        }
+        HashSet<Id> itemIds = new HashSet<>();
+        List<InventoryGRNItem> grnItems = listLinks(InventoryGRNItem.class).toList();
+        Currency currency = null, localCurrency = transaction.getManager().getCurrency();
+        for(InventoryGRNItem grnItem: grnItems) {
+            if(currency == null) {
+                currency = grnItem.getUnitCost().getCurrency();
+            } else if(currency != grnItem.getUnitCost().getCurrency()) {
+                throw new Invalid_State("Multiple currencies found in GRN");
+            }
+            InventoryItem ii = grnItem.getItem();
+            if(ii == null) {
+                continue;
+            }
+            if(itemIds.contains(ii.getId())) {
+                throw new Invalid_State("Duplicate item found! " + ii.toDisplay());
+            }
+            itemIds.add(ii.getId());
+        }
+        if(currency == null) {
+            return;
+        }
+        if(currency.equals(localCurrency) && !exchangeRate.isOne()) {
+            throw new Invalid_State("Exchange rate is not 1 for local currency");
+        }
+        this.exchangeRate = exchangeRate;
+        this.currency = currency.getCurrencyCode();
+        internal = true;
+        save(transaction);
+        for(InventoryGRNItem grnItem: grnItems) {
+            grnItem.internal = true;
+            grnItem.setUnitCost(new Money(grnItem.getUnitCost().multiply(exchangeRate).getValue(), localCurrency));
+            grnItem.save(transaction);
+            InventoryItem ii = grnItem.getItem();
+            if(ii != null) {
+                ii.illegal = false;
+                ii.setCost(grnItem.getUnitCost().multiply(ii.getQuantity()));
+                ii.save(transaction);
+            }
+        }
     }
 }

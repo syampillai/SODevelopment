@@ -199,7 +199,7 @@ public class Assembly<T extends InventoryItem, C extends InventoryItem> extends 
             dateField.setValue(date);
             if(!binPopulated) {
                 binPopulated = true;
-                InventoryLocation location = locationField.getValue();
+                InventoryLocation location = item.getRealLocation();
                 if(location instanceof InventoryBin) {
                     InventoryStore store = ((InventoryBin) location).getStore();
                     specificBinField.setStore(store);

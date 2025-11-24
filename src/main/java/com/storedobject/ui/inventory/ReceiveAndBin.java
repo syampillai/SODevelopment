@@ -49,12 +49,17 @@ public class ReceiveAndBin extends ListGrid<InventoryItem> implements Transactio
 
     public ReceiveAndBin(Date date, String reference, List<InventoryItem> itemList, TransactionManager.Transact update,
                          Runnable refresher, GRNEditor grnEditor, boolean allowSNChange) {
-        this(date, reference, itemList, update, refresher, grnEditor, allowSNChange, new Component[]{});
+        this(date, reference, itemList, update, refresher, grnEditor, allowSNChange, false);
     }
 
     public ReceiveAndBin(Date date, String reference, List<InventoryItem> itemList, TransactionManager.Transact update,
                          Runnable refresher, GRNEditor grnEditor, boolean allowSNChange, Component... extraComponents) {
-        super(InventoryItem.class, filtered(itemList),
+        this(date, reference, itemList, update, refresher, grnEditor, allowSNChange, false, extraComponents);
+    }
+
+    private ReceiveAndBin(Date date, String reference, List<InventoryItem> itemList, TransactionManager.Transact update,
+                         Runnable refresher, GRNEditor grnEditor, boolean allowSNChange, boolean assembly, Component... extraComponents) {
+        super(InventoryItem.class, filtered(itemList, assembly),
                 StringList.create("PartNumber.Name AS Item", "PartNumber.PartNumber AS Part Number",
                         "SerialNumberDisplay as Serial/Batch", "Quantity", "InTransit", "Location"));
         this.update = update;
@@ -89,12 +94,18 @@ public class ReceiveAndBin extends ListGrid<InventoryItem> implements Transactio
     }
 
     public ReceiveAndBin(List<InventoryItem> itemList) {
-        this(DateUtility.today(), "", itemList, null, null);
+        this(itemList, false);
+    }
+
+    public ReceiveAndBin(List<InventoryItem> itemList, boolean assembly) {
+        this(DateUtility.today(), "", itemList, null, null, null, false, assembly);
         setCaption("Inspect & Bin");
     }
 
-    private static List<InventoryItem> filtered(List<InventoryItem> items) {
-        items.removeIf(i -> !i.getLocation().isInspectionRequired());
+    private static List<InventoryItem> filtered(List<InventoryItem> items, boolean assembly) {
+        if(!assembly) {
+            items.removeIf(i -> !i.getLocation().isInspectionRequired());
+        }
         return items;
     }
 
@@ -139,7 +150,8 @@ public class ReceiveAndBin extends ListGrid<InventoryItem> implements Transactio
     }
 
     public String getLocation(InventoryItem item) {
-        StringBuilder s = new StringBuilder(item.getLocationDisplay());
+        InventoryLocation loc = item.getLocation();
+        StringBuilder s = new StringBuilder(loc instanceof InventoryFitmentPosition f ? f.toDisplay(false) : loc.toDisplay());
         InventoryLocation newLoc = bins.get(item.getId());
         if (newLoc != null && !newLoc.getId().equals(item.getLocationId())) {
             s.append(" -> ");

@@ -41,7 +41,8 @@ public abstract class AbstractAssembly<T extends InventoryItem, C extends Invent
 
     AbstractAssembly(InventoryLocation location, T item, Class<T> itemClass, Class<C> componentClass) {
         super(InventoryFitmentPosition.class, COLUMNS);
-        new ItemContextMenu<>(this);
+        var contextMenu = new ItemContextMenu<>(this);
+        contextMenu.setAllowInspection(!(this instanceof ViewAssembly));
         locationField = new LocationField("Location", 0);
         if(item == null) {
             selectRootItem = new SelectRootItem(location, itemClass);
@@ -183,6 +184,9 @@ public abstract class AbstractAssembly<T extends InventoryItem, C extends Invent
         } else {
             root = new InventoryFitmentPosition();
             root.makeVirtual();
+        }
+        if(item.getRealLocation() instanceof InventoryBin b) {
+            locationField.setValue(b.getStore().getStoreBin());
         }
         refresh();
         expand(root);

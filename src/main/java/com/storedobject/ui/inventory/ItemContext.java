@@ -10,6 +10,7 @@ import com.vaadin.flow.component.Component;
 import java.sql.Date;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class ItemContext {
 
@@ -36,29 +37,63 @@ public class ItemContext {
         if(refresher != null) {
             refresher.run();
         }
+        if(view instanceof AbstractAssembly<?,?> assembly) {
+            assembly.refresh();
+        }
     }
 
     public void inspect(InventoryItem item) {
         if(item == null) {
             return;
         }
+        List<InventoryItem> list = new ArrayList<>();
+        list.add(item);
+        String caption = null;
+        if(item.getLocation() instanceof InventoryFitmentPosition f) {
+            InventoryItem parent = f.getItem();
+            caption = "Assembly: " + parent.getPN();
+        }
+        inspect(list, caption);
+    }
+
+    public void inspect(HasInventoryItem hasItem) {
+        inspect(hasItem == null ? null : hasItem.getInventoryItem());
+    }
+
+    public void inspectAssembly(InventoryItem item) {
+        if(item == null || !item.getPartNumber().isAssembly()) {
+            return;
+        }
+        List<InventoryItem> list = item.listImmediateFitmentPositions().map(InventoryFitmentPosition::getFittedItem)
+                .filter(Objects::nonNull).toList();
+        if(list.isEmpty()) {
+            view.message("No fitted items found!");
+            return;
+        }
+        inspect(list, "Assembly: " + item.getPN());
+    }
+
+    public void inspectAssembly(HasInventoryItem hasItem) {
+        inspectAssembly(hasItem == null ? null : hasItem.getInventoryItem());
+    }
+
+    private void inspect(List<InventoryItem> items, String caption) {
         if(view != null) {
             view.close();
         }
-        List<InventoryItem> list = new ArrayList<>();
-        list.add(item);
-        ReceiveAndBin bin = new ReceiveAndBin(list);
+        ReceiveAndBin bin = new ReceiveAndBin(items, caption != null);
+        if(caption != null) {
+            bin.setCaption(caption);
+        }
         if(view instanceof LocateItem locateItem) {
             bin.setCloseAction(() -> {
                 view.execute();
                 locateItem.loadItems();
             });
+        } else if(view != null) {
+            bin.setCloseAction(view::execute);
         }
         bin.execute();
-    }
-
-    public void inspect(HasInventoryItem hasItem) {
-        inspect(hasItem == null ? null : hasItem.getInventoryItem());
     }
 
     public void split(InventoryItem item) {
@@ -87,7 +122,7 @@ public class ItemContext {
     }
 
     public void breakAssembly(InventoryItem item) {
-        if(view != null) {
+        if(view == null) {
             return;
         }
         ELabel m = new ELabel(item.toDisplay(), Application.COLOR_SUCCESS);

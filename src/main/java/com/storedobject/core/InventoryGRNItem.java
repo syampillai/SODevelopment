@@ -362,7 +362,7 @@ public final class InventoryGRNItem extends StoredObject implements Detail, HasI
      * @param newQuantity New quantity (Could be null if change not required).
      * @param newUnitCost New unit cost (Could be null if change not required).
      * @param newSerialNumber New serial number (Could be null if change not required).
-     * @throws Exception If error occurs while updating the value.
+     * @throws Exception If an error occurs while updating the value.
      * @return True if the values are updated.
      */
     public boolean updateValues(TransactionManager tm, Quantity newQuantity, Money newUnitCost, String newSerialNumber)

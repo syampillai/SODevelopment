@@ -122,6 +122,10 @@ public class InventoryItem extends StoredObject implements HasInventoryItem {
         return partNumber;
     }
 
+    public String getPN() {
+        return getPartNumber().getPartNumber();
+    }
+
     public void setSerialNumber(String serialNumber) {
         this.serialNumber = toCode(serialNumber);
     }
@@ -787,7 +791,7 @@ public class InventoryItem extends StoredObject implements HasInventoryItem {
         if(partNumber == null) {
             return null;
         }
-        return get((Class<T>) partNumber.createItem().getClass(), serialNumber, partNumber, true);
+        return get((Class<T>) partNumber.createItem().getClass(), serialNumber, partNumber);
     }
 
     public static InventoryItem getByPartNumberId(String serialNumber, Id partNumber) {
@@ -799,28 +803,17 @@ public class InventoryItem extends StoredObject implements HasInventoryItem {
         return get(itemClass, serialNumber, InventoryItemType.get(partNumber));
     }
 
-    public static <T extends InventoryItem> T get(Class<T> itemClass, String serialNumber,
-                                                  InventoryItemType partNumber) {
-        return get(itemClass, serialNumber, partNumber, false);
-    }
-
-    public static <T extends InventoryItem> T getByPartNumber(Class<T> itemClass, String serialNumber,
-                                                              String partNumber, boolean any) {
-        return get(itemClass, serialNumber, InventoryItemType.get(partNumber), any);
-    }
-
-    public static <T extends InventoryItem> T get(Class<T> itemClass, String serialNumber, InventoryItemType partNumber,
-                                                  boolean any) {
+    public static <T extends InventoryItem> T get(Class<T> itemClass, String serialNumber, InventoryItemType partNumber) {
         if(partNumber == null) {
             return null;
         }
         String s = "PartNumber=" + partNumber.getId() + " AND SerialNumber";
         serialNumber =  toCode(serialNumber);
-        T i = get(itemClass, s + "='" + serialNumber + "'", any);
+        T i = list(itemClass, s + "='" + serialNumber + "'").single(false);
         if(i != null) {
             return i;
         }
-        return list(null, itemClass, s + " LIKE '"+ serialNumber + "%'", null, any, 0, 1, null)
+        return list(null, itemClass, s + " LIKE '"+ serialNumber + "%'", null, false, 0, 2, null)
                 .single(false);
     }
 
@@ -831,16 +824,11 @@ public class InventoryItem extends StoredObject implements HasInventoryItem {
 
     public static <T extends InventoryItem> ObjectIterator<T> list(Class<T> itemClass, String serialNumber,
                                                                    InventoryItemType partNumber) {
-        return list(itemClass, serialNumber, partNumber, true);
-    }
-
-    public static <T extends InventoryItem> ObjectIterator<T> list(Class<T> itemClass, String serialNumber,
-                                                                   InventoryItemType partNumber, boolean any) {
         if(partNumber == null) {
             return ObjectIterator.create();
         }
         return list(itemClass, "PartNumber=" + partNumber.getId() + " AND SerialNumber LIKE '" +
-                toCode(serialNumber) + "%'", any);
+                toCode(serialNumber) + "%'");
     }
 
     /**

@@ -14,9 +14,7 @@ import com.vaadin.flow.component.icon.VaadinIcon;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.BiFunction;
 
@@ -39,6 +37,8 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
     private Search search;
     private final ELabel searchLabel = new ELabel();
     private final ELabel countLabel = new ELabel("0");
+    private final boolean canProcess = actionAllowed("PROCESS"), canCorrect = actionAllowed("CORRECT"),
+            canLandedCost = actionAllowed("LANDED-COST");
 
     /**
      * Constructor.
@@ -184,15 +184,15 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
         GridMenuItem<InventoryGRN> process =
                 cm.addItem("Receive/Process", e -> e.getItem().ifPresent(i -> edit.click()));
         GridMenuItem<InventoryGRN> landedCost =
-                cm.addItem("Landed Cost", e -> e.getItem().ifPresent(this::computeLandedCost));
+                cm.addItem("Compute Landed Cost", e -> e.getItem().ifPresent(this::computeLandedCost));
         cm.setDynamicContentHandler(grn -> {
             deselectAll();
             if(grn == null) {
                 return false;
             }
             select(grn);
-            process.setVisible(grn.getStatus() <= 1);
-            landedCost.setVisible(landedCostModule && grn.getStatus() > 0);
+            process.setVisible(canProcess && grn.getStatus() <= 1);
+            landedCost.setVisible(canLandedCost && landedCostModule && grn.getStatus() > 0);
             return process.isVisible() || landedCost.isVisible();
         });
     }
@@ -264,11 +264,11 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
     public void createHeaders() {
         ButtonLayout b = new ButtonLayout();
         b.add(storeDisplay, switchStore, new ELabel().
-                append(" | ", Application.COLOR_INFO).
-                append("Note: ").
-                append("Double-click or right-click on the entry to receive/process items",
-                        Application.COLOR_SUCCESS).
-                update(), searchLabel, new ELabel("| ", Application.COLOR_INFO).append("Entries:").update(),
+                        append(" | ", Application.COLOR_INFO).
+                        append("Note: ").
+                        append("Double-click or right-click on the entry to receive/process items",
+                                Application.COLOR_SUCCESS).
+                        update(), searchLabel, new ELabel("| ", Application.COLOR_INFO).append("Entries:").update(),
                 countLabel);
         prependHeader().join().setComponent(b);
     }
@@ -424,8 +424,9 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
         private GRNItemGrid grnItemGrid;
         private InventoryStore  store;
         private final NewGRNItemForm newGRNItemForm = new NewGRNItemForm();
-        private final Button process = new Button("Mark as Inspected", VaadinIcon.CHECK, e -> process());
-        private final Button close = new Button("Mark as Received", VaadinIcon.THUMBS_UP_O, e -> process());
+        private final Button process = canProcess ? new Button("Mark as Inspected", VaadinIcon.CHECK, e -> process()) : null;
+        private final Button close = canProcess ? new Button("Mark as Received", VaadinIcon.THUMBS_UP_O, e -> process()) : null;
+        private final Button correction = canCorrect ? new Button("Correct Details", VaadinIcon.PENCIL, e -> correctDetails()) : null;
         private final Button editItem = new Button("Edit", e -> grnItemGrid.editGRNItemSel()).asSmall();
         private final Button splitQty = new Button("Split Quantity", VaadinIcon.SPLIT,
                 e -> grnItemGrid.splitQuantitySel()).asSmall();
@@ -516,7 +517,7 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
                 return;
             }
             switch(grn.getStatus()) {
-                case 0 -> buttonPanel.add(process);
+                case 0 -> buttonPanel.add(process, correction);
                 case 1 -> buttonPanel.add(close);
             }
         }
@@ -560,6 +561,62 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
                             "\nAre you sure?",
                     () -> how.accept(object));
             af.execute();
+        }
+
+        private void correctDetails() {
+            InventoryGRN grn = getObject();
+            if(grn.getStatus() > 0) {
+                message("GRN status is '" + grn.getStatusValue() + "'. Cannot correct exchange rate.");
+                return;
+            }
+            InventoryGRNItem grnItem = QueryBuilder.from(InventoryGRNItem.class).limit(1).listLinks(grn).findFirst();
+            if(grnItem == null) {
+                message("No items found for this GRN.");
+                return;
+            }
+            new CorrectionForm(grn, grnItem.getUnitCost().getCurrency()).execute();
+        }
+
+        private class CorrectionForm extends SupplierInvoiceDetail {
+
+            private final InventoryGRN grn;
+
+            public CorrectionForm(InventoryGRN grn, Currency currency) {
+                super(getTransactionManager(), currency);
+                this.grn = grn;
+            }
+
+            @Override
+            protected void execute(View parent, boolean doNotLock) {
+                refField.setValue(grn.getInvoiceNumber());
+                dateField.setValue(grn.getInvoiceDate());
+                super.execute(parent, doNotLock);
+            }
+
+            @Override
+            protected boolean process() {
+                close();
+                String ref = StoredObject.toCode(refField.getText());
+                if(!ref.isBlank()) {
+                    grn.setInvoiceNumber(ref);
+                }
+                grn.setInvoiceDate(dateField.getValue());
+                try {
+                    Rate r = rateField.getValue();
+                    getTransactionManager().transact(t -> {
+                        if (grn.getExchangeRate().equals(r)) {
+                            grn.save(t);
+                        } else {
+                            grn.correctExchangeRate(t, r);
+                        }
+                    });
+                } catch (Exception e) {
+                    warn(e);
+                }
+                reload();
+                refresh(grn);
+                return true;
+            }
         }
 
         private void process() {
@@ -807,7 +864,7 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
         private void clearAlert() {
             clearAlerts();
         }
-        
+
         private void warn(Object any) {
             warning(any);
         }

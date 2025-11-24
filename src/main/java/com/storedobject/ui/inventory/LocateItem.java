@@ -19,7 +19,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class LocateItem extends DataGrid<InventoryItem> implements CloseableView {
 
-    private static final String INSPECT = "INSPECT", EDIT_COST = "EDIT_COST";
+    private static final String INSPECT = "INSPECT", EDIT_COST = "EDIT_COST", ASSEMBLE = "ASSEMBLE", BREAK = "BREAK";
     private final ChoiceField servFilter = new ChoiceField(new String[] {
             "Serviceable",
             "Unserviceable",
@@ -49,9 +49,8 @@ public class LocateItem extends DataGrid<InventoryItem> implements CloseableView
     /**
      * Constructor.
      *
-     * @param caption This could be "Caption", "Caption|Class Name", "Caption|INSPECT", "Caption|Class Name|INSPECT",
-     *                "Caption|INSPECT,EDIT_COST", "Caption|Class Name|INSPECT,EDIT_COST", "Caption|EDIT_COST",
-     *                "Caption|Class Name|EDIT_COST".
+     * @param caption This could be "Caption", "Caption|Class Name", "Caption|Options", "Caption|Class Name|Options",
+     *                "Options" could be comma-separated string of "INSPECT", "EDIT_COST", "BREAK", "ASSEMBLE".
      */
     public LocateItem(String caption) {
         this(caption(caption), null, itemClass(caption), itemTypeClass(caption), false, caption);
@@ -159,10 +158,11 @@ public class LocateItem extends DataGrid<InventoryItem> implements CloseableView
             canInspect = true;
         }
         if(originalCaption.contains("|")) {
-            caption = originalCaption.substring(originalCaption.indexOf('|') + 1).
-                    replace(INSPECT, "").replace(EDIT_COST, "").replace(",", "")
-                    .replace("|", "");
-            if(!caption.isEmpty() && itemClass == null && itemTypeClass == null) {
+            caption = originalCaption.substring(originalCaption.indexOf('|') + 1)
+                    .replace(INSPECT, "").replace(EDIT_COST, "")
+                    .replace(BREAK, "").replace(ASSEMBLE, "")
+                    .replace(",", "").replace("|", "");
+            if (!caption.isEmpty() && itemClass == null && itemTypeClass == null) {
                 throw new SORuntimeException("Unable to determine item or item type class from '" +
                         originalCaption + "'");
             }
@@ -199,6 +199,8 @@ public class LocateItem extends DataGrid<InventoryItem> implements CloseableView
         locFilter.addValueChangeListener(e -> loadItems());
         contextMenu = new ItemContextMenu<>(this, canInspect, false,
                 originalCaption.contains(EDIT_COST), this::loadItems);
+        contextMenu.setAllowBreaking(originalCaption.contains(BREAK));
+        contextMenu.setAllowAssemble(originalCaption.contains(ASSEMBLE));
         contextMenu.setHideViewStock(true);
     }
 
@@ -207,6 +209,7 @@ public class LocateItem extends DataGrid<InventoryItem> implements CloseableView
             return null;
         }
         caption = caption.replace(INSPECT, "").replace(EDIT_COST, "")
+                .replace(BREAK, "").replace(ASSEMBLE, "")
                 .replace(",", "").replace("||", "|").
                 replace("_", "");
         caption = caption.trim();
@@ -274,10 +277,10 @@ public class LocateItem extends DataGrid<InventoryItem> implements CloseableView
         locFilter.setWidth("155px");
         ButtonLayout b = new ButtonLayout(getConfigureButton(), servFilter, locFilter);
         if(snField != null) {
-            b.add(new ELabel("S/N: "), snField);
+            b.add(new ELabel("Serial/Batch: "), snField);
         }
         if(pnField != null) {
-            pnField.setItemLabelGenerator(InventoryItemType::getName);
+            pnField.setItemLabelGenerator(iit -> iit.getPartNumber() + " - " + iit.getName());
             b.add(new ELabel("P/N: "), pnField);
         }
         b.add(new Button("Exit", e -> close()));
@@ -326,7 +329,7 @@ public class LocateItem extends DataGrid<InventoryItem> implements CloseableView
             }
             loadInt(StoredObject.list(itemClass, "SerialNumber LIKE '" + sn + "%'", true)
                     .map(i -> (InventoryItem)i));
-            warning("S/N " + sn + " not found!");
+            if(isEmpty()) warning("S/N " + sn + " not found!");
             return;
         }
         InventoryItemType pn = pnField.getObject();
@@ -336,14 +339,14 @@ public class LocateItem extends DataGrid<InventoryItem> implements CloseableView
         }
         ObjectIterator<InventoryItem> items = null;
         if(!sn.isEmpty()) {
-            InventoryItem item = InventoryItem.getByPartNumberId(sn, pn.getId());
+            InventoryItem item = InventoryItem.get(sn, pn);
             if(item != null) {
                 items = ObjectIterator.create(item);
             } else {
                 String c = "PartNumber=" + pn.getId() + " AND SerialNumber LIKE '" + sn + "%'";
                 Class<? extends InventoryItem> iClass = itemClass;
                 if(iClass == null) {
-                    iClass = InventoryItem.class;
+                    iClass = pn.createItem().getClass();
                 }
                 items = StoredObject.list(iClass, c, true).limit(100).map(i -> i);
                 for(InventoryItemType apn : pn.listAPNs()) {
@@ -351,7 +354,7 @@ public class LocateItem extends DataGrid<InventoryItem> implements CloseableView
                     items = items.add(StoredObject.list(iClass, c, true).limit(100).map(i -> i));
                 }
                 loadInt(items);
-                warning("S/N " + sn + " not found!");
+                if(isEmpty()) warning("S/N " + sn + " not found!");
                 return;
             }
         }
