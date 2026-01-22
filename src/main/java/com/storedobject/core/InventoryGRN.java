@@ -58,7 +58,6 @@ public final class InventoryGRN extends StoredObject implements OfEntity, HasChi
     public static String[] protectedColumns() {
         return new String[] {
                 "No",
-                "Status",
                 "LandedCost",
         };
     }
@@ -238,7 +237,7 @@ public final class InventoryGRN extends StoredObject implements OfEntity, HasChi
     }
 
     @SetNotAllowed
-    @Column(order = 600)
+    @Column(order = 600, readOnly = true)
     public int getStatus() {
         return status;
     }
@@ -353,6 +352,12 @@ public final class InventoryGRN extends StoredObject implements OfEntity, HasChi
             exchangeRate.checkLimit("Exchange Rate", 14);
         }
         super.validateData(tm);
+    }
+
+    @Override
+    public void validateInsert() throws Exception {
+        UserAction.save(this, "NEW");
+        super.validateInsert();
     }
 
     @Override
@@ -954,5 +959,15 @@ public final class InventoryGRN extends StoredObject implements OfEntity, HasChi
                 ii.save(transaction);
             }
         }
+    }
+
+    public void correctInvoiceDetails(Transaction transaction, String invoiceNumber, Date invoiceDate) throws Exception {
+        if(invoiceNumber == null || invoiceDate == null) {
+            throw new Invalid_State("Invoice number and date cannot be null");
+        }
+        referenceNumber = invoiceNumber;
+        this.invoiceDate.setTime(invoiceDate.getTime());
+        internal = true;
+        save(transaction);
     }
 }

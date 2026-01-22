@@ -366,23 +366,33 @@ public class ItemContext {
             }
             return;
         }
+        if(includeSource) {
+            viewSource(grn, item, true);
+            return;
+        }
         if(grnEditor == null) {
             grnEditor = new GRNEditor();
         }
         grnEditor.viewObject(grn);
-        grnEditor.setCaption(grn.getReference());
-        if(!includeSource) {
-            return;
-        }
-        Application a = Application.get();
-        grn.listMasters(StoredObject.class, true)
-                .forEach(m -> a.view(grn.getReference() + " - " + makeLabel(m), m));
+        grnEditor.setCaption("GRN: " + grn.getReference());
     }
 
-    private static String  makeLabel(StoredObject so) {
-        if(so instanceof InventoryTransfer transfer) return transfer.getReference();
-        if(so instanceof InventoryPO po) return po.getReference();
-        return StringUtility.makeLabel(so.getClass());
+    public void viewSource(InventoryGRN grn, InventoryItem item, boolean showGRN) {
+        if(grn == null) return;
+        Application a = Application.get();
+        if(a == null) return;
+        String black = "font-weight:bold;color:black", blue = "font-weight:bold;color:blue";
+        ELabel l = new ELabel("GRN: ", black).append(grn.getReference(), blue);
+        if(item != null) {
+            l.append(" Item: ", black).append(item.toDisplay(), blue);
+        }
+        l.update();
+        ObjectsViewer v = new ObjectsViewer("GRN: " + grn.getReference(), l);
+        if(showGRN) {
+            v.add(grn);
+        }
+        grn.listMasters(StoredObject.class, true).forEach(v::add);
+        v.execute();
     }
 
     public void viewGRN(HasInventoryItem hasItem) {
@@ -390,30 +400,29 @@ public class ItemContext {
     }
 
     public void viewGRN(HasInventoryItem hasItem, boolean includeSource) {
+        if(hasItem instanceof InventoryGRNItem gi) {
+            if(!includeSource) {
+                return;
+            }
+            viewSource(gi.getMaster(InventoryGRN.class), gi.getInventoryItem(), false);
+            return;
+        }
         viewGRN(hasItem == null ? null : hasItem.getInventoryItem(), includeSource);
     }
 
-    public void viewCost(InventoryItem item) {
-        cost(item, true);
-    }
-
-    public void viewCost(HasInventoryItem hasItem) {
-        viewCost(hasItem == null ? null : hasItem.getInventoryItem());
-    }
-
     public void editCost(InventoryItem item) {
-        cost(item, false);
+        cost(item);
     }
 
     public void editCost(HasInventoryItem hasItem) {
         editCost(hasItem == null ? null : hasItem.getInventoryItem());
     }
 
-    private void cost(InventoryItem item, boolean viewMode) {
+    private void cost(InventoryItem item) {
         if(item == null) {
             return;
         }
-        new EditCost(item, viewMode).execute();
+        new EditCost(item).execute();
     }
 
     private static class FitmentLocations extends ObjectGrid<InventoryFitmentPosition> implements CloseableView {

@@ -78,7 +78,7 @@ public class ObjectViewer extends Executor implements ObjectSetter<StoredObject>
             }
         }
         if(caption == null || caption.isEmpty() || "_".equals(caption)) {
-            caption = StringUtility.makeLabel(object.getClass());
+            caption = object instanceof HasReference hr ? hr.getReference() : StringUtility.makeLabel(object.getClass());
         }
         if(viewer == null) {
             viewer = ObjectEditor.create(object.getClass(), EditorAction.VIEW, caption);

@@ -842,7 +842,8 @@ public class ObjectBrowser<T extends StoredObject> extends ObjectGrid<T>
             close();
             objectSetter.setObject(object);
         } else {
-            if(edit != null && edit.isVisible() && edit.isEnabled() && canEdit(object)) {
+            if(edit != null && edit.isVisible() && edit.isEnabled() && canEdit(object)
+                    && !getObjectEditor().ledgerPosted(object)) {
                 if(layout == null) {
                     editRowInt(object);
                 } else {
@@ -1075,7 +1076,7 @@ public class ObjectBrowser<T extends StoredObject> extends ObjectGrid<T>
      * @param object the object to be edited, must not be null and must be editable
      */
     public void doEdit(T object) {
-        if(object != null && canEdit(object)) {
+        if(object != null && canEdit(object) && !getObjectEditor().ledgerPosted(object)) {
             getObjectEditor().editObject(object, getView(), true);
         }
     }
@@ -1487,7 +1488,7 @@ public class ObjectBrowser<T extends StoredObject> extends ObjectGrid<T>
     }
 
     private void editRowInt(T item) {
-        if(!readOnly && editingItem != item && canRowEdit(item)) {
+        if(!readOnly && editingItem != item && canRowEdit(item) && !getObjectEditor().ledgerPosted(item)) {
             editingItem = item;
             getRowEditor();
             if(rowMode && editor.editItem(item)) {

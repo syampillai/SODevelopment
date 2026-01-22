@@ -54,7 +54,6 @@ public abstract class InventoryTransfer extends StoredObject implements OfEntity
     public static String[] protectedColumns() {
         return new String[]{
                 "No",
-                "Status",
                 "Amendment",
         };
     }
@@ -247,7 +246,7 @@ public abstract class InventoryTransfer extends StoredObject implements OfEntity
     }
 
     @SetNotAllowed
-    @Column(order = 600)
+    @Column(order = 600, readOnly = true)
     public int getStatus() {
         return status;
     }
@@ -310,6 +309,12 @@ public abstract class InventoryTransfer extends StoredObject implements OfEntity
             throw new Invalid_State("Not a valid " + (from ? getFromLocationName() : getToLocationName()) + " - " +
                     (entity == null ? location.getEntityId() : entity.toDisplay()));
         }
+    }
+
+    @Override
+    public void validateInsert() throws Exception {
+        UserAction.save(this, "NEW");
+        super.validateInsert();
     }
 
     /**

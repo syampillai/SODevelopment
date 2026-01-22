@@ -400,8 +400,9 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
             case 4 -> 2;
             default -> -1;
         };
-        return StoredObject.list(InventoryVirtualLocation.class, "Type=" + type + " AND Status=0").
-                map(InventoryVirtualLocation::getEntity).toList();
+        return StoredObject.list(InventoryVirtualLocation.class, "Type=" + type + " AND Status=0")
+                .filter(InventoryVirtualLocation::isActive)
+                .map(InventoryVirtualLocation::getEntity).toList();
     }
 
     /**
@@ -464,7 +465,7 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
         @Override
         protected void formConstructed() {
             super.formConstructed();
-            add.setVisible(false);
+            if(add != null) add.setVisible(false);
             setFieldReadOnly("Type", "Items.l");
         }
 

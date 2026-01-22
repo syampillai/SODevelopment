@@ -274,6 +274,18 @@ public class MoneyField extends CustomTextField<Money> implements RequiredField 
         }
     }
 
+    /**
+     * Allows all currencies for the {@code MoneyField}.
+     * This method removes any restrictions on the set of allowed currencies.
+     * The field will accept values in any currency, and no currency filtering
+     * will be applied. Additionally, it invokes internal logic to update the
+     * state of the field and ensure consistency with the new configuration.
+     */
+    public void setAllowAllCurrencies() {
+        this.allowedCurrencies = null;
+        checkCurrency();
+    }
+
     private void checkCurrency() {
         setHelperText(null);
         if(allowedCurrencies == null || allowedCurrencies.size() == 1) {
@@ -341,7 +353,7 @@ public class MoneyField extends CustomTextField<Money> implements RequiredField 
         symbol.getStyle().set("cursor", "pointer");
         symbol.getElement().
                 setProperty("title",
-                        allowedCurrencies != null && !allowedCurrencies.isEmpty() && !readOnly ?
+                        allowedCurrencies != null && allowedCurrencies.size() > 1 && !readOnly ?
                                 "Click to change" : "Currency");
     }
 

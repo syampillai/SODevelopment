@@ -34,10 +34,7 @@ public class UploadProcessorView extends TextView {
         this.processor = processor;
         uploadField = new UploadField(caption, this::process);
         uploadField.setMaxFiles(1);
-        uploadField.getUploadComponent().addFailedListener(e -> {
-            error(e.getReason());
-            uploadAborted();
-        });
+        uploadField.setProcessErrorConsumer(e -> uploadAborted());
     }
 
     public Upload getUploadComponent() {

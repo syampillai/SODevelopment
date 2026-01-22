@@ -189,8 +189,24 @@ public class UserAction extends StoredObject {
     }
 
     /**
+     * Retrieves a {@code UserAction} object associated with a specific stored object and action.
+     * The method constructs the action identifier by combining the action prefix of the given
+     * stored object with the specified action string, and then retrieves the corresponding {@code UserAction}.
+     *
+     * @param tm the {@code TransactionManager} used for managing the transaction
+     *           during the retrieval operation
+     * @param object the {@code StoredObject} whose action prefix is used to construct
+     *               the combined action identifier
+     * @param action the action string to append to the action prefix of the stored object
+     * @return the {@code UserAction} corresponding to the constructed action identifier
+     */
+    public static UserAction get(TransactionManager tm, StoredObject object, String action) {
+        return get(tm, ClassAttribute.get(object).getActionPrefix() + "-" + action);
+    }
+
+    /**
      * Retrieves a UserAction object associated with a given action. If the action does not exist,
-     * it will be created and associated UserAction will be initialized and saved.
+     * it will be created, and associated UserAction will be initialized and saved.
      *
      * @param tm the TransactionManager instance used for transaction operations and user retrieval
      * @param action the action code or description to find or create the associated UserAction
@@ -230,5 +246,30 @@ public class UserAction extends StoredObject {
         UIAction a = UIAction.getForAction(action);
         if(a == null) return null;
         return so.listLinks(UserAction.class, "Action=" + a.getId()).map(UserAction::getSystemUser).findFirst();
+    }
+
+    /**
+     * Saves a user action as a link.
+     *
+     * @param object the {@link StoredObject} to be linked with the user action
+     * @param action the action identifier used to retrieve or create the associated {@link UserAction}
+     * @throws Exception if an error occurs during the transaction, retrieval, or linking process
+     */
+    public static void save(StoredObject object, String action) throws Exception {
+        Transaction t = object.getTransaction();
+        UserAction ua = UserAction.get(t.getManager(), object, action);
+        boolean found = false;
+        for(UserAction a: object.listLinks(UserAction.class, "Action=" + ua.getActionId())) {
+            if(ua.getId().equals(a.getId())) {
+                found = true;
+                continue;
+            }
+            object.removeLink(t, a);
+        }
+        if(!found) object.addLink(t, ua);
+        UserActionLog log = new UserActionLog();
+        log.setObject(object);
+        log.setUserAction(ua);
+        log.save(t);
     }
 }

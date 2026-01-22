@@ -2,7 +2,12 @@ package com.storedobjects.support;
 
 import com.storedobject.core.*;
 
-public class Product extends Name {
+import java.util.HashMap;
+import java.util.Map;
+
+public final class Product extends Name {
+
+    private static final Map<Id, Product> cache = new HashMap<>();
 
     public Product() {
     }
@@ -11,6 +16,7 @@ public class Product extends Name {
 
     public static String[] links() {
         return new String[] {
+                "Modules|com.storedobjects.support.ProductModule|||0",
                 "Product Types|com.storedobject.core.InventoryItemType/Any|||0",
         };
     }
@@ -28,11 +34,6 @@ public class Product extends Name {
     }
 
     @Override
-    public void validateData(TransactionManager tm) throws Exception {
-        super.validateData(tm);
-    }
-
-    @Override
     public void saved() throws Exception {
         super.saved();
         ProductSkill ps;
@@ -47,5 +48,18 @@ public class Product extends Name {
             }
         }
         Issue.approvers.clear();
+        cache.remove(getId());
+    }
+
+    public static Product get(Id id) {
+        if(Id.isNull(id)) {
+            return null;
+        }
+        Product o = cache.get(id);
+        if(o == null) {
+            o = get(Product.class, id);
+            cache.put(id, o);
+        }
+        return o;
     }
 }

@@ -389,6 +389,12 @@ public class MaterialRequest extends StoredObject implements OfEntity, HasRefere
     }
 
     @Override
+    public void validateInsert() throws Exception {
+        UserAction.save(this, "NEW");
+        super.validateInsert();
+    }
+
+    @Override
     public void validateUpdate() throws Exception {
         super.validateUpdate();
         if(status == 1 && updated()) {

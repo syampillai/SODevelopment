@@ -24,6 +24,8 @@ public class FileViewer extends ObjectForestViewer<FileFolder> implements Closea
     private final Id personId;
     private final Map<Id, FileCirculation> circs = new HashMap<>();
     private final Set<Id> noCircs = new HashSet<>();
+    private final TreeSearchField<FileFolder, Object> treeSearchField;
+    private ListViewer listViewer;
 
     public FileViewer(Application application) {
         this(application, null, null);
@@ -47,6 +49,7 @@ public class FileViewer extends ObjectForestViewer<FileFolder> implements Closea
 
     public FileViewer(FileFolder root, String caption) {
         super(FileFolder.class, StringList.EMPTY);
+        treeSearchField = new TreeSearchField<>(this);
         getDataProvider().getForest().setListLinks(FileViewer::list);
         filter.setVisible(false);
         addConstructedListener(o -> con());
@@ -93,7 +96,8 @@ public class FileViewer extends ObjectForestViewer<FileFolder> implements Closea
 
     @Override
     public Component createHeader() {
-        return new ButtonLayout(new ELabel("Name Search:"), new TreeSearchField<>(this),
+        return new ButtonLayout(new ELabel("Name Search:"), treeSearchField,
+                new Button("List View", e -> listView()),
                 new Button("Exit", e -> close()));
     }
 
@@ -159,16 +163,20 @@ public class FileViewer extends ObjectForestViewer<FileFolder> implements Closea
         getSelected();
         if(item instanceof ObjectForest.LinkObject lo && lo == currentLinkObject) {
             if(lo.getObject() instanceof FileData fileData) {
-                FileCirculation fc = circ(fileData);
-                if(fc != null && fc.getStatus() == 0) {
-                    fc.setStatus(1);
-                    transact(fc::save);
-                    circs.remove(fileData.getId());
-                    refreshCurrentNode(lo.getObject());
-                }
-                getApplication().view(fileData.getName(), fileData.getFile());
+                opened(fileData);
             }
         }
+    }
+
+    private void opened(FileData fileData) {
+        FileCirculation fc = circ(fileData);
+        if(fc != null && fc.getStatus() == 0) {
+            fc.setStatus(1);
+            transact(fc::save);
+            circs.remove(fileData.getId());
+        }
+        getApplication().view(fileData.getName(), fileData.getFile());
+        refreshCurrentNode(fileData);
     }
 
     private Component createDownloadMenu(Object item) {
@@ -270,5 +278,44 @@ public class FileViewer extends ObjectForestViewer<FileFolder> implements Closea
             }
         }
         return fc;
+    }
+
+    private void listView() {
+        if(listViewer == null) {
+            listViewer = new ListViewer();
+            listViewer.setCaption(getCaption());
+            visitAll(o -> {
+                if(o instanceof ObjectForest.LinkObject lo && lo.getObject() instanceof FileData fd) {
+                    listViewer.add(fd);
+                }
+            });
+        }
+        listViewer.execute(getView());
+    }
+
+    private class ListViewer extends FileViewerGrid {
+
+        @Override
+        public Component createHeader() {
+            return new ButtonLayout(
+                    new GridSearchField<>(this),
+                    new Button("Tree View", e -> close()),
+                    new Button("Exit", e -> close())
+            );
+        }
+
+        @Override
+        protected void view(FileData fileData) {
+            opened(fileData);
+        }
+
+        @Override
+        public void close() {
+            super.close();
+            FileData fd = getSelected();
+            if(fd != null) {
+                treeSearchField.setValue(fd.getName());
+            }
+        }
     }
 }

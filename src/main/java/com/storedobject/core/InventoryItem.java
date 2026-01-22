@@ -61,7 +61,7 @@ public class InventoryItem extends StoredObject implements HasInventoryItem {
     }
 
     public static String[] protectedColumns() {
-        return new String[] { "Store", "Quantity", "Cost", "InTransit", "Owner", "PurchaseDate", "GRN", "BatchTag" };
+        return new String[] { "Store", "InTransit", "Owner", "PurchaseDate", "GRN", "BatchTag" };
     }
 
     public static String[] searchColumns() {
@@ -232,7 +232,7 @@ public class InventoryItem extends StoredObject implements HasInventoryItem {
     }
 
     @SetNotAllowed
-    @Column(order = 300, style = "(any)", caption = "Bin/Location")
+    @Column(order = 500, style = "(any)", caption = "Bin/Location")
     public Id getLocationId() {
         return locationId;
     }
@@ -316,11 +316,15 @@ public class InventoryItem extends StoredObject implements HasInventoryItem {
 
     @Override
     @SetNotAllowed
+    @Column(order = 300, readOnly = true, required = false)
     public Quantity getQuantity() {
         return quantity;
     }
 
     public void setCost(Money cost) {
+        if(cost == null || cost.equals(this.cost)) {
+            return;
+        }
         if(!loading() && illegal) {
             throw new Set_Not_Allowed("Cost");
         }
@@ -339,6 +343,7 @@ public class InventoryItem extends StoredObject implements HasInventoryItem {
     }
 
     @SetNotAllowed
+    @Column(order = 400, readOnly = true, required = false)
     public Money getCost() {
         return cost;
     }
@@ -1140,22 +1145,22 @@ public class InventoryItem extends StoredObject implements HasInventoryItem {
                                                                                  InventoryLocation location,
                                                                                  Id grnId,
                                                                                  String batchTag) {
-        return listStock(partNumber, serialNumber, location.getId(), true, false,
+        return listStockInt(partNumber, serialNumber, location.getId(), true, false,
                 "GRN=" + grnId + " AND NOT InTransit AND BatchTag='" + batchTag + "'");
     }
 
     private static <T extends InventoryItemType> ObjectIterator<InventoryItem> listStock(T partNumber,
-                                                                                         String serialNumber, Id id,
+                                                                                         String serialNumber, Id storeId,
                                                                                          boolean location,
                                                                                          boolean everyWhere) {
-        return listStock(partNumber, serialNumber, id, location, everyWhere, "(Quantity).Quantity>0");
+        return listStockInt(partNumber, serialNumber, storeId, location, everyWhere, "(Quantity).Quantity>0");
     }
 
-    private static <T extends InventoryItemType> ObjectIterator<InventoryItem> listStock(T partNumber,
-                                                                                         String serialNumber, Id id,
-                                                                                         boolean location,
-                                                                                         boolean everyWhere,
-                                                                                         String extraCondition) {
+    private static <T extends InventoryItemType> ObjectIterator<InventoryItem> listStockInt(T partNumber,
+                                                                                            String serialNumber, Id storeId,
+                                                                                            boolean location,
+                                                                                            boolean everyWhere,
+                                                                                            String extraCondition) {
         StringBuilder condition = new StringBuilder("PartNumber=");
         condition.append(partNumber.getId());
         if(serialNumber != null) {
@@ -1164,10 +1169,10 @@ public class InventoryItem extends StoredObject implements HasInventoryItem {
         }
         if(!everyWhere) {
             condition.append(" AND ");
-            if(Id.isNull(id)) {
+            if(Id.isNull(storeId)) {
                 condition.append("Store>0");
             } else {
-                condition.append(location ? "Location" : "Store").append('=').append(id);
+                condition.append(location ? "Location" : "Store").append('=').append(storeId);
             }
         }
         condition.append(" AND ").append(extraCondition);
@@ -1237,6 +1242,7 @@ public class InventoryItem extends StoredObject implements HasInventoryItem {
     /**
      * List all the items for the given part number. It will return even the items fitted on assemblies,
      * items sent for repair, etc. However, items that are already scrapped/consumed will not be included.
+     * Fixed assets are also included in the list.
      *
      * @param partNumber Part number for which the list needs to be obtained.
      * @param condition Additional condition if any. Could be null.
@@ -1257,7 +1263,7 @@ public class InventoryItem extends StoredObject implements HasInventoryItem {
         }
         ObjectIterator<InventoryItem> list = list(InventoryItem.class, c, "GRN,TranId", true);
         return list.filter(item -> switch(item.getRealLocation().getType()) {
-            case 0, 3, 4, 5, 8, 10, 11, 13, 14, 18 -> true;
+            case 0, 3, 4, 5, 8, 9, 10, 11, 13, 14, 18, 19, 20 -> true;
             default -> false;
         });
     }

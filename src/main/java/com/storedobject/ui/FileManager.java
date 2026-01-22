@@ -6,7 +6,6 @@ import com.storedobject.core.ObjectForest;
 import com.storedobject.core.*;
 import com.storedobject.report.FileCirculationStatus;
 import com.storedobject.vaadin.*;
-import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.grid.contextmenu.GridContextMenu;
 import com.vaadin.flow.component.grid.contextmenu.GridMenuItem;
 
@@ -141,9 +140,8 @@ public class FileManager extends ObjectForestBrowser<FileFolder> implements Tran
     }
 
     @Override
-    public Component createHeader() {
-        return new ButtonLayout(new ELabel("Name Search:"), new TreeSearchField<>(this),
-                new Button("Exit", e -> close()));
+    public void createHeaders() {
+        appendHeader().join().setComponent(new ButtonLayout(new ELabel("Name Search:"), new TreeSearchField<>(this)));
     }
 
     @Override

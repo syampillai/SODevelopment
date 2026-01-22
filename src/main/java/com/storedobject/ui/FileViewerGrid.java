@@ -47,7 +47,7 @@ public class FileViewerGrid extends ObjectGrid<FileData> implements CloseableVie
         } else {
             return null;
         }
-        return new Button(view, icon, e -> getApplication().view(file.getName(), sd)).asSmall();
+        return new Button(view, icon, e -> view(file)).asSmall();
     }
 
     private Component createDownloadMenu(FileData file) {
@@ -59,5 +59,9 @@ public class FileViewerGrid extends ObjectGrid<FileData> implements CloseableVie
         file.setFile(streamData);
         file.makeVirtual();
         add(file);
+    }
+
+    protected void view(FileData fileData) {
+        getApplication().view(fileData.getName(), fileData.getFile());
     }
 }

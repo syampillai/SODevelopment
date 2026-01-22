@@ -11,12 +11,15 @@ import com.storedobject.ui.Application;
 import com.storedobject.ui.*;
 import com.storedobject.vaadin.*;
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import org.jspecify.annotations.NonNull;
 
 import java.io.*;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class TableDefinitionEditor extends ObjectEditor<TableDefinition> {
@@ -41,23 +44,23 @@ public class TableDefinitionEditor extends ObjectEditor<TableDefinition> {
         delete = d;
         d.add(new ConfirmButton("Delete Data Class Definition", "", e -> doDelete()));
         d.add(new Button("Delete Logic / Table", "", e -> deleteTableOrDC(false)));
-        reorderFields = new Button("Reorder Fields", "sort", this);
+        reorderFields = new Button("Reorder Fields", "sort", e -> new FieldReorderForm(getObject()).execute(this));
         loadParent = new Button("Load Parent", "angle-double-up", this);
         viewChildren = new Button("Children", this);
         editSource = new Button("Edit Source", "editor:mode-edit", this);
         viewSource = new Button("View Source", this);
         compileSource = new Button("Compile Source",this);
         deploy = new Button("Deploy", "truck", this);
-        upload = new Button("Upload", this);
+        upload = new Button("Upload", e -> new UploadBox().execute(this));
         download = new Button("Download", e -> download());
         downloadAll = new Button("Download All", "download", e -> new DownloadAll().execute(this));
         createSourceAll = new Button("Create Source Files", "download", this);
         compileSourceAll = new ConfirmButton("Compile All", this);
-        deployAll = new ConfirmButton("Deploy All", "truck", this);
+        deployAll = new ConfirmButton("Deploy All", "truck", e -> command(() -> new DeployAll().execute()));
         viewAll = new Button("View All", "children", this);
         uploadUpdate = new Button("Bulk Upload & Update", "upload", this);
         uploadCompare = new Button("Bulk Upload & Compare", "upload", this);
-        report = new Button("Report", this);
+        report = new Button("Documentation", VaadinIcon.BOOK, e -> new ClassSelector(getObject()).execute());
     }
 
     @Override
@@ -186,22 +189,6 @@ public class TableDefinitionEditor extends ObjectEditor<TableDefinition> {
 
     @Override
     public void clicked(Component c) {
-        if(c == report) {
-            new ClassSelector(getObject()).execute();
-            return;
-        }
-        if(c == reorderFields) {
-            (new FieldReorderForm(getObject())).execute(this);
-            return;
-        }
-        if(c == deployAll) {
-            command(() -> new DeployAll().execute());
-            return;
-        }
-        if(c == upload) {
-            new UploadBox().execute(this);
-            return;
-        }
         if(c == createSourceAll || c == compileSourceAll) {
             final Component pressed = c;
             TextView v = new TextView((pressed == createSourceAll ? "Creat" : "Compil") + "ing Sources");
@@ -933,7 +920,7 @@ public class TableDefinitionEditor extends ObjectEditor<TableDefinition> {
             }
         }
 
-        private void printLinks(PDFTable table, TableDefinition td, ArrayList<TableDefinition> detailLinks) {
+        private void printLinks(PDFTable table, TableDefinition td, List<TableDefinition> detailLinks, List<Id> printedLinks) {
             String s;
             int order = 0;
             TableDefinition linkTable;
@@ -959,8 +946,9 @@ public class TableDefinitionEditor extends ObjectEditor<TableDefinition> {
                     } else {
                         if(linkTable.hasDetailInterface()) {
                             table.addCell(createCell("Detail Link"));
-                            if(!linkTable.equals(td) && !detailLinks.contains(linkTable)) {
+                            if(!linkTable.equals(td) && !detailLinks.contains(linkTable) && !printedLinks.contains(linkTable.getId())) {
                                 detailLinks.add(linkTable);
+                                printedLinks.add(linkTable.getId());
                             }
                         } else {
                             table.addCell(createCell("Reference Link"));
@@ -986,7 +974,7 @@ public class TableDefinitionEditor extends ObjectEditor<TableDefinition> {
         private void printIndices(@SuppressWarnings("unused") TableDefinition td) {
         }
 
-        private void printColumns(TableDefinition td, ArrayList<TableDefinition> detailLinks) {
+        private void printColumns(TableDefinition td, List<TableDefinition> detailLinks, List<Id> printedLinks) {
             PDFTable t = createTable(2, 10, 17, 5);
             addTitles(t, "", "Name", "Type", "Style/Notes");
             String s;
@@ -1017,31 +1005,43 @@ public class TableDefinitionEditor extends ObjectEditor<TableDefinition> {
                 } else {
                     s = cd.getParameters();
                 }
-                if(!cd.getSetAllowed() || cd.getEmptyAllowed()) {
+                if(!cd.getSetAllowed() || cd.getEmptyAllowed() || cd.getDisplayOnly()) {
+                    String ts = getColumnStatusValue(cd);
                     if(!s.isEmpty()) {
                         s += "\n";
                     }
-                    if(cd.getSetAllowed()) {
-                        s += "Can be empty";
-                    } else {
-                        s += "Set not allowed";
-                        if(cd.getEmptyAllowed()) {
-                            s += ", Can be empty";
-                        }
-                    }
+                    s += ts;
                 }
                 t.addCell(createCell(s));
                 printNotes(t, cd.getNotes());
             }
-            printLinks(t, td, detailLinks);
+            printLinks(t, td, detailLinks, printedLinks);
             add(t);
         }
 
-        private void printTable(TableDefinition td) {
-            printTable(td, 0);
+        private static @NonNull String getColumnStatusValue(ColumnDefinition cd) {
+            String ts = cd.getSetAllowed() ? "" : "Set not allowed";
+            if(cd.getEmptyAllowed()) {
+                if(!ts.isEmpty()) {
+                    ts += ", ";
+                }
+                ts += "Can be empty";
+            }
+            if(cd.getDisplayOnly()) {
+                if(!ts.isEmpty()) {
+                    ts += ", ";
+                }
+                ts += "Read only";
+            }
+            return ts;
         }
 
-        private void printTable(TableDefinition td, int linkIndex) {
+        private void printTable(TableDefinition td) {
+            List<Id> printedLinks = new ArrayList<>();
+            printTable(td, 0, printedLinks);
+        }
+
+        private void printTable(TableDefinition td, int linkIndex, List<Id> printedLinks) {
             String s;
             PDFCell c;
             PDFTable t = createTable(15, 80);
@@ -1106,11 +1106,11 @@ public class TableDefinitionEditor extends ObjectEditor<TableDefinition> {
             }
             add(t);
             ArrayList<TableDefinition> detailLinks = new ArrayList<>();
-            printColumns(td, detailLinks);
+            printColumns(td, detailLinks, printedLinks);
             printIndices(td);
             int linkCount = 0;
             for(TableDefinition link: detailLinks) {
-                printTable(link, ++linkCount);
+                printTable(link, ++linkCount, printedLinks);
             }
         }
 

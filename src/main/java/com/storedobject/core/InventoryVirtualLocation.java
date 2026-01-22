@@ -17,6 +17,7 @@ import java.util.Map;
 public final class InventoryVirtualLocation extends InventoryLocation implements HasChildren {
 
     static final Map<Id, InventoryVirtualLocation> cache = new HashMap<>();
+    private static final EntityRole DUMMY = new EntityRole() { };
     private static final String[] statusValues =
             new String[] {
                     "Active", "Inactive",
@@ -26,6 +27,7 @@ public final class InventoryVirtualLocation extends InventoryLocation implements
     private Id entityId;
     private String code = "";
     private int status = 0;
+    private EntityRole role;
 
     public InventoryVirtualLocation() {
     }
@@ -315,6 +317,57 @@ public final class InventoryVirtualLocation extends InventoryLocation implements
 
     @Override
     public boolean isActive() {
-        return status == 0;
+        if(status != 0) return false;
+        if(role != null) return role.isActive();
+        role = getRole();
+        return role.isActive();
+    }
+
+    public <R extends EntityRole> EntityRole getRole() {
+        if(role == null) {
+            switch (type) {
+                case 1 -> role = role("SUPPLIER-CLASS");
+                case 2 -> role = role("CUSTOMER-CLASS");
+                case 3 -> {
+                    role = role("REPAIR-ORGANIZATION-CLASS");
+                    if(role == null) {
+                        role = role("SERVICE-PROVIDER-CLASS");
+                    }
+                    if(role == null) {
+                        role = role("SUPPLIER-CLASS");
+                    }
+                }
+                case 8 -> {
+                    role = role("LESSEE-CLASS");
+                    if(role == null) {
+                        role = role("SUPPLIER-CLASS");
+                    }
+                }
+                case 9 -> {
+                    role = role("LESSOR-CLASS");
+                    if(role == null) {
+                        role = role("SUPPLIER-CLASS");
+                    }
+                }
+            }
+        }
+        if(role == null) {
+            role = DUMMY;
+        }
+        return role;
+    }
+
+    private <R extends EntityRole> EntityRole role(String property) {
+        Class<?> rClass;
+        try {
+            rClass = JavaClassLoader.createClassFromProperty(property);
+        } catch (SOException e) {
+            return null;
+        }
+        if(rClass != null && EntityRole.class.isAssignableFrom(rClass)) {
+            //noinspection unchecked
+            return get((Class<R>)rClass, "Organization=" + entityId);
+        }
+        return null;
     }
 }

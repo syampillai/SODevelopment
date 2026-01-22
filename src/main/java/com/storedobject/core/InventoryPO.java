@@ -52,7 +52,6 @@ public class InventoryPO extends StoredObject implements HasChildren, HasReferen
         return new String[] {
                 "No",
                 "ReferenceNumber",
-                "Status",
                 "ApprovalRequired",
         };
     }
@@ -202,7 +201,7 @@ public class InventoryPO extends StoredObject implements HasChildren, HasReferen
     }
 
     @SetNotAllowed
-    @Column(order = 500)
+    @Column(order = 500, readOnly = true)
     public int getStatus() {
         return status;
     }
@@ -256,6 +255,12 @@ public class InventoryPO extends StoredObject implements HasChildren, HasReferen
                 referenceNumber = pattern.getNumber(tran.getManager(), getNo(), date);
             }
         }
+    }
+
+    @Override
+    public void validateInsert() throws Exception {
+        UserAction.save(this, "NEW");
+        super.validateInsert();
     }
 
     @Override
@@ -576,7 +581,7 @@ public class InventoryPO extends StoredObject implements HasChildren, HasReferen
     }
 
     /**
-     * Get the GRN type. One of the GRN type values: 0, 1 or 2.
+     * Get the GRN type. One of the GRN type values: 0, 1, or 2.
      *
      * @return Type of GRN. Default is 0.
      */
@@ -585,7 +590,7 @@ public class InventoryPO extends StoredObject implements HasChildren, HasReferen
     }
 
     /**
-     * Is a specific type of landed cost is applicable to this PO?
+     * Is a specific type of landed cost applicable to this PO?
      *
      * @param landedCostType Type of landed cost.
      * @param grn Associated GRN.

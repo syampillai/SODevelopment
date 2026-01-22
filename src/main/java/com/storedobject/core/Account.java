@@ -12,7 +12,7 @@ import java.util.*;
 
 /**
  * This class represents an Account. Account has a status ({@link #getAccountStatus()}) which is a bit pattern with
- * following values:
+ * the following values:
  * <pre>
  *    0: [Account level] 0 = Active, 1 = Closed
  *  2,1: [Account level, Overrides 10,9] 00 = Bits 10,9 applicable, 01 = Debits allowed (credit blocked),
@@ -117,7 +117,7 @@ public class Account extends StoredObject implements OfEntity, HasName {
     }
 
     public static String[] browseColumns() {
-        return new String[] { "AccountNumber", "Name" };
+        return new String[] { "AccountNumber", "Currency", "Name" };
     }
 
     public static String[] searchColumns() {
@@ -128,6 +128,15 @@ public class Account extends StoredObject implements OfEntity, HasName {
         return new String[] { "OpeningBalance", "LocalCurrencyOpeningBalance", "LocalCurrencyBalance", "AccountStatus" };
     }
 
+    /**
+     * Retrieves the account number associated with this instance.
+     * If the instance is of type AccountTitle, it returns a modified version
+     * of the account number by excluding the suffix "-ALT".
+     * Otherwise, it returns the full account number.
+     * <p>Note: This method is used to retrieve the account number with potential modifications based on the instance type.</p>
+     *
+     * @return the account number as a string, with modifications applied if the instance is of type AccountTitle
+     */
     public final String getAccountNumber() {
         if(this instanceof AccountTitle) {
             return number.substring(0, number.indexOf("-ALT"));
@@ -198,6 +207,7 @@ public class Account extends StoredObject implements OfEntity, HasName {
      * @return The Id of the System Entity
      */
     @SetNotAllowed
+    @Column(caption = "Of", readOnly = true)
     public final Id getSystemEntityId() {
         return systemEntityId;
     }
@@ -241,6 +251,7 @@ public class Account extends StoredObject implements OfEntity, HasName {
     }
 
     @SetNotAllowed
+    @Column(readOnly = true)
     public final Money getBalance() {
         if(this instanceof AccountTitle at) {
             return at.getAccount().balance;
@@ -270,6 +281,7 @@ public class Account extends StoredObject implements OfEntity, HasName {
     }
 
     @SetNotAllowed
+    @Column(readOnly = true)
     public final Money getLocalCurrencyBalance() {
         if(this instanceof AccountTitle at) {
             return at.getAccount().balanceLC;
@@ -299,6 +311,7 @@ public class Account extends StoredObject implements OfEntity, HasName {
     }
 
     @SetNotAllowed
+    @Column(readOnly = true)
     public final Money getOpeningBalance() {
         if(this instanceof AccountTitle at) {
             return at.getAccount().openingBalance;
@@ -317,6 +330,7 @@ public class Account extends StoredObject implements OfEntity, HasName {
         return getLocalCurrencyBalance(DateUtility.addDay(date, -1));
     }
 
+    @Column(readOnly = true)
     public final Money getLocalCurrencyOpeningBalance() {
         if(this instanceof AccountTitle at) {
             return at.getAccount().openingBalanceLC;
@@ -352,6 +366,10 @@ public class Account extends StoredObject implements OfEntity, HasName {
             accountStatus &= 7; // Only 3 bits can be set.
         }
         this.accountStatus = accountStatus;
+    }
+
+    public final String getAccountStatusValue() {
+        return getStatusDescription();
     }
 
     public final void close(Transaction transaction) throws Exception {
@@ -596,7 +614,7 @@ public class Account extends StoredObject implements OfEntity, HasName {
 
     /**
      * Get the title of the account. By default, this will return {@link #getName()}. However, if you return
-     * some other value, that will be automatically set as the name of the account when save to the database.
+     * some other value, that will be automatically set as the name of the account when saved to the database.
      *
      * @return Title of the account.
      */
@@ -641,12 +659,48 @@ public class Account extends StoredObject implements OfEntity, HasName {
     }
 
     public final void setOpeningBalance(TransactionManager tm, Money amount, Money localCurrencyAmount) throws Exception {
-        if(getCurrency() != amount.getCurrency() || getLocalCurrency() != localCurrencyAmount.getCurrency()) {
-            throw new Invalid_State("Currency mismatch");
-        }
         refresh();
+        if(getLocalCurrency() != localCurrencyAmount.getCurrency()) {
+            throw new Invalid_State("Accounting currency mismatch");
+        }
+        if(getCurrency() != amount.getCurrency()) {
+            canChangeCurrency();
+            addToOpeningBalance(tm, getBalance().negate(), getLocalCurrencyBalance().negate()); // Remove the old balance.
+            setCurrency(tm, amount.getCurrency());
+        }
         addToOpeningBalance(tm, amount.subtract(getOpeningBalance()),
                 localCurrencyAmount.subtract(getLocalCurrencyOpeningBalance()));
+    }
+
+    private void canChangeCurrency() throws Invalid_State {
+        boolean ok = balance.isZero() && balanceLC.isZero();
+        if(ok) {
+            RawSQL sql = new RawSQL();
+            try {
+                sql.execute("SELECT 1 FROM core.Ledger WHERE Account=" + getId() + " LIMIT 1");
+                ok = sql.eoq();
+            } finally {
+                sql.close();
+            }
+        }
+        if(!ok) throw new Invalid_State("Cannot change currency of an account with existing transactions");
+    }
+
+    private void setCurrency(TransactionManager tm, Currency currency) throws Exception {
+        Money zero = new Money(currency);
+        openingBalance = zero;
+        balance = zero;
+        tm.transact(t -> {
+            save(t);
+            RawSQL sql = ((DBTransaction)t).getSQL();
+            try {
+                sql.executeUpdate("UPDATE core.Account SET OpeningBalance=ROW(0,'" + currency.getCurrencyCode()
+                        + "'),Balance=ROW(0,'" + currency.getCurrencyCode() + "') WHERE Id=" + getId());
+                sql.executeUpdate("DELETE FROM core.AccountBalance WHERE Account=" + getId());
+            } finally {
+                sql.close();
+            }
+        });
     }
 
     public final void addToOpeningBalance(TransactionManager tm, Money amount) throws Exception {
@@ -788,6 +842,7 @@ public class Account extends StoredObject implements OfEntity, HasName {
         }
 
         @Override
+        @Column(readOnly = true)
         public Money getLocalCurrencyOpeningBalance() {
             return opBalanceLC;
         }

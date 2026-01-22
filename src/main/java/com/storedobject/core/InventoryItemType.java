@@ -239,6 +239,9 @@ public class InventoryItemType extends StoredObject implements HasChildren, HasI
         if(isSerialized()) {
             unitOfMeasurement = Count.ONE;
         }
+        if(unitOfMeasurement.getUnit().obsolete) {
+            throw new Invalid_Value("Unit of Measurement - Obsolete");
+        }
         partNumber = toCode(partNumber);
         if(!deleted()) {
             if(partNumber.isEmpty()) {
@@ -353,18 +356,18 @@ public class InventoryItemType extends StoredObject implements HasChildren, HasI
         if(old == null) {
             return;
         }
-        int uType = old.unitOfMeasurement.getUnit().getType();
-        if(uType != unitOfMeasurement.getUnit().getType()) {
+        int uTypeOld = old.unitOfMeasurement.getUnit().getType();
+        int uTypeNew = unitOfMeasurement.getUnit().getType();
+        if(uTypeOld != uTypeNew) {
             InventoryItem item = InventoryItem.listItems(this).filter(i -> {
                 Quantity q = i.getQuantity();
                 if(q.isZero()) {
                     return false;
                 }
-                return q.getUnit().getType() != uType;
+                return q.getUnit().getType() != uTypeNew;
             }).findFirst();
             if(item != null) {
-                throw new SOException("Item with incompatible unit exists - " + item.toDisplay() + ", Quantity: "
-                        + item.getQuantity());
+                throw new SOException("Item with incompatible unit exists - " + item.toDisplay());
             }
         }
     }
@@ -384,19 +387,27 @@ public class InventoryItemType extends StoredObject implements HasChildren, HasI
      * Check whether the measurement unit of the given quantity compatible for this item or not.
      *
      * @param quantity Quantity to check.
-     * @param name Name of the quantity (used to generate message of the exception).
+     * @param name Name of the quantity (used to generate a message of the exception).
      * @throws Invalid_State Throws if the measurement unit is not compatible.
      */
     public void checkUnit(Quantity quantity, String name) throws Invalid_State {
-        if(quantity.getUnit().getType() == unitOfMeasurement.getUnit().getType()) {
+        MeasurementUnit uom = unitOfMeasurement.getUnit(), mu = quantity.getUnit();
+        if(mu.obsolete) {
+            throw new Invalid_State("Unit of Measurement is obsolete" + (name == null ? "" : (" - " + name)));
+        }
+        if(mu.getType() == uom.getType()) {
+            return;
+        }
+        if(quantity.isZero()) {
+            quantity.setUnit(uom);
             return;
         }
         if(name == null) {
-            throw new Invalid_State("Unit '" + unitOfMeasurement.getUnit() + "' of '" + this.toDisplay() +
-                    "' is not compatible with '" + quantity.getUnit() + "'");
+            throw new Invalid_State("Unit '" + uom + "' of '" + this.toDisplay() +
+                    "' is not compatible with '" + mu + "'");
         }
-        throw new Invalid_State("Measurement unit of " + name + " '" + quantity.getUnit().getUnit() +
-                "' is not compatible with '" + unitOfMeasurement.getUnit().getUnit() + "'");
+        throw new Invalid_State("Measurement unit of " + name + " '" + mu +
+                "' is not compatible with '" + uom + "'");
     }
 
     /**
@@ -422,8 +433,8 @@ public class InventoryItemType extends StoredObject implements HasChildren, HasI
 
     /**
      * <p>Is this an expendable item?</p>
-     * <p>Items (such as nut, bolt, rivet etc.) for which (1) no authorized repair procedure exists, and/or
-     * (2) the cost of repair would exceed cost of its replacement. Expendable items are usually considered to be
+     * <p>Items (such as nut, bolt, rivet, etc.) for which (1) no authorized repair procedure exists, and/or
+     * (2) the cost of repair would exceed the cost of its replacement. Expendable items are usually considered to be
      * consumed when issued and are not recorded as returnable inventory.</p>
      *
      * @return True or false.
@@ -434,8 +445,8 @@ public class InventoryItemType extends StoredObject implements HasChildren, HasI
 
     /**
      * <p>Is this a consumable item?</p>
-     * <p>A consumable item (or a consumable) is an item that is once used, can not be recovered. Once issued from
-     * stores, consumables gets incorporated into other items and loose their identity. An example of a consumable
+     * <p>A consumable item (or a consumable) is an item that is once used, cannot be recovered. Once issued from
+     * stores, consumables get incorporated into other items and lose their identity. An example of a consumable
      * is paint.</p>
      *
      * @return True or false.
@@ -473,7 +484,7 @@ public class InventoryItemType extends StoredObject implements HasChildren, HasI
     /**
      * <p>Is this a repairable item?</p>
      * <p>This method is used to check whether an item is repairable or not. It makes sure that the item
-     * is a serialized items and its {@link #isRepairable()} returns <code>true</code>.</p>
+     * is a serialized item and its {@link #isRepairable()} returns <code>true</code>.</p>
      *
      * @return True or false.
      */
@@ -484,7 +495,7 @@ public class InventoryItemType extends StoredObject implements HasChildren, HasI
     /**
      * Get the category Id of this item. A category Id could be anything an organization may want to maintain
      * items in some special category groups. For example, in an airline store, items may be categorized based on
-     * the aircraft fleet and in that case, even if some items can be used across the fleets, it may be still
+     * the aircraft fleet, and in that case, even if some items can be used across the fleets, it may be still
      * maintained per fleet.
      *
      * @return Category Id. Default is <code>null</code>.
@@ -569,6 +580,33 @@ public class InventoryItemType extends StoredObject implements HasChildren, HasI
             return null;
         }
         ii.setSerialNumber(serialNumber);
+        return ii;
+    }
+
+    /**
+     * Creates and initializes an inventory item with the specified parameters.
+     *
+     * @param serialNumber the serial number of the item to be created
+     * @param quantity the quantity of the item
+     * @param location the virtual location where the item will be created
+     * @param tm the transaction manager associated with the operation
+     * @return the created inventory item of the specified type
+     * @throws Exception if the item cannot be created due to invalid state or other issues
+     */
+    public final <T extends InventoryItem> T createItem(String serialNumber, Quantity quantity,
+                                                        InventoryVirtualLocation location, TransactionManager tm) throws Exception {
+        if(location.getEntityId().equals(tm.getEntity().getEntityId())) {
+            throw new Invalid_State("Can't create item in the given location");
+        }
+        T ii = createItem(serialNumber);
+        if(ii == null) {
+            throw new Invalid_State("Item with serial number '" + serialNumber + "' already exists");
+        }
+        ii.illegal = false;
+        ii.setQuantity(quantity);
+        ii.setLocation(location);
+        ii.setOwner(location.getEntityId());
+        ii.illegal = true;
         return ii;
     }
 
@@ -675,7 +713,7 @@ public class InventoryItemType extends StoredObject implements HasChildren, HasI
 
     /**
      * List all the items of this part number. It will return even the items fitted on assemblies,
-     * items sent for repair etc. However, items that are already scrapped/consumed will not be included.
+     * items sent for repair, etc. However, items that are already scrapped/consumed will not be included.
      *
      * @return List of items.
      */
@@ -685,7 +723,7 @@ public class InventoryItemType extends StoredObject implements HasChildren, HasI
 
     /**
      * List all the items of this given part number. It will return even the items fitted on assemblies,
-     * items sent for repair etc. However, items that are already scrapped/consumed will not be included.
+     * items sent for repair, etc. However, items that are already scrapped/consumed will not be included.
      *
      * @param condition Additional condition if any. Could be null.
      * @return List of items.
@@ -696,7 +734,7 @@ public class InventoryItemType extends StoredObject implements HasChildren, HasI
 
     /**
      * List all the items of this given part number. It will return even the items fitted on assemblies,
-     * items sent for repair etc. However, items that are already scrapped/consumed will not be included.
+     * items sent for repair, etc. However, items that are already scrapped/consumed will not be included.
      *
      * @param includeZeros Whether to include zero quantity items (in the case of non-serialized items) or not.
      * @return List of items.
@@ -707,7 +745,7 @@ public class InventoryItemType extends StoredObject implements HasChildren, HasI
 
     /**
      * List all the items of this given part number. It will return even the items fitted on assemblies,
-     * items sent for repair etc. However, items that are already scrapped/consumed will not be included.
+     * items sent for repair, etc. However, items that are already scrapped/consumed will not be included.
      *
      * @param condition Additional condition if any. Could be null.
      * @param includeZeros Whether to include zero quantity items (in the case of non-serialized items) or not.
@@ -885,7 +923,23 @@ public class InventoryItemType extends StoredObject implements HasChildren, HasI
      * @return List containing APNs. (Will not contain blocked part numbers and the list is unmodifiable).
      */
     public final List<InventoryItemType> listAPNs() {
-        return listAPNs(getId());
+        if(created()) {
+            return new ArrayList<>();
+        }
+        Id partNumberId = getId();
+        synchronized(apns) {
+            List<InventoryItemType> list = apns.get(partNumberId);
+            if(list == null) {
+                list = listLinks(InventoryAPN.class).map(apn -> (InventoryItemType)get(getClass(), apn.getPartNumberId()))
+                        .filter(pn -> pn != null && !pn.isBlocked() && !partNumberId.equals(pn.getId())).toList();
+                if(list.isEmpty()) {
+                    list = Collections.emptyList();
+                }
+                list = Collections.unmodifiableList(list);
+                apns.put(partNumberId, list);
+            }
+            return list;
+        }
     }
 
     /**
@@ -898,19 +952,11 @@ public class InventoryItemType extends StoredObject implements HasChildren, HasI
         if(Id.isNull(partNumberId)) {
             return new ArrayList<>();
         }
-        synchronized(apns) {
-            List<InventoryItemType> list = apns.get(partNumberId);
-            if(list == null) {
-                list = partNumberId.listLinks(InventoryAPN.class).map(InventoryAPN::getPartNumber)
-                        .filter(pn -> pn != null && !pn.isBlocked() && !partNumberId.equals(pn.getId())).toList();
-                if(list.isEmpty()) {
-                    list = Collections.emptyList();
-                }
-                list = Collections.unmodifiableList(list);
-                apns.put(partNumberId, list);
-            }
-            return list;
+        InventoryItemType iit = get(InventoryItemType.class, partNumberId, true);
+        if(iit == null) {
+            return new ArrayList<>();
         }
+        return iit.listAPNs();
     }
 
     public void validateUoMCorrection(MeasurementUnit from, MeasurementUnit to) throws Exception {
@@ -932,11 +978,15 @@ public class InventoryItemType extends StoredObject implements HasChildren, HasI
 
     public void correctUoM(TransactionManager tm, MeasurementUnit from, MeasurementUnit to) throws Exception {
         validateUoMCorrection(from, to);
+        correctUoM(tm, from, to, null);
+    }
+
+    private void correctUoM(TransactionManager tm, MeasurementUnit from, MeasurementUnit to, Quantity uoi) throws Exception {
         DBTransaction t = tm.createTransaction();
         try {
-            correctUoM(t, from, to);
+            correctUoM(t, from, to, uoi);
             for(InventoryItemType alt: listAPNs()) {
-                alt.correctUoM(t, from, to);
+                alt.correctUoM(t, from, to, uoi);
             }
             t.commit();
             t = null;
@@ -951,7 +1001,7 @@ public class InventoryItemType extends StoredObject implements HasChildren, HasI
         }
     }
 
-    private void correctUoM(DBTransaction t, MeasurementUnit from, MeasurementUnit to) throws Exception {
+    private void correctUoM(DBTransaction t, MeasurementUnit from, MeasurementUnit to, Quantity uoi) throws Exception {
         InventoryUnitCorrection iuc = new InventoryUnitCorrection();
         iuc.internal = true;
         iuc.setItem(this);
@@ -972,6 +1022,14 @@ public class InventoryItemType extends StoredObject implements HasChildren, HasI
         updateUoM(q, "InventoryTransferItem", fromU, toU, "Item", cd);
         updateUoM(q, "InventoryPOItem", fromU, toU, null, cd);
         updateUoM(q, "InventoryPOItem", "Received", fromU, toU, null, cd);
+        if(uoi == null) {
+            return;
+        }
+        updateUoM(q, "InventoryItemType", "UnitOfMeasurement", fromU, toU, "Id", cd);
+        updateUoM(q, "InventoryItemType", "UnitOfIssue", fromU, toU, "Id", cd);
+        updateUoM(q, "InventoryItemType", "MinimumStockLevel", fromU, toU, "Id", cd);
+        updateUoM(q, "InventoryItemType", "ReorderPoint", fromU, toU, "Id", cd);
+        updateUoM(q, "InventoryItemType", "EconomicOrderQuantity", fromU, toU, "Id", cd);
     }
 
     private void updateUoM(RawSQL q, String table, String from, String to, String pn, boolean checkDecimals)
@@ -991,16 +1049,17 @@ public class InventoryItemType extends StoredObject implements HasChildren, HasI
             c = "=" + getId();
         }
         if(checkDecimals) {
-            q.execute("SELECT (" + quantity + ").quantity, Id FROM core." + table + " WHERE (" + quantity + ").unit='"
-                    + from + "' AND " + pn + c);
+            boolean stock = table.equals("InventoryStock");
+            q.execute("SELECT (" + quantity + ").quantity" + ( stock ? "" : ", Id")
+                    + " FROM core." + table + " WHERE (" + quantity + ").unit='" + from + "' AND " + pn + c);
             if(!q.eoq()) {
                 BigDecimal bd;
                 ResultSet rs = q.getResult();
                 while(!q.eoq()) {
                     bd = rs.getBigDecimal(1);
                     if(bd.scale() > 0 && bd.stripTrailingZeros().scale() > 0) {
-                        String m = "Contains decimals - Id = " + rs.getBigDecimal(2).toBigInteger()
-                                + ", Quantity = " + bd.toPlainString() + " in (" + table  + ")";
+                        String m = stock ? "" :  (" - Id = " + rs.getBigDecimal(2).toBigInteger());
+                        m = "Contains decimals" + m + ", Quantity = " + bd.toPlainString() + " in (" + table  + ")";
                         q.cancel();
                         throw new SOException(m);
                     }
@@ -1016,20 +1075,10 @@ public class InventoryItemType extends StoredObject implements HasChildren, HasI
         if(!uom.isCompatible(uoi)) {
             throw new SOException("Incompatible units: " + uom.getUnit().getUnit() + ", " + uoi.getUnit().getUnit());
         }
-        if(!uom.isCompatible(unitOfMeasurement)) {
-            InventoryItem item = list(InventoryItem.class, "PartNumber=" + getId(), true).findFirst();
-            if(item != null) {
-                throw new Invalid_State("An item of this type already exists - " + item.toDisplay() + ", Quantity: "
-                        + item.getQuantity());
-            }
+        if(isSerialized() && !uom.equals(Count.ONE)) {
+            throw new SOException("Wrong unit for serialized items - " + uom);
         }
-        unitOfMeasurement = uom.zero();
-        unitOfIssue = uoi.zero();
-        MeasurementUnit mu = uom.getUnit();
-        minimumStockLevel = Quantity.create(minimumStockLevel.getValue(), mu);
-        reorderPoint = Quantity.create(reorderPoint.getValue(), mu);
-        economicOrderQuantity = Quantity.create(economicOrderQuantity.getValue(), mu);
-        tm.transact(this::save);
+        correctUoM(tm, unitOfMeasurement.getUnit(), uom.getUnit(), uoi);
     }
 
     @Override
@@ -1181,5 +1230,13 @@ public class InventoryItemType extends StoredObject implements HasChildren, HasI
     @Override
     public InventoryItemType getInventoryItemType() {
         return this;
+    }
+
+    @Override
+    void savedCore() throws Exception {
+        synchronized (InventoryItem.cachePN) {
+            InventoryItem.cachePN.remove(getId());
+        }
+        super.savedCore();
     }
 }

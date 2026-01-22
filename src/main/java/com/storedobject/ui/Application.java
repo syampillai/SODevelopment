@@ -757,6 +757,7 @@ public class Application extends com.storedobject.vaadin.Application implements 
      *                   (true for windowed mode, false for fullscreen mode).
      */
     public void view(String caption, MediaFile mediaFile, boolean windowMode) {
+        if(!windowMode) openMenu();
         DocumentViewer.view(caption, mediaFile, windowMode);
     }
 
@@ -928,6 +929,7 @@ public class Application extends com.storedobject.vaadin.Application implements 
         if(server == null) {
             return;
         }
+        if(!windowMode) openMenu();
         synchronized(contentProducers) {
             CP cp = new CP(caption, producer, timeTracker, windowMode, extraHeaderButtons);
             contentProducers.add(cp);
@@ -1201,14 +1203,17 @@ public class Application extends com.storedobject.vaadin.Application implements 
                 }
             };
         }
+        String username = getQueryParameter("login");
+        removeQueryParameter("login");
+        if(username == null || username.isBlank()) {
+            return null;
+        }
         autoToken = ApplicationServer.getGlobalProperty("application.autologin.token", null, false);
         if(autoToken != null) {
-            String token = getQueryParameter("login");
-            removeQueryParameter("login");
             for(String at: StringList.create(autoToken)) {
-                if(at.equals(token)) {
+                if(at.equals(username)) {
                     String autoLogin = ApplicationServer.getGlobalProperty("application.autologin.user." + at,
-                            null, false);
+                            at.toLowerCase(), false);
                     if(autoLogin == null || autoLogin.isBlank()) {
                         continue;
                     }
@@ -1218,22 +1223,28 @@ public class Application extends com.storedobject.vaadin.Application implements 
                     if(autoPassword == null) {
                         continue;
                     }
+                    autoLogin = autoLogin.trim();
+                    String finalAutoLogin = autoLogin;
                     return () -> {
                         login.setType(4);
-                        if(!login.login(autoLogin.trim(), autoPassword.toCharArray(), false)) {
-                            screenLogin();
+                        if(!login.login(finalAutoLogin, autoPassword.toCharArray(), false)) {
+                            screenLogin(finalAutoLogin);
                         }
                     };
                 }
             }
         }
-        return null;
+        return () -> screenLogin(username);
     }
 
     private void screenLogin() {
+        screenLogin(null);
+    }
+
+    private void screenLogin(String username) {
         loginForm = createLogin();
         if(loginForm == null) {
-            loginForm = createLoginInt();
+            loginForm = createLoginInt(username);
         }
         if(loginForm != null) {
             log("Accessed");
@@ -1241,12 +1252,12 @@ public class Application extends com.storedobject.vaadin.Application implements 
         }
     }
 
-    private Runnable createLoginInt() {
+    private Runnable createLoginInt(String username) {
         String loginLogic = ApplicationServer.getGlobalProperty("application.logic.login",
                 "", true);
         if(loginLogic.isEmpty()) {
             if(SOServlet.getTextContent("com.storedobject.ui.LoginForm") == null) {
-                loginForm = LoginForm.create();
+                loginForm = LoginForm.create(username);
             } else {
                 loginForm = new LoginForm();
             }

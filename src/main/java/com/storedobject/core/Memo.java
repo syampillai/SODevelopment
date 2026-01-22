@@ -12,7 +12,7 @@ public class Memo extends StoredObject implements OfEntity {
     final static String ILLEGAL = "Illegal modification attempt";
     private static final String[] statusValues =
             new String[] {
-                    "Initiated", "Forwarded", "Returned", "Being Approved", "Approved", "Rejected", "Abandoned"
+                    "Initiated", "Forwarded", "Returned", "Being Approved", "Approved", "Rejected"
             };
     private Id typeId;
     private MemoType type;
@@ -24,6 +24,7 @@ public class Memo extends StoredObject implements OfEntity {
     boolean internal = false;
     private Id systemEntityId;
     private SystemUser initiatedBy;
+    private Id assistedById = Id.ZERO;
 
     public Memo() {
     }
@@ -36,6 +37,12 @@ public class Memo extends StoredObject implements OfEntity {
         columns.add("Subject", "text");
         columns.add("Status", "int");
         columns.add("LastComment", "int");
+        columns.add("AssistedBy", "id");
+    }
+
+    public static void indices(Indices indices) {
+        indices.add("SystemEntity,No", "Status<10", false);
+        indices.add("SystemEntity,No",false);
     }
 
     public static String[] browseColumns() {
@@ -151,7 +158,7 @@ public class Memo extends StoredObject implements OfEntity {
     }
 
     @SetNotAllowed
-    @Column(order = 400)
+    @Column(order = 400, readOnly = true)
     public final int getStatus() {
         return status;
     }
@@ -161,12 +168,13 @@ public class Memo extends StoredObject implements OfEntity {
     }
 
     public static String getStatusValue(int value) {
+        if(value >= 10) value -= 10;
         String[] s = getStatusValues();
         return s[value % s.length];
     }
 
     public String getStatusValue() {
-        return renameAction(getStatusValue(status));
+        return renameAction(getStatusValue(status)) + (status >= 10 ? " - Closed" : "");
     }
 
     protected  String getMemoStatus() {
@@ -198,10 +206,32 @@ public class Memo extends StoredObject implements OfEntity {
         return lastComment;
     }
 
+    public void setAssistedBy(Id assistedById) {
+        this.assistedById = assistedById;
+    }
+
+    public void setAssistedBy(BigDecimal idValue) {
+        setAssistedBy(new Id(idValue));
+    }
+
+    public void setAssistedBy(SystemUser assistedBy) {
+        setAssistedBy(assistedBy == null ? null : assistedBy.getId());
+    }
+
+    @Column(order = 700, required = false, readOnly = true)
+    public Id getAssistedById() {
+        return assistedById;
+    }
+
+    public SystemUser getAssistedBy() {
+        return getRelated(SystemUser.class, assistedById);
+    }
+
     @Override
     public void validateData(TransactionManager tm) throws Exception {
         systemEntityId = check(tm, systemEntityId);
         typeId = tm.checkType(this, typeId, MemoType.class, false);
+        assistedById = tm.checkType(this, assistedById, SystemUser.class, true);
         if(StringUtility.isWhite(subject)) {
             throw new Invalid_Value("Empty subject");
         }
@@ -243,7 +273,21 @@ public class Memo extends StoredObject implements OfEntity {
     }
 
     public MemoComment getLatestComment() {
-        return get(MemoComment.class, "Memo=" + getId() + " AND CommentCount=" + lastComment);
+        MemoComment mc = get(MemoComment.class, "Memo=" + getId() + " AND CommentCount=" + lastComment);
+        if(mc != null) mc.memo = this;
+        return mc;
+    }
+
+    /**
+     * Determines if the assistant can assist the boss based on their relationship.
+     * This method checks if both users are not null and if a link exists between them.
+     *
+     * @param boss The SystemUser who requires assistance.
+     * @param assistant The SystemUser who might assist the boss.
+     * @return {@code true} if the assistant can assist the boss, {@code false} otherwise.
+     */
+    protected boolean canAssist(SystemUser boss, SystemUser assistant) {
+        return boss != null && assistant != null && boss.existsLink(assistant);
     }
 
     public Id save(Transaction transaction, String content, SystemUser enteredFor) throws Exception {
@@ -258,8 +302,13 @@ public class Memo extends StoredObject implements OfEntity {
         if(enteredFor == null) {
             throw new SOException("Owner");
         }
+        Id uid = transaction.getUserId();
+        if(!uid.equals(enteredFor.getId()) && !canAssist(transaction.getManager().getUser(), enteredFor)) {
+            throw new Invalid_State(enteredFor.getName() + " can't assist " + transaction.getManager().getUser().getName());
+        }
         MemoComment mc;
         internal = true;
+        assistedById = uid.equals(enteredFor.getId()) ? Id.ZERO : uid;
         Id id = save(transaction);
         if(created) {
             mc = new MemoComment();
@@ -275,7 +324,6 @@ public class Memo extends StoredObject implements OfEntity {
                 throw new SOException(ILLEGAL);
             }
         }
-        mc.enteredById = transaction.getUserId();
         mc.comment = content;
         mc.save(transaction);
         return id;
@@ -288,8 +336,7 @@ public class Memo extends StoredObject implements OfEntity {
         Id owner = getInitiatedById();
         if(!owner.equals(transaction.getUserId())) {
             MemoComment mc = get(MemoComment.class, "Memo=" + getId() + " AND CommentCount=" + lastComment);
-            if(mc == null || !mc.getCommentedById().equals(owner)
-                    || mc.getEnteredById().equals(transaction.getUserId())) {
+            if(mc == null || !mc.getCommentedById().equals(owner) || !transaction.getUserId().equals(assistedById)) {
                 throw new SOException(ILLEGAL);
             }
         }
@@ -345,8 +392,8 @@ public class Memo extends StoredObject implements OfEntity {
     }
 
     /**
-     * This method is invoked when a memo is escalated to another level. This should return a system user at next level.
-     * <p>Note: This is not used by the basic memo system because there is no concept of "escalation" in memo system.
+     * This method is invoked when a memo is escalated to another level. This should return a system user at the next level.
+     * <p>Note: This is not used by the basic memo system because there is no concept of "escalation" in the memo system.
      * However, it could be implemented in a derived class.</p>
      *
      * @return A system user at the next level.
@@ -399,7 +446,7 @@ public class Memo extends StoredObject implements OfEntity {
         if(lastComment == 0) {
             return null;
         }
-        MemoComment mc = get(MemoComment.class, "Memo=" + getId() + " AND CommentCount=" + lastComment);
+        MemoComment mc = getLatestComment();
         if(mc == null) {
             return null;
         }
@@ -415,6 +462,10 @@ public class Memo extends StoredObject implements OfEntity {
 
     public boolean isMine(SystemUser su) {
         return getInitialComment().isMine(su);
+    }
+
+    public boolean isMyMemo(SystemUser su) {
+        return getInitialComment().getCommentedById().equals(su.getId());
     }
 
     public List<SystemUser> listApprovers() {

@@ -10,21 +10,19 @@ import com.vaadin.flow.component.checkbox.Checkbox;
 public class EditCost extends DataForm implements Transactional {
 
     private final InventoryItem item;
-    private final boolean viewMode;
-    private MoneyField newCost;
+    private final MoneyField newCost;
     private Checkbox updateAll;
     private final Runnable runMe;
 
-    public EditCost(InventoryItem item, boolean viewMode) {
-        this(item, viewMode, null);
+    public EditCost(InventoryItem item) {
+        this(item, null);
     }
 
-    public EditCost(InventoryItem item, boolean viewMode, Runnable runMe) {
-        super(viewMode ? "Cost Details" : "Edit Cost", "Save", "Cancel", viewMode);
+    public EditCost(InventoryItem item, Runnable runMe) {
+        super("Edit Cost", "Save", "Cancel");
         this.runMe = runMe;
-        this.viewMode = viewMode;
         this.item = item;
-        setButtonsAtTop(!viewMode);
+        setButtonsAtTop(true);
         addField(new ELabelField("Item", item.toDisplay()));
         addField(new ELabelField("Location", ItemContext.locationDisplay(item)));
         addField(new ELabelField("GRN Details", grn()));
@@ -35,9 +33,6 @@ public class EditCost extends DataForm implements Transactional {
         } else {
             addField(new ELabelField("Quantity & Cost", item.getQuantity() + ", " + item.getCost()));
         }
-        if(viewMode) {
-            return;
-        }
         newCost = new MoneyField("Cost to Set");
         newCost.setValue(item.getCost());
         addField(newCost);
@@ -45,15 +40,6 @@ public class EditCost extends DataForm implements Transactional {
             addField(updateAll = new Checkbox("Update all Serial Numbers?"));
         }
         setFirstFocus(newCost);
-    }
-
-    @Override
-    protected void buildButtons() {
-        super.buildButtons();
-        if(viewMode) {
-            ok.setVisible(false);
-            cancel.setText("Close");
-        }
     }
 
     @Override

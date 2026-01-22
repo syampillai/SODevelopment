@@ -54,7 +54,7 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
      */
     protected HasComponents buttonPanel;
     /**
-     * Teh Print button if defined. Print button will be defined automatically. Please see {@link PrintButton}.
+     * The Print button if defined. Print button will be defined automatically. Please see {@link PrintButton}.
      */
     protected PrintButton print;
     /**
@@ -1320,7 +1320,7 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
 
     private int doEditInt(boolean adding, Grid<T> grid) {
         T object = getObject();
-        if(object == null || (!adding && !canEdit())) {
+        if(object == null || (!adding && !canEdit()) || ledgerPosted(object)) {
             return -1;
         }
         form.setReadOnly(false);
@@ -1355,7 +1355,7 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
      */
     public void doDelete() {
         T object = getObject();
-        if(object == null || isEditing() || !canDelete()) {
+        if(object == null || isEditing() || !canDelete() || ledgerPosted(object)) {
             return;
         }
         boolean deleted = false;
@@ -1538,6 +1538,15 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
      */
     public boolean canEdit() {
         return edit != null && edit.isEnabled();
+    }
+
+    boolean ledgerPosted(StoredObject object) {
+        if(object == null) return false;
+        if(object instanceof Financial f && f.isLedgerPosted()) {
+            warning("Ledger has been posted - modifications are not allowed");
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -2801,6 +2810,7 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
      * @param extraInfo The "Extra Information" instance to be saved.
      * @throws Exception if any validation error to be notified.
      */
+    @SuppressWarnings("RedundantThrows")
     public void savingExtraInfo(StoredObject extraInfo) throws Exception {
     }
 
@@ -2888,17 +2898,6 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
     }
 
     /**
-     * Prefix string that is added to the "action" string to determine the actual {@link UIAction} to be checked. See
-     * {@link #actionAllowed(String)}. For example, {@link com.storedobject.ui.inventory.POBrowser} returns the value
-     * "PO" for this method.
-     *
-     * @return Prefix string. The default implementation returns null. That means that all the actions are allowed.
-     */
-    protected String getActionPrefix() {
-        return null;
-    }
-
-    /**
      * Check whether a specific action is allowed or not. An action is defined in the UI logic as a keyword like
      * "SEND-ITEMS", "PLACE-ORDER", "RECEIVE-ITEMS", "PRINT-VOUCHER", etc. and there could be corresponding access
      * control applicable within the logic. The user's groups determine whether that user can carry out that action or
@@ -2906,15 +2905,14 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
      * However, it is up to the logic to decide the course of action.
      * <p>The user's groups can be configured to allow various UI actions ({@link com.storedobject.core.UIAction}.
      * Each {@link com.storedobject.core.UIAction} represents a unique "action" string ({@link UIAction#getAction()})
-     * and that value should be equal to {@link #getActionPrefix()} + "-" + action to allow that action.</p>
+     * and that value should be equal to the data classes prefix + "-" + action to allow that action.</p>
      *
      * @param action Action string.
-     * @return True/false. Please note that it will always return <code>true</code> if {@link #getActionPrefix()}
-     * returns <code>null</code>.
+     * @return True/false.
      */
     public boolean actionAllowed(String action) {
         return (allowedActions == null || allowedActions.contains(action))
-                && DataGrid.actionAllowed(getTransactionManager(), action, getActionPrefix());
+                && DataGrid.actionAllowed(getTransactionManager(), action, ClassAttribute.get(getDataClass()).getActionPrefix());
     }
 
     /**

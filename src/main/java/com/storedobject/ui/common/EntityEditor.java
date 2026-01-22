@@ -142,7 +142,7 @@ public class EntityEditor extends ObjectEditor<Entity> {
         int p = 0, no = 0;
         while(r > 0) {
             if((r & 1) == 1) {
-                if(s.length() > 0) {
+                if(!s.isEmpty()) {
                     s.append('\n');
                 }
                 ++no;
@@ -154,7 +154,7 @@ public class EntityEditor extends ObjectEditor<Entity> {
             ++p;
             r >>= 1;
         }
-        if(s.length() == 0) {
+        if(s.isEmpty()) {
             s.append("None");
         }
         return s.toString();

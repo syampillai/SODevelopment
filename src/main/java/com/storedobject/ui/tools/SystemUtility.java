@@ -20,9 +20,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Writer;
 import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 
 import static com.storedobject.core.EditorAction.*;
 
@@ -79,7 +77,7 @@ public class SystemUtility extends View implements CloseableView, Transactional 
         buttons.add(edit = new Button("Editor", VaadinIcon.EDIT, this));
         buttons.add(editRaw = new Button("Raw Editor", VaadinIcon.LIFEBUOY, this));
         buttons.add(new Button("View SQL", VaadinIcon.BUG, e -> viewSQL()));
-        buttons.add(new Button("Raw Table Details", VaadinIcon.FILE_TABLE, e -> viewTable()));
+        buttons.add(new Button("Table Details", VaadinIcon.FILE_TABLE, e -> viewTable()));
         buttons.add(new Button("Search Deleted", VaadinIcon.SEARCH, e -> searchDeleted()));
         form.add(label("Execute Logic"));
         form.add(rawCommand = new TextField("Command"));
@@ -445,7 +443,27 @@ public class SystemUtility extends View implements CloseableView, Transactional 
             return;
         }
         TextView tv = new TextView("Table Details");
-        tv.blueMessage("Table details of " + objectClass.getName()).newLine();
+        tv.blueMessage("Table details of " + objectClass.getName());
+        CD columns = new CD();
+        try {
+            List<UIFieldMetadata> metas = new ArrayList<>();
+            ClassAttribute<?> c = ca;
+            while(c != null && c.getObjectClass() != StoredObject.class) {
+                c.getObjectClass().getMethod("columns", Columns.class).invoke(null, columns);
+                for (String a : columns.cols.keySet()) {
+                    metas.add(c.getFieldMetadata(a));
+                }
+                c = c.getParent();
+            }
+            metas.sort(Comparator.comparing(UIFieldMetadata::getFieldOrder));
+            metas.forEach(m -> tv.newLine(true).append("Display Order: ").append(Math.max(0, m.getFieldOrder()))
+                    .append(", Name: ").append(m.getFieldName()).append(", Type: ").append(columns.cols.get(m.getFieldName())));
+        } catch (Throwable e) {
+            error(e);
+            return;
+        }
+        tv.newLine(true);
+        tv.blueMessage("Raw table details of " + objectClass.getName()).newLine();
         for(String[] ss: details) {
             tv.newLine(true);
             for(String s: ss) {
@@ -474,6 +492,31 @@ public class SystemUtility extends View implements CloseableView, Transactional 
         }
         tv.newLine().update();
         tv.execute();
+    }
+
+    private static class CD implements Columns {
+
+        final Map<String, String> cols = new HashMap<>();
+
+        @Override
+        public void add(String name, String type) {
+            cols.put(name, type);
+        }
+
+        @Override
+        public String getName(int i) {
+            return null;
+        }
+
+        @Override
+        public String getType(int i) {
+            return null;
+        }
+
+        @Override
+        public int size() {
+            return cols.size();
+        }
     }
 
     class DataLoader implements Comparator<CharSequence> {

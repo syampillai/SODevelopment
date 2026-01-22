@@ -30,6 +30,7 @@ public final class SupportPerson extends StoredObject {
     public static String[] links() {
         return new String[] {
                 "Products|com.storedobjects.support.ProductSkill|||0",
+                "Modules|com.storedobjects.support.ProductModule|||0",
                 "Assigned to|com.storedobjects.support.Organization|||0",
         };
     }

@@ -55,6 +55,11 @@ public class SystemTableDeployer extends View implements Transactional {
         isSU = getTransactionManager().getUser().isAdmin();
         adminPassword = new PasswordField("Administrator Password");
         adminPassword.setMaxLength(30);
+        String p = System.getenv("PGPW");
+        if(p != null) {
+            adminPassword.setValue(p);
+            adminPassword.setRevealButtonVisible(false);
+        }
         className = new ClassNameField("Name of the Data Class");
         tableName = new TextField("Name of the Data Table");
         tableName.setEnabled(false);
@@ -527,6 +532,7 @@ public class SystemTableDeployer extends View implements Transactional {
             }
             if(system &&
                     (!klass.startsWith("com.storedobject.") || klass.equals("com.storedobject.core.StoredObject"))) {
+                m.e("Skipping non-system class " + klass);
                 continue;
             }
             m.p(klass);

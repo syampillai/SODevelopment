@@ -24,7 +24,7 @@ public abstract class StoredObject implements Displayable, HasId, StringFiller {
     public static final Logger logger = Logger.getLogger("stored");
     private Id id, tranId;
     private static int r = new Random().nextInt();
-    private boolean loading = false;
+    private boolean loading = new Random().nextBoolean();
     Transaction tran;
     private List<StoredObjectLink<?>> links;
 

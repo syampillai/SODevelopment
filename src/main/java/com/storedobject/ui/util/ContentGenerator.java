@@ -37,7 +37,7 @@ public class ContentGenerator extends AbstractContentGenerator {
     }
 
     public ContentGenerator(Application application, ContentProducer producer, boolean download, String caption,
-                             Consumer<AbstractContentGenerator>  inform, Consumer<Long> timeTracker,
+                            Consumer<AbstractContentGenerator>  inform, Consumer<Long> timeTracker,
                             Runnable preRun, boolean windowMode, Component... extraHeaderButtons) {
         super(application, producer, inform, timeTracker, preRun);
         this.windowMode = windowMode;

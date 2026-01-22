@@ -86,11 +86,9 @@ public class SystemLog {
         if(name != null && !name.isEmpty()) {
             name = name.toUpperCase().trim().replace("'", "''");
             synchronized (sql) {
-                RawSQL.debug = true;
                 sql.execute("SELECT LoggedAt,Log FROM core.SystemLog WHERE Name='" + name + "'"
                         + (condition == null ? "" : (" AND (" + condition + ")"))
                         + " ORDER BY Name,LoggedAt LIMIT " + limit);
-                RawSQL.debug = false;
                 if(!sql.eoq()) {
                     ResultSet rs = sql.getResult();
                     while(!sql.eoq()) {

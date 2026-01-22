@@ -6,7 +6,6 @@ import com.storedobject.ui.Application;
 import com.storedobject.ui.*;
 import com.storedobject.vaadin.*;
 import com.vaadin.flow.component.*;
-import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.grid.contextmenu.GridContextMenu;
 import com.vaadin.flow.component.grid.contextmenu.GridMenuItem;
 import com.vaadin.flow.component.html.Paragraph;
@@ -16,23 +15,31 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class MemoSystem extends ObjectGrid<MemoComment> implements CloseableView, Transactional, AlertHandler {
 
-    private final MemoType memoType;
+    protected final MemoType memoType;
+    protected final ButtonLayout buttonPanel = new ButtonLayout();
     private MemoEditor<?> memoEditor;
     private CommentEditor commentEditor;
     private NewMemoType newMemoType;
     private SystemUser who;
     private Button whoButton;
-    private SelectWho selectWho;
+    private SelectBoss selectBoss;
     private SelectAssistant selectAssistant;
     private String comment;
-    private ELabel rightClick;
-    private boolean history = false;
+    private final ELabel entryCount = new ELabel();
+    private final ELabel rightClick = new ELabel("|", Application.COLOR_INFO)
+            .append(" Right-click on the entry to see options", Application.COLOR_SUCCESS)
+            .update();
+    protected final HistoryCheckbox history = new HistoryCheckbox(c -> loadMemos());
     private Id filterMemoId;
-    private MemoComment prevCache;
     private ReasonForm reasonForm;
+    private boolean assisting = false;
+    private final Button newButton = new Button(getCreateLabel() + " New " + getMemoLabel(), "add",
+            e -> newMemo((MemoComment) null));
 
     public MemoSystem() {
         this(true);
@@ -51,13 +58,15 @@ public class MemoSystem extends ObjectGrid<MemoComment> implements CloseableView
     }
 
     public MemoSystem(MemoType memoType, boolean load) {
-        super(MemoComment.class);
+        this(memoType, null, load);
+    }
+
+    protected MemoSystem(MemoType memoType, Iterable<String> columns, boolean load) {
+        super(MemoComment.class, columns);
         checkMemoType(memoType);
         this.memoType = memoType;
         who = getTransactionManager().getUser();
-        if(who.getStatus() != 0) {
-            throw new SORuntimeException("You are not a regular user");
-        }
+        checkUser(who);
         setCaption(memoType == null ? Application.getLogicCaption("Memo System") : memoType.getName());
         GridContextMenu<MemoComment> contextMenu = new GridContextMenu<>(this);
         contextMenu.addItem("View", e -> e.getItem().ifPresent(this::viewMemo));
@@ -91,12 +100,13 @@ public class MemoSystem extends ObjectGrid<MemoComment> implements CloseableView
                 contextMenu.addItem("Create New " + getMemoLabel(), e -> newMemo(e.getItem().orElse(null)));
         contextMenu.setDynamicContentHandler(mc -> {
             deselectAll();
-            if(mc == null || mc.getMemo().getStatus() == 6) {
+            select(mc);
+            if(isViewMode() || mc == null || mc.getMemo().getStatus() == 6) {
                 editItem.setVisible(false);
                 editSubject.setVisible(false);
                 closeMemo.setVisible(false);
                 editComment.setVisible(false);
-                recallMemo.setVisible(mc != null && canRecall(mc));
+                recallMemo.setVisible(!isViewMode() && mc != null && canRecall(mc));
                 forwardMemo.setVisible(false);
                 returnMemo.setVisible(false);
                 returnMemoToInitiator.setVisible(false);
@@ -108,16 +118,15 @@ public class MemoSystem extends ObjectGrid<MemoComment> implements CloseableView
                 escalateMemo.setVisible(false);
                 return true;
             }
-            select(mc);
             editItem.setVisible(canEditMemo(mc));
             editSubject.setVisible(!editItem.isVisible() && canEditSubject(mc));
             boolean canComment = canComment(mc);
             editComment.setVisible(canComment);
-            closeMemo.setVisible(mine() && canCloseMemo(mc));
-            recallMemo.setVisible(mine() && canRecall(mc));
-            boolean canForward = mine() && canForward(mc);
+            closeMemo.setVisible(canCloseMemo(mc));
+            recallMemo.setVisible(canRecall(mc));
+            boolean canForward = canForward(mc);
             forwardMemo.setVisible(canForward);
-            boolean canReturn = mine() && canReturn(mc);
+            boolean canReturn = canReturn(mc);
             returnMemo.setVisible(canReturn);
             if(!canForward && !canReturn && mine()) {
                 String why = mc.getMemo().whyNoTakers();
@@ -126,14 +135,13 @@ public class MemoSystem extends ObjectGrid<MemoComment> implements CloseableView
                     error(why);
                 }
             }
-            returnMemoToInitiator.setVisible(mine() && !canReturn && mc.canReturnToInitiator(who));
+            returnMemoToInitiator.setVisible(!canReturn && mc.canReturnToInitiator(who));
             approveMemo.setVisible(mine() && canApprove(mc));
-            reopenMemo.setVisible(mine() && canReopen(mc));
-            escalateMemo.setVisible(mine() && canEscalate(mc));
+            reopenMemo.setVisible(canReopen(mc));
+            escalateMemo.setVisible(canEscalate(mc));
             rejectMemo.setVisible(canReject() && mine() && canApprove(mc));
-            assignAssistant.setVisible(canAssignAssistant() && mine() && mc.getMemo().getStatus() < 4);
-            createNew.setVisible(memoType == null && !mc.getMemo().getType().getSpecial());
-            assignAssistant.setVisible(false);
+            assignAssistant.setVisible(canAssignAssistant() && mc.getMemo().getStatus() < 4);
+            createNew.setVisible(memoType != null && !mc.getMemo().getType().getSpecial());
             return true;
         });
         if(load) {
@@ -147,7 +155,7 @@ public class MemoSystem extends ObjectGrid<MemoComment> implements CloseableView
         });
     }
 
-    private static MemoType memoType(String shortName) {
+    protected static MemoType memoType(String shortName) {
         int p;
         if(shortName != null && (p = shortName.indexOf('|')) > 0) {
             shortName = shortName.substring(0, p);
@@ -158,6 +166,16 @@ public class MemoSystem extends ObjectGrid<MemoComment> implements CloseableView
             throw new SORuntimeException(shortName + " doesn't exist");
         }
         return t;
+    }
+
+    protected void checkUser(SystemUser who) {
+        if(who.getStatus() != 0) {
+            throw new SORuntimeException("You are not a regular user");
+        }
+    }
+
+    protected boolean isViewMode() {
+        return false;
     }
 
     @Override
@@ -193,67 +211,69 @@ public class MemoSystem extends ObjectGrid<MemoComment> implements CloseableView
         return getTransactionManager().getUser().getId().equals(who.getId());
     }
 
-    private void loadMemos() {
-        prevCache = null;
-        String filter = "CommentedBy=" + who.getId();
-        if(!history) {
-            filter += " AND T.Status<3";
+    protected String memoLoadFilter() {
+        return "EXISTS (SELECT * FROM core.MemoComment WHERE Memo=T.Id AND CommentedBy=" + who.getId() + ")";
+    }
+
+    protected <M extends Memo> void loadMemos() {
+        String filter = "SystemEntity";
+        List<SystemEntity> entityList = getTransactionManager().getUser().listEntities();
+        if(entityList.size() == 1) {
+            filter += "=" + entityList.getFirst().getId();
+        } else {
+            filter += " IN (" + entityList.stream().map(SystemEntity::getId).map(Id::toString)
+                    .collect(Collectors.joining(",")) + ")";
+        }
+        filter += " AND ";
+        if(history.getValue()) {
+            filter += history.getFilter("Date");
+        } else {
+            filter += "Status<10";
         }
         if(memoType != null) {
-            filter += " AND Memo.Type=" + memoType.getId();
+            filter += " AND Type=" + memoType.getId();
         }
         if(filterMemoId != null) {
             filter += " AND Memo=" + filterMemoId;
         }
-        ObjectIterator<MemoComment> mcs = StoredObject.list(MemoComment.class, filter, "Memo DESC,CommentedAt DESC")
-                .filter(this::ownerFilter).convert(this::convertFilter).filter(Objects::nonNull);
+        if(assisting) {
+            filter += " AND AssistedBy=" + getTransactionManager().getUser().getId();
+        }
+        String extraFilter = memoLoadFilter();
+        if(extraFilter != null && !extraFilter.isEmpty()) filter += " AND " + extraFilter;
+        QueryBuilder<M> q = QueryBuilder.from(memoClass());
+        q.where(filter).orderBy("SystemEntity,No DESC");
+        ObjectIterator<MemoComment> mcs = q.list().filter(this::filter)
+                .map(Memo::getLatestComment).filter(Objects::nonNull).filter(this::filter);
         load(mcs);
         deselectAll();
     }
 
-    private MemoComment convertFilter(MemoComment mc) {
-        Memo m = mc.getMemo();
-        MemoComment lastComment = m.getLatestComment();
-        if(history) {
-            return lastComment;
-        }
-        if(lastComment.equals(mc)) {
-            return mc;
-        }
-        return m.isMine(who) ? lastComment : null;
+    @SuppressWarnings("unchecked")
+    protected final <M extends Memo> Class<M> memoClass() {
+        return (Class<M>)(memoType == null ? Memo.class : memoType.getMemoClass());
     }
 
-    private boolean ownerFilter(MemoComment mc) {
-        if(memoType == null) {
-            if(mc.getMemo().getType().getSpecial()) {
-                return false;
-            }
-        }
-        if(prevCache != null && prevCache.getMemoId().equals(mc.getMemoId())) {
-            return false;
-        }
-        if(mc.getMemo() == null) {
-            return false;
-        }
-        prevCache = mc;
+    protected boolean filter(Memo memo) {
+        return true;
+    }
+
+    protected boolean filter(MemoComment memoComment) {
         return true;
     }
 
     @Override
-    public Component createHeader() {
-        Checkbox h = new Checkbox("Include History");
-        h.addValueChangeListener(e -> {
-            history = e.getValue();
-            loadMemos();
-        });
-        return new ButtonLayout(
-                getConfigureButton(),
-                canCreateNew() ? new Button(getCreateLabel() + " New " + getMemoLabel(), "add",
-                        e -> newMemo((MemoComment) null)) : null,
-                new Button("Load", e -> loadMemos()),
-                h,
-                new Button("Exit", e -> close())
-        );
+    public final Component createHeader() {
+        newButton.setVisible(canCreateNew());
+        GridSearchField<MemoComment> searchField = new GridSearchField<>(this);
+        searchField.configure(mc -> mc.getMemo().getSubject());
+        buttonPanel.add(getConfigureButton(), newButton, searchField, new Button("Load", e -> loadMemos()));
+        addExtraButtons();
+        buttonPanel.add(history, new Button("Exit", e -> close()));
+        return buttonPanel;
+    }
+
+    protected void addExtraButtons() {
     }
 
     protected String whoName(SystemUser who) {
@@ -263,18 +283,35 @@ public class MemoSystem extends ObjectGrid<MemoComment> implements CloseableView
     @Override
     public void createHeaders() {
         whoButton = new Button(whoName(who), (String) null, e -> selectWho()).asSmall();
-        rightClick = new ELabel("Please right-click on the entry to see all options", Application.COLOR_SUCCESS);
+        whoButton();
         rightClick.setVisible(!isEmpty());
-        ButtonLayout b = new ButtonLayout(whoButton, rightClick);
+        ButtonLayout b = new ButtonLayout(whoButton, new ELabel("|", Application.COLOR_INFO),
+                new ELabel("Count"), entryCount, rightClick);
+        addToHeader(b);
         prependHeader().join().setComponent(b);
+    }
+
+    protected final void whoButton() {
+        String t = whoName(who);
+        if(assisting) {
+            t += " - Assisting";
+        }
+        whoButton.setText(t);
+        whoButton.getElement().setAttribute("title", assisting ? "Click to change" : assistantMessage(who));
+    }
+
+    protected String assistantMessage(SystemUser who) {
+        return "Click here if you want to assist someone else";
+    }
+
+    protected void addToHeader(ButtonLayout buttonLayout) {
     }
 
     @Override
     public void loaded() {
         super.loaded();
-        if(rightClick != null) {
-            rightClick.setVisible(!isEmpty());
-        }
+        entryCount.clearContent().append("#" + size(), Application.COLOR_SUCCESS).update();
+        rightClick.setVisible(!isEmpty());
         filterMemoId = null;
     }
 
@@ -323,7 +360,8 @@ public class MemoSystem extends ObjectGrid<MemoComment> implements CloseableView
             return;
         }
         try {
-            Memo memo = mt.getMemoClass().getDeclaredConstructor().newInstance();
+            MemoEditor<?> me = memoEditor(mt.getMemoClass());
+            Memo memo = me.createObjectInstance();
             if(memoType != null && !memoType.getSpecial()) {
                 memo.setSubject(memoType.getName());
             }
@@ -381,14 +419,22 @@ public class MemoSystem extends ObjectGrid<MemoComment> implements CloseableView
         return mc.canEditSubject(who);
     }
 
-    private void editMemo(Memo memo) {
-        memoEditor(memo).editObject(memo, getView());
+    private <M extends Memo> void editMemo(M memo) {
+        @SuppressWarnings("unchecked") MemoEditor<M> me = (MemoEditor<M>) memoEditor(memo.getClass());
+        me.editObject(memo, getView());
+    }
+
+    public void viewMemo() {
+        MemoComment mc = selected();
+        if(mc != null) {
+            viewMemo(mc);
+        }
     }
 
     private <M extends Memo> void viewMemo(MemoComment mc) {
         comment = mc.getContent();
         @SuppressWarnings("unchecked") M memo = (M)mc.getMemo();
-        MemoEditor<M> me = memoEditor(memo);
+        @SuppressWarnings("unchecked") MemoEditor<M> me = (MemoEditor<M>) memoEditor(memo.getClass());
         me.viewObject(memo, getView());
         me.comments.set(mc);
     }
@@ -402,26 +448,24 @@ public class MemoSystem extends ObjectGrid<MemoComment> implements CloseableView
     }
 
     @SuppressWarnings("unchecked")
-    private <M extends Memo> MemoEditor<M> memoEditor(M memo) {
+    private <M extends Memo> MemoEditor<M> memoEditor(Class<M> memoClass) {
         clearAlerts();
-        if(memoEditor == null || memoEditor.getObjectClass() != memo.getClass()) {
-            memoEditor = createMemoEditor(memo.getClass());
+        if(memoEditor == null || memoEditor.getObjectClass() != memoClass) {
+            memoEditor = createMemoEditor(memoClass);
             if(memoEditor == null) {
-                memoEditor = new MemoEditor<>(memo.getClass());
+                memoEditor = new MemoEditor<>(memoClass);
             }
             memoEditor.setMemoSystem(this);
         }
         return (MemoEditor<M>) memoEditor;
     }
 
-    private void selectWho() {
-        if(canAssist()) {
-            if (selectWho == null) {
-                selectWho = new SelectWho();
-                selectWho.suField.setValue(who);
-            }
-            selectWho.execute(getView());
+    protected void selectWho() {
+        if (selectBoss == null) {
+            selectBoss = new SelectBoss();
+            selectBoss.suField.setValue(who);
         }
+        selectBoss.execute(getView());
     }
 
     @Override
@@ -437,71 +481,122 @@ public class MemoSystem extends ObjectGrid<MemoComment> implements CloseableView
     }
 
 
-    private abstract class SelectSU extends DataForm {
+    private boolean assistantFilter(SystemUser su) {
+        return !su.getId().equals(who.getId()) && filterAssistant(su);
+    }
 
-        final UserField suField = new UserField(SystemUser.class);
+    protected boolean filterAssistant(SystemUser who) {
+        return true;
+    }
 
-        public SelectSU(String label) {
+    private class SelectAssistant extends DataForm {
+
+        final UserField suField = UserField.forLinks("Select Assistant", who, MemoSystem.this::assistantFilter);
+        MemoComment memoComment;
+
+        public SelectAssistant() {
             super("Select");
-            suField.setLabel(label);
-            suField.setFilter("Status=0", false);
-            suField.setLoadFilter(MemoSystem.this::whoFilter, false);
             addField(suField);
             setRequired(suField);
         }
 
         @Override
+        protected void execute(View parent, boolean doNotLock) {
+            //noinspection SizeReplaceableByIsEmpty
+            if(suField.getField() instanceof ObjectComboField<SystemUser> f && f.size() == 0) {
+                warning("No assistants available!");
+                return;
+            }
+            suField.clear();
+            super.execute(parent, doNotLock);
+        }
+
+        @Override
         protected final boolean process() {
+            clearAlerts();
             SystemUser su = suField.getObject();
-            Id eid = getTransactionManager().getEntity().getId();
-            if(su.listEntities().stream().noneMatch(e -> e.getId().equals(eid))) {
-                warning(su.getName() + " doesn't belong to " + getTransactionManager().getEntity().getName());
+            if(su.getId().equals(getTransactionManager().getUser().getId())) {
                 return false;
             }
-            setSU(su);
+            close();
+            if(su.getId().equals(memoComment.getMemo().getAssistedById())) {
+                message("Already assigned to " + su.getName());
+                return true;
+            }
+            if(transact(t -> memoComment.assignAssistant(t, su))) {
+                message("Assigned to " + su.getName());
+            }
             return true;
         }
 
-        protected abstract void setSU(SystemUser su);
-    }
-
-    private boolean whoFilter(SystemUser su) {
-        return !su.getId().equals(who.getId()) && filterWho(su);
-    }
-
-    protected boolean filterWho(SystemUser who) {
-        return true;
-    }
-
-    private class SelectWho extends SelectSU {
-
-        public SelectWho() {
-            super("Assist");
-        }
-
         @Override
-        protected void setSU(SystemUser su) {
-            who = su;
-            memoEditor = null;
-            whoButton.setText(whoName(who));
-            loadMemos();
+        public int getMinimumContentHeight() {
+            return 40;
         }
     }
 
-    private class SelectAssistant extends SelectSU {
+    protected String assistantName(SystemUser assistant) {
+        return assistant.getName();
+    }
 
-        private MemoComment memoComment;
+    protected List<SystemUser> assistants() {
+        return getTransactionManager().getUser().listAssistants().toList();
+    }
 
-        public SelectAssistant() {
-            super("Assistant");
-        }
+    private class SelectBoss extends DataForm {
 
-        @Override
-        protected void setSU(SystemUser su) {
-            if(transact(t -> memoComment.assignAssistant(t, su))) {
-                loadMemos();
+        final UserField suField = new UserField("Assist", assistants());
+
+        public SelectBoss() {
+            super("Select");
+            addField(suField);
+            if(suField.getField() instanceof ObjectComboField<SystemUser> f) {
+                f.setItemLabelGenerator(MemoSystem.this::assistantName);
+                f.setClearButtonVisible(true);
             }
         }
+
+        @Override
+        protected void execute(View parent, boolean doNotLock) {
+            //noinspection SizeReplaceableByIsEmpty
+            if(suField.getField() instanceof ObjectComboField<SystemUser> f && f.size() == 0) {
+                warning("You can't assist anyone!");
+                return;
+            }
+            suField.clear();
+            super.execute(parent, doNotLock);
+        }
+
+        @Override
+        protected final boolean process() {
+            clearAlerts();
+            close();
+            who = suField.getObject();
+            if(who == null || who.getId().equals(getTransactionManager().getUser().getId())) {
+                who = getTransactionManager().getUser();
+                assisting = false;
+            } else {
+                assisting = true;
+            }
+            newButton.setVisible(canCreateNew());
+            memoEditor = null;
+            whoButton();
+            loadMemos();
+            return true;
+        }
+
+        @Override
+        public int getMinimumContentWidth() {
+            return 40;
+        }
+    }
+
+    protected final SystemUser who() {
+        return who;
+    }
+
+    protected boolean isAssisting() {
+        return assisting;
     }
 
     private void editSubject(MemoComment mc) {
@@ -544,7 +639,7 @@ public class MemoSystem extends ObjectGrid<MemoComment> implements CloseableView
 
         @Override
         public int getMinimumContentWidth() {
-            return 60;
+            return 40;
         }
     }
 
@@ -650,6 +745,13 @@ public class MemoSystem extends ObjectGrid<MemoComment> implements CloseableView
         }
 
         @Override
+        protected M createObjectInstance() {
+            M instance = super.createObjectInstance();
+            if(memoSystem.assisting) instance.setAssistedBy(getTransactionManager().getUser());
+            return instance;
+        }
+
+        @Override
         protected void saveObject(Transaction t, M object) throws Exception {
             object.save(t, memoSystem.comment, memoSystem.who);
         }
@@ -661,6 +763,7 @@ public class MemoSystem extends ObjectGrid<MemoComment> implements CloseableView
 
         @Override
         public void setObject(M object, boolean load) {
+            comments.removeAll();
             super.setObject(object, load);
             setCaption(object == null ? "Memo" : object.getReference());
         }
@@ -709,10 +812,6 @@ public class MemoSystem extends ObjectGrid<MemoComment> implements CloseableView
         return true;
     }
 
-    protected boolean canAssist() {
-        return true;
-    }
-
     protected boolean canCreateNew() {
         return true;
     }
@@ -750,6 +849,9 @@ public class MemoSystem extends ObjectGrid<MemoComment> implements CloseableView
     }
 
     private void selectAssistant(MemoComment mc) {
+        if(!canAssignAssistant()) {
+            return;
+        }
         if(selectAssistant == null) {
             selectAssistant = new SelectAssistant();
         }
@@ -760,10 +862,11 @@ public class MemoSystem extends ObjectGrid<MemoComment> implements CloseableView
     private class CommentEditor extends ObjectEditor<MemoComment> {
 
         int action;
-        private final UserField suField = new UserField("Forward to", SystemUser.class, ObjectField.Type.CHOICE);
+        private final UserField suField = new UserField("Forward to", ObjectField.Type.CHOICE);
         private SystemUser su;
         private final Comments comments = new Comments(this);
         private Focusable<?> commentField;
+        private final List<ExtraMemoField> extraMemoFields = new ArrayList<>();
 
         CommentEditor() {
             super(MemoComment.class);
@@ -779,10 +882,19 @@ public class MemoSystem extends ObjectGrid<MemoComment> implements CloseableView
             });
             addField("ForwardTo", o -> suid(), (o, v) -> su = suField.getObject());
             addField("Subject", o -> o.getMemo().getSubject());
+            List<ExtraMemoField> emfs = extraMemoFields();
+            if(emfs != null) {
+                for(ExtraMemoField field: emfs) {
+                    if(field != null) {
+                        addField(field.name(), o -> field.getter().apply(o.getMemo()));
+                        extraMemoFields.add(field);
+                    }
+                }
+            }
             addField("MemoStatus");
             addField("Comments");
             addConstructedListener(f -> {
-                setColumnSpan((Component) getField("Comment"), 2);
+                setColumnSpan((Component) getField("Comments"), 2);
                 setColumnSpan((Component) getField("Subject"), 2);
                 setRequired(suField, false);
             });
@@ -794,7 +906,7 @@ public class MemoSystem extends ObjectGrid<MemoComment> implements CloseableView
 
         @Override
         protected HasValue<?, ?> createField(String fieldName, Class<?> fieldType, String label) {
-            if("Subject".equals(fieldName)) {
+            if("Subject".equals(fieldName) || extraMemoFields.stream().anyMatch(f -> f.name().equals(fieldName))) {
                 return new TextField(label);
             }
             if("ForwardTo".equals(fieldName)) {
@@ -817,13 +929,27 @@ public class MemoSystem extends ObjectGrid<MemoComment> implements CloseableView
 
         @Override
         protected int getFieldOrder(String fieldName) {
+            int o = extraFieldOrder(fieldName);
+            if(o >= 0) {
+                return 110 + o;
+            }
             return switch(fieldName) {
                 case "MemoStatus" -> 110;
                 case "ForwardTo" -> 750;
                 case "Subject" -> 760;
+                case "Comment" -> 761;
                 case "Comments" -> 770;
                 default -> super.getFieldOrder(fieldName);
             };
+        }
+
+        private int extraFieldOrder(String fieldName) {
+            for(int i = 0; i < extraMemoFields.size(); i++) {
+                if(extraMemoFields.get(i).name().equals(fieldName)) {
+                    return i;
+                }
+            }
+            return -1;
         }
 
         @Override
@@ -853,7 +979,6 @@ public class MemoSystem extends ObjectGrid<MemoComment> implements CloseableView
 
         @Override
         protected void saveObject(Transaction t, MemoComment object) throws Exception {
-            //if(object.getCommentCount() == 0) return;
             switch(action) {
                 case 1 -> object.returnMemo(t, object.getComment());
                 case 2 -> object.forwardMemo(t, object.getComment(), su);
@@ -922,6 +1047,7 @@ public class MemoSystem extends ObjectGrid<MemoComment> implements CloseableView
 
     private class Comments extends VerticalLayout {
 
+        private static final String BACKGROUND = "#E6F2F2";
         private MemoComment memoComment;
         private final View view;
         private final Button showButton, orderButton;
@@ -937,14 +1063,28 @@ public class MemoSystem extends ObjectGrid<MemoComment> implements CloseableView
             buttons.add(new ELabel("Comments/Details:"), showButton, orderButton);
         }
 
+        @Override
+        public void removeAll() {
+            super.removeAll();
+            comments.clear();
+            showing = true;
+            showButton.setIcon(VaadinIcon.EYE_SLASH);
+            showButton.setVisible(true);
+            showButton.setText("Hide");
+            orderButton.setVisible(false);
+        }
+
         void set(MemoComment mc) {
             removeAll();
-            comments.clear();
-            add(buttons);
-            add(new Badge("Pending with " + mc.getMemo().getPendingWith()));
+            VerticalLayout v = new VerticalLayout();
+            v.add(buttons);
+            v.add(new Badge("Pending with " + mc.getMemo().getPendingWith()));
+            Box box = new Box(v);
+            box.setStyle("background-color", BACKGROUND);
+            add(v);
             StoredObject.list(MemoComment.class, "Memo=" + mc.getMemoId(), "CommentCount")
                     .forEach(this::addComment);
-            orderButton.setIcon(ascending ? VaadinIcon.ANGLE_DOUBLE_UP : VaadinIcon.ANGLE_DOUBLE_DOWN);
+            orderButton.setIcon(ascending ? VaadinIcon.ANGLE_DOUBLE_DOWN : VaadinIcon.ANGLE_DOUBLE_UP);
             if(!ascending) {
                 for(int n = comments.size(); --n >= 0;) {
                     add(comments.get(n));
@@ -955,6 +1095,7 @@ public class MemoSystem extends ObjectGrid<MemoComment> implements CloseableView
 
         private void toggleOrder() {
             ascending = !ascending;
+            orderButton.setIcon(ascending ? VaadinIcon.ANGLE_DOUBLE_DOWN : VaadinIcon.ANGLE_DOUBLE_UP);
             comments.forEach(this::remove);
             if(ascending) {
                 comments.forEach(this::add);
@@ -971,7 +1112,8 @@ public class MemoSystem extends ObjectGrid<MemoComment> implements CloseableView
         private void toggleVisibility() {
             showing = !showing;
             getChildren().forEach(c -> c.setVisible(showing));
-            buttons.setVisible(true);
+            //noinspection OptionalGetWithoutIsPresent
+            buttons.getParent().get().setVisible(true);
             if(view instanceof CommentEditor ce) {
                 ce.commentField.focus();
             }
@@ -1018,9 +1160,9 @@ public class MemoSystem extends ObjectGrid<MemoComment> implements CloseableView
                     };
                 }
                 action = mc.getMemo().renameActionVerb(action);
-                add(new Badge(action + " by " + mc.getCommentedBy().getName() + " at " + getCommentedAt(mc)));
+                add(new Badge(action + " by " + assistantName(mc.getCommentedBy()) + " at " + getCommentedAt(mc)));
                 Paragraph p = new Paragraph();
-                p.getStyle().set("font-style", "italic").set("line-height", "normal");
+                p.getStyle().set("font-style", "italic").set("font-weight", "bold").set("line-height", "normal");
                 c.lines().forEach(line -> {
                     p.add(new Span(line));
                     p.add(new HtmlComponent("br"));
@@ -1029,7 +1171,8 @@ public class MemoSystem extends ObjectGrid<MemoComment> implements CloseableView
                 ButtonLayout attachments = new ButtonLayout();
                 AtomicBoolean any = new AtomicBoolean(false);
                 mc.listLinks(MemoAttachment.class).forEach(a -> {
-                    attachments.add(new Button(a.getName(), VaadinIcon.PAPERCLIP, e -> Application.get().view(a)).asSmall());
+                    attachments.add(new Button(a.getName(), VaadinIcon.PAPERCLIP,
+                            e -> Application.get().view(a, true)).asSmall());
                     any.set(true);
                 });
                 if(any.get()) {
@@ -1037,6 +1180,7 @@ public class MemoSystem extends ObjectGrid<MemoComment> implements CloseableView
                 }
                 Box box = new Box(this);
                 box.setStyle("width", "100%");
+                box.setStyle("background-color", BACKGROUND);
             }
         }
     }
@@ -1086,5 +1230,12 @@ public class MemoSystem extends ObjectGrid<MemoComment> implements CloseableView
         public int getMinimumContentWidth() {
             return 60;
         }
+    }
+
+    protected List<ExtraMemoField> extraMemoFields() {
+        return null;
+    }
+
+    public record ExtraMemoField(String name, Function<Memo, String> getter) {
     }
 }

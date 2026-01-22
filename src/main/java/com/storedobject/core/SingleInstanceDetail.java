@@ -10,7 +10,7 @@ public interface SingleInstanceDetail extends Detail {
     /**
      * By overriding this method, a fixed value is returned as the unique value so that only one instance can exist
      * for a specific master instance.
-     * <p>Note: This is the mechanism used for ensuring single instance. If this method is overridden, single
+     * <p>Note: This is the mechanism used for ensuring a single instance. If this method is overridden, a single
      * instance is not guaranteed.</p>
      *
      * @return Returns an empty string as the fixed value to enforce uniqueness.

@@ -2,7 +2,7 @@ package com.storedobject.core;
 
 /**
  * The Financial interface represents a financial entity that can post ledger transactions.
- * It provides methods to check if the ledger is already posted, and to post a ledger transaction.
+ * It provides methods to check if the ledger is already posted and to post a ledger transaction.
  * It also provides a default method to post a ledger transaction using a TransactionManager.
  *
  * @author Syam
@@ -74,7 +74,7 @@ public interface Financial {
     }
 
     /**
-     * Is financial system active for this entity?
+     * Is a financial system active for this entity?
      *
      * @return True/false.
      */
@@ -84,7 +84,7 @@ public interface Financial {
     }
 
     /**
-     * Is financial system active for this transaction manager?
+     * Is a financial system active for this transaction manager?
      *
      * @return True/false.
      */

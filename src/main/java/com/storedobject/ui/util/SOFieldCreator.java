@@ -137,7 +137,9 @@ public class SOFieldCreator<T> implements ObjectFieldCreator<T> {
         try {
             if(HasContacts.class.isAssignableFrom(ca.getObjectClass()) &&
                     ca.getObjectClass().getDeclaredConstructor().newInstance() instanceof HasContacts hc) {
-                hc.listContactTypes().filter(ct -> oe.isFieldIncluded(ct.getName() + ".c"))
+                hc.listContactTypes()
+                        .filter(ct -> ct.getType() <= 2)
+                        .filter(ct -> oe.isFieldIncluded(ct.getName() + ".c"))
                         .forEach(contactTypes::add);
             }
         } catch(InstantiationException | IllegalAccessException | NoSuchMethodException
@@ -457,6 +459,12 @@ public class SOFieldCreator<T> implements ObjectFieldCreator<T> {
                 }
             } else if(field != null) {
                 field.setReadOnly(true);
+            }
+        }
+        if(form != null && !md.getEditability()) {
+            ObjectEditor<?> oe = oe();
+            if(oe != null) {
+                oe.setFieldReadOnly(field);
             }
         }
     }

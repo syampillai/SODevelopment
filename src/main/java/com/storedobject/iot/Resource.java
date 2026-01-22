@@ -13,7 +13,7 @@ public final class Resource extends Name {
     private static final Map<Id, Resource> resources = new HashMap<>();
     private int code; // 1: Electricity, 2: Water
     private String measurementUnit;
-    private boolean utilization;
+    private boolean production;
 
     public Resource() {
     }
@@ -21,7 +21,7 @@ public final class Resource extends Name {
     public static void columns(Columns columns) {
         columns.add("Code", "int");
         columns.add("MeasurementUnit", "text");
-        columns.add("Utilization", "boolean");
+        columns.add("Production", "boolean");
     }
 
     public static void indices(Indices indices) {
@@ -66,13 +66,13 @@ public final class Resource extends Name {
         return measurementUnit;
     }
 
-    public void setUtilization(boolean utilization) {
-        this.utilization = utilization;
+    public void setProduction(boolean production) {
+        this.production = production;
     }
 
     @Column(order = 400)
-    public boolean getUtilization() {
-        return utilization;
+    public boolean getProduction() {
+        return production;
     }
 
     @Override

@@ -11,11 +11,11 @@ import java.util.function.Consumer;
 class AdministratorPassword extends DataForm {
 
     private boolean verified = false;
-    private final PasswordField passwordField = new PasswordField("Administrator password");
+    private final PasswordField passwordField = new PasswordField("DB Administrator Password");
     private Consumer<char[]> consumer;
 
     AdministratorPassword() {
-        super("Administrator Password");
+        super("DB Administrator Password");
         passwordField.setMaxLength(30);
         addField(passwordField);
     }
@@ -23,12 +23,7 @@ class AdministratorPassword extends DataForm {
     @Override
     protected boolean process() {
         clearAlerts();
-        try {
-            verified = Database.get().validateSecurityPassword(passwordField.getValue().toCharArray());
-        } catch (Exception e) {
-            warning(e);
-            return false;
-        }
+        if(!verify(passwordField.getValue(),true)) return false;
         if(verified) {
             close();
             consume();
@@ -38,8 +33,26 @@ class AdministratorPassword extends DataForm {
         return false;
     }
 
+    private boolean verify(String p, boolean warn) {
+        if(verified) return true;
+        try {
+            verified = Database.get().validateSecurityPassword(p.toCharArray());
+        } catch (Exception e) {
+            if(warn) warning(e);
+            verified = false;
+        }
+        return verified;
+    }
+
     @Override
     protected void execute(View parent, boolean doNotLock) {
+        if(!verified) {
+            String p = System.getenv("PGPW");
+            if(p != null && verify(p, false)) {
+                passwordField.setValue(p);
+                passwordField.setRevealButtonVisible(false);
+            }
+        }
         if(verified) {
             consume();
         } else {

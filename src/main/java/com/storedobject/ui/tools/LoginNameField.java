@@ -20,6 +20,7 @@ public class LoginNameField extends ComboBox<String> {
     private HasValue<?, ?> passwordField;
     private StringList userList;
     private Registration registrationRemember;
+    private String username;
 
     public LoginNameField() {
         super();
@@ -43,6 +44,10 @@ public class LoginNameField extends ComboBox<String> {
             }
         });
         userChanged();
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
     }
 
     public void setPasswordField(HasValue<?, ?> passwordField) {
@@ -83,7 +88,7 @@ public class LoginNameField extends ComboBox<String> {
     private void set() {
         setItems(userList);
         if(!userList.isEmpty()) {
-            setValue(userList.get(0));
+            setValue(userList.getFirst());
         }
     }
 
@@ -102,6 +107,13 @@ public class LoginNameField extends ComboBox<String> {
         } else {
             userList = StringList.EMPTY;
         }
+        String u = username;
+        if(u != null && !u.isEmpty()) {
+            u = u.trim().toLowerCase();
+            if(!userList.contains(u)) {
+                userList = StringList.concat(StringList.create( new String[] { u }), userList);
+            }
+        }
         set();
     }
 
@@ -114,8 +126,8 @@ public class LoginNameField extends ComboBox<String> {
             return;
         }
         if(remember.getValue()) {
-            if(userList.size() > 0) {
-                if(userList.get(0).equals(u)) {
+            if(!userList.isEmpty()) {
+                if(userList.getFirst().equals(u)) {
                     return;
                 }
                 String thisU = u;

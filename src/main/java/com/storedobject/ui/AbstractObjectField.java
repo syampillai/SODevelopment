@@ -185,7 +185,7 @@ public abstract class AbstractObjectField<T extends StoredObject> extends Custom
     }
 
     /**
-     * Check the current value to see if it is satisfying the filter condition of the searcher or not.
+     * Check the current value to see if it satisfies the filter condition of the searcher or not.
      */
     protected void reget() {
         T v1 = getValue();

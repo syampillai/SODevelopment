@@ -72,7 +72,7 @@ public final class SupportUser extends StoredObject {
     }
 
     public Organization getOrganization() {
-        return getRelated(Organization.class, organizationId);
+        return Organization.get(organizationId);
     }
 
     @Override

@@ -2,7 +2,12 @@ package com.storedobjects.support;
 
 import com.storedobject.core.*;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class Organization extends EntityRole {
+
+    private static final Map<Id, Organization> cache = new HashMap<>();
 
     public Organization() {
     }
@@ -39,9 +44,19 @@ public class Organization extends EntityRole {
     @Override
     public void saved() {
         Issue.approvers.clear();
+        cache.remove(getId());
     }
 
     public ObjectIterator<SystemUser> listUsers() {
         return list(SupportUser.class, "Organization=" + getId()).map(SupportUser::getSupportUser);
+    }
+
+    public static Organization get(Id id) {
+        Organization o = cache.get(id);
+        if(o == null) {
+            o = get(Organization.class, id, true);
+            cache.put(id, o);
+        }
+        return o;
     }
 }

@@ -55,7 +55,7 @@ public class ProductSkill extends StoredObject {
     }
 
     public Product getProduct() {
-        return getRelated(Product.class, productId);
+        return Product.get(productId);
     }
 
     public void setSkillLevel(int skillLevel) {

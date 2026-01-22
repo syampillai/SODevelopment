@@ -13,6 +13,7 @@ import java.sql.Date;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeParseException;
 import java.util.*;
@@ -415,13 +416,19 @@ public class JSON extends com.storedobject.common.JSON {
             if (rfc3339String == null) {
                 throw new IllegalArgumentException("Input string cannot be null");
             }
-
             try {
                 OffsetDateTime odt = OffsetDateTime.parse(rfc3339String, RFC_3339_FORMATTER);
                 return odt.toInstant();
-
             } catch (DateTimeParseException e) {
-                throw new IllegalArgumentException("Invalid RFC 3339 format: " + rfc3339String, e);
+                try {
+                    // If that fails, try parsing as date-only and convert to Instant
+                    LocalDate date = LocalDate.parse(rfc3339String);
+                    // Date-only: assume start of day (00:00:00) in UTC
+                    return date.atStartOfDay(ZoneOffset.UTC).toInstant();
+                } catch (DateTimeParseException ignored) {
+                    throw new IllegalArgumentException(
+                            "Invalid RFC 3339 or date-only format: " + rfc3339String, e);
+                }
             }
         }
 

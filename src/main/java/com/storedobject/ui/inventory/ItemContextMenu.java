@@ -15,7 +15,7 @@ public class ItemContextMenu<T extends HasInventoryItem> extends GridContextMenu
     private final ItemContext context = new ItemContext();
     private boolean allowInspection, allowBreaking, allowAssemble, allowEditCost, hideGRNDetails, hideViewStock, hideMovementDetails;
     private GridMenuItem<T> itemAssembly, parentAssembly, viewFitment, viewFitmentLocations, inspect, split, assemble, inspectAssembly,
-            breakAssembly, movementDetails, grnDetails, editCost, itemDetails, costDetails, pnDetails, viewStock, viewSource;
+            breakAssembly, movementDetails, grnDetails, editCost, itemDetails, pnDetails, viewStock, viewSource;
     private SerializablePredicate<T> dynamicContentHandler;
 
     public ItemContextMenu(Grid<T> itemGrid) {
@@ -33,7 +33,8 @@ public class ItemContextMenu<T extends HasInventoryItem> extends GridContextMenu
     public ItemContextMenu(Grid<T> itemGrid, boolean canInspect, boolean allowBreaking,
                            boolean allowEditCost, Runnable refresher) {
         super(itemGrid);
-        if(itemGrid instanceof DetailLinkGrid<?> linkGrid && linkGrid.getDataClass() == InventoryGRNItem.class) {
+        boolean isGRN = itemGrid instanceof DetailLinkGrid<?> linkGrid && linkGrid.getDataClass() == InventoryGRNItem.class;
+        if(isGRN) {
             setHideGRNDetails(true);
         }
         boolean isAdmin = itemGrid instanceof Transactional transactional
@@ -49,13 +50,13 @@ public class ItemContextMenu<T extends HasInventoryItem> extends GridContextMenu
                 return false;
             }
             if(itemAssembly == null) {
-                build(isAdmin);
+                build(isAdmin, isGRN);
             }
             InventoryItem ii = hi.getInventoryItem();
             if(ii == null) {
                 hide(itemAssembly, parentAssembly, viewFitment, viewFitmentLocations, inspect, split, assemble,
                         inspectAssembly,
-                        breakAssembly, movementDetails, grnDetails, viewSource, editCost, itemDetails, costDetails,
+                        breakAssembly, movementDetails, grnDetails, viewSource, editCost, itemDetails,
                         pnDetails, viewStock);
                 InventoryItemType iit = hi.getInventoryItemType();
                 if(iit == null) {
@@ -74,9 +75,8 @@ public class ItemContextMenu<T extends HasInventoryItem> extends GridContextMenu
             }
             pnDetails.setVisible(true);
             itemDetails.setVisible(true);
-            costDetails.setVisible(true);
             grnDetails.setVisible(!hideGRNDetails);
-            viewSource.setVisible(!hideGRNDetails);
+            viewSource.setVisible(true);
             viewStock.setVisible(!hideViewStock);
             itemGrid.select(hi);
             InventoryLocation loc = ii.getLocation();
@@ -114,7 +114,7 @@ public class ItemContextMenu<T extends HasInventoryItem> extends GridContextMenu
         });
     }
 
-    private void build(boolean isAdmin) {
+    private void build(boolean isAdmin, boolean isGRN) {
         itemDetails = addItem("Item Details -", e -> e.getItem().ifPresent(context::view));
         itemAssembly = addItem("Item Assembly -", e -> e.getItem().ifPresent(context::viewAssembly));
         parentAssembly = addItem("Parent Assembly -", e -> e.getItem().ifPresent(context::viewParentAssembly));
@@ -128,9 +128,8 @@ public class ItemContextMenu<T extends HasInventoryItem> extends GridContextMenu
         breakAssembly = addItem("Break from Assembly -", e -> e.getItem().ifPresent(context::breakAssembly));
         movementDetails = addItem("Movement Details -", e -> e.getItem().ifPresent(context::viewMovements));
         grnDetails = addItem("GRN Details -", e -> e.getItem().ifPresent(context::viewGRN));
-        viewSource = addItem("GRN & Source Details -", e -> e.getItem()
+        viewSource = addItem(isGRN ? "View Source -" : "GRN & Source Details -", e -> e.getItem()
                 .ifPresent(i -> context.viewGRN(i, true)));
-        costDetails = addItem("Cost Details -", e -> e.getItem().ifPresent(context::viewCost));
         editCost = addItem("Edit Cost -", e -> e.getItem().ifPresent(item -> {
             close();
             context.editCost(item);

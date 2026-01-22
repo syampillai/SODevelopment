@@ -50,4 +50,11 @@ public @interface Column {
      * @return Tab name. Default value is a <code>null</code> string.
      */
     String tab() default "";
+
+    /**
+     * Indicates whether the field is read-only.
+     *
+     * @return True if the field is read-only; otherwise, false. The default value is false.
+     */
+    boolean readOnly() default false;
 }

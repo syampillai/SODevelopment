@@ -18,9 +18,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * This is a template-based login screen and its template can be defined in the {@link TextContent} named
+ * This is a template-based login-screen, and its template can be defined in the {@link TextContent} named
  * "com.storedobject.ui.LoginForm". If this template exists, this will be used for rendering the login view
- * instead of the default one. Following id-values are used to map the necessary fields in the template:
+ * instead of the default one. The following id-values are used to map the necessary fields in the template:
  * <p>id = "layout" (Should be an HTML div tag. Represents the outermost layout in which the whole login
  * form is wrapped. This is optional.)</p>
  * <p>id = "login" (Should be a vaadin-combo-box tag. Represents user-name field. Not working due to a bug,
@@ -197,6 +197,7 @@ public class LoginForm extends TemplateView implements HomeView, FullScreen {
     @Id
     private SVGImage github;
 
+    private String username;
     private SystemUser user;
     private boolean init;
     private final ExecutableView internal;
@@ -416,6 +417,7 @@ public class LoginForm extends TemplateView implements HomeView, FullScreen {
         }
         if(loginField == null) {
             loginField = new LoginNameField();
+            loginField.setUsername(username);
         }
         if(remember == null) {
             remember = new Checkbox();
@@ -485,8 +487,10 @@ public class LoginForm extends TemplateView implements HomeView, FullScreen {
         return ac <= 0 ? -1 : ac;
     }
 
-    static Runnable create() {
-        return new LoginForm(false).internal;
+    static Runnable create(String username) {
+        LoginForm f = new LoginForm(false);
+        f.username = username;
+        return f.internal;
     }
 
     private class LF extends DataForm implements HomeView {

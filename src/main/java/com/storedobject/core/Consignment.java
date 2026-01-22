@@ -219,7 +219,9 @@ public class Consignment extends StoredObject implements HasReference {
         } else if(type == 3) {
             parent = listMasters(InventoryGRN.class).findFirst();
         }
-        parent = listMasters(InventoryTransfer.class, true).findFirst();
+        if(parent == null) {
+            parent = listMasters(InventoryTransfer.class, true).findFirst();
+        }
         return parent == null ? null : parent.getSystemEntity();
     }
 

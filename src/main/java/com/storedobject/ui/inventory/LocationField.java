@@ -74,7 +74,7 @@ public class LocationField extends ObjectComboField<InventoryLocation> {
     public static LocationField create(String label, int... types) {
         try {
             LocationField locationField = new LocationField(label, types);
-            if(locationField.getLocations().isEmpty()) {
+            if(locationField.locations.isEmpty()) {
                 throw new Exception();
             }
             return locationField;
@@ -162,16 +162,18 @@ public class LocationField extends ObjectComboField<InventoryLocation> {
             }
         }
         if(includeZero) {
-            StoredObject.list(InventoryStoreBin.class).forEach(locations::add);
+            StoredObject.list(InventoryStoreBin.class).filter(InventoryLocation::isActive).forEach(locations::add);
         }
         if(includeCustodians) {
-            StoredObject.list(InventoryCustodyLocation.class).forEach(locations::add);
+            StoredObject.list(InventoryCustodyLocation.class).filter(InventoryCustodyLocation::isActive)
+                    .forEach(locations::add);
         }
         if(sTypes == null) {
             return locations;
         }
         sTypes.append(')');
-        StoredObject.list(InventoryVirtualLocation.class, sTypes + " AND Status=0").forEach(locations::add);
+        StoredObject.list(InventoryVirtualLocation.class, sTypes + " AND Status=0")
+                .filter(InventoryVirtualLocation::isActive).forEach(locations::add);
         return locations;
     }
 

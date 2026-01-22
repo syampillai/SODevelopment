@@ -14,6 +14,8 @@ import java.util.*;
 @SuppressWarnings("RedundantThrows")
 public final class SystemUser extends StoredObject implements HasName, Notifye {
 
+    private int status;
+
     public SystemUser(String login, Id personId) {
         this();
     }
@@ -70,11 +72,15 @@ public final class SystemUser extends StoredObject implements HasName, Notifye {
         return "";
     }
 
+    public void setLogin(String login) {
+    }
+
     public int getStatus() {
         return 0;
     }
 
     public void setStatus(int status) {
+        this.status = status;
     }
 
     public static String[] getStatusBitValues() {
@@ -221,6 +227,37 @@ public final class SystemUser extends StoredObject implements HasName, Notifye {
 
     public ObjectIterator<Logic> listAutoLogic() {
         return ObjectIterator.create();
+    }
+
+    public ObjectIterator<SystemUser> listAssistants() {
+        return listLinks(SystemUser.class, userFilter())
+                .filter(su -> !su.getId().equals(getId()));
+    }
+
+    public ObjectIterator<SystemUser> listBosses() {
+        return listMasters(SystemUser.class, userFilter())
+                .filter(su -> !su.getId().equals(getId()));
+    }
+
+    /**
+     * Filter string that eliminates special users such as system users, process users, etc.
+     *
+     * @return Filter string.
+     */
+    public static String userFilter() {
+        return "(Status & 30)=0 AND (Status & 1)<>1";
+    }
+
+
+    /**
+     * Filter condition that eliminates special users such as system users, process users, etc.
+     *
+     * @return Filter condition.
+     */
+    public static boolean userLoadFilter(SystemUser user) {
+        // Should not be (Auditor, External, Process, System, _) = 11110
+        // Should not be a locked user
+        return (user.status & 30) == 0 && (user.status & 1) != 1;
     }
 
     public ObjectIterator<SystemUserGroup> listGroups() {

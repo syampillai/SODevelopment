@@ -13,7 +13,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * For locating stocks of a given "Part Number" and its APNs. The result includes all locations, including items
- * fitted on assemblies, items sent for repair etc. However, items that are already scrapped are not included.
+ * fitted on assemblies, items sent for repair, etc. However, items that are already scrapped are not included.
  *
  * @author Syam
  */
@@ -29,7 +29,8 @@ public class LocateItem extends DataGrid<InventoryItem> implements CloseableView
             "Stores only",
             "Other locations",
             "Fitted on assembly",
-            "Everywhere"
+            "Everywhere",
+            "Everywhere + Scrapped"
     });
     private final Class<? extends InventoryItem> itemClass;
     private final ObjectField<? extends InventoryItemType> pnField;
@@ -321,13 +322,13 @@ public class LocateItem extends DataGrid<InventoryItem> implements CloseableView
                 clear();
                 return;
             }
-            InventoryItem item = StoredObject.list(itemClass, "SerialNumber='" + sn + "'", true)
+            InventoryItem item = StoredObject.list(itemClass, "SerialNumber='" + sn + "' AND (Quantity).Quantity>0", true)
                     .single(false);
             if(item != null) {
                 loadInt(ObjectIterator.create(item));
                 return;
             }
-            loadInt(StoredObject.list(itemClass, "SerialNumber LIKE '" + sn + "%'", true)
+            loadInt(StoredObject.list(itemClass, "SerialNumber LIKE '" + sn + "%' AND (Quantity).Quantity>0", true)
                     .map(i -> (InventoryItem)i));
             if(isEmpty()) warning("S/N " + sn + " not found!");
             return;
@@ -337,32 +338,26 @@ public class LocateItem extends DataGrid<InventoryItem> implements CloseableView
             clear();
             return;
         }
-        ObjectIterator<InventoryItem> items = null;
+        ObjectIterator<InventoryItem> items;
         if(!sn.isEmpty()) {
-            InventoryItem item = InventoryItem.get(sn, pn);
-            if(item != null) {
-                items = ObjectIterator.create(item);
-            } else {
-                String c = "PartNumber=" + pn.getId() + " AND SerialNumber LIKE '" + sn + "%'";
-                Class<? extends InventoryItem> iClass = itemClass;
-                if(iClass == null) {
-                    iClass = pn.createItem().getClass();
-                }
-                items = StoredObject.list(iClass, c, true).limit(100).map(i -> i);
-                for(InventoryItemType apn : pn.listAPNs()) {
-                    c = "PartNumber=" + apn.getId() + " AND SerialNumber LIKE '" + sn + "%'";
-                    items = items.add(StoredObject.list(iClass, c, true).limit(100).map(i -> i));
-                }
-                loadInt(items);
-                if(isEmpty()) warning("S/N " + sn + " not found!");
-                return;
+            String snc = " AND SerialNumber LIKE '" + sn + "%' AND (Quantity).Quantity>0";
+            String c = "PartNumber=" + pn.getId() + snc;
+            Class<? extends InventoryItem> iClass = itemClass;
+            if(iClass == null) {
+                iClass = pn.createItem().getClass();
             }
-        }
-        if(items == null) {
-            items = InventoryItem.listItems(pn);
+            items = StoredObject.list(iClass, c, true).map(i -> i);
             for(InventoryItemType apn : pn.listAPNs()) {
-                items = items.add(InventoryItem.listItems(apn));
+                c = "PartNumber=" + apn.getId() + snc;
+                items = items.add(StoredObject.list(iClass, c, true).map(i -> i));
             }
+            loadInt(items);
+            if(isEmpty()) warning("S/N " + sn + " not found!");
+            return;
+        }
+        items = InventoryItem.listItems(pn);
+        for(InventoryItemType apn : pn.listAPNs()) {
+            items = items.add(InventoryItem.listItems(apn));
         }
         loadInt(items);
     }
@@ -375,8 +370,8 @@ public class LocateItem extends DataGrid<InventoryItem> implements CloseableView
                 return loc instanceof InventoryBin && ((InventoryBin)loc).getStoreId().equals(store.getId());
             });
         }
-        int filter = this.locFilter.getValue();
-        switch(filter) {
+        int locFilter = this.locFilter.getValue();
+        switch(locFilter) {
             case 0 -> objects = objects.filter(ii -> ii.getLocation() instanceof InventoryBin);
             case 1 -> objects = objects.filter(ii -> {
                 InventoryLocation loc = ii.getLocation();
@@ -388,8 +383,12 @@ public class LocateItem extends DataGrid<InventoryItem> implements CloseableView
             case 0 -> objects = objects.filter(InventoryItem::isServiceable);
             case 1 -> objects = objects.filter(ii -> !ii.isServiceable());
         }
+        if(locFilter != 4) { // Remove scrapped
+            objects = objects.filter(ii -> !(ii.getLocation() instanceof InventoryBin b) || b.getStore().isRepairable());
+        }
         objects = objects.filter(ii -> switch(ii.getLocation().getType()) {
-            case 1, 2, 7, 9, 12, 15, 16, 17 -> false;
+            case 6 -> locFilter == 4; // Keep scrapped
+            case 1, 2, 7, 12, 15, 16, 17, 21 -> false;
             default -> true;
         }).limit(501);
         AtomicInteger n = new AtomicInteger(0);

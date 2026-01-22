@@ -49,7 +49,7 @@ public class ContactData implements StoredObjectLink<Contact> {
         Arrays.fill(contacts, null);
         Arrays.fill(oldValue, null);
         if(master != null) {
-            ((HasContacts) master).listContacts().forEach(c -> {
+            ((HasContacts) master).listContacts().filter(c -> c.getType().getType() <= 2).forEach(c -> {
                 int i = indexOf(c.getTypeId());
                 if(i >= 0) {
                     contacts[i] = c;

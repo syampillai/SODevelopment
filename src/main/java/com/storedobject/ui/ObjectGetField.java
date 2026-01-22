@@ -15,7 +15,7 @@ import java.util.function.Function;
 
 /**
  * A field to accept instances of {@link StoredObject}s that are searchable using some keywords.
- * <p>In order to make a {@link StoredObject} searchable using keywords, it should at least implement
+ * <p>To make a {@link StoredObject} searchable using keywords, it should at least implement
  * a static get(String keywords) method that returns a matching instance.
  * Example: {@link com.storedobject.core.Person#get(String)}.</p>
  * <p>Also, it is recommended to implement a static list(String keywords) method that returns an

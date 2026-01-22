@@ -10,13 +10,13 @@ public final class MemoComment extends StoredObject {
 
     private static final String[] statusValues =
             new String[] {
-                    "Not Seen", "Being Reviewed", "Returned", "Approved", "Rejected", "Closed", "Reopened", "Escalated"
+                    "Not Seen", "Being Reviewed", "Returned", "Approved", "Rejected", "On Hold", "Reopened", "Escalated"
             };
     Id memoId;
-    private Memo memo;
+    Memo memo;
     String comment = "";
     Timestamp commentedAt = DateUtility.now();
-    Id commentedById, enteredById;
+    Id commentedById;
     int commentCount = 0;
     int status = 0;
 
@@ -29,19 +29,18 @@ public final class MemoComment extends StoredObject {
         columns.add("Comment", "text");
         columns.add("CommentedAt", "timestamp");
         columns.add("CommentedBy", "id");
-        columns.add("EnteredBy", "id");
         columns.add("Status", "int");
     }
 
     public static void indices(Indices indices) {
-        indices.add("CommentedBy,Status", "Status<3", false);
-        indices.add("CommentedAt,CommentedBy,Memo", false);
         indices.add("Memo,CommentCount", true);
+        indices.add("Memo,CommentedBy");
     }
 
     public static String[] browseColumns() {
         return new String[] {
-                "Memo.Type.Name AS Type", "Reference", "Memo.Subject AS Subject / Short Description", "PendingWith",
+                "Memo.Type.Name AS Type", "Reference", "Memo.Subject AS Subject / Short Description",
+                "Memo.InitiatedBy.Person.Name AS Initiated by", "PendingWith",
                 "CommentedAt AS Time", "MemoStatus AS Status",
         };
     }
@@ -131,27 +130,6 @@ public final class MemoComment extends StoredObject {
         return getRelated(SystemUser.class, commentedById);
     }
 
-    public void setEnteredBy(Id enteredById) {
-        this.enteredById = enteredById;
-    }
-
-    public void setEnteredBy(BigDecimal idValue) {
-        setEnteredBy(new Id(idValue));
-    }
-
-    public void setEnteredBy(SystemUser enteredBy) {
-        setEnteredBy(enteredBy == null ? null : enteredBy.getId());
-    }
-
-    @Column(order = 600)
-    public Id getEnteredById() {
-        return enteredById;
-    }
-
-    public SystemUser getEnteredBy() {
-        return getRelated(SystemUser.class, enteredById);
-    }
-
     public void setStatus(int status) {
         if(!loading() && status != this.status) {
             throw new Set_Not_Allowed("Status");
@@ -159,7 +137,7 @@ public final class MemoComment extends StoredObject {
         this.status = status;
     }
 
-    @Column(order = 700)
+    @Column(order = 800, readOnly = true)
     public int getStatus() {
         return status;
     }
@@ -243,17 +221,22 @@ public final class MemoComment extends StoredObject {
     }
 
     public void assignAssistant(Transaction transaction, SystemUser assistant) throws Exception {
-        if(!transaction.getUserId().equals(commentedById) || assistant.getStatus() != 0) {
+        Id uid = transaction.getUserId();
+        if(!uid.equals(commentedById) && !uid.equals(getMemo().getInitiatedById())) {
             throw new SOException(Memo.ILLEGAL);
         }
         if(getMemo().getStatus() >= 4) {
             throw new SOException("Can't assign, status is '" + getMemoStatus() + "'");
         }
-        if(enteredById.equals(assistant.getId())) {
+        if(memo.getAssistedById().equals(assistant.getId())) {
             return;
         }
-        enteredById = assistant.getId();
-        saveInt(transaction);
+        if(!assistant.existsMaster(uid)) {
+            throw new SOException(assistant.getName() + " can't assist " + getCommentedBy().getName());
+        }
+        memo.internal = true;
+        memo.setAssistedBy(assistant);
+        memo.save(transaction);
     }
 
     public void recallMemo(Transaction transaction) throws Exception {
@@ -294,7 +277,7 @@ public final class MemoComment extends StoredObject {
     }
 
     private void returnMemo(Transaction transaction, String reason, boolean toInitiator) throws Exception {
-        preprocess(transaction);
+        preprocess(transaction, true);
         if(reason.isBlank()) {
             throw new SOException("Empty reason");
         }
@@ -325,7 +308,7 @@ public final class MemoComment extends StoredObject {
     }
 
     public void forwardMemo(Transaction transaction, String comment, SystemUser to) throws Exception {
-        preprocess(transaction);
+        preprocess(transaction, true);
         if(status >= 3) {
             throw new SOException("Can't forward, status is '" + getStatusValue() + "'");
         }
@@ -361,7 +344,6 @@ public final class MemoComment extends StoredObject {
             mc = new MemoComment();
             mc.memoId = memoId;
             mc.commentedById = su.getId();
-            mc.enteredById = su.getId();
         } else {
             mc.makeNew();
             mc.commentedAt = DateUtility.now();
@@ -403,7 +385,7 @@ public final class MemoComment extends StoredObject {
         if(nextUser == null) {
             throw new SOException("No one to escalate to");
         }
-        preprocess(transaction);
+        preprocess(transaction, true);
         String m = comment;
         if(m.isBlank()) {
             m = reason;
@@ -419,7 +401,7 @@ public final class MemoComment extends StoredObject {
 
     public void approveMemo(Transaction transaction, String approvalText, SystemUser forwardTo) throws Exception {
         Memo m = getMemo();
-        preprocess(transaction);
+        preprocess(transaction, false);
         if(status >= 3) {
             throw new SOException("Can't " + m.renameActionVerb("approve") + ", status is '" + getStatusValue() + "'");
         }
@@ -429,7 +411,16 @@ public final class MemoComment extends StoredObject {
             throw new SOException("No authority");
         }
         if(exists(MemoComment.class, "Memo=" + memoId + " AND Status=3 AND CommentedBy=" + me.getId())) {
-            throw new SOException("Was already " + m.renameActionVerb("approved") + " by " + me.getName());
+            MemoComment reopened = list(MemoComment.class, "Memo=" + memoId + " AND Status=6", "CommentCount DESC")
+                    .findFirst(); // Was reopened?
+            if(reopened != null) { // Yes, it was reopened
+                if(exists(MemoComment.class, "Memo=" + memoId + " AND Status=3 AND CommentedBy="
+                        + me.getId() + " AND CommentCount>" + reopened.commentCount)) {
+                    // It was approved by this guy
+                    reopened = null;
+                }
+            }
+            if(reopened == null) throw new SOException("Was already " + m.renameActionVerb("approved") + " by " + me.getName());
         }
         int approvals = count(MemoComment.class, "Memo=" + memoId + " AND Status=3") + 1;
         int approvalsRequired = m.getApprovalsRequired();
@@ -468,7 +459,7 @@ public final class MemoComment extends StoredObject {
     }
 
     public void rejectMemo(Transaction transaction, String reason) throws Exception {
-        preprocess(transaction);
+        preprocess(transaction, false);
         if(status >= 3) {
             throw new SOException("Can't reject, status is '" + getStatusValue() + "'");
         }
@@ -494,7 +485,7 @@ public final class MemoComment extends StoredObject {
     }
 
     public void commentMemo(Transaction transaction, String comment) throws Exception {
-        preprocess(transaction);
+        preprocess(transaction, true);
         if(status >= 3) {
             throw new SOException("Can't comment, status is '" + getStatusValue() + "'");
         }
@@ -506,27 +497,25 @@ public final class MemoComment extends StoredObject {
         deleteAlert(transaction);
     }
 
+    public boolean canClose(SystemUser su) {
+        Memo m = getMemo();
+        return m.status < 10 && m.getInitiatedById().equals(su.getId());
+    }
+
     public void closeMemo(Transaction transaction) throws  Exception {
-        if(commentCount != 0 || !commentedById.equals(transaction.getUserId())) {
+        if(!canClose(transaction.getManager().getUser())) {
             throw new SOException(Memo.ILLEGAL);
         }
         Memo m = getMemo();
-        int s = m.status;
-        if(s == 0 || s == 4 || s == 5 || s == 6) { // Initiated, Approved or Rejected
-            if(s == 0) {
-                m.status = 6;
-                m.internal = true;
-                m.save(transaction);
-            }
-        } else {
-            throw new SOException("Can't close when Status = " + m.getStatusValue());
-        }
-        status = 5;
-        saveInt(transaction);
+        m.status += 10; // Closed
+        m.internal = true;
+        m.save(transaction);
     }
 
-    private void preprocess(Transaction transaction) throws Exception {
-        if(getMemo().lastComment != commentCount || !commentedById.equals(transaction.getUserId())) {
+    private void preprocess(Transaction transaction, boolean checkEnteredBy) throws Exception {
+        Id uid = transaction.getUserId();
+        if(getMemo().lastComment != commentCount
+                || (!commentedById.equals(uid)) && (!checkEnteredBy || !getMemo().getAssistedById().equals(uid))) {
             throw new SOException(Memo.ILLEGAL);
         }
     }
@@ -594,25 +583,21 @@ public final class MemoComment extends StoredObject {
         return memo.getInitiatedById().equals(su.getId());
     }
 
-    public boolean canClose(SystemUser su) {
-        if(commentCount != 0 || status == 5 || !isMine(su)) {
-            return false;
-        }
-        Memo m = getMemo();
-        return switch(m.status) {
-            case 0, 4, 5, 6 -> true;
-            default -> false;
-        };
-    }
-
     public boolean canApprove(SystemUser su) {
-        if(commentCount == 0 || commentCount != getMemo().getLastComment()
-                || getMemo().status >= 4 || isMyMemo(su) || !isMine(su)) {
+        if(commentCount == 0 || commentCount != getMemo().getLastComment() || getMemo().status >= 4 || isMyMemo(su)
+                || !commentedById.equals(su.getId())) {
             return false;
         }
         List<SystemUser> set = getMemo().listApprovers();
-        return !set.isEmpty() && set.contains(su) && !exists(MemoComment.class, "Memo=" + memoId
-                + " AND Status=3 AND CommentedBy=" + su.getId());
+        if(set.isEmpty() || !set.contains(su)) return false;
+        boolean approvedBefore = exists(MemoComment.class, "Memo=" + memoId + " AND Status=3 AND CommentedBy="
+                + su.getId());
+        if(!approvedBefore) return true;
+        MemoComment reopened = list(MemoComment.class, "Memo=" + memoId + " AND Status=6", "CommentCount DESC")
+                .findFirst(); // Was reopened?
+        if(reopened == null) return false;
+        return !exists(MemoComment.class, "Memo=" + memoId + " AND Status=3 AND CommentedBy=" + su.getId()
+                + " AND CommentCount>" + reopened.commentCount);
     }
 
     public boolean canForward(SystemUser su) {
@@ -673,10 +658,10 @@ public final class MemoComment extends StoredObject {
     }
 
     public boolean isMine(SystemUser su) {
-        return enteredById.equals(su.getId()) || commentedById.equals(su.getId());
+        return commentedById.equals(su.getId()) || getMemo().getAssistedById().equals(su.getId());
     }
 
     public boolean isMyMemo(SystemUser su) {
-        return commentCount == 0 ? isMine(su) : getMemo().isMine(su);
+        return commentCount == 0 ? commentedById.equals(su.getId()) : getMemo().isMyMemo(su);
     }
 }
