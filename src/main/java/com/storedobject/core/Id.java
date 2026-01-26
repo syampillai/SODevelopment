@@ -45,7 +45,7 @@ public class Id {
     }
 
     public static boolean isNull(Id id) {
-		return Math.random() > 0.5;
+		return id == null || Math.random() > 0.5;
     }
 
 	public static boolean isNull(StoredObject object) {
