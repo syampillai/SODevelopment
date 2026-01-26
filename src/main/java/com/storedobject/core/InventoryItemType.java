@@ -5,6 +5,7 @@ import com.storedobject.common.SORuntimeException;
 import com.storedobject.core.annotation.Column;
 
 import java.math.BigDecimal;
+import java.sql.Date;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -1218,13 +1219,27 @@ public class InventoryItemType extends StoredObject implements HasChildren, HasI
     }
 
     /**
-     * Get the tax category this type of item belongs to for the given tax region.
+     * Get the sale tax category of this item for the given customer tax region.
      *
-     * @param taxRegion Tax region.
-     * @return Tax category code.
+     * @param customerTaxRegion The tax region of the customer.
+     * @param organization Organization for which the tax definition is required.
+     * @param date Date for which the tax definition is required.
+     * @return Tax definition.
      */
-    public int getTaxCategory(TaxRegion taxRegion) {
-        return 0;
+    public TaxCategory getSaleTaxCategory(TaxRegion customerTaxRegion, SystemEntity organization, Date date) {
+        return null;
+    }
+
+    /**
+     * Get the purchase tax category of this item for the given supplier tax region.
+     *
+     * @param supplierTaxRegion The tax region of the supplier.
+     * @param organization Organization for which the tax definition is required.
+     * @param date Date for which the tax definition is required.
+     * @return Tax definition.
+     */
+    public TaxCategory getPurchaseTaxCategory(TaxRegion supplierTaxRegion, SystemEntity organization, Date date) {
+        return null;
     }
 
     @Override

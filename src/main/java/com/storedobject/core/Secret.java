@@ -285,4 +285,8 @@ public final class Secret extends StoredObject {
     public static String generatePassword(int length) {
         return "" + Math.random();
     }
+
+    public static String generatePassword(PasswordPolicy policy) {
+        return generatePassword(16);
+    }
 }

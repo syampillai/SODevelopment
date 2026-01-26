@@ -3,7 +3,6 @@ package com.storedobject.core;
 import com.storedobject.core.annotation.*;
 import java.math.BigDecimal;
 import java.sql.Date;
-import java.util.Currency;
 import java.util.List;
 
 /**
@@ -504,8 +503,8 @@ public final class InventoryGRNItem extends StoredObject implements Detail, HasI
 
     private record PO(InventoryGRN grn, InventoryPO po, InventoryPOItem item) {}
 
-    public List<Tax> computeTax(Date date, TaxRegion region, Currency localCurrency) {
-        return region.computeTax(date, this, getItem(), quantity, unitCost, localCurrency);
+    public List<Tax> computeTax(Date date, TaxRegion region, SystemEntity organization) {
+        return region.computeTax(date, this, getItem(), quantity, unitCost, organization);
     }
 
     @Override

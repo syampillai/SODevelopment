@@ -6,6 +6,7 @@ import com.storedobject.core.annotation.*;
 import com.storedobject.common.Address;
 import com.storedobject.common.PhoneNumber;
 
+import java.math.BigDecimal;
 import java.util.Objects;
 
 /**
@@ -23,6 +24,7 @@ public abstract class AccountEntity<T extends StoredObject> extends StoredObject
     private String primaryEmail;
     private String primaryPhone;
     private String taxCode;
+    private Id taxRegionId;
 
     /**
      * Represents an account entity.
@@ -56,6 +58,8 @@ public abstract class AccountEntity<T extends StoredObject> extends StoredObject
      *   The primary phone number of the entity.
      * - TaxCode (text):
      *   The tax code of the entity.
+     * - TaxRegion (id):
+     *   The tax region of the entity.
      *
      * @param columns The Columns interface to add the columns to.
      */
@@ -65,6 +69,7 @@ public abstract class AccountEntity<T extends StoredObject> extends StoredObject
         columns.add("PrimaryEmail", "email");
         columns.add("PrimaryPhone", "phone");
         columns.add("TaxCode", "text");
+        columns.add("TaxRegion", "id");
     }
 
     /**
@@ -249,9 +254,68 @@ public abstract class AccountEntity<T extends StoredObject> extends StoredObject
         return taxCode;
     }
 
+    /**
+     * Sets the tax region for the account entity.
+     *
+     * @param regionId The ID of the tax region to be set.
+     */
+    public void setTaxRegion(Id regionId) {
+        this.taxRegionId = regionId;
+    }
+
+    /**
+     * Sets the tax region for the account entity using a numerical value.
+     * This method converts the provided numerical value into an {@code Id} instance
+     * and assigns it as the tax region.
+     *
+     * @param idValue The numerical value representing the tax region to be set.
+     */
+    public void setTaxRegion(BigDecimal idValue) {
+        setTaxRegion(new Id(idValue));
+    }
+
+    /**
+     * Sets the tax region associated with this account entity.
+     * If the provided tax region is null, a default ID of zero is set.
+     *
+     * @param region The tax region to set. If null, the tax region ID is set to zero.
+     */
+    public void setTaxRegion(TaxRegion region) {
+        setTaxRegion(region == null ? Id.ZERO : region.getId());
+    }
+
+    /**
+     * Retrieves the tax region ID associated with this account entity.
+     *
+     * @return The tax region ID of the account entity.
+     */
+    @Column(order = 700)
+    public Id getTaxRegionId() {
+        return taxRegionId;
+    }
+
+    /**
+     * Retrieves the tax region associated with this account entity.
+     *
+     * @return The tax region corresponding to the tax region ID of the account entity.
+     */
+    public TaxRegion getTaxRegion() {
+        return TaxRegion.getFor(taxRegionId);
+    }
+
     @Override
     public void validateData(TransactionManager tm) throws Exception {
         setPartyId(tm.checkType(this, getPartyId(), getPartyClass(), false));
+        if(Id.isNull(taxRegionId)){
+            TaxRegion taxRegion = TaxRegion.getDefault();
+            if(taxRegion != null) {
+                taxRegionId = taxRegion.getId();
+            } else {
+                throw new Invalid_Value("Tax Region");
+            }
+        } else {
+            taxRegionId = tm.checkType(this, taxRegionId, TaxRegion.class, false);
+        }
         shortName = toCode(shortName);
         if (primaryAddress == null) {
             primaryAddress = "";
@@ -336,11 +400,23 @@ public abstract class AccountEntity<T extends StoredObject> extends StoredObject
         return s == 0 ? s : HasContacts.phoneToNumber(primaryPhone);
     }
 
+    /**
+     * Retrieves a single AccountEntity matching the provided name.
+     *
+     * @param name the name of the account to be retrieved
+     * @return the AccountEntity object if found, or null if no matching entity exists
+     */
     public static AccountEntity<?> get(String name) {
         ObjectIterator<AccountEntity<?>> oi = listInt(name);
         return oi == null ? null : oi.single(false);
     }
 
+    /**
+     * Retrieves an iterator for AccountEntity objects based on the provided name.
+     *
+     * @param name the name used to filter or retrieve the AccountEntity objects.
+     * @return an ObjectIterator of AccountEntity objects, or an empty iterator if no results are found.
+     */
     public static ObjectIterator<AccountEntity<?>> list(String name) {
         ObjectIterator<AccountEntity<?>> oi = listInt(name);
         return oi == null ? ObjectIterator.create() : oi;

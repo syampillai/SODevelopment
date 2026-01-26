@@ -846,6 +846,7 @@ public final class InventoryGRN extends StoredObject implements OfEntity, HasChi
     }
 
     public void computeTax(TransactionManager tm, TaxRegion region) throws Exception {
+        SystemEntity organization = getSystemEntity();
         List<InventoryGRNItem> items = listLinks(InventoryGRNItem.class).toList();
         DBTransaction t = null;
         Money taxInc;
@@ -856,7 +857,7 @@ public final class InventoryGRN extends StoredObject implements OfEntity, HasChi
                 for(Tax tax: item.listLinks(Tax.class)) {
                     taxInc = taxInc.subtract(tax.getTax());
                 }
-                List<Tax> taxes = item.computeTax(date, region, tm.getCurrency());
+                List<Tax> taxes = item.computeTax(date, region, organization);
                 for(Tax tax: taxes) {
                     if(tax.status == 0) { // No change
                         taxInc = taxInc.add(tax.getTax());

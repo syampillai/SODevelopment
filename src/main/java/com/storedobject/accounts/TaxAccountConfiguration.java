@@ -109,7 +109,7 @@ public final class TaxAccountConfiguration extends StoredObject implements OfEnt
      * @return the system entity ID
      */
     @SetNotAllowed
-    @Column(order = 100)
+    @Column(order = 100, caption = "Organization")
     public Id getSystemEntityId() {
         return systemEntityId;
     }
