@@ -140,19 +140,19 @@ public final class TaxRegion extends Name {
     }
 
     /**
-     * Computes and save the applicable taxes for a given inventory item based on the provided details.
+     * Computes and save the applicable taxes for a given inventory item based on the provided parameters.
      *
-     * @param date the date for which the tax computation is to be done
-     * @param parent the parent object to which the inventory item belongs
-     * @param item the inventory item for which taxes are to be computed
-     * @param quantity the quantity of the inventory item
-     * @param unitCost the cost per unit of the inventory item
+     * @param parent         The parent object representing the context for the tax computation.
+     * @param itemType       The type of inventory item for which taxes are to be computed.
+     * @param quantity       The quantity of the inventory item being taxed.
+     * @param unitCost       The cost per unit of the inventory item.
      * @param transaction Transaction
-     * @return a list of calculated taxes as {@code Tax} objects
+     * @return A list of taxes applicable to the specified inventory item and context.
      */
-    public List<Tax> computeTax(Date date, StoredObject parent, InventoryItem item, Quantity quantity, Money unitCost,
-                                Transaction transaction) throws Exception {
-        return computeTax(date, parent, item.getPartNumber(), quantity, unitCost, transaction);
+    public List<Tax> computeTax(StoredObject parent, InventoryItemType itemType, Quantity quantity,
+                                Money unitCost, Transaction transaction) throws Exception {
+        Date date = transaction.getManager().getWorkingDate();
+        return computeTax(date, parent, itemType, quantity, unitCost, transaction);
     }
 
     /**

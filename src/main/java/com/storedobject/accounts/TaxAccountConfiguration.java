@@ -1,5 +1,6 @@
 package com.storedobject.accounts;
 
+import com.storedobject.common.SORuntimeException;
 import com.storedobject.core.*;
 import com.storedobject.core.annotation.*;
 import java.math.BigDecimal;
@@ -238,5 +239,24 @@ public final class TaxAccountConfiguration extends StoredObject implements OfEnt
             throw new Invalid_State("Account does not belong to this organization");
         }
         super.validateData(tm);
+    }
+
+    /**
+     * Retrieves the Account associated with the given SystemEntity and TaxType.
+     * The method searches for a TaxAccountConfiguration that matches the provided
+     * SystemEntity and TaxType. If no configuration is found, an exception is thrown.
+     *
+     * @param systemEntity The system entity for which the associated account is to be retrieved.
+     * @param type The tax type for which the associated account is to be retrieved.
+     * @return The Account object associated with the specified SystemEntity and TaxType.
+     * @throws SORuntimeException If no matching TaxAccountConfiguration is found.
+     */
+    public static Account getAccount(SystemEntity systemEntity, TaxType type) {
+        TaxAccountConfiguration tac = get(TaxAccountConfiguration.class,
+                "SystemEntity=" + systemEntity.getId() + " AND Type=" + type.getId());
+        if(tac == null) {
+            throw new SORuntimeException("Tax account configuration not found for tax type " + type.getName());
+        }
+        return tac.getAccount();
     }
 }

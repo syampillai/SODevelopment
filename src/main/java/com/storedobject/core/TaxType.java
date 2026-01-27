@@ -336,4 +336,9 @@ public final class TaxType extends Name implements DisplayOrder {
         }
         return tt;
     }
+
+    @Override
+    public String toDisplay() {
+        return name + " (" + getRegion().getName() + ")";
+    }
 }
