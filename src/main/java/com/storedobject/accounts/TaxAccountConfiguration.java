@@ -128,7 +128,7 @@ public final class TaxAccountConfiguration extends StoredObject implements OfEnt
      * Sets the type of tax.
      *
      * @param typeId the Id representing the desired type
-     * @throws Set_Not_Allowed if the method is called outside the loading state
+     * @throws Set_Not_Allowed if the method is called outside the loading state,
      *                         and the new typeId is different from the current typeId
      */
     public void setType(Id typeId) {
@@ -242,6 +242,19 @@ public final class TaxAccountConfiguration extends StoredObject implements OfEnt
     }
 
     /**
+     * Retrieves the Account associated with the specified SystemEntity and Tax.
+     * This method internally resolves the TaxType ID from the provided Tax instance
+     * to locate the associated account.
+     *
+     * @param systemEntity The system entity for which the associated account is to be retrieved.
+     * @param tax          The tax object containing the type information required to resolve the account.
+     * @return The Account object associated with the specified SystemEntity and Tax.
+     */
+    public static Account getAccount(SystemEntity systemEntity, Tax tax) {
+        return getAccount(systemEntity, tax.getTypeId());
+    }
+
+    /**
      * Retrieves the Account associated with the given SystemEntity and TaxType.
      * The method searches for a TaxAccountConfiguration that matches the provided
      * SystemEntity and TaxType. If no configuration is found, an exception is thrown.
@@ -252,10 +265,14 @@ public final class TaxAccountConfiguration extends StoredObject implements OfEnt
      * @throws SORuntimeException If no matching TaxAccountConfiguration is found.
      */
     public static Account getAccount(SystemEntity systemEntity, TaxType type) {
+        return getAccount(systemEntity, type.getId());
+    }
+
+    private static Account getAccount(SystemEntity systemEntity, Id taxTypeId) {
         TaxAccountConfiguration tac = get(TaxAccountConfiguration.class,
-                "SystemEntity=" + systemEntity.getId() + " AND Type=" + type.getId());
+                "SystemEntity=" + systemEntity.getId() + " AND Type=" + taxTypeId);
         if(tac == null) {
-            throw new SORuntimeException("Tax account configuration not found for tax type " + type.getName());
+            throw new SORuntimeException("Tax account configuration not found for tax type Id = " + taxTypeId);
         }
         return tac.getAccount();
     }
