@@ -845,62 +845,6 @@ public final class InventoryGRN extends StoredObject implements OfEntity, HasChi
         return m;
     }
 
-    public void computeTax(TransactionManager tm, TaxRegion region) throws Exception {
-        SystemEntity organization = getSystemEntity();
-        List<InventoryGRNItem> items = listLinks(InventoryGRNItem.class).toList();
-        DBTransaction t = null;
-        Money taxInc;
-        GI gi = new GI(new Money());
-        try {
-            for(InventoryGRNItem item: items) {
-                taxInc = new Money();
-                for(Tax tax: item.listLinks(Tax.class)) {
-                    taxInc = taxInc.subtract(tax.getTax());
-                }
-                List<Tax> taxes = item.computeTax(date, region, organization);
-                for(Tax tax: taxes) {
-                    if(tax.status == 0) { // No change
-                        taxInc = taxInc.add(tax.getTax());
-                        continue;
-                    }
-                    tax.internal = true;
-                    if(t == null) {
-                        t = tm.createTransaction();
-                    }
-                    switch (tax.status) {
-                        case 1  -> { // Newly created
-                            tax.makeNew();
-                            tax.save(t);
-                            item.addLink(t, tax);
-                            taxInc = taxInc.add(tax.getTax());
-                        }
-                        case 2 -> { // Recomputed
-                            tax.save(t);
-                            taxInc = taxInc.add(tax.getTax());
-                        }
-                        case 3, 4 -> { // Region changed, No more applicable
-                            tax.delete(t);
-                            taxInc = taxInc.subtract(tax.getTax());
-                        }
-                    }
-                }
-                if(taxInc.isZero()) {
-                    continue;
-                }
-                gi.incUC = taxInc.divide(item.getQuantity());
-                updateGRNItemCost(gi, item, t);
-            }
-            if(t != null) {
-                t.commit();
-            }
-        } catch (Exception e) {
-            if(t != null) {
-                t.rollback();
-            }
-            throw e;
-        }
-    }
-
     void attachConsignmentFrom(Transaction transaction, StoredObject from) throws Exception {
         List<Consignment> consignments = from.listLinks(Consignment.class, "Type=3", true).toList();
         for(Consignment c: consignments) {

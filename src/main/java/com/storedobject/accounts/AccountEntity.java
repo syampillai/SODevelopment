@@ -76,7 +76,7 @@ public abstract class AccountEntity<T extends StoredObject> extends StoredObject
      * Adds columns to the provided Indices interface for an entity.
      * The columns represent the following fields in the entity:
      * - lower(ShortName) (text):
-     *   Adds an index for the ShortName field in the entity, ignoring case.
+     *   Adds an index for the ShortName field in the entity, ignoring its case.
      *
      * @param indices The Indices interface to add the columns to.
      */

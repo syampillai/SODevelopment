@@ -81,19 +81,6 @@ public class TaxDefinition extends StoredObject {
     }
 
     /**
-     * Retrieves an iterator of tax types applicable to a specific inventory item, tax region of the customer, and date.
-     *
-     * @param item   the inventory item for which the tax types are to be determined
-     * @param organization the organization for which the tax types are being retrieved
-     * @param customerTaxRegion the tax customerTaxRegion that specifies the geographical context
-     * @param date   the date at which the tax types are evaluated
-     * @return an iterator over the tax types applicable to the given parameters
-     */
-    public static ObjectIterator<TaxType> listTypes(InventoryItem item, SystemEntity organization, TaxRegion customerTaxRegion, Date date) {
-        return listTypes(item.getPartNumber(), organization, customerTaxRegion, date);
-    }
-
-    /**
      * Retrieves an iterator of tax types applicable to a given inventory item type and tax region of the customer at a specific date.
      *
      * @param itemType the inventory item type for which the tax types need to be listed

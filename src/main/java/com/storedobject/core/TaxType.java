@@ -63,7 +63,7 @@ public final class TaxType extends Name implements DisplayOrder {
      *         "TaxMethod AS Method of Computation", and "ApplicablePeriod".
      */
     public static String[] browseColumns() {
-        return new String[] { "Region AS Applicable to", "TaxMethod AS Method of Computation", "ApplicablePeriod" };
+        return new String[] { "Region AS Applicable to", "Name", "TaxMethod AS Method of Computation", "ApplicablePeriod" };
     }
 
     /**

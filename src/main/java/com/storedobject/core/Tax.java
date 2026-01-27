@@ -4,7 +4,7 @@ import com.storedobject.core.annotation.*;
 import java.math.BigDecimal;
 
 /**
- * Represents a monetary tax amount computed for a give tax type and rate. When taxes are computed, for each calculation,
+ * Represents a monetary tax amount computed for a given tax type and rate. When taxes are computed, for each calculation,
  * the resulting tax amount is stored in this class.
  *
  * @author Syam
@@ -14,7 +14,6 @@ public final class Tax extends StoredObject {
     private Id typeId;
     private Percentage rate = Quantity.create(Percentage.class);
     private Money tax = new Money();
-    int status = 0;
     boolean internal = false;
 
     /**
@@ -231,10 +230,11 @@ public final class Tax extends StoredObject {
     }
 
     /**
-     * Status - 0: Normal / No change, 1: Newly computed, 2: Recomputed, 3: Region changed (to deleted), 4: No more applicable (to delete)
-     * @return Status value
+     * Retrieves the Id of the tax region of the associated tax type.
+     *
+     * @return The {@link Id} corresponding to the tax region of this tax.
      */
-    public int getStatus() {
-        return status;
+    public Id getRegionId() {
+        return getType().getRegionId();
     }
 }

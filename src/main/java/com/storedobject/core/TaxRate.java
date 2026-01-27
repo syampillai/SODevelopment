@@ -8,7 +8,6 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 
-@Table(anchors = "Type")
 public final class TaxRate extends StoredObject {
 
     private static final Map<Id, TaxRate> taxRates = new HashMap<>(); // Key is Id

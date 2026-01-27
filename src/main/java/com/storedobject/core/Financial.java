@@ -33,7 +33,7 @@ public interface Financial {
     }
 
     static int getBalanceType(Account account) {
-        return account.getAccountStatus() >> 4;
+        return (account.getAccountStatus() >> 4) & 1;
     }
 
     static String getBalanceTypeValue(Account account) {

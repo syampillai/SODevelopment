@@ -232,7 +232,7 @@ public final class TaxAccountConfiguration extends StoredObject implements OfEnt
         if(Financial.isSpecial(a) || a instanceof EntityAccount || a.isForeignCurrency()
                 || Financial.getCategory(a) != 0 || Financial.getBalanceType(a) != 1
                 || Financial.getTransactionType(a) != 2) {
-            throw new Invalid_State("Account is not a tax account");
+            throw new Invalid_State("Account is not a tax account - Status: " + a.getStatusDescription());
         }
         if(!systemEntityId.equals(a.getSystemEntityId())) {
             throw new Invalid_State("Account does not belong to this organization");

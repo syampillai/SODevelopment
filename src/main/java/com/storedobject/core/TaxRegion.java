@@ -140,69 +140,74 @@ public final class TaxRegion extends Name {
     }
 
     /**
-     * Computes the applicable taxes for a given inventory item based on the provided details.
+     * Computes and save the applicable taxes for a given inventory item based on the provided details.
      *
      * @param date the date for which the tax computation is to be done
      * @param parent the parent object to which the inventory item belongs
      * @param item the inventory item for which taxes are to be computed
      * @param quantity the quantity of the inventory item
      * @param unitCost the cost per unit of the inventory item
-     * @param organization the organization for which the tax being computed
+     * @param transaction Transaction
      * @return a list of calculated taxes as {@code Tax} objects
      */
     public List<Tax> computeTax(Date date, StoredObject parent, InventoryItem item, Quantity quantity, Money unitCost,
-                                SystemEntity organization) {
-        return computeTax(date, parent, item.getPartNumber(), quantity, unitCost, organization);
+                                Transaction transaction) throws Exception {
+        return computeTax(date, parent, item.getPartNumber(), quantity, unitCost, transaction);
     }
 
     /**
-     * Computes the applicable taxes for a given inventory item based on the provided parameters.
+     * Computes and save the applicable taxes for a given inventory item based on the provided parameters.
      *
      * @param date           The date for which the tax computation is being performed.
      * @param parent         The parent object representing the context for the tax computation.
      * @param itemType       The type of inventory item for which taxes are to be computed.
      * @param quantity       The quantity of the inventory item being taxed.
      * @param unitCost       The cost per unit of the inventory item.
-     * @param organization   The organization for which the taxes are being computed.
+     * @param transaction Transaction
      * @return A list of taxes applicable to the specified inventory item and context.
      */
     public List<Tax> computeTax(Date date, StoredObject parent, InventoryItemType itemType, Quantity quantity,
-                                Money unitCost, SystemEntity organization) {
+                                Money unitCost, Transaction transaction) throws Exception {
+        SystemEntity organization = transaction.getManager().getEntity();
+        Currency localCurrency = Currency.getInstance(organization.getCurrency());
+        Percentage p;
         List<TaxType> taxTypes = TaxDefinition.listTypes(itemType, organization, this, date).toList();
         List<Tax> taxes = parent.listLinks(Tax.class).toList();
+        Set<Id> toDelete = new HashSet<>();
         for(Tax tax : taxes) {
-            if(!tax.getRegion().getId().equals(getId())) {
-                tax.status = 3; // Region changed - to be deleted
-            } else if(taxTypes.stream().noneMatch(t -> tax.getTypeId().equals(t.getId()))) {
-                tax.status = 4; // No more applicable - to be deleted
-            } else {
+            if(!tax.getRegionId().equals(getId()) // Region changed
+                || taxTypes.stream().noneMatch(t -> tax.getTypeId().equals(t.getId())) // No more applicable
+            ) { // To be deleted
+                tax.delete(transaction);
+                toDelete.add(tax.getId());
+            } else { // Modify
                 TaxType tt = tax.getType();
-                Percentage p = TaxRate.getRate(date, tt);
-                Money t = tt.getTaxMethod().getTax(itemType, quantity, unitCost, p,
-                        Currency.getInstance(organization.getCurrency()));
-                if(!p.equals(tax.getRate()) || !t.equals(tax.getTax())) {
-                    tax.status = 2; // Modified
+                p = TaxRate.getRate(date, tt);
+                Money t = tt.getTaxMethod().getTax(itemType, quantity, unitCost, p, localCurrency);
+                if(!p.equals(tax.getRate()) || !t.equals(tax.getTax())) { // Save only if changed
                     tax.setTax(t);
                     tax.setRate(p);
+                    tax.save(transaction);
                 }
             }
         }
-        List<Tax> result = new ArrayList<>();
+        taxes.removeIf(t -> toDelete.contains(t.getId()));
         Tax tax;
         for(TaxType taxType : taxTypes) {
             tax = taxes.stream().filter(t -> t.getTypeId().equals(taxType.getId())).findFirst().orElse(null);
-            if(tax == null) {
-                tax = new Tax();
-                tax.status = 1; // Newly created
-                tax.setType(taxType);
-                Percentage p = TaxRate.getRate(date, taxType);
-                tax.setRate(p);
-                tax.setTax(taxType.getTaxMethod().getTax(itemType, quantity, unitCost, p,
-                        Currency.getInstance(organization.getCurrency())));
-                tax.makeVirtual();
+            if(tax != null) {
+                continue;
             }
-            result.add(tax);
+            // New tax type
+            tax = new Tax();
+            tax.setType(taxType);
+            p = TaxRate.getRate(date, taxType);
+            tax.setRate(p);
+            tax.setTax(taxType.getTaxMethod().getTax(itemType, quantity, unitCost, p, localCurrency));
+            tax.save(transaction);
+            parent.addLink(transaction, tax);
+            taxes.add(tax);
         }
-        return result;
+        return taxes;
     }
 }
