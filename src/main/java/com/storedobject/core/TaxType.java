@@ -144,7 +144,7 @@ public final class TaxType extends Name implements DisplayOrder {
      * @return The identifier of the applicable region.
      */
     @SetNotAllowed
-    @Column(order = 200, caption = "Applicable to")
+    @Column(order = 200, caption = "Applicable Biller Region")
     public Id getRegionId() {
         return regionId;
     }

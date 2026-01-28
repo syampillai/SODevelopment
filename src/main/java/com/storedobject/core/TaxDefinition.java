@@ -98,7 +98,6 @@ public class TaxDefinition extends StoredObject {
         if(td == null) throw new SORuntimeException("No tax definition found for category '" + category.getName()
                 + "' and customer tax region '" + customerTaxRegion.getName() + "'");
         return td.listLinks(TaxType.class, "Region=" + TaxCode.getFor(organization).getTaxRegionId() + " AND '"
-                        + Database.format(date) + "' BETWEEN Type.ApplicableFrom AND Type.ApplicableTo",
-                "DisplayOrder");
+                        + Database.format(date) + "' BETWEEN ApplicableFrom AND ApplicableTo", "DisplayOrder");
     }
 }

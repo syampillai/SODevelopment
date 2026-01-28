@@ -178,6 +178,7 @@ public final class TaxRegion extends Name {
             if(!tax.getRegionId().equals(getId()) // Region changed
                 || taxTypes.stream().noneMatch(t -> tax.getTypeId().equals(t.getId())) // No more applicable
             ) { // To be deleted
+                tax.internal = true;
                 tax.delete(transaction);
                 toDelete.add(tax.getId());
             } else { // Modify
@@ -187,6 +188,7 @@ public final class TaxRegion extends Name {
                 if(!p.equals(tax.getRate()) || !t.equals(tax.getTax())) { // Save only if changed
                     tax.setTax(t);
                     tax.setRate(p);
+                    tax.internal = true;
                     tax.save(transaction);
                 }
             }
@@ -204,6 +206,7 @@ public final class TaxRegion extends Name {
             p = TaxRate.getRate(date, taxType);
             tax.setRate(p);
             tax.setTax(taxType.getTaxMethod().getTax(itemType, quantity, unitCost, p, localCurrency));
+            tax.internal = true;
             tax.save(transaction);
             parent.addLink(transaction, tax);
             taxes.add(tax);
