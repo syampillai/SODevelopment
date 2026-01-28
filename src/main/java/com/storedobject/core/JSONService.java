@@ -22,8 +22,8 @@ public interface JSONService {
 
 	/**
 	 * A marker interface that indicates that the JSON service does not require authentication.
-	 * If this interface is implemented by a JSON service, it means that the service does not require authentication.
+	 * If this interface is implemented, it means that the service does not require authentication.
 	 */
-	interface OpenAccess {
+	interface OpenAccess extends JSONService {
 	}
 }
