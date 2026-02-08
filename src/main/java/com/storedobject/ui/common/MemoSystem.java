@@ -6,6 +6,7 @@ import com.storedobject.ui.Application;
 import com.storedobject.ui.*;
 import com.storedobject.vaadin.*;
 import com.vaadin.flow.component.*;
+import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.contextmenu.GridContextMenu;
 import com.vaadin.flow.component.grid.contextmenu.GridMenuItem;
 import com.vaadin.flow.component.html.Paragraph;
@@ -39,7 +40,7 @@ public class MemoSystem extends ObjectGrid<MemoComment> implements CloseableView
     private ReasonForm reasonForm;
     private boolean assisting = false;
     private final Button newButton = new Button(getCreateLabel() + " New " + getMemoLabel(), "add",
-            e -> newMemo((MemoComment) null));
+            e -> createNewMemo());
 
     public MemoSystem() {
         this(true);
@@ -87,7 +88,7 @@ public class MemoSystem extends ObjectGrid<MemoComment> implements CloseableView
         GridMenuItem<MemoComment> forwardMemo =
                 contextMenu.addItem("Forward", e -> e.getItem().ifPresent(mc -> memoAction(mc, 2)));
         GridMenuItem<MemoComment> approveMemo =
-                contextMenu.addItem(getApproveLabel(), e -> e.getItem().ifPresent(mc -> memoAction(mc, 3)));
+                contextMenu.addItem("*", e -> e.getItem().ifPresent(mc -> memoAction(mc, 3)));
         GridMenuItem<MemoComment> rejectMemo =
                 contextMenu.addItem("Reject", e -> e.getItem().ifPresent(mc -> memoAction(mc, 4)));
         GridMenuItem<MemoComment> reopenMemo =
@@ -136,7 +137,11 @@ public class MemoSystem extends ObjectGrid<MemoComment> implements CloseableView
                 }
             }
             returnMemoToInitiator.setVisible(!canReturn && mc.canReturnToInitiator(who));
-            approveMemo.setVisible(mine() && canApprove(mc));
+            boolean canApprove = mine() && canApprove(mc);
+            approveMemo.setVisible(canApprove);
+            if(canApprove) {
+                approveMemo.setText(mc.getMemo().getApproveLabel());
+            }
             reopenMemo.setVisible(canReopen(mc));
             escalateMemo.setVisible(canEscalate(mc));
             rejectMemo.setVisible(canReject() && mine() && canApprove(mc));
@@ -151,6 +156,12 @@ public class MemoSystem extends ObjectGrid<MemoComment> implements CloseableView
             MemoComment mc = e.getItem();
             if(mc != null) {
                 viewMemo(mc);
+            }
+        });
+        addConstructedListener(e -> {
+            Grid.Column<MemoComment> c = getColumn("Memo.Subject");
+            if(c != null) {
+                c.setFlexGrow(0).setWidth("25vw").setAutoWidth(false);
             }
         });
     }
@@ -193,10 +204,6 @@ public class MemoSystem extends ObjectGrid<MemoComment> implements CloseableView
 
     protected String getCreateLabel() {
         return "Create";
-    }
-
-    protected String getApproveLabel() {
-        return "Approve";
     }
 
     @Override
@@ -266,7 +273,10 @@ public class MemoSystem extends ObjectGrid<MemoComment> implements CloseableView
     public final Component createHeader() {
         newButton.setVisible(canCreateNew());
         GridSearchField<MemoComment> searchField = new GridSearchField<>(this);
-        searchField.configure(mc -> mc.getMemo().getSubject());
+        searchField.configure(mc -> {
+            Memo m = mc.getMemo();
+            return m.getSubject() + " " + mc.getPendingWith() + " " + mc.getMemoStatus() + " " + m.getInitiatedBy().getName();
+        });
         buttonPanel.add(getConfigureButton(), newButton, searchField, new Button("Load", e -> loadMemos()));
         addExtraButtons();
         buttonPanel.add(history, new Button("Exit", e -> close()));
@@ -335,6 +345,10 @@ public class MemoSystem extends ObjectGrid<MemoComment> implements CloseableView
 
     public String getCommentedAt(MemoComment mc) {
         return DateUtility.formatWithTimeHHMM(getTransactionManager().date(mc.getCommentedAt()));
+    }
+
+    protected final void createNewMemo() {
+        newMemo((MemoComment) null);
     }
 
     private void newMemo(MemoComment mc) {
@@ -723,6 +737,14 @@ public class MemoSystem extends ObjectGrid<MemoComment> implements CloseableView
             };
         }
 
+        @Override
+        protected void customizeField(String fieldName, HasValue<?, ?> field) {
+            if("Subject".equals(fieldName) && field instanceof TextField tf) {
+                tf.setMaxLength(200);
+            }
+            super.customizeField(fieldName, field);
+        }
+
         private String initBy(Memo memo) {
             SystemUser u = memo.getInitiatedBy();
             return u == null ? memoSystem.who.getName() : u.getName();
@@ -826,7 +848,7 @@ public class MemoSystem extends ObjectGrid<MemoComment> implements CloseableView
         }
     }
 
-    protected void forwardMemo(MemoComment mc, SystemUser to) {
+    protected final void forwardMemo(MemoComment mc, SystemUser to) {
         memoAction(mc, 2);
         commentEditor.suField.setValue(to);
         commentEditor.suField.setReadOnly(true);
@@ -845,6 +867,12 @@ public class MemoSystem extends ObjectGrid<MemoComment> implements CloseableView
         }
         commentEditor.suField.setReadOnly(false);
         commentEditor.action = action;
+        if(action == 2 && mc.getComment().isBlank() && mc.getCommentCount() > 1) {
+            MemoComment pc = mc.getPrevious();
+            if(pc.getStatus() == 6) { // It was reopened, copy the reason as the comment
+                mc.setComment(pc.getComment());
+            }
+        }
         commentEditor.editObject(mc, getView());
     }
 
@@ -1033,7 +1061,7 @@ public class MemoSystem extends ObjectGrid<MemoComment> implements CloseableView
             save.setText(switch(action) {
                 case 1, 5 -> "Return";
                 case 2 -> "Forward";
-                case 3 -> getApproveLabel();
+                case 3 -> mc.getMemo().getApproveLabel();
                 case 4 -> "Reject";
                 default -> "Save";
             });
@@ -1159,7 +1187,7 @@ public class MemoSystem extends ObjectGrid<MemoComment> implements CloseableView
                         default -> "Commented";
                     };
                 }
-                action = mc.getMemo().renameActionVerb(action);
+                action = (mc.getCommentCount() + 1) + ". " + mc.getMemo().renameActionVerb(action);
                 add(new Badge(action + " by " + assistantName(mc.getCommentedBy()) + " at " + getCommentedAt(mc)));
                 Paragraph p = new Paragraph();
                 p.getStyle().set("font-style", "italic").set("font-weight", "bold").set("line-height", "normal");
@@ -1194,6 +1222,7 @@ public class MemoSystem extends ObjectGrid<MemoComment> implements CloseableView
 
         public ReasonForm() {
             super("Reason");
+            new SpeechRecognition(reason);
             reason.setMaxHeight(20, Unit.CH);
             addField(status, reason);
             setRequired(reason);

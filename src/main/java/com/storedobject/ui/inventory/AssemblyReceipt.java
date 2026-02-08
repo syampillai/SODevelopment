@@ -71,7 +71,7 @@ public class AssemblyReceipt<T extends InventoryItem, C extends InventoryItem> e
                 warning("Duplicate item for S/N = " + sn + " exists. Item " + inventoryItemType.toDisplay());
             }
             item.setQuantity(quantityRequired);
-            inventoryTransaction.purchase(item, reference(reference), fitmentPosition, grn.getSupplier());
+            inventoryTransaction.purchase(null, item, reference(reference), fitmentPosition, grn.getSupplier());
             if(editor != null && editor.getObjectClass() != item.getClass()) {
                 editor = null;
             }
@@ -120,7 +120,7 @@ public class AssemblyReceipt<T extends InventoryItem, C extends InventoryItem> e
             } else {
                 inventoryTransaction.abandon();
             }
-            inventoryTransaction.thrash(item, reference(reference));
+            inventoryTransaction.thrash(null, item, reference(reference));
             if(transact(t -> inventoryTransaction.save(t))) {
                 refresh();
                 return true;

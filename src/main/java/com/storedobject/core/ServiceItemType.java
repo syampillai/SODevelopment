@@ -11,7 +11,7 @@ public class ServiceItemType extends AbstractServiceItemType {
     public static String[] browseColumns() {
         return new String[] {
             "PartNumber as SAC-",
-            "Name.Name as Name"
+            "Name"
         };
     }
     

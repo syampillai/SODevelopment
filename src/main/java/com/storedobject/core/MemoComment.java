@@ -240,26 +240,19 @@ public final class MemoComment extends StoredObject {
     }
 
     public void recallMemo(Transaction transaction) throws Exception {
-        if(status == 3 || status == 4 || getMemo().status >= 4) {
-            throw new SOException("Can't recall, status is '" + getMemoStatus() + "'");
-        }
-        MemoComment mc;
-        if(!commentedById.equals(transaction.getUserId()) || (mc = getNext()) == null) {
+        MemoComment mc = getPrevious();
+        if(mc == null || !canRecall(transaction.getManager().getUser())) {
             throw new SOException(Memo.ILLEGAL);
         }
-        if(mc.getStatus() > 0) {
-            throw new SOException("Can't recall, " + mc.getCommentedBy().getPerson().getName() +
-                    " has already acted on it");
-        }
         Memo m = getMemo();
-        m.lastComment = commentCount;
+        m.lastComment = mc.commentCount;
         m.internal = true;
         m.save(transaction);
-        mc.commentCount = -mc.commentCount;
-        mc.deleteAlert(transaction);
-        mc.delete(transaction);
-        status = 1; // Being reviewed
-        saveInt(transaction);
+        commentCount = -commentCount;
+        deleteAlert(transaction);
+        delete(transaction);
+        mc.status = 1; // Being reviewed
+        mc.saveInt(transaction);
     }
 
     public void returnMemoToInitiator(Transaction transaction, String reason) throws Exception {
@@ -283,7 +276,7 @@ public final class MemoComment extends StoredObject {
         }
         Memo m = getMemo();
         m.lastComment = commentCount + 1;
-        MemoComment pre = toInitiator ? getFirst() : pre();
+        MemoComment pre = toInitiator ? getFirst() : getPrevious();
         if(pre == null) {
             throw new SOException(Memo.ILLEGAL);
         }
@@ -499,7 +492,18 @@ public final class MemoComment extends StoredObject {
 
     public boolean canClose(SystemUser su) {
         Memo m = getMemo();
-        return m.status < 10 && m.getInitiatedById().equals(su.getId());
+        if(m.status < 10 && m.getInitiatedById().equals(su.getId())) return true;
+        switch(m.status) {
+            case 4, 5 -> {
+                // Approved/Rejected
+            }
+            default -> {
+                return false;
+            }
+        }
+        MemoComment mc = m.getLatestComment();
+        return mc.getCommentedById().equals(su.getId())
+                && DateUtility.now().getTime() - mc.getCommentedAt().getTime() > m.getAutocloseTime();
     }
 
     public void closeMemo(Transaction transaction) throws  Exception {
@@ -520,7 +524,7 @@ public final class MemoComment extends StoredObject {
         }
     }
 
-    private MemoComment pre() {
+    public MemoComment getPrevious() {
         if(commentCount == 0) {
             return null;
         }
@@ -627,16 +631,9 @@ public final class MemoComment extends StoredObject {
     }
 
     public boolean canRecall(SystemUser su) {
-        switch (status) {
-            case 3, 4, 5, 6, 7 -> {
-                return false;
-            }
-        }
-        if(!isMine(su)) {
-            return false;
-        }
-        MemoComment next = getNext();
-        return next != null && next.getStatus() == 0;
+        if(status != 0) return false;
+        MemoComment previous = getPrevious();
+        return previous != null && previous.status != 6 && previous.isMine(su); // status != 6 means not reopened
     }
 
     public boolean canComment(SystemUser su) {
@@ -658,7 +655,8 @@ public final class MemoComment extends StoredObject {
     }
 
     public boolean isMine(SystemUser su) {
-        return commentedById.equals(su.getId()) || getMemo().getAssistedById().equals(su.getId());
+        return commentedById.equals(su.getId()) ||
+                (getMemo().getAssistedById().equals(su.getId())) && getLatest().getCommentedById().equals(su.getId());
     }
 
     public boolean isMyMemo(SystemUser su) {

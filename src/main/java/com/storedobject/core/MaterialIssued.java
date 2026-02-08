@@ -140,7 +140,7 @@ public final class MaterialIssued extends StoredObject implements OfEntity, HasR
     @Override
     public String getReference() {
         if(reference == null) {
-            reference = ref.getTag(this);
+            reference = ref.get(this);
         }
         return reference == null ? "" : reference;
     }
@@ -239,6 +239,9 @@ public final class MaterialIssued extends StoredObject implements OfEntity, HasR
 
     @Override
     public void validateData(TransactionManager tm) throws Exception {
+        if(date.after(DateUtility.today())) {
+            throw new Invalid_State("Date cannot be in the future");
+        }
         systemEntityId = check(tm, systemEntityId);
         referenceNumber = toCode(referenceNumber);
         locationId = tm.checkTypeAny(this, locationId, InventoryLocation.class, false);
@@ -257,6 +260,12 @@ public final class MaterialIssued extends StoredObject implements OfEntity, HasR
     public void validate() throws Exception {
         super.validate();
         referenceNumber = String.valueOf(getNo());
+    }
+
+    @Override
+    public void validateInsert() throws Exception {
+        UserAction.save(this, "NEW");
+        super.validateInsert();
     }
 
     @Override
@@ -323,10 +332,11 @@ public final class MaterialIssued extends StoredObject implements OfEntity, HasR
                 mri = mii.getRequest();
                 mris.add(mri);
             }
-            mri.setIssued(mri.getIssued().add(mii.getQuantity()).convert(mri.getRequested(), 6));
-            if(mri.getIssued().isGreaterThan(mri.getRequested())) {
+            Quantity requested = mri.getRequested();
+            mri.setIssued(mri.getIssued().convert(requested).add(mii.getQuantity()));
+            if(mri.getIssued().isGreaterThan(requested)) {
                 throw new Invalid_State("Issued quantity exceeds the requested quantity for item - "
-                        + mii.getItem().toDisplay() + " [Requested: " + mri.getRequested() + ", Issued: "
+                        + mii.getItem().toDisplay() + " [Requested: " + requested + ", Issued: "
                         + mri.getIssued() + "]" + mri.getId());
             }
             ii = mii.getItem();
@@ -334,7 +344,7 @@ public final class MaterialIssued extends StoredObject implements OfEntity, HasR
             if(mr.getReserved()) {
                 toLoc = InventoryReservedBin.createFor(transaction, bin, mr);
             }
-            it.moveTo(ii, mii.getQuantity(), referenceNumber, toLoc);
+            it.moveTo(mii.getId(), ii, mii.getQuantity(), referenceNumber, toLoc);
         }
         for(MaterialRequestItem i: mris) {
             i.save(transaction);
@@ -416,6 +426,23 @@ public final class MaterialIssued extends StoredObject implements OfEntity, HasR
         if(status != 3) {
             return;
         }
+        MaterialRequest mr = getRequest();
+        InventoryLocation toLoc = mr.getFromLocation();
+        List<MaterialIssuedItem> miis = items();
+        InventoryItem item;
+        InventoryLocation rbin;
+        InventoryTransaction it = new InventoryTransaction(transaction.getManager(), null, referenceNumber);
+        for(MaterialIssuedItem mii: miis) {
+            item = mii.getItem();
+            rbin = item.getLocation();
+            if(!(rbin instanceof InventoryReservedBin rb)) {
+                throw new Invalid_State("Item already moved - " + item);
+            }
+            rb.illegal = false;
+            it.moveTo(mii.getId(), item, null, toLoc);
+        }
+        it.save(transaction);
+        status = 1;
         save(transaction);
     }
 }

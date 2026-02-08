@@ -26,7 +26,7 @@ public class DataPickup extends DataForm implements Transactional {
             close();
             new GetItems(CAPTION, location,
                     InventoryTransaction.forDataPickup(getTransactionManager(), referenceField.getValue()),
-                    m -> m.getTransaction().dataPickup(m.getItem(), m.getLocationTo())).execute();
+                    m -> m.getTransaction().dataPickup(null, m.getItem(), m.getLocationTo())).execute();
             return true;
         }
         warning("Movement to '" + location + "' is not supported");

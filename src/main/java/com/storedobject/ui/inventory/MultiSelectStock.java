@@ -8,7 +8,7 @@ import java.util.Set;
 import java.util.function.Consumer;
 
 /**
- * Select stock multiple entries from a list of given stock items.
+ * Select multiple stock entries from a list of given stock items.
  *
  * @author Syam
  */

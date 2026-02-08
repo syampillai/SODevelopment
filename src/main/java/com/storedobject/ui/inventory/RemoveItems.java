@@ -95,10 +95,10 @@ class RemoveItems extends DataForm implements Transactional {
         inventoryTransaction.abandon();
         String reference = refField.getValue();
         switch(action) {
-            case 0 -> inventoryTransaction.sale(item, q, reference, entity);
-            case 1 -> inventoryTransaction.loanTo(item, q, reference, entity);
-            case 2 -> inventoryTransaction.scrap(item, q, reference);
-            case 3 -> inventoryTransaction.bookShortage(item, q, reference);
+            case 0 -> inventoryTransaction.sale(null, item, q, reference, entity);
+            case 1 -> inventoryTransaction.loanTo(null, item, q, reference, entity);
+            case 2 -> inventoryTransaction.scrap(null, item, q, reference);
+            case 3 -> inventoryTransaction.bookShortage(null, item, q, reference);
             default -> {
                 warning("Not yet implemented!");
                 return false;

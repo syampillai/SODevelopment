@@ -291,7 +291,7 @@ public class DefineReplacementItems extends DataForm {
                 itemEditor.close();
                 InventoryTransaction it = new InventoryTransaction(tm, DateUtility.today(), remarks(remarks, "Created"));
                 try {
-                    it.changeOwner(item, null, StoredObject.get(Entity.class, storeBin.getStore().getSystemEntity().getEntityId()));
+                    it.changeOwner(null, item, null, StoredObject.get(Entity.class, storeBin.getStore().getSystemEntity().getEntityId()));
                 } catch (Throwable e) {
                     error(e);
                     return false;
@@ -341,7 +341,7 @@ public class DefineReplacementItems extends DataForm {
             clearAlerts();
             try {
                 InventoryTransaction it = new InventoryTransaction(tm, DateUtility.today(), remarks(remarks, "Consumed"));
-                it.moveTo(item, consumed,null, consumption);
+                it.moveTo(null, item, consumed,null, consumption);
                 it.save();
                 message(item.toDisplay() + " - Item marked as consumed! Consumed: " + consumed);
                 removeItem(item);
@@ -380,8 +380,8 @@ public class DefineReplacementItems extends DataForm {
                 String finalSOld = sOld, finalSNew = sNew;
                 InventoryTransaction it = new InventoryTransaction(tm, DateUtility.today());
                 tm.transact(t -> {
-                    it.moveTo(item, remarks(remarks, "Replaced with " + finalSNew), consumption);
-                    it.changeOwner(StoredObject.get(newItem.getClass(), newItem.getId()),
+                    it.moveTo(null, item, remarks(remarks, "Replaced with " + finalSNew), consumption);
+                    it.changeOwner(null, StoredObject.get(newItem.getClass(), newItem.getId()),
                             remarks(remarks, "Replacement of " + finalSOld),
                             StoredObject.get(Entity.class, storeBin.getStore().getSystemEntity().getEntityId()));
                     it.save(t);
@@ -406,7 +406,7 @@ public class DefineReplacementItems extends DataForm {
             try {
                 InventoryTransaction it = new InventoryTransaction(tm, DateUtility.today(), remarks(remarks, "Consumed"));
                 tm.transact(t -> {
-                    it.moveTo(item, consumed, null, consumption);
+                    it.moveTo(null, item, consumed, null, consumption);
                     it.save(t);
                 });
                 message(itemDisplay + " - Item marked as consumed! Consumed: " + consumed + ", To Return: " + toReturn
@@ -780,7 +780,7 @@ public class DefineReplacementItems extends DataForm {
                     } else {
                         inventoryTransaction.abandon();
                     }
-                    inventoryTransaction.moveTo(item, qToRemove, reference("Removed"), eo);
+                    inventoryTransaction.moveTo(null, item, qToRemove, reference("Removed"), eo);
                     if(transact(t -> inventoryTransaction.save(t))) {
                         if(item.isSerialized()) {
                             items.addFirst(item);

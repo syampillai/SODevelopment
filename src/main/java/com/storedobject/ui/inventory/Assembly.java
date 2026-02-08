@@ -179,9 +179,9 @@ public class Assembly<T extends InventoryItem, C extends InventoryItem> extends 
                 inventoryTransaction.abandon();
             }
             if(location == scrap) {
-                inventoryTransaction.scrap(item, qToRemove, reference(null));
+                inventoryTransaction.scrap(null, item, qToRemove, reference(null));
             } else {
-                inventoryTransaction.moveTo(item, qToRemove, reference(null), location);
+                inventoryTransaction.moveTo(null, item, qToRemove, reference(null), location);
             }
             if(transact(t -> inventoryTransaction.save(t))) {
                 refresh();

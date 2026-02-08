@@ -206,7 +206,7 @@ public class ReceiveAndBin extends ListGrid<InventoryItem> implements Transactio
                 newBin = bins.get(item.getId());
                 if (newBin != null && !newBin.getId().equals(item.getLocationId())) {
                     any = true;
-                    it.moveTo(StoredObject.get(item.getClass(), item.getId()), reference, newBin);
+                    it.moveTo(null, StoredObject.get(item.getClass(), item.getId()), reference, newBin);
                 }
             }
             if (any) {
@@ -249,7 +249,11 @@ public class ReceiveAndBin extends ListGrid<InventoryItem> implements Transactio
     }
 
     private boolean saveItem(InventoryItem item) {
-        if (!transact(t -> itemEditor.save(t))) {
+        if (!transact(t -> {
+            itemEditor.save(t);
+            InventoryItem ii = (InventoryItem) itemEditor.getObject();
+            if(ii.isSerialized()) UserAction.save(ii, "INSPECT");
+        })) {
             return false;
         }
         return saveItem2(item);

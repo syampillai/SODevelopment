@@ -181,6 +181,10 @@ public class Memo extends StoredObject implements OfEntity {
         return getStatusValue();
     }
 
+    public String getApproveLabel() {
+        return "Approve";
+    }
+
     public String renameAction(String action) {
         return action;
     }
@@ -529,5 +533,9 @@ public class Memo extends StoredObject implements OfEntity {
             return "Problem: No commenters/approvers";
         }
         return null;
+    }
+
+    protected long getAutocloseTime() {
+        return 2592000L; // 30 days = 30 * 24 * 60 * 60 * 1000L;
     }
 }

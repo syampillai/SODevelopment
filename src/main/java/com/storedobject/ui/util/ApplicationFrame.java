@@ -29,6 +29,7 @@ public class ApplicationFrame extends com.storedobject.vaadin.ApplicationFrame i
     private final Div progressBars = new Div();
     private SearchMenu searchMenu;
     private ES entitySelector;
+    private TimeComponent timeComponent;
 
     public ApplicationFrame() {
         new ContextMenu(this);
@@ -107,17 +108,16 @@ public class ApplicationFrame extends com.storedobject.vaadin.ApplicationFrame i
             application.setLocale(su.getLocale());
             Person p = su.getPerson();
             application.speak("Welcome " + p);
-            setUserTitle(a);
+            setUserTitle(a, false);
             ButtonIcon logoutButton = new ButtonIcon("icons:exit-to-app", e -> a.logout());
             logoutButton.setStyle("color", "var(--lumo-error-color)");
             logoutButton.getElement().setAttribute("title", "Sign out");
             logoutButton.getElement().setAttribute("tabindex", "-1");
             SystemEntity se = tm.getEntity();
             TimeZone timeZone = se == null ? null : TimeZone.getTimeZone(se.getZoneId());
-            getToolbox().add(new TimeComponent(tm.getTimeDifference(),
-                            timeZone == null ? "" : timeZone.getDisplayName(false, TimeZone.SHORT)),
-                    new SpeakerButton(),
-                    ((Application) application).getAlertButton(),
+            timeComponent = new TimeComponent(tm.getTimeDifference(),
+                    timeZone == null ? "" : timeZone.getDisplayName(false, TimeZone.SHORT));
+            getToolbox().add(timeComponent, new SpeakerButton(), ((Application) application).getAlertButton(),
                     new CompactSwitcher(a).icon, logoutButton);
         }
         if(!ApplicationServer.getGlobalBooleanProperty("application.config.menu.hide")) {
@@ -125,7 +125,11 @@ public class ApplicationFrame extends com.storedobject.vaadin.ApplicationFrame i
         }
     }
 
-    private void setUserTitle(Application a) {
+    public TimeComponent getTimeComponent() {
+        return timeComponent;
+    }
+
+    private void setUserTitle(Application a, boolean setTime) {
         boolean landscape = a.getDeviceWidth() > a.getDeviceHeight();
         TransactionManager tm = a.getTransactionManager();
         SystemUser su = tm.getUser();
@@ -144,6 +148,18 @@ public class ApplicationFrame extends com.storedobject.vaadin.ApplicationFrame i
         } else if(user instanceof Component c) {
             c.getElement().setAttribute("title", title);
         }
+        if(setTime) {
+            setUserTime(a);
+        }
+    }
+
+    private void setUserTime(Application a) {
+        if(timeComponent == null) return;
+        TransactionManager tm = a.getTransactionManager();
+        SystemEntity se = tm.getEntity();
+        TimeZone timeZone = se == null ? null : TimeZone.getTimeZone(se.getZoneId());
+        timeComponent.reinit(tm.getTimeDifference(),
+                timeZone == null ? "" : timeZone.getDisplayName(false, TimeZone.SHORT));
     }
 
     @Override
@@ -166,6 +182,7 @@ public class ApplicationFrame extends com.storedobject.vaadin.ApplicationFrame i
         openMenu();
     }
 
+    @SuppressWarnings("ClassCanBeRecord")
     private static class CompactSwitcher {
 
         private final ButtonIcon icon;
@@ -228,7 +245,7 @@ public class ApplicationFrame extends com.storedobject.vaadin.ApplicationFrame i
         if(entitySelector.count > 1) {
             entitySelector.execute();
         } else {
-            setUserTitle(Application.get());
+            setUserTitle(Application.get(), true);
         }
     }
 
@@ -241,7 +258,7 @@ public class ApplicationFrame extends com.storedobject.vaadin.ApplicationFrame i
         @Override
         protected boolean process() {
             super.process();
-            setUserTitle(Application.get());
+            setUserTitle(Application.get(), true);
             return true;
         }
     }

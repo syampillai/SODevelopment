@@ -346,7 +346,7 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
             return;
         }
         if(viewer == null) {
-            viewer = ObjectEditor.create(InventoryGRN.class);
+            viewer = new com.storedobject.ui.inventory.GRNEditor();
         }
         viewer.setCaption("GRN: " + object.getReference());
         viewer.viewObject(object);
@@ -416,7 +416,28 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
         return true;
     }
 
-    private class GRNEditor extends ObjectEditor<InventoryGRN> {
+    static class BasicGRNEditor extends ObjectEditor<InventoryGRN> {
+
+        private final Button viewSource = new Button("View Source", e -> viewSource(getObject()));
+
+        public BasicGRNEditor(int actions) {
+            this(actions, null);
+        }
+
+        public BasicGRNEditor(int actions, String caption) {
+            super(InventoryGRN.class, actions, caption, null);
+            addField("Reference");
+        }
+
+        @Override
+        protected void addExtraButtons() {
+            if(getObject() != null) {
+                buttonPanel.add(viewSource);
+            }
+        }
+    }
+
+    private class GRNEditor extends BasicGRNEditor {
 
         private final int type;
         private ObjectField<Entity> supplierField;
@@ -441,9 +462,7 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
         private final Class<? extends InventoryItemType> pnClass;
 
         GRNEditor(int type, Class<? extends InventoryItemType> pnClass, int actions, String caption) {
-            super(InventoryGRN.class, actions & (~EditorAction.SEARCH), caption);
-            addField("Reference");
-            addField("Status", InventoryGRN::getStatus, (grn, v) -> {});
+            super(actions & (~EditorAction.SEARCH), caption);
             this.type = type;
             this.pnClass = pnClass;
             Collection<Entity> suppliers = suppliers(type);
@@ -513,6 +532,7 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
 
         @Override
         protected void addExtraButtons() {
+            super.addExtraButtons();
             InventoryGRN grn = getObject();
             if(grn == null) {
                 return;
@@ -1134,6 +1154,7 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
                     InventoryItem item;
                     itemEditor.save(t);
                     item = (InventoryItem) itemEditor.getObject();
+                    if(item.isSerialized()) UserAction.save(item, "INSPECT");
                     if(!item.getId().equals(grnItem.getItemId())) {
                         grnItem.setItem(item.getId());
                         if(bin != null && !(bin instanceof InventoryStoreBin) && !bin.canBin(item)) {
@@ -1537,7 +1558,10 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
     }
 
     private void viewSource() {
-        InventoryGRN grn = selected();
+        viewSource(selected());
+    }
+
+    private static void viewSource(InventoryGRN grn) {
         if(grn == null) {
             return;
         }

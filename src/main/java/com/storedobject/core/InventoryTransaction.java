@@ -29,13 +29,13 @@ public final class InventoryTransaction {
     public void setDataPickupMode() {
     }
 
-    public void dataPickup(InventoryItem item, InventoryLocation to) {
+    public void dataPickup(Id sourceId, InventoryItem item, InventoryLocation to) {
     }
 
-    public void dataPickup(InventoryItem item, Quantity quantity, InventoryLocation to) {
+    public void dataPickup(Id sourceId, InventoryItem item, Quantity quantity, InventoryLocation to) {
     }
 
-    public void dataPickup(InventoryItem item, InventoryLocation locationTo, InventoryFitmentPosition assemblyPosition) {
+    public void dataPickup(Id sourceId, InventoryItem item, InventoryLocation locationTo, InventoryFitmentPosition assemblyPosition) {
     }
 
     public static InventoryLocation createSupplierLocation(TransactionManager tm, Entity supplier) {
@@ -70,65 +70,65 @@ public final class InventoryTransaction {
         return new InventoryVirtualLocation();
     }
 
-    public void scrap(InventoryItem item, String reference) {
+    public void scrap(Id sourceId, InventoryItem item, String reference) {
     }
 
-    public void scrap(InventoryItem item, Quantity quantity, String reference) {
+    public void scrap(Id sourceId, InventoryItem item, Quantity quantity, String reference) {
     }
 
-    public void consume(InventoryItem item, String reference) {
+    public void consume(Id sourceId, InventoryItem item, String reference) {
     }
 
-    public void consume(InventoryItem item, Quantity quantity, String reference) {
+    public void consume(Id sourceId, InventoryItem item, Quantity quantity, String reference) {
     }
 
-    public void bookShortage(InventoryItem item, Quantity quantity, String reference) {
+    public void bookShortage(Id sourceId, InventoryItem item, Quantity quantity, String reference) {
     }
 
-    public void purchase(InventoryItem item, String reference, InventoryLocation to, Entity fromEntity) {
+    public void purchase(Id sourceId, InventoryItem item, String reference, InventoryLocation to, Entity fromEntity) {
     }
 
-    public void purchase(InventoryItem item, Quantity quantity, String reference, InventoryLocation to,
+    public void purchase(Id sourceId, InventoryItem item, Quantity quantity, String reference, InventoryLocation to,
                          Entity fromEntity) {
     }
 
-    public void sale(InventoryItem item, Quantity quantity, String reference, Entity toEntity) {
+    public void sale(Id sourceId, InventoryItem item, Quantity quantity, String reference, Entity toEntity) {
     }
 
-    public void changeOwner(InventoryItem item, String reference, Entity toEntity) {
+    public void changeOwner(Id sourceId, InventoryItem item, String reference, Entity toEntity) {
     }
 
-    public void splitQuantity(InventoryItem item, Quantity quantity, String reference) {
+    public void splitQuantity(Id sourceId, InventoryItem item, Quantity quantity, String reference) {
     }
 
-    public void moveTo(InventoryItem item, Quantity quantity, String reference, InventoryLocation to) {
+    public void moveTo(Id sourceId, InventoryItem item, Quantity quantity, String reference, InventoryLocation to) {
     }
 
-    public void moveTo(InventoryItem item, String reference, InventoryLocation to) {
+    public void moveTo(Id sourceId, InventoryItem item, String reference, InventoryLocation to) {
     }
     
-    public void reverse(InventoryItem item, String reference) {
+    public void reverse(Id sourceId, InventoryItem item, String reference) {
     }
 
-    public void sendForRepair(InventoryItem item, Quantity quantity, String reference, Entity repairEntity) {
+    public void sendForRepair(Id sourceId, InventoryItem item, Quantity quantity, String reference, Entity repairEntity) {
     }
 
-    public void loanTo(InventoryItem item, Quantity quantity, String reference, Entity entity) {
+    public void loanTo(Id sourceId, InventoryItem item, Quantity quantity, String reference, Entity entity) {
     }
 
-    public void receiveFromExternal(InventoryItem item, String reference, InventoryLocation to, Entity entity) {
+    public void receiveFromExternal(Id sourceId, InventoryItem item, String reference, InventoryLocation to, Entity entity) {
     }
 
-    public void loanFrom(InventoryItem item, String reference, InventoryLocation to, Entity entity) {
+    public void loanFrom(Id sourceId, InventoryItem item, String reference, InventoryLocation to, Entity entity) {
     }
 
-    public void loanReturn(InventoryItem item, String reference) {
+    public void loanReturn(Id sourceId, InventoryItem item, String reference) {
     }
 
-    public void thrash(InventoryItem item, String reference) {
+    public void thrash(Id sourceId, InventoryItem item, String reference) {
     }
 
-    public void thrash(InventoryItem item, Quantity quantity, String reference) {
+    public void thrash(Id sourceId, InventoryItem item, Quantity quantity, String reference) {
     }
 
     public void abandon() {

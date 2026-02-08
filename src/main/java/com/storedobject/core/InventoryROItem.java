@@ -57,6 +57,6 @@ public class InventoryROItem extends InventoryReturnItem {
 
     @Override
     protected void  move(InventoryTransaction transaction, InventoryItem item, InventoryLocation toLocation, Entity toEntity) {
-        transaction.sendForRepair(item, getQuantity(), null, toEntity);
+        transaction.sendForRepair(getId(), item, getQuantity(), null, toEntity);
     }
 }

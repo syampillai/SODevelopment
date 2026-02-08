@@ -468,7 +468,7 @@ public class MaterialRequest extends StoredObject implements OfEntity, HasRefere
                 mri = mii.getRequest();
                 rbin = (InventoryReservedBin)item.getLocation();
                 rbin.illegal = false;
-                iTran.moveTo(item, null, rbin.getBin());
+                iTran.moveTo(mii.getId(), item, null, rbin.getBin());
                 mri.setIssued(mri.getIssued().subtract(mii.getQuantity()));
                 mri.save(tran);
                 rbin.setReservedBy(Id.ZERO);

@@ -674,7 +674,7 @@ public abstract class AbstractAssembly<T extends InventoryItem, C extends Invent
             } else {
                 inventoryTransaction.abandon();
             }
-            inventoryTransaction.moveTo(item, qFit, reference, fitmentPosition);
+            inventoryTransaction.moveTo(null, item, qFit, reference, fitmentPosition);
             if(transact(t -> inventoryTransaction.save(t))) {
                 refresh();
                 return true;

@@ -11,4 +11,8 @@ public class TimeComponent extends LitComponent {
     public TimeComponent(int timeDifference, String timeZoneName) {
         executeJS("initComp", timeDifference, timeZoneName);
     }
+
+    public void reinit(int timeDifference, String timeZoneName) {
+        executeJS("reinitComp", timeDifference, timeZoneName);
+    }
 }

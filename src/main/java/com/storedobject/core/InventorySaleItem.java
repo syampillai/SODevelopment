@@ -43,6 +43,6 @@ public class InventorySaleItem extends InventoryTransferItem {
 
     @Override
     protected void  move(InventoryTransaction transaction, InventoryItem item, InventoryLocation toLocation, Entity toEntity) {
-        transaction.sale(item, getQuantity(), null, toEntity);
+        transaction.sale(getId(), item, getQuantity(), null, toEntity);
     }
 }

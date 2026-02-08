@@ -297,7 +297,7 @@ public class ItemContext {
             }
             close();
             InventoryTransaction it = new InventoryTransaction(getTransactionManager(), dateField.getValue());
-            it.moveTo(item, ref, location);
+            it.moveTo(null, item, ref, location);
             if(transact(it::save)) {
                 message("Item '" + item.toDisplay() +
                         "' is removed from the assembly and is available at '" + location + "' now!");
@@ -489,7 +489,7 @@ public class ItemContext {
             close();
             String reference = "Split";
             InventoryTransaction it = new InventoryTransaction(getTransactionManager(), DateUtility.today(), reference);
-            it.splitQuantity(item, q, reference);
+            it.splitQuantity(null, item, q, reference);
             if(transact(it::save)) {
                 message("Quantity split successfully");
             }

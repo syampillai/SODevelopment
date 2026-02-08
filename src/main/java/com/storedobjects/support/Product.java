@@ -1,6 +1,7 @@
 package com.storedobjects.support;
 
 import com.storedobject.core.*;
+import com.storedobject.core.annotation.Column;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -8,17 +9,29 @@ import java.util.Map;
 public final class Product extends Name {
 
     private static final Map<Id, Product> cache = new HashMap<>();
+    private boolean internal;
 
     public Product() {
     }
 
-    public static void columns(Columns columns) {}
+    public static void columns(Columns columns) {
+        columns.add("Internal", "boolean");
+    }
 
     public static String[] links() {
         return new String[] {
                 "Modules|com.storedobjects.support.ProductModule|||0",
-                "Product Types|com.storedobject.core.InventoryItemType/Any|||0",
+                "Product/Service Types|com.storedobject.core.InventoryItemType/Any|||0",
         };
+    }
+
+    public void setInternal(boolean internal) {
+        this.internal = internal;
+    }
+
+    @Column(order = 2000, caption = "Internal Task")
+    public boolean getInternal() {
+        return internal;
     }
 
     public static Product get(String name) {

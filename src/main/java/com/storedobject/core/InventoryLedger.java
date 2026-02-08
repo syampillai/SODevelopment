@@ -127,6 +127,23 @@ public final class InventoryLedger extends StoredObject implements HasInventoryI
         return new InventoryBin();
     }
 
+    public void setSource(Id sourceId) {
+    }
+
+    public void setSource(BigDecimal idValue) {
+    }
+
+    public void setSource(StoredObject source) {
+    }
+
+    public Id getSourceId() {
+        return Id.ZERO;
+    }
+
+    public StoredObject getSource() {
+        return get(getTransaction(), Id.ZERO);
+    }
+
     public String getReference() {
         return "";
     }

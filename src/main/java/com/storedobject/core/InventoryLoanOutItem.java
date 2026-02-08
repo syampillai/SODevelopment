@@ -26,6 +26,6 @@ public class InventoryLoanOutItem extends InventoryReturnItem {
 
     @Override
     protected void move(InventoryTransaction transaction, InventoryItem item, InventoryLocation toLocation, Entity toEntity) {
-        transaction.loanTo(item, getQuantity(), null, toEntity);
+        transaction.loanTo(getId(), item, getQuantity(), null, toEntity);
     }
 }

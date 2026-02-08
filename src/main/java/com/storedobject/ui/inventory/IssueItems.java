@@ -117,7 +117,7 @@ class IssueItems extends DataForm implements Transactional {
             return false;
         }
         inventoryTransaction.abandon();
-        inventoryTransaction.moveTo(item, q, refField.getValue(), bin);
+        inventoryTransaction.moveTo(null, item, q, refField.getValue(), bin);
         try {
             inventoryTransaction.save();
             message("Item moved successfully");

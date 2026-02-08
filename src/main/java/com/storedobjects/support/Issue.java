@@ -1,5 +1,6 @@
 package com.storedobjects.support;
 
+import com.storedobject.common.SORuntimeException;
 import com.storedobject.core.*;
 import com.storedobject.core.annotation.Column;
 import com.storedobject.core.annotation.SetNotAllowed;
@@ -69,7 +70,7 @@ public class Issue extends Memo {
     }
 
     @SetNotAllowed
-    @Column(order = 100)
+    @Column(order = 100, caption = "Product/Service")
     public Id getProductId() {
         return productId;
     }
@@ -79,8 +80,8 @@ public class Issue extends Memo {
     }
 
     public void setProductModule(Id productModuleId) {
-        if (!loading() && !Id.equals(this.getProductModuleId(), productModuleId)) {
-            throw new Set_Not_Allowed("ProductModule");
+        if (!Id.equals(this.getProductModuleId(), productModuleId)) {
+            throw new SORuntimeException("Product Module doesn't belong to '" + getProduct().toDisplay() + "'");
         }
         this.productModuleId = productModuleId;
     }
@@ -93,7 +94,6 @@ public class Issue extends Memo {
         setProductModule(productModule == null ? null : productModule.getId());
     }
 
-    @SetNotAllowed
     @Column(order = 110, required = false)
     public Id getProductModuleId() {
         return productModuleId;
@@ -115,11 +115,16 @@ public class Issue extends Memo {
     }
 
     @Override
+    public String getApproveLabel() {
+        return "Mark as " + (getProduct().getInternal() ? "Completed" : "Resolved");
+    }
+
+    @Override
     public String renameAction(String action) {
         return switch (action) {
             case "Forwarded" -> "Open";
             case "Being Approved" -> "Working on";
-            case "Approved" -> "Resolved";
+            case "Approved" -> getProduct().getInternal() ? "Completed" : "Resolved";
             case "Rejected" -> "On Hold";
             case "Abandoned" -> "Closed";
             default -> action;
@@ -129,7 +134,7 @@ public class Issue extends Memo {
     @Override
     public String renameCommentAction(String action) {
         return switch (action) {
-            case "Approved" -> "Resolved";
+            case "Approved" -> getProduct().getInternal() ? "Completed" : "Resolved";
             case "Rejected" -> "On Hold";
             case "Abandoned" -> "Closed";
             default -> action;
@@ -140,8 +145,8 @@ public class Issue extends Memo {
     public String renameActionVerb(String action) {
         return switch (action) {
             case "approve" -> "resolve";
-            case "approved" -> "resolved";
-            case "Approved" -> "Resolved";
+            case "approved" -> getProduct().getInternal() ? "completed" : "resolved";
+            case "Approved" -> getProduct().getInternal() ? "Completed" : "Resolved";
             case "approval", "approvals" -> "investigation";
             case "rejected" -> "on hold";
             default -> action;
@@ -174,7 +179,8 @@ public class Issue extends Memo {
     }
 
     public Entity getEntity() {
-        return getOrganization().getEntity();
+        Organization org = getOrganization();
+        return org == null ? getSystemEntity().getEntity() : org.getEntity();
     }
 
     @Override
@@ -218,10 +224,13 @@ public class Issue extends Memo {
         if(approvers == null) {
             approvers = new ArrayList<>();
             List<SystemUser> finalApprovers = approvers;
-            list(SupportPerson.class)
-                    .filter(sp -> sp.existsLinks(ProductSkill.class, skillMatch()))
-                    .filter(sp -> sp.existsLinks(Organization.class, "Id=" + organizationId))
-                    .forEach(sp -> finalApprovers.add(sp.getPerson()));
+            ObjectIterator<SupportPerson> sps = list(SupportPerson.class)
+                    .filter(sp -> sp.existsLinks(ProductSkill.class, skillMatch()));
+            if(!Id.isNull(organizationId)) {
+                sps = sps.filter(sp -> !sp.existsLinks(Organization.class) // Not assigned to any specific organization, so take as all
+                        || sp.existsLinks(Organization.class, "Id=" + organizationId));
+            }
+            sps.forEach(sp -> finalApprovers.add(sp.getPerson()));
             Issue.approvers.put(key, approvers);
         }
         return approvers;
@@ -246,7 +255,7 @@ public class Issue extends Memo {
         if(listApprovers().isEmpty()) {
             StringBuilder sb = new StringBuilder("Product: ");
             sb.append(getProduct().toDisplay()).append(", Organization: ")
-                    .append(get(Organization.class, getOrganizationId()).getEntity().getName())
+                    .append(getEntity().getName())
                     .append("\nSkill Level: ")
                     .append(level + 1)
                     .append(", Problem: No one found to ");
@@ -263,14 +272,17 @@ public class Issue extends Memo {
 
     @Override
     public boolean canReopen(SystemUser su) {
-        switch (getStatus()) {
-            case 4, 5, 6 -> { // Approved / Rejected / Abandoned
-            }
-            default -> {
-                return false;
+        int status = getStatus();
+        if(status < 10) {
+            switch (status) {
+                case 4, 5 -> { // Approved / Rejected
+                }
+                default -> {
+                    return false;
+                }
             }
         }
-        if(!isMine(su)) { // Not mine
+        if(!isMine(su) && !su.getId().equals(getAssistedById())) { // Not mine and not helped by me
             return false;
         }
         return switch (getLatestComment().getStatus()) {
@@ -284,7 +296,11 @@ public class Issue extends Memo {
         if(level == 2) {
             return false;
         }
-        switch (getStatus()) {
+        int status = getStatus();
+        if(status >= 10) {
+            return false;
+        }
+        switch (status) {
             case 1, 2, 3, 5 -> { // Forwarded / Returned / Being Approved / Rejected
             }
             default -> {
@@ -305,6 +321,6 @@ public class Issue extends Memo {
     protected boolean canAssist(SystemUser boss, SystemUser assistant) {
         if(super.canAssist(boss, assistant)) return true;
         if(boss == null || assistant == null) return false;
-        return exists(SupportPerson.class, "Person=" + boss.getId()); // A support person can assist anyone
+        return exists(SupportPerson.class, "Person=" + boss.getId()); // A support person can help anyone
     }
 }

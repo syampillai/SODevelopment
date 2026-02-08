@@ -8,27 +8,28 @@ import com.storedobject.ui.ELabel;
 import com.storedobject.ui.ObjectComboField;
 import com.storedobject.ui.ObjectField;
 import com.storedobject.ui.common.MemoSystem;
-import com.storedobject.vaadin.ButtonLayout;
-import com.storedobject.vaadin.DataForm;
-import com.storedobject.vaadin.RadioChoiceField;
-import com.storedobject.vaadin.View;
+import com.storedobject.vaadin.*;
 import com.storedobjects.support.*;
 import com.vaadin.flow.component.HasValue;
+import com.vaadin.flow.component.icon.VaadinIcon;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 public class SupportSystem extends MemoSystem {
 
-    private final Map<Id, Organization> supportOrgs = new HashMap<>();
+    private final Map<Id, Organization> supportOrg = new HashMap<>();
     private List<Organization> organizations;
     private boolean user = false; // Determines whether the current user is a support user
     private ObjectField<Product> productField;
-    private final ObjectField<ProductModule> moduleField = new ObjectField<>("Module", ProductModule.class, ObjectField.Type.CHOICE);
+    private final ObjectField<ProductModule> moduleField =
+            new ObjectField<>("Module", ProductModule.class, ObjectField.Type.CHOICE);
     private ObjectComboField<Product> productFilterField;
     private Product productFilter;
     private ObjectComboField<Organization> organizationFilterField;
     private Organization organizationFilter;
+    private IssueEditor<? extends Issue> issueEditor;
 
     public SupportSystem() {
         this("SS");
@@ -47,7 +48,8 @@ public class SupportSystem extends MemoSystem {
     }
 
     public SupportSystem(MemoType type, boolean load) {
-        super(type, StringList.concat(StoredObjectUtility.browseColumns(MemoComment.class), StringList.create("From", "Product")), load);
+        super(type, StringList.concat(StoredObjectUtility.browseColumns(MemoComment.class),
+                StringList.create("From", "Product AS Product/Service")), load);
         addConstructedListener(e -> setColumnVisible("From", !user));
     }
 
@@ -80,7 +82,7 @@ public class SupportSystem extends MemoSystem {
     }
 
     private Organization getOrganization(SystemUser systemUser) {
-        Organization organization = supportOrgs.get(systemUser.getId());
+        Organization organization = supportOrg.get(systemUser.getId());
         if(organization == null) {
             SupportUser supportUser = StoredObject.get(SupportUser.class, "SupportUser=" + systemUser.getId());
             if(supportUser == null) {
@@ -89,7 +91,7 @@ public class SupportSystem extends MemoSystem {
             } else {
                 organization = supportUser.getOrganization();
             }
-            supportOrgs.put(systemUser.getId(), organization);
+            supportOrg.put(systemUser.getId(), organization);
         }
         return organization;
     }
@@ -125,7 +127,7 @@ public class SupportSystem extends MemoSystem {
         if(productField != null) {
             if(user || isAssisting()) {
                 Organization organization = getOrganization(who());
-                productField.getField().load(organization.listLinks(Product.class));
+                productField.getField().load(organization.listProducts());
             } else {
                 productField.getField().load(StoredObject.list(Product.class));
             }
@@ -134,13 +136,18 @@ public class SupportSystem extends MemoSystem {
     }
 
     @Override
-    protected boolean canReject() {
-        return false;
+    protected void addExtraButtons() {
+        if(user) return;
+        buttonPanel.add(new Button("Create Internal Task", VaadinIcon.TASKS, e -> createInternalTask()));
+    }
+
+    private void createInternalTask() {
+        createNewMemo();
     }
 
     @Override
-    protected String getApproveLabel() {
-        return "Mark as Resolved";
+    protected boolean canReject() {
+        return false;
     }
 
     @Override
@@ -167,10 +174,26 @@ public class SupportSystem extends MemoSystem {
             warning("You are not part of the support system");
             return;
         }
-        supportPerson.listLinks(Organization.class).filter(o -> o.existsLinks(Product.class))
-                .collectAll(organizations);
+        supportPerson.listOrganizations().collectAll(organizations);
         if (organizations.isEmpty()) {
             warning("You are not assigned to any organization to provide support");
+            return;
+        }
+        AtomicBoolean hasInternalSkill = new AtomicBoolean(false);
+        Set<Id> skills = new HashSet<>();
+        supportPerson.listLinks(ProductSkill.class).forEach(s -> {
+            if(s.getProduct().getInternal()) hasInternalSkill.set(true);
+            skills.add(s.getProductId());
+        });
+        boolean anySkill = hasInternalSkill.get();
+        if(!anySkill) {
+            for (Organization o : organizations) {
+                anySkill = o.listLinks(Product.class).anyMatch(p -> skills.contains(p.getId()));
+                if (anySkill) break;
+            }
+        }
+        if(!anySkill) {
+            warning("You are not assigned to any product to provide support");
             return;
         }
         setColumnVisible("From", true);
@@ -244,8 +267,11 @@ public class SupportSystem extends MemoSystem {
 
     @SuppressWarnings("unchecked")
     private <M extends Memo, I extends Issue> MemoEditor<M> createIssueEditor(Class<M> memoClass) {
-        Class<I> issueClass = (Class<I>) memoClass;
-        return (MemoEditor<M>) new IssueEditor<>(issueClass);
+        if(issueEditor == null) {
+            Class<I> issueClass = (Class<I>) memoClass;
+            issueEditor = new IssueEditor<>(issueClass);
+        }
+        return (MemoEditor<M>) issueEditor;
     }
 
     private static boolean checkAlertHandler = true;

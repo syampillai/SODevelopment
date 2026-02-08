@@ -736,7 +736,7 @@ public class InventoryItem extends StoredObject implements HasInventoryItem {
         }
         boolean notAllowed = true;
         if(getLocation() instanceof InventoryBin && isSerialized() && !canBin(location)) { // Binning rejected
-            if(old.getLocationId().equals(locationId)) { // Bin didn't change, rejection maybe due to change in serviceability
+            if(old.getLocationId().equals(locationId)) { // Bin didn't change, rejection maybe due to a change in serviceability
                 InventoryLocation from = location;
                 location = InventoryStoreBin.getForStore(((InventoryBin) location).getStoreId());
                 //noinspection ConstantConditions
@@ -1798,5 +1798,9 @@ public class InventoryItem extends StoredObject implements HasInventoryItem {
         this.cost = cost;
         setLocation(location);
         illegal = true;
+    }
+
+    public static String actionPrefixForUI() {
+        return "II";
     }
 }

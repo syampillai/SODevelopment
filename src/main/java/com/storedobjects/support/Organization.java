@@ -20,8 +20,8 @@ public class Organization extends EntityRole {
 
     public static String[] links() {
         return new String[] {
-                "Product Type|com.storedobjects.support.Product|||0",
-                "Products|com.storedobject.core.InventoryItem/Any|||0",
+                "Product/Service Type|com.storedobjects.support.Product|||0",
+                "Products/Services|com.storedobject.core.InventoryItem/Any|||0",
         };
     }
 
@@ -49,6 +49,10 @@ public class Organization extends EntityRole {
 
     public ObjectIterator<SystemUser> listUsers() {
         return list(SupportUser.class, "Organization=" + getId()).map(SupportUser::getSupportUser);
+    }
+
+    public ObjectIterator<Product> listProducts() {
+        return listLinks(Product.class, "NOT Internal");
     }
 
     public static Organization get(Id id) {

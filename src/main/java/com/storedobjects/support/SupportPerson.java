@@ -3,6 +3,7 @@ package com.storedobjects.support;
 import com.storedobject.core.*;
 import com.storedobject.core.annotation.*;
 import java.math.BigDecimal;
+import java.util.List;
 
 public final class SupportPerson extends StoredObject {
 
@@ -73,5 +74,12 @@ public final class SupportPerson extends StoredObject {
 
     public static SupportPerson getFor(SystemUser systemUser) {
         return get(SupportPerson.class, "Person=" + systemUser.getId());
+    }
+
+    public ObjectIterator<Organization> listOrganizations() {
+        List<Organization> list = listLinks(Organization.class).filter(o -> o.existsLinks(Product.class))
+                .toList();
+        return list.isEmpty() ? list(Organization.class).filter(o -> o.existsLinks(Product.class))
+                : ObjectIterator.create(list);
     }
 }

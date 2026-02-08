@@ -153,7 +153,7 @@ public class AssemblyDataPickup<T extends InventoryItem, C extends InventoryItem
                         return false;
                     }
                 }
-                inventoryTransaction.moveTo(item, qFit, reference(null), fitmentPosition);
+                inventoryTransaction.moveTo(null, item, qFit, reference(null), fitmentPosition);
                 if(transact(t -> inventoryTransaction.save(t))) {
                     refresh();
                     return true;
@@ -175,7 +175,7 @@ public class AssemblyDataPickup<T extends InventoryItem, C extends InventoryItem
             item.setSerialNumber(sn);
             item.setQuantity(qFit);
             item.setCost(costField.getValue().multiply(qFit));
-            inventoryTransaction.dataPickup(item, locationField.getValue(), fitmentPosition);
+            inventoryTransaction.dataPickup(null, item, locationField.getValue(), fitmentPosition);
             if(editor != null && editor.getObjectClass() != item.getClass()) {
                 editor = null;
             }
@@ -230,7 +230,7 @@ public class AssemblyDataPickup<T extends InventoryItem, C extends InventoryItem
             } else {
                 inventoryTransaction.abandon();
             }
-            inventoryTransaction.thrash(item, qToRemove, reference(null));
+            inventoryTransaction.thrash(null, item, qToRemove, reference(null));
             if(transact(t -> inventoryTransaction.save(t))) {
                 refresh();
                 return true;

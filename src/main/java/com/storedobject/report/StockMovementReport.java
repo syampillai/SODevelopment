@@ -95,7 +95,7 @@ public class StockMovementReport extends PDFReport {
 		boolean categoryHeaderPrinted = categoryHeading == null;
 		InventoryLocation locFrom, locTo;
 		Id storeId = location instanceof InventoryStoreBin ? ((InventoryStoreBin) location).getStoreId() : null;
-		int count = 0, countCat = 0;
+		int countTotal = 0, countCat = 0;
 		Money.List costOfReceipts, costOfIssues, runningCost,
 				totalCost = new Money.List(),
 				totalCostOfReceipts = new Money.List(), totalCostOfIssues = new Money.List(),
@@ -179,7 +179,7 @@ public class StockMovementReport extends PDFReport {
 					opening = printOS(table, partNumber);
 					totalCost.add(opening.cost());
 					totalCostCat.add(opening.cost());
-					++count;
+					++countTotal;
 					++countCat;
 					runningQuantity = runningQuantity.add(opening.quantity());
 					runningCost.add(opening.cost());
@@ -254,7 +254,7 @@ public class StockMovementReport extends PDFReport {
 			totalCostOfIssuesCat.add(costOfIssues);
 			if(opening == null) {
 				opening = getOS(partNumber);
-				if(!printZeros && opening.quantity().isZero()) {
+				if(!printZeros && !opening.quantity().isPositive()) {
 					continue;
 				}
 				if(!tableUsed) {
@@ -273,7 +273,7 @@ public class StockMovementReport extends PDFReport {
 				printOS(table, opening, partNumber);
 				totalCost.add(opening.cost());
 				totalCostCat.add(opening.cost());
-				++count;
+				++countTotal;
 				++countCat;
 				if(summary) {
 					table.addBlankCell();
@@ -309,8 +309,8 @@ public class StockMovementReport extends PDFReport {
 		if(!tableUsed) {
 			return;
 		}
-		if(count > countCat) {
-			printTotals(table, count, totalCost, totalCostOfReceipts, totalCostOfIssues, "Grand Total");
+		if(countTotal > countCat) {
+			printTotals(table, countTotal, totalCost, totalCostOfReceipts, totalCostOfIssues, "Grand Total");
 		}
 		add(table);
 	}

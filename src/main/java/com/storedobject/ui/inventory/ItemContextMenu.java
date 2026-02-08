@@ -68,6 +68,7 @@ public class ItemContextMenu<T extends HasInventoryItem> extends GridContextMenu
                     viewStock.setVisible(true);
                     viewStock.setText("View Stock: " + iit.getPartNumber());
                 }
+                viewSource.setVisible(hi instanceof InventoryGRNItem);
                 if(dynamicContentHandler != null) {
                     dynamicContentHandler.test(hi);
                 }

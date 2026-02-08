@@ -176,7 +176,7 @@ public class Application extends com.storedobject.vaadin.Application implements 
      * This returns the {@link Login} instance associated with application. It will be available only till
      * logged in.
      *
-     * @return Login instance when not logged in, otherwise null.
+     * @return Login instance when wasn't logged in, otherwise null.
      */
     public Login getLogin() {
         return login;
@@ -2003,7 +2003,8 @@ public class Application extends com.storedobject.vaadin.Application implements 
         @Override
         boolean delete() {
             if(message.countLinks(Person.class) <= 1) {
-                return transact(message::delete);
+                StoredObject so = StoredObject.get(message.getClass(), message.getId());
+                return so == null || transact(so::delete);
             }
             Id pid = getTransactionManager().getUser().getPersonId();
             return transact(t -> message.removeLink(t, pid));

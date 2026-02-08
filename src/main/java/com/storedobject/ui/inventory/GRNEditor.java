@@ -3,19 +3,16 @@ package com.storedobject.ui.inventory;
 import com.storedobject.core.EditorAction;
 import com.storedobject.core.Entity;
 import com.storedobject.core.InventoryGRN;
-import com.storedobject.ui.ObjectEditor;
 import com.storedobject.ui.ObjectField;
 import com.vaadin.flow.component.HasValue;
 
-public class GRNEditor extends ObjectEditor<InventoryGRN> {
+public class GRNEditor extends GRN.BasicGRNEditor {
 
     private ObjectField<Entity> supplierField;
 
     public GRNEditor() {
-        super(InventoryGRN.class, EditorAction.EDIT);
+        super(EditorAction.EDIT);
         setCaption("GRN");
-        addField("Reference");
-        addField("Status", InventoryGRN::getStatus, (grn, v) -> {});
     }
 
     @Override
