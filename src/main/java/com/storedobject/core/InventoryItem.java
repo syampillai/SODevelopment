@@ -1807,8 +1807,7 @@ public class InventoryItem extends StoredObject implements HasInventoryItem {
     public void inspect(Transaction transaction, Date date, String reference) throws Exception {
         reference = reference.trim();
         save(transaction);
-        InventoryLedger ledger = list(InventoryLedger.class, "Item=" + getId(), "Date DESC,TranId DESC")
-                .findFirst();
+        InventoryLedger ledger = getLatestMovement();
         if(ledger != null) {
             String r = ledger.getReference();
             int p = r.indexOf("Inspected: ");
@@ -1822,5 +1821,26 @@ public class InventoryItem extends StoredObject implements HasInventoryItem {
             ledger.save(transaction);
         }
         UserAction.save(this, "INSPECT");
+    }
+
+    /**
+     * Retrieves the latest movement in the inventory ledger.
+     *
+     * @return the most recent entry in the inventory ledger as an InventoryLedger object
+     */
+    public InventoryLedger getLatestMovement() {
+        return listMovements(1).findFirst();
+    }
+
+    /**
+     * Retrieves a list of most recent inventory movements for the current item, limited to the specified count.
+     * The movements are ordered in the reverse chronological order.
+     *
+     * @param count the maximum number of inventory movements to retrieve
+     * @return an iterator over the list of inventory movements
+     */
+    public ObjectIterator<InventoryLedger> listMovements(int count) {
+        return QueryBuilder.from(InventoryLedger.class).where("Item=" + getId()).orderBy("Date DESC,TranId DESC")
+                .limit(count).list();
     }
 }
