@@ -250,9 +250,9 @@ public class ReceiveAndBin extends ListGrid<InventoryItem> implements Transactio
 
     private boolean saveItem(InventoryItem item) {
         if (!transact(t -> {
-            itemEditor.save(t);
-            InventoryItem ii = (InventoryItem) itemEditor.getObject();
-            if(ii.isSerialized()) UserAction.save(ii, "INSPECT");
+            //noinspection unchecked
+            itemEditor.save(t,
+                    (tran, o) -> ((InventoryItem)o).inspect(tran, dateField.getValue(), referenceField.getValue()));
         })) {
             return false;
         }

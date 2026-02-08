@@ -1111,11 +1111,29 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
      * @throws Exception Raises when save operation is not successful.
      */
     public void save(Transaction t) throws Exception {
+        save(t, null);
+    }
+
+    /**
+     * Save the current instance to the database.
+     * <p>Note: Not only the save operation includes saving the current instance, but also
+     * it includes saving the links, connected master (if any), contact data, attachments, etc. So, this method may be
+     * invoked from within customized save operations too.</p>
+     *
+     * @param t Transaction.
+     * @param saver Custom saver. If null is passed, default saver {@link #saveObject(Transaction, StoredObject)} is invoked.
+     * @throws Exception Raises when save operation is not successful.
+     */
+    public void save(Transaction t, ObjectSaver<T> saver) throws Exception {
         T object = getObject();
         if(parentObject != null) {
             object.setMaster(parentObject, parentLinkType);
         }
-        saveObject(t, object);
+        if(saver == null) {
+            saveObject(t, object);
+        } else {
+            saver.save(t, object);
+        }
         if(parentObject != null) {
             parentObject.addLink(t, object, parentLinkType);
         }
@@ -1128,7 +1146,8 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
     }
 
     /**
-     * Save the given object. This is invoked from the {@link #save(Transaction)} method to just save the object.
+     * Save the given object. This is invoked from the {@link #save(Transaction)} method to just save the object if no
+     * customr saver is used.
      * The default implementation just saves the object by invoking {@link StoredObject#save(Transaction)}.
      *
      * @param t Transaction.

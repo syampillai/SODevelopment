@@ -1803,4 +1803,24 @@ public class InventoryItem extends StoredObject implements HasInventoryItem {
     public static String actionPrefixForUI() {
         return "II";
     }
+
+    public void inspect(Transaction transaction, Date date, String reference) throws Exception {
+        reference = reference.trim();
+        save(transaction);
+        InventoryLedger ledger = list(InventoryLedger.class, "Item=" + getId(), "Date DESC,TranId DESC")
+                .findFirst();
+        if(ledger != null) {
+            String r = ledger.getReference();
+            int p = r.indexOf("Inspected: ");
+            if(p >= 0) {
+                r = r.substring(0, p) + "Inspected: " + reference + " (" + DateUtility.format(date) + ")";
+            } else {
+                r += ", Inspected: " + reference + " (" + DateUtility.format(date) + ")";
+            }
+            ledger.setReference(r);
+            ledger.illegal = false;
+            ledger.save(transaction);
+        }
+        UserAction.save(this, "INSPECT");
+    }
 }

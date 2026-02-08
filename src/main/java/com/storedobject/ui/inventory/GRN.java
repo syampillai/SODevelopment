@@ -1149,12 +1149,13 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
             }
 
             private boolean saveItem() {
+                InventoryGRN grn = getObject();
                 InventoryLocation bin = grnItem.getBin();
                 if(!transact(t -> {
-                    InventoryItem item;
-                    itemEditor.save(t);
-                    item = (InventoryItem) itemEditor.getObject();
-                    if(item.isSerialized()) UserAction.save(item, "INSPECT");
+                    //noinspection unchecked
+                    itemEditor.save(t,
+                            (tran, o) -> ((InventoryItem)o).inspect(tran, grn.getDate(), grn.getReference()));
+                    InventoryItem item = (InventoryItem) itemEditor.getObject();
                     if(!item.getId().equals(grnItem.getItemId())) {
                         grnItem.setItem(item.getId());
                         if(bin != null && !(bin instanceof InventoryStoreBin) && !bin.canBin(item)) {
