@@ -396,14 +396,15 @@ public class Memo extends StoredObject implements OfEntity {
     }
 
     /**
-     * This method is invoked when a memo is escalated to another level. This should return a system user at the next level.
+     * Escalates the memo to the next level.
      * <p>Note: This is not used by the basic memo system because there is no concept of "escalation" in the memo system.
      * However, it could be implemented in a derived class.</p>
      *
-     * @return A system user at the next level.
+     * @param transaction The transaction object.
+     * @throws Exception If an error occurs during the saving or escalation process.
      */
-    protected SystemUser escalating() {
-        return null;
+    protected void escalate(Transaction transaction) throws Exception {
+        save(transaction);
     }
 
     /**
@@ -474,6 +475,10 @@ public class Memo extends StoredObject implements OfEntity {
 
     public List<SystemUser> listApprovers() {
         return getType().approvers();
+    }
+
+    public List<SystemUser> listNextLevelApprovers() {
+        return listApprovers();
     }
 
     public List<SystemUser> listCommenters() {

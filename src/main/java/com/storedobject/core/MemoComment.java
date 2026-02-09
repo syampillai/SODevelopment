@@ -325,7 +325,11 @@ public final class MemoComment extends StoredObject {
         saveInt(transaction);
         deleteAlert(transaction);
         m.internal = true;
-        m.save(transaction);
+        if(escalate) {
+            m.escalate(transaction);
+        } else {
+            m.save(transaction);
+        }
         mc.saveInt(transaction);
         mc.alert(transaction, (escalate ? "escalated" : "forwarded") + " to you");
     }
@@ -370,13 +374,22 @@ public final class MemoComment extends StoredObject {
         mc.saveInt(transaction);
     }
 
-    public void escalateMemo(Transaction transaction, String reason) throws Exception {
+    public void escalateMemo(Transaction transaction, String reason, SystemUser escalatedTo) throws Exception {
         if(!canEscalate(transaction.getManager().getUser())) {
             throw new SOException(Memo.ILLEGAL);
         }
-        SystemUser nextUser = getMemo().escalating();
-        if(nextUser == null) {
-            throw new SOException("No one to escalate to");
+        SystemUser nextUser;
+        if(escalatedTo == null) {
+            nextUser = ObjectIterator.create(getMemo().listNextLevelApprovers()).random();
+            if(nextUser == null) {
+                throw new SOException("No one to escalate to");
+            }
+        } else {
+            if (getMemo().listNextLevelApprovers().contains(escalatedTo)) {
+                nextUser = escalatedTo;
+            } else {
+                throw new SOException("Can not escalate to " + escalatedTo.getName());
+            }
         }
         preprocess(transaction, true);
         String m = comment;

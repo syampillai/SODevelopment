@@ -1,14 +1,19 @@
 package com.storedobject.ui.inventory;
 
 import com.storedobject.common.SORuntimeException;
+import com.storedobject.common.StringList;
 import com.storedobject.core.*;
+import com.storedobject.ui.Application;
+import com.storedobject.ui.ELabel;
 import com.storedobject.ui.Transactional;
 import com.storedobject.vaadin.*;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.icon.VaadinIcon;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -19,15 +24,17 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 public abstract class HandleReturnedItems extends DataForm implements Transactional {
 
+    private final String SPECIFIC = "Select items from specific ";
     InventoryStoreBin storeBin;
     InventoryLocation eo; // External organization or custody
     final LocationField storeField;
     final LocationField eoField;
     final int type;
     private Button goToOld;
-    private boolean includeOnlyForStore;
     private boolean defineReplacements = false;
     final boolean autoMode;
+    private final Checkbox selectSpecific, includeOnlyForStore;
+    private final Set<Id> specificItems = new HashSet<>();
 
     public HandleReturnedItems(String caption, int type, InventoryStoreBin storeBin, InventoryLocation eo, boolean allowJumpToOld) {
         this(caption, type, storeBin, eo, allowJumpToOld, true);
@@ -78,11 +85,28 @@ public abstract class HandleReturnedItems extends DataForm implements Transactio
         if(allowJumpToOld) {
             goToOld = new Button("Previous Entries", VaadinIcon.COG_O, e -> goToOld());
         }
-        Checkbox includeOnlyForStore = new Checkbox("Include only items sent from the selected store and replacements");
-        includeOnlyForStore.addValueChangeListener(e -> this.includeOnlyForStore = e.getValue());
+        selectSpecific = new Checkbox(SPECIFIC + label());
+        switch (type) {
+            case 3, 8 -> {
+                add(selectSpecific);
+                selectSpecific.addValueChangeListener(e -> selectSpecific());
+            }
+        }
+        includeOnlyForStore = new Checkbox("Include only items sent from the selected store and replacements");
         add(includeOnlyForStore);
         storeField.addValueChangeListener(e -> this.storeBin = (InventoryStoreBin) e.getValue());
-        eoField.addValueChangeListener(e -> this.eo = e.getValue());
+        eoField.addValueChangeListener(e -> {
+            this.eo = e.getValue();
+            selectSpecific.setValue(false);
+        });
+    }
+
+    private String label() {
+        return switch(type) {
+            case 3 -> "RO";
+            case 8 -> "LO";
+            default -> "R";
+        } + "s";
     }
 
     @Override
@@ -129,6 +153,10 @@ public abstract class HandleReturnedItems extends DataForm implements Transactio
     }
 
     private boolean set() {
+        return set(true);
+    }
+
+    private boolean set(boolean close) {
         if(storeBin == null) {
             storeBin = (InventoryStoreBin) storeField.getValue();
         }
@@ -140,7 +168,7 @@ public abstract class HandleReturnedItems extends DataForm implements Transactio
             message("Please select both the store and " + (type == 18 ? "custodian" : "organization") + "!");
             return false;
         }
-        close();
+        if(close) close();
         return true;
     }
 
@@ -149,6 +177,35 @@ public abstract class HandleReturnedItems extends DataForm implements Transactio
             defineReplacements = true;
             proceed();
         }
+    }
+
+    private void selectSpecific() {
+        if(!selectSpecific.getValue()) {
+            specificItems.clear();
+            selectSpecific.setLabel(SPECIFIC + label());
+            return;
+        }
+        if(!set(false)) {
+            selectSpecific.setValue(false);
+            return;
+        }
+        String condition = "Status<2 AND Amendment>0 AND ToLocation=" + eo.getId();
+        if(includeOnlyForStore.getValue()) {
+            condition += " AND FromLocation=" + storeBin.getId();
+        }
+        ObjectIterator<InventoryReturn> irs;
+        if(type == 3) {
+            irs = StoredObject.list(InventoryRO.class, condition, true).map(r -> r);
+        } else {
+            irs = StoredObject.list(InventoryLoanOut.class, condition, true).map(r -> r);
+        }
+        List<InventoryReturn> list = irs.toList();
+        if(list.isEmpty()) {
+            message("No items pending to be received from:<BR/>" + eo.toDisplay());
+            selectSpecific.setValue(false);
+            return;
+        }
+        new SelectSpecificIR(list).execute();
     }
 
     @Override
@@ -167,9 +224,13 @@ public abstract class HandleReturnedItems extends DataForm implements Transactio
                 .forEach(it -> it.listLinks(InventoryTransferItem.class, true)
                         .forEach(iti -> amends.add(iti.getItemId())));
         AtomicBoolean amended = new AtomicBoolean(false);
-        List<InventoryItem> items = StoredObject.list(InventoryItem.class, "Location=" + eo.getId(), true)
-                .filter(i -> {
-                    if(validLoc(i)) {
+        ObjectIterator<InventoryItem> itemIterator = StoredObject.list(InventoryItem.class, "Location=" + eo.getId(), true);
+        if(selectSpecific.getValue()) {
+            itemIterator = itemIterator.filter(i -> specificItems.contains(i.getId()));
+        }
+        boolean storeOnly = includeOnlyForStore.getValue();
+        List<InventoryItem> items = itemIterator.filter(i -> {
+                    if(validLoc(i, storeOnly)) {
                         if(!amends.contains(i.getId())) {
                             return true;
                         }
@@ -177,7 +238,7 @@ public abstract class HandleReturnedItems extends DataForm implements Transactio
                     }
                     return false;
                 })
-                .filter( i -> !amends.contains(i.getId()) && validLoc(i)).toList();
+                .filter( i -> !amends.contains(i.getId()) && validLoc(i, storeOnly)).toList();
         if(items.isEmpty()) {
             message("No items pending to be received from:<BR/>" + eo.toDisplay());
             if(amended.get()) {
@@ -199,7 +260,7 @@ public abstract class HandleReturnedItems extends DataForm implements Transactio
 
     protected abstract void proceed(List<InventoryItem> items);
 
-    private boolean validLoc(InventoryItem ii) {
+    private boolean validLoc(InventoryItem ii, boolean includeOnlyForStore) {
         if(!includeOnlyForStore) {
             return true;
         }
@@ -229,5 +290,50 @@ public abstract class HandleReturnedItems extends DataForm implements Transactio
             }
         }
         return pLoc instanceof InventoryBin bin && bin.getStoreId().equals(storeBin.getStoreId());
+    }
+
+    private void loadSpecificItems(Set<InventoryReturn> irs) {
+        specificItems.clear();
+        if(irs.isEmpty()) {
+            selectSpecific.setValue(false);
+            return;
+        }
+        StringBuilder label = new StringBuilder(SPECIFIC);
+        label.append(label()).append(" - ");
+        int count = 0;
+        for(InventoryReturn ir: irs) {
+            if(count++ > 0) {
+                label.append(", ");
+            }
+            if(count < 4) {
+                label.append(ir.getReference()).append(" (").append(DateUtility.format(ir.getDate())).append(")");
+            }
+            if(type == 3) {
+                ir.listLinks(InventoryROItem.class, true).forEach(i -> specificItems.add(i.getItemId()));
+            } else if(type == 8) {
+                ir.listLinks(InventoryLoanOutItem.class, true).forEach(i -> specificItems.add(i.getItemId()));
+            }
+        }
+        selectSpecific.setLabel(label.toString());
+    }
+
+    private class SelectSpecificIR extends MultiSelectGrid<InventoryReturn> {
+
+        public SelectSpecificIR(List<InventoryReturn> items) {
+            super(InventoryReturn.class, items, StringList.create("Date", "Reference", "FromLocation AS Sent from"),
+                    HandleReturnedItems.this::loadSpecificItems);
+        }
+
+        @Override
+        protected void cancel() {
+            super.cancel();
+            selectSpecific.setValue(false);
+        }
+
+        @Override
+        public void createHeaders() {
+            prependHeader().join().setComponent(new ButtonLayout(new ELabel("Location: "),
+                    new ELabel(eo.toDisplay(), Application.COLOR_SUCCESS)));
+        }
     }
 }

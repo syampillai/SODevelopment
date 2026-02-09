@@ -232,7 +232,8 @@ public class MemoSystem extends ObjectGrid<MemoComment> implements CloseableView
                     .collect(Collectors.joining(",")) + ")";
         }
         filter += " AND ";
-        if(history.getValue()) {
+        boolean h = history.getValue();
+        if(h) {
             filter += history.getFilter("Date");
         } else {
             filter += "Status<10";
@@ -251,7 +252,16 @@ public class MemoSystem extends ObjectGrid<MemoComment> implements CloseableView
         QueryBuilder<M> q = QueryBuilder.from(memoClass());
         q.where(filter).orderBy("SystemEntity,No DESC");
         ObjectIterator<MemoComment> mcs = q.list().filter(this::filter)
-                .map(Memo::getLatestComment).filter(Objects::nonNull).filter(this::filter);
+                .map(Memo::getLatestComment).filter(Objects::nonNull)
+                .filter(mc -> {
+                    if(h) return true;
+                    Memo m = mc.getMemo();
+                    if(m.getStatus() > 3) { // Approved, Rejected
+                        return m.getInitiatedById().equals(who.getId()) || m.getAssistedById().equals(who.getId());
+                    }
+                    return true;
+                })
+                .filter(this::filter);
         load(mcs);
         deselectAll();
     }
@@ -1217,6 +1227,7 @@ public class MemoSystem extends ObjectGrid<MemoComment> implements CloseableView
 
         private final ELabelField status = new ELabelField("Status");
         private final TextArea reason = new TextArea("Reason");
+        private final ObjectComboField<SystemUser> escalateTo = new ObjectComboField<>("Escalate To", SystemUser.class, List.of());
         private MemoComment mc;
         private boolean escalate;
 
@@ -1224,7 +1235,8 @@ public class MemoSystem extends ObjectGrid<MemoComment> implements CloseableView
             super("Reason");
             new SpeechRecognition(reason);
             reason.setMaxHeight(20, Unit.CH);
-            addField(status, reason);
+            escalateTo.setClearButtonVisible(true);
+            addField(status, escalateTo, reason);
             setRequired(reason);
             setFirstFocus(reason);
         }
@@ -1239,7 +1251,7 @@ public class MemoSystem extends ObjectGrid<MemoComment> implements CloseableView
             clearAlerts();
             close();
             if(escalate) {
-                tran(t -> mc.escalateMemo(t, r));
+                tran(t -> mc.escalateMemo(t, r, escalateTo.getObject()));
             } else {
                 tran(t -> mc.reopenMemo(t, r));
             }
@@ -1252,6 +1264,15 @@ public class MemoSystem extends ObjectGrid<MemoComment> implements CloseableView
             this.escalate = escalate;
             status.clearContent().append("Current status is \"" + mc.getStatusValue() + "\"").update();
             setCaption("Reason for " + (escalate ? "Escalation" : "Reopening"));
+            setFieldVisible(escalate, escalateTo);
+            if(escalate) {
+                List<SystemUser> approvers = mc.getMemo().listNextLevelApprovers();
+                if(approvers.isEmpty()) {
+                    warning("Can not escalate to anyone!");
+                    return;
+                }
+                escalateTo.load(approvers);
+            }
             execute();
         }
 

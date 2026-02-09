@@ -184,9 +184,9 @@ public class Issue extends Memo {
     }
 
     @Override
-    protected SystemUser escalating() {
+    protected void escalate(Transaction transaction) throws Exception {
         ++level;
-        return ObjectIterator.create(listApprovers(level)).random();
+        super.escalate(transaction);
     }
 
     @Override
@@ -243,6 +243,11 @@ public class Issue extends Memo {
     @Override
     public List<SystemUser> listApprovers() {
         return listApprovers(level);
+    }
+
+    @Override
+    public List<SystemUser> listNextLevelApprovers() {
+        return listApprovers(level + 1);
     }
 
     @Override

@@ -78,6 +78,7 @@ public interface QuickSender {
             try {
                 finalSender.sendTestMail(email, subject, message);
             } catch (Exception e) {
+                ApplicationServer.log(e);
                 return false;
             }
             return true;
