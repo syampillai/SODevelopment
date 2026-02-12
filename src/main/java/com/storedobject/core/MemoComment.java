@@ -407,6 +407,13 @@ public final class MemoComment extends StoredObject {
 
     public void approveMemo(Transaction transaction, String approvalText, SystemUser forwardTo) throws Exception {
         Memo m = getMemo();
+        Memo predecessor = predecessor(m);
+        if(predecessor != null) {
+            throw new SOException("Make sure that '" + predecessor.getReference() + "' is finalized first");
+        }
+        if(!canApprove(transaction.getManager().getUser(), false)) {
+            throw new SOException(Memo.ILLEGAL);
+        }
         preprocess(transaction, false);
         if(status >= 3) {
             throw new SOException("Can't " + m.renameActionVerb("approve") + ", status is '" + getStatusValue() + "'");
@@ -600,12 +607,41 @@ public final class MemoComment extends StoredObject {
         return memo.getInitiatedById().equals(su.getId());
     }
 
+    private static Memo predecessor(Memo m) {
+        if(!m.canHavePredecessors()) {
+            return null;
+        }
+        List<Memo> predecessors = m.listLinks(Memo.class, true).toList();
+        if(predecessors.isEmpty()) {
+            return null;
+        }
+        Memo p;
+        for(Memo predecessor : predecessors) {
+            if(predecessor.status <= 3) {
+                return predecessor;
+            }
+            p = predecessor(predecessor);
+            if(p != null) {
+                return p;
+            }
+        }
+        return null;
+    }
+
     public boolean canApprove(SystemUser su) {
-        if(commentCount == 0 || commentCount != getMemo().getLastComment() || getMemo().status >= 4 || isMyMemo(su)
+        return canApprove(su, true);
+    }
+
+    private boolean canApprove(SystemUser su, boolean checkPredecessor) {
+        Memo m = getMemo();
+        if(checkPredecessor && predecessor(m) != null) {
+            return false;
+        }
+        if(commentCount == 0 || commentCount != m.getLastComment() || m.status >= 4 || isMyMemo(su)
                 || !commentedById.equals(su.getId())) {
             return false;
         }
-        List<SystemUser> set = getMemo().listApprovers();
+        List<SystemUser> set = m.listApprovers();
         if(set.isEmpty() || !set.contains(su)) return false;
         boolean approvedBefore = exists(MemoComment.class, "Memo=" + memoId + " AND Status=3 AND CommentedBy="
                 + su.getId());
@@ -618,10 +654,10 @@ public final class MemoComment extends StoredObject {
     }
 
     public boolean canForward(SystemUser su) {
-        if(commentCount != getMemo().getLastComment() || status >= 3 || !isMine(su)) {
+        Memo m = getMemo();
+        if(commentCount != m.getLastComment() || status >= 3 || !isMine(su)) {
             return false;
         }
-        Memo m = getMemo();
         return !m.listCommenters().isEmpty() || !m.listApprovers().isEmpty();
     }
 

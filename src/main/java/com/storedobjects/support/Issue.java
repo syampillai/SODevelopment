@@ -328,4 +328,9 @@ public class Issue extends Memo {
         if(boss == null || assistant == null) return false;
         return exists(SupportPerson.class, "Person=" + boss.getId()); // A support person can help anyone
     }
+
+    @Override
+    public final boolean canHavePredecessors() {
+        return true;
+    }
 }

@@ -294,7 +294,7 @@ public class Memo extends StoredObject implements OfEntity {
         return boss != null && assistant != null && boss.existsLink(assistant);
     }
 
-    public Id save(Transaction transaction, String content, SystemUser enteredFor) throws Exception {
+    public Id save(Transaction transaction, String content, SystemUser enteredFor, Memo parent) throws Exception {
         boolean created = created();
         if(content == null || content.isBlank()) {
             if(created) {
@@ -330,6 +330,9 @@ public class Memo extends StoredObject implements OfEntity {
         }
         mc.comment = content;
         mc.save(transaction);
+        if(parent != null) {
+            parent.addLink(transaction, this);
+        }
         return id;
     }
 
@@ -542,5 +545,15 @@ public class Memo extends StoredObject implements OfEntity {
 
     protected long getAutocloseTime() {
         return 2592000L; // 30 days = 30 * 24 * 60 * 60 * 1000L;
+    }
+
+    /**
+     * Determines whether this memo can have predecessors associated with it.
+     * <p>Note: The basic memos don't have predecessors. However, other derived memos may have predecessors.</p>
+     *
+     * @return {@code true} if there is a predecessor, {@code false} otherwise.
+     */
+    public boolean canHavePredecessors() {
+        return false;
     }
 }

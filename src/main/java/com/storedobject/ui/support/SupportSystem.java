@@ -142,7 +142,18 @@ public class SupportSystem extends MemoSystem {
     }
 
     private void createInternalTask() {
-        createNewMemo();
+        Memo m;
+        MemoComment mc = selected();
+        String s;
+        if(mc == null) {
+            m = null;
+            s = "You haven't selected any ticket.\nSo, an independent internal task";
+        } else {
+            m = mc.getMemo();
+            s = "A sub-task of " + m.getReference();
+        }
+        s += " will be created.\nAre you sure?";
+        ActionForm.execute(s, () -> createNewMemo(m));
     }
 
     @Override

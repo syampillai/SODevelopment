@@ -49,7 +49,7 @@ public class ObjectTreeBrowser<T extends StoredObject> extends ObjectTree<T> {
     }
 
     ObjectTreeBrowser(Class<T> objectClass, Iterable<String> columns, int actions, String caption, String allowedActions) {
-        super(objectClass, columns);
+        super(objectClass, columns,(actions & ALLOW_ANY) == ALLOW_ANY, 0);
         anchorsExist = !ClassAttribute.get(getObjectClass()).getAnchors().isEmpty();
         addConstructedListener(o -> con());
         getDataProvider().setLoadCallBack(this::loadInt);

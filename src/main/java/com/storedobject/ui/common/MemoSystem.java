@@ -1,9 +1,11 @@
 package com.storedobject.ui.common;
 
 import com.storedobject.common.SORuntimeException;
+import com.storedobject.common.StringList;
 import com.storedobject.core.*;
 import com.storedobject.ui.Application;
 import com.storedobject.ui.*;
+import com.storedobject.ui.ObjectTree;
 import com.storedobject.vaadin.*;
 import com.vaadin.flow.component.*;
 import com.vaadin.flow.component.grid.Grid;
@@ -40,7 +42,8 @@ public class MemoSystem extends ObjectGrid<MemoComment> implements CloseableView
     private ReasonForm reasonForm;
     private boolean assisting = false;
     private final Button newButton = new Button(getCreateLabel() + " New " + getMemoLabel(), "add",
-            e -> createNewMemo());
+            e -> createNewMemo(null));
+    private MemoTree dependencyTree;
 
     public MemoSystem() {
         this(true);
@@ -98,10 +101,12 @@ public class MemoSystem extends ObjectGrid<MemoComment> implements CloseableView
         GridMenuItem<MemoComment> assignAssistant =
                 contextMenu.addItem("Assign Assistant", e -> e.getItem().ifPresent(this::selectAssistant));
         GridMenuItem<MemoComment> createNew =
-                contextMenu.addItem("Create New " + getMemoLabel(), e -> newMemo(e.getItem().orElse(null)));
+                contextMenu.addItem("Create New " + getMemoLabel(), e -> newMemo(e.getItem().orElse(null), null));
+        GridMenuItem<MemoComment> viewDependency = contextMenu.addItem("View Dependency", e -> viewDependency(e.getItem().orElse(null)));
         contextMenu.setDynamicContentHandler(mc -> {
             deselectAll();
             select(mc);
+            viewDependency.setVisible(mc != null && mc.getMemo().canHavePredecessors());
             if(isViewMode() || mc == null || mc.getMemo().getStatus() == 6) {
                 editItem.setVisible(false);
                 editSubject.setVisible(false);
@@ -357,13 +362,13 @@ public class MemoSystem extends ObjectGrid<MemoComment> implements CloseableView
         return DateUtility.formatWithTimeHHMM(getTransactionManager().date(mc.getCommentedAt()));
     }
 
-    protected final void createNewMemo() {
-        newMemo((MemoComment) null);
+    protected final void createNewMemo(Memo parentMemo) {
+        newMemo((MemoComment) null, parentMemo);
     }
 
-    private void newMemo(MemoComment mc) {
+    private void newMemo(MemoComment mc, Memo parentMemo) {
         if(memoType != null) {
-            newMemo(memoType);
+            newMemo(memoType, parentMemo);
             return;
         }
         clearAlerts();
@@ -374,10 +379,11 @@ public class MemoSystem extends ObjectGrid<MemoComment> implements CloseableView
         if(mc != null) {
             newMemoType.type.setValue(mc.getMemo().getType());
         }
+        newMemoType.parentMemo = parentMemo;
         newMemoType.execute(this.getView());
     }
 
-    private void newMemo(MemoType mt) {
+    private void newMemo(MemoType mt, Memo parentMemo) {
         clearAlerts();
         if(mt.getInactive()) {
             warning("Not active - " + mt.toDisplay());
@@ -385,6 +391,7 @@ public class MemoSystem extends ObjectGrid<MemoComment> implements CloseableView
         }
         try {
             MemoEditor<?> me = memoEditor(mt.getMemoClass());
+            me.parentMemo = parentMemo;
             Memo memo = me.createObjectInstance();
             if(memoType != null && !memoType.getSpecial()) {
                 memo.setSubject(memoType.getName());
@@ -397,6 +404,24 @@ public class MemoSystem extends ObjectGrid<MemoComment> implements CloseableView
             log(e);
             error("Unable to create - " + mt.toDisplay());
         }
+    }
+
+    private void viewDependency(MemoComment mc) {
+        if(mc == null) {
+            return;
+        }
+        clearAlerts();
+        Memo m = mc.getMemo();
+        if(!m.existsLinks(Memo.class, true)) {
+            message("No dependencies found for " + m.getReference());
+            return;
+        }
+        if(dependencyTree == null) {
+            dependencyTree = new MemoTree();
+        }
+        dependencyTree.setRoots(m);
+        dependencyTree.execute(getView());
+        dependencyTree.expand(m);
     }
 
     private void editMemo(MemoComment mc) {
@@ -455,12 +480,20 @@ public class MemoSystem extends ObjectGrid<MemoComment> implements CloseableView
         }
     }
 
-    private <M extends Memo> void viewMemo(MemoComment mc) {
+    private void viewMemo(MemoComment mc) {
+        viewMemo(mc, getView());
+    }
+
+    private <M extends Memo> void viewMemo(MemoComment mc, View lock) {
         comment = mc.getContent();
         @SuppressWarnings("unchecked") M memo = (M)mc.getMemo();
         @SuppressWarnings("unchecked") MemoEditor<M> me = (MemoEditor<M>) memoEditor(memo.getClass());
-        me.viewObject(memo, getView());
+        me.viewObject(memo, lock);
         me.comments.set(mc);
+    }
+
+    private void viewMemo(Memo memo) {
+        viewMemo(memo.getLatestComment(), dependencyTree.getView());
     }
 
     protected SystemUser getUser() {
@@ -671,6 +704,7 @@ public class MemoSystem extends ObjectGrid<MemoComment> implements CloseableView
 
         final ObjectField<MemoType> type = new ObjectField<>("Select", MemoType.class, true);
         private final ELabelField creatingFor = new ELabelField("Creating for");
+        private Memo parentMemo;
 
         public NewMemoType() {
             super(getCreateLabel() + " New");
@@ -682,7 +716,7 @@ public class MemoSystem extends ObjectGrid<MemoComment> implements CloseableView
         @Override
         protected boolean process() {
             close();
-            newMemo(type.getObject());
+            newMemo(type.getObject(), parentMemo);
             return true;
         }
 
@@ -698,6 +732,7 @@ public class MemoSystem extends ObjectGrid<MemoComment> implements CloseableView
         private MemoSystem memoSystem;
         private Comments comments;
         private CompoundField commentsField;
+        private Memo parentMemo;
 
         protected MemoEditor(Class<M> objectClass) {
             super(objectClass);
@@ -785,7 +820,7 @@ public class MemoSystem extends ObjectGrid<MemoComment> implements CloseableView
 
         @Override
         protected void saveObject(Transaction t, M object) throws Exception {
-            object.save(t, memoSystem.comment, memoSystem.who);
+            object.save(t, memoSystem.comment, memoSystem.who, parentMemo);
         }
 
         @Override
@@ -1287,5 +1322,29 @@ public class MemoSystem extends ObjectGrid<MemoComment> implements CloseableView
     }
 
     public record ExtraMemoField(String name, Function<Memo, String> getter) {
+    }
+
+    private class MemoTree extends ObjectTree<Memo> implements CloseableView {
+
+        public MemoTree() {
+            super(Memo.class,
+                    StringList.create("Reference", "Date", "Subject AS Subject / Short Description", "Status", "PendingWith"),
+                    true);
+            setCaption("Dependencies");
+            GridContextMenu<Memo> contextMenu = new GridContextMenu<>(this);
+            contextMenu.addItem("View Details", e -> e.getItem().ifPresent(MemoSystem.this::viewMemo));
+        }
+
+        @Override
+        public Component createHeader() {
+            return new ButtonLayout(new ELabel("Dependencies", Application.COLOR_SUCCESS),
+                    new Button("Exit", e -> close()));
+        }
+
+        @Override
+        public void createHeaders() {
+            prependHeader().join()
+                    .setComponent(new ELabel("Right-click on the entry to view details", Application.COLOR_SUCCESS));
+        }
     }
 }
