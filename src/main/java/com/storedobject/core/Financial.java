@@ -73,6 +73,14 @@ public interface Financial {
         return getCategory(account) == 1 && getBalanceType(account) == 1;
     }
 
+    static boolean isExpense(Account account) {
+        return getCategory(account) == 1 && getBalanceType(account) == 0;
+    }
+
+    static boolean isRevenue(Account account) {
+        return getCategory(account) == 0 && getBalanceType(account) == 1;
+    }
+
     /**
      * Is a financial system active for this entity?
      *

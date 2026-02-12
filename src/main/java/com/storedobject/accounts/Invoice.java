@@ -53,14 +53,6 @@ public abstract class Invoice extends StoredObject implements OfEntity, Financia
         };
     }
 
-    public static void readOnlyColumns(ColumnNames columnNames) {
-        columnNames.add("SystemEntity");
-        columnNames.add("Posted");
-        columnNames.add("Total");
-        columnNames.add("PaymentStatus");
-        columnNames.add("FromInventory");
-    }
-
     public void setSystemEntity(Id systemEntityId) {
         if (!loading() && !Id.equals(this.getSystemEntityId(), systemEntityId)) {
             throw new Set_Not_Allowed("System Entity");
@@ -77,7 +69,7 @@ public abstract class Invoice extends StoredObject implements OfEntity, Financia
     }
 
     @SetNotAllowed
-    @Column(order = 100)
+    @Column(order = 100, readOnly = true)
     public Id getSystemEntityId() {
         return systemEntityId;
     }
@@ -156,7 +148,7 @@ public abstract class Invoice extends StoredObject implements OfEntity, Financia
         setTotal(Money.create(moneyValue));
     }
 
-    @Column(order = 500)
+    @Column(order = 500, readOnly = true)
     public Money getTotal() {
         return total;
     }
@@ -169,7 +161,7 @@ public abstract class Invoice extends StoredObject implements OfEntity, Financia
     }
 
     @SetNotAllowed
-    @Column(order = 600)
+    @Column(order = 600, readOnly = true)
     public boolean getPosted() {
         return posted;
     }
@@ -208,7 +200,7 @@ public abstract class Invoice extends StoredObject implements OfEntity, Financia
     }
 
     @SetNotAllowed
-    @Column(order = 900)
+    @Column(order = 900, readOnly = true)
     public int getPaymentStatus() {
         return paymentStatus;
     }
@@ -234,7 +226,7 @@ public abstract class Invoice extends StoredObject implements OfEntity, Financia
     }
 
     @SetNotAllowed
-    @Column(order = 1000)
+    @Column(order = 1000, readOnly = true)
     public boolean getFromInventory() {
         return fromInventory;
     }

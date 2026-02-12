@@ -924,6 +924,7 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
             }
         } catch (Exception e) {
             warning(e);
+        } finally {
             reload();
         }
     }

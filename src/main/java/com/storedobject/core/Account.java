@@ -96,14 +96,6 @@ public class Account extends StoredObject implements OfEntity, HasName {
         columns.add("AccountStatus", "int");
     }
 
-    public static void readOnlyColumns(ColumnNames columnNames) {
-        columnNames.add("SystemEntity");
-        columnNames.add("OpeningBalance");
-        columnNames.add("LocalCurrencyOpeningBalance");
-        columnNames.add("Balance");
-        columnNames.add("LocalCurrencyBalance");
-    }
-
     public static void indices(Indices indices) {
         indices.add("SystemEntity,Id", false);
         indices.add("lower(Name)", false);
@@ -580,6 +572,11 @@ public class Account extends StoredObject implements OfEntity, HasName {
         this.number = number;
     }
 
+    public void changeAccountNumber(String number, TransactionManager tm) throws Exception {
+        this.number = number;
+        tm.transact(this::save);
+    }
+
     @Column(required = false, style = "(code)")
     public String getAlternateNumber() {
         return alternateNumber;
@@ -662,6 +659,8 @@ public class Account extends StoredObject implements OfEntity, HasName {
         refresh();
         if(getLocalCurrency() != localCurrencyAmount.getCurrency()) {
             throw new Invalid_State("Accounting currency mismatch");
+        } else if(getLocalCurrency() == amount.getCurrency() && !amount.equals(localCurrencyAmount)) {
+            throw new Invalid_State("Opening balance in local and foreign currency are not equal");
         }
         if(getCurrency() != amount.getCurrency()) {
             canChangeCurrency();
