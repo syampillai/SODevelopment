@@ -3,17 +3,19 @@ package com.storedobject.ui;
 import com.storedobject.core.ObjectList;
 import com.storedobject.core.*;
 import com.storedobject.vaadin.DataList;
+import com.vaadin.flow.component.grid.dnd.GridDropMode;
 import com.vaadin.flow.data.provider.ListDataProvider;
 import com.vaadin.flow.shared.Registration;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 /**
- * Grid that can be used show a list of {@link StoredObject} instances. This implements {@link List} and can handle
+ * Grid that can be used shows a list of {@link StoredObject} instances. This implements {@link List} and can handle
  * big-sized lists with an internal caching strategy. However, most methods of the {@link List} such as the "add"
  * methods and "set" methods have poor performance. If you really want to use those methods to add rows to the grid
  * rather than using the various "load" methods of {@link ObjectLoader}, it's better to use the in-memory version
@@ -24,6 +26,8 @@ import java.util.function.Predicate;
  */
 public class ObjectListGrid<T extends StoredObject> extends DataGrid<T> implements ObjectLoader<T> {
 
+    private T draggedItem;
+    private BiFunction<ObjectListGrid<T>, T, Boolean> dropAction;
     List<ObjectChangedListener<T>> objectChangedListeners;
 
     public ObjectListGrid(Class<T> objectClass) {
@@ -163,5 +167,40 @@ public class ObjectListGrid<T extends StoredObject> extends DataGrid<T> implemen
     @Override
     public void setViewFilter(Predicate<T> filter) {
         ObjectLoader.super.setViewFilter(filter);
+    }
+
+    public void setDropAction(BiFunction<ObjectListGrid<T>, T, Boolean> dropAction) {
+        this.dropAction = dropAction;
+    }
+
+    public final T getDraggedItem() {
+        return draggedItem;
+    }
+
+    public void draggedAndDropped(T droppedItem) {
+        if(draggedItem == null) {
+            return;
+        }
+        if(dropAction == null) {
+            message("No drop action defined.");
+            return;
+        }
+        if(dropAction.apply(this, droppedItem)) {
+            refresh();
+        }
+    }
+
+    public void enableDragAndDrop() {
+        if(isRowsDraggable()) {
+            return;
+        }
+        setRowsDraggable(true);
+        addDragStartListener(e -> {
+            draggedItem = e.getDraggedItems().getFirst();
+            setDropMode(GridDropMode.ON_TOP);
+            setDropFilter(item -> !item.getId().equals(draggedItem.getId()));
+        });
+        addDropListener(e -> e.getDropTargetItem().ifPresent(this::draggedAndDropped));
+        addDragEndListener(e -> draggedItem = null);
     }
 }

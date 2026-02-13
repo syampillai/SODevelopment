@@ -379,7 +379,7 @@ public class Memo extends StoredObject implements OfEntity {
 
     @Override
     public String toDisplay() {
-        return getReference() + " ("+ getType().getName() + ")";
+        return getReference() + " [" + getStatusValue() + "] " + subject;
     }
 
     /**

@@ -241,7 +241,13 @@ public class SupportSystem extends MemoSystem {
         organizationFilterField.setMinWidth("300px");
         organizationFilterField.setClearButtonVisible(true);
         organizationFilterField.addValueChangeListener(e -> organizationChanged());
+        enableDragAndDrop();
         super.execute(lock);
+    }
+
+    @Override
+    protected boolean allowDependencyRemoval() {
+        return !user;
     }
 
     private void setProductField(ObjectField<Product> field) {

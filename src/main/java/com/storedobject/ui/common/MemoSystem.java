@@ -34,9 +34,7 @@ public class MemoSystem extends ObjectGrid<MemoComment> implements CloseableView
     private SelectAssistant selectAssistant;
     private String comment;
     private final ELabel entryCount = new ELabel();
-    private final ELabel rightClick = new ELabel("|", Application.COLOR_INFO)
-            .append(" Right-click on the entry to see options", Application.COLOR_SUCCESS)
-            .update();
+    private final ELabel rightClick = new ELabel("Right-click on the entry to see options", Application.COLOR_SUCCESS);
     protected final HistoryCheckbox history = new HistoryCheckbox(c -> loadMemos());
     private Id filterMemoId;
     private ReasonForm reasonForm;
@@ -102,11 +100,11 @@ public class MemoSystem extends ObjectGrid<MemoComment> implements CloseableView
                 contextMenu.addItem("Assign Assistant", e -> e.getItem().ifPresent(this::selectAssistant));
         GridMenuItem<MemoComment> createNew =
                 contextMenu.addItem("Create New " + getMemoLabel(), e -> newMemo(e.getItem().orElse(null), null));
-        GridMenuItem<MemoComment> viewDependency = contextMenu.addItem("View Dependency", e -> viewDependency(e.getItem().orElse(null)));
+        GridMenuItem<MemoComment> viewDependencies = contextMenu.addItem("View Dependencies", e -> viewDependencies(e.getItem().orElse(null)));
         contextMenu.setDynamicContentHandler(mc -> {
             deselectAll();
             select(mc);
-            viewDependency.setVisible(mc != null && mc.getMemo().canHavePredecessors());
+            viewDependencies.setVisible(mc != null && mc.getMemo().canHavePredecessors() && mc.getMemo().getStatus() <= 3);
             if(isViewMode() || mc == null || mc.getMemo().getStatus() == 6) {
                 editItem.setVisible(false);
                 editSubject.setVisible(false);
@@ -311,7 +309,7 @@ public class MemoSystem extends ObjectGrid<MemoComment> implements CloseableView
         whoButton();
         rightClick.setVisible(!isEmpty());
         ButtonLayout b = new ButtonLayout(whoButton, new ELabel("|", Application.COLOR_INFO),
-                new ELabel("Count"), entryCount, rightClick);
+                new ELabel("Count"), entryCount, new ELabel("|", Application.COLOR_INFO), rightClick);
         addToHeader(b);
         prependHeader().join().setComponent(b);
     }
@@ -406,7 +404,7 @@ public class MemoSystem extends ObjectGrid<MemoComment> implements CloseableView
         }
     }
 
-    private void viewDependency(MemoComment mc) {
+    private void viewDependencies(MemoComment mc) {
         if(mc == null) {
             return;
         }
@@ -419,7 +417,7 @@ public class MemoSystem extends ObjectGrid<MemoComment> implements CloseableView
         if(dependencyTree == null) {
             dependencyTree = new MemoTree();
         }
-        dependencyTree.setRoots(m);
+        dependencyTree.set(m);
         dependencyTree.execute(getView());
         dependencyTree.expand(m);
     }
@@ -1324,7 +1322,37 @@ public class MemoSystem extends ObjectGrid<MemoComment> implements CloseableView
     public record ExtraMemoField(String name, Function<Memo, String> getter) {
     }
 
+    protected boolean allowDependencyRemoval() {
+        return false;
+    }
+
+    @Override
+    public void enableDragAndDrop() {
+        if(isRowsDraggable()) return;
+        super.enableDragAndDrop();
+        rightClick.newLine(true).append("To add dependencies, use drag & drop", Application.COLOR_SUCCESS).update();
+        setDropAction((g, mc) -> dropped(mc));
+    }
+
+    @SuppressWarnings("SameReturnValue")
+    private boolean dropped(MemoComment dropped) {
+        Memo droppedMemo = dropped.getMemo(), draggedMemo = getDraggedItem().getMemo();
+        if(droppedMemo.existsLinks(Memo.class, "Id=" + draggedMemo.getId(), true)) {
+            message(draggedMemo.getReference() + " is already a dependent of" + droppedMemo.getReference());
+            return false;
+        }
+        ActionForm.execute(draggedMemo.getReference() + " will be made a dependent of "
+                        + droppedMemo.getReference() + ".\nAre you sure?",
+                () -> {
+                    transact(t -> droppedMemo.addLink(t, draggedMemo));
+                    message(droppedMemo.getReference() + " is now added as a dependent of " + draggedMemo.getReference());
+                });
+        return false;
+    }
+
     private class MemoTree extends ObjectTree<Memo> implements CloseableView {
+
+        private Memo root;
 
         public MemoTree() {
             super(Memo.class,
@@ -1333,6 +1361,20 @@ public class MemoSystem extends ObjectGrid<MemoComment> implements CloseableView
             setCaption("Dependencies");
             GridContextMenu<Memo> contextMenu = new GridContextMenu<>(this);
             contextMenu.addItem("View Details", e -> e.getItem().ifPresent(MemoSystem.this::viewMemo));
+            var remove = contextMenu.addItem("Remove This", e -> e.getItem().ifPresent(this::removeDependency));
+            contextMenu.setDynamicContentHandler(m -> {
+                remove.setVisible(allowDependencyRemoval() && m != null && !m.getId().equals(root.getId()));
+                return true;
+            });
+        }
+
+        void set(Memo memo) {
+            root = memo;
+            setRoots(memo);
+        }
+
+        private void reset() {
+            set(root);
         }
 
         @Override
@@ -1344,7 +1386,73 @@ public class MemoSystem extends ObjectGrid<MemoComment> implements CloseableView
         @Override
         public void createHeaders() {
             prependHeader().join()
-                    .setComponent(new ELabel("Right-click on the entry to view details", Application.COLOR_SUCCESS));
+                    .setComponent(new ELabel("Right-click on the entry to view options", Application.COLOR_SUCCESS));
+        }
+
+        private void removeDependency(Memo memo) {
+            clearAlerts();
+            List<Memo> list = memo.listMasters(Memo.class, true).filter(this::insideTree).toList();
+            if(list.size() == 1) {
+                Memo parent = list.getFirst();
+                ActionForm.execute("Remove the dependency of " + memo.getReference() + " from " + parent.getReference() + ".\n Are you sure?", () -> {
+                    try {
+                        getTransactionManager().transact(t -> parent.removeLink(t, memo));
+                        reset();
+                        message("Dependency of " + memo.getReference() + " removed successfully");
+                    } catch (Exception e) {
+                        error(e);
+                    }
+                });
+            } else {
+                if(list.isEmpty()) {
+                    message("No dependencies found!");
+                }
+                new RemovalGrid(list, memo).execute(getView());
+            }
+        }
+
+        private boolean insideTree(Memo m) {
+            return inside(root, m);
+        }
+
+        private static boolean inside(Memo root, Memo check) {
+            if(root.getId().equals(check.getId())) {
+                return true;
+            }
+            return root.listLinks(Memo.class, true).anyMatch(m -> inside(m, check));
+        }
+
+        private class RemovalGrid extends MultiSelectGrid<Memo> {
+
+            private final Memo memo;
+
+            public RemovalGrid(List<Memo> parents, Memo memo) {
+                super(Memo.class, parents, StringList.create("Reference", "Date", "Subject AS Subject / Short Description"),
+                        selected -> {
+                            if(selected.isEmpty()) {
+                                MemoSystem.this.message("No dependencies removed!");
+                            } else {
+                                try {
+                                    getTransactionManager().transact(t -> {
+                                        for(Memo m: selected) {
+                                            m.removeLink(t, memo);
+                                        }
+                                    });
+                                    reset();
+                                    MemoTree.this.message("Dependency of " + memo.getReference() + " removed successfully");
+                                } catch (Exception e) {
+                                    MemoTree.this.error(e);
+                                }
+                            }
+                        });
+                this.memo = memo;
+            }
+
+            @Override
+            public void createHeaders() {
+                prependHeader().join().setComponent(new ELabel(memo.getReference()
+                        + " appears under the following. Please select the ones to remove.", Application.COLOR_SUCCESS));
+            }
         }
     }
 }

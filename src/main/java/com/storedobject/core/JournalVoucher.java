@@ -7,24 +7,27 @@ import java.io.LineNumberReader;
 import java.io.StringReader;
 import java.math.BigDecimal;
 import java.sql.Date;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 
 /**
- * <p>Represents a Journal Voucher (JV). All financial transactions require a JV and this is the only way to create
- * financial ledger entries (referred as "entries" in this documentation) in the system.
+ * <p>Represents a Journal Voucher (JV). All financial transactions require a JV, and this is the only way to create
+ * financial ledger entries (referred to as "entries" in this documentation) in the system.
  * A JV is owned by an instanceof a {@link StoredObject} and that is the one creating
- * the entries. For example, an "Cash Sales Invoice" object may be creating a "Sales JV" by debiting the "cash
+ * the entries. For example, a "Cash Sales Invoice" object may be creating a "Sales JV" by debiting the "cash
  * account" with the "invoice amount", crediting the "sales account" with the "items total" and crediting the
  * "tax account" with the "tax part" of the invoice.</p>
- * <p>JV entries, once created can not be changed. The only way to change any financial transaction is to
+ * <p>JV entries, once created, cannot be changed. The only way to change any financial transaction is to
  * pass reversal entries via some reversal JVs. So, a "reversal JV" system needs to be designed separately for such
  * cases.</p>
+ * <p>The JV owner should implement {@link Financial}.</p>
  *
  * @author Syam
  */
-public class JournalVoucher extends StoredObject implements OfEntity, HasReference {
+public class JournalVoucher extends StoredObject implements Financial, OfEntity, HasReference {
 
     private static final ReferencePattern<JournalVoucher> ref = new ReferencePattern<>();
     private static final Map<String, Id> types = new HashMap<>();
@@ -33,6 +36,7 @@ public class JournalVoucher extends StoredObject implements OfEntity, HasReferen
     private Date date;
     private int entrySerial = 0;
     private final List<Entry> entries = new ArrayList<>();
+    private final Map<Id, Money> excess = new HashMap<>();
     private Id systemEntityId, originId = Id.ZERO, ignoreFSId = Id.ZERO;
     int no = 0;
     private String reference, foreignReference = "";
@@ -69,9 +73,10 @@ public class JournalVoucher extends StoredObject implements OfEntity, HasReferen
     }
 
     public static void indices(Indices indices) {
-        indices.add("SystemEntity,No,T_Family", true);
+        indices.add("SystemEntity,No,T_Family,Date", true);
         indices.add("SystemEntity,Date,No");
         indices.add("ForeignReference,Origin", "ForeignReference != ''", true);
+        indices.add("Owner");
     }
 
     public static String[] protectedColumns() {
@@ -195,7 +200,7 @@ public class JournalVoucher extends StoredObject implements OfEntity, HasReferen
     /**
      * Get the origin of this JV.
      *
-     * @return Name the origin
+     * @return Name of the origin
      */
     public String getOriginatedFrom() {
         if(Id.isNull(originId)) {
@@ -237,6 +242,23 @@ public class JournalVoucher extends StoredObject implements OfEntity, HasReferen
                 return;
             }
             throw new Set_Not_Allowed("JV Owner");
+        } else if(owner != null) {
+            if(owner.created()) {
+                throw new Set_Not_Allowed("JV Owner - Not yet saved");
+            }
+            if(!(owner instanceof Financial f)) {
+                throw new Set_Not_Allowed("Invalid JV Owner");
+            }
+            if(f.isLedgerPosted()) {
+                throw new Set_Not_Allowed("JV Owner - Already posted");
+            }
+        }
+        if(Id.isNull(systemEntityId)) {
+            if(owner instanceof OfEntity oe) {
+                systemEntityId = oe.getSystemEntityId();
+            } else if(owner instanceof HasReference hr) {
+                systemEntityId = hr.getSystemEntityId();
+            }
         }
         setOwner(owner == null ? null : owner.getId());
     }
@@ -376,8 +398,30 @@ public class JournalVoucher extends StoredObject implements OfEntity, HasReferen
         return foreignReference;
     }
 
+    @Override
+    void loadedCore() {
+        entries.clear();
+        RawSQL sql;
+        sql = new RawSQL("SELECT EntrySerial,Account,Amount,LocalCurrencyAmount,Type,Narration,Date,ValueDate FROM core.Ledger WHERE TranId="
+                + ledgerTran.value.toBigInteger() + " AND Object=" + getId() + " ORDER BY TranId,Object,EntrySerial");
+        try {
+            sql.execute();
+            ResultSet rs = sql.getResult();
+            while (!sql.eoq()) {
+                entries.add(new Entry(this, rs));
+                sql.skip();
+            }
+        } catch (Exception e) {
+            throw new SOClassError(getClass(), "Load", e);
+        } finally {
+            sql.close();
+        }
+        super.loadedCore();
+    }
+
     /**
-     * Get the offset amount of this JV. The offset amount is the amount that is required to balance this JV.
+     * Get the offset amount of this JV. The offset amount is the amount in local currency that is required to
+     * balance this JV.
      *
      * @return Offset amount.
      */
@@ -385,9 +429,9 @@ public class JournalVoucher extends StoredObject implements OfEntity, HasReferen
         if(entries.isEmpty()) {
             return new Money();
         }
-        Money a = entries.get(0).amount.zero();
+        Money a = entries.getFirst().localCurrencyAmount.zero();
         for(Entry e: entries) {
-            a = a.add(e.amount);
+            a = a.add(e.localCurrencyAmount);
         }
         return a.negate();
     }
@@ -399,7 +443,7 @@ public class JournalVoucher extends StoredObject implements OfEntity, HasReferen
             throw new Invalid_State("System not set up for any entity");
         }
         systemEntityId = check(tm, systemEntityId);
-        if(owner == null && ownerId != null) {
+        if(owner == null && !Id.isNull(ownerId)) {
             ownerId = tm.checkTypeAny(this, ownerId, StoredObject.class, false);
         }
         boolean dateSet = date != null;
@@ -434,7 +478,7 @@ public class JournalVoucher extends StoredObject implements OfEntity, HasReferen
         if(owner != null) {
             ownerId = owner.getId();
         }
-        if(ownerId == null) {
+        if(Id.isNull(ownerId)) {
             ownerId = getId();
         }
         if(ownerId == null) {
@@ -445,10 +489,19 @@ public class JournalVoucher extends StoredObject implements OfEntity, HasReferen
     @Override
     public void validateUpdate() throws Exception {
         JournalVoucher jv = get(getClass(), getId());
+        if(jv == null) {
+            throw new Invalid_State("Journal voucher is saved multiple times");
+        }
         if(!jv.date.equals(date)) {
-            throw new Invalid_State("Date can't be updated");
+            throw new Invalid_State("JV - Date can't be updated");
         }
         super.validateUpdate();
+    }
+
+    @Override
+    public void validateDelete() throws Exception {
+        super.validateDelete();
+        throw new Invalid_State("Delete not allowed");
     }
 
     @Override
@@ -478,13 +531,45 @@ public class JournalVoucher extends StoredObject implements OfEntity, HasReferen
     }
 
     /**
+     * For internal use only.
+     * @exception Exception Transaction will be rolled back if any exception is thrown.
+     */
+    void doTransactions() throws Exception {
+        if(!(tran instanceof DBTransaction t)) {
+            throw new Invalid_State("Not in a transaction");
+        }
+        if(entrySerial == 0) {
+            throw new Invalid_State("No entries in JV");
+        }
+        t.entries.addAll(entries);
+        if(excess.isEmpty()) {
+            return;
+        }
+        Money m, mt;
+        for (Id aid : excess.keySet()) {
+            m = excess.get(aid);
+            mt = t.excess.get(aid);
+            if(mt != null) {
+                if ((mt.isPositive() && m.isNegative()) || (mt.isNegative() && m.isPositive())) {
+                    throw new Invalid_State("Both limit & lien are specified for account - "
+                            + Account.get(Account.class,aid, true).toDisplay());
+                }
+                if(mt.absolute().isGreaterThan(m.absolute())) {
+                    continue;
+                }
+            }
+            t.excess.put(aid, m);
+        }
+    }
+
+    /**
      * Debit a local currency account.
      *
      * @param account Account to be debited.
      * @param amount Amount.
      * @param entrySerial Entry serial.
      * @param type Transaction type (As defined in {@link TransactionType}).
-     * @param particulars Particulars (narration) of the transaction entry. (Can not be empty or <code>null</code>).
+     * @param particulars Particulars (narration) of the transaction entry. (Cannot be empty or <code>null</code>).
      * @throws Exception Any exception.
      */
     public final void debit(Account account, Money amount, int entrySerial, String type, String particulars)
@@ -499,7 +584,7 @@ public class JournalVoucher extends StoredObject implements OfEntity, HasReferen
      * @param amount Amount.
      * @param entrySerial Entry serial.
      * @param type Transaction type (As defined in {@link TransactionType}).
-     * @param particulars Particulars (narration) of the transaction entry. (Can not be empty or <code>null</code>).
+     * @param particulars Particulars (narration) of the transaction entry. (Cannot be empty or <code>null</code>).
      * @throws Exception Any exception.
      */
     public final void debit(Account account, BigDecimal amount, int entrySerial, String type, String particulars)
@@ -515,7 +600,7 @@ public class JournalVoucher extends StoredObject implements OfEntity, HasReferen
      * @param localCurrencyAmount Amount in local currency.
      * @param entrySerial Entry serial.
      * @param type Transaction type (As defined in {@link TransactionType}).
-     * @param particulars Particulars (narration) of the transaction entry. (Can not be empty or <code>null</code>).
+     * @param particulars Particulars (narration) of the transaction entry. (Cannot be empty or <code>null</code>).
      * @throws Exception Any exception.
      */
     public final void debit(Account account, Money amount, Money localCurrencyAmount, int entrySerial,
@@ -531,7 +616,7 @@ public class JournalVoucher extends StoredObject implements OfEntity, HasReferen
      * @param localCurrencyAmount Amount in local currency.
      * @param entrySerial Entry serial.
      * @param type Transaction type (As defined in {@link TransactionType}).
-     * @param particulars Particulars (narration) of the transaction entry. (Can not be empty or <code>null</code>).
+     * @param particulars Particulars (narration) of the transaction entry. (Cannot be empty or <code>null</code>).
      * @throws Exception Any exception.
      */
     public final void debit(Account account, BigDecimal amount, BigDecimal localCurrencyAmount, int entrySerial,
@@ -546,7 +631,7 @@ public class JournalVoucher extends StoredObject implements OfEntity, HasReferen
      * @param amount Amount.
      * @param entrySerial Entry serial.
      * @param type Transaction type (As defined in {@link TransactionType}).
-     * @param particulars Particulars (narration) of the transaction entry. (Can not be empty or <code>null</code>).
+     * @param particulars Particulars (narration) of the transaction entry. (Cannot be empty or <code>null</code>).
      * @throws Exception Any exception.
      */
     public final void credit(Account account, Money amount, int entrySerial, String type, String particulars)
@@ -561,7 +646,7 @@ public class JournalVoucher extends StoredObject implements OfEntity, HasReferen
      * @param amount Amount.
      * @param entrySerial Entry serial.
      * @param type Transaction type (As defined in {@link TransactionType}).
-     * @param particulars Particulars (narration) of the transaction entry. (Can not be empty or <code>null</code>).
+     * @param particulars Particulars (narration) of the transaction entry. (Cannot be empty or <code>null</code>).
      * @throws Exception Any exception.
      */
     public final void credit(Account account, BigDecimal amount, int entrySerial, String type, String particulars)
@@ -577,7 +662,7 @@ public class JournalVoucher extends StoredObject implements OfEntity, HasReferen
      * @param localCurrencyAmount Amount in local currency.
      * @param entrySerial Entry serial.
      * @param type Transaction type (As defined in {@link TransactionType}).
-     * @param particulars Particulars (narration) of the transaction entry. (Can not be empty or <code>null</code>).
+     * @param particulars Particulars (narration) of the transaction entry. (Cannot be empty or <code>null</code>).
      * @throws Exception Any exception.
      */
     public final void credit(Account account, Money amount, Money localCurrencyAmount, int entrySerial,
@@ -593,7 +678,7 @@ public class JournalVoucher extends StoredObject implements OfEntity, HasReferen
      * @param localCurrencyAmount Amount in local currency.
      * @param entrySerial Entry serial.
      * @param type Transaction type (As defined in {@link TransactionType}).
-     * @param particulars Particulars (narration) of the transaction entry. (Can not be empty or <code>null</code>).
+     * @param particulars Particulars (narration) of the transaction entry. (Cannot be empty or <code>null</code>).
      * @param valueDate Value-date.
      * @throws Exception Any exception.
      */
@@ -615,24 +700,29 @@ public class JournalVoucher extends StoredObject implements OfEntity, HasReferen
             localCurrencyAmount = amount;
         }
         if(amount == null || localCurrencyAmount.isZero()) {
-            throw new SOException("Amount is zero");
+            throw new SOException("Amount is zero" + ", Account: " + account.toDisplay());
         }
         Currency c = account.getCurrency(), lc = account.getLocalCurrency();
+        if(lc != localCurrencyAmount.getCurrency()) {
+            throw new SOException("Local currency amount mismatch: " + localCurrencyAmount + ", Expected currency: "
+                    + Money.getSymbol(lc) + ",\nAccount: " + account.toDisplay());
+        }
         if(c == lc) {
             if(!amount.equals(localCurrencyAmount)) {
-                throw new SOException("Local currency amount mismatch: " + amount + ", " + localCurrencyAmount);
+                throw new SOException("Local currency amount mismatch: " + amount + ", " + localCurrencyAmount
+                        + ",\nAccount: " + account.toDisplay());
             }
         } else {
             if(c != amount.getCurrency()) {
                 throw new SOException("Currency amount mismatch: " + amount + ", Expected currency: "
-                        + Money.getSymbol(c));
+                        + Money.getSymbol(c) + ",\nAccount: " + account.toDisplay());
             }
         }
         if(StringUtility.isWhite(particulars)) {
             throw new SOException("Transaction narration/particulars can't be empty");
         }
         if(entrySerial >= 1000000000) { // Conflict with IB transactions (Check in DBTransaction class)
-            throw new SOException("Entry serial should be less than 1000000000");
+            throw new SOException("Entry serial should be less than 1000000000" + ",\nAccount: " + account.toDisplay());
         }
         creditInt(account, amount, localCurrencyAmount, entrySerial, typeId(type), particulars, valueDate);
     }
@@ -657,7 +747,7 @@ public class JournalVoucher extends StoredObject implements OfEntity, HasReferen
      * @param localCurrencyAmount Amount in local currency.
      * @param entrySerial Entry serial.
      * @param type Transaction type (As defined in {@link TransactionType}).
-     * @param particulars Particulars (narration) of the transaction entry. (Can not be empty or <code>null</code>).
+     * @param particulars Particulars (narration) of the transaction entry. (Cannot be empty or <code>null</code>).
      * @throws Exception Any exception.
      */
     public final void credit(Account account, BigDecimal amount, BigDecimal localCurrencyAmount, int entrySerial,
@@ -672,7 +762,7 @@ public class JournalVoucher extends StoredObject implements OfEntity, HasReferen
      * @param account Account to be debited.
      * @param amount Amount.
      * @param type Transaction type (As defined in {@link TransactionType}).
-     * @param particulars Particulars (narration) of the transaction entry. (Can not be empty or <code>null</code>).
+     * @param particulars Particulars (narration) of the transaction entry. (Cannot be empty or <code>null</code>).
      * @throws Exception Any exception.
      */
     public final void debit(Account account, Money amount, String type, String particulars) throws Exception {
@@ -685,7 +775,7 @@ public class JournalVoucher extends StoredObject implements OfEntity, HasReferen
      * @param account Account to be debited.
      * @param amount Amount.
      * @param type Transaction type (As defined in {@link TransactionType}).
-     * @param particulars Particulars (narration) of the transaction entry. (Can not be empty or <code>null</code>).
+     * @param particulars Particulars (narration) of the transaction entry. (Cannot be empty or <code>null</code>).
      * @throws Exception Any exception.
      */
     public final void debit(Account account, BigDecimal amount, String type, String particulars) throws Exception {
@@ -699,7 +789,7 @@ public class JournalVoucher extends StoredObject implements OfEntity, HasReferen
      * @param amount Amount in account currency.
      * @param localCurrencyAmount Amount in local currency.
      * @param type Transaction type (As defined in {@link TransactionType}).
-     * @param particulars Particulars (narration) of the transaction entry. (Can not be empty or <code>null</code>).
+     * @param particulars Particulars (narration) of the transaction entry. (Cannot be empty or <code>null</code>).
      * @throws Exception Any exception.
      */
     public final void debit(Account account, Money amount, Money localCurrencyAmount, String type, String particulars)
@@ -714,7 +804,7 @@ public class JournalVoucher extends StoredObject implements OfEntity, HasReferen
      * @param amount Amount in account currency.
      * @param localCurrencyAmount Amount in local currency.
      * @param type Transaction type (As defined in {@link TransactionType}).
-     * @param particulars Particulars (narration) of the transaction entry. (Can not be empty or <code>null</code>).
+     * @param particulars Particulars (narration) of the transaction entry. (Cannot be empty or <code>null</code>).
      * @throws Exception Any exception.
      */
     public final void debit(Account account, BigDecimal amount, BigDecimal localCurrencyAmount, String type,
@@ -728,7 +818,7 @@ public class JournalVoucher extends StoredObject implements OfEntity, HasReferen
      * @param account Account to be credited.
      * @param amount Amount.
      * @param type Transaction type (As defined in {@link TransactionType}).
-     * @param particulars Particulars (narration) of the transaction entry. (Can not be empty or <code>null</code>).
+     * @param particulars Particulars (narration) of the transaction entry. (Cannot be empty or <code>null</code>).
      * @throws Exception Any exception.
      */
     public final void credit(Account account, Money amount, String type, String particulars) throws Exception {
@@ -741,7 +831,7 @@ public class JournalVoucher extends StoredObject implements OfEntity, HasReferen
      * @param account Account to be credited.
      * @param amount Amount.
      * @param type Transaction type (As defined in {@link TransactionType}).
-     * @param particulars Particulars (narration) of the transaction entry. (Can not be empty or <code>null</code>).
+     * @param particulars Particulars (narration) of the transaction entry. (Cannot be empty or <code>null</code>).
      * @throws Exception Any exception.
      */
     public final void credit(Account account, BigDecimal amount, String type, String particulars) throws Exception {
@@ -755,7 +845,7 @@ public class JournalVoucher extends StoredObject implements OfEntity, HasReferen
      * @param amount Amount in account currency.
      * @param localCurrencyAmount Amount in local currency.
      * @param type Transaction type (As defined in {@link TransactionType}).
-     * @param particulars Particulars (narration) of the transaction entry. (Can not be empty or <code>null</code>).
+     * @param particulars Particulars (narration) of the transaction entry. (Cannot be empty or <code>null</code>).
      * @throws Exception Any exception.
      */
     public final void credit(Account account, Money amount, Money localCurrencyAmount, String type, String particulars)
@@ -770,7 +860,7 @@ public class JournalVoucher extends StoredObject implements OfEntity, HasReferen
      * @param amount Amount in account currency.
      * @param localCurrencyAmount Amount in local currency.
      * @param type Transaction type (As defined in {@link TransactionType}).
-     * @param particulars Particulars (narration) of the transaction entry. (Can not be empty or <code>null</code>).
+     * @param particulars Particulars (narration) of the transaction entry. (Cannot be empty or <code>null</code>).
      * @throws Exception Any exception.
      */
     public final void credit(Account account, BigDecimal amount, BigDecimal localCurrencyAmount, String type,
@@ -785,7 +875,7 @@ public class JournalVoucher extends StoredObject implements OfEntity, HasReferen
      * @param amount Amount.
      * @param entrySerial Entry serial.
      * @param type Transaction type (As defined in {@link TransactionType}).
-     * @param particulars Particulars (narration) of the transaction entry. (Can not be empty or <code>null</code>).
+     * @param particulars Particulars (narration) of the transaction entry. (Cannot be empty or <code>null</code>).
      * @param valueDate Value-date.
      * @throws Exception Any exception.
      */
@@ -803,7 +893,7 @@ public class JournalVoucher extends StoredObject implements OfEntity, HasReferen
      * @param amount Amount.
      * @param entrySerial Entry serial.
      * @param type Transaction type (As defined in {@link TransactionType}).
-     * @param particulars Particulars (narration) of the transaction entry. (Can not be empty or <code>null</code>).
+     * @param particulars Particulars (narration) of the transaction entry. (Cannot be empty or <code>null</code>).
      * @param valueDate Value-date.
      * @throws Exception Any exception.
      */
@@ -821,7 +911,7 @@ public class JournalVoucher extends StoredObject implements OfEntity, HasReferen
      * @param localCurrencyAmount Amount in local currency.
      * @param entrySerial Entry serial.
      * @param type Transaction type (As defined in {@link TransactionType}).
-     * @param particulars Particulars (narration) of the transaction entry. (Can not be empty or <code>null</code>).
+     * @param particulars Particulars (narration) of the transaction entry. (Cannot be empty or <code>null</code>).
      * @param valueDate Value-date.
      * @throws Exception Any exception.
      */
@@ -838,7 +928,7 @@ public class JournalVoucher extends StoredObject implements OfEntity, HasReferen
      * @param localCurrencyAmount Amount in local currency.
      * @param entrySerial Entry serial.
      * @param type Transaction type (As defined in {@link TransactionType}).
-     * @param particulars Particulars (narration) of the transaction entry. (Can not be empty or <code>null</code>).
+     * @param particulars Particulars (narration) of the transaction entry. (Cannot be empty or <code>null</code>).
      * @param valueDate Value-date.
      * @throws Exception Any exception.
      */
@@ -854,7 +944,7 @@ public class JournalVoucher extends StoredObject implements OfEntity, HasReferen
      * @param amount Amount.
      * @param entrySerial Entry serial.
      * @param type Transaction type (As defined in {@link TransactionType}).
-     * @param particulars Particulars (narration) of the transaction entry. (Can not be empty or <code>null</code>).
+     * @param particulars Particulars (narration) of the transaction entry. (Cannot be empty or <code>null</code>).
      * @param valueDate Value-date.
      * @throws Exception Any exception.
      */
@@ -870,7 +960,7 @@ public class JournalVoucher extends StoredObject implements OfEntity, HasReferen
      * @param amount Amount.
      * @param entrySerial Entry serial.
      * @param type Transaction type (As defined in {@link TransactionType}).
-     * @param particulars Particulars (narration) of the transaction entry. (Can not be empty or <code>null</code>).
+     * @param particulars Particulars (narration) of the transaction entry. (Cannot be empty or <code>null</code>).
      * @param valueDate Value-date.
      * @throws Exception Any exception.
      */
@@ -888,7 +978,7 @@ public class JournalVoucher extends StoredObject implements OfEntity, HasReferen
      * @param localCurrencyAmount Amount in local currency.
      * @param entrySerial Entry serial.
      * @param type Transaction type (As defined in {@link TransactionType}).
-     * @param particulars Particulars (narration) of the transaction entry. (Can not be empty or <code>null</code>).
+     * @param particulars Particulars (narration) of the transaction entry. (Cannot be empty or <code>null</code>).
      * @param valueDate Value-date.
      * @throws Exception Any exception.
      */
@@ -904,7 +994,7 @@ public class JournalVoucher extends StoredObject implements OfEntity, HasReferen
      * @param account Account to be debited.
      * @param amount Amount.
      * @param type Transaction type (As defined in {@link TransactionType}).
-     * @param particulars Particulars (narration) of the transaction entry. (Can not be empty or <code>null</code>).
+     * @param particulars Particulars (narration) of the transaction entry. (Cannot be empty or <code>null</code>).
      * @param valueDate Value-date.
      * @throws Exception Any exception.
      */
@@ -919,7 +1009,7 @@ public class JournalVoucher extends StoredObject implements OfEntity, HasReferen
      * @param account Account to be debited.
      * @param amount Amount.
      * @param type Transaction type (As defined in {@link TransactionType}).
-     * @param particulars Particulars (narration) of the transaction entry. (Can not be empty or <code>null</code>).
+     * @param particulars Particulars (narration) of the transaction entry. (Cannot be empty or <code>null</code>).
      * @param valueDate Value-date.
      * @throws Exception Any exception.
      */
@@ -935,7 +1025,7 @@ public class JournalVoucher extends StoredObject implements OfEntity, HasReferen
      * @param amount Amount in account currency.
      * @param localCurrencyAmount Amount in local currency.
      * @param type Transaction type (As defined in {@link TransactionType}).
-     * @param particulars Particulars (narration) of the transaction entry. (Can not be empty or <code>null</code>).
+     * @param particulars Particulars (narration) of the transaction entry. (Cannot be empty or <code>null</code>).
      * @param valueDate Value-date.
      * @throws Exception Any exception.
      */
@@ -951,7 +1041,7 @@ public class JournalVoucher extends StoredObject implements OfEntity, HasReferen
      * @param amount Amount in account currency.
      * @param localCurrencyAmount Amount in local currency.
      * @param type Transaction type (As defined in {@link TransactionType}).
-     * @param particulars Particulars (narration) of the transaction entry. (Can not be empty or <code>null</code>).
+     * @param particulars Particulars (narration) of the transaction entry. (Cannot be empty or <code>null</code>).
      * @param valueDate Value-date.
      * @throws Exception Any exception.
      */
@@ -966,7 +1056,7 @@ public class JournalVoucher extends StoredObject implements OfEntity, HasReferen
      * @param account Account to be credited.
      * @param amount Amount.
      * @param type Transaction type (As defined in {@link TransactionType}).
-     * @param particulars Particulars (narration) of the transaction entry. (Can not be empty or <code>null</code>).
+     * @param particulars Particulars (narration) of the transaction entry. (Cannot be empty or <code>null</code>).
      * @param valueDate Value-date.
      * @throws Exception Any exception.
      */
@@ -981,7 +1071,7 @@ public class JournalVoucher extends StoredObject implements OfEntity, HasReferen
      * @param account Account to be credited.
      * @param amount Amount.
      * @param type Transaction type (As defined in {@link TransactionType}).
-     * @param particulars Particulars (narration) of the transaction entry. (Can not be empty or <code>null</code>).
+     * @param particulars Particulars (narration) of the transaction entry. (Cannot be empty or <code>null</code>).
      * @param valueDate Value-date.
      * @throws Exception Any exception.
      */
@@ -997,7 +1087,7 @@ public class JournalVoucher extends StoredObject implements OfEntity, HasReferen
      * @param amount Amount in account currency.
      * @param localCurrencyAmount Amount in local currency.
      * @param type Transaction type (As defined in {@link TransactionType}).
-     * @param particulars Particulars (narration) of the transaction entry. (Can not be empty or <code>null</code>).
+     * @param particulars Particulars (narration) of the transaction entry. (Cannot be empty or <code>null</code>).
      * @param valueDate Value-date.
      * @throws Exception Any exception.
      */
@@ -1013,7 +1103,7 @@ public class JournalVoucher extends StoredObject implements OfEntity, HasReferen
      * @param amount Amount in account currency.
      * @param localCurrencyAmount Amount in local currency.
      * @param type Transaction type (As defined in {@link TransactionType}).
-     * @param particulars Particulars (narration) of the transaction entry. (Can not be empty or <code>null</code>).
+     * @param particulars Particulars (narration) of the transaction entry. (Cannot be empty or <code>null</code>).
      * @param valueDate Value-date.
      * @throws Exception Any exception.
      */
@@ -1031,7 +1121,14 @@ public class JournalVoucher extends StoredObject implements OfEntity, HasReferen
         if(tid == null) {
             TransactionType tt = TransactionType.getFor(type);
             if(tt == null) {
-                throw new Invalid_State("Unknown transaction type: " + type);
+                Transaction t = getTransaction();
+                if(t != null) {
+                    try {
+                        tt = TransactionType.create(t.getManager(), type);
+                    } catch (Exception ignored) {
+                    }
+                }
+                if( tt == null) throw new Invalid_State("Unknown transaction type: " + type);
             }
             tid = tt.getId();
             types.put(type, tid);
@@ -1098,7 +1195,7 @@ public class JournalVoucher extends StoredObject implements OfEntity, HasReferen
      * @return List of journal vouchers.
      */
     public List<JournalVoucher> getVouchers() {
-        return new ArrayList<>();
+        return Account.LedgerEntry.vouchers(this);
     }
 
     /**
@@ -1118,10 +1215,10 @@ public class JournalVoucher extends StoredObject implements OfEntity, HasReferen
         final Id type;
         final String particulars;
         Date date, valueDate;
-        private String extraData;
+        private Map<String, Object> extraData;
 
         Entry(JournalVoucher journalVoucher, Account account, Money amount, Money localCurrencyAmount,
-              int entrySerial, Id type, String particulars, Date valueDate) {
+                      int entrySerial, Id type, String particulars, Date valueDate) {
             this.journalVoucher = journalVoucher;
             this.account = account;
             this.amount = amount;
@@ -1134,9 +1231,26 @@ public class JournalVoucher extends StoredObject implements OfEntity, HasReferen
         }
 
         private Entry(JournalVoucher journalVoucher, Account account, Money amount, Money localCurrencyAmount,
-                      int entrySerial, Id type, String particulars, Date valueDate, String extraData) {
+              int entrySerial, Id type, String particulars, Date valueDate, Map<String, Object> extraData) {
             this(journalVoucher, account, amount, localCurrencyAmount, entrySerial, type, particulars, valueDate);
             setExtraData(extraData);
+        }
+
+        private Entry(JournalVoucher journalVoucher, ResultSet rs) throws SQLException, SOException {
+            this.journalVoucher = journalVoucher;
+            // EntrySerial,Account,Amount,LocalCurrencyAmount,Narration,Date,ValueDate
+            entrySerial = rs.getInt(1);
+            Id id = new Id(rs.getBigDecimal(2));
+            account = StoredObject.get(Account.class, id, true);
+            if(account == null) {
+                throw new SOException("Account not found: " + id);
+            }
+            amount = new Money(rs.getBigDecimal(3), account.getCurrency());
+            localCurrencyAmount = new Money(rs.getBigDecimal(4), account.getLocalCurrency());
+            type = new Id(rs.getBigDecimal(5));
+            particulars = rs.getString(6);
+            date = rs.getDate(7);
+            valueDate = rs.getDate(8);
         }
 
         /**
@@ -1168,7 +1282,7 @@ public class JournalVoucher extends StoredObject implements OfEntity, HasReferen
 
 
         /**
-         * Get the serial number of this entry in the JV.
+         * Get the serialnumber of this entry in the JV.
          *
          * @return Serial number.
          */
@@ -1186,17 +1300,12 @@ public class JournalVoucher extends StoredObject implements OfEntity, HasReferen
         }
 
         /**
-         * Get transaction type.
+         * Get the transaction type.
          *
          * @return Transaction type.
          */
         public TransactionType getType() {
             return Id.isNull(type) ? null : get(TransactionType.class, type);
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            return obj == this;
         }
 
         @Override
@@ -1215,16 +1324,16 @@ public class JournalVoucher extends StoredObject implements OfEntity, HasReferen
          *
          * @param extraData The extra data to be set.
          */
-        public void setExtraData(String  extraData) {
+        public void setExtraData(Map<String, Object>  extraData) {
             this.extraData = extraData;
         }
 
         /**
          * Returns the extra data associated with this entry.
          *
-         * @return The extra data as an Object.
+         * @return The extra data as a String.
          */
-        public String getExtraData() {
+        public Map<String, Object> getExtraData() {
             return extraData;
         }
 
@@ -1254,18 +1363,72 @@ public class JournalVoucher extends StoredObject implements OfEntity, HasReferen
      * @param excess Excess amount (on top of the allowed limit).
      */
     public void allowExcess(Account account, Money excess) {
+        this.excess.put(account.getId(), excess);
     }
 
     /**
      * Change the date of the associated transactions.
-     * <p>Note: This method is useful only for data pick up of old transaction during implementation.</p>
+     * <p>Note: This method is useful only for data pickup during implementation.</p>
      * @param transactionManager Transaction manager.
      * @param date New date.
      * @exception Exception if changed can't be carried out.
      */
     public void predateTransactions(TransactionManager transactionManager, Date date, String remarks) throws Exception {
-        if(Math.random() > 0.5) {
-            throw new Exception();
+        Date currentDate;
+        Id tid = new Id(ledgerTran.value);
+        List<Id> vouchers = new ArrayList<>();
+        RawSQL sql;
+        sql = new RawSQL();
+        try {
+            sql.execute("SELECT DISTINCT Date FROM core.Ledger WHERE TranId=" + tid);
+            if(sql.eoq()) {
+                throw new Invalid_State("Can't determine the current date of the transactions!");
+            }
+            ResultSet rs = sql.getResult();
+            currentDate = rs.getDate(1);
+            if(DateUtility.isSameDate(currentDate, date)) {
+                return;
+            }
+            sql.execute("SELECT DISTINCT Object FROM core.Ledger WHERE TranId=" + tid);
+            if(!sql.eoq()) {
+                rs = sql.getResult();
+                while (!sql.eoq()) {
+                    vouchers.add(new Id(rs.getBigDecimal(1)));
+                    sql.skip();
+                }
+            }
+            for(Id vid: vouchers) {
+                if(vid.equals(getId())) {
+                    continue;
+                }
+                if(get(JournalVoucher.class, vid, true) == null) {
+                    throw new Invalid_State("Missing JV, Id = " + vid);
+                }
+            }
+        } finally {
+            sql.close();
+        }
+        TransactionDate td;
+        DBTransaction t = null;
+        try {
+            t = transactionManager.createTransaction();
+            for(Id vid: vouchers) {
+                td = new TransactionDate(vid, currentDate, date, remarks);
+                td.save(t);
+            }
+            sql = t.getSQL();
+            sql.executeUpdate("UPDATE core.Ledger SET ValueDate='" + Database.format(date) + "' WHERE TranId="
+                    + tid + " AND ValueDate=Date");
+            sql.executeUpdate("UPDATE core.Ledger SET Date='" + Database.format(date) + "' WHERE TranId=" + tid);
+            sql.executeUpdate("DELETE FROM core.AccountBalance WHERE Account IN (SELECT Account FROM core.Ledger WHERE TranId="
+                        + tid + ")");
+            t.commit();
+            t = null;
+        } finally {
+            sql.close();
+            if(t != null) {
+                t.rollback();
+            }
         }
     }
 
@@ -1287,10 +1450,42 @@ public class JournalVoucher extends StoredObject implements OfEntity, HasReferen
      * @throws Exception If any error occurs.
      */
     public UnpostedJournal saveAsUnposted(TransactionManager tm) throws Exception {
-        if(Math.random() > 0.5) {
-            throw new Exception();
+        validateData(tm);
+        UnpostedJournal uj = new UnpostedJournal();
+        uj.setSystemEntity(systemEntityId);
+        uj.setOwner(ownerId);
+        uj.setDate(date);
+        uj.setJVClassName(getClass().getName());
+        if(getClass() != JournalVoucher.class) {
+            uj.setExtraInformation(stringify());
         }
-        return new UnpostedJournal();
+        if(!foreignReference.isBlank()) {
+            uj.setForeignReference(originId + "/" + foreignReference);
+        }
+        uj.internal = true;
+        tm.transact(t -> {
+            uj.save(t);
+            UnpostedJournalEntry ue;
+            for(Entry e: entries) {
+                ue = new UnpostedJournalEntry();
+                ue.setDisplayOrder(e.id);
+                ue.setAccount(e.account);
+                ue.setAmount(e.amount);
+                ue.setLocalCurrencyAmount(e.localCurrencyAmount);
+                ue.setEntrySerial(e.entrySerial);
+                ue.setType(e.type);
+                ue.setParticulars(e.particulars);
+                ue.setValueDate(e.valueDate);
+                String ed = e.extraData == null ? "" : new com.storedobject.common.JSON(e.extraData).toString();
+                ue.setExtraData(ed);
+                ue.internal = true;
+                ue.save(t);
+                uj.addLink(t, ue);
+                ue.internal = false;
+            }
+        });
+        uj.internal = false;
+        return uj;
     }
 
     /**
@@ -1304,20 +1499,143 @@ public class JournalVoucher extends StoredObject implements OfEntity, HasReferen
         JournalVoucher jv = (JournalVoucher) JavaClassLoader.getLogic(unpostedJournal.getJVClassName())
                 .getConstructor().newInstance();
         if(jv.getClass() != JournalVoucher.class) {
-            jv.load(new LineNumberReader(new StringReader(unpostedJournal.getExtraInformation())));
+            String ei = unpostedJournal.getExtraInformation();
+            if(!ei.isBlank()) {
+                jv.load(new LineNumberReader(new StringReader(ei)));
+            }
         }
         Account a;
         Money amount, lcAmount;
+        String s;
+        Map<String, Object> ed;
         for(UnpostedJournalEntry e: unpostedJournal.listLinks(UnpostedJournalEntry.class, null, "DisplayOrder")) {
             a = e.getAccount();
             amount = e.getAmount();
             lcAmount = e.getLocalCurrencyAmount();
+            s = e.getExtraData();
+            if(s.isBlank()) {
+                ed = null;
+            } else if(s.startsWith("{")) { // TODO Remove after upgrading iWrapper
+                ed = new HashMap<>();
+                ed.put("n", s);
+            } else {
+                ed = new com.storedobject.common.JSON(s).toMap();
+            }
             jv.entries.add(new Entry(jv, a, amount, lcAmount, e.getEntrySerial(), e.getTypeId(), e.getParticulars(),
-                    e.getValueDate(), e.getExtraData()));
+                    e.getValueDate(), ed));
             jv.entrySerial = e.getEntrySerial();
             a.addBalance(amount);
             a.addLocalCurrencyBalance(lcAmount);
         }
         return jv;
+    }
+
+    @Override
+    public final boolean isLedgerPosted() {
+        return !created() && !deleted();
+    }
+
+    @Override
+    public void postLedger(TransactionManager transactionManager) throws Exception {
+        throw new Invalid_State("JV will be posted automatically");
+    }
+
+    /**
+     * Reverses a journal voucher by creating a new voucher with inverted facts.
+     * The new voucher is assigned the specified description, and the current date is used.
+     *
+     * @return A new JournalVoucher object that represents the reversed voucher.
+     */
+    public JournalVoucher reverseVoucher() {
+        return reverseVoucher(null, DateUtility.today(), "Reversed", false);
+    }
+
+    /**
+     * Reverses a journal voucher and creates a new entry with the reversal details.
+     *
+     * @param reversalReason the reason for reversing the journal voucher
+     * @return a new JournalVoucher object representing the reversed voucher
+     */
+    public JournalVoucher reverseVoucher(String reversalReason) {
+        return reverseVoucher(reversalReason, false);
+    }
+
+    /**
+     * Reverses a journal voucher based on the provided date and reversal reason.
+     *
+     * @param date the date on which the reversal is to be recorded
+     * @param reversalReason the reason for reversing the voucher
+     * @return a new JournalVoucher object representing the reversed voucher
+     */
+    public JournalVoucher reverseVoucher(Date date, String reversalReason) {
+        return reverseVoucher(date, reversalReason, false);
+    }
+
+    /**
+     * Reverses a journal voucher by creating a reversed version of the original voucher.
+     * The reversed voucher may include a reason for reversal and can optionally modify the narration.
+     *
+     * @param reversalReason     The reason for reversing the journal voucher.
+     * @param prependToNarration If true, the reversal reason is prepended to the narration of the voucher.
+     * @return The reversed journal voucher.
+     */
+    public JournalVoucher reverseVoucher(String reversalReason, boolean prependToNarration) {
+        return reverseVoucher(null, DateUtility.today(), reversalReason, prependToNarration);
+    }
+
+    /**
+     * Reverses a journal voucher by creating a reversal entry with the specified date,
+     * reversal reason, and narration handling.
+     *
+     * @param date the date on which the reversal is to be executed
+     * @param reversalReason the reason provided for reversing the voucher
+     * @param prependToNarration a flag indicating whether the reversal reason should be
+     *                           prepended to the narration in the reversed voucher
+     * @return the reversed JournalVoucher instance created
+     */
+    public JournalVoucher reverseVoucher(Date date, String reversalReason, boolean prependToNarration) {
+        return reverseVoucher(null, date, reversalReason, prependToNarration);
+    }
+
+    /**
+     * Reverses a journal voucher by creating a new reversal journal voucher
+     * based on the current voucher's details and adjusting the entries accordingly.
+     *
+     * @param reversal The JournalVoucher instance to populate with reversal data.
+     *                 If null, a new instance will be created.
+     * @param date The date for the reversal. If null, the date of the current voucher will be used.
+     * @param reversalReason The reason for the reversal, which will be included in the narration.
+     * @param prependToNarration Determines whether the reversal reason is prepended to
+     *                            the narration or appended to it.
+     * @return A JournalVoucher object representing the reversal,
+     *         or null if the*/
+    public JournalVoucher reverseVoucher(JournalVoucher reversal, Date date, String reversalReason, boolean prependToNarration) {
+        if(reversal == null) {
+            try {
+                reversal = getClass().getConstructor().newInstance();
+            } catch (Exception e) {
+                return null;
+            }
+        }
+        reversal.systemEntityId = systemEntityId;
+        reversal.ownerId = ownerId;
+        reversal.date = date == null ? this.date : date;
+        reversal.foreignReference = foreignReference;
+        for(Entry e: entries) {
+            if(reversal.entrySerial < e.entrySerial && e.entrySerial < 1000000000) {
+                reversal.entrySerial = e.entrySerial;
+            }
+            String narr = e.particulars;
+            if(prependToNarration) {
+                narr = "(" + reversalReason + ") " + narr;
+            } else {
+                narr += " (" + reversalReason + ")";
+            }
+            reversal.entries.add(new Entry(reversal, e.account, e.amount.negate(),
+                    e.localCurrencyAmount.negate(),
+                    e.entrySerial, e.type,
+                    narr, e.valueDate, e.extraData));
+        }
+        return reversal;
     }
 }

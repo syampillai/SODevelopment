@@ -1,11 +1,14 @@
 package com.storedobject.core;
 
-import java.util.Random;
+import java.util.*;
 
 /**
  * Transaction. All protected methods of this class are for internal purpose only.
  */
 public final class DBTransaction extends AbstractTransaction {
+
+    final Map<Id, Money> excess = new HashMap<>();
+    final List<JournalVoucher.Entry> entries = new ArrayList<>();
 
     // For internal use only.
     DBTransaction(TransactionManager tm) throws Exception {

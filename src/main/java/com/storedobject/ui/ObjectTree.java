@@ -5,11 +5,13 @@ import com.storedobject.ui.util.ChildVisitor;
 import com.storedobject.ui.util.DataLoadedListener;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ItemLabelGenerator;
+import com.vaadin.flow.component.grid.dnd.GridDropMode;
 import com.vaadin.flow.component.splitlayout.SplitLayout;
 import com.vaadin.flow.shared.Registration;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.BiFunction;
 import java.util.stream.Stream;
 
 public class ObjectTree<T extends StoredObject> extends DataTreeGrid<T>
@@ -22,6 +24,8 @@ public class ObjectTree<T extends StoredObject> extends DataTreeGrid<T>
     private NewObject<T> newObject;
     private Logic logic;
     private SplitLayout layout;
+    private T draggedItem;
+    private BiFunction<ObjectTree<T>, T, Boolean> dropAction;
 
     public ObjectTree(Class<T> objectClass) {
         this(objectClass, false);
@@ -314,7 +318,7 @@ public class ObjectTree<T extends StoredObject> extends DataTreeGrid<T>
     }
 
     /**
-     * Prefix string that is added to the "action" string to determine the actual {@link UIAction} to be checked. See
+     * Prefix string added to the "action" string to determine the actual {@link UIAction} to be checked. See
      * {@link #actionAllowed(String)}. For example, {@link com.storedobject.ui.inventory.POBrowser} returns the value
      * "PO" for this method.
      *
@@ -332,7 +336,7 @@ public class ObjectTree<T extends StoredObject> extends DataTreeGrid<T>
      * However, it is up to the logic to decide the course of action.
      * <p>The user's groups can be configured to allow various UI actions ({@link com.storedobject.core.UIAction}.
      * Each {@link com.storedobject.core.UIAction} represents a unique "action" string ({@link UIAction#getAction()})
-     * and that value should be equal to {@link #getActionPrefix()} + "-" + action in order to allow that action.</p>
+     * and that value should be equal to {@link #getActionPrefix()} + "-" + action to allow that action.</p>
      *
      * @param action Action string.
      * @return True/false. Please note that it will always return <code>true</code> if {@link #getActionPrefix()}
@@ -356,5 +360,94 @@ public class ObjectTree<T extends StoredObject> extends DataTreeGrid<T>
             return false;
         }
         return true;
+    }
+
+    /**
+     * Retrieves the data tree structured as an ObjectTree for the current context.
+     *
+     * @return an ObjectTree instance representing the hierarchical data structure.
+     */
+    public com.storedobject.core.ObjectTree<T> getDataTree() {
+        return getDataProvider().getTree();
+    }
+
+    /**
+     * Sets the drop action to be executed during a drop operation.
+     *
+     * @param dropAction a BiFunction that takes an ObjectTree and an object of type T as parameters
+     *                   and returns a Boolean indicating whether the drop operation is allowed or not
+     */
+    public void setDropAction(BiFunction<ObjectTree<T>, T, Boolean> dropAction) {
+        this.dropAction = dropAction;
+    }
+
+    /**
+     * Retrieves the currently dragged item.
+     *
+     * @return the dragged item of type T, or null if no item is being dragged
+     */
+    public final T getDraggedItem() {
+        return draggedItem;
+    }
+
+    /**
+     * Handles the drag-and-drop operation for moving an item within a data tree structure.
+     * This method performs validation on the dropped item, checks the drop action callback,
+     * and modifies the tree structure based on the movement of the dragged item.
+     *
+     * @param droppedItem The item on which the dragged item is being dropped. This represents
+     *                    the target node in the tree structure where the dragged item will be linked.
+     */
+    public void draggedAndDropped(T droppedItem) {
+        if(draggedItem == null) {
+            return;
+        }
+        if(dropAction != null) {
+            if(dropAction.apply(this, droppedItem)) {
+                refresh();
+                return;
+            }
+        }
+        T parent = getDataTree().getParent(draggedItem);
+        if(parent != null && parent.getId().equals(droppedItem.getId())) {
+            return;
+        }
+        int linkType = getDataProvider().getLinkType();
+        try {
+            getTransactionManager().transact(t -> {
+               if(parent != null) {
+                   parent.removeLink(t, draggedItem, linkType);
+               }
+               droppedItem.addLink(t, draggedItem, linkType);
+            });
+        } catch (Exception e) {
+            error(e);
+        }
+    }
+
+    /**
+     * Enables drag-and-drop functionality within the grid.
+     * <p></p>
+     * When invoked, it ensures that rows can be dragged and dropped. It sets the drag event listeners
+     * to manage the behavior during drag and drop operations:
+     * <p></p>
+     * - Configures rows to be draggable, preventing multiple re-initializations.
+     * - Sets up a drag start listener that captures the dragged item and applies a drop filter
+     *   to prevent dropping onto itself.
+     * - Configures a drop listener to handle actions when an item is dropped onto a valid target.
+     * - Sets up a drag end listener to clear the dragged item once the operation is complete.
+     */
+    public void enableDragAndDrop() {
+        if(isRowsDraggable()) {
+            return;
+        }
+        setRowsDraggable(true);
+        addDragStartListener(e -> {
+            draggedItem = e.getDraggedItems().getFirst();
+            setDropMode(GridDropMode.ON_TOP);
+            setDropFilter(item -> !item.getId().equals(draggedItem.getId()));
+        });
+        addDropListener(e -> e.getDropTargetItem().ifPresent(this::draggedAndDropped));
+        addDragEndListener(e -> draggedItem = null);
     }
 }

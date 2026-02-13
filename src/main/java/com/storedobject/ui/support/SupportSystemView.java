@@ -40,6 +40,7 @@ public class SupportSystemView extends MemoSystem {
         productFilterField.setMinWidth("300px");
         productFilterField.setClearButtonVisible(true);
         productFilterField.addValueChangeListener(e -> productChanged());
+        enableDragAndDrop();
     }
 
     @Override
@@ -112,6 +113,11 @@ public class SupportSystemView extends MemoSystem {
 
     public String getOrganization(MemoComment mc) {
         return ((Issue)mc.getMemo()).getOrganization().getName();
+    }
+
+    @Override
+    protected boolean allowDependencyRemoval() {
+        return true;
     }
 
     @Override
