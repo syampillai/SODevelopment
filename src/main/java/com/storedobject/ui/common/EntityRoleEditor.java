@@ -96,7 +96,7 @@ public class EntityRoleEditor<T extends EntityRole> extends ObjectEditor<T> {
     }
 
     /**
-     * Can new entities can be created or existing entities can be edited?
+     * Can new entities be created or existing entities can be edited?
      *
      * @return True/false.
      */

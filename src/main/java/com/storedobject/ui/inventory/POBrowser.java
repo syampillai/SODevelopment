@@ -33,6 +33,11 @@ public class POBrowser<T extends InventoryPO> extends ObjectBrowser<T> implement
     private final ELabel searchLabel = new ELabel();
     private final ELabel countLabel = new ELabel("0");
 
+    public POBrowser() {
+        //noinspection unchecked
+        this((Class<T>) InventoryPO.class);
+    }
+
     public POBrowser(Class<T> objectClass) {
         this(objectClass, (String)null);
     }

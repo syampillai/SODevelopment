@@ -14,6 +14,11 @@ public class POEditor<T extends InventoryPO> extends ObjectEditor<T> {
     private ObjectField<Entity> supplierField;
     InventoryStore store;
 
+    public POEditor() {
+        //noinspection unchecked
+        this((Class<T>) InventoryPO.class);
+    }
+
     public POEditor(Class<T> objectClass) {
         this(objectClass, 0, null);
     }

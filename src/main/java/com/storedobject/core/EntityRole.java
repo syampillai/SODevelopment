@@ -24,23 +24,23 @@ public abstract class EntityRole extends StoredObject implements OfEntity, HasCo
     }
 
     @Override
-	public String getUniqueCondition() {
+    public String getUniqueCondition() {
         return "Organization=" + getOrganizationId() + " AND T_Family=" + family() + " AND SystemEntity=" + getSystemEntityId();
     }
 
-	public static String[] displayColumns() {
-		return new String[] {
-			"Organization.Name as Organization",
-			"Organization.Location as Location",
-			"Organization.Country AS Country"
-		};
-	}
+    public static String[] displayColumns() {
+        return new String[] {
+                "Organization.Name as Organization",
+                "Organization.Location as Location",
+                "Organization.Country AS Country"
+        };
+    }
 
-	public static String[] searchColumns() {
-		return new String[] {
-			"Organization.Name as Organization",
-		};
-	}
+    public static String[] searchColumns() {
+        return new String[] {
+                "Organization.Name as Organization",
+        };
+    }
 
     public void setOrganization(Id organizationId) {
         if(!loading() && !Id.equals(this.organizationId, organizationId)) {
@@ -64,12 +64,12 @@ public abstract class EntityRole extends StoredObject implements OfEntity, HasCo
     }
 
     public Entity getOrganization() {
-    	if(organization == null || Id.isNull(organization.getId())) {
-    		organization = get(Entity.class, organizationId);
-    	}
-    	return organization;
+        if(organization == null || Id.isNull(organization.getId())) {
+            organization = get(Entity.class, organizationId);
+        }
+        return organization;
     }
-    
+
     public void setSystemEntity(Id systemEntityId) {
         if(!loading()) {
             throw new Set_Not_Allowed("System Entity");
@@ -99,7 +99,7 @@ public abstract class EntityRole extends StoredObject implements OfEntity, HasCo
     }
 
     @Override
-	public void validateData(TransactionManager tm) throws Exception {
+    public void validateData(TransactionManager tm) throws Exception {
         if(!deleted()) {
             systemEntityId = check(tm, systemEntityId);
             if(this instanceof OfEntitySelf && Id.isNull(organizationId)) {
@@ -114,7 +114,7 @@ public abstract class EntityRole extends StoredObject implements OfEntity, HasCo
     }
 
     @Override
-	public String toString() {
+    public String toString() {
         return getOrganization().toString();
     }
 
@@ -124,37 +124,37 @@ public abstract class EntityRole extends StoredObject implements OfEntity, HasCo
     }
 
     public static <T extends EntityRole> T get(SystemEntity systemEntity, Class<T> roleClass, Entity entity) {
-    	return get(systemEntity, roleClass, entity, false);
+        return get(systemEntity, roleClass, entity, false);
     }
-    
+
     public static <T extends EntityRole> T get(SystemEntity systemEntity, Class<T> roleClass, Entity entity, boolean any) {
-    	return entity == null ? null : getByEntityId(systemEntity, roleClass, entity.getId(), any);
+        return entity == null ? null : getByEntityId(systemEntity, roleClass, entity.getId(), any);
     }
-    
+
     public static <T extends EntityRole> T getByEntityId(SystemEntity systemEntity, Class<T> roleClass, Id entityId) {
-    	return getByEntityId(systemEntity, roleClass, entityId, false);
+        return getByEntityId(systemEntity, roleClass, entityId, false);
     }
-    
+
     public static <T extends EntityRole> T getByEntityId(SystemEntity systemEntity, Class<T> roleClass, Id entityId, boolean any) {
-    	return entityId == null || roleClass == null ? null :
-    		get(roleClass, "Organization=" + entityId + " AND SystemEntity=" + systemEntity.getId(), any);
+        return entityId == null || roleClass == null ? null :
+                get(roleClass, "Organization=" + entityId + " AND SystemEntity=" + systemEntity.getId(), any);
     }
 
     public static <T extends EntityRole> T getByName(SystemEntity systemEntity, Class<T> roleClass, String name) {
-    	return getByName(systemEntity, roleClass, name, false);
+        return getByName(systemEntity, roleClass, name, false);
     }
 
     public static <T extends EntityRole> T getByName(SystemEntity systemEntity, Class<T> roleClass, String name, boolean any) {
-    	T role = get(systemEntity, roleClass, Entity.get(name), any);
-    	return role == null ? listByName(systemEntity, roleClass, name, any).single(false) : role;
+        T role = get(systemEntity, roleClass, Entity.get(name), any);
+        return role == null ? listByName(systemEntity, roleClass, name, any).single(false) : role;
     }
 
     public static <T extends EntityRole> ObjectIterator<T> listByName(SystemEntity systemEntity, Class<T> roleClass, String name) {
-    	return listByName(systemEntity, roleClass, name, false);
+        return listByName(systemEntity, roleClass, name, false);
     }
-    
+
     public static <T extends EntityRole> ObjectIterator<T> listByName(final SystemEntity systemEntity, final Class<T> roleClass, String name, final boolean any) {
-		return Entity.list(name).convert(e -> get(systemEntity, roleClass, e, any));
+        return Entity.list(name).convert(e -> get(systemEntity, roleClass, e, any));
     }
 
     @Override

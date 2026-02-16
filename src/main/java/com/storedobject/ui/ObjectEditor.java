@@ -48,7 +48,6 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
         implements Transactional, ObjectSetter<T>,
         ObjectChangedListener<T>, ObjectEditorListener, ObjectProvider<T>, AlertHandler, TransactionCreator {
 
-    static final String CONFIRM_LEDGER = "About to post financial entries to the ledger, this can not be undone!\nProceed?";
     /**
      * The layout where buttons are displayed.
      */
@@ -693,7 +692,7 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
         }
         if(Financial.class.isAssignableFrom(getObjectClass()) && nm
                 && ((actions & EditorAction.LEDGER) == EditorAction.LEDGER) && actionAllowed("LEDGER")) {
-            ledger = new LedgerButton(this);
+            ledger = new LedgerButton<>(this);
         }
         if(!((actions & EditorAction.NO_EXIT) == EditorAction.NO_EXIT)) {
             exit = new Button("Exit", this);
@@ -837,8 +836,9 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
         if(audit != null && object != null) {
             buttonPanel.add(audit);
         }
-        if(object != null && ledger instanceof LedgerButton lb) {
-            lb.set(object);
+        if(object != null && ledger instanceof LedgerButton<?> lb) {
+            @SuppressWarnings("unchecked") LedgerButton<T> b = (LedgerButton<T>) lb;
+            b.set(object);
             buttonPanel.add(ledger);
         }
         if(exit != null) {
@@ -894,33 +894,84 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
     }
 
     /**
-     * Create ledger entries. This is equivalent to pressing the "Post Ledger" button.
+     * Create ledger entries.
      */
     public void postLedger() {
         postLedger(getObject());
     }
 
     /**
-     * Create ledger entries. This is equivalent to pressing the "Post Ledger" button.
+     * Create ledger entries.
      */
     public void postLedger(T object) {
+        postLedger(object, null);
+    }
+
+    private void postLedger(Consumer<T> inform) {
+        postLedger(getObject(), inform);
+    }
+
+    private void postLedger(T object, Consumer<T> inform) {
         clearAlerts();
         if(!(object instanceof Financial f)) {
             warning("Not a financial entry");
-            return;
-        }
-        if(f.isLedgerPosted()) {
-            viewJV(object);
             return;
         }
         if(object.created()) {
             warning("Unable to create financial transactions, the entry is yet saved!");
             return;
         }
+        if(f.isLedgerPosted()) {
+            warning("Ledger entries are already posted!");
+            return;
+        }
         try {
             f.postLedger(getTransactionManager());
-            if(object == getObject()) {
-                drawButtons();
+            if(inform != null) {
+                inform.accept(object);
+            }
+            message("Ledger entries created successfully!");
+        } catch (Exception e) {
+            warning(e);
+        }
+    }
+
+    /**
+     * Reverse ledger entries.
+     */
+    public void reverseLedger(String reason, boolean prependNarration) {
+        reverseLedger(getObject(), reason, prependNarration);
+    }
+
+    private void reverseLedger(String reason, boolean prependNarration, Consumer<T> inform) {
+        reverseLedger(getObject(), reason, prependNarration, inform);
+    }
+
+    /**
+     * Reverse ledger entries.
+     */
+    public void reverseLedger(T object, String reason, boolean prependNarration) {
+        reverseLedger(object, reason, prependNarration, null);
+    }
+
+    private void reverseLedger(T object, String reason, boolean prependNarration, Consumer<T> inform) {
+        clearAlerts();
+        if(!(object instanceof Financial f)) {
+            warning("Not a financial entry");
+            return;
+        }
+        if(!f.isLedgerPosted()) {
+            warning("Ledger entries are not yet posted!");
+            return;
+        }
+        if(!f.canReverseLedger()) {
+            warning("Reversal of ledger entries is not allowed!");
+            return;
+        }
+        try {
+            f.reverseLedger(getTransactionManager(), reason, prependNarration);
+            if(inform != null) {
+                inform.accept(object);
             }
         } catch (Exception e) {
             warning(e);
@@ -940,9 +991,8 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
     }
 
     private void viewJV(StoredObject object) {
-        List<JournalVoucher> jv =
-                StoredObject.list(JournalVoucher.class, "Owner=" + object.getId(), "T.Id", true)
-                .toList();
+        if(!(object instanceof Financial f)) return;
+        List<JournalVoucher> jv = f.listJournalVouchers();
         if(jv.isEmpty()) {
             warning("Financial voucher could not be found");
             return;
@@ -2960,35 +3010,89 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
         }
     }
 
-    private static class LedgerButton extends Button {
+    static class LedgerButton<O extends StoredObject> extends PopupButton {
 
-        private static final String POST_LEDGER = "Post Ledger";
-        private static final String VIEW_VOUCHER = "View Voucher";
-        private final ObjectEditor<?> oe;
+        private final Button view = new Button("View", VaadinIcon.EYE, e -> this.viewVoucher());
+        private final Button post = new Button("Post", VaadinIcon.ANGLE_DOUBLE_RIGHT, e -> this.postVoucher());
+        private final Button reverse = new Button("Reverse", VaadinIcon.ANGLE_DOUBLE_LEFT, e -> this.reverseVoucher());
+        ObjectEditor<O> oe;
+        private Reverse reversalForm;
 
-        public LedgerButton(ObjectEditor<?> oe) {
-            super(POST_LEDGER, VaadinIcon.BOOK_DOLLAR, null);
+        public LedgerButton(ObjectEditor<O> oe) {
+            super("Voucher", VaadinIcon.BOOK_DOLLAR);
             this.oe = oe;
-            addClickHandler(e -> clicked());
+            add(post, view, reverse);
+            disable();
         }
 
-        private void clicked() {
-            if(oe.getObject() instanceof Financial f) {
-                if (f.isLedgerPosted()) {
-                    oe.viewLedger();
-                    return;
-                }
-                new ActionForm("Post Ledger", CONFIRM_LEDGER, oe::postLedger).execute();
+        private void disable() {
+            post.setEnabled(false);
+            view.setEnabled(false);
+            reverse.setEnabled(false);
+        }
+
+        private void viewVoucher() {
+            if(oe != null) oe.viewLedger();
+        }
+
+        private void postVoucher() {
+            if(oe == null) return;
+            new ActionForm("Post Financial Voucher",
+                    "About to post financial entries to the ledger, this cannot be undone!\nProceed?",
+                    () -> oe.postLedger(this::refresh))
+                    .execute();
+        }
+
+        private void reverseVoucher() {
+            if(oe == null) return;
+            if(reversalForm == null) {
+                reversalForm = new Reverse();
             }
+            reversalForm.execute();
         }
 
-        private void set(StoredObject object) {
+        void set(O object) {
             if(!(object instanceof Financial f)) {
-                setVisible(false);
+                disable();
                 return;
             }
             setVisible(true);
-            setText(f.isLedgerPosted() ? VIEW_VOUCHER : POST_LEDGER);
+            boolean posted = f.isLedgerPosted();
+            view.setEnabled(posted);
+            post.setEnabled(!posted);
+            reverse.setEnabled(posted && f.canReverseLedger());
+        }
+
+        protected void refresh(O object) {
+            oe.reload();
+        }
+
+        private class Reverse extends DataForm {
+
+            private final TextArea reason = new TextArea("Reversal Reason");
+            private final RadioChoiceField append = new RadioChoiceField("To the original narration",
+                    new String[] { "Append", "Prepend" });
+
+            public Reverse() {
+                super("Reverse Financial Voucher");
+                new SpeechRecognition(reason);
+                addField(reason, append);
+                setRequired(reason);
+                addField(new ELabelField("Warning",
+                        "This operation cannot be undone!", Application.COLOR_ERROR));
+            }
+
+            @Override
+            protected boolean process() {
+                boolean prepend = append.getValue() == 1;
+                String r = reason.getValue();
+                if(r.length() <= 3) {
+                    warning("Reason must be at least 4 characters long!");
+                    return false;
+                }
+                oe.reverseLedger(r, prepend, LedgerButton.this::refresh);
+                return true;
+            }
         }
     }
 }

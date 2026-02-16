@@ -11,6 +11,10 @@ public class StockMovementReport extends StockReportForm {
     private BooleanField summaryField;
     private Report report;
 
+    public StockMovementReport() {
+        this(Application.get());
+    }
+
     public StockMovementReport(Application a) {
         super(a.getLogicTitle("Stock Movement"));
     }

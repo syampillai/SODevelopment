@@ -6,7 +6,6 @@ import com.storedobject.ui.accounts.JournalVoucherBrowser;
 import com.storedobject.ui.inventory.POBrowser;
 import com.storedobject.ui.util.LoadFilterButtons;
 import com.storedobject.ui.util.LogicParser;
-import com.storedobject.vaadin.ActionForm;
 import com.storedobject.vaadin.Button;
 import com.storedobject.vaadin.ButtonLayout;
 import com.storedobject.vaadin.ConfirmButton;
@@ -14,7 +13,6 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasValue;
 import com.vaadin.flow.component.grid.editor.Editor;
 import com.vaadin.flow.component.html.Span;
-import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.splitlayout.SplitLayout;
 import com.vaadin.flow.shared.Registration;
@@ -436,7 +434,7 @@ public class ObjectBrowser<T extends StoredObject> extends ObjectGrid<T>
             }
             if(Financial.class.isAssignableFrom(getObjectClass())
                     && nm && ((actions & LEDGER) == LEDGER) && actionAllowed("LEDGER")) {
-                ledger = new Button("View/Post Ledger", VaadinIcon.BOOK_DOLLAR, this);
+                ledger = new LedgerButton();
                 buttonPanel.add(ledger);
             }
         }
@@ -906,10 +904,6 @@ public class ObjectBrowser<T extends StoredObject> extends ObjectGrid<T>
                 new ObjectHistoryGrid<>(object).executeAll();
                 return;
             }
-            if(c == ledger) {
-                postLedger(object);
-                return;
-            }
         }
         if(c == search) {
             if (!canSearch()) {
@@ -1110,35 +1104,6 @@ public class ObjectBrowser<T extends StoredObject> extends ObjectGrid<T>
                 isAllowAny(), getRenderedColumnNames().toList());
         list.setExtraCondition(getFilterCondition());
         list.execute();
-    }
-
-    /**
-     * Posts the given object to the ledger if it meets the required conditions.
-     * The method checks whether the object is an instance of a financial entry,
-     * whether it has already been posted to the ledger, and whether the current
-     * user has the necessary permissions to view or post the ledger.
-     *
-     * @param object the object to be processed and potentially posted to the ledger.
-     *               Must be an instance of a financial entry to proceed.
-     */
-    public void postLedger(T object) {
-        if(!(object instanceof Financial f)) {
-            clearAlerts();
-            warning("Not a financial entry");
-            return;
-        }
-        if(f.isLedgerPosted()) {
-            if(canViewLedger(object)) {
-                getObjectEditor().postLedger(object);
-            }
-        } else {
-            if(canPostLedger(object)) {
-                new ActionForm("Post Ledger", ObjectEditor.CONFIRM_LEDGER, () -> {
-                    getObjectEditor().postLedger(object);
-                    refresh(object);
-                }).execute();
-            }
-        }
     }
 
     /**
@@ -1671,5 +1636,29 @@ public class ObjectBrowser<T extends StoredObject> extends ObjectGrid<T>
      */
     public Runnable getExitAction() {
         return exitAction;
+    }
+
+    private class LedgerButton extends ObjectEditor.LedgerButton<T> {
+
+        public LedgerButton() {
+            super(null);
+            addClickListener(e -> selected());
+        }
+
+        private void selected() {
+            T object = ObjectBrowser.this.selected();
+            if(object != null) {
+                if(oe == null) oe = getObjectEditor();
+                oe.setObject(object);
+                set(object);
+            }
+        }
+
+        @Override
+        protected void refresh(T object) {
+            if(object != null) {
+                ObjectBrowser.this.refresh(object);
+            }
+        }
     }
 }

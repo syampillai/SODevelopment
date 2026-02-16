@@ -143,7 +143,7 @@ public class SupportSystem extends MemoSystem {
 
     private void createInternalTask() {
         Memo m;
-        MemoComment mc = selected();
+        MemoComment mc = getSelected();
         String s;
         if(mc == null) {
             m = null;

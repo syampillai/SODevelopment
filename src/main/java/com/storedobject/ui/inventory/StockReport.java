@@ -13,6 +13,10 @@ public class StockReport extends StockReportForm {
     private Report pdf;
     private ExReport excel;
 
+    public StockReport() {
+        this(Application.get());
+    }
+
     public StockReport(Application a) {
         super(a.getLogicTitle("Stock Report"));
     }
