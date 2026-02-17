@@ -986,7 +986,7 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
      */
     public void viewLedger() {
         T o = getObject();
-        if(o instanceof Financial f && f.isLedgerPosted() && canViewLedger()) {
+        if(o instanceof Financial f && (f.isLedgerPosted() || f.isLedgerReversed())&& canViewLedger()) {
             viewJV(o);
         }
     }
@@ -2324,6 +2324,9 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
             f.setGrid(createLinkFieldGrid(f.getLink().getName() + ".l", f));
             customizeLinkField(f);
             attachLinkField(f);
+            if(f.getLink().isReadOnly()) {
+                setFieldReadOnly(f);
+            }
             return;
         }
         String tabName = getTabName(fieldName, field);

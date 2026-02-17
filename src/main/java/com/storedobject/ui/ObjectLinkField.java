@@ -298,7 +298,7 @@ public final class ObjectLinkField<T extends StoredObject>
 
     @Override
     public boolean isReadOnly() {
-        return readOnly;
+        return readOnly || link.isReadOnly();
     }
 
     public StoredObject getMaster() {

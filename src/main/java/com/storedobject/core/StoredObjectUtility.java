@@ -317,6 +317,13 @@ public final class StoredObjectUtility {
             return false;
         }
 
+        public void setReadOnly() {
+        }
+
+        public boolean isReadOnly() {
+            return false;
+        }
+
         public boolean isDetail() {
             return false;
         }
