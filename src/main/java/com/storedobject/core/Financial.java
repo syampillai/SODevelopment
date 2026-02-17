@@ -19,6 +19,15 @@ public interface Financial {
     boolean isLedgerPosted();
 
     /**
+     * Checks whether the ledger is reversed.
+     *
+     * @return {@code true} if the ledger is reversed, {@code false} otherwise.
+     */
+    default boolean isLedgerReversed() {
+        return false;
+    }
+
+    /**
      * Posts ledger transactions using the provided TransactionManager.
      *
      * @param transactionManager the TransactionManager used to post the ledger transaction
@@ -90,7 +99,7 @@ public interface Financial {
         if(!canReverseLedger()) throw new Invalid_State("Reversal not supported");
         List<JournalVoucher> vouchers = listJournalVouchers();
         if(vouchers.isEmpty()) throw new Invalid_State("No vouchers to reverse");
-        return vouchers.getFirst().reverseVoucher(reversalReason, appendToNarration);
+        return vouchers.getLast().reverseVoucher(reversalReason, appendToNarration);
     }
 
     /**

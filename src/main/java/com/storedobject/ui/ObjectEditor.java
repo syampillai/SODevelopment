@@ -973,6 +973,7 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
             if(inform != null) {
                 inform.accept(object);
             }
+            message("Ledger entries reversed successfully!");
         } catch (Exception e) {
             warning(e);
         } finally {
@@ -3057,9 +3058,9 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
                 return;
             }
             setVisible(true);
-            boolean posted = f.isLedgerPosted();
-            view.setEnabled(posted);
-            post.setEnabled(!posted);
+            boolean posted = f.isLedgerPosted(), reversed = f.isLedgerReversed();
+            view.setEnabled(posted || reversed);
+            post.setEnabled(!posted || reversed);
             reverse.setEnabled(posted && f.canReverseLedger());
         }
 
