@@ -199,6 +199,34 @@ public abstract class StoredObject implements Displayable, HasId, StringFiller {
         return family(id);
     }
 
+    public void migrateLink(TransactionManager tm, StoredObject oldMaster, StoredObject newMaster) throws Exception {
+        migrateLink(tm, 0, oldMaster, newMaster);
+    }
+
+    public void migrateLink(TransactionManager tm, int linkType, StoredObject oldMaster, StoredObject newMaster) throws Exception {
+        if(!tm.actionAllowed("LINK_MIGRATE")) {
+            throw new SOException("Not authorized to migrate link");
+        }
+        UIAction a = UIAction.getFor("Link migration action not found");
+        if(a == null) {
+            throw new SOException("Action not found");
+        }
+        int family = family();
+        tm.transact(t -> {
+            UserAction.save(t,this, a);
+            RawSQL q = ((DBTransaction)t).getSQL();
+            try {
+                q.executeUpdate("DELETE core.Link WHERE Type=" + linkType + " AND FromId=" + getId()
+                        + " AND FromFamily=" + family + " AND ToId=" + oldMaster.getId());
+                q.executeUpdate("INSERT INTO core.Link(TranId,FromId,FromFamily,ToId,ToFamily,Type) VALUES("
+                        + t.getId() + "," + getId() + "," + family + "," + newMaster.getId() + "," + newMaster.family()
+                        + "," + linkType + ")");
+            } finally {
+                q.close();
+            }
+        });
+    }
+
     /**
      * Migrate this instance to another class instance. Please note that there is no error checking or validations when
      * this is invoked. This is used very rarely, and it may be useful for building low-level utilities.

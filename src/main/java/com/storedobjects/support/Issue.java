@@ -81,7 +81,7 @@ public class Issue extends Memo {
 
     public void setProductModule(Id productModuleId) {
         if (!Id.equals(this.getProductModuleId(), productModuleId)) {
-            throw new SORuntimeException("Product Module doesn't belong to '" + getProduct().toDisplay() + "'");
+            throw new SORuntimeException("Product module/category doesn't belong to '" + getProduct().toDisplay() + "'");
         }
         this.productModuleId = productModuleId;
     }
@@ -94,7 +94,7 @@ public class Issue extends Memo {
         setProductModule(productModule == null ? null : productModule.getId());
     }
 
-    @Column(order = 110, required = false)
+    @Column(order = 110, required = false, caption = "Module/Category")
     public Id getProductModuleId() {
         return productModuleId;
     }

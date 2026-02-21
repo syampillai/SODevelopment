@@ -684,6 +684,9 @@ public class JournalVoucher extends StoredObject implements Financial, OfEntity,
      */
     public final void credit(Account account, Money amount, Money localCurrencyAmount, int entrySerial,
                              String type, String particulars, Date valueDate) throws Exception {
+        if((amount == null || amount.isZero()) && (localCurrencyAmount == null || localCurrencyAmount.isZero())) {
+            return; // Zero amount entries are ignored
+        }
         if(account instanceof AccountTitle at) {
             account = at.getAccount();
         }

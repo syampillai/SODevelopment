@@ -28,6 +28,7 @@ public class ReceiveAndBin extends ListGrid<InventoryItem> implements Transactio
     private final Date date;
     private final TextField referenceField = new TextField();
     private Runnable closeAction;
+    private final boolean receiveMode;
 
     public ReceiveAndBin(Date date, String reference, List<InventoryItem> itemList) {
         this(date, reference, itemList, null, null);
@@ -58,7 +59,7 @@ public class ReceiveAndBin extends ListGrid<InventoryItem> implements Transactio
     }
 
     private ReceiveAndBin(Date date, String reference, List<InventoryItem> itemList, TransactionManager.Transact update,
-                         Runnable refresher, GRNEditor grnEditor, boolean allowSNChange, boolean assembly, Component... extraComponents) {
+                          Runnable refresher, GRNEditor grnEditor, boolean allowSNChange, boolean assembly, Component... extraComponents) {
         super(InventoryItem.class, filtered(itemList, assembly),
                 StringList.create("PartNumber.Name AS Item", "PartNumber.PartNumber AS Part Number",
                         "SerialNumberDisplay as Serial/Batch", "Quantity", "InTransit", "Location"));
@@ -88,6 +89,9 @@ public class ReceiveAndBin extends ListGrid<InventoryItem> implements Transactio
         process.setVisible(update != null || refresher != null);
         if (process.isVisible()) {
             process.setText("Receive");
+            receiveMode = true;
+        } else {
+            receiveMode = false;
         }
         ItemContextMenu<InventoryItem> contextMenu = new ItemContextMenu<>(this);
         contextMenu.setAllowAssemble(true);
@@ -125,7 +129,7 @@ public class ReceiveAndBin extends ListGrid<InventoryItem> implements Transactio
     }
 
     private void con() {
-        addComponentColumn(this::actionButton).setFlexGrow(0).setWidth("200px");
+        addComponentColumn(this::actionButton).setFlexGrow(0).setWidth((receiveMode ? 300 : 200) + "px");
     }
 
     @Override
@@ -142,9 +146,12 @@ public class ReceiveAndBin extends ListGrid<InventoryItem> implements Transactio
     }
 
     private ButtonLayout actionButton(InventoryItem item) {
-        ButtonLayout b = new ButtonLayout(new Button("Inspect", VaadinIcon.STOCK, e -> inspect(item)).asSmall());
+        ButtonLayout b = new ButtonLayout(new Button("Inspect", VaadinIcon.USER_CHECK, e -> inspect(item)).asSmall());
         if (item.getLocation() instanceof InventoryBin) {
             b.add(new Button("Bin", VaadinIcon.STORAGE, e -> binEditor.binItem(item)).asSmall());
+        }
+        if(receiveMode) {
+            b.add(new Button("Receive", VaadinIcon.STOCK, e -> receive(item)).asSmall());
         }
         return b;
     }
@@ -164,19 +171,28 @@ public class ReceiveAndBin extends ListGrid<InventoryItem> implements Transactio
         process(true);
     }
 
-    private void process(boolean check) {
+    private Object[] checkRef() {
         clearAlerts();
         Date d = dateField.getValue();
         if (d.before(date)) {
             warning("Date shouldn't be less than " + DateUtility.formatDate(date));
-            return;
+            return null;
         }
         String reference = referenceField.getValue();
         if (reference.isEmpty()) {
             warning("Reference can't be empty");
+            return null;
+        }
+        return new Object[]{d, reference};
+    }
+
+    private void process(boolean check) {
+        Object[] o = checkRef();
+        if(o == null) {
             return;
         }
-        clearAlerts();
+        Date d = (Date) o[0];
+        String reference = (String) o[1];
         List<InventoryItem> list = stream().filter(InventoryItem::getInTransit).toList();
         if (check) {
             if (!list.isEmpty()) {
@@ -221,6 +237,37 @@ public class ReceiveAndBin extends ListGrid<InventoryItem> implements Transactio
                 refresher.run();
             }
             message("Done");
+        }
+    }
+
+    private void receive(InventoryItem item) {
+        if(item.getInTransit()) {
+            warning("Item not inspected yet!");
+            return;
+        }
+        InventoryLocation newBin;
+        newBin = bins.get(item.getId());
+        if (newBin == null || newBin.getId().equals(item.getLocationId())) {
+            warning("Bin not changed - already at " + item.getLocationDisplay());
+            return;
+        }
+        Object[] o = checkRef();
+        if(o == null) {
+            return;
+        }
+        Date d = (Date) o[0];
+        String reference = (String) o[1];
+        if (transact(t -> {
+            InventoryTransaction it = new InventoryTransaction(getTransactionManager(), d, reference);
+            it.moveTo(null, StoredObject.get(item.getClass(), item.getId()), reference, newBin);
+            it.save(t);
+            remove(item);
+            refresh();
+        })) {
+            if (refresher != null) {
+                refresher.run();
+            }
+            message("Received - " + item.toDisplay());
         }
     }
 

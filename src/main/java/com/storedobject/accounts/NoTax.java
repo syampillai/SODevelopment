@@ -6,6 +6,11 @@ import java.util.Currency;
 
 public final class NoTax extends TaxMethod {
 
+    private static final Account NO_TAX_ACCOUNT = new Account();
+    static {
+        NO_TAX_ACCOUNT.makeVirtual();
+    }
+
     public NoTax() {
         name = "No Tax";
     }
@@ -17,5 +22,9 @@ public final class NoTax extends TaxMethod {
     public Money getTax(InventoryItemType itemType, Quantity quantity,
                         Money unitCost, Percentage taxRate, Currency localCurrency) {
         return new Money(localCurrency);
+    }
+
+    public static Account getAccount() {
+        return NO_TAX_ACCOUNT;
     }
 }

@@ -133,6 +133,7 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
     private String fieldName = "";
     private JournalVoucherView voucherView;
     private boolean embeddedMode = false;
+    private int columns = 2; // TODO debug and remove this
 
     /**
      * Constructor.
@@ -320,6 +321,7 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
     @Override
     public void setColumns(int columns) {
         super.setColumns(columns);
+        this.columns = columns;
         tabList.values().forEach(t -> t.setColumns(columns));
         setLinkTabColumns(columns);
     }
@@ -2272,7 +2274,7 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
         currentTab = layout;
         if(currentTab == null) {
             currentTab = new FormLayout();
-            currentTab.setColumns(getColumns());
+            currentTab.setColumns(columns);
             tabs.put(tabName, currentTab);
             if(linkTabs == null) {
                 linkTabs = new ObjectLinkField.Tabs();
@@ -2286,7 +2288,7 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
 
     /**
      * If this method is invoked, tabbing stops and all further fields added without any tab name will go to the
-     * non-tab area of the editor.
+     * non-tabbed area of the editor.
      */
     public void setNoTab() {
        currentTab = null;

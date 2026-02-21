@@ -272,4 +272,32 @@ public class UserAction extends StoredObject {
         log.setUserAction(ua);
         log.save(t);
     }
+
+    /**
+     * Note: for internal use only.
+     * <p></p>
+     * Saves a user action and associates it with a stored object and a transaction.
+     * This method ensures that a {@code UserAction} is created (if it doesn't already exist)
+     * for the given system user and action. It then links the specified stored object
+     * with the user action and logs the interaction by saving a {@code UserActionLog}.
+     *
+     * @param t       The {@code Transaction} instance used to manage database interactions.
+     * @param object  The {@code StoredObject} to be linked with the user action.
+     * @param action  The {@code UIAction} representing the action to be associated with the user.
+     * @throws Exception If an error occurs during the process, such as database issues or validation failures.
+     */
+    static void save(Transaction t, StoredObject object, UIAction action) throws Exception {
+        UserAction ua = get(UserAction.class, "Action=" + action.getId() + " AND SystemUser=" + t.getManager().getUser().getId());
+        if(ua == null) {
+            ua = new UserAction();
+            ua.setAction(action);
+            ua.setSystemUser(t.getManager().getUser());
+            ua.save(t);
+        }
+        object.addLink(t, ua);
+        UserActionLog log = new UserActionLog();
+        log.setObject(object);
+        log.setUserAction(ua);
+        log.save(t);
+    }
 }

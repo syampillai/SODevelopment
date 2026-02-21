@@ -20,7 +20,7 @@ public final class Product extends Name {
 
     public static String[] links() {
         return new String[] {
-                "Modules|com.storedobjects.support.ProductModule|||0",
+                "Modules/Categories|com.storedobjects.support.ProductModule|||0",
                 "Product/Service Types|com.storedobject.core.InventoryItemType/Any|||0",
         };
     }

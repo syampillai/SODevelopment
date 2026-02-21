@@ -339,6 +339,7 @@ public final class TaxType extends Name implements DisplayOrder {
 
     @Override
     public String toDisplay() {
-        return name + " (" + getRegion().getName() + ")";
+        return name + " (" + getRegion().getName() + "), Method: " + TaxMethod.getFor(taxMethodId).getName()
+                + ". Period: " + getApplicablePeriod();
     }
 }

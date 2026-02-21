@@ -105,6 +105,7 @@ public abstract class HandleReturnedItems extends DataForm implements Transactio
         return switch(type) {
             case 3 -> "RO";
             case 8 -> "LO";
+            case 18 -> "Custodian";
             default -> "R";
         } + "s";
     }
@@ -189,7 +190,7 @@ public abstract class HandleReturnedItems extends DataForm implements Transactio
             selectSpecific.setValue(false);
             return;
         }
-        String condition = "Status<2 AND Amendment>0 AND ToLocation=" + eo.getId();
+        String condition = "Status=1 AND ToLocation=" + eo.getId();
         if(includeOnlyForStore.getValue()) {
             condition += " AND FromLocation=" + storeBin.getId();
         }
@@ -199,13 +200,25 @@ public abstract class HandleReturnedItems extends DataForm implements Transactio
         } else {
             irs = StoredObject.list(InventoryLoanOut.class, condition, true).map(r -> r);
         }
-        List<InventoryReturn> list = irs.toList();
+        List<InventoryReturn> list = irs.filter(this::anyItem).toList();
         if(list.isEmpty()) {
             message("No items pending to be received from:<BR/>" + eo.toDisplay());
             selectSpecific.setValue(false);
             return;
         }
         new SelectSpecificIR(list).execute();
+    }
+
+    private boolean anyItem(InventoryReturn ir) {
+        ObjectIterator<InventoryReturnItem> items;
+        if(ir instanceof InventoryRO) {
+            items = ir.listLinks(InventoryROItem.class, true).map(i -> i);
+        } else if(ir instanceof InventoryLoanOut) {
+            items = ir.listLinks(InventoryLoanOutItem.class, true).map(i -> i);
+        } else {
+            items = ir.listLinks(InventoryReturnItem.class, true);
+        }
+        return items.map(InventoryTransferItem::getItem).anyMatch(i -> i != null && i.getLocationId().equals(eo.getId()));
     }
 
     @Override

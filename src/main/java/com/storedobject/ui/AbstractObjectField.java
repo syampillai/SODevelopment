@@ -2,9 +2,7 @@ package com.storedobject.ui;
 
 import com.storedobject.common.StringList;
 import com.storedobject.core.*;
-import com.storedobject.vaadin.ButtonLayout;
-import com.storedobject.vaadin.CustomField;
-import com.storedobject.vaadin.ValueRequired;
+import com.storedobject.vaadin.*;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasText;
@@ -34,6 +32,7 @@ public abstract class AbstractObjectField<T extends StoredObject> extends Custom
      * The detail component.
      */
     Component detailComponent;
+    private final Box detailBox;
     private Consumer<T> displayDetail;
     private boolean prefixFieldControl = true;
     /**
@@ -59,6 +58,18 @@ public abstract class AbstractObjectField<T extends StoredObject> extends Custom
         this.objectClass = objectClass;
         this.allowAny = allowAny;
         detailComponent = new ELabel();
+        String h = "2em";
+        detailComponent.getStyle().set("min-height", h)
+                .set("max-height", "50px")
+                .set("line-height", "--vaadin-input-field-value-line-height")
+                .set("display", "flex")
+                .set("align-items", "center")
+                .set("color", "var(--vaadin-input-field-value-color)")
+                .set("font-size", "var(--vaadin-input-field-value-font-size)")
+                .set("font-weight", "var(--vaadin-input-field-value-font-weight");
+        detailBox = new Box(detailComponent);
+        detailBox.setPadding("0px 4px 0px 6px");
+        new Clickable<>(detailComponent, e-> focus());
     }
 
     /**
@@ -361,6 +372,7 @@ public abstract class AbstractObjectField<T extends StoredObject> extends Custom
     @Override
     public void setReadOnly(boolean readOnly) {
         super.setReadOnly(readOnly);
+        detailBox.setReadOnly(readOnly);
         if (!prefixFieldControl) {
             return;
         }
@@ -372,6 +384,7 @@ public abstract class AbstractObjectField<T extends StoredObject> extends Custom
     @Override
     public void setEnabled(boolean enabled) {
         super.setEnabled(enabled);
+        detailBox.setEnabled(enabled);
         if (!prefixFieldControl) {
             return;
         }

@@ -186,26 +186,35 @@ public final class TaxRegion extends Name {
                 p = TaxRate.getRate(date, tt);
                 Money t = tt.getTaxMethod().getTax(itemType, quantity, unitCost, p, localCurrency);
                 if(!p.equals(tax.getRate()) || !t.equals(tax.getTax())) { // Save only if changed
-                    tax.setTax(t);
-                    tax.setRate(p);
                     tax.internal = true;
-                    tax.save(transaction);
+                    if(t.isZero()) {
+                        tax.delete(transaction);
+                    } else {
+                        tax.setTax(t);
+                        tax.setRate(p);
+                        tax.save(transaction);
+                    }
                 }
             }
         }
         taxes.removeIf(t -> toDelete.contains(t.getId()));
         Tax tax;
+        Money amount;
         for(TaxType taxType : taxTypes) {
             tax = taxes.stream().filter(t -> t.getTypeId().equals(taxType.getId())).findFirst().orElse(null);
             if(tax != null) {
                 continue;
             }
             // New tax type
+            p = TaxRate.getRate(date, taxType);
+            amount = taxType.getTaxMethod().getTax(itemType, quantity, unitCost, p, localCurrency);
+            if(amount.isZero()) {
+                continue;
+            }
             tax = new Tax();
             tax.setType(taxType);
-            p = TaxRate.getRate(date, taxType);
             tax.setRate(p);
-            tax.setTax(taxType.getTaxMethod().getTax(itemType, quantity, unitCost, p, localCurrency));
+            tax.setTax(amount);
             tax.internal = true;
             tax.save(transaction);
             parent.addLink(transaction, tax);

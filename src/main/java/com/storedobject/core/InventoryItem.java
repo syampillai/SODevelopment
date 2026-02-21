@@ -1806,6 +1806,7 @@ public class InventoryItem extends StoredObject implements HasInventoryItem {
 
     public void inspect(Transaction transaction, Date date, String reference) throws Exception {
         reference = reference.trim();
+        inTransit = false;
         save(transaction);
         InventoryLedger ledger = getLatestMovement();
         if(ledger != null) {

@@ -272,7 +272,13 @@ public final class TaxAccountConfiguration extends StoredObject implements OfEnt
         TaxAccountConfiguration tac = get(TaxAccountConfiguration.class,
                 "SystemEntity=" + systemEntity.getId() + " AND Type=" + taxTypeId);
         if(tac == null) {
-            throw new SORuntimeException("Tax account configuration not found for tax type Id = " + taxTypeId);
+            TaxType tt = TaxType.getFor(taxTypeId);
+            TaxMethod tm = tt.getTaxMethod();
+            if(tm instanceof NoTax) {
+                return NoTax.getAccount();
+            }
+            throw new SORuntimeException("Tax account configuration not found for tax type = " + taxTypeId + " - "
+                    + TaxType.getFor(taxTypeId).toDisplay());
         }
         return tac.getAccount();
     }
