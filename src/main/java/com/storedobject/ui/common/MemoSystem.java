@@ -11,9 +11,8 @@ import com.vaadin.flow.component.*;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.contextmenu.GridContextMenu;
 import com.vaadin.flow.component.grid.contextmenu.GridMenuItem;
-import com.vaadin.flow.component.html.Paragraph;
-import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.markdown.Markdown;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 
 import java.util.*;
@@ -1206,7 +1205,7 @@ public class MemoSystem extends ObjectGrid<MemoComment> implements CloseableView
             if(c.isBlank()) {
                 return;
             }
-            CommentCard cc = new CommentCard(mc, c);
+            CommentCard cc = new CommentCard(mc);
             comments.add(cc);
             if(ascending) {
                 add(cc);
@@ -1215,7 +1214,7 @@ public class MemoSystem extends ObjectGrid<MemoComment> implements CloseableView
 
         private class CommentCard extends VerticalLayout {
 
-            private CommentCard(MemoComment mc, String c) {
+            private CommentCard(MemoComment mc) {
                 String action;
                 if(mc.getCommentCount() == 0) {
                     action = "Initiated";
@@ -1232,13 +1231,9 @@ public class MemoSystem extends ObjectGrid<MemoComment> implements CloseableView
                 }
                 action = (mc.getCommentCount() + 1) + ". " + mc.getMemo().renameActionVerb(action);
                 add(new Badge(action + " by " + assistantName(mc.getCommentedBy()) + " at " + getCommentedAt(mc)));
-                Paragraph p = new Paragraph();
-                p.getStyle().set("font-style", "italic").set("font-weight", "bold").set("line-height", "normal");
-                c.lines().forEach(line -> {
-                    p.add(new Span(line));
-                    p.add(new HtmlComponent("br"));
-                });
-                add(p);
+                Markdown comment = new Markdown(mc.getComment());
+                comment.getStyle().set("line-height", "normal");
+                add(comment);
                 ButtonLayout attachments = new ButtonLayout();
                 AtomicBoolean any = new AtomicBoolean(false);
                 mc.listLinks(MemoAttachment.class).forEach(a -> {
