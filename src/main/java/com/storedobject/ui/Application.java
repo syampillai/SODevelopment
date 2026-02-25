@@ -36,6 +36,7 @@ import java.util.ArrayList;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 public class Application extends com.storedobject.vaadin.Application implements Device, RunningLogic, RequiresApproval {
 
@@ -637,10 +638,33 @@ public class Application extends com.storedobject.vaadin.Application implements 
      * @param defaultTitle Default title to be returned if there is no current logic.
      * @return Title of the logic or default title.
      */
+    @Deprecated
     public String getLogicTitle(String defaultTitle) {
+        return getLogicTitle(() -> defaultTitle);
+    }
+
+    /**
+     * Retrieves the logic title for the current context. This method delegates
+     * the retrieval process to an overload that accepts a supplier, passing a
+     * default supplier which returns null.
+     *
+     * @return the logic title as a String, or null if no title is available
+     */
+    public String getLogicTitle() {
+        return getLogicTitle(() -> null);
+    }
+
+    /**
+     * Retrieves the title of the currently running logic or returns a default title
+     * if no logic is running.
+     *
+     * @param defaultTitle A Supplier that provides the default title when no logic is running.
+     * @return The title of the running logic if present, otherwise the default title provided by the Supplier.
+     */
+    public String getLogicTitle(Supplier<String> defaultTitle) {
         Logic r = runningLogic;
         runningLogic = null;
-        return r == null ? defaultTitle : r.getTitle();
+        return r == null ? defaultTitle.get() : r.getTitle();
     }
 
     /**
@@ -652,9 +676,30 @@ public class Application extends com.storedobject.vaadin.Application implements 
      *                       current context.
      * @return Title of the logic or default caption.
      */
+    @Deprecated
     public static String getLogicCaption(String defaultCaption) {
+        return getLogicCaption(() -> defaultCaption);
+    }
+
+    /**
+     * Retrieves a logic caption string using a default supplier.
+     *
+     * @return the logic caption string, or null if the default supplier provides no value
+     */
+    public static String getLogicCaption() {
+        return getLogicCaption(() -> null);
+    }
+
+    /**
+     * Retrieves a logic caption based on the current application context.
+     * If the application context is not available, the provided default caption is returned.
+     *
+     * @param defaultCaption a Supplier that provides the default caption when the application context is not available
+     * @return the logic caption from the application context, or the default caption if the application context is null
+     */
+    public static String getLogicCaption(Supplier<String> defaultCaption) {
         Application a = get();
-        return a == null ? defaultCaption : a.getLogicTitle(defaultCaption);
+        return a == null ? defaultCaption.get() : a.getLogicTitle(defaultCaption);
     }
 
     @Override
@@ -1079,7 +1124,7 @@ public class Application extends com.storedobject.vaadin.Application implements 
     }
 
     /**
-     * Triggers the action to open the aplication menu.
+     * Triggers the action to open the application menu.
      */
     public void openMenu() {
         mainLayout.openMenu();

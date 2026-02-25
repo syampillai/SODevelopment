@@ -20,6 +20,14 @@ public class LogicParser {
     private static final String SO_DOT = "com.storedobject.";
     private static final String SOS_DOT = "com.storedobjects.";
 
+    public static Class<?> createLogicClass(Class<?> objectClass, String tag) {
+        try {
+            return JavaClassLoader.getLogic(createLogicName(objectClass, tag));
+        } catch (ClassNotFoundException e) {
+            return null;
+        }
+    }
+
     public static String createLogicName(Class<?> objectClass, String tag) {
         return createLogicName(objectClass.getName(), tag, objectClass);
     }
@@ -114,6 +122,7 @@ public class LogicParser {
             s.set(0, className);
         }
         switch(action) {
+            case "C" -> fillLogic(s, "CardDashboard", null);
             case "E" -> fillLogic(s, "Editor", null);
             case "B" -> fillLogic(s, "Browser", null);
             case "BE" -> fillLogic(s, "BrowserEditor", null);

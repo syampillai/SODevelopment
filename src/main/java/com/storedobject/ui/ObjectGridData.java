@@ -62,7 +62,6 @@ public interface ObjectGridData<T extends StoredObject, ROOT> extends HasColumns
 
     @Override
     default void setLoadFilter(ObjectLoadFilter<T> objectLoadFilter) {
-
         setFilter(objectLoadFilter, false);
     }
 

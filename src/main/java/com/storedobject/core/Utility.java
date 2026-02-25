@@ -195,18 +195,23 @@ public class Utility {
         try {
             return constructor.newInstance(cp.params);
         } catch(Throwable e) {
-            Throwable error = e;
-            while(error != null) {
-                if(error instanceof LogicRedirected ld) {
-                    throw ld;
-                }
-                if(error instanceof SORuntimeException sore) {
-                    throw sore;
-                }
-                error = error.getCause();
-            }
-            throw new SORuntimeException(e);
+            checkError(e);
         }
+        return null;
+    }
+
+    private static void checkError(Throwable e) {
+        Throwable error = e;
+        while(error != null) {
+            if(error instanceof LogicRedirected ld) {
+                throw ld;
+            }
+            if(error instanceof SORuntimeException sore) {
+                throw sore;
+            }
+            error = error.getCause();
+        }
+        throw new SORuntimeException(e);
     }
 
     private static <T> T constructDefault(Class<T> objectClass) {
@@ -219,18 +224,9 @@ public class Utility {
         try {
             return constructor.newInstance();
         } catch(Throwable e) {
-            Throwable error = e;
-            while(error != null) {
-                if(error instanceof LogicRedirected ld) {
-                    throw ld;
-                }
-                if(error instanceof SORuntimeException sore) {
-                    throw sore;
-                }
-                error = error.getCause();
-            }
-            throw new SORuntimeException(e);
+            checkError(e);
         }
+        return null;
     }
 
     private record CP(Class<?>[] paramClasses, Object[] params) {

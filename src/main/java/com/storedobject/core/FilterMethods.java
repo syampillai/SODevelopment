@@ -171,14 +171,14 @@ public interface FilterMethods<T extends StoredObject> {
     }
 
     /**
-     * This method is called whenever a filter condition is changed. Methods with default implementation already
+     * This method is called whenever a filter condition is changed. Methods with a default implementation already
      * invoke this method. If any of those methods are overridden, make sure that it invokes this method so that logic
      * to handle filter changes can be coded here.
      */
     void applyFilter();
 
     /**
-     * This method is called whenever a filter predicate is changed. Methods with default implementation already
+     * This method is called whenever a filter predicate is changed. Methods with a default implementation already
      * invoke this method. If any of those methods are overridden, make sure that it invokes this method so that logic
      * to handle filter changes can be coded here.
      * <p>Note: This method is used to show the filtered result of the existing entries</p>

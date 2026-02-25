@@ -36,7 +36,7 @@ public class ModuleMenu extends View implements CloseableView, SingletonLogic, V
      * @param application Application.
      */
     public ModuleMenu(Application application) {
-        this(application, application.getLogicTitle(null));
+        this(application, application.getLogicTitle(() -> null));
     }
 
     /**
@@ -174,7 +174,6 @@ public class ModuleMenu extends View implements CloseableView, SingletonLogic, V
                 style(image.getStyle(), "height", getSize() - 50);
             }
             new Clickable<>(this, e -> execute());
-            new Card(this);
             addClassName("menublock");
             style(getStyle());
         }

@@ -13,7 +13,7 @@ import com.vaadin.flow.component.template.Id;
 import java.util.function.Supplier;
 
 /**
- * This is equivalent of the {@link DataForm} class except that the content is based on HTML-template. However,
+ * This is an equivalent of the {@link DataForm} class except that the content is based on HTML template. However,
  * it doesn't support "window mode" because the whole UI part is controlled by the HTML template. Two "Id" values
  * ("Ok" and "Cancel" buttons) must be mapped and must use the vaadin-button tags. Also, there is no concept of
  * "button panel" as in {@link DataForm}. All required fields should be defined using "Id" annotations and
@@ -72,7 +72,7 @@ public abstract class TemplateDataForm extends AbstractDataForm<Object> {
         this.form.setView(this);
         setErrorDisplay(null);
         if(caption == null) {
-            caption = Application.getLogicCaption(StringUtility.makeLabel(getClass()));
+            caption = Application.getLogicCaption(() -> StringUtility.makeLabel(getClass()));
         }
         setCaption(caption);
     }
@@ -104,7 +104,7 @@ public abstract class TemplateDataForm extends AbstractDataForm<Object> {
     }
 
     /**
-     * Get the name of the field. Name of the field is used when displaying error/informational messages.
+     * Get the name of the field. The name of the field is used when displaying error/informational messages.
      *
      * @param id Id for which the component was mapped.
      * @return Name.
@@ -130,7 +130,7 @@ public abstract class TemplateDataForm extends AbstractDataForm<Object> {
     }
 
     /**
-     * This method is invoked if the "Cancel" button is pressed. Default action closes the "data entry screen".
+     * This method is invoked if the "Cancel" button is pressed. The default action closes the "data entry screen".
      */
     protected void cancel() {
         abort();

@@ -49,7 +49,7 @@ public class Assembly<T extends InventoryItem, C extends InventoryItem> extends 
         if(item == null) {
             Application a = Application.get();
             if(a != null) {
-                String caption = a.getLogicTitle(null);
+                String caption = a.getLogicTitle();
                 if(caption != null) {
                     setCaption(caption);
                 }

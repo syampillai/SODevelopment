@@ -24,7 +24,7 @@ public class TemplateView extends TemplateLayout implements ExecutableView {
      */
     public TemplateView() {
         super();
-        setCaption(Application.getLogicCaption(StringUtility.makeLabel(getClass())));
+        setCaption(Application.getLogicCaption(() -> StringUtility.makeLabel(getClass())));
     }
 
     /**
@@ -104,7 +104,7 @@ public class TemplateView extends TemplateLayout implements ExecutableView {
     }
 
     /**
-     * Decorate the outermost component if required. (This will be invoked after applying the
+     * Decorate the outermost component if required. This will be invoked after applying the
      * {@link View#decorateComponent()}.
      */
     public void decorateComponent() {
@@ -112,7 +112,7 @@ public class TemplateView extends TemplateLayout implements ExecutableView {
 
     /**
      * Get the component that represents this template view. (This will be the outermost component).
-     * This is equivalent to {@link View#getComponent()}.
+     * This is an equivalent to {@link View#getComponent()}.
      *
      * @return The outermost component.
      */

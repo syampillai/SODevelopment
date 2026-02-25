@@ -54,7 +54,7 @@ public class DefineAssembly<T extends InventoryItemType, C extends InventoryItem
         setHeightFull();
         Application a = Application.get();
         if(a != null) {
-            String caption = a.getLogicTitle(null);
+            String caption = a.getLogicTitle();
             if(caption != null) {
                 setCaption(caption);
             }

@@ -1,0 +1,63 @@
+package com.storedobject.ui;
+
+import com.storedobject.vaadin.CloseableView;
+import com.storedobject.vaadin.ContentWithHeader;
+import com.storedobject.vaadin.ExecutableView;
+import com.storedobject.vaadin.View;
+
+public class CardDashboard extends ContentWithHeader implements ExecutableView, CloseableView {
+
+    private final CardGrid grid;
+    private String caption;
+    private V view;
+
+    public CardDashboard(String caption, CardGrid grid) {
+        super(null, grid);
+        this.grid = grid;
+        setCaption(caption);
+    }
+
+    @Override
+    public void setCaption(String caption) {
+        this.caption = caption == null || caption.isBlank() ? "Dashboard" : caption;
+        if(view != null) {
+            view.setCaption(caption);
+        }
+    }
+
+    @Override
+    public String getCaption() {
+        return caption;
+    }
+
+    public CardGrid getGrid() {
+        return grid;
+    }
+
+    @Override
+    public View getView(boolean create) {
+        if(view == null && create) {
+            view = new V();
+        }
+        return view;
+    }
+
+    private class V extends View {
+
+        public V() {
+            super(caption);
+            setComponent(CardDashboard.this);
+        }
+
+        @Override
+        public boolean isCloseable() {
+            return CardDashboard.this.isCloseable();
+        }
+
+        @Override
+        public void decorateComponent() {
+            super.decorateComponent();
+            getStyle().set("background", "#F0EFED").set("height", "fit-content");
+        }
+    }
+}

@@ -68,7 +68,7 @@ public class MemoSystem extends ObjectGrid<MemoComment> implements CloseableView
         this.memoType = memoType;
         who = getTransactionManager().getUser();
         checkUser(who);
-        setCaption(memoType == null ? Application.getLogicCaption("Memo System") : memoType.getName());
+        setCaption(memoType == null ? Application.getLogicCaption(() -> "Memo System") : memoType.getName());
         GridContextMenu<MemoComment> contextMenu = new GridContextMenu<>(this);
         contextMenu.addItem("View", e -> e.getItem().ifPresent(this::viewMemo));
         GridMenuItem<MemoComment> editItem =

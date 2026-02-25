@@ -15,8 +15,8 @@ import java.io.Reader;
 /**
  * Create a {@link View} from some HTML content. The HTML may contain
  * references to media content using ${media} variable where media is the name of the media to set.
- * ({@link com.storedobject.core.MediaFile}s can be stored in the DB). If the HTML is a full-fledged one (if it
- * starts with a html tag), an {@link IFrame} will be created as the component of the {@link View}. Otherwise,
+ * ({@link com.storedobject.core.MediaFile}s can be stored in the DB). If the HTML is full-fledged (if it
+ * starts with an HTML tag), an {@link IFrame} will be created as the component of the {@link View}. Otherwise,
  * a {@link TemplateLayout} is created.
  *
  * @author Syam
@@ -27,12 +27,12 @@ public class HTMLView extends Viewer {
     private Component component;
 
     /**
-     * Constructor. Currently, running logic title will be used as the "text content name".
+     * Constructor. Currently, the running logic title will be used as the "text content name".
      *
      * @param application Application instance.
      */
     public HTMLView(Application application) {
-        this(application.getLogicTitle(null));
+        this(application.getLogicTitle(() -> null));
     }
 
     /**
@@ -51,7 +51,7 @@ public class HTMLView extends Viewer {
      * @param windowMode Whether to show it in a window or not.
      */
     public HTMLView(Application application, boolean windowMode) {
-        this(application.getLogicTitle(null), windowMode);
+        this(application.getLogicTitle(() -> null), windowMode);
     }
 
     /**
@@ -137,7 +137,7 @@ public class HTMLView extends Viewer {
     }
 
     /**
-     * Whether to show a header with caption or not even in non-window mode. (Default implementation returns true)
+     * Whether to show a header with a caption or not even in non-window mode. (Default implementation returns true)
      * unless it's a {@link HomeView}.
      *
      * @return True/false.
@@ -198,7 +198,7 @@ public class HTMLView extends Viewer {
     }
 
     /**
-     * Get the component that is used internally to render the HTML.
+     * Get the component used internally to render the HTML.
      *
      * @return The viewer component.
      */
