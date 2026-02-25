@@ -35,6 +35,12 @@ public class CardDashboard extends ContentWithHeader implements ExecutableView, 
     }
 
     @Override
+    public void execute(View lock) {
+        ExecutableView.super.execute(lock);
+        Application.get().closeMenu();
+    }
+
+    @Override
     public View getView(boolean create) {
         if(view == null && create) {
             view = new V();

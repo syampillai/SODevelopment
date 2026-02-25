@@ -45,6 +45,7 @@ public class ObjectListLoader<T extends StoredObject> implements ObjectLoader<T>
         for(T object: list) {
             loadConsumer.accept(object);
         }
+        loadConsumer.accept(null);
     }
 
     @Override

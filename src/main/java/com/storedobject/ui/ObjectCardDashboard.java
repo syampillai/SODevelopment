@@ -65,6 +65,10 @@ public class ObjectCardDashboard<T extends StoredObject> extends CardDashboard i
     }
 
     private void newCard(T o) {
+        if(o == null) {
+            getGrid().cardsUpdated();
+            return;
+        }
         ObjectCard<T> card = cardCreator == null ? createCard(o) : cardCreator.apply(o);
         if(card == null) {
             card = createCard(o);
@@ -99,6 +103,7 @@ public class ObjectCardDashboard<T extends StoredObject> extends CardDashboard i
         for(T object: loader.getList()) {
             updateCard(getGrid(), object);
         }
+        getGrid().cardsUpdated();
     }
 
     /**
@@ -111,6 +116,7 @@ public class ObjectCardDashboard<T extends StoredObject> extends CardDashboard i
     public void reload(T object) {
         loader.getList().refresh(object);
         updateCard(getGrid(), object);
+        getGrid().cardUpdated(object);
     }
 
     /**
@@ -120,6 +126,7 @@ public class ObjectCardDashboard<T extends StoredObject> extends CardDashboard i
         for (T o : loader.getList()) {
             updateCard(getGrid(), o);
         }
+        getGrid().cardsUpdated();
     }
 
     /**
@@ -131,7 +138,13 @@ public class ObjectCardDashboard<T extends StoredObject> extends CardDashboard i
     public void refresh(T object) {
         if(loader.getList().contains(object)) {
             updateCard(getGrid(), object);
+            getGrid().cardUpdated(object);
         }
+    }
+
+    public ObjectCardGrid<T> getGrid() {
+        //noinspection unchecked
+        return (ObjectCardGrid<T>) super.getGrid();
     }
     
     private static <O extends StoredObject> boolean updateCard(Component c, O object) {

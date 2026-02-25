@@ -30,6 +30,7 @@ public class CommentField extends CustomField<String> {
             setLabel(label);
         }
         icon.setColor("grey");
+        icon.getStyle().set("cursor", "pointer");
         add(icon);
         configurePopover();
         addValueChangeListener(e -> icon.setColor(e.getValue().isBlank() ? "grey" : Application.COLOR_SUCCESS));
