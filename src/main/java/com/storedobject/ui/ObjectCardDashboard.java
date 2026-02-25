@@ -8,6 +8,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasOrderedComponents;
 import com.vaadin.flow.component.html.Div;
 
+import java.util.List;
 import java.util.function.Function;
 
 public class ObjectCardDashboard<T extends StoredObject> extends CardDashboard implements ObjectLoader<T> {
@@ -21,13 +22,7 @@ public class ObjectCardDashboard<T extends StoredObject> extends CardDashboard i
 
     public ObjectCardDashboard(Class<T> objectClass, boolean allowAny) {
         super(Application.getLogicCaption(() -> StringUtility.makeLabel(objectClass)), grid(objectClass));
-        loader = new ObjectListLoader<>(objectClass, this::newCard, allowAny);
-    }
-
-    public ObjectCardDashboard(String className) throws Exception {
-        //noinspection unchecked
-        this((Class<T>) JavaClassLoader.getLogic(className(className)), className.toLowerCase().endsWith("/any"));
-        Class<?> c = LogicParser.createLogicClass(loader.getObjectClass(), "Card");
+        Class<?> c = LogicParser.createLogicClass(objectClass, "Card");
         if(c != null && ObjectCard.class.isAssignableFrom(c) && c != ObjectCard.class) {
             cardCreator = o -> {
                 try {
@@ -38,6 +33,12 @@ public class ObjectCardDashboard<T extends StoredObject> extends CardDashboard i
                 }
             };
         }
+        loader = new ObjectListLoader<>(objectClass, this::newCard, this::clearInt, this::cardsLoadedInt, allowAny);
+    }
+
+    public ObjectCardDashboard(String className) throws Exception {
+        //noinspection unchecked
+        this((Class<T>) JavaClassLoader.getLogic(className(className)), className.toLowerCase().endsWith("/any"));
         load();
     }
 
@@ -83,10 +84,6 @@ public class ObjectCardDashboard<T extends StoredObject> extends CardDashboard i
     }
 
     private void newCard(T o) {
-        if(o == null) {
-            cardsLoadedInt();
-            return;
-        }
         ObjectCard<T> card = cardCreator == null ? createCard(o) : cardCreator.apply(o);
         if(card == null) {
             card = createCard(o);
@@ -105,11 +102,19 @@ public class ObjectCardDashboard<T extends StoredObject> extends CardDashboard i
     public Class<T> getObjectClass() {
         return loader.getObjectClass();
     }
+
+    public List<T> getList() {
+        return loader.getList();
+    }
     
     @Override
     public void clear() {
+        loader.clear();
+    }
+
+    private void clearInt() {
         getGrid().removeAll();
-        loader.getList().clear();
+        cardsLoadedInt();
     }
 
     /**

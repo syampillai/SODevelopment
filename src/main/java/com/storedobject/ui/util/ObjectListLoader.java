@@ -11,17 +11,20 @@ public class ObjectListLoader<T extends StoredObject> implements ObjectLoader<T>
     private final ObjectList<T> list;
     private final ObjectLoadFilter<T> filter = new ObjectLoadFilter<>();
     private final Consumer<T> loadConsumer;
+    private final Runnable cleared, loaded;
 
-    public ObjectListLoader(Class<T> objectClass, Consumer<T> loadConsumer) {
-        this(objectClass, loadConsumer, false);
+    public ObjectListLoader(Class<T> objectClass, Consumer<T> loadConsumer, Runnable cleared, Runnable loaded) {
+        this(objectClass, loadConsumer, cleared, loaded, false);
     }
 
-    public ObjectListLoader(Class<T> objectClass, Consumer<T> loadConsumer, boolean any) {
-        this(objectClass, loadConsumer, any,true);
+    public ObjectListLoader(Class<T> objectClass, Consumer<T> loadConsumer, Runnable cleared, Runnable loaded, boolean any) {
+        this(objectClass, loadConsumer, cleared, loaded, true, any);
     }
 
-    public ObjectListLoader(Class<T> objectClass, Consumer<T> loadConsumer, boolean any, boolean inMemory) {
+    public ObjectListLoader(Class<T> objectClass, Consumer<T> loadConsumer, Runnable cleared, Runnable loaded, boolean inMemory, boolean any) {
         this.loadConsumer = loadConsumer;
+        this.cleared = cleared;
+        this.loaded = loaded;
         list = inMemory ? new ObjectMemoryList<>(objectClass, any) : new ObjectCacheList<>(objectClass, any);
     }
 
@@ -41,11 +44,18 @@ public class ObjectListLoader<T extends StoredObject> implements ObjectLoader<T>
 
     @Override
     public void load(ObjectIterator<T> objectIterator) {
+        list.clear();
+        cleared.run();
         list.load(objectIterator);
         for(T object: list) {
             loadConsumer.accept(object);
         }
-        loadConsumer.accept(null);
+        loaded.run();
+    }
+
+    @Override
+    public void clear() {
+        load(ObjectIterator.create());
     }
 
     @Override
