@@ -4,6 +4,7 @@ import com.vaadin.flow.component.html.Div;
 
 public class CardGrid extends Div {
 
+    private CardDashboard dashboard;
     private int cardWidth;
 
     CardGrid() {
@@ -26,5 +27,13 @@ public class CardGrid extends Div {
 
     public int getCardWidth() {
         return cardWidth;
+    }
+
+    public void setDashboard(CardDashboard dashboard) {
+        this.dashboard = dashboard;
+    }
+
+    public CardDashboard getDashboard() {
+        return dashboard;
     }
 }

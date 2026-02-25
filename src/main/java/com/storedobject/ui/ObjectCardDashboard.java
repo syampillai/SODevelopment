@@ -60,13 +60,31 @@ public class ObjectCardDashboard<T extends StoredObject> extends CardDashboard i
         return p < 0 ? className : className.substring(0, p);
     }
 
+    public void cardsLoaded() {
+    }
+
+    public void cardLoaded(T object) {
+        cardsLoaded();
+    }
+
+    private void cardsLoadedInt() {
+        cardsLoaded();
+        getGrid().cardsLoaded();
+    }
+
+    private void cardLoadedInt(T object) {
+        cardLoaded(object);
+        getGrid().cardLoaded(object);
+    }
+
+
     public void setCardCreator(Function<T, ObjectCard<T>> cardCreator) {
         this.cardCreator = cardCreator;
     }
 
     private void newCard(T o) {
         if(o == null) {
-            getGrid().cardsUpdated();
+            cardsLoadedInt();
             return;
         }
         ObjectCard<T> card = cardCreator == null ? createCard(o) : cardCreator.apply(o);
@@ -103,7 +121,7 @@ public class ObjectCardDashboard<T extends StoredObject> extends CardDashboard i
         for(T object: loader.getList()) {
             updateCard(getGrid(), object);
         }
-        getGrid().cardsUpdated();
+        cardsLoadedInt();
     }
 
     /**
@@ -116,7 +134,7 @@ public class ObjectCardDashboard<T extends StoredObject> extends CardDashboard i
     public void reload(T object) {
         loader.getList().refresh(object);
         updateCard(getGrid(), object);
-        getGrid().cardUpdated(object);
+        cardLoadedInt(object);
     }
 
     /**
@@ -126,7 +144,7 @@ public class ObjectCardDashboard<T extends StoredObject> extends CardDashboard i
         for (T o : loader.getList()) {
             updateCard(getGrid(), o);
         }
-        getGrid().cardsUpdated();
+        cardsLoadedInt();
     }
 
     /**
@@ -138,7 +156,7 @@ public class ObjectCardDashboard<T extends StoredObject> extends CardDashboard i
     public void refresh(T object) {
         if(loader.getList().contains(object)) {
             updateCard(getGrid(), object);
-            getGrid().cardUpdated(object);
+            cardLoadedInt(object);
         }
     }
 

@@ -4,9 +4,10 @@ import com.storedobject.core.StoredObject;
 
 public class ObjectCardGrid<T extends StoredObject> extends CardGrid {
 
-    public void cardsUpdated() {
+    public void cardsLoaded() {
     }
 
-    public void cardUpdated(T object) {
+    public void cardLoaded(T object) {
+        cardsLoaded();
     }
 }

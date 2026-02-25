@@ -14,6 +14,7 @@ public class CardDashboard extends ContentWithHeader implements ExecutableView, 
     public CardDashboard(String caption, CardGrid grid) {
         super(null, grid);
         this.grid = grid;
+        grid.setDashboard(this);
         setCaption(caption);
     }
 
