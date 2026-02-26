@@ -60,7 +60,6 @@ public class ObjectCardDashboard<T extends StoredObject> extends CardDashboard<T
             };
         }
         loader = new ObjectListLoader<>(objectClass, this::newCard, this::clearInt, this::cardsLoadedInt, allowAny);
-        addCardSelectedListener(card -> message("Selected: " + card.isSelected() + ": " + card.getObject().toDisplay()));
     }
 
     /**

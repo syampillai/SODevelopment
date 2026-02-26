@@ -23,7 +23,7 @@ import java.util.stream.Stream;
  */
 public class CardGrid<T> extends Div {
 
-    private Grid.SelectionMode selectionMode = Grid.SelectionMode.MULTI;
+    private Grid.SelectionMode selectionMode = Grid.SelectionMode.NONE;
     private CardDashboard<T> dashboard;
     private int cardWidth, gap;
     private Card<T> selectedCard;
