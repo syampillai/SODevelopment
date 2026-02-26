@@ -20,7 +20,7 @@ import java.util.function.Function;
  *
  * @author Syam
  */
-public class ObjectCardDashboard<T extends StoredObject> extends CardDashboard implements ObjectLoader<T> {
+public class ObjectCardDashboard<T extends StoredObject> extends CardDashboard<T> implements ObjectLoader<T> {
 
     private final ObjectListLoader<T> loader;
     private Function<T, ObjectCard<T>> cardCreator = null;
@@ -60,6 +60,7 @@ public class ObjectCardDashboard<T extends StoredObject> extends CardDashboard i
             };
         }
         loader = new ObjectListLoader<>(objectClass, this::newCard, this::clearInt, this::cardsLoadedInt, allowAny);
+        addCardSelectedListener(card -> message("Selected: " + card.isSelected() + ": " + card.getObject().toDisplay()));
     }
 
     /**
@@ -247,10 +248,9 @@ public class ObjectCardDashboard<T extends StoredObject> extends CardDashboard i
      *         allowing interaction and management of object-specific cards.
      */
     public ObjectCardGrid<T> getGrid() {
-        //noinspection unchecked
         return (ObjectCardGrid<T>) super.getGrid();
     }
-    
+
     private static <O extends StoredObject> boolean updateCard(Component c, O object) {
         switch (c) {
             case null -> {

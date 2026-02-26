@@ -1,17 +1,27 @@
 package com.storedobject.ui;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.DetachEvent;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Hr;
+import com.vaadin.flow.component.icon.Icon;
+import com.vaadin.flow.component.icon.VaadinIcon;
 
 /**
  * Represents a styled container with configurable layout and styling options.
  * The Card class extends Div and provides a pre-defined style for creating card-like components.
  * It supports alignment, justification, and grid span configuration.
  *
+ * @param <T> The type of object associated with the card.
+ *
  * @author Syam
  */
-public class Card extends Div {
+public class Card<T> extends Div {
+
+    private CardGrid<T> grid;
+    private T object;
+    private final Icon checkIcon = VaadinIcon.CHECK_CIRCLE.create();
+    private boolean selected;
 
     /**
      * Default constructor for the Card component. It initializes the card
@@ -39,7 +49,17 @@ public class Card extends Div {
                 .set("flex-direction", "column")
                 .set("margin", "0")
                 .set("align-self", "stretch")
-                .set("gap", "8px");
+                .set("gap", "8px")
+                .set("user-select", "none")
+                .set("position", "relative");
+        checkIcon.getStyle()
+                .set("position", "absolute")
+                .set("top", "8px")
+                .set("right", "8px")
+                .set("color", "var(--lumo-primary-color)")
+                .set("display", "none");
+        add(checkIcon);
+        addClickListener(event -> dispatchClick());
     }
 
     /**
@@ -343,5 +363,114 @@ public class Card extends Div {
         public void setColor(String color) {
             getStyle().set("background-color", color);
         }
+    }
+
+    /**
+     * Toggles the selection state of the card.
+     * If the card is currently selected, it will be deselected.
+     * If it is not selected, it will be marked as selected.
+     * Internally, this method calls {@code setSelected(boolean selected)}
+     * with the negated value of the current selection state.
+     */
+    public void toggleSelection() {
+        setSelected(!selected);
+    }
+
+    /**
+     * Updates the selection state of the card and applies corresponding visual styles.
+     * If the new selection state differs from the current state, this method updates
+     * the card's appearance, including the visibility of the check icon, and notifies
+     * the associated data grid (if any) of the selection change.
+     *
+     * @param selected The new selection state. If true, the card is marked as selected;
+     *                 otherwise, it is unselected.
+     */
+    public void setSelected(boolean selected) {
+        if(selected == this.selected) {
+            return;
+        }
+        this.selected = selected;
+        checkIcon.getStyle().set("display", selected ? "block" : "none");
+        updateSelectionStyles();
+        dispatchSelection();
+    }
+
+    /**
+     * Checks whether the card is currently selected.
+     *
+     * @return {@code true} if the card is selected, {@code false} otherwise
+     */
+    public boolean isSelected() {
+        return selected;
+    }
+
+    private void updateSelectionStyles() {
+        if (this.selected) {
+            getStyle()
+                    .set("outline", "2px solid var(--lumo-primary-color)")
+                    .set("background-color", "var(--lumo-primary-color-10pct)");
+            checkIcon.getStyle().set("opacity", "1").set("transform", "scale(1)");
+        } else {
+            getStyle()
+                    .remove("outline")
+                    .set("background-color", "white");
+            checkIcon.getStyle().set("opacity", "0").set("transform", "scale(0)");
+        }
+    }
+
+    @Override
+    protected void onDetach(DetachEvent detachEvent) {
+        super.onDetach(detachEvent);
+        grid = null;
+    }
+
+    private void dispatchClick() {
+        if(grid == null) {
+            grid = findGrid(this);
+        }
+        if(grid != null) {
+            grid.clicked(this);
+        }
+    }
+
+    private void dispatchSelection() {
+        if(grid == null) {
+            grid = findGrid(this);
+        }
+        if(grid != null) {
+            grid.selected(this);
+        }
+    }
+
+    private static <O> CardGrid<O> findGrid(Component c) {
+        Component p = c.getParent().orElse(null);
+        if(p == null) {
+            return null;
+        }
+        if(p instanceof CardGrid<?> g) {
+            //noinspection unchecked
+            return (CardGrid<O>) g;
+        }
+        return findGrid(p);
+    }
+
+    /**
+     * Retrieves the object of type T stored in this card.
+     *
+     * @return the object of type T stored in this card
+     */
+    public final T getObject() {
+        return object;
+    }
+
+    /**
+     * Sets the object of type T for this card. Display attributes of the card should be set based on the object's property values.
+     * If this method is overridden, the object must be set by invoking the superclass implementation.
+     *
+     * @param object the object to be associated with this card must be of type T
+     *               where T is a subclass of StoredObject
+     */
+    public void setObject(T object) {
+        this.object = object;
     }
 }

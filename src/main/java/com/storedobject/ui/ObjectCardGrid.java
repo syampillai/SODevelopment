@@ -1,7 +1,6 @@
 package com.storedobject.ui;
 
 import com.storedobject.core.StoredObject;
-
 import java.util.Collections;
 import java.util.List;
 
@@ -15,7 +14,7 @@ import java.util.List;
  *            be managed by this grid
  * @author Syam
  */
-public class ObjectCardGrid<T extends StoredObject> extends CardGrid {
+public class ObjectCardGrid<T extends StoredObject> extends CardGrid<T> {
 
     /**
      * This method is called when all cards in the grid have been successfully loaded.
@@ -44,7 +43,7 @@ public class ObjectCardGrid<T extends StoredObject> extends CardGrid {
      *         not an instance of {@code ObjectCardDashboard} or no dashboard is set.
      */
     public List<T> getList() {
-        CardDashboard dashboard = getDashboard();
+        CardDashboard<T> dashboard = getDashboard();
         if(dashboard instanceof ObjectCardDashboard<?> d) {
             //noinspection unchecked
             return ((ObjectCardDashboard<T>) d).getList();

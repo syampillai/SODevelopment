@@ -3,6 +3,11 @@ package com.storedobject.ui;
 import com.storedobject.vaadin.CloseableView;
 import com.storedobject.vaadin.ExecutableView;
 import com.storedobject.vaadin.View;
+import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.shared.Registration;
+
+import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 /**
  * The CardDashboard class represents a dashboard composed of interactive cards laid out on a grid.
@@ -15,11 +20,13 @@ import com.storedobject.vaadin.View;
  * display-specific details and interactions related to its content. The caption updates are propagated
  * to the view if it exists.
  *
+ * @param <T> The type of object associated with the cards in the dashboard.
+ *
  * @author Syam
  */
-public class CardDashboard extends ScrollingContent implements ExecutableView, CloseableView {
+public class CardDashboard<T> extends ScrollingContent implements ExecutableView, CloseableView {
 
-    private final CardGrid grid;
+    private final CardGrid<T> grid;
     private String caption;
     private V view;
 
@@ -34,7 +41,7 @@ public class CardDashboard extends ScrollingContent implements ExecutableView, C
      * @param grid    the {@code CardGrid} that organizes and manages the cards displayed in the dashboard.
      *                This grid is essential for layout and content management within the dashboard.
      */
-    public CardDashboard(String caption, CardGrid grid) {
+    public CardDashboard(String caption, CardGrid<T> grid) {
         super(grid);
         this.grid = grid;
         grid.setDashboard(this);
@@ -61,7 +68,7 @@ public class CardDashboard extends ScrollingContent implements ExecutableView, C
      *
      * @return the {@code CardGrid} instance linked to this {@code CardDashboard}.
      */
-    public CardGrid getGrid() {
+    public CardGrid<T> getGrid() {
         return grid;
     }
 
@@ -90,5 +97,85 @@ public class CardDashboard extends ScrollingContent implements ExecutableView, C
         public boolean isCloseable() {
             return CardDashboard.this.isCloseable();
         }
+    }
+
+    /**
+     * Configures the selection mode for the grid within the {@code CardDashboard}.
+     * The selection mode determines how cards in the grid can be selected
+     * (e.g., single, multi, or none).
+     *
+     * @param selectionMode the {@code Grid.SelectionMode} that specifies the
+     *                      card selection behavior in the grid. Must not be null.
+     */
+    public final void setSelectionMode(Grid.SelectionMode selectionMode) {
+        getGrid().setSelectionMode(selectionMode);
+    }
+
+    /**
+     * Retrieves the current selection mode of the {@code Grid} associated with this dashboard.
+     * The selection mode determines how items within the grid can be selected
+     * (e.g., single, multiple, or none).
+     *
+     * @return the current {@code Grid.SelectionMode} of the associated {@code Grid}.
+     */
+    public final Grid.SelectionMode getSelectionMode() {
+        return getGrid().getSelectionMode();
+    }
+
+    /**
+     * Adds a card selection listener to the dashboard's associated {@code CardGrid}.
+     * The listener is triggered whenever a card is selected in the grid.
+     *
+     * @param listener a {@code Consumer} that processes the {@code Card} selected by the user.
+     *                 This listener is invoked with the selected card as its input.
+     * @return a {@code Registration} object that can be used to remove the listener if it is no longer needed.
+     */
+    public final Registration addCardSelectedListener(Consumer<Card<T>> listener) {
+        return getGrid().addCardSelectedListener(listener);
+    }
+
+    /**
+     * Toggles the selection state of all cards within the dashboard's grid.
+     * This method delegates the operation to the {@code CardGrid} associated with
+     * the {@code CardDashboard}. It allows for selecting or deselecting all cards
+     * simultaneously based on the specified parameter. This operation is only
+     * effective if the grid's selection mode is set to {@code Grid.SelectionMode.MULTI}.
+     *
+     * @param select a boolean value indicating the desired selection state for all cards.
+     *               If {@code true}, all cards in the grid will be selected; if {@code false},
+     *               all cards will be deselected.
+     */
+    public void selectAllCards(boolean select) {
+        getGrid().selectAllCards(select);
+    }
+
+    /**
+     * Retrieves the currently selected card from the associated grid.
+     * The selected card is managed by the {@code CardGrid} linked to this dashboard.
+     *
+     * @return the selected {@code Card}, or {@code null} if no card is selected.
+     */
+    public Card<T> getSelectedCard() {
+        return getGrid().getSelectedCard();
+    }
+
+    /**
+     * Retrieves a stream of the currently selected cards from the associated {@code CardGrid}.
+     *
+     * @return a {@code Stream} of {@code Card} objects that are currently selected in the grid.
+     */
+    public Stream<Card<T>> getSelectedCards() {
+        return getGrid().getSelectedCards();
+    }
+
+    /**
+     * Retrieves a stream of {@code Card} objects managed by the associated {@code CardGrid}.
+     * This method is used to access and iterate through all the cards currently organized
+     * within the grid layout of the dashboard.
+     *
+     * @return a {@code Stream} of {@code Card<T>} instances representing the cards in the grid.
+     */
+    public Stream<Card<T>> getCards() {
+        return getGrid().getCards();
     }
 }
