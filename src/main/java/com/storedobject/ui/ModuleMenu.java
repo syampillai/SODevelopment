@@ -5,11 +5,8 @@ import com.storedobject.core.*;
 import com.storedobject.vaadin.*;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.dependency.CssImport;
-import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Paragraph;
-import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.dom.Style;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -20,10 +17,9 @@ import java.util.Map;
  *
  * @author Syam
  */
-public class ModuleMenu extends View implements CloseableView, SingletonLogic, ViewSelected {
+public class ModuleMenu extends CardDashboard<ModuleLogic> implements CloseableView, SingletonLogic, ViewSelected {
 
     private final Breadcrumbs breadcrumbs = new Breadcrumbs(this);
-    private final CenteredLayout body;
     private final Map<Breadcrumbs.Breadcrumb, List<ModuleLogic>> modules = new HashMap<>();
     private final Application application;
     private final int size;
@@ -56,6 +52,8 @@ public class ModuleMenu extends View implements CloseableView, SingletonLogic, V
      * @param module Application module where the logic definitions are stored.
      */
     public ModuleMenu(Application application, ApplicationModule module) {
+        super(null, new CardGrid<>());
+        getGrid().getStyle().set("justify-content", "space-evenly");
         this.application = application;
         if(module == null) {
             throw new SORuntimeException("Application Module missing!");
@@ -63,10 +61,7 @@ public class ModuleMenu extends View implements CloseableView, SingletonLogic, V
         size = module.getSize();
         fontSize = module.getFontSize();
         setCaption(module.getName());
-        body = new CenteredLayout();
-        body.setGap(10);
-        VerticalLayout layout = new VerticalLayout(breadcrumbs, body);
-        setComponent(layout);
+        setHeader(breadcrumbs);
         if(drawFailed(module)) {
             warning("Nothing found under: " + module.getName());
         } else {
@@ -97,6 +92,7 @@ public class ModuleMenu extends View implements CloseableView, SingletonLogic, V
     private boolean drawFailed(StoredObject name) {
         String s = name instanceof Name n ? n.getName() : (name instanceof ModuleLogic m ? m.getName() : "");
         Breadcrumbs.Breadcrumb bc = breadcrumbs.add(s);
+        bc.getStyle().set("font-weight", "bold").set("font-size", "larger");
         bc.addRemovalListener(modules::remove);
         List<ModuleLogic> moduleList = listModules(name);
         modules.put(bc, moduleList);
@@ -105,9 +101,13 @@ public class ModuleMenu extends View implements CloseableView, SingletonLogic, V
 
     private boolean drawFailed(List<ModuleLogic> moduleList) {
         application.closeMenu();
-        body.removeAll();
+        CardGrid<ModuleLogic> grid = getGrid();
+        grid.removeAll();
+        MenuBlock b;
         for(ModuleLogic m: moduleList) {
-            body.add(new MenuBlock(m));
+            b = new MenuBlock();
+            b.setObject(m);
+            grid.add(b);
         }
         return moduleList.isEmpty();
     }
@@ -144,13 +144,15 @@ public class ModuleMenu extends View implements CloseableView, SingletonLogic, V
     }
 
     @CssImport("./so/module-menu/module-menu.css")
-    private class MenuBlock extends Div {
+    private class MenuBlock extends Card<ModuleLogic> {
 
-        private final ModuleLogic moduleLogic;
         private View view;
 
-        private MenuBlock(ModuleLogic moduleLogic) {
-            this.moduleLogic = moduleLogic;
+        private MenuBlock() {}
+
+        @Override
+        public void setObject(ModuleLogic moduleLogic) {
+            super.setObject(moduleLogic);
             Paragraph p = new Paragraph(moduleLogic.getTitle());
             p.addClassName("menutext");
             String fontSize = getFontSize();
@@ -196,10 +198,10 @@ public class ModuleMenu extends View implements CloseableView, SingletonLogic, V
 
         private void execute() {
             application.closeMenu();
-            Logic logic = moduleLogic.getLogic();
+            Logic logic = getObject().getLogic();
             if(logic == null) {
-                if(drawFailed(moduleLogic)) {
-                    warning("Nothing found under - " + moduleLogic.getName());
+                if(drawFailed(getObject())) {
+                    warning("Nothing found under - " + getObject().getName());
                 }
             } else {
                 if(view != null) {

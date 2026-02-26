@@ -55,10 +55,11 @@ public class ScrollingContent extends Div {
                 .set("overflow", "auto");
         headerContainer.getStyle().set("display", "flex");
         headerContainer.setWidthFull();
-        setHeaderHeight(64);
-        container.add(content);
+        setHeaderHeight(16);
+        if(content != null) {
+            container.add(content);
+        }
         getStyle()
-                .set("background", "#F0EFED")
                 .set("height", "100%")
                 .set("min-height", "0")
                 .set("min-width", "0")

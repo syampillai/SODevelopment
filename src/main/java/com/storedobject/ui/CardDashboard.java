@@ -43,6 +43,7 @@ public class CardDashboard<T> extends ScrollingContent implements ExecutableView
      */
     public CardDashboard(String caption, CardGrid<T> grid) {
         super(grid);
+        getStyle().set("background-color", "var(--lumo-primary-color-10pct)");
         this.grid = grid;
         grid.setDashboard(this);
         setCaption(caption);

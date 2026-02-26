@@ -497,17 +497,22 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
             setComponent(container);
         }
         if(formField == null) {
-            if(container instanceof ContentWithHeader) {
-                if(buttonPanel instanceof Component) {
-                    ((ContentWithHeader) container).setHeader((Component) buttonPanel);
-                    buttonPanel.getElement().getStyle().set("background", "var(--lumo-base-color)");
+            if(container instanceof ScrollingContent sc) {
+                if(buttonPanel instanceof Component b) {
+                    sc.setHeader(b);
                 }
-                ((ContentWithHeader) container).setBody(fc);
-            } else if(container instanceof HasComponents) {
-                if(buttonPanel instanceof Component) {
-                    ((HasComponents) container).add((Component) buttonPanel);
+                sc.setContent(fc);
+            } else if(container instanceof ContentWithHeader ch) {
+                if(buttonPanel instanceof Component b) {
+                    ch.setHeader(b);
+                    b.getStyle().set("background", "var(--lumo-base-color)");
                 }
-                ((HasComponents) container).add(fc);
+                ch.setBody(fc);
+            } else if(container instanceof HasComponents hc) {
+                if(buttonPanel instanceof Component b) {
+                    hc.add(b);
+                }
+                hc.add(fc);
             }
         }
         drawButtons();
@@ -519,7 +524,7 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
     }
 
     private Component createDefaultLayout() {
-        return new ContentWithHeader();
+        return new ScrollingContent();
     }
 
     private HasComponents createDefaultButtonLayout() {
