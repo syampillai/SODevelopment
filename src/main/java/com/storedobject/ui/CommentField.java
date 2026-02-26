@@ -73,6 +73,9 @@ public class CommentField extends CustomField<String> {
     }
 
     private void configurePopover() {
+        icon.getElement().executeJs(
+                "this.addEventListener('click', function(e) { e.stopPropagation(); });"
+        );
         popover.setTarget(icon);
         popover.setOpenOnClick(true);
         popover.setCloseOnOutsideClick(true);

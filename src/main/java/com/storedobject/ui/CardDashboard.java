@@ -178,4 +178,34 @@ public class CardDashboard<T> extends ScrollingContent implements ExecutableView
     public Stream<Card<T>> getCards() {
         return getGrid().getCards();
     }
+
+    /**
+     * Disables card selection in the associated grid.
+     * When this method is invoked, it prevents the grid from processing
+     * any card selection events, effectively ignoring selection input or state changes.
+     * <p></p>
+     * This can be useful in scenarios where card selection functionality
+     * needs to be temporarily suspended without altering the grid's selection state.
+     * <p></p>
+     * Use case: When you have clickable components inside the cards, you may not want to fire the selection events
+     * when the user clicks on them. In such cases, you can temporarily suspend card selection to avoid unintended behavior.
+     * This is typically achieved by invoking this method from within your click-handlers. It will be automatically enabled
+     * again when your click-handlers complete their execution.
+     */
+    public void ignoreSelection() {
+        if(grid != null) {
+            grid.ignoreSelection = true;
+        }
+    }
+
+    /**
+     * Checks whether card selection is currently being ignored in the associated grid.
+     * When this method returns {@code true}, card selection events are not processed,
+     * effectively disabling selection functionality for the grid.
+     *
+     * @return {@code true} if card selection is being ignored; {@code false} otherwise
+     */
+    public boolean isIgnoreSelection() {
+        return grid == null || grid.ignoreSelection;
+    }
 }

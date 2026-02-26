@@ -28,6 +28,7 @@ public class CardGrid<T> extends Div {
     private int cardWidth, gap;
     private Card<T> selectedCard;
     private List<Consumer<Card<T>>> cardSelectedListeners;
+    boolean ignoreSelection;
 
     /**
      * Constructs a new CardGrid instance and initializes its default styling and layout.
@@ -246,5 +247,33 @@ public class CardGrid<T> extends Div {
     public Stream<Card<T>> getCards() {
         //noinspection unchecked
         return getChildren().filter(Card.class::isInstance).map(Card.class::cast);
+    }
+
+    /**
+     * Disables card selection in the grid.
+     * When this method is invoked, it prevents the grid from processing
+     * any card selection events, effectively ignoring selection input or state changes.
+     * <p></p>
+     * This can be useful in scenarios where card selection functionality
+     * needs to be temporarily suspended without altering the grid's selection state.
+     * <p></p>
+     * Use case: When you have clickable components inside the cards, you may not want to fire the selection events
+     * when the user clicks on them. In such cases, you can temporarily suspend card selection to avoid unintended behavior.
+     * This is typically achieved by invoking this method from within your click-handlers. It will be automatically enabled
+     * again when your click-handlers complete their execution.
+     */
+    public void ignoreSelection() {
+        ignoreSelection = true;
+    }
+
+    /**
+     * Checks whether card selection is currently being ignored in the grid.
+     * When this method returns {@code true}, card selection events are not processed,
+     * effectively disabling selection functionality for the grid.
+     *
+     * @return {@code true} if card selection is being ignored; {@code false} otherwise
+     */
+    public boolean isIgnoreSelection() {
+        return ignoreSelection;
     }
 }

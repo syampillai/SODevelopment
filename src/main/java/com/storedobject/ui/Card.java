@@ -59,7 +59,7 @@ public class Card<T> extends Div {
                 .set("color", "var(--lumo-primary-color)")
                 .set("display", "none");
         add(checkIcon);
-        addClickListener(event -> dispatchClick());
+        addClickListener(e -> dispatchClick());
     }
 
     /**
@@ -407,12 +407,10 @@ public class Card<T> extends Div {
     private void updateSelectionStyles() {
         if (this.selected) {
             getStyle()
-                    .set("outline", "2px solid var(--lumo-primary-color)")
                     .set("background-color", "var(--lumo-primary-color-10pct)");
             checkIcon.getStyle().set("opacity", "1").set("transform", "scale(1)");
         } else {
             getStyle()
-                    .remove("outline")
                     .set("background-color", "white");
             checkIcon.getStyle().set("opacity", "0").set("transform", "scale(0)");
         }
@@ -429,6 +427,10 @@ public class Card<T> extends Div {
             grid = findGrid(this);
         }
         if(grid != null) {
+            if(grid.ignoreSelection) {
+                grid.ignoreSelection = false;
+                return;
+            }
             grid.clicked(this);
         }
     }
@@ -472,5 +474,37 @@ public class Card<T> extends Div {
      */
     public void setObject(T object) {
         this.object = object;
+    }
+
+    /**
+     * Disables card selection in the associated grid.
+     * When this method is invoked, it prevents the grid from processing
+     * any card selection events, effectively ignoring selection input or state changes.
+     * <p></p>
+     * This can be useful in scenarios where card selection functionality
+     * needs to be temporarily suspended without altering the grid's selection state.
+     * <p></p>
+     * Use case: When you have clickable components inside the cards, you may not want to fire the selection events
+     * when the user clicks on them. In such cases, you can temporarily suspend card selection to avoid unintended behavior.
+     * This is typically achieved by invoking this method from within your click-handlers. It will be automatically enabled
+     * again when your click-handlers complete their execution.
+     */
+    public void ignoreSelection() {
+        CardGrid<T> grid = findGrid(this);
+        if(grid != null) {
+            grid.ignoreSelection = true;
+        }
+    }
+
+    /**
+     * Checks whether card selection is currently being ignored in the associated grid.
+     * When this method returns {@code true}, card selection events are not processed,
+     * effectively disabling selection functionality for the grid.
+     *
+     * @return {@code true} if card selection is being ignored; {@code false} otherwise
+     */
+    public boolean isIgnoreSelection() {
+        CardGrid<T> grid = findGrid(this);
+        return grid == null || grid.ignoreSelection;
     }
 }

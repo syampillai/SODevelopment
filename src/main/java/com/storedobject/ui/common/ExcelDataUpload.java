@@ -25,7 +25,7 @@ import java.sql.Date;
 import java.util.*;
 
 /**
- * Upload data contain in an Excel file and typically create entries in the system. The Excel file may contain
+ * Upload data containing in an Excel file and typically create entries in the system. The Excel file may contain
  * data rows in a specified area called "data boundary" and you can use the method {@link #setDataBoundary(String)}
  * to define the "data boundary". If the "data boundary" is not specified, the whole Excel sheet data will be
  * considered as the "data boundary". Processing of the data is done in the {@link #processData(ArrayList)} method
