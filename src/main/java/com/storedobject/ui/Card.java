@@ -1,7 +1,6 @@
 package com.storedobject.ui;
 
-import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.DetachEvent;
+import com.vaadin.flow.component.*;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Hr;
 import com.vaadin.flow.component.icon.Icon;
@@ -9,19 +8,38 @@ import com.vaadin.flow.component.icon.VaadinIcon;
 
 /**
  * Represents a styled container with configurable layout and styling options.
- * The Card class extends Div and provides a pre-defined style for creating card-like components.
+ * The Card class embeds a component and provides a pre-defined style for creating card-like components.
  * It supports alignment, justification, and grid span configuration.
  *
  * @param <T> The type of object associated with the card.
  *
  * @author Syam
  */
-public class Card<T> extends Div {
+public class Card<T> extends Composite<Component> implements HasComponents {
 
+    private final Component content;
     private CardGrid<T> grid;
     private T object;
     private final Icon checkIcon = VaadinIcon.CHECK_CIRCLE.create();
     private boolean selected;
+
+    /**
+     * Default constructor for the Card component.
+     * Initializes the card with a default content component (a Div) and applies
+     * predefined styles for appearance and layout.
+     * <pre>
+     * The following styles are typically applied by default:
+     * - Rounded corners (e.g., 12px border radius).
+     * - Padding for internal spacing (e.g., 16px).
+     * - Background color and subtle shadow effect for better visibility.
+     * - Flexbox layout with vertical stacking of child elements.
+     * - Stretch alignment to fill the available space.
+     * - Gap between child elements for improved readability.
+     * </pre>
+     */
+    public Card() {
+        this(new Div());
+    }
 
     /**
      * Default constructor for the Card component. It initializes the card
@@ -38,8 +56,11 @@ public class Card<T> extends Div {
      * - Alignment set to stretch to occupy available space.
      * - Gap set to 8px between child elements.
      * </pre>
+     *
+     * @param root The root component to be displayed within the card.
      */
-    public Card() {
+    public Card(Component root) {
+        this.content = root instanceof HasComponents ? root : new Div(root);
         getStyle()
                 .set("border-radius", "12px")
                 .set("padding", "16px")
@@ -59,7 +80,14 @@ public class Card<T> extends Div {
                 .set("color", "var(--lumo-primary-color)")
                 .set("display", "none");
         add(checkIcon);
-        addClickListener(e -> dispatchClick());
+        if(this.content instanceof ClickNotifier<?>) {
+            ((ClickNotifier<?>) root).addClickListener(e -> dispatchClick());
+        }
+    }
+
+    @Override
+    protected final Component initContent() {
+        return content;
     }
 
     /**
