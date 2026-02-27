@@ -23,6 +23,8 @@ import java.util.function.Consumer;
  */
 public class CommentField extends CustomField<String> {
 
+    private static String blankColor = "#A9A9A9", activeColor = Application.COLOR_SUCCESS;
+
     /**
      * Represents the layout container for managing and organizing buttons within the CommentField component.
      * This layout is used to house and structure interactive elements like "ok" and "cancel" buttons.
@@ -81,7 +83,52 @@ public class CommentField extends CustomField<String> {
         icon.getStyle().set("cursor", "pointer");
         add(icon);
         configurePopover();
-        addValueChangeListener(e -> icon.setColor(e.getValue().isBlank() ? "grey" : Application.COLOR_SUCCESS));
+        addValueChangeListener(e -> updateIconAppearance());
+    }
+
+    /**
+     * Sets the color to be used when the comment field value is blank.
+     * This method allows defining a visual indicator (like a background color)
+     * for the blank state of the comment field.
+     *
+     * @param blankColor the color value to set for the blank state; must be a valid color format
+     */
+    public static void setBlankColor(String blankColor) {
+        CommentField.blankColor = blankColor;
+    }
+
+    /**
+     * Sets the active color for the comment field.
+     * The active color is used to visually indicate the non-blank state
+     * of the comment field, such as highlighting the icon or other UI elements
+     * when a value is present.
+     *
+     * @param activeColor the color value to set for the active state;
+     *                    must be a valid color format
+     */
+    public static void setActiveColor(String activeColor) {
+        CommentField.activeColor = activeColor;
+    }
+
+    /**
+     * Updates the appearance of the icon based on the current state of the comment field.
+     * <p></p>
+     * The method evaluates whether the comment field's value is blank by invoking the {@code isBlank} method.
+     * If the value is determined to be blank, the icon's color is set to the value of {@code blankColor}.
+     * Otherwise, the icon's color is set to the value of {@code activeColor}.
+     */
+    public void updateIconAppearance() {
+        icon.setColor(isBlank() ? blankColor : activeColor);
+    }
+
+    /**
+     * Determines whether the current value of the comment field is blank.
+     * This method checks if the underlying value string is empty or contains only whitespace characters.
+     *
+     * @return {@code true} if the current value is blank, {@code false} otherwise
+     */
+    protected boolean isBlank() {
+        return getValue().isBlank();
     }
 
     @Override
