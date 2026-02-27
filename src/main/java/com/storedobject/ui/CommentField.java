@@ -97,17 +97,37 @@ public class CommentField extends CustomField<String> {
     private TextArea createTextArea() {
         TextArea area = new TextArea();
         area.setWidthFull();
+        area.setWidth( "350px");
         area.setHeight("150px");
         return area;
     }
 
     private VerticalLayout createPopoverContent() {
         VerticalLayout layout = new VerticalLayout();
-        layout.setPadding(true);
-        layout.setSpacing(true);
-        layout.setWidth("320px");
         layout.add(textArea, buttonLayout);
         return layout;
+    }
+
+    /**
+     * Sets the width of the text area in pixels.
+     * This method adjusts the width of the comment field's text area
+     * to the specified value, applying the width as a CSS pixel value.
+     *
+     * @param widthInPixels the desired width of the text area in pixels; must be a non-negative integer
+     */
+    public void setTextAreaWidth(int widthInPixels) {
+        textArea.setWidth(widthInPixels + "px");
+    }
+
+    /**
+     * Sets the height of the text area within the CommentField.
+     * This method adjusts the visual height of the text area to the specified value in pixels.
+     *
+     * @param heightInPixels the desired height of the text area in pixels;
+     *                       must be a non-negative integer
+     */
+    public void setTextAreaHeight(int heightInPixels) {
+        textArea.setHeight(heightInPixels + "px");
     }
 
     /**
