@@ -211,6 +211,27 @@ public class CommentField extends CustomField<String> {
         return () -> cancelledListeners.remove(listener);
     }
 
+    /**
+     * Opens the popover associated with the CommentField.
+     * This method triggers the display of the popover, allowing the user
+     * to interact with the CommentField, such as entering or modifying
+     * text content.
+     */
+    public void open() {
+        popover.open();
+    }
+
+    /**
+     * Closes the associated popover in the CommentField.
+     * This method is responsible for hiding or dismissing the popover
+     * element associated with the CommentField. It gets invoked typically
+     * when the user interacts with the "Cancel" or "OK" buttons, or in other
+     * scenarios where the popover should no longer be displayed.
+     */
+    public void close() {
+        popover.close();
+    }
+
     private class Pop extends Popover {
 
         @Override
