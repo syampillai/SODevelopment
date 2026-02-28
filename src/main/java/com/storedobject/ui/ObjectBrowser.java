@@ -1306,6 +1306,16 @@ public class ObjectBrowser<T extends StoredObject> extends ObjectGrid<T>
             layout.setSplitterPosition(50);
             editor.buttonsOff();
         }
+        customizeObjectEditor(editor);
+    }
+
+    /**
+     * Customizes the provided object editor to adapt its behavior or appearance as needed.
+     *
+     * @param editor the ObjectEditor instance to be customized; typically used to modify
+     *               the editing behavior or UI of the object being managed.
+     */
+    protected void customizeObjectEditor(ObjectEditor<T> editor) {
     }
 
     private String getFieldLabel(String fieldName) {
