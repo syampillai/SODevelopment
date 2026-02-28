@@ -75,6 +75,7 @@ public class CommentField extends CustomField<String> {
      */
     public CommentField(String label, String value) {
         super("");
+        addValueChangeListener(e -> updateIconAppearance());
         setValue(value);
         if (label != null) {
             setLabel(label);
@@ -83,7 +84,6 @@ public class CommentField extends CustomField<String> {
         icon.getStyle().set("cursor", "pointer");
         add(icon);
         configurePopover();
-        addValueChangeListener(e -> updateIconAppearance());
     }
 
     /**
