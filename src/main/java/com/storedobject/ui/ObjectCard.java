@@ -32,4 +32,22 @@ public class ObjectCard<T extends StoredObject> extends Card<T> {
     public ObjectCard(Component root) {
         super(root);
     }
+
+    /**
+     * Refreshes the content of the card.
+     */
+    public void refresh() {
+        setObject(getObject());
+    }
+
+    /**
+     * Reloads the object and refreshes the card with updated data.
+     */
+    public void reload() {
+        T object = getObject();
+        if(object != null) {
+            object.reload();
+            setObject(object);
+        }
+    }
 }
