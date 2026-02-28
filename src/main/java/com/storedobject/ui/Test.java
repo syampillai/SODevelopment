@@ -10,7 +10,6 @@ public class Test extends DataForm {
 
     public Test() {
         super("Test");
-        ScrollingContent c = new ScrollingContent();
         fi = new FontIcon("frog");
         icon = new TextField("Icon");
         category = new TextField("Category");
