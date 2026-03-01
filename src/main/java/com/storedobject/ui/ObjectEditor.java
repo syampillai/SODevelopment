@@ -1425,6 +1425,8 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
         addExtraEditingButtons();
         buttonPanel.add(cancel);
         setObject(object, true);
+        linkFields.stream().filter(f -> f.getLink().isDetail())
+                .forEach(f -> f.editingStarted(object));
         editingStartedInternal();
         focus();
         return 1;

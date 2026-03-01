@@ -309,6 +309,16 @@ public final class ObjectLinkField<T extends StoredObject>
         grid.setMaster(master,true);
     }
 
+    /**
+     * This is invoked when the master's ObjectEditor started editing its instance.
+     * @param parentObject The master object.
+     */
+    void editingStarted(StoredObject parentObject) {
+        if(grid instanceof DetailLinkGrid<?> g) {
+            g.getObjectEditor().setParentObject(parentObject, link.getType());
+        }
+    }
+
     @Override
     public void clear() {
         if(grid != null) {
