@@ -2421,6 +2421,40 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
         return linkFields.stream().filter(lf -> lf.getFieldName().equals(fn)).findAny().orElse(null);
     }
 
+    /**
+     * Retrieves an ObjectLinkField for the specified class type, representing
+     * a link to objects of the given type.
+     *
+     * @param linkClass the class type of the linked objects
+     * @param <L> the type of the stored object
+     * @return an ObjectLinkField corresponding to the specified class type
+     */
+    public <L extends StoredObject> ObjectLinkField<L> getLinkField(Class<L> linkClass) {
+        return getLinkField(linkClass, 0);
+    }
+
+    /**
+     * Retrieves an ObjectLinkField corresponding to the specified link class and link type.
+     *
+     * @param <L>       the type of the linked StoredObject
+     * @param linkClass the class of the linked object
+     * @param linkType  the type of the link
+     * @return the ObjectLinkField matching the given link class and link type,
+     *         or null if no matching field is found
+     */
+    public <L extends StoredObject> ObjectLinkField<L> getLinkField(Class<L> linkClass, int linkType) {
+        //noinspection unchecked
+        return linkFields.stream().filter(f -> {
+            var link = f.getLink();
+            return link.getType() == linkType && link.getObjectClass() == linkClass;
+        }).map(f -> (ObjectLinkField<L>)f).findAny().orElse(null);
+    }
+
+    /**
+     * Retrieves a list of link fields as an unmodifiable list.
+     *
+     * @return an unmodifiable list of ObjectLinkField objects representing the link fields.
+     */
     public List<ObjectLinkField<?>> linkFields() {
         return Collections.unmodifiableList(linkFields);
     }
