@@ -126,6 +126,11 @@ public abstract class AbstractLinkGrid<T extends StoredObject> extends EditableO
     }
 
     @Override
+    protected final boolean canChange(T item, int editorAction) {
+        return ((ObjectEditor<?>)getButtonPanel().getMasterView()).acceptChange(getField(), item, editorAction);
+    }
+
+    @Override
     public void applyFilter() {
         link.setCondition(getEffectiveCondition(getFilterCondition()));
         link.setLoadPredicate(getLoadFilter().getLoadingPredicate());
@@ -136,5 +141,9 @@ public abstract class AbstractLinkGrid<T extends StoredObject> extends EditableO
     public void setOrderBy(String orderBy, boolean load) {
         link.setOrderBy(getOrderBy());
         super.setOrderBy(orderBy, load);
+    }
+
+    @Override
+    public <O extends StoredObject> void instanceCreated(O newInstance) {
     }
 }

@@ -275,11 +275,6 @@ public class ReferenceLinkGrid<T extends StoredObject> extends AbstractLinkGrid<
         reloadedAllNow();
     }
 
-    @Override
-    protected final boolean canChange(T item, int editorAction) {
-        return ((ObjectEditor<?>)getButtonPanel().getMasterView()).acceptChange(getField(), item, editorAction);
-    }
-
     private class RList extends EList implements LinkValue<T> {
 
         @Override

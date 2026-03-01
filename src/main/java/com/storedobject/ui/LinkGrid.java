@@ -7,7 +7,7 @@ import com.storedobject.ui.util.LinkGridButtons;
 import com.storedobject.vaadin.View;
 import com.vaadin.flow.component.grid.Grid;
 
-public interface LinkGrid<T extends StoredObject> {
+public interface LinkGrid<T extends StoredObject> extends NewInstanceConsumer {
 
     Class<T> getObjectClass();
 

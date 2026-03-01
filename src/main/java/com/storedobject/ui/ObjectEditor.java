@@ -629,9 +629,11 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
     }
     
     private void setUpNew(T instance) {
-        if(instance != null) {
-            NewObject.setSystemEntity(getTransactionManager(), instance);
-            setFixedValues(instance);
+        if(instance == null) return;
+        NewObject.setSystemEntity(getTransactionManager(), instance);
+        setFixedValues(instance);
+        if(grid instanceof NewInstanceConsumer c) {
+            c.instanceCreated(instance);
         }
     }
 

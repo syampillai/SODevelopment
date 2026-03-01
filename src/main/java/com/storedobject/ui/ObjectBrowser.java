@@ -36,7 +36,7 @@ import static com.storedobject.core.EditorAction.*;
  * @author Syam
  */
 public class ObjectBrowser<T extends StoredObject> extends ObjectGrid<T>
-        implements EditableDataGrid<T>, ObjectEditorListener {
+        implements EditableDataGrid<T>, ObjectEditorListener, NewInstanceConsumer {
 
     private LoadFilterButtons<T> loadFilterButtons;
     /**
@@ -1646,6 +1646,10 @@ public class ObjectBrowser<T extends StoredObject> extends ObjectGrid<T>
      */
     public Runnable getExitAction() {
         return exitAction;
+    }
+
+    @Override
+    public <O extends StoredObject> void instanceCreated(O newInstance) {
     }
 
     private class LedgerButton extends ObjectEditor.LedgerButton<T> {
