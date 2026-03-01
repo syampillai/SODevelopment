@@ -473,6 +473,18 @@ public final class ObjectLinkField<T extends StoredObject>
             field.tab = tab;
             tab.setVisible(field.visible);
         }
+
+        public Tab getTab(String label) {
+            com.vaadin.flow.component.tabs.Tabs tabs = getTabs();
+            int count = tabs.getTabCount();
+            for(int i = 0; i < count; i++) {
+                Tab tab = tabs.getTabAt(i);
+                if(tab.getLabel().equals(label)) {
+                    return tab;
+                }
+            }
+            return null;
+        }
     }
 
     private class TrackerRegistration implements Registration {
