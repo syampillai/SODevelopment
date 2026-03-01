@@ -58,17 +58,19 @@ public abstract class AbstractObjectField<T extends StoredObject> extends Custom
         this.objectClass = objectClass;
         this.allowAny = allowAny;
         detailComponent = new ELabel();
-        String h = "2em";
-        detailComponent.getStyle().set("min-height", h)
+        detailComponent.getStyle().set("min-height", "2em")
                 .set("max-height", "50px")
-                .set("line-height", "--vaadin-input-field-value-line-height")
+                .set("box-sizing", "border-box")
+                .set("height", "var(--lumo-text-field-size, var(--lumo-size-m))")
+                .set("line-height", "var(--vaadin-input-field-value-line-height)")
                 .set("display", "flex")
                 .set("align-items", "center")
                 .set("color", "var(--vaadin-input-field-value-color)")
                 .set("font-size", "var(--vaadin-input-field-value-font-size)")
-                .set("font-weight", "var(--vaadin-input-field-value-font-weight");
+                .set("font-weight", "var(--vaadin-input-field-value-font-weight)");
         detailBox = new Box(detailComponent);
         detailBox.setPadding("0px 4px 0px 6px");
+        detailComponent.getStyle().set("border-radius"," var(--lumo-text-field-border-radius, var(--lumo-border-radius-m))");
         new Clickable<>(detailComponent, e-> focus());
     }
 

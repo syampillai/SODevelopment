@@ -1,5 +1,6 @@
 package com.storedobject.ui;
 
+import com.storedobject.vaadin.View;
 import com.vaadin.flow.component.*;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Hr;
@@ -534,5 +535,22 @@ public class Card<T> extends Composite<Component> implements HasComponents {
     public boolean isIgnoreSelection() {
         CardGrid<T> grid = findGrid(this);
         return grid == null || grid.ignoreSelection;
+    }
+
+    /**
+     * Retrieves the associated view of the card from its containing grid's dashboard.
+     * If the card is not part of a grid or the associated grid does not have a dashboard,
+     * the method returns {@code null}.
+     *
+     * @return the view associated with the card's grid dashboard, or {@code null}
+     *         if the grid or its dashboard is not available
+     */
+    public View getView() {
+        CardGrid<T> grid = findGrid(this);
+        if(grid == null) {
+            return null;
+        }
+        var dashboard = grid.getDashboard();
+        return dashboard == null ? null : dashboard.getView();
     }
 }
