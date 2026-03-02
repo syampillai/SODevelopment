@@ -214,11 +214,11 @@ public class TimestampField extends TranslatedField<Timestamp, LocalDateTime> {
      * Sets the step property of the time picker using duration.
      * It specifies the intervals for the displayed items in the time picker dropdown and also the displayed time format.
      * <p>The set step needs to evenly divide a day or an hour and has to be larger than 0 milliseconds.</p>
-     * <p>If the step is less than 60 seconds, the format will be changed to hh:mm:ss and it can be in
-     * hh:mm:ss.fff format, when the step is less than 1 second.</p>
+     * <p>If the step is less than 60 seconds, the format will be changed to hh:mm:ss, and it can be in
+     * hh:mm:ss.fff format when the step is less than 1 second.</p>
      * <p>NOTE: If the step is less than 900 seconds, the dropdown is hidden.</p>
      * <p>NOTE: changing the step to a larger duration can cause a new HasValue.ValueChangeEvent to be fired
-     * if some parts (eg. seconds) is discarded from the value.</p>
+     * if some parts (e.g., seconds) are discarded from the value.</p>
      *
      * @param step Step.
      */
@@ -239,8 +239,8 @@ public class TimestampField extends TranslatedField<Timestamp, LocalDateTime> {
     }
 
     /**
-     * Epoch value to set. Epoch value determines how a 2 digit year value is interpreted. Epoch value is added to
-     * the 2 digit year value. The default value of epoch is the first year of the century. For example, for the 21st
+     * Epoch value to set. Epoch value determines how a 2-digit year value is interpreted. Epoch value is added to
+     * the 2-digit year value. The default value of epoch is the first year of the century. For example, for the 21st
      * century, the default epoch value is 2000.
      *
      * @param epoch Epoch value to set.
@@ -252,7 +252,7 @@ public class TimestampField extends TranslatedField<Timestamp, LocalDateTime> {
     /**
      * Get the current epoch value. (Please see {@link #setEpoch(int)}).
      *
-     * @return Current the current epoch value.
+     * @return The current epoch value.
      */
     public int getEpoch() {
         return converter.getEpoch();
@@ -326,8 +326,8 @@ public class TimestampField extends TranslatedField<Timestamp, LocalDateTime> {
         }
 
         /**
-         * Epoch value to set. Epoch value determines how a 2 digit year value is interpreted. Epoch value is added to
-         * the 2 digit year value. The default value of epoch is the first year of the century. For example, for 21st
+         * Epoch value to set. Epoch value determines how a 2-digit year value is interpreted. Epoch value is added to
+         * the 2-digit year value. The default value of epoch is the first year of the century. For example, for the 21st
          * century, epoch value is 2000.
          *
          * @param epoch Epoch value to set.
@@ -339,7 +339,7 @@ public class TimestampField extends TranslatedField<Timestamp, LocalDateTime> {
         /**
          * Get the current epoch value. (Please see {@link #setEpoch(int)}).
          *
-         * @return Current the current epoch value.
+         * @return The current epoch value.
          */
         int getEpoch() {
             return epoch;

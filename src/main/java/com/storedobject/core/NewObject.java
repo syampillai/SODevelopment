@@ -4,7 +4,7 @@ import java.lang.reflect.Method;
 import java.sql.Timestamp;
 
 /**
- * Interface to generate new object of a specific type.
+ * Interface to generate a new object instance of a specific type.
  *
  * @param <T> Object type.
  */

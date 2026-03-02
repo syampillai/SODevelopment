@@ -480,6 +480,7 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
 
     @Override
     protected void initUI() {
+        super.initUI();
         buttonPanel = createButtonLayout();
         if(buttonPanel == null) {
             buttonPanel = createDefaultButtonLayout();
@@ -3156,5 +3157,10 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
                 return true;
             }
         }
+    }
+
+    @Override
+    protected HasValue<?, ?> createField(String fieldName) {
+        return null; // TODO Made it final - Debug (Check Port field creation in Skarp's EnquiryEditor code)
     }
 }
