@@ -133,6 +133,7 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
     private String fieldName = "";
     private JournalVoucherView voucherView;
     private boolean embeddedMode = false;
+    private int columns = 2;
 
     /**
      * Constructor.
@@ -295,7 +296,7 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
         if(anchorForm.getFieldCount() == 0) {
             anchorForm = null;
         }
-        setLinkTabColumns(getColumns());
+        setLinkTabColumns(columns);
     }
 
     @Override
@@ -320,6 +321,7 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
     @Override
     public void setColumns(int columns) {
         super.setColumns(columns);
+        this.columns = columns;
         tabList.values().forEach(t -> t.setColumns(columns));
         setLinkTabColumns(columns);
     }
@@ -2282,10 +2284,10 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
         currentTab = layout;
         if(currentTab == null) {
             currentTab = new FormLayout();
-            currentTab.setColumns(getColumns());
+            currentTab.setColumns(columns);
             tabs.put(tabName, currentTab);
             if(linkTabs == null) {
-                linkTabs = new ObjectLinkField.Tabs(getColumns());
+                linkTabs = new ObjectLinkField.Tabs(columns);
                 linkTabs.createTab(tabName, currentTab);
                 super.add(linkTabs);
             } else {
@@ -2413,10 +2415,10 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
      */
     protected void attachLinkField(ObjectLinkField<?> field) {
         if(linkTabs == null) {
-            linkTabs = new ObjectLinkField.Tabs(getColumns());
+            linkTabs = new ObjectLinkField.Tabs(columns);
             super.add(linkTabs);
         }
-        linkTabs.addField(field, getColumns());
+        linkTabs.addField(field, columns);
     }
 
     /**

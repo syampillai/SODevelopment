@@ -33,6 +33,13 @@ public final class ObjectLinkField<T extends StoredObject>
 
     public ObjectLinkField(String label, StoredObjectUtility.Link<T> link) {
         this.link = link;
+        label = label.replace(" | ", "|").replace(" |", "|").replace("| ", "|");
+        while (label.contains(" |")) {
+            label = label.replace(" |", "|");
+        }
+        while (label.contains("| ")) {
+            label = label.replace("| ", "|");
+        }
         this.label = label;
     }
 

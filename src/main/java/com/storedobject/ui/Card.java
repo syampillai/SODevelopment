@@ -380,6 +380,7 @@ public class Card<T> extends Composite<Component> implements HasComponents {
                     .set("border", "none")
                     .set("border-top", "1px solid #e0e0e0")
                     .set("height", "3px")
+                    .set("width", "100%")
                     .set("margin", "8px 0");
         }
 
