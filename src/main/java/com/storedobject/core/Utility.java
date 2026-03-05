@@ -6,6 +6,7 @@ import org.postgresql.util.PGobject;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
+import java.time.ZoneId;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.IntStream;
@@ -399,5 +400,24 @@ public class Utility {
             array[i++] = converter.apply(t);
         }
         return array;
+    }
+
+    public static String shortName(TimeZone tz) {
+        return tz.getDisplayName(false, TimeZone.SHORT, Locale.getDefault());
+    }
+
+    public static String nameGMT(String zoneId) {
+        return nameGMT(ZoneId.of(zoneId));
+    }
+
+    public static String nameGMT(ZoneId zoneId) {
+        return nameGMT(TimeZone.getTimeZone(zoneId));
+    }
+
+    public static String nameGMT(TimeZone tz) {
+        int offset = tz.getRawOffset();
+        int hours = offset / 3600000;
+        int minutes = (offset % 3600000) / 60000;
+        return "GMT" + (hours < 0 ? "-" : "+") + String.format("%02d:%02d", Math.abs(hours), Math.abs(minutes));
     }
 }

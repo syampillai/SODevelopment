@@ -4,6 +4,7 @@ import com.storedobject.core.*;
 import com.storedobject.core.annotation.Column;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public final class Product extends Name {
@@ -47,21 +48,35 @@ public final class Product extends Name {
     }
 
     @Override
+    public void validateDelete() throws Exception {
+        super.validateDelete();
+        Transaction t = getTransaction();
+        List<ProductSkill> pss = list(ProductSkill.class, "Product=" + getId()).toList();
+        for(ProductSkill ps : pss) {
+            ps.delete(t);
+        }
+    }
+
+    @Override
     public void saved() throws Exception {
         super.saved();
+        if(!deleted()) createSkills();
+        Issue.approvers.clear();
+        cache.remove(getId());
+    }
+
+    private void createSkills() throws Exception {
         ProductSkill ps;
         Transaction t = getTransaction();
-        for(int level = 0; level < ProductSkill.getSkillLevelValues().length; level++) {
+        for (int level = 0; level < ProductSkill.getSkillLevelValues().length; level++) {
             ps = get(ProductSkill.class, "Product=" + getId() + " AND SkillLevel=" + level);
-            if(ps == null) {
+            if (ps == null) {
                 ps = new ProductSkill();
                 ps.setProduct(getId());
                 ps.setSkillLevel(level);
                 ps.save(t);
             }
         }
-        Issue.approvers.clear();
-        cache.remove(getId());
     }
 
     public static Product get(Id id) {

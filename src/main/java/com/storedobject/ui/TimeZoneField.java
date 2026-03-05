@@ -1,5 +1,6 @@
 package com.storedobject.ui;
 
+import com.storedobject.core.Utility;
 import com.vaadin.flow.component.combobox.ComboBox;
 
 import java.time.ZoneId;
@@ -10,7 +11,7 @@ public class TimeZoneField extends ComboBox<String> {
 
     private static final List<String> timeZones = new ArrayList<>(ZoneId.getAvailableZoneIds());
     static {
-        timeZones.sort(String::compareToIgnoreCase);
+        timeZones.sort((a, b) -> Utility.nameGMT(a).compareToIgnoreCase(Utility.nameGMT(b)));
     }
 
     public TimeZoneField() {
@@ -20,6 +21,7 @@ public class TimeZoneField extends ComboBox<String> {
     public TimeZoneField(String label) {
         super(label, timeZones);
         setValue("Etc/GMT");
+        setItemLabelGenerator(name -> Utility.nameGMT(name) + "  " + name);
     }
 
     public ZoneId getZoneId() {

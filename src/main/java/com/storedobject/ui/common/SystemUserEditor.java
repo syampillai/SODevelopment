@@ -43,6 +43,11 @@ public class SystemUserEditor extends ObjectEditor<SystemUser> {
     }
 
     @Override
+    protected boolean includeField(String fieldName) {
+        return !".p".equals(fieldName) && super.includeField(fieldName);
+    }
+
+    @Override
     public ObjectField.Type getObjectFieldType(String fieldName) {
         if("Person".equals(fieldName)) {
             return ObjectField.Type.FORM;

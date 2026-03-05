@@ -133,7 +133,6 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
     private String fieldName = "";
     private JournalVoucherView voucherView;
     private boolean embeddedMode = false;
-    private int columns = 2; // TODO debug and remove this
 
     /**
      * Constructor.
@@ -291,7 +290,7 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
     }
 
     private void fConstructed() {
-        tabs = null;
+        tabs = null; // Form constructed... No more tab manipulation.
         anchorForm = new AnchorForm();
         if(anchorForm.getFieldCount() == 0) {
             anchorForm = null;
@@ -321,7 +320,6 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
     @Override
     public void setColumns(int columns) {
         super.setColumns(columns);
-        this.columns = columns;
         tabList.values().forEach(t -> t.setColumns(columns));
         setLinkTabColumns(columns);
     }
@@ -2284,14 +2282,14 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
         currentTab = layout;
         if(currentTab == null) {
             currentTab = new FormLayout();
-            currentTab.setColumns(columns);
+            currentTab.setColumns(getColumns());
             tabs.put(tabName, currentTab);
             if(linkTabs == null) {
-                linkTabs = new ObjectLinkField.Tabs();
-                linkTabs.add(new Tab(tabName), currentTab);
+                linkTabs = new ObjectLinkField.Tabs(getColumns());
+                linkTabs.createTab(tabName, currentTab);
                 super.add(linkTabs);
             } else {
-                linkTabs.add(new Tab(tabName), currentTab);
+                linkTabs.createTab(tabName, currentTab);
             }
         }
     }
@@ -2415,10 +2413,10 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
      */
     protected void attachLinkField(ObjectLinkField<?> field) {
         if(linkTabs == null) {
-            linkTabs = new ObjectLinkField.Tabs();
+            linkTabs = new ObjectLinkField.Tabs(getColumns());
             super.add(linkTabs);
         }
-        linkTabs.addField(field);
+        linkTabs.addField(field, getColumns());
     }
 
     /**

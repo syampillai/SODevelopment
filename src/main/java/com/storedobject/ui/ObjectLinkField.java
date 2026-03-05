@@ -2,9 +2,7 @@ package com.storedobject.ui;
 
 import com.storedobject.common.ArrayListSet;
 import com.storedobject.core.*;
-import com.storedobject.vaadin.HasVisibility;
-import com.storedobject.vaadin.View;
-import com.storedobject.vaadin.ViewDependent;
+import com.storedobject.vaadin.*;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasValue;
 import com.vaadin.flow.component.grid.Grid;
@@ -462,28 +460,92 @@ public final class ObjectLinkField<T extends StoredObject>
 
     public static class Tabs extends com.storedobject.vaadin.Tabs {
 
-        public Tabs() {
+        private final Map<Tab, FormLayout> components = new HashMap<>();
+
+        public Tabs(int columnSpan) {
             getTabs().addThemeVariants(TabsVariant.LUMO_SMALL);
-            getElement().setAttribute("colspan", "2");
+            span(this, columnSpan);
         }
 
-        public void addField(ObjectLinkField<?> field) {
-            Tab tab = new Tab(field.getLabel());
-            add(tab, (Component)field.grid);
+        private void span(Component c, int columnSpan) {
+            c.getElement().setAttribute("colspan", "" + columnSpan);
+        }
+
+        public void addField(ObjectLinkField<?> field, int columnSpan) {
+            FormLayout layout = new FormLayout();
+            span(layout, columnSpan);
+            layout.setColumns(columnSpan);
+            Component c = (Component) field.grid;
+            span(c, columnSpan);
+            layout.add(c);
+            Tab tab = createTab(field.getLabel(), layout);
             field.tab = tab;
             tab.setVisible(field.visible);
         }
 
         public Tab getTab(String label) {
+            int p = label.indexOf('|');
+            if(p < 0) return tabByName(label);
+            String sub = label.substring(p + 1);
+            Tab tab = tabByName(label.substring(0, p));
+            if(tab == null) return null;
+            Tabs tabs = tabs(tab);
+            if(tabs == null) return null;
+            return tabs.getTab(sub);
+        }
+
+        private Tabs tabs(Tab tab) {
+            return components.get(tab).getChildren().filter(t -> t instanceof Tabs)
+                    .map(t -> (Tabs)t).findFirst().orElse(null);
+        }
+
+        private Tab tabByName(String label) {
             com.vaadin.flow.component.tabs.Tabs tabs = getTabs();
             int count = tabs.getTabCount();
             for(int i = 0; i < count; i++) {
                 Tab tab = tabs.getTabAt(i);
-                if(tab.getLabel().equals(label)) {
+                if (tab.getLabel().equals(label)) {
                     return tab;
                 }
             }
             return null;
+        }
+
+        public Tab createTab(String label, FormLayout child) {
+            int p = label.indexOf('|');
+            String sub = p < 0 ? null : label.substring(p + 1);
+            if(p >= 0) {
+                label = label.substring(0, p);
+            }
+            Tab tab = getTab(label);
+            if(sub == null) {
+                if (tab != null) {
+                    components.get(tab).add(child);
+                } else {
+                    tab = new Tab(label);
+                    add(tab, child);
+                    components.put(tab, child);
+                }
+                return tab;
+            }
+            Tabs tabs;
+            if(tab == null) {
+                tab = new Tab(label);
+                FormLayout layout = new FormLayout();
+                span(layout, child.getColumns());
+                layout.setColumns(child.getColumns());
+                tabs = new Tabs(child.getColumns());
+                layout.add(tabs);
+                add(tab, layout);
+                components.put(tab, layout);
+            } else {
+                tabs = tabs(tab);
+                if(tabs == null) {
+                    tabs = new Tabs(child.getColumns());
+                    components.get(tab).add(tabs);
+                }
+            }
+            return tabs.createTab(sub, child);
         }
     }
 
