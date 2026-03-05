@@ -211,7 +211,38 @@ public class UIFieldMetadata extends StoredObject implements Detail {
 	public boolean isStyle(String style) {
 		return false;
 	}
-	
+
+	public String getStyleValue(String style) {
+		return getStyleValue(style, null);
+	}
+
+	public String getStyleValue(String style, String defaultValue) {
+		if(metadata == null) {
+			return defaultValue;
+		}
+		style = "(" + style.toLowerCase() + ":";
+		String s = metadata.style().toLowerCase();
+		int p = s.indexOf(style);
+		if(p < 0) {
+			return defaultValue;
+		}
+		p += style.length();
+		int q = s.indexOf(')', p);
+		return q < 0 ? defaultValue : metadata.style().substring(p, q);
+	}
+
+	public int getStyleNumber(String style) {
+		return getStyleNumber(style, 0);
+	}
+
+	public int getStyleNumber(String style, int defaultValue) {
+		String s = getStyleValue(style);
+		if(s == null || s.isEmpty() || !StringUtility.isDigit(s)) {
+			return defaultValue;
+		}
+		return Integer.parseInt(s);
+	}
+
 	public String getDisplayName() {
 		return null;
 	}
