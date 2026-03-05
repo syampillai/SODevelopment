@@ -2,6 +2,8 @@ package com.storedobject.core;
 
 public class JavaClassLoader extends ClassLoader {
 
+    static final char VERSION_SEPARATOR = '.';
+
     protected JavaClassLoader() {
         super(Thread.currentThread().getContextClassLoader());
     }
@@ -11,6 +13,10 @@ public class JavaClassLoader extends ClassLoader {
     }
 
     public static Class<?> getLogic(String name, boolean resolve) throws ClassNotFoundException {
+        return Person.class;
+    }
+
+    public static Class<?> getLogic(String name, boolean resolve, TransactionManager tm) throws ClassNotFoundException {
         return Person.class;
     }
 
