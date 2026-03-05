@@ -2354,17 +2354,19 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
             }
             return;
         }
+        UIFieldMetadata md = null;
+        if(getFieldCreator() instanceof SOFieldCreator<?> fc) {
+            md = fc.getMD(fieldName);
+        }
         String tabName = getTabName(fieldName, field);
-        if(tabName == null && getFieldCreator() instanceof SOFieldCreator<?> fc) {
-            UIFieldMetadata md = fc.getMD(fieldName);
-            if(md != null) {
-                tabName = md.getTabName();
-            }
+        if(tabName == null && md != null) {
+            tabName = md.getTabName();
         }
         setTab(tabName, true);
         if(currentTab == null && mainTabName != null) {
             setTab(mainTabName, false);
         }
+        if(md != null) addSection(md);
         if(currentTab != null) {
             currentTab.add((Component) field);
             fieldPositions.add(new FieldPosition(this.fieldName + fieldName, currentTab, fieldPos(currentTab)));
@@ -2372,6 +2374,21 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
             fieldPositions.add(new FieldPosition(this.fieldName + fieldName, getForm().getContainer(),
                     fieldPos(getForm().getContainer())));
             super.attachField(fieldName, field);
+        }
+    }
+
+    private void addSection(UIFieldMetadata md) {
+        String sectionName = md.getStyleValue("section", null);
+        if(sectionName == null) return;
+        FormSection fs = new FormSection(sectionName, columns);
+        int v = md.getStyleNumber("height", 0);
+        if(v > 0) fs.setHeight(v + "px");
+        v = md.getStyleNumber("span", 0);
+        if(v > 0) fs.setColumnSpan(v);
+        if(currentTab == null) {
+            super.add(fs);
+        } else {
+            currentTab.add(fs);
         }
     }
 
