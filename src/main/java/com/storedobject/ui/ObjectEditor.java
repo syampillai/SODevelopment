@@ -11,10 +11,7 @@ import com.storedobject.ui.inventory.POEditor;
 import com.storedobject.ui.inventory.POItemEditor;
 import com.storedobject.ui.util.*;
 import com.storedobject.vaadin.*;
-import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.Focusable;
-import com.vaadin.flow.component.HasComponents;
-import com.vaadin.flow.component.HasValue;
+import com.vaadin.flow.component.*;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.editor.Editor;
 import com.vaadin.flow.component.icon.VaadinIcon;
@@ -2366,14 +2363,31 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
         if(currentTab == null && mainTabName != null) {
             setTab(mainTabName, false);
         }
-        if(md != null) addSection(md);
+        if(md != null) {
+            addSection(md);
+            styleField(md, field);
+        }
         if(currentTab != null) {
             currentTab.add((Component) field);
             fieldPositions.add(new FieldPosition(this.fieldName + fieldName, currentTab, fieldPos(currentTab)));
+            if(md != null) addSectionEnd(md);
         } else {
             fieldPositions.add(new FieldPosition(this.fieldName + fieldName, getForm().getContainer(),
                     fieldPos(getForm().getContainer())));
+            if(md != null) addSectionEnd(md);
             super.attachField(fieldName, field);
+        }
+    }
+
+    private void styleField(UIFieldMetadata md, HasValue<?, ?> field) {
+        if(field instanceof HasHelper helper) {
+            String tip = md.getStyleValue("tip", null);
+            if(tip != null) helper.setHelperText(tip);
+        }
+        if(!(field instanceof Component c)) return;
+        int v = md.getStyleNumber("span", -1);
+        if(v > 0) {
+         setColumnSpan(c, v);
         }
     }
 
@@ -2383,12 +2397,26 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
         FormSection fs = new FormSection(sectionName, columns);
         int v = md.getStyleNumber("height", 0);
         if(v > 0) fs.setHeight(v + "px");
-        v = md.getStyleNumber("span", 0);
+        v = md.getStyleNumber("section-span", -1);
+        if(v == -1) v = md.getStyleNumber("span", 0);
         if(v > 0) fs.setColumnSpan(v);
         if(currentTab == null) {
             super.add(fs);
         } else {
             currentTab.add(fs);
+        }
+    }
+
+    private void addSectionEnd(UIFieldMetadata md) {
+        if(!md.isStyle("section-end")) return;
+        FormSection.End end = new FormSection.End(columns);
+        int v = md.getStyleNumber("section-span", -1);
+        if(v == -1) v = md.getStyleNumber("span", 0);
+        if(v > 0) end.setColumnSpan(v);
+        if(currentTab == null) {
+            super.add(end);
+        } else {
+            currentTab.add(end);
         }
     }
 

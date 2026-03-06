@@ -87,10 +87,14 @@ public class FormSection extends Card.Row {
      *             a positive integer; if less than 1, defaults to 2.
      */
     public void setColumnSpan(int span) {
+        span(this, span);
+    }
+
+    static void span(Component c, int span) {
         if(span < 1) {
             span = 2;
         }
-        getElement().setAttribute("colspan", "" + span);
+        c.getElement().setAttribute("colspan", "" + span);
     }
 
     /**
@@ -141,5 +145,50 @@ public class FormSection extends Card.Row {
      */
     public Card.Line getLine() {
         return line;
+    }
+
+    /**
+     * The {@code End} class is a specialized subclass of {@code Card.Line}, intended to represent
+     * a terminating component or marker within a layout structure. It allows for customization
+     * of its column span, providing a simple and flexible way to define its placement within
+     * a grid or other layout systems.
+     * <p></p>
+     * This class provides constructors for initializing the object with a default or specified
+     * column span, as well as a method for dynamically updating the column span.
+     */
+    public static class End extends Card.Line {
+
+        /**
+         * Constructs a new {@code End} object with a default column span of {@code 0}.
+         * This constructor is intended to provide a convenient way to initialize an
+         * {@code End} instance without explicitly specifying the column span, which
+         * can later be adjusted using the appropriate method.
+         */
+        public End() {
+            this(0);
+        }
+
+        /**
+         * Constructs an {@code End} object with the specified column span.
+         * This constructor initializes the {@code End} component and defines its column span
+         * within a layout structure.
+         *
+         * @param span the desired column span for this {@code End} component. If the value
+         *             specified is less than 1, a default value of 2 will be applied.
+         */
+        public End(int span) {
+            span(this, span);
+        }
+
+        /**
+         * Sets the column span for the current component. The column span defines the
+         * number of grid columns this component will occupy in the layout.
+         *
+         * @param span the number of grid columns to allocate to this component.
+         *             If the provided value is less than 1, it defaults to 2.
+         */
+        public void setColumnSpan(int span) {
+            span(this, span);
+        }
     }
 }
