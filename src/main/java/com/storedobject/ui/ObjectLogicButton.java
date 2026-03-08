@@ -97,7 +97,7 @@ public abstract class ObjectLogicButton<T extends StoredObject> extends Button {
      *
      * @return Class of the object with which this button is associated
      */
-    public Class<T> getObjectClass() {
+    public final Class<T> getObjectClass() {
         return objectClass;
     }
 

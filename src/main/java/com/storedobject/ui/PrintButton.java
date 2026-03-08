@@ -161,7 +161,7 @@ public final class PrintButton<T extends StoredObject> extends Composite<Button>
     private <O extends StoredObject> Button createButton(Class<T> objectClass, PrintLogicDefinition printLogicDefinition) {
         Class<?> lc = printLogicDefinition.getLogicClass();
         if(lc == null) {
-            return errorButton(printLogicDefinition);
+            return errorButton(printLogicDefinition, null);
         }
         if(!ObjectLogicButton.class.isAssignableFrom(lc)) {
             Button b = new PButton(printLogicDefinition);
@@ -171,7 +171,11 @@ public final class PrintButton<T extends StoredObject> extends Composite<Button>
         }
         ObjectLogicButton<?> ob = createLogicButton(objectClass, lc);
         if(ob == null) {
-            return errorButton(printLogicDefinition);
+            return errorButton(printLogicDefinition, null);
+        }
+        if(!ob.getObjectClass().isAssignableFrom(objectClass)) {
+            return errorButton(printLogicDefinition, "Logic class " + lc.getName() + " does not support "
+                    + objectClass.getName());
         }
         @SuppressWarnings("unchecked") ObjectLogicButton<O> finalOb = (ObjectLogicButton<O>) ob;
         ob.listem(e -> {
@@ -218,13 +222,16 @@ public final class PrintButton<T extends StoredObject> extends Composite<Button>
         return ob;
     }
 
-    private ObjectLogicButton<StoredObject> errorButton(PrintLogicDefinition printLogicDefinition) {
-        String msg = "Unable to create logic " + printLogicDefinition.getPrintLogicClassName();
+    private ObjectLogicButton<StoredObject> errorButton(PrintLogicDefinition printLogicDefinition, String message) {
+        if(message == null) {
+            message = "Unable to create logic " + printLogicDefinition.getPrintLogicClassName();
+        }
+        String finalMessage = message;
         var b = new ObjectLogicButton<>(StoredObject.class) {
 
             @Override
             public void accept(StoredObject object, Object source) {
-                Application.warning(msg);
+                Application.warning(finalMessage);
             }
         };
         String label = printLogicDefinition.getLabel();

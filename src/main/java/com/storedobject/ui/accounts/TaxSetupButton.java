@@ -1,8 +1,6 @@
 package com.storedobject.ui.accounts;
 
-import com.storedobject.accounts.AccountFinder;
-import com.storedobject.accounts.BusinessEntity;
-import com.storedobject.accounts.EntityAccount;
+import com.storedobject.accounts.*;
 import com.storedobject.core.StoredObject;
 import com.storedobject.ui.Application;
 import com.storedobject.ui.ObjectEditor;
@@ -19,7 +17,8 @@ import com.vaadin.flow.component.icon.VaadinIcon;
  */
 public class TaxSetupButton extends ObjectLogicButton<StoredObject> {
 
-    private ObjectEditor<BusinessEntity> taxEditor;
+    private ObjectEditor<BusinessEntity> taxEditorBusiness;
+    private ObjectEditor<PersonalEntity> taxEditorPersonal;
 
     /**
      * Constructor for TaxSetupButton.
@@ -30,7 +29,7 @@ public class TaxSetupButton extends ObjectLogicButton<StoredObject> {
 
     @Override
     public void accept(StoredObject role, Object source) {
-        if(!(role instanceof AccountFinder f) || !(source instanceof Transactional t)) {
+        if(!(role instanceof EntityAccountFinder f) || !(source instanceof Transactional t)) {
             warn("Unable to find account of " + role.toDisplay());
             return;
         }
@@ -42,15 +41,25 @@ public class TaxSetupButton extends ObjectLogicButton<StoredObject> {
                 return;
             }
         } catch (Exception e) {
-            warn(e);
+            error(e);
             return;
         }
-        if (taxEditor == null) taxEditor = ObjectEditor.create(BusinessEntity.class);
         View v = source instanceof View ? (View)source: (source instanceof HasColumns<?> hc ? hc.getView(): null);
-        taxEditor.editObject((BusinessEntity) account.getEntity(), v);
+        AccountEntity<?> ae = account.getEntity();
+        if(ae instanceof PersonalEntity pe) {
+            if (taxEditorPersonal == null) taxEditorPersonal = ObjectEditor.create(PersonalEntity.class);
+            taxEditorPersonal.editObject(pe, v);
+        } else if(ae instanceof BusinessEntity be) {
+            if (taxEditorBusiness == null) taxEditorBusiness = ObjectEditor.create(BusinessEntity.class);
+            taxEditorBusiness.editObject(be, v);
+        }
     }
 
     private void warn(Object message) {
         Application.warning(message);
+    }
+
+    private void error(Object message) {
+        Application.error(message);
     }
 }
