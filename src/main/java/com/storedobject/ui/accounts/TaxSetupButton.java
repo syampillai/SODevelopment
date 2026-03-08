@@ -31,7 +31,7 @@ public class TaxSetupButton extends ObjectLogicButton<StoredObject> {
     @Override
     public void accept(StoredObject role, Object source) {
         if(!(role instanceof AccountFinder f) || !(source instanceof Transactional t)) {
-            warn("Cannot find account of " + role.toDisplay());
+            warn("Unable to find account of " + role.toDisplay());
             return;
         }
         EntityAccount account;

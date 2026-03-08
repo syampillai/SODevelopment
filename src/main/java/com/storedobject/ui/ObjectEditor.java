@@ -52,7 +52,7 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
     /**
      * The Print button if defined. Print button will be defined automatically. Please see {@link PrintButton}.
      */
-    protected PrintButton print;
+    protected PrintButton<T> print;
     /**
      * Button - Add.
      */

@@ -49,7 +49,7 @@ public class ObjectBrowser<T extends StoredObject> extends ObjectGrid<T>
      * Represents a button used to trigger a print action within the ObjectBrowser.
      * This button is used to facilitate printing of data or output managed by the ObjectBrowser component.
      */
-    protected PrintButton print;
+    protected PrintButton<T> print;
     /**
      * The "Add" button associated with this instance of the {@code ObjectBrowser}.
      * This button is typically used to initiate an "add" operation, allowing users
@@ -375,7 +375,7 @@ public class ObjectBrowser<T extends StoredObject> extends ObjectGrid<T>
         cancel.setVisible(false);
         this.allowedActions = allowedActions;
         if(actions < 0) {
-            actions = (-actions) | StoredObjectUtility.statusUI(getObjectClass());
+            actions = (-actions) | ClassAttribute.get(getObjectClass()).statusUI();
         }
         actions = filterActionsInternal(actions);
         if((actions & ALLOW_ANY) == ALLOW_ANY) {
@@ -799,9 +799,7 @@ public class ObjectBrowser<T extends StoredObject> extends ObjectGrid<T>
      *  - If the list contains one item, it selects that item and returns it.
      * If none of the above conditions are met, it logs a warning and returns null.
      *
-     * @return the currently selected item, the item being edited if no item is selected,
-     *         the only item present if the list contains one item, or null if no item
-     *         is selected and the list is empty or in an ambiguous state.
+     * @return the currently selected item.
      */
     @Override
     public T selected() {
@@ -1503,7 +1501,7 @@ public class ObjectBrowser<T extends StoredObject> extends ObjectGrid<T>
     /**
      * Saves the currently edited row if an editor is active and there is an item being edited.
      * This method checks the editor and the item being edited for validity, saves the edited data
-     * using the row editor's save method, and then finalizes the editing process.
+     * using the row editor's save-method, and then finalizes the editing process.
      * It resets the editing state and updates the visibility of the save
      * and cancel controls associated with the editor.
      */

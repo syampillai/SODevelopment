@@ -141,8 +141,11 @@ public final class PrintButton<T extends StoredObject> extends Composite<Button>
     }
 
     public Stream<PrintLogicDefinition> definitions() {
-        return buttons.values().stream()
-                .map(b -> (b instanceof PButton pb) ? pb.definition : ((ObjectLogicButton<?>)b).printLogicDefinition);
+        return buttons.values().stream().map(this::def);
+    }
+
+    private PrintLogicDefinition def(Button b) {
+        return (b instanceof PButton pb) ? pb.definition : ((ObjectLogicButton<?>)b).definition;
     }
 
     private static class PButton extends Button {
@@ -171,15 +174,19 @@ public final class PrintButton<T extends StoredObject> extends Composite<Button>
             return errorButton(printLogicDefinition);
         }
         @SuppressWarnings("unchecked") ObjectLogicButton<O> finalOb = (ObjectLogicButton<O>) ob;
-        // noinspection unchecked
-        ob.listem(e -> finalOb.accept((O)objectSupplier.get(), objectSource));
+        ob.listem(e -> {
+            @SuppressWarnings("unchecked") O object = (O)objectSupplier.get();
+            if(object != null) {
+                finalOb.accept(object, objectSource);
+            }
+        });
         String label = printLogicDefinition.getLabel();
         ob.setText(label);
-        label = iconName(printLogicDefinition);
-        if(!"-".equals(label)) {
+        label = printLogicDefinition.getIconName();
+        if(!label.isEmpty()) {
             ob.setIcon(label);
         }
-        ob.printLogicDefinition = printLogicDefinition;
+        ob.definition = printLogicDefinition;
         buttons.put(label, ob);
         return ob;
     }
@@ -223,7 +230,7 @@ public final class PrintButton<T extends StoredObject> extends Composite<Button>
         String label = printLogicDefinition.getLabel();
         b.setText(label);
         buttons.put(label, b);
-        b.printLogicDefinition = printLogicDefinition;
+        b.definition = printLogicDefinition;
         return b;
     }
 }

@@ -22,7 +22,7 @@ import com.vaadin.flow.shared.Registration;
  */
 public abstract class ObjectLogicButton<T extends StoredObject> extends Button {
 
-    PrintLogicDefinition printLogicDefinition; // This is set for internal use only
+    PrintLogicDefinition definition; // This is set for internal use only
     private final Class<T> objectClass;
 
     /**
