@@ -11,6 +11,8 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Composite;
 import com.vaadin.flow.component.icon.VaadinIcon;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -34,27 +36,29 @@ import java.util.stream.Stream;
  * any generic logic in the {@link PrintLogicDefinition}. The logic must implement
  * {@link Runnable} and must have a constructor that takes a
  * {@link com.storedobject.core.Device} and a {@link StoredObject} instance as its parameters.</p>
+ * <p>Yet another feature is to define a class extending {@link ObjectLogicButton} where
+ * the desired logic is implemented in the {@link ObjectLogicButton#accept(StoredObject, Object)} method.</p>
  * <p>In {@link ObjectEditor}, by default, the {@link PrintButton} will be hidden if the object instance is null.
- * However, you can control this behaviour and control the visibility of it or its individual buttons by overriding
+ * However, you can control this behavior and control the visibility of it or its individual buttons by overriding
  * the {@link ObjectEditor#enablePrintButtons(boolean)} method.</p>
  *
  * @author Syam
  */
-public final class PrintButton extends Composite<Button> {
+public final class PrintButton<T extends StoredObject> extends Composite<Button> {
 
-    private final Supplier<StoredObject> objectSupplier;
+    private final Supplier<T> objectSupplier;
     private final Object objectSource;
     private final Button button;
     private final Map<String, PButton> buttons = new HashMap<>();
 
-    private PrintButton(Object objectSource, Supplier<StoredObject> objectSupplier, List<PrintLogicDefinition> logics, List<Component> extras) {
+    private PrintButton(Class<T> objectClass, Object objectSource, Supplier<T> objectSupplier, List<PrintLogicDefinition> logics, List<Component> extras) {
         this.objectSupplier = objectSupplier;
         this.objectSource = objectSource;
         if(logics.size() == 1 && extras == null) {
-            button = new PButton(logics.get(0));
+            button = createButton(objectClass, logics.getFirst());
         } else {
             button = new PopupButton("More", VaadinIcon.LINES);
-            logics.forEach(d -> ((PopupButton) button).add(new PButton(d)));
+            logics.forEach(d -> ((PopupButton) button).add(createButton(objectClass, d)));
             if(extras != null) {
                 extras.forEach(ec -> ((PopupButton) button).add(ec));
             }
@@ -67,37 +71,37 @@ public final class PrintButton extends Composite<Button> {
     }
 
     /**
-     * Create a "print button" for object editor.
+     * Create a "print button" for the object editor.
      *
      * @param objectEditor Object editor for which the button to be created.
      * @return Print button.
      */
-    public static PrintButton create(ObjectEditor<?> objectEditor) {
+    public static <O extends StoredObject> PrintButton<O> create(ObjectEditor<O> objectEditor) {
         return create(objectEditor.getObjectClass(), objectEditor, objectEditor::getObject, objectEditor.getClass().getName());
     }
 
     /**
-     * Create a "print button" for object grid.
+     * Create a "print button" for the object grid.
      *
      * @param objectGrid Object grid for which the button to be created.
      * @return Print button.
      */
-    public static PrintButton create(ObjectGrid<?> objectGrid) {
+    public static <O extends StoredObject> PrintButton<O> create(ObjectGrid<O> objectGrid) {
         return create(objectGrid.getObjectClass(), objectGrid, objectGrid::selected, objectGrid.getClass().getName());
     }
 
     /**
-     * Create a "print button" for object supplier.
+     * Create a "print button" for the object supplier.
      *
      * @param objectClass Object class of the object supplier.
      * @param objectSupplier Object supplier for which the button to be created.
      * @return Print button.
      */
-    public static PrintButton create(Class<? extends StoredObject> objectClass, Supplier<StoredObject> objectSupplier) {
+    public static <O extends StoredObject> PrintButton<O> create(Class<O> objectClass, Supplier<O> objectSupplier) {
         return create(objectClass, null, objectSupplier, null);
     }
 
-    private static PrintButton create(Class<? extends StoredObject> objectClass, Object objectSource, Supplier<StoredObject> objectSupplier,
+    private static <O extends StoredObject> PrintButton<O> create(Class<O> objectClass, Object objectSource, Supplier<O> objectSupplier,
                                       String dataLogicName) {
         List<Component> extras = objectSupplier instanceof ObjectBrowser<?> b ? b.listMoreButtons() : null;
         if(extras != null && extras.isEmpty()) {
@@ -107,7 +111,7 @@ public final class PrintButton extends Composite<Button> {
         if(list.isEmpty() && extras == null) {
             return null;
         }
-        return new PrintButton(objectSource, objectSupplier, list, extras);
+        return new PrintButton<>(objectClass, objectSource, objectSupplier, list, extras);
     }
 
     private static String iconName(PrintLogicDefinition printLogicDefinition) {
@@ -125,7 +129,7 @@ public final class PrintButton extends Composite<Button> {
     }
 
     /**
-     * Get the button corresponding to the label passed. (This could be used from
+     * Get the button corresponding to the label passed. This could be used from
      * {@link ObjectEditor#enablePrintButtons(boolean)} to selectively hide buttons.
      *
      * @param label Label of the button.
@@ -148,5 +152,55 @@ public final class PrintButton extends Composite<Button> {
             definition = printLogicDefinition;
             buttons.put(printLogicDefinition.getLabel(), this);
         }
+    }
+
+    private <O extends StoredObject> Button createButton(Class<T> objectClass, PrintLogicDefinition printLogicDefinition) {
+        Class<?> lc = printLogicDefinition.getLogicClass();
+        if(!ObjectLogicButton.class.isAssignableFrom(lc)) {
+            return new PButton(printLogicDefinition);
+        }
+        ObjectLogicButton<?> ob = null;
+        Class<?> oc = objectClass;
+        Constructor<?> c = null;
+        while(true) {
+            try {
+                c = lc.getConstructor(oc);
+                ob = (ObjectLogicButton<?>) c.newInstance(oc);
+                break;
+            } catch (NoSuchMethodException
+                     | InstantiationException
+                     | IllegalAccessException
+                     | InvocationTargetException ignored) {
+            }
+            if(oc == StoredObject.class) break;
+            oc = oc.getSuperclass();
+        }
+        if(c == null) {
+            try {
+                c = lc.getConstructor();
+                ob = (ObjectLogicButton<?>) c.newInstance();
+            } catch (NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException ignored) {
+            }
+        }
+        if(ob == null) {
+            String msg = "Unable to create logic button with " + printLogicDefinition.getLogicClass().getName();
+            ob = new ObjectLogicButton<>(StoredObject.class) {
+
+                @Override
+                public void accept(StoredObject object, Object source) {
+                    Application.warning(msg);
+                }
+            };
+        }
+        @SuppressWarnings("unchecked") ObjectLogicButton<O> finalOb = (ObjectLogicButton<O>) ob;
+        // noinspection unchecked
+        ob.listem(e -> finalOb.accept((O)objectSupplier.get(), objectSource));
+        String label = printLogicDefinition.getLabel();
+        ob.setText(label);
+        label = iconName(printLogicDefinition);
+        if(!"-".equals(label)) {
+            ob.setIcon(label);
+        }
+        return ob;
     }
 }
