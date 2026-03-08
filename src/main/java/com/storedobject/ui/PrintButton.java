@@ -10,6 +10,7 @@ import com.storedobject.vaadin.PopupButton;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Composite;
 import com.vaadin.flow.component.icon.VaadinIcon;
+import org.jspecify.annotations.Nullable;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -49,7 +50,7 @@ public final class PrintButton<T extends StoredObject> extends Composite<Button>
     private final Supplier<T> objectSupplier;
     private final Object objectSource;
     private final Button button;
-    private final Map<String, PButton> buttons = new HashMap<>();
+    private final Map<String, Button> buttons = new HashMap<>();
 
     private PrintButton(Class<T> objectClass, Object objectSource, Supplier<T> objectSupplier, List<PrintLogicDefinition> logics, List<Component> extras) {
         this.objectSupplier = objectSupplier;
@@ -140,25 +141,50 @@ public final class PrintButton<T extends StoredObject> extends Composite<Button>
     }
 
     public Stream<PrintLogicDefinition> definitions() {
-        return buttons.values().stream().map(pb -> pb.definition);
+        return buttons.values().stream()
+                .map(b -> (b instanceof PButton pb) ? pb.definition : ((ObjectLogicButton<?>)b).printLogicDefinition);
     }
 
-    private class PButton extends Button {
+    private static class PButton extends Button {
 
         private final PrintLogicDefinition definition;
 
         public PButton(PrintLogicDefinition printLogicDefinition) {
-            super(printLogicDefinition.getLabel(), iconName(printLogicDefinition), e -> clicked(printLogicDefinition));
+            super(printLogicDefinition.getLabel(), iconName(printLogicDefinition), null);
             definition = printLogicDefinition;
-            buttons.put(printLogicDefinition.getLabel(), this);
         }
     }
 
     private <O extends StoredObject> Button createButton(Class<T> objectClass, PrintLogicDefinition printLogicDefinition) {
         Class<?> lc = printLogicDefinition.getLogicClass();
-        if(!ObjectLogicButton.class.isAssignableFrom(lc)) {
-            return new PButton(printLogicDefinition);
+        if(lc == null) {
+            return errorButton(printLogicDefinition);
         }
+        if(!ObjectLogicButton.class.isAssignableFrom(lc)) {
+            Button b = new PButton(printLogicDefinition);
+            b.addClickListener(e -> clicked(printLogicDefinition));
+            buttons.put(printLogicDefinition.getLabel(), b);
+            return b;
+        }
+        ObjectLogicButton<?> ob = createLogicButton(objectClass, lc);
+        if(ob == null) {
+            return errorButton(printLogicDefinition);
+        }
+        @SuppressWarnings("unchecked") ObjectLogicButton<O> finalOb = (ObjectLogicButton<O>) ob;
+        // noinspection unchecked
+        ob.listem(e -> finalOb.accept((O)objectSupplier.get(), objectSource));
+        String label = printLogicDefinition.getLabel();
+        ob.setText(label);
+        label = iconName(printLogicDefinition);
+        if(!"-".equals(label)) {
+            ob.setIcon(label);
+        }
+        ob.printLogicDefinition = printLogicDefinition;
+        buttons.put(label, ob);
+        return ob;
+    }
+
+    private static <T extends StoredObject> @Nullable ObjectLogicButton<?> createLogicButton(Class<T> objectClass, Class<?> lc) {
         ObjectLogicButton<?> ob = null;
         Class<?> oc = objectClass;
         Constructor<?> c = null;
@@ -182,25 +208,22 @@ public final class PrintButton<T extends StoredObject> extends Composite<Button>
             } catch (NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException ignored) {
             }
         }
-        if(ob == null) {
-            String msg = "Unable to create logic button with " + printLogicDefinition.getLogicClass().getName();
-            ob = new ObjectLogicButton<>(StoredObject.class) {
-
-                @Override
-                public void accept(StoredObject object, Object source) {
-                    Application.warning(msg);
-                }
-            };
-        }
-        @SuppressWarnings("unchecked") ObjectLogicButton<O> finalOb = (ObjectLogicButton<O>) ob;
-        // noinspection unchecked
-        ob.listem(e -> finalOb.accept((O)objectSupplier.get(), objectSource));
-        String label = printLogicDefinition.getLabel();
-        ob.setText(label);
-        label = iconName(printLogicDefinition);
-        if(!"-".equals(label)) {
-            ob.setIcon(label);
-        }
         return ob;
+    }
+
+    private ObjectLogicButton<StoredObject> errorButton(PrintLogicDefinition printLogicDefinition) {
+        String msg = "Unable to create logic " + printLogicDefinition.getPrintLogicClassName();
+        var b = new ObjectLogicButton<>(StoredObject.class) {
+
+            @Override
+            public void accept(StoredObject object, Object source) {
+                Application.warning(msg);
+            }
+        };
+        String label = printLogicDefinition.getLabel();
+        b.setText(label);
+        buttons.put(label, b);
+        b.printLogicDefinition = printLogicDefinition;
+        return b;
     }
 }

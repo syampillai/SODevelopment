@@ -1,5 +1,6 @@
 package com.storedobject.ui;
 
+import com.storedobject.core.PrintLogicDefinition;
 import com.storedobject.core.StoredObject;
 import com.storedobject.vaadin.Button;
 import com.storedobject.vaadin.ClickHandler;
@@ -20,7 +21,8 @@ import com.vaadin.flow.shared.Registration;
  * @author Syam
  */
 public abstract class ObjectLogicButton<T extends StoredObject> extends Button {
-    
+
+    PrintLogicDefinition printLogicDefinition; // This is set for internal use only
     private final Class<T> objectClass;
 
     /**
