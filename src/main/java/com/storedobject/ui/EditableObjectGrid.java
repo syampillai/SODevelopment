@@ -54,7 +54,7 @@ public class EditableObjectGrid<T extends StoredObject> extends AbstractEditable
 
     protected EditableObjectGrid(Class<T> objectClass, Filtered<T> list, Iterable<String> columns) {
         super(objectClass, list,
-                columns == null ? StoredObjectUtility.browseColumns(objectClass) : columns);
+                columns == null ? ClassAttribute.get(objectClass).browseColumns() : columns);
         addConstructedListener(g ->
                 getRowEditor().addConstructedListener(e -> getEditor().setBinder(editor.getForm().getBinder())));
     }
@@ -133,7 +133,7 @@ public class EditableObjectGrid<T extends StoredObject> extends AbstractEditable
 
     /**
      * All fields are editable by default unless a field for editing the value of a particular column
-     * can not be determined from its {@link ObjectEditor}.
+     * cannot be determined from its {@link ObjectEditor}.
      *
      * @param columnName Column name.
      * @return True/false.
@@ -144,7 +144,7 @@ public class EditableObjectGrid<T extends StoredObject> extends AbstractEditable
     }
 
     /**
-     * Check if a field is editable or not. (For internal purpose only).
+     * Check if a field is editable or not. (For internal purposes only).
      *
      * @param columnName Column name.
      * @return True/false.
@@ -281,7 +281,7 @@ public class EditableObjectGrid<T extends StoredObject> extends AbstractEditable
     }
 
     /**
-     * Set read only.
+     * Set read-only.
      *
      * @param readOnly If true, rows will not be editable.
      */
@@ -561,7 +561,7 @@ public class EditableObjectGrid<T extends StoredObject> extends AbstractEditable
      *
      * @param item Item to change.
      * @param editorAction Editor action (One of the static values from {@link EditorAction}).
-     * @return True if change is acceptable. If returned false, change will be ignored.
+     * @return True if change is acceptable. If returned false, the change will be ignored.
      */
     protected boolean canChange(T item, int editorAction) {
         return true;

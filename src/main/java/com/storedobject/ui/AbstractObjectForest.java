@@ -19,7 +19,7 @@ public abstract class AbstractObjectForest<T extends StoredObject> extends DataT
     Logic logic;
 
     public AbstractObjectForest(boolean large, boolean forViewing, Class<T> objectClass, Iterable<String> columns, boolean any) {
-        super(Object.class, NAME.concat(columns == null ? StoredObjectUtility.browseColumns(objectClass)
+        super(Object.class, NAME.concat(columns == null ? ClassAttribute.get(objectClass).browseColumns()
                 : StringList.create(columns)));
         this.objectClass = objectClass;
         ObjectForest<T> forest = new ObjectForest<>(large, 0, objectClass, any);

@@ -79,7 +79,7 @@ public class ObjectForestViewer<T extends StoredObject> extends ObjectForestEdit
 
     public static <O extends StoredObject> ObjectForestViewer<O> create(Class<O> objectClass, boolean any,
                                                                         String title) {
-        return create(objectClass, StoredObjectUtility.browseColumns(objectClass), any, title);
+        return create(objectClass, ClassAttribute.get(objectClass).browseColumns(), any, title);
     }
 
     @SuppressWarnings("unchecked")

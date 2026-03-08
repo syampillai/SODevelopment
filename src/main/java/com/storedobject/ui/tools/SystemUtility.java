@@ -403,7 +403,7 @@ public class SystemUtility extends View implements CloseableView, Transactional 
         }
         String cols = select.getValue().trim();
         if(cols.isEmpty()) {
-            cols = StoredObjectUtility.browseColumns(objectClass).toString(", ");
+            cols = ClassAttribute.get(objectClass).browseColumns().toString(", ");
             select.setValue(cols);
         } else {
             if(!cols.startsWith("/")) {

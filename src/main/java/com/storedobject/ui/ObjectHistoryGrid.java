@@ -77,7 +77,7 @@ public class ObjectHistoryGrid<T extends StoredObject> extends DataGrid<T> imple
 
     private static <O extends StoredObject> StringList cols(Class<O> objectClass) {
         StringList cols = cols(AuditTrailConfiguration.getByClass(objectClass));
-        return cols == null ? StoredObjectUtility.browseColumns(objectClass) : cols;
+        return cols == null ? ClassAttribute.get(objectClass).browseColumns() : cols;
     }
 
     private static StringList cols(AuditTrailConfiguration atc) {
@@ -201,7 +201,7 @@ public class ObjectHistoryGrid<T extends StoredObject> extends DataGrid<T> imple
             return;
         }
         Class<T> objectClass = getObjectClass();
-        ObjectBrowser<T> ob = new ObjectBrowser<>(objectClass, StoredObjectUtility.browseColumns(objectClass),
+        ObjectBrowser<T> ob = new ObjectBrowser<>(objectClass, ClassAttribute.get(objectClass).browseColumns(),
                 EditorAction.SEARCH, StringList.create(atc.getSearchFields()));
         ob.search(null, viewer);
     }

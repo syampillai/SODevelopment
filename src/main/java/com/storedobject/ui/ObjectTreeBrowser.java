@@ -56,7 +56,7 @@ public class ObjectTreeBrowser<T extends StoredObject> extends ObjectTree<T> {
         setCaption(caption);
         this.allowedActions = allowedActions;
         if(actions < 0) {
-            actions = (-actions) | StoredObjectUtility.statusUI(getObjectClass());
+            actions = (-actions) | ClassAttribute.get(getObjectClass()).statusUI();
         }
         actions = filterActionsInternal(actions);
         if((actions & ALLOW_ANY) == ALLOW_ANY) {
@@ -119,7 +119,7 @@ public class ObjectTreeBrowser<T extends StoredObject> extends ObjectTree<T> {
     }
 
     public static <O extends StoredObject> ObjectTreeBrowser<O> create(Class<O> objectClass, int actions, String title) {
-        return create(objectClass, StoredObjectUtility.browseColumns(objectClass), actions, title);
+        return create(objectClass, ClassAttribute.get(objectClass).browseColumns(), actions, title);
     }
 
     @SuppressWarnings("unchecked")

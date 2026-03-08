@@ -27,7 +27,7 @@ public class Percentage extends Quantity {
 	}
 	
 	/**
-	 * Create a quantity of this type with zero value.
+	 * Create a quantity of these types with zero value.
 	 * @return Result
 	 */
 	@Override

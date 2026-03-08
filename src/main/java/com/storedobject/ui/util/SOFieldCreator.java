@@ -69,7 +69,7 @@ public class SOFieldCreator<T> implements ObjectFieldCreator<T> {
     public Stream<Method> getFieldGetMethods() {
         if(ca != null) {
             ArrayList<Method> methods = new ArrayList<>();
-            ca.getAttributes().minus(StoredObjectUtility.protectedColumns(ca.getObjectClass())).
+            ca.getAttributes().minus(ca.protectedColumns()).
                     forEach(n -> methods.add(ca.getMethod(n)));
             if(mds != null) {
                 int order = 10000;
@@ -172,7 +172,7 @@ public class SOFieldCreator<T> implements ObjectFieldCreator<T> {
             if(oe != null) {
                 oe.extraLinks().forEach(link -> links.add(link));
             }
-            StringList protectedColumns = StoredObjectUtility.protectedColumns(ca.getObjectClass());
+            StringList protectedColumns = ca.protectedColumns();
             links.removeIf(link -> protectedColumns.contains(link.getName() + ".l"));
             Stream<String> names = links.stream().map(link -> link.getName() + ".l");
             listADs().removeIf(ad -> protectedColumns.contains(ad.getName() + ".a"));
@@ -749,18 +749,7 @@ public class SOFieldCreator<T> implements ObjectFieldCreator<T> {
         }
         if(ComputedMinute.class == type) {
             ComputedMinutesField mf = new ComputedMinutesField(label);
-            mf.setLength(md.getIntParameter(9, 0));
-            String p = md.getParameter(1);
-            if(p != null && p.isEmpty()) {
-                p = null;
-            }
-            if(p != null) {
-                mf.setPlaceholder(p);
-            }
-            p = md.getParameter("", 2);
-            if(p.indexOf('D') >= 0) {
-                mf.setAllowDays(true);
-            }
+            setMD(mf, md);
             return mf;
         }
         if(Geolocation.class == type) {
@@ -856,18 +845,7 @@ public class SOFieldCreator<T> implements ObjectFieldCreator<T> {
                 }
             }
             if(f instanceof MinutesField mf) {
-                mf.setLength(md.getIntParameter(9, 0));
-                String p = md.getParameter(1);
-                if(p != null && p.isEmpty()) {
-                    p = null;
-                }
-                if(p != null) {
-                    mf.setPlaceholder(p);
-                }
-                p = md.getParameter("", 2);
-                if(p.indexOf('D') >= 0) {
-                    mf.setAllowDays(true);
-                }
+                setMD(mf, md);
             }
             return f;
         }
@@ -933,6 +911,36 @@ public class SOFieldCreator<T> implements ObjectFieldCreator<T> {
         }
         field.setMinLength(p1);
         return field;
+    }
+
+    private static void setMD(HasValue<?, ?> field, UIFieldMetadata md) {
+        ComputedMinutesField cmf = field instanceof ComputedMinutesField f ? f : null;
+        MinutesField mf = field instanceof MinutesField f ? f : null;
+        int w = md.getIntParameter(9, 0);
+        if(mf != null) {
+            mf.setLength(w);
+        } else if(cmf != null) {
+            cmf.setLength(w);
+        }
+        String p = md.getParameter(1);
+        if(p != null && p.isEmpty()) {
+            p = null;
+        }
+        if(p != null) {
+            if (mf != null) {
+                mf.setPlaceholder(p);
+            } else if (cmf != null) {
+                cmf.setPlaceholder(p);
+            }
+        }
+        p = md.getParameter("", 2);
+        if(p.indexOf('D') >= 0) {
+            if(mf != null) {
+                mf.setAllowDays(true);
+            } else if(cmf != null) {
+                cmf.setAllowDays(true);
+            }
+        }
     }
 
     private ObjectField.Type objectFieldType(String fieldName, UIFieldMetadata md) {

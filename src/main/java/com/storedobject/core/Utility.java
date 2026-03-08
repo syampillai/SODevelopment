@@ -21,7 +21,7 @@ import java.util.stream.StreamSupport;
 public class Utility {
 
     /**
-     * Blank time: The local time Jan 1, 1800 0:00 is considered blank by the platform for internal purposes.
+     * Blank time: The platform considers the local time Jan 1, 1800 0:00 blank for internal purposes.
      */
     public static final long BLANK_TIME = -5364662400000L;
 
@@ -104,7 +104,7 @@ public class Utility {
      * @return True if empty/blank, otherwise false.
      */
     public static <D extends Date> boolean isEmpty(D dateTime) {
-        return dateTime == null || dateTime.getTime() == BLANK_TIME;
+        return dateTime == null || dateTime.getTime() <= BLANK_TIME;
     }
 
     /**

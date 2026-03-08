@@ -70,7 +70,7 @@ public class ObjectForestBrowser<T extends StoredObject> extends ObjectForest<T>
         setCaption(caption);
         this.allowedActions = allowedActions;
         if(actions < 0) {
-            actions = (-actions) | StoredObjectUtility.statusUI(getObjectClass());
+            actions = (-actions) | ClassAttribute.get(getObjectClass()).statusUI();
         }
         actions = filterActionsInternal(actions);
         if((actions & ALLOW_ANY) == ALLOW_ANY) {
@@ -134,7 +134,7 @@ public class ObjectForestBrowser<T extends StoredObject> extends ObjectForest<T>
     }
 
     public static <O extends StoredObject> ObjectForestBrowser<O> create(Class<O> objectClass, int actions, String title) {
-        return create(objectClass, StoredObjectUtility.browseColumns(objectClass), actions, title);
+        return create(objectClass, ClassAttribute.get(objectClass).browseColumns(), actions, title);
     }
 
     @SuppressWarnings("unchecked")

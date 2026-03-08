@@ -1,10 +1,7 @@
 package com.storedobject.ui.tools;
 
 import com.storedobject.common.StringList;
-import com.storedobject.core.AuditTrailConfiguration;
-import com.storedobject.core.EditorAction;
-import com.storedobject.core.StoredObject;
-import com.storedobject.core.StoredObjectUtility;
+import com.storedobject.core.*;
 import com.storedobject.ui.ObjectBrowser;
 import com.storedobject.ui.ObjectGetField;
 import com.storedobject.ui.ObjectHistoryGrid;
@@ -37,7 +34,7 @@ public class AuditTrail extends DataForm {
             return true;
         }
         close();
-        ObjectBrowser<?> obx = new ObjectBrowser<>(objectClass, StoredObjectUtility.browseColumns(objectClass),
+        ObjectBrowser<?> obx = new ObjectBrowser<>(objectClass, ClassAttribute.get(objectClass).browseColumns(),
                 EditorAction.SEARCH, StringList.create(atc.getSearchFields()));
         @SuppressWarnings("unchecked") ObjectBrowser<StoredObject> ob = (ObjectBrowser<StoredObject>) obx;
         ob.search(null, object -> new ObjectHistoryGrid<>(object, atc).executeAll());

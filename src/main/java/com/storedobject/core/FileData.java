@@ -302,7 +302,7 @@ public class FileData extends StoredObject implements Detail, HasParents, Conten
             ClassAttribute<?> ca;
             for(FileData fd: list) {
                 sql.execute(fd.historyString());
-                ca = StoredObjectUtility.classAttribute(fd);
+                ca = ClassAttribute.get(fd);
                 sql.execute("UPDATE " + ca.moduleName + "." + ca.tableName + " SET File=" + fileId +
                         ",TranId=" + getTransactionId() + " WHERE Id=" + fd.getId());
             }

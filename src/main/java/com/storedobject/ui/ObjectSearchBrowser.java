@@ -134,7 +134,7 @@ public class ObjectSearchBrowser<T extends StoredObject> extends ObjectBrowser<T
      * @return An instance of the searcher.
      */
     public static <O extends StoredObject> ObjectSearchBrowser<O> create(Class<O> objectClass, String caption, Consumer<O> objectConsumer) {
-        return create(objectClass, StoredObjectUtility.browseColumns(objectClass), caption, objectConsumer);
+        return create(objectClass, ClassAttribute.get(objectClass).browseColumns(), caption, objectConsumer);
     }
 
     /**

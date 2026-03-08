@@ -53,8 +53,22 @@ public class MinutesTimestamp extends Timestamp implements Displayable {
 
     @Override
     public final void setTime(long time) {
-        super.setTime((time / 60000) * 60000);
-        setNanos(0);
+        super.setTime(strip(time));
+        super.setNanos(0);
+    }
+
+    @Override
+    public final long getTime() {
+        return strip(super.getTime());
+    }
+
+    private static long strip(long time) {
+        return (time / 60000) * 60000;
+    }
+
+    @Override
+    public final int getNanos() {
+        return 0;
     }
 
     @Override

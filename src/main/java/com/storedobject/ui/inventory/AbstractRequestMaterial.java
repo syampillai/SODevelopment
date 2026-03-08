@@ -131,7 +131,7 @@ public abstract class AbstractRequestMaterial<MR extends MaterialRequest, MRI ex
         if(style == -1) {
             style = issuing ? 0 : 1;
         }
-        StringList bc = StoredObjectUtility.browseColumns(mrClass);
+        StringList bc = ClassAttribute.get(mrClass).browseColumns();
         bc = bc.minus(StringList.create("Date", "Reference", "Remarks", "FromLocation", "ToLocation", "Status",
                 "Priority", "RequiredBefore", "Received"));
         return switch(style) {

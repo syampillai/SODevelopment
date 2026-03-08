@@ -32,7 +32,7 @@ public class SOColumnCreator<T> implements ObjectColumnCreator<T> {
         occ.grid = grid;
         Class<? extends StoredObject> c = (Class<? extends StoredObject>) occ.getObjectClass();
         if(StoredObject.class.isAssignableFrom(c)) {
-            occ.ca = StoredObjectUtility.classAttribute(c);
+            occ.ca = ClassAttribute.get(c);
             occ.valueTypes = new HashMap<>();
         }
         return occ;
@@ -41,7 +41,7 @@ public class SOColumnCreator<T> implements ObjectColumnCreator<T> {
     @Override
     public Stream<String> getColumnNames() {
         if(ca != null) {
-            return StoredObjectUtility.browseColumns(ca.getObjectClass()).stream();
+            return ca.browseColumns().stream();
         }
         return ObjectColumnCreator.super.getColumnNames();
     }

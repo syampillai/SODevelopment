@@ -228,7 +228,7 @@ public class CreateConsignment<C extends Consignment> implements Executable {
             }
             close();
             SelectGrid<C> select = new SelectGrid<>(consignmentClass, consignments,
-                    StoredObjectUtility.browseColumns(consignmentClass),
+                    ClassAttribute.get(consignmentClass).browseColumns(),
                     c -> {
                         consignment = c;
                         attachConsignment(false);

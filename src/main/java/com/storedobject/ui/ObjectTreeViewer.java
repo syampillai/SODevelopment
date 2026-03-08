@@ -67,7 +67,7 @@ public class ObjectTreeViewer<T extends StoredObject> extends ObjectTreeBrowser<
     }
 
     public static <O extends StoredObject> ObjectTreeViewer<O> create(Class<O> objectClass, String title) {
-        return create(objectClass, StoredObjectUtility.browseColumns(objectClass), title);
+        return create(objectClass, ClassAttribute.get(objectClass).browseColumns(), title);
     }
 
     @SuppressWarnings("unchecked")

@@ -9,7 +9,6 @@ import com.storedobject.vaadin.*;
 
 import java.util.List;
 
-@SuppressWarnings("resource")
 public class POCorrection extends SelectStore implements Transactional {
 
     private final DateField dateField = new DateField("PO Date");
@@ -40,7 +39,7 @@ public class POCorrection extends SelectStore implements Transactional {
             return false;
         }
         close();
-        SelectGrid<InventoryPO> g = new SelectGrid<>(InventoryPO.class, pos, StoredObjectUtility.browseColumns(InventoryPO.class),
+        SelectGrid<InventoryPO> g = new SelectGrid<>(InventoryPO.class, pos, ClassAttribute.get(InventoryPO.class).browseColumns(),
                 this::process);
         g.setCaption("Select PO");
         g.execute();
@@ -55,7 +54,7 @@ public class POCorrection extends SelectStore implements Transactional {
                     () -> transact(po::recallOrder)).execute();
             default -> {
                 SelectGrid<InventoryPOItem> g = new SelectGrid<>(InventoryPOItem.class, po.listItems().toList(),
-                        StoredObjectUtility.browseColumns(InventoryPOItem.class),
+                        ClassAttribute.get(InventoryPOItem.class).browseColumns(),
                         poi -> new EditItem(po, poi).execute());
                 g.setCaption("Select Item to Edit");
                 g.execute();

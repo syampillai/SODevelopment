@@ -69,7 +69,7 @@ public class ObjectFilter<T extends StoredObject> extends Form implements Object
         this.changeConsumer = changeConsumer;
         this.objectClass = objectClass;
         if(columns == null || columns.isEmpty()) {
-            columns = StoredObjectUtility.searchColumns(objectClass);
+            columns = ClassAttribute.get(objectClass).browseColumns();
         }
         this.columns = columns.array();
         buildFields();
@@ -437,14 +437,11 @@ public class ObjectFilter<T extends StoredObject> extends Form implements Object
                     }
                     s = "" + value;
                 }
-                if(fields[i] instanceof ObjectFilter.MField) {
-                    b.append('(').append(columns[i]).append(").Amount");
-                } else if(fields[i] instanceof ObjectFilter.QField) {
-                    b.append('(').append(columns[i]).append(").Quantity");
-                } else if(fields[i] instanceof ObjectFilter.CVField) {
-                    b.append('(').append(columns[i]).append(").Value");
-                } else {
-                    b.append(columns[i]);
+                switch (fields[i]) {
+                    case ObjectFilter.MField ignored -> b.append('(').append(columns[i]).append(").Amount");
+                    case ObjectFilter.QField ignored -> b.append('(').append(columns[i]).append(").Quantity");
+                    case ObjectFilter.CVField ignored -> b.append('(').append(columns[i]).append(").Value");
+                    case null, default -> b.append(columns[i]);
                 }
                 switch(p) {
                     case 0 -> b.append('=');

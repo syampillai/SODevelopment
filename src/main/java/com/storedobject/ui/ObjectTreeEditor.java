@@ -1,8 +1,8 @@
 package com.storedobject.ui;
 
+import com.storedobject.core.ClassAttribute;
 import com.storedobject.core.JavaClassLoader;
 import com.storedobject.core.StoredObject;
-import com.storedobject.core.StoredObjectUtility;
 import com.storedobject.ui.util.LogicParser;
 
 import java.lang.reflect.Constructor;
@@ -52,7 +52,7 @@ public class ObjectTreeEditor<T extends StoredObject> extends ObjectTreeBrowser<
     }
 
     public static <O extends StoredObject> ObjectTreeEditor<O> create(Class<O> objectClass, int actions, String title) {
-        return create(objectClass, StoredObjectUtility.browseColumns(objectClass), actions, title);
+        return create(objectClass, ClassAttribute.get(objectClass).browseColumns(), actions, title);
     }
 
     @SuppressWarnings("unchecked")

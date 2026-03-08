@@ -133,4 +133,35 @@ public final class ClassAttribute<T extends StoredObject> {
     public String getActionPrefix() {
         return "";
     }
+    public StringList displayColumns() {
+        return StringList.EMPTY;
+    }
+
+    public StringList searchColumns() {
+        return StringList.EMPTY;
+    }
+
+    public StringList protectedColumns() {
+        return StringList.EMPTY;
+    }
+
+    public StringList browseColumns() {
+        return StringList.EMPTY;
+    }
+
+    public String browseOrder() {
+        return "";
+    }
+
+    public StringList links() {
+        return StringList.EMPTY;
+    }
+
+    public int hints() {
+        return -1;
+    }
+
+    public int statusUI() {
+        return -1;
+    }
 }

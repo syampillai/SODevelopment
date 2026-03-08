@@ -1,10 +1,7 @@
 package com.storedobject.ui;
 
 import com.storedobject.common.SORuntimeException;
-import com.storedobject.core.EditableList;
-import com.storedobject.core.StoredObject;
-import com.storedobject.core.StoredObjectUtility;
-import com.storedobject.core.Transaction;
+import com.storedobject.core.*;
 import com.storedobject.ui.util.AcceptAbandonButtons;
 import com.storedobject.vaadin.Button;
 import com.storedobject.vaadin.ButtonLayout;
@@ -88,7 +85,7 @@ public class ObjectListEditor<T extends StoredObject> extends EditableObjectGrid
      * @param columns Columns to edit.
      */
     public ObjectListEditor(Class<T> objectClass, Iterable<String> columns, boolean any) {
-        super(objectClass, columns == null ? StoredObjectUtility.browseColumns(objectClass) : columns, any);
+        super(objectClass, columns == null ? ClassAttribute.get(objectClass).browseColumns() : columns, any);
         buttonPanel = new ButtonLayout();
         saveAll = new Button("Save Changes", "save", e -> save()).asSmall().asPrimary();
         add = new Button("Add", e -> addIf()).asSmall();
@@ -199,7 +196,7 @@ public class ObjectListEditor<T extends StoredObject> extends EditableObjectGrid
 
     /**
      * Reload a selected instance. This will abandon all the changes already made to the instance. If the instance
-     * was a newly added one, it will be removed.
+     * was newly added, it will be removed.
      */
     public void reload() {
         cancelEdit();
@@ -270,8 +267,8 @@ public class ObjectListEditor<T extends StoredObject> extends EditableObjectGrid
     }
 
     /**
-     * Check if this editor is in an invalid state or not. (It will be in invalid state if the current row
-     * editor can not be closed because the data is invalid).
+     * Check if this editor is in an invalid state or not. (It will be in an invalid state if the current row
+     * editor cannot be closed because the data is invalid).
      *
      * @return True or false.
      */
@@ -513,7 +510,7 @@ public class ObjectListEditor<T extends StoredObject> extends EditableObjectGrid
      * typically overridden to raise user-friendly messages when data is not valid. (Please note that this method
      * will not be invoked by the {@link #save(Transaction)} method).
      *
-     * @throws Exception If any the data is not valid.
+     * @throws Exception If any, the data is not valid.
      */
     @SuppressWarnings("RedundantThrows")
     public void validateData() throws Exception {
@@ -613,7 +610,7 @@ public class ObjectListEditor<T extends StoredObject> extends EditableObjectGrid
      * This is invoked when an instance is saved. You can carry out further save-related actions if any.
      *
      * @param object Instance that is saved.
-     * @throws Exception If an exception is thrown, transaction will be aborted.
+     * @throws Exception If an exception is thrown, the transaction will be aborted.
      */
     protected void saved(Transaction transaction, T object) throws Exception {
     }
@@ -622,7 +619,7 @@ public class ObjectListEditor<T extends StoredObject> extends EditableObjectGrid
      * This is invoked when an instance is deleted while saving. You can carry out further save-related actions if any.
      *
      * @param object Instance that is deleted.
-     * @throws Exception If an exception is thrown, transaction will be aborted.
+     * @throws Exception If an exception is thrown, the transaction will be aborted.
      */
     protected void deleted(Transaction transaction, T object) throws Exception {
     }
@@ -641,7 +638,7 @@ public class ObjectListEditor<T extends StoredObject> extends EditableObjectGrid
     }
 
     /**
-     * Save the currently accumulated changes to the database. Errors if any will be displayed in the UI.
+     * Save the currently accumulated changes to the database. Errors, if any, will be displayed in the UI.
      * <p>If a saver is set via {@link #setSaver(Function)}, that saver will be used for saving the changes.
      * Otherwise, a {@link Transaction} is created and {@link #save(Transaction)} is invoked with
      * that transaction to save the changes.</p>

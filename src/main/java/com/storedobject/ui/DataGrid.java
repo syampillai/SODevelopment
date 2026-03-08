@@ -46,8 +46,8 @@ public class DataGrid<T> extends com.storedobject.vaadin.ListGrid<T>
         if(!StoredObject.class.isAssignableFrom(objectClass)) {
             return null;
         }
-        @SuppressWarnings("unchecked") Class<O> oClass = (Class<O>) objectClass;
-        return StoredObjectUtility.browseColumns(oClass);
+        //noinspection unchecked
+        return ClassAttribute.get((Class<O>) objectClass).browseColumns();
     }
 
     protected boolean isValid(ListDataProvider<T> dataProvider) {
