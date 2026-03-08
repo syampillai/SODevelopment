@@ -69,7 +69,7 @@ public class ObjectFilter<T extends StoredObject> extends Form implements Object
         this.changeConsumer = changeConsumer;
         this.objectClass = objectClass;
         if(columns == null || columns.isEmpty()) {
-            columns = ClassAttribute.get(objectClass).browseColumns();
+            columns = ClassAttribute.get(objectClass).searchColumns();
         }
         this.columns = columns.array();
         buildFields();

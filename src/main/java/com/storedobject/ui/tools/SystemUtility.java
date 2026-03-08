@@ -677,7 +677,7 @@ public class SystemUtility extends View implements CloseableView, Transactional 
                 int family, count = 0;
                 for(StoredObject so: objects) {
                     ++count;
-                    family = StoredObjectUtility.family(so.getClass());
+                    family = ClassAttribute.get(so.getClass()).getFamily();
                     if(types.contains(family)) {
                         continue;
                     }
