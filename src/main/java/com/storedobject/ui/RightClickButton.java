@@ -9,8 +9,32 @@ public class RightClickButton<T> implements Consumer<T>, Predicate<T> {
     private Consumer<T> consumer;
     private Predicate<T> predicate;
 
+    public RightClickButton() {
+        this(null, null, null);
+    }
+
+    public RightClickButton(Consumer<T> consumer) {
+        this(null, consumer, null);
+    }
+
+    public RightClickButton(Predicate<T> predicate) {
+        this(null, null, predicate);
+    }
+
+    public RightClickButton(Consumer<T> consumer, Predicate<T> predicate) {
+        this(null, consumer, predicate);
+    }
+
     public RightClickButton(String label) {
         this(label, null, null);
+    }
+
+    public RightClickButton(String label, Consumer<T> consumer) {
+        this(label, consumer, null);
+    }
+
+    public RightClickButton(String label, Predicate<T> predicate) {
+        this(label, null, predicate);
     }
 
     public RightClickButton(String label, Consumer<T> consumer, Predicate<T> predicate) {
