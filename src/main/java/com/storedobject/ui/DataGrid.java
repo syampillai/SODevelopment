@@ -25,6 +25,7 @@ public class DataGrid<T> extends com.storedobject.vaadin.ListGrid<T>
     static final String ACTION_NOT_ALLOWED = "Your profile doesn't allow the requested action";
     private GridListDataView<T> dataView;
     private String actionPrefix = null;
+    private RightClickMenu<T> rightClickMenu;
 
     public DataGrid(Class<T> objectClass) {
         this(objectClass, null);
@@ -555,6 +556,36 @@ public class DataGrid<T> extends com.storedobject.vaadin.ListGrid<T>
             return false;
         }
         return true;
+    }
+
+    /**
+     * Returns the instance of the right-click menu associated with this grid.
+     * If the right-click menu is not already initialized, a new instance is created.
+     *
+     * @return the right-click menu instance
+     */
+    public RightClickMenu<T> getRightClickMenu() {
+        if(rightClickMenu == null) {
+            rightClickMenu = new RightClickMenu<>(this);
+        }
+        return rightClickMenu;
+    }
+
+    /**
+     * Sets the right-click menu for this grid.
+     *
+     * @param rightClickMenu the right-click menu to be associated with this grid. A null value will remove
+     *                       the current menu.
+     */
+    public void setRightClickMenu(RightClickMenu<T> rightClickMenu) {
+        if(this.rightClickMenu != null) {
+            this.rightClickMenu.setTarget(null);
+            this.rightClickMenu.removeFromParent();
+        }
+        if(rightClickMenu != null && rightClickMenu.getTarget() != this) {
+            rightClickMenu.setTarget(this);
+        }
+        this.rightClickMenu = rightClickMenu;
     }
 
     static boolean actionAllowed(TransactionManager tm, String action, String prefix) {
