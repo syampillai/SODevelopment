@@ -59,31 +59,6 @@ public class ItemTypeContextMenu<T extends HasInventoryItemType> extends RightCl
         }));
     }
 
-    private boolean test(T hit) {
-        @SuppressWarnings("unchecked") Grid<T> itemTypeGrid = (Grid<T>) getTarget();
-        itemTypeGrid.deselectAll();
-        if(pnDetails == null) {
-            build(isAdmin);
-        }
-        itemTypeGrid.select(hit);
-        InventoryItemType it = hit.getInventoryItemType();
-        if(it == null) {
-            hide(pnDetails);
-            return false;
-        }
-        pnDetails.setVisible(true);
-        viewStock.setVisible(true);
-        String pn = "P/N: " + it.getPartNumber();
-        getItems().forEach(mi -> {
-            String label = mi.getText();
-            int p = label.indexOf('-');
-            if(p > 0) {
-                mi.setText(label.substring(0, p) + "- " + pn);
-            }
-        });
-        return true;
-    }
-
     @SafeVarargs
     private void hide(GridMenuItem<T>... items) {
         for(GridMenuItem<T> item: items) {
