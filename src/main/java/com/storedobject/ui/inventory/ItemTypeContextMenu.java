@@ -3,23 +3,22 @@ package com.storedobject.ui.inventory;
 import com.storedobject.core.HasInventoryItemType;
 import com.storedobject.core.InventoryItemType;
 import com.storedobject.ui.Application;
+import com.storedobject.ui.RightClickMenu;
 import com.storedobject.ui.Transactional;
 import com.vaadin.flow.component.grid.Grid;
-import com.vaadin.flow.component.grid.contextmenu.GridContextMenu;
 import com.vaadin.flow.component.grid.contextmenu.GridMenuItem;
-import com.vaadin.flow.function.SerializablePredicate;
 
-public class ItemTypeContextMenu<T extends HasInventoryItemType> extends GridContextMenu<T> {
+public class ItemTypeContextMenu<T extends HasInventoryItemType> extends RightClickMenu<T> {
 
-    private SerializablePredicate<T> dynamicContentHandler;
     private GridMenuItem<T> pnDetails, viewStock;
     private final ItemContext context = new ItemContext();
+    private final boolean isAdmin;
 
     public ItemTypeContextMenu(Grid<T> itemTypeGrid) {
         super(itemTypeGrid);
-        boolean isAdmin = itemTypeGrid instanceof Transactional transactional
+        isAdmin = itemTypeGrid instanceof Transactional transactional
                 && transactional.getTransactionManager().getUser().isAdmin();
-        super.setDynamicContentHandler(hit -> {
+        addCustomContentHandler(hit -> {
             itemTypeGrid.deselectAll();
             if(hit == null) {
                 return false;
@@ -31,7 +30,7 @@ public class ItemTypeContextMenu<T extends HasInventoryItemType> extends GridCon
             InventoryItemType it = hit.getInventoryItemType();
             if(it == null) {
                 hide(pnDetails);
-                return dynamicContentHandler != null && dynamicContentHandler.test(hit);
+                return false;
             }
             pnDetails.setVisible(true);
             viewStock.setVisible(true);
@@ -43,9 +42,6 @@ public class ItemTypeContextMenu<T extends HasInventoryItemType> extends GridCon
                     mi.setText(label.substring(0, p) + "- " + pn);
                 }
             });
-            if(dynamicContentHandler != null) {
-                dynamicContentHandler.test(hit);
-            }
             return true;
         });
     }
@@ -63,15 +59,35 @@ public class ItemTypeContextMenu<T extends HasInventoryItemType> extends GridCon
         }));
     }
 
+    private boolean test(T hit) {
+        @SuppressWarnings("unchecked") Grid<T> itemTypeGrid = (Grid<T>) getTarget();
+        itemTypeGrid.deselectAll();
+        if(pnDetails == null) {
+            build(isAdmin);
+        }
+        itemTypeGrid.select(hit);
+        InventoryItemType it = hit.getInventoryItemType();
+        if(it == null) {
+            hide(pnDetails);
+            return false;
+        }
+        pnDetails.setVisible(true);
+        viewStock.setVisible(true);
+        String pn = "P/N: " + it.getPartNumber();
+        getItems().forEach(mi -> {
+            String label = mi.getText();
+            int p = label.indexOf('-');
+            if(p > 0) {
+                mi.setText(label.substring(0, p) + "- " + pn);
+            }
+        });
+        return true;
+    }
+
     @SafeVarargs
     private void hide(GridMenuItem<T>... items) {
         for(GridMenuItem<T> item: items) {
             item.setVisible(false);
         }
-    }
-
-    @Override
-    public void setDynamicContentHandler(SerializablePredicate<T> dynamicContentHandler) {
-        this.dynamicContentHandler = dynamicContentHandler;
     }
 }

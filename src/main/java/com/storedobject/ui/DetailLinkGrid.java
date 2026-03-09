@@ -13,19 +13,11 @@ public class DetailLinkGrid<T extends StoredObject> extends AbstractLinkGrid<T> 
     private final AcceptAbandonButtons acceptAbandonButtons;
 
     public DetailLinkGrid(ObjectLinkField<T> linkField) {
-        this(linkField, null, true);
-    }
-
-    public DetailLinkGrid(ObjectLinkField<T> linkField, boolean createContextMenu) {
-        this(linkField, null, createContextMenu);
+        this(linkField, null);
     }
 
     public DetailLinkGrid(ObjectLinkField<T> linkField, Iterable<String> columns) {
-        this(linkField, columns, true);
-    }
-
-    public DetailLinkGrid(ObjectLinkField<T> linkField, Iterable<String> columns, boolean createContextMenu) {
-        super(linkField, columns == null ? linkField.getLink().getBrowseColumns() : columns, linkField.isAllowAny(), createContextMenu);
+        super(linkField, columns == null ? linkField.getLink().getBrowseColumns() : columns, linkField.isAllowAny());
         if(!link.isDetail()) {
             throw new SORuntimeException(link.getName() + " is not a Detail Link");
         }

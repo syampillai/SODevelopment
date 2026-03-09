@@ -12,29 +12,27 @@ public abstract class AbstractLinkGrid<T extends StoredObject> extends EditableO
     final StoredObjectUtility.Link<T> link;
     final ObjectLinkField<T> linkField;
 
-    public AbstractLinkGrid(ObjectLinkField<T> linkField, Iterable<String> columns, boolean any, boolean createContextMenu) {
+    public AbstractLinkGrid(ObjectLinkField<T> linkField, Iterable<String> columns, boolean any) {
         super(linkField.getObjectClass(), columns, any);
         this.linkField = linkField;
         this.link = linkField.getLink();
-        init(createContextMenu);
+        init();
     }
 
-    protected AbstractLinkGrid(ObjectLinkField<T> linkField, Filtered<T> list, Iterable<String> columns, boolean createContextMenu) {
+    protected AbstractLinkGrid(ObjectLinkField<T> linkField, Filtered<T> list, Iterable<String> columns) {
         super(linkField.getObjectClass(), list, columns);
         this.linkField = linkField;
         this.link = linkField.getLink();
-        init(createContextMenu);
+        init();
     }
 
-    private void init(boolean createContextMenu) {
-        if(createContextMenu) {
-            if(HasInventoryItem.class.isAssignableFrom(getObjectClass())) {
-                @SuppressWarnings("unchecked") Grid<? extends HasInventoryItem> g = (Grid<? extends HasInventoryItem>) this;
-                new ItemContextMenu<>(g).setHideGRNDetails(getObjectClass() == InventoryGRNItem.class);
-            } else if(HasInventoryItemType.class.isAssignableFrom(getObjectClass())) {
-                @SuppressWarnings("unchecked") Grid<? extends HasInventoryItemType> g = (Grid<? extends HasInventoryItemType>) this;
-                new ItemTypeContextMenu<>(g);
-            }
+    private void init() {
+        if(HasInventoryItem.class.isAssignableFrom(getObjectClass())) {
+            @SuppressWarnings("unchecked") Grid<? extends HasInventoryItem> g = (Grid<? extends HasInventoryItem>) this;
+            new ItemContextMenu<>(g).setHideGRNDetails(getObjectClass() == InventoryGRNItem.class);
+        } else if(HasInventoryItemType.class.isAssignableFrom(getObjectClass())) {
+            @SuppressWarnings("unchecked") Grid<? extends HasInventoryItemType> g = (Grid<? extends HasInventoryItemType>) this;
+            new ItemTypeContextMenu<>(g);
         }
         setAllRowsVisible(true);
     }

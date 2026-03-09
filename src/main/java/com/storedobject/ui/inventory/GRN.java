@@ -8,7 +8,6 @@ import com.storedobject.ui.*;
 import com.storedobject.vaadin.*;
 import com.vaadin.flow.component.HasValue;
 import com.vaadin.flow.component.checkbox.Checkbox;
-import com.vaadin.flow.component.grid.contextmenu.GridContextMenu;
 import com.vaadin.flow.component.grid.contextmenu.GridMenuItem;
 import com.vaadin.flow.component.icon.VaadinIcon;
 
@@ -180,12 +179,12 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
         }
         addConstructedListener(f -> con());
         setCaption("GRN (" + InventoryGRN.getTypeValues()[type] + ")");
-        GridContextMenu<InventoryGRN> cm = new GridContextMenu<>(this);
+        RightClickMenu<InventoryGRN> cm = new RightClickMenu<>(this);
         GridMenuItem<InventoryGRN> process =
                 cm.addItem("Receive/Process", e -> e.getItem().ifPresent(i -> edit.click()));
         GridMenuItem<InventoryGRN> landedCost =
                 cm.addItem("Compute Landed Cost", e -> e.getItem().ifPresent(this::computeLandedCost));
-        cm.setDynamicContentHandler(grn -> {
+        cm.addCustomContentHandler(grn -> {
             deselectAll();
             if(grn == null) {
                 return false;
@@ -928,10 +927,10 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
             private SplitQuantity splitQuantity;
 
             public GRNItemGrid() {
-                super(grnItemsField, false);
+                super(grnItemsField);
                 setObjectEditor(new GRNItemEditor());
                 getButtonPanel().add(editItem, splitQty, inspect, bin, assemble, hint);
-                ItemContextMenu<InventoryGRNItem> contextMenu = new ItemContextMenu<>(this);
+                ItemContextMenu<InventoryGRNItem> contextMenu = (ItemContextMenu<InventoryGRNItem>) getRightClickMenu();
                 contextMenu.setHideGRNDetails(true);
                 GridMenuItem<InventoryGRNItem> split = contextMenu.addItem("Split Quantity",
                         e -> e.getItem().ifPresent(x -> splitQuantity()));
@@ -943,7 +942,7 @@ public class GRN extends ObjectBrowser<InventoryGRN> {
                         e -> e.getItem().ifPresent(x -> assemble()));
                 GridMenuItem<InventoryGRNItem> editGRNItem = contextMenu.addItem("Edit",
                         e -> e.getItem().ifPresent(x -> editGRNItem()));
-                contextMenu.setDynamicContentHandler(r -> {
+                contextMenu.addCustomContentHandler(r -> {
                     if(r == null) {
                         return false;
                     }

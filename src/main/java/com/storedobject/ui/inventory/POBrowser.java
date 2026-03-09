@@ -8,7 +8,6 @@ import com.storedobject.vaadin.*;
 import com.storedobject.vaadin.ListGrid;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.checkbox.Checkbox;
-import com.vaadin.flow.component.grid.contextmenu.GridContextMenu;
 import com.vaadin.flow.component.grid.contextmenu.GridMenuItem;
 import com.vaadin.flow.component.icon.VaadinIcon;
 
@@ -25,7 +24,6 @@ public class POBrowser<T extends InventoryPO> extends ObjectBrowser<T> implement
     protected final Button goToGRNs = new Button("GRNs", VaadinIcon.STOCK, e -> processGRN(null));
     private POEditor<T> editor;
     private final List<ProcessButton> processButtons = new ArrayList<>();
-    private final GridContextMenu<T> contextMenu;
     String filter = "Status<4";
     private boolean allowSwitchStore = true;
     private boolean searching = false;
@@ -92,7 +90,7 @@ public class POBrowser<T extends InventoryPO> extends ObjectBrowser<T> implement
                 setCaption("Purchase Order");
             }
         });
-        contextMenu = new GridContextMenu<>(this);
+        RightClickMenu<T> contextMenu = new RightClickMenu<>(this);
         GridMenuItem<T> approveOrder = contextMenu.addItem("Approve the Order",
                 e -> e.getItem().ifPresent(i -> approveOrder()));
         GridMenuItem<T> placeOrder = contextMenu.addItem("Place the Order",
@@ -107,7 +105,7 @@ public class POBrowser<T extends InventoryPO> extends ObjectBrowser<T> implement
                 e -> e.getItem().ifPresent(i -> preProcessGRNs()));
         GridMenuItem<T> viewGRNs = contextMenu.addItem("View Associated GRNs",
                 e -> e.getItem().ifPresent(i -> preViewGRNs()));
-        contextMenu.setDynamicContentHandler(po -> {
+        contextMenu.addCustomContentHandler(po -> {
             deselectAll();
             if(po == null) {
                 return false;
@@ -566,12 +564,12 @@ public class POBrowser<T extends InventoryPO> extends ObjectBrowser<T> implement
             currency = items.getFirst().getUnitPrice().getCurrency();
             this.po = po;
             createHTMLColumn("PartNumber", this::pn);
-            GridContextMenu<InventoryPOItem> cm = new GridContextMenu<>(this);
+            RightClickMenu<InventoryPOItem> cm = new RightClickMenu<>(this);
             GridMenuItem<InventoryPOItem> noAPN = cm.addItem("No APNs found!");
             GridMenuItem<InventoryPOItem> createAPN = cm.addItem("Create a new APN",
                     e -> e.getItem().ifPresent(poi -> createAPN(poi.getPartNumber())));
             GridMenuItem<InventoryPOItem> setAPN = cm.addItem("Set APN", e -> e.getItem().ifPresent(this::apn));
-            cm.setDynamicContentHandler(item -> {
+            cm.addCustomContentHandler(item -> {
                 deselectAll();
                 if(item == null) {
                     return false;
@@ -975,7 +973,7 @@ public class POBrowser<T extends InventoryPO> extends ObjectBrowser<T> implement
 
         ProcessButton(String label, Predicate<T> check, Consumer<T> processor) {
             this.check = check == null ? (po -> true) : check;
-            menu = contextMenu.addItem(label, e -> e.getItem().ifPresent(processor));
+            menu = getRightClickMenu().addItem(label, e -> e.getItem().ifPresent(processor));
         }
     }
 

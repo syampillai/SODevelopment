@@ -4,13 +4,13 @@ import com.storedobject.common.StringList;
 import com.storedobject.core.*;
 import com.storedobject.ui.Application;
 import com.storedobject.ui.ELabel;
+import com.storedobject.ui.RightClickMenu;
 import com.storedobject.vaadin.ActionForm;
 import com.storedobject.vaadin.Button;
 import com.storedobject.vaadin.ButtonLayout;
 import com.storedobject.vaadin.DataTreeGrid;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.checkbox.Checkbox;
-import com.vaadin.flow.component.grid.contextmenu.GridContextMenu;
 import com.vaadin.flow.component.grid.contextmenu.GridMenuItem;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.data.provider.hierarchy.AbstractHierarchicalDataProvider;
@@ -32,12 +32,12 @@ public class BaseReceiveMaterialRequested<MR extends MaterialRequest, MRI extend
 
     public BaseReceiveMaterialRequested(Class<MR> materialRequestClass, InventoryLocation from) {
         super(materialRequestClass, false, 2, from);
-        GridContextMenu<MR> contextMenu = new GridContextMenu<>(this);
+        RightClickMenu<MR> contextMenu = new RightClickMenu<>(this);
         GridMenuItem<MR> receive = contextMenu.addItem("Receive Materials", e -> receive());
         GridMenuItem<MR> request = contextMenu.addItem("Request to issue", e -> receive());
         GridMenuItem<MR> release = contextMenu.addItem("Cancel Reservation",
                 e -> releaseReservation(e.getItem().orElse(null)));
-        contextMenu.setDynamicContentHandler(o -> {
+        contextMenu.addCustomContentHandler(o -> {
             if(o == null) {
                 return false;
             }

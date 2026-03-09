@@ -40,19 +40,11 @@ public class ReferenceLinkGrid<T extends StoredObject> extends AbstractLinkGrid<
     };
 
     public ReferenceLinkGrid(ObjectLinkField<T> linkField) {
-        this(linkField, null, true);
-    }
-
-    public ReferenceLinkGrid(ObjectLinkField<T> linkField, boolean createContextMenu) {
-        this(linkField, null, createContextMenu);
+        this(linkField, null);
     }
 
     public ReferenceLinkGrid(ObjectLinkField<T> linkField, Iterable<String> columns) {
-        this(linkField, columns, true);
-    }
-
-    public ReferenceLinkGrid(ObjectLinkField<T> linkField, Iterable<String> columns, boolean createContextMenu) {
-        super(linkField, new ObjectMemoryList<>(linkField.getObjectClass(), linkField.isAllowAny()), columns, createContextMenu);
+        super(linkField, new ObjectMemoryList<>(linkField.getObjectClass(), linkField.isAllowAny()), columns);
         setFilter((String) null, false);
         buttonPanel = new LinkGridButtons<>(this);
         //noinspection unchecked

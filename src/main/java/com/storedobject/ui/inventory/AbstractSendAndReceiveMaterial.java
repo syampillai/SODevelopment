@@ -7,7 +7,6 @@ import com.storedobject.ui.Application;
 import com.storedobject.ui.*;
 import com.storedobject.vaadin.*;
 import com.vaadin.flow.component.HasValue;
-import com.vaadin.flow.component.grid.contextmenu.GridContextMenu;
 import com.vaadin.flow.component.grid.contextmenu.GridMenuItem;
 import com.vaadin.flow.component.icon.VaadinIcon;
 
@@ -160,14 +159,14 @@ public abstract class AbstractSendAndReceiveMaterial<T extends InventoryTransfer
             this.filterField = new ObjectField<>(this.toField.getLabel(), ff);
         }
         setOrderBy("Date DESC,No DESC");
-        GridContextMenu<T> cm = new GridContextMenu<>(this);
+        RightClickMenu<T> cm = new RightClickMenu<>(this);
         final boolean approvalAllowed = !receiveMode && canApprove();
         final GridMenuItem<T> approvalMenu = approvalAllowed ? cm.addItem("Approve", e ->  approve()) : null;
         final boolean actionAllowed = receiveMode ? canReceive() : canSend();
         final GridMenuItem<T> actionMenu = actionAllowed ? cm.addItem((receiveMode ? "Receive" : "Send")
                 + " Items", e -> e.getItem().ifPresent(this::rowDoubleClicked)) : null;
         GridMenuItem<T> grnMenu = cm.addItem("Associated GRN", e ->  grn());
-        cm.setDynamicContentHandler(o -> {
+        cm.addCustomContentHandler(o -> {
             if(o == null) {
                 return false;
             }

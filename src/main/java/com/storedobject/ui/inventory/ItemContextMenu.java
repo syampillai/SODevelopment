@@ -3,20 +3,18 @@ package com.storedobject.ui.inventory;
 import com.storedobject.core.*;
 import com.storedobject.ui.Application;
 import com.storedobject.ui.DetailLinkGrid;
+import com.storedobject.ui.RightClickMenu;
 import com.storedobject.ui.Transactional;
 import com.storedobject.vaadin.ExecutableView;
 import com.vaadin.flow.component.grid.Grid;
-import com.vaadin.flow.component.grid.contextmenu.GridContextMenu;
 import com.vaadin.flow.component.grid.contextmenu.GridMenuItem;
-import com.vaadin.flow.function.SerializablePredicate;
 
-public class ItemContextMenu<T extends HasInventoryItem> extends GridContextMenu<T> {
+public class ItemContextMenu<T extends HasInventoryItem> extends RightClickMenu<T> {
 
     private final ItemContext context = new ItemContext();
     private boolean allowInspection, allowBreaking, allowAssemble, allowEditCost, hideGRNDetails, hideViewStock, hideMovementDetails;
     private GridMenuItem<T> itemAssembly, parentAssembly, viewFitment, viewFitmentLocations, inspect, split, assemble, inspectAssembly,
             breakAssembly, movementDetails, grnDetails, editCost, itemDetails, pnDetails, viewStock, viewSource;
-    private SerializablePredicate<T> dynamicContentHandler;
 
     public ItemContextMenu(Grid<T> itemGrid) {
         this(itemGrid, null);
@@ -44,7 +42,7 @@ public class ItemContextMenu<T extends HasInventoryItem> extends GridContextMenu
         this.allowEditCost = allowEditCost;
         context.setRefresher(refresher);
         context.setView((ExecutableView) itemGrid);
-        super.setDynamicContentHandler(hi -> {
+        addCustomContentHandler(hi -> {
             itemGrid.deselectAll();
             if(hi == null) {
                 return false;
@@ -60,7 +58,7 @@ public class ItemContextMenu<T extends HasInventoryItem> extends GridContextMenu
                         pnDetails, viewStock);
                 InventoryItemType iit = hi.getInventoryItemType();
                 if(iit == null) {
-                    return dynamicContentHandler != null && dynamicContentHandler.test(hi);
+                    return false;
                 }
                 pnDetails.setVisible(true);
                 pnDetails.setText("P/N Details: " + iit.getPartNumber());
@@ -69,9 +67,6 @@ public class ItemContextMenu<T extends HasInventoryItem> extends GridContextMenu
                     viewStock.setText("View Stock: " + iit.getPartNumber());
                 }
                 viewSource.setVisible(hi instanceof InventoryGRNItem);
-                if(dynamicContentHandler != null) {
-                    dynamicContentHandler.test(hi);
-                }
                 return true;
             }
             pnDetails.setVisible(true);
@@ -108,9 +103,6 @@ public class ItemContextMenu<T extends HasInventoryItem> extends GridContextMenu
                     }
                 }
             });
-            if(dynamicContentHandler != null) {
-                dynamicContentHandler.test(hi);
-            }
             return true;
         });
     }
@@ -161,11 +153,6 @@ public class ItemContextMenu<T extends HasInventoryItem> extends GridContextMenu
         for(GridMenuItem<T> item: items) {
             item.setVisible(false);
         }
-    }
-
-    @Override
-    public void setDynamicContentHandler(SerializablePredicate<T> dynamicContentHandler) {
-        this.dynamicContentHandler = dynamicContentHandler;
     }
 
     public void setAllowBreaking(boolean allowBreaking) {

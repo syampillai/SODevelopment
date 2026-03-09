@@ -578,6 +578,9 @@ public class DataGrid<T> extends com.storedobject.vaadin.ListGrid<T>
      *                       the current menu.
      */
     public void setRightClickMenu(RightClickMenu<T> rightClickMenu) {
+        if(this.rightClickMenu == rightClickMenu) {
+            return;
+        }
         if(this.rightClickMenu != null) {
             this.rightClickMenu.setTarget(null);
             this.rightClickMenu.removeFromParent();

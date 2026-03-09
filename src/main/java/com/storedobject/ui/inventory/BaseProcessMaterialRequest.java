@@ -11,7 +11,6 @@ import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.grid.ColumnTextAlign;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridMultiSelectionModel;
-import com.vaadin.flow.component.grid.contextmenu.GridContextMenu;
 import com.vaadin.flow.component.grid.contextmenu.GridMenuItem;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.data.provider.hierarchy.AbstractHierarchicalDataProvider;
@@ -45,12 +44,12 @@ public class BaseProcessMaterialRequest<MR extends MaterialRequest, MRI extends 
     }
 
     private void init() {
-        GridContextMenu<MR> contextMenu = new GridContextMenu<>(this);
+        RightClickMenu<MR> contextMenu = new RightClickMenu<>(this);
         GridMenuItem<MR> process = contextMenu.addItem("Process Request", e -> e.getItem()
                 .ifPresent(i -> processRequest()));
         GridMenuItem<MR> viewItems = contextMenu.addItem("", e -> e.getItem()
                 .ifPresent(i -> viewItems()));
-        contextMenu.setDynamicContentHandler(mr -> {
+        contextMenu.addCustomContentHandler(mr -> {
             deselectAll();
             if(mr == null) {
                 return false;
@@ -196,7 +195,7 @@ public class BaseProcessMaterialRequest<MR extends MaterialRequest, MRI extends 
             setSelectionMode(SelectionMode.MULTI);
             ((GridMultiSelectionModel<Object>)getSelectionModel()).addMultiSelectionListener(this::selectionChanged);
             setCaption("Process Material Request");
-            GridContextMenu<Object> contextMenu = new GridContextMenu<>(this);
+            RightClickMenu<Object> contextMenu = new RightClickMenu<>(this);
             GridMenuItem<Object> addEntry = contextMenu.addItem("Add Entries", e -> addEntries());
             GridMenuItem<Object> addEntries = contextMenu.addItem("Fill Entries", e -> balanceFill());
             GridMenuItem<Object> removeEntries = contextMenu.addItem("Remove Entries", e -> removeEntries());
@@ -212,7 +211,7 @@ public class BaseProcessMaterialRequest<MR extends MaterialRequest, MRI extends 
                 }
             });
             GridMenuItem<Object> viewAssembly = contextMenu.addItem("View Assembly", e -> viewAssembly());
-            contextMenu.setDynamicContentHandler(o -> {
+            contextMenu.addCustomContentHandler(o -> {
                 deselectAll();
                 select(o);
                 selectedSet.clear();

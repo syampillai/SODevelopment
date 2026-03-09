@@ -204,7 +204,7 @@ public class DefineReplacementItems extends DataForm {
             var markAsConsumed = m.addItem("Mark as Consumed - ", e -> e.getItem().ifPresent(this::consume));
             var splitQuantity = m.addItem("Consume Fully/Partially - ", e -> e.getItem().ifPresent(this::splitQuantity));
             var assembly = m.addItem("Manage Assembly - ", e -> e.getItem().ifPresent(this::assembly));
-            m.setDynamicContentHandler(i -> {
+            m.addCustomContentHandler(i -> {
                 markAsConsumed.setVisible(i.isSerialized());
                 splitQuantity.setVisible(!i.isSerialized());
                 assembly.setVisible(i.getPartNumber().isAssembly());
