@@ -30,6 +30,7 @@ public class MailForm extends DataForm implements Transactional {
     private Attachments attachments;
     private boolean allowAttachments = true;
     private SenderGroup senderGroup;
+    private Mail mail;
 
     public MailForm() {
         this("Mail");
@@ -97,7 +98,7 @@ public class MailForm extends DataForm implements Transactional {
         Set<Address> as = field.getValue();
         StringBuilder s = new StringBuilder();
         as.forEach(a -> {
-            if(s.length() > 0) {
+            if(!s.isEmpty()) {
                 s.append(",");
             }
             s.append(a.email);
@@ -155,7 +156,17 @@ public class MailForm extends DataForm implements Transactional {
         }
         transact(m::save);
         warning("Mail created successfully for sending...");
+        this.mail = m;
         return true;
+    }
+
+    /**
+     * Get the mail instance created by this form.
+     *
+     * @return Mail instance if created, otherwise <code>null</code>.
+     */
+    public Mail getMail() {
+        return mail;
     }
 
     public void addOtherAttachments(@SuppressWarnings("unused") Mail mail) {
@@ -330,16 +341,12 @@ public class MailForm extends DataForm implements Transactional {
         @Override
         public Address apply(T so) {
             if(so != null) {
-                Address a;
-                if(so instanceof Person) {
-                    a = new Address((Person) so);
-                } else if(so instanceof PersonRole) {
-                    a = new Address((PersonRole) so);
-                } else if(so instanceof Contact) {
-                    a = new Address((Contact) so);
-                } else {
-                    a = new Address(so);
-                }
+                Address a = switch (so) {
+                    case Person person -> new Address(person);
+                    case PersonRole personRole -> new Address(personRole);
+                    case Contact contact -> new Address(contact);
+                    default -> new Address(so);
+                };
                 if(a.isValid()) {
                     return a;
                 }
@@ -437,7 +444,7 @@ public class MailForm extends DataForm implements Transactional {
                 }
             });
             if(!errors.isEmpty()) {
-                throw errors.get(0);
+                throw errors.getFirst();
             }
             if(files.isEmpty()) {
                 return null;
