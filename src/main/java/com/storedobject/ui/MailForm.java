@@ -23,14 +23,13 @@ import java.util.function.Function;
 
 public class MailForm extends DataForm implements Transactional {
 
-    private ObjectField<SenderGroup> senderField;
-    private TokensField<Address> addressField, ccField;
-    private TextField subjectField;
-    private TextArea contentField;
+    private final ObjectField<SenderGroup> senderField;
+    private final TokensField<Address> addressField, ccField;
+    private final TextField subjectField;
+    private final TextArea contentField;
     private Attachments attachments;
     private boolean allowAttachments = true;
     private SenderGroup senderGroup;
-    private Mail mail;
 
     public MailForm() {
         this("Mail");
@@ -41,25 +40,6 @@ public class MailForm extends DataForm implements Transactional {
         setButtonsAtTop(true);
         setScrollable(true);
         setColumns(1);
-    }
-
-    public void setAllowAttachments(boolean allow) {
-        allowAttachments = allow;
-        if(allow) {
-            if(attachments == null) {
-                attachments = new Attachments();
-                addField(attachments);
-            }
-        } else {
-            if(attachments != null) {
-                remove(attachments);
-                attachments = null;
-            }
-        }
-    }
-
-    @Override
-    protected void buildFields() {
         String userEmail = getTransactionManager().getUser().getPerson().getContact("email");
         senderField = new ObjectField<>("From", SenderGroup.class, ObjectField.Type.CHOICE);
         senderField.setValue((Id)null);
@@ -86,6 +66,21 @@ public class MailForm extends DataForm implements Transactional {
         setAllowAttachments(allowAttachments);
         contentField = new TextArea("Content");
         addField(contentField);
+    }
+
+    public void setAllowAttachments(boolean allow) {
+        allowAttachments = allow;
+        if(allow) {
+            if(attachments == null) {
+                attachments = new Attachments();
+                addField(attachments);
+            }
+        } else {
+            if(attachments != null) {
+                remove(attachments);
+                attachments = null;
+            }
+        }
     }
 
     @Override
@@ -154,19 +149,24 @@ public class MailForm extends DataForm implements Transactional {
             error(e);
             return false;
         }
-        transact(m::save);
-        warning("Mail created successfully for sending...");
-        this.mail = m;
+        if(transact(t -> {
+            m.save(t);
+            saveExtra(m, t);
+        })) {
+            message("Mail created successfully for sending...");
+        }
         return true;
     }
 
     /**
-     * Get the mail instance created by this form.
-     *
-     * @return Mail instance if created, otherwise <code>null</code>.
+     * Save any extra data associated with this mail.
+     * @param mail Mail that is already saved.
+     * @param transaction Transaction.
+     * @return True if everything is saved successfully.
+     * @throws Exception If any error occurs.
      */
-    public Mail getMail() {
-        return mail;
+    protected boolean saveExtra(Mail mail, Transaction transaction) throws Exception {
+        return true;
     }
 
     public void addOtherAttachments(@SuppressWarnings("unused") Mail mail) {
