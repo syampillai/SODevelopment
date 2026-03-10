@@ -153,7 +153,11 @@ public class MailForm extends DataForm implements Transactional {
             m.save(t);
             saveExtra(m, t);
         })) {
-            message("Mail created successfully for sending...");
+            saved(m);
+        } else {
+            // Try to delete
+            m.reload();
+            transact(m::delete);
         }
         return true;
     }
@@ -167,6 +171,14 @@ public class MailForm extends DataForm implements Transactional {
      */
     protected boolean saveExtra(Mail mail, Transaction transaction) throws Exception {
         return true;
+    }
+
+    /**
+     * Called when the mail is saved successfully.
+     * @param mail Saved mail.
+     */
+    protected void saved(Mail mail) {
+        message("Mail created successfully for sending...");
     }
 
     public void addOtherAttachments(@SuppressWarnings("unused") Mail mail) {
