@@ -166,11 +166,9 @@ public class MailForm extends DataForm implements Transactional {
      * Save any extra data associated with this mail.
      * @param mail Mail that is already saved.
      * @param transaction Transaction.
-     * @return True if everything is saved successfully.
      * @throws Exception If any error occurs.
      */
-    protected boolean saveExtra(Mail mail, Transaction transaction) throws Exception {
-        return true;
+    protected void saveExtra(Mail mail, Transaction transaction) throws Exception {
     }
 
     /**
