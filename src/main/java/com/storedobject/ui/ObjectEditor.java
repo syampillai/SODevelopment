@@ -2367,12 +2367,13 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
             addSection(md);
             styleField(md, field);
         }
+        String fn = this.fieldName + fieldName;
         if(currentTab != null) {
             currentTab.add((Component) field);
-            fieldPositions.add(new FieldPosition(this.fieldName + fieldName, currentTab, fieldPos(currentTab)));
+            fieldPositions.add(new FieldPosition(fn, currentTab, fieldPos(currentTab)));
             if(md != null) addSectionEnd(md);
         } else {
-            fieldPositions.add(new FieldPosition(this.fieldName + fieldName, getForm().getContainer(),
+            fieldPositions.add(new FieldPosition(fn, getForm().getContainer(),
                     fieldPos(getForm().getContainer())));
             if(md != null) addSectionEnd(md);
             super.attachField(fieldName, field);
@@ -2400,10 +2401,14 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
         v = md.getStyleNumber("section-span", -1);
         if(v == -1) v = md.getStyleNumber("span", 0);
         if(v > 0) fs.setColumnSpan(v);
+        String fn = this.fieldName + fieldName + "$0";
         if(currentTab == null) {
             super.add(fs);
+            fieldPositions.add(new FieldPosition(fn, getForm().getContainer(),
+                    fieldPos(getForm().getContainer())));
         } else {
             currentTab.add(fs);
+            fieldPositions.add(new FieldPosition(fn, currentTab, fieldPos(currentTab)));
         }
     }
 
@@ -2413,10 +2418,14 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
         int v = md.getStyleNumber("section-span", -1);
         if(v == -1) v = md.getStyleNumber("span", 0);
         if(v > 0) end.setColumnSpan(v);
+        String fn = this.fieldName + fieldName + "$1";
         if(currentTab == null) {
             super.add(end);
+            fieldPositions.add(new FieldPosition(fn, getForm().getContainer(),
+                    fieldPos(getForm().getContainer())));
         } else {
             currentTab.add(end);
+            fieldPositions.add(new FieldPosition(fn, currentTab, fieldPos(currentTab)));
         }
     }
 

@@ -149,7 +149,7 @@ public final class UIAction extends StoredObject {
      * Retrieves a UIAction based on the given action name.
      *
      * @param action the name of the action to retrieve
-     * @return a UIAction object that matches the given action name, or null if no match is found
+     * @return a UIAction object that matches the given action name or null if no match is found
      */
     public static UIAction get(String action) {
         action = toCode(action);

@@ -47,6 +47,7 @@ public class ObjectSearchField<T extends StoredObject> extends AbstractObjectFie
             setModelValue(null, true);
             setPresentationValue(null);
         }).withBox();
+        delete.setColor(Application.COLOR_ERROR);
         delete.setVisible(false);
         return new ButtonLayout(addButton, search, delete);
     }

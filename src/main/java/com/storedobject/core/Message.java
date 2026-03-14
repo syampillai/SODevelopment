@@ -172,7 +172,7 @@ public abstract class Message extends StoredObject {
     @Override
 	public void validateData(TransactionManager tm) throws Exception {
         if(!deleted()) {
-            sentToId = tm.checkType(this, sentToId, Person.class, false);
+            sentToId = tm.checkType(this, sentToId, Person.class, true);
             if (StringUtility.isWhite(message)) {
                 throw new Invalid_Value("Message");
             }

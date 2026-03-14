@@ -30,6 +30,7 @@ public class IFrame extends Component implements HasSize {
      */
     public IFrame(String sourceDocument) {
         new ContextMenu(this);
+        getElement().setAttribute("sandbox", "allow-scripts");
         Style s = getElement().getStyle();
         s.set("border", "none");
         s.set("margin", "0px");
@@ -41,7 +42,7 @@ public class IFrame extends Component implements HasSize {
     /**
      * Constructor.
      *
-     * @param textContent Text content from which source document to be set.
+     * @param textContent Text content from which a source document to be set.
      */
     public IFrame(TextContent textContent) {
         this(textContent == null ? null : textContent.getContent());
@@ -69,5 +70,15 @@ public class IFrame extends Component implements HasSize {
             }
             getElement().setAttribute("srcdoc", sourceDocument);
         }
+    }
+
+    /**
+     * Sets the source URL for the iframe element.
+     *
+     * @param source The source URL to be set. It specifies the address of the document
+     *               to be embedded within the iframe.
+     */
+    public void setSource(String source) {
+        getElement().setAttribute("src", source);
     }
 }

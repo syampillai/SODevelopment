@@ -200,16 +200,10 @@ public class DefineReplacementItems extends DataForm {
             this.items = items;
             load(items);
             ItemContextMenu<InventoryItem> m = new ItemContextMenu<>(this);
-            m.addItem("Replace Item - ", e -> e.getItem().ifPresent(this::replace));
-            var markAsConsumed = m.addItem("Mark as Consumed - ", e -> e.getItem().ifPresent(this::consume));
-            var splitQuantity = m.addItem("Consume Fully/Partially - ", e -> e.getItem().ifPresent(this::splitQuantity));
-            var assembly = m.addItem("Manage Assembly - ", e -> e.getItem().ifPresent(this::assembly));
-            m.addCustomContentHandler(i -> {
-                markAsConsumed.setVisible(i.isSerialized());
-                splitQuantity.setVisible(!i.isSerialized());
-                assembly.setVisible(i.getPartNumber().isAssembly());
-                return true;
-            });
+            m.add(new RightClickButton<>("Replace Item - ", this::replaceItem));
+            m.add(new RightClickButton<>("Mark as Consumed - ", this::consumeItem, InventoryItem::isSerialized));
+            m.add(new RightClickButton<>("Consume Fully/Partially - ", this::splitQuantity, i -> !i.isSerialized()));
+            m.add(new RightClickButton<>("Manage Assembly - ", this::assembly, i -> i.getPartNumber().isAssembly()));
         }
 
         @Override
@@ -237,7 +231,7 @@ public class DefineReplacementItems extends DataForm {
             ));
         }
 
-        private void replace(InventoryItem item) {
+        private void replaceItem(InventoryItem item) {
             new ItemReplacementForm(item).execute();
         }
 
@@ -254,7 +248,7 @@ public class DefineReplacementItems extends DataForm {
             new ConsumptionForm(item).execute();
         }
 
-        private void consume(InventoryItem item) {
+        private void consumeItem(InventoryItem item) {
             new SerializedConsumptionForm(item).execute();
         }
 
@@ -263,7 +257,7 @@ public class DefineReplacementItems extends DataForm {
         }
 
         private void createNewItem(InventoryItemType pn, String sn, Quantity quantity, String remarks) {
-            InventoryItem item = getItem(pn, sn);
+            InventoryItem item = pn.isSerialized() ? getItem(pn, sn) : null;
             if(item == null) {
                 try {
                     item = pn.createItem(sn, quantity, eo, getTransactionManager());
@@ -353,7 +347,7 @@ public class DefineReplacementItems extends DataForm {
         private void replace(InventoryItem item, InventoryItemType pn, String sn, String remarks) {
             clearAlerts();
             String sOld = "S/N = " + item.getSerialNumber(), sNew = "S/N = " + sn;
-            InventoryItem newItem, ii = getItem(pn, sn);
+            InventoryItem newItem, ii = pn.isSerialized() ? getItem(pn, sn) : null;
             boolean isNew = ii == null;
             if(isNew) ii = pn.createItem(sn);
             newItem = ii;

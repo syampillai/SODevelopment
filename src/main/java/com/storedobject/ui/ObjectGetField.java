@@ -162,6 +162,7 @@ public class ObjectGetField<T extends StoredObject> extends AbstractObjectField<
             setValue((Id)null);
             searchField.focus();
         }).withBox();
+        b.setColor(Application.COLOR_ERROR);
         buttonLayout.add(b);
         buttonLayout.add(search);
         searchField.setPrefixComponent(buttonLayout);

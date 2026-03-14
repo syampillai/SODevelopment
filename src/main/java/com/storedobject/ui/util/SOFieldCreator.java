@@ -629,6 +629,8 @@ public class SOFieldCreator<T> implements ObjectFieldCreator<T> {
                 FileField fileField = new FileField(types.toArray(new ObjectField.Type[0]));
                 fileField.disallowDownload();
                 return new ObjectField<>(label, fileField);
+            } else if(realObjectType == SystemUser.class) {
+                return new UserField(label);
             }
             ObjectEditor<FT> oe = (ObjectEditor<FT>) oe();
             Class<FT> fieldClass = (Class<FT>) realObjectType;

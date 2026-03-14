@@ -66,6 +66,7 @@ public class MailForm extends DataForm implements Transactional {
         setAllowAttachments(allowAttachments);
         contentField = new TextArea("Content");
         addField(contentField);
+        setRequired(senderField, addressField, subjectField, contentField);
     }
 
     public void setAllowAttachments(boolean allow) {

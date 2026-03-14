@@ -13,6 +13,8 @@ import java.sql.Timestamp;
  * The primary purpose of this class is to provide accurate time precision
  * in minutes by truncating seconds and nanoseconds and offering a string
  * representation formatted to show hours and minutes.
+ *
+ * @author Syam
  */
 public class MinutesTimestamp extends Timestamp implements Displayable {
 

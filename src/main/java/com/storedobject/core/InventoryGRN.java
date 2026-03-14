@@ -574,9 +574,9 @@ public final class InventoryGRN extends StoredObject implements OfEntity, HasChi
                 it.checkTransit(false);
             }
             switch(type) {
-                case 0 -> it.moveTo(grnItem.getId(), item, null, bin);
-                case 1 -> it.receiveFromExternal(grnItem.getId(), item, null, bin, supplier);
-                case 2 -> it.loanFrom(grnItem.getId(), item, null, bin, supplier);
+                case 0 -> it.moveTo(grnItem.getId(), item, getReference(), bin);
+                case 1 -> it.receiveFromExternal(grnItem.getId(), item, getReference(), bin, supplier);
+                case 2 -> it.loanFrom(grnItem.getId(), item, getReference(), bin, supplier);
                 case 3 -> throw new SORuntimeException("Can't process repair returns");
                 case 4 -> throw new SORuntimeException("Can't process sales returns");
                 case 5 -> throw new SORuntimeException("Can't process loan returns");
