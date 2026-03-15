@@ -1,31 +1,37 @@
 package com.storedobject.ui;
 
 import com.storedobject.core.*;
+import com.storedobject.office.ODTReport;
 import com.storedobject.vaadin.*;
 
 public class Test extends DataForm {
 
-    TextField icon, category;
-    FontIcon fi;
+    private final BooleanField raw = new BooleanField("Raw");
 
     public Test() {
         super("Test");
-        fi = new FontIcon("frog");
-        icon = new TextField("Icon");
-        category = new TextField("Category");
-        addField(icon, category);
-        setRequired(icon, category);
-    }
-
-    @Override
-    protected void buildButtons() {
-        super.buildButtons();
-        buttonPanel.add(fi);
+        addField(raw);
     }
 
     @Override
     protected boolean process() {
-        fi.set(icon.getValue(), category.getValue());
-        return false;
+        close();
+        R r = new R(getApplication());
+        r.setRawOutput(raw.getValue());
+        r.execute();
+        return true;
+    }
+
+    private static class R extends ODTReport {
+
+        public R(Device device) {
+            super(device);
+            setTemplate(new Id("3405"));
+        }
+
+        @Override
+        protected boolean includeSection(String sectionName) {
+            return !"Section2".equals(sectionName);
+        }
     }
 }

@@ -70,11 +70,6 @@ public class ODT<T> implements ContentProducer, Closeable {
     public void setTransactionManager(TransactionManager transactionManager) {
     }
 
-    @Override
-    public TransactionManager getTransactionManager() {
-        return null;
-    }
-
     public Throwable getException() {
         return null;
     }
@@ -101,5 +96,12 @@ public class ODT<T> implements ContentProducer, Closeable {
 
     @Override
     public void close() {
+    }
+
+    protected boolean includeTable(String tableName) {
+        return true;
+    }
+    protected boolean includeSection(String sectionName) {
+        return true;
     }
 }
