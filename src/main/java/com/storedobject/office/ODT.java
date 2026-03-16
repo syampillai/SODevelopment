@@ -1,6 +1,7 @@
 package com.storedobject.office;
 
 import com.storedobject.core.*;
+import org.w3c.dom.Node;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -101,7 +102,48 @@ public class ODT<T> implements ContentProducer, Closeable {
     protected boolean includeTable(String tableName) {
         return true;
     }
+
     protected boolean includeSection(String sectionName) {
         return true;
+    }
+
+    protected boolean isCustomTable(String tableName) {
+        return false;
+    }
+
+    @SuppressWarnings("RedundantThrows")
+    protected void customize(Table table) throws Exception {
+    }
+
+    public static class Table {
+
+        private Table() {
+        }
+
+        public String getName() {
+            return "";
+        }
+
+        public TableRow getRow(int n) {
+            return Math.random() > 0 ? new TableRow(null) : null;
+        }
+
+        public void add(TableRow row) {
+        }
+
+        public void add(TableRow row, int variableIndex) throws Exception {
+        }
+
+        public void copy(int index) {
+        }
+
+        public void copy(int index, int count) {
+        }
+    }
+
+    public static class TableRow {
+
+        private TableRow(@SuppressWarnings("unused") Node row) {
+        }
     }
 }

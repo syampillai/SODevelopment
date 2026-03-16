@@ -22,16 +22,45 @@ public class Test extends DataForm {
         return true;
     }
 
-    private static class R extends ODTReport {
+    public static class R extends ODTReport {
 
         public R(Device device) {
             super(device);
-            setTemplate(new Id("3405"));
+            setTemplate(new Id("3408"));
+        }
+
+        public Object fill(String name) {
+            return name;
+        }
+
+        public Object fill(String name, int i) {
+            return name + "[" + i + "]";
+        }
+
+        public int rowCount(String table) {
+            return "Cargolist".equals(table) ? 2 : 0;
+        }
+
+        public int rowStart(String table) {
+            return "Estimatelist".equals(table) ? 2 : -1;
         }
 
         @Override
-        protected boolean includeSection(String sectionName) {
-            return !"Section2".equals(sectionName);
+        protected boolean isCustomTable(String tableName) {
+            return "Estimatelist".equals(tableName);
+        }
+
+        @Override
+        protected void customize(Table table) throws Exception {
+            table.copy(0);
+            TableRow row;
+            row = table.getRow(1);
+            table.add(row, 0);
+            row = table.getRow(2);
+            table.add(row, 10);
+            row = table.getRow(2);
+            table.add(row, 11);
+            table.copy(3, 2);
         }
     }
 }
