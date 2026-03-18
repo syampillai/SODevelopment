@@ -1,5 +1,6 @@
 :host(.so-editable-grid) [part~="row"][selected] [part~="body-cell"]:not([part~="details-cell"]) {
-    background: var(--lumo-primary-color-50pct);
+    background: var(--so-grid-selected-background, var(--lumo-primary-color-50pct));
+    color: var(--so-grid-selected-color, var(--so-header-color));
 }
 [part~="cell"].so-edited {
     background: var(--lumo-primary-color-10pct);

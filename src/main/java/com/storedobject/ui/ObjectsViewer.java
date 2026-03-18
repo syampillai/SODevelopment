@@ -6,6 +6,8 @@ import com.storedobject.core.StoredObject;
 import com.storedobject.core.StringUtility;
 import com.storedobject.vaadin.*;
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.tabs.Tab;
+import com.vaadin.flow.component.tabs.TabSheet;
 
 /**
  * ObjectsViewer is a specialized UI component that serves as a container for displaying
@@ -18,7 +20,7 @@ import com.vaadin.flow.component.Component;
  */
 public class ObjectsViewer extends View implements CloseableView {
 
-    private final Tabs tabs = new Tabs();
+    private final TabSheet tabs = new TabSheet();
 
     /**
      * Constructs an {@code ObjectsViewer} instance with a specified caption and an optional
@@ -70,6 +72,6 @@ public class ObjectsViewer extends View implements CloseableView {
         }
         @SuppressWarnings("unchecked") ObjectEditor<T> oe = (ObjectEditor<T>) ObjectEditor.create(object.getClass(), EditorAction.VIEW, caption);
         oe.setObject(object);
-        tabs.createTab(caption, oe.getContent());
+        tabs.add(new Tab(caption), oe.getContent());
     }
 }

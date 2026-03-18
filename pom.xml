@@ -7,11 +7,11 @@
     <parent>
         <groupId>com.storedobject</groupId>
         <artifactId>so-uipom</artifactId>
-        <version>24.9.8</version>
+        <version>24.10.0</version>
     </parent>
 
     <artifactId>so-development</artifactId>
-    <version>16.3.0</version>
+    <version>16.4.0</version>
 
     <name>${project.groupId}:${project.artifactId}</name>
     <description>SO Development skeleton classes</description>
@@ -63,13 +63,13 @@
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-core</artifactId>
-            <version>2.21.0</version>
+            <version>2.21.1</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
-            <version>2.21.0</version>
+            <version>2.21.1</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
@@ -81,7 +81,7 @@
         <dependency>
             <groupId>com.fasterxml.jackson.datatype</groupId>
             <artifactId>jackson-datatype-jsr310</artifactId>
-            <version>2.21.0</version>
+            <version>2.21.1</version>
             <scope>compile</scope>
         </dependency>
 

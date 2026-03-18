@@ -4,6 +4,7 @@ import com.storedobject.common.ArrayListSet;
 import com.storedobject.common.IO;
 import com.storedobject.core.StoredObject;
 import com.storedobject.core.StringUtility;
+import com.storedobject.ui.ScrollingContent;
 import com.storedobject.ui.Transactional;
 import com.storedobject.vaadin.Button;
 import com.storedobject.vaadin.ButtonLayout;
@@ -35,14 +36,14 @@ public class ObjectBlockEditor extends View implements Transactional {
     public ObjectBlockEditor(StoredObject master, Map<String, StoredObject> details, String block, String caption) throws Exception {
         setCaption(caption);
         buttonPanel = new ButtonLayout();
-        buttonPanel.sticky();
         buttonPanel.add(save = new Button("Save", this));
         buttonPanel.add(expand = new Button("Expand", this));
         expand.setVisible(false);
         buttonPanel.add(collapse = new Button("Collapse", this));
         addExtraButtons();
         buttonPanel.add(cancel = new Button("Cancel", this));
-        layout.add(buttonPanel);
+        ScrollingContent sc = new ScrollingContent(buttonPanel, layout);
+        setComponent(sc);
         BufferedReader buffer = IO.get(new StringReader(block));
         String lineO, line, blockName, colName = null;
         int onPos;
@@ -92,7 +93,6 @@ public class ObjectBlockEditor extends View implements Transactional {
         }
         createBlock(sb.toString(), false, null);
         IO.close(buffer);
-        setComponent(layout);
     }
 
     private void createBlock(String b, boolean editable, String placeholder) {

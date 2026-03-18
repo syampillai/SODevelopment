@@ -6,8 +6,10 @@ import com.storedobject.vaadin.*;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasValue;
 import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.tabs.Tab;
-import com.vaadin.flow.component.tabs.TabsVariant;
+import com.vaadin.flow.component.tabs.TabSheet;
+import com.vaadin.flow.component.tabs.TabSheetVariant;
 import com.vaadin.flow.shared.Registration;
 
 import java.util.*;
@@ -465,12 +467,16 @@ public final class ObjectLinkField<T extends StoredObject>
         return visible;
     }
 
-    public static class Tabs extends com.storedobject.vaadin.Tabs {
+    public static class Tabs extends TabSheet {
 
         private final Map<Tab, FormLayout> components = new HashMap<>();
 
         public Tabs(int columnSpan) {
-            getTabs().addThemeVariants(TabsVariant.LUMO_SMALL);
+            var icon = VaadinIcon.GRID.create();
+            icon.setColor(Application.COLOR_SUCCESS);
+            icon.setSize("1em");
+            setPrefixComponent(icon);
+            addThemeVariants(TabSheetVariant.LUMO_TABS_SMALL);
             span(this, columnSpan);
         }
 
@@ -507,10 +513,9 @@ public final class ObjectLinkField<T extends StoredObject>
         }
 
         private Tab tabByName(String label) {
-            com.vaadin.flow.component.tabs.Tabs tabs = getTabs();
-            int count = tabs.getTabCount();
+            int count = getTabCount();
             for(int i = 0; i < count; i++) {
-                Tab tab = tabs.getTabAt(i);
+                Tab tab = getTabAt(i);
                 if (tab.getLabel().equals(label)) {
                     return tab;
                 }

@@ -32,7 +32,7 @@ public class SystemLogViewer extends View implements Transactional, CloseableVie
     private final LogGrid logGrid = new LogGrid();
     private final SystemLogGrid systemLogGrid = new SystemLogGrid();
     private final TimestampPeriodField systemLogPeriod = new TimestampPeriodField("System Log Period");
-    private String login, tag;
+    private String login;
 
     public SystemLogViewer() {
         super("System Log");
@@ -66,19 +66,9 @@ public class SystemLogViewer extends View implements Transactional, CloseableVie
             loginField.setValue(getTransactionManager().getUser());
         }
         login = null;
-        tag = null;
         switch(type.getValue()) {
             case 0 -> login = loginField.getObject().getLogin();
             case 1, 2 -> login = "*";
-        }
-        if(login == null) {
-            SystemUser su = SystemUser.get(ApplicationServer.getGlobalProperty(tag + ".user", "*"));
-            if(su == null) {
-                warning("Can not identify user for the " + tag + " interface");
-                hideLogs();
-                return;
-            }
-            login = su.getLogin();
         }
         if(lines.getValue() <= 0) {
             lines.setValue(50);
@@ -146,14 +136,8 @@ public class SystemLogViewer extends View implements Transactional, CloseableVie
         XML xml = new XML();
         xml.ignoreDTDs();
         try {
-            xml.set(new TagClosedReader(tag));
+            xml.set(new TagClosedReader());
             logGrid.setXML(xml);
-        } catch(SOException soe) {
-            String error = "Log File" + (tag == null ? "" : (" for " + Character.toUpperCase(tag.charAt(0))
-                    + tag.substring(1))) + ": ";
-            warning(error + soe.getEndUserMessage());
-            log(error + TagClosedReader.fileName(tag));
-            hideLogs();
         } catch (Exception e) {
             error(e);
             hideLogs();
@@ -183,8 +167,8 @@ public class SystemLogViewer extends View implements Transactional, CloseableVie
         private int fileCount = 0;
         private final String fileName;
 
-        private TagClosedReader(String tag) throws Exception {
-            fileName = fileName(tag);
+        private TagClosedReader() throws Exception {
+            fileName = ApplicationServer.getLogFile();
             File file = new File(fileName);
             if(!file.exists()) {
                 throw new SOException("Not found!");
@@ -194,15 +178,6 @@ public class SystemLogViewer extends View implements Transactional, CloseableVie
             }
             fileTime = file.lastModified();
             logReader = IO.getReader(file);
-        }
-
-        private static String fileName(String tag) {
-            String fileName = ApplicationServer.getLogFile();
-            if(tag != null) {
-                int p = fileName.lastIndexOf(File.separatorChar);
-                fileName = fileName.substring(0, p) + "-" + tag + fileName.substring(p);
-            }
-            return fileName;
         }
 
         @Override
@@ -299,11 +274,7 @@ public class SystemLogViewer extends View implements Transactional, CloseableVie
         @Override
         public void setXML(XML xml) {
             user = "/" + login + "/";
-            app = "(" + ApplicationServer.getPackageId();
-            if(tag != null) {
-                app += "-" + tag.toUpperCase();
-            }
-            app += ")/";
+            app = "(" + ApplicationServer.getApplicationName() + ")/";
             all = SystemLogViewer.this.includeGenericInfo.getValue();
             super.setXML(xml);
         }

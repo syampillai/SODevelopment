@@ -556,7 +556,7 @@ public class InventoryItem extends StoredObject implements HasInventoryItem {
             boolean binError = true;
             if(location instanceof InventoryBin && isSerialized()) { // It's in a store
                 InventoryItem p = get(getClass(), getId());
-                if(p != null && p.getLocationId().equals(locationId)) { // Bin didn't change, rejection maybe due to the  change in serviceability
+                if(p != null && p.getLocationId().equals(locationId)) { // Bin didn't change, rejection maybe due to the change in serviceability
                     binError = false; // Allowing
                 }
             }
@@ -1606,7 +1606,7 @@ public class InventoryItem extends StoredObject implements HasInventoryItem {
      * @param invoiceDate Invoice date.
      * @param invoiceReference Invoice reference (supplier's invoice number).
      * @param supplier Supplier.
-     * @param grnType GRN Type - 0:Purchase, 1: External Owner, 2: Loaned from, 3: Items Repaired by, 4: Sales Return
+     * @param grnType GRN Type - 0: Purchase, 1: External Owner, 2: Loaned from, 3: Items Repaired by, 4: Sales Return
      * @return GRN
      * @throws Exception if transaction errors occur.
      */

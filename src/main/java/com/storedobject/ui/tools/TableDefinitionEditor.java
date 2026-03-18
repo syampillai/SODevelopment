@@ -24,8 +24,23 @@ import java.util.Map;
 
 public class TableDefinitionEditor extends ObjectEditor<TableDefinition> {
 
-    private Button loadParent, viewChildren, viewSource, editSource, compileSource, deploy, upload, deployAll, download,
-            downloadAll, createSourceAll, compileSourceAll, viewAll, reorderFields, uploadUpdate, uploadCompare, report;
+    private Button loadParent;
+    private Button viewChildren;
+    private Button viewSource;
+    private Button editSource;
+    private Button compileSource;
+    private Button deploy;
+    private Button download;
+    private Button createSourceAll;
+    private Button compileSourceAll;
+    private Button reorderFields;
+    private Button uploadUpdate;
+    private Button uploadCompare;
+    private Button deploys;
+    private Button source;
+    private Button downloads;
+    private Button uploads;
+    private Button more;
     private ClassTreeBrowser classTree = null, fullClassTree = null;
     private char[] adminPassword;
 
@@ -51,42 +66,56 @@ public class TableDefinitionEditor extends ObjectEditor<TableDefinition> {
         viewSource = new Button("View Source", this);
         compileSource = new Button("Compile Source",this);
         deploy = new Button("Deploy", "truck", this);
-        upload = new Button("Upload", e -> new UploadBox().execute(this));
+        Button upload = new Button("Upload", e -> new UploadBox().execute(this));
         download = new Button("Download", e -> download());
-        downloadAll = new Button("Download All", "download", e -> new DownloadAll().execute(this));
+        Button downloadAll = new Button("Download All", VaadinIcon.DOWNLOAD, e -> new DownloadAll().execute(this));
         createSourceAll = new Button("Create Source Files", "download", this);
         compileSourceAll = new ConfirmButton("Compile All", this);
-        deployAll = new ConfirmButton("Deploy All", "truck", e -> command(() -> new DeployAll().execute()));
-        viewAll = new Button("View All", "children", this);
+        Button deployAll = new ConfirmButton("Deploy All", "truck", e -> command(() -> new DeployAll().execute()));
+        d = new PopupButton("Deploy", "truck");
+        deploys = d;
+        d.add(deploy, deployAll);
+        Button viewAll = new Button("View All", "children", e -> viewAll());
         uploadUpdate = new Button("Bulk Upload & Update", "upload", this);
         uploadCompare = new Button("Bulk Upload & Compare", "upload", this);
-        report = new Button("Documentation", VaadinIcon.BOOK, e -> new ClassSelector(getObject()).execute());
+        d = new PopupButton("Downloads", VaadinIcon.DOWNLOAD);
+        downloads = d;
+        d.add(download, downloadAll);
+        Button report = new Button("Documentation", VaadinIcon.BOOK, e -> new ClassSelector(getObject()).execute());
+        d = new PopupButton("More", VaadinIcon.LINES);
+        more = d;
+        d.add(viewAll, report, reorderFields);
+        d = new PopupButton("Uploads", VaadinIcon.UPLOAD);
+        uploads = d;
+        d.add(upload, uploadUpdate, uploadCompare);
+        d = new PopupButton("Source", VaadinIcon.CODE);
+        source = d;
+        d.add(editSource, viewSource, compileSource, compileSourceAll, createSourceAll);
     }
 
     @Override
     public void addExtraButtons() {
         TableDefinition td = getObject();
         if(td != null && td.getId() != null) {
-            buttonPanel.add(reorderFields);
+            deploy.setEnabled(true);
+            reorderFields.setEnabled(true);
+            download.setEnabled(true);
+            viewSource.setEnabled(true);
+            editSource.setEnabled(true);
+            compileSource.setEnabled(true);
             if(!td.getParentClassName().endsWith("StoredObject")) {
                 buttonPanel.add(loadParent);
             }
             buttonPanel.add(viewChildren);
-            buttonPanel.add(viewSource);
-            buttonPanel.add(editSource);
-            buttonPanel.add(compileSource);
-            buttonPanel.add(deploy);
-            buttonPanel.add(download);
+        } else {
+            deploy.setEnabled(false);
+            reorderFields.setEnabled(false);
+            download.setEnabled(false);
+            viewSource.setEnabled(false);
+            editSource.setEnabled(false);
+            compileSource.setEnabled(false);
         }
-        buttonPanel.add(upload);
-        buttonPanel.add(downloadAll);
-        buttonPanel.add(createSourceAll);
-        buttonPanel.add(compileSourceAll);
-        buttonPanel.add(deployAll);
-        buttonPanel.add(viewAll);
-        buttonPanel.add(uploadUpdate);
-        buttonPanel.add(uploadCompare);
-        buttonPanel.add(report);
+        buttonPanel.add(deploys, source, downloads, uploads, more);
     }
 
     public String getVersionInformation() {
@@ -264,14 +293,6 @@ public class TableDefinitionEditor extends ObjectEditor<TableDefinition> {
             classTree.invoke(TableDefinitionEditor.this);
             return;
         }
-        if(c == viewAll) {
-            if(fullClassTree != null) {
-                fullClassTree.close();
-            }
-            fullClassTree = new FullClassTreeBrowser();
-            fullClassTree.invoke(TableDefinitionEditor.this);
-            return;
-        }
         if(c == uploadUpdate || c == uploadCompare) {
             UploadProcessorView u = new UploadProcessorView("Data Class Definitions",
                     (c == uploadUpdate ? "Updat" : "Compar") + "ing data class definitions");
@@ -281,6 +302,15 @@ public class TableDefinitionEditor extends ObjectEditor<TableDefinition> {
         }
         super.clicked(c);
     }
+
+    private void viewAll() {
+        if(fullClassTree != null) {
+            fullClassTree.close();
+        }
+        fullClassTree = new FullClassTreeBrowser();
+        fullClassTree.invoke(TableDefinitionEditor.this);
+    }
+
 
     private void createCompileSources(TextView v, boolean compile, boolean skipCompletionLabel) {
         v.message((compile ? "Compil" : "Creat") + "ing data classes");
@@ -1126,8 +1156,7 @@ public class TableDefinitionEditor extends ObjectEditor<TableDefinition> {
     private class DeployTable extends View implements Transactional {
 
         private final Button proceed;
-        private final Button deleteLogic;
-        private final Button deleteTable;
+        private final Button delete;
         private final Button menuItem;
         private final Button exit;
         private TableDefinition td;
@@ -1152,8 +1181,7 @@ public class TableDefinitionEditor extends ObjectEditor<TableDefinition> {
             VerticalLayout layout = new VerticalLayout();
             ButtonLayout buttons = new ButtonLayout();
             buttons.add(proceed = new Button("Proceed", this));
-            buttons.add(deleteLogic = new ConfirmButton("Delete Logic",this));
-            buttons.add(deleteTable = new ConfirmButton("Delete Table",this));
+            buttons.add(delete = new ConfirmButton("Delete Table & Logic",this));
             buttons.add(menuItem = new Button("Create Menu Item", "menu", this));
             buttons.add(exit = new Button("Exit", this));
             layout.add(buttons);
@@ -1201,12 +1229,10 @@ public class TableDefinitionEditor extends ObjectEditor<TableDefinition> {
             className.setValue(td == null ? "" : td.getClassName());
             tableName.setValue("<Not set yet>");
             if(td == null) {
-                deleteLogic.setVisible(false);
-                deleteTable.setVisible(false);
+                delete.setVisible(false);
                 return;
             }
-            deleteLogic.setVisible(true);
-            deleteTable.setVisible(true);
+            delete.setVisible(true);
             if(!td.compile()) {
                 status("Compilation errors exist");
                 action = 0;
@@ -1229,8 +1255,7 @@ public class TableDefinitionEditor extends ObjectEditor<TableDefinition> {
                 status("No Data Class definition set");
                 return;
             }
-            deleteLogic.setVisible(true);
-            deleteTable.setVisible(true);
+            delete.setVisible(true);
             action = 0;
             execute(caller);
         }
@@ -1404,18 +1429,14 @@ public class TableDefinitionEditor extends ObjectEditor<TableDefinition> {
                 oe.editObject(logic);
                 return;
             }
-            if((c == proceed && action > 1) || (c == deleteLogic) || (c == deleteTable)) {
+            if((c == proceed && action > 1) || c == delete) {
                 if(adminPassword == null) {
                     message("The operation you selected requires administrator password! Please input the password and try again.");
                     command(this::clearAlerts);
                     return;
                 }
             }
-            if(c == deleteLogic) {
-                delLogic();
-                return;
-            }
-            if(c == deleteTable) {
+            if(c == delete) {
                 delTable();
                 return;
             }
@@ -1506,35 +1527,14 @@ public class TableDefinitionEditor extends ObjectEditor<TableDefinition> {
             }
         }
 
-        private void delLogic() {
-            try {
-                if(jc == null) {
-                    jc = JavaClass.create(td.getClassName());
-                }
-                if(jc.getId() != null) {
-                    Transaction t = getTransactionManager().createTransaction();
-                    try {
-                        jc.delete(t);
-                        t.commit();
-                        message("Logic dropped");
-                    } catch(Exception e) {
-                        t.rollback();
-                        error(e);
-                    }
-                } else {
-                    message("Logic doesn't exist");
-                }
-            } catch (Exception e) {
-                action = -1;
-                error(e);
-            }
-        }
-
         @SuppressWarnings("unchecked")
         private void delTable() {
             if(adminPassword == null) {
                 command(this::delTable);
                 return;
+            }
+            if(jc == null) {
+                jc = JavaClass.create(td.getClassName());
             }
             try {
                 String tableName = td.getTableName(getTransactionManager());
@@ -1553,7 +1553,20 @@ public class TableDefinitionEditor extends ObjectEditor<TableDefinition> {
                 } else {
                     message("Table doesn't exist");
                 }
-            } catch(ClassNotFoundException e) {
+                if(jc != null && jc.getId() != null) {
+                    Transaction t = getTransactionManager().createTransaction();
+                    try {
+                        jc.delete(t);
+                        t.commit();
+                        message("Logic dropped");
+                    } catch(Exception e) {
+                        t.rollback();
+                        error(e);
+                    }
+                } else {
+                    message("Logic doesn't exist");
+                }
+            } catch(Exception e) {
                 error(e);
                 action = -1;
             }

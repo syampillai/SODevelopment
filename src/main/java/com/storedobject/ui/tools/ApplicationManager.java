@@ -7,9 +7,9 @@ import com.storedobject.platform.Application;
 import com.storedobject.ui.ELabelField;
 import com.storedobject.ui.Transactional;
 import com.storedobject.ui.util.SOServlet;
-import com.storedobject.vaadin.ComboField;
-import com.storedobject.vaadin.DataForm;
-import com.storedobject.vaadin.RadioChoiceField;
+import com.storedobject.vaadin.*;
+import com.vaadin.flow.component.icon.VaadinIcon;
+import java.io.IOException;
 
 public class ApplicationManager extends DataForm implements Transactional {
 
@@ -38,6 +38,16 @@ public class ApplicationManager extends DataForm implements Transactional {
             host.setValue(SOServlet.getServer());
             host.setEnabled(false);
         }
+    }
+
+    @Override
+    protected void buildButtons() {
+        super.buildButtons();
+        buttonPanel.removeAll();
+        Icon redIcon = new Icon(VaadinIcon.PLUG);
+        redIcon.setColor(com.storedobject.ui.Application.COLOR_ERROR);
+        Button platforms = new Button("Restart SO Platform", redIcon, e -> restartPlatform());
+        buttonPanel.add(ok, platforms, cancel);
     }
 
     @Override
@@ -116,5 +126,28 @@ public class ApplicationManager extends DataForm implements Transactional {
 
     private String doAct(Application a, boolean reload, String by) throws Exception {
         return reload ? a.reload(by) : a.stop(by);
+    }
+
+    private void restartPlatform() {
+        close();
+        String h = System.getProperty("user.home");
+        com.storedobject.ui.Application a = com.storedobject.ui.Application.get();
+        new ActionForm("All running applications and customers will be affected.\nDo you really want to proceed?", () -> {
+            Thread.startVirtualThread(() -> {
+                try {
+                    Thread.sleep(1000);
+                    ProcessBuilder processBuilder = new ProcessBuilder();
+                    processBuilder.command(h + "/bin/s", "restart");
+                    Process process = processBuilder.start();
+                    process.waitFor();
+                } catch (IOException | InterruptedException e) {
+                    a.access(() -> {
+                        clearAlerts();
+                        error(e);
+                    });
+                }
+            });
+            message("Restarting SO platform...\nYour screen may stop responding if successful");
+        }).execute();
     }
 }
