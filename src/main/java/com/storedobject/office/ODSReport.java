@@ -1,6 +1,5 @@
 package com.storedobject.office;
 
-import com.storedobject.common.SORuntimeException;
 import com.storedobject.core.*;
 
 import java.io.InputStream;
@@ -14,7 +13,7 @@ public class ODSReport extends ODS {
      * Constructor.
      *
      * @param device Device
-     * This will create an blank ODS file and the content may be manipulated in the generateContent() method.
+     * This will create an blank ODS file, and the content may be manipulated in the generateContent() method.
      */
     public ODSReport(Device device) {
         this.device = device;
@@ -35,7 +34,7 @@ public class ODSReport extends ODS {
      * Constructor.
      *
      * @param device Device
-     * @param databaseFileName Database file name (FileData) containing ODS file with some content.
+     * @param databaseFileName Database file name (FileData) containing an ODS file with some content.
      */
     public ODSReport(Device device, String databaseFileName) {
         super(databaseFileName);
@@ -77,11 +76,9 @@ public class ODSReport extends ODS {
 
     @Override
     public void execute() {
+        System.err.println("Executing ODSReport");
         if(!executed) {
             executed = true;
-            if(blocked()) {
-                throw new SORuntimeException(AccessControl.MESSAGE);
-            }
             getDevice().view(this);
             return;
         }
@@ -109,9 +106,5 @@ public class ODSReport extends ODS {
     @Override
     public Device getDevice() {
         return device;
-    }
-
-    private boolean blocked() {
-        return isBlocked("ODS");
     }
 }

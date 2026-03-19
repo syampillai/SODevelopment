@@ -147,16 +147,17 @@ public abstract class StreamContentProducer implements ContentProducer, Closeabl
         if(tm != null && tm.getUser().isAdmin()) return false;
         Entity entity = contentProducer.getEntity();
         if(entity == null) return false;
+        type = type == null ? "" : type.toUpperCase();
         String key = entity.getId() + type;
         Boolean blocked = ACCESS.get(key);
         if(blocked == null) {
             AccessControl ac = AccessControl.get(entity);
             blocked = switch (type) {
                 case "PDF" -> ac.getBlockPDF();
-                case "Excel" -> ac.getBlockExcel();
+                case "EXCEL", "XLSX" -> ac.getBlockExcel();
                 case "ODT" -> ac.getBlockODT();
                 case "ODS" -> ac.getBlockODS();
-                default -> true;
+                default -> ac.getBlockPDF() || ac.getBlockExcel() || ac.getBlockODT() || ac.getBlockODS();
             };
             ACCESS.put(key, blocked);
         }
