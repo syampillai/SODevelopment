@@ -88,6 +88,12 @@ public final class ObjectLinkField<T extends StoredObject>
         }
     }
 
+    private void tabSelected() {
+        if(grid instanceof AbstractLinkGrid<?> alg) {
+            alg.tabSelected();
+        }
+    }
+
     @Override
     public void setRequiredIndicatorVisible(boolean b) {
     }
@@ -494,6 +500,9 @@ public final class ObjectLinkField<T extends StoredObject>
             Tab tab = createTab(field.getLabel(), layout);
             field.tab = tab;
             tab.setVisible(field.visible);
+            addSelectedChangeListener(e -> {
+                if(e.getSelectedTab() == tab) field.tabSelected();
+            });
         }
 
         public Tab getTab(String label) {

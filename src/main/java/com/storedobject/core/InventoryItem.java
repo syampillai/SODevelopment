@@ -782,7 +782,7 @@ public class InventoryItem extends StoredObject implements HasInventoryItem {
     @Override
     public void validateDelete() throws Exception {
         if(!quantity.isZero() && !getLocation().infiniteSource()) {
-            throw new Invalid_State("Can not delete item with non-zero quantity - " + this + ", Quantity: " + quantity);
+            throw new Invalid_State("Cannot delete item with non-zero quantity - " + toDisplay());
         }
         super.validateDelete();
     }

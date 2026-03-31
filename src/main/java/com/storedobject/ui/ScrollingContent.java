@@ -3,16 +3,15 @@ package com.storedobject.ui;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.html.Div;
 
+import java.util.Collection;
+import java.util.List;
+import java.util.stream.Stream;
+
 /**
  * Represents a container component that manages a scrolling content area
  * along with an optional header. It is designed to handle both the header
  * and content sections flexibly, where the content area supports scrolling
  * and the header has a fixed height.
- * <p></p>
- * This class extends {@code Div} and provides a customizable structure for
- * laying out a header and a scrollable content area. It is styled and
- * configured by default to support these features but also allows further
- * customization.
  *
  * @author Syam
  */
@@ -67,7 +66,7 @@ public class ScrollingContent extends Div {
                 .set("flex-direction", "column")
                 .set("overflow", "hidden");
         setHeader(header);
-        add(headerContainer, container);
+        super.add(List.of(headerContainer, container));
     }
 
     /**
@@ -147,5 +146,150 @@ public class ScrollingContent extends Div {
         this.margin = margin;
         container.getStyle().set("margin", margin + "px");
         headerContainer.getStyle().set("margin", margin + "px " + margin + "px 0px " + margin + "px");
+    }
+
+    /**
+     * Adds the specified components to the content-container.
+     *
+     * @param components the array of components to be added to the content-container.
+     */
+    @Override
+    public void add(Component... components) {
+        container.add(components);
+    }
+
+    /**
+     * Adds the specified text to the content-container.
+     *
+     * @param text the text to be added to the content-container
+     */
+    @Override
+    public void add(String text) {
+        container.add(text);
+    }
+
+    /**
+     * Adds a collection of components to the content-container.
+     *
+     * @param components the collection of components to be added to the content-container
+     */
+    @Override
+    public void add(Collection<Component> components) {
+        container.add(components);
+    }
+
+    /**
+     * Removes the specified components from the content-container.
+     *
+     * @param components the components to be removed from the content-container
+     */
+    @Override
+    public void remove(Component... components) {
+        container.remove(components);
+    }
+
+    /**
+     * Removes the specified collection of components from the content-container.
+     *
+     * @param components the collection of components to be removed from the content-container;
+     *                   if the collection is null or empty, no action is performed
+     */
+    @Override
+    public void remove(Collection<Component> components) {
+        container.remove(components);
+    }
+
+    /**
+     * Removes all components from the content-container maintained within this instance.
+     * This operation clears all content currently present in the content-container,
+     * leaving it empty.
+     * This method overrides the {@code removeAll()} implementation from the
+     * parent class to specifically target the components stored in the internal
+     * {@code container}.
+     */
+    @Override
+    public void removeAll() {
+        container.removeAll();
+    }
+
+    /**
+     * Adds a given component to the content-container as the first component.
+     *
+     * @param component the component to add as the first element in the content-container;
+     *                  must not be null
+     */
+    @Override
+    public void addComponentAsFirst(Component component) {
+        container.addComponentAsFirst(component);
+    }
+
+    /**
+     * Adds a component to the specified index within the content-container.
+     * This method allows for precise placement of the component at the given index.
+     *
+     * @param index the position at which the component should be inserted.
+     *              Must be a valid index within the content-container.
+     * @param component the component to be added to the content-container.
+     *                  Cannot be null.
+     */
+    @Override
+    public void addComponentAtIndex(int index, Component component) {
+        container.addComponentAtIndex(index, component);
+    }
+
+    /**
+     * Replaces an existing component with a new component in the content-container.
+     *
+     * @param oldComponent the component to be replaced
+     * @param newComponent the component to replace with
+     */
+    @Override
+    public void replace(Component oldComponent, Component newComponent) {
+        container.replace(oldComponent, newComponent);
+    }
+
+    /**
+     * Returns the index of the specified component within the content-container.
+     *
+     * @param component the component whose index is to be determined
+     * @return the index of the component within the content-container, or -1 if the component is not found
+     */
+    @Override
+    public int indexOf(Component component) {
+        return container.indexOf(component);
+    }
+
+    /**
+     * Retrieves the component located at the specified index within the content-container.
+     * If the index is out of bounds or the specified position does not contain a component,
+     * this method may throw an exception.
+     *
+     * @param index the position of the desired component within the content-container, zero-based.
+     *              Must be a valid index, ranging from 0 to the total component count minus one.
+     * @return the component at the specified index; null may be returned based on the container's implementation if no component exists.
+     */
+    @Override
+    public Component getComponentAt(int index) {
+        return container.getComponentAt(index);
+    }
+
+    /**
+     * Returns the total number of components present in the content-container.
+     *
+     * @return the count of components currently contained in the content-container
+     */
+    @Override
+    public int getComponentCount() {
+        return container.getComponentCount();
+    }
+
+    /**
+     * Retrieves a stream of child components contained within the content-container.
+     *
+     * @return a Stream of Component objects representing the child components.
+     */
+    @Override
+    public Stream<Component> getChildren() {
+        return container.getChildren();
     }
 }

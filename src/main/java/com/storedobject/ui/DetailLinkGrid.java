@@ -9,7 +9,6 @@ import com.vaadin.flow.component.grid.editor.Editor;
 
 public class DetailLinkGrid<T extends StoredObject> extends AbstractLinkGrid<T> {
 
-    private final LinkGridButtons<T> buttonPanel;
     private final AcceptAbandonButtons acceptAbandonButtons;
 
     public DetailLinkGrid(ObjectLinkField<T> linkField) {
@@ -22,7 +21,6 @@ public class DetailLinkGrid<T extends StoredObject> extends AbstractLinkGrid<T> 
             throw new SORuntimeException(link.getName() + " is not a Detail Link");
         }
         setFilter((String) null, false);
-        buttonPanel = new LinkGridButtons<>(this);
         acceptAbandonButtons = new AcceptAbandonButtons(this::saveEdited, this::cancelEdit);
         addValueChangeTracker((e, fromClient) -> buttonPanel.changed());
         addDataLoadedListener(buttonPanel::changed);

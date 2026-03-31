@@ -1,6 +1,8 @@
 package com.storedobject.ui;
 
-import com.storedobject.core.*;
+import com.storedobject.core.Id;
+import com.storedobject.office.Filler;
+import com.storedobject.office.ODT;
 import com.storedobject.office.ODTReport;
 import com.storedobject.vaadin.*;
 
@@ -16,51 +18,23 @@ public class Test extends DataForm {
     @Override
     protected boolean process() {
         close();
-        R r = new R(getApplication());
+        ODTReport r = new ODTReport(getApplication(), new Id("3464"));
+        r.setFiller(new F());
         r.setRawOutput(raw.getValue());
         r.execute();
         return true;
     }
 
-    public static class R extends ODTReport {
+    public static class F extends Filler {
 
-        public R(Device device) {
-            super(device);
-            setTemplate(new Id("3408"));
-        }
-
-        public Object fill(String name) {
-            return name;
-        }
-
-        public Object fill(String name, int i) {
-            return name + "[" + i + "]";
-        }
-
-        public int rowCount(String table) {
-            return "Cargolist".equals(table) ? 2 : 0;
-        }
-
-        public int rowStart(String table) {
-            return "Estimatelist".equals(table) ? 2 : -1;
+        @Override
+        public void customizeTable(ODT.Table table) {
+            System.err.println("Table: " + table.getName());
         }
 
         @Override
-        protected boolean isCustomTable(String tableName) {
-            return "Estimatelist".equals(tableName);
-        }
-
-        @Override
-        protected void customize(Table table) throws Exception {
-            table.copy(0);
-            TableRow row;
-            row = table.getRow(1);
-            table.add(row, 0);
-            row = table.getRow(2);
-            table.add(row, 10);
-            row = table.getRow(2);
-            table.add(row, 11);
-            table.copy(3, 2);
+        public void customizeSection(ODT.Section section) {
+            System.err.println("Section: " + section.getName());
         }
     }
 }

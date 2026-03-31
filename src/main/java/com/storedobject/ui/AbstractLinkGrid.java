@@ -4,11 +4,13 @@ import com.storedobject.common.SORuntimeException;
 import com.storedobject.core.*;
 import com.storedobject.ui.inventory.ItemContextMenu;
 import com.storedobject.ui.inventory.ItemTypeContextMenu;
+import com.storedobject.ui.util.LinkGridButtons;
 import com.storedobject.vaadin.View;
 import com.vaadin.flow.component.grid.Grid;
 
 public abstract class AbstractLinkGrid<T extends StoredObject> extends EditableObjectGrid<T> implements LinkGrid<T> {
 
+    final LinkGridButtons<T> buttonPanel = new LinkGridButtons<>(this);
     final StoredObjectUtility.Link<T> link;
     final ObjectLinkField<T> linkField;
 
@@ -35,6 +37,10 @@ public abstract class AbstractLinkGrid<T extends StoredObject> extends EditableO
             new ItemTypeContextMenu<>(g);
         }
         setAllRowsVisible(true);
+    }
+
+    void tabSelected() {
+        buttonPanel.changed();
     }
 
     @Override

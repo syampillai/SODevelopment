@@ -7,7 +7,6 @@ import com.vaadin.flow.data.provider.ListDataProvider;
 
 public class ReferenceLinkGrid<T extends StoredObject> extends AbstractLinkGrid<T> {
 
-    private final LinkGridButtons<T> buttonPanel;
     private ObjectSearcher<T> searcher;
     private boolean fromClient;
 
@@ -46,7 +45,6 @@ public class ReferenceLinkGrid<T extends StoredObject> extends AbstractLinkGrid<
     public ReferenceLinkGrid(ObjectLinkField<T> linkField, Iterable<String> columns) {
         super(linkField, new ObjectMemoryList<>(linkField.getObjectClass(), linkField.isAllowAny()), columns);
         setFilter((String) null, false);
-        buttonPanel = new LinkGridButtons<>(this);
         //noinspection unchecked
         createColumn("*", o -> isEdited(o) ? "*" : (isAdded(o) ? "+" : (isDeleted(o) ? "-" : "")));
         addDataLoadedListener(buttonPanel::changed);
