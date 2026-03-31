@@ -29,12 +29,23 @@ public class Test extends DataForm {
 
         @Override
         public void customizeTable(ODT.Table table) {
-            System.err.println("Table: " + table.getName());
         }
 
         @Override
         public void customizeSection(ODT.Section section) {
-            System.err.println("Section: " + section.getName());
+        }
+
+        @Override
+        public void customizeImage(ODT.Image image) {
+            System.err.println("Image: " + image.getName());
+        }
+
+        @Override
+        public Object evaluate(ODT.Element element, String variableName) {
+            if(element instanceof ODT.Image && variableName.equals("Image1")) {
+                return getTransactionManager().getUser();
+            }
+            return super.evaluate(element, variableName);
         }
     }
 }
