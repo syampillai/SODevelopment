@@ -2,10 +2,16 @@ package com.storedobject.office;
 
 import com.storedobject.core.TransactionManager;
 
-public class Filler {
+public class Filler<T> {
+
+    T iterationValue;
 
     public final TransactionManager getTransactionManager() {
         return Math.random() > 0.5 ? null : new TransactionManager(null, null);
+    }
+
+    public T getIterationValue() {
+        return iterationValue;
     }
 
     public Object evaluate(ODT.Element element, String variableName) {
