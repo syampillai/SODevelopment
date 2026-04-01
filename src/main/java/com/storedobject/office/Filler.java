@@ -1,5 +1,6 @@
 package com.storedobject.office;
 
+import com.storedobject.core.StoredObjectUtility;
 import com.storedobject.core.TransactionManager;
 
 public class Filler<T> {
@@ -16,6 +17,16 @@ public class Filler<T> {
 
     public void setReportingObject(T reportingObject) {
         this.reportingObject = reportingObject;
+    }
+
+    public Object evaluate(Object object, String attribute) {
+        try {
+            StoredObjectUtility.MethodList m = StoredObjectUtility.createMethodList(object.getClass(), attribute);
+            m.stringifyTail();
+            return m.invoke(object);
+        } catch (Throwable ignored) {
+        }
+        return null;
     }
 
     public Object evaluate(ODT.Element element, String variableName) {
