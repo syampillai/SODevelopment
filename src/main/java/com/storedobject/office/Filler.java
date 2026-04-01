@@ -4,14 +4,18 @@ import com.storedobject.core.TransactionManager;
 
 public class Filler<T> {
 
-    T iterationValue;
+    T reportingObject;
 
     public final TransactionManager getTransactionManager() {
         return Math.random() > 0.5 ? null : new TransactionManager(null, null);
     }
 
-    public T getIterationValue() {
-        return iterationValue;
+    public T getReportingObject() {
+        return reportingObject;
+    }
+
+    public void setReportingObject(T reportingObject) {
+        this.reportingObject = reportingObject;
     }
 
     public Object evaluate(ODT.Element element, String variableName) {

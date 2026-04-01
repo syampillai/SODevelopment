@@ -165,7 +165,7 @@ public class FileData extends StoredObject implements Detail, HasParents, Conten
      *
      * @param transaction Transaction.
      * @param file New version of the document.
-     * @throws Exception Raises if transaction fails.
+     * @throws Exception Raises if the transaction fails.
      */
     public void replaceWith(Transaction transaction, FileData file) throws Exception {
         if(file.getClass() != getClass()) {
