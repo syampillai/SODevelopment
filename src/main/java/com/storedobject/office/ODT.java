@@ -1,23 +1,17 @@
 package com.storedobject.office;
 
-import com.storedobject.common.IO;
 import com.storedobject.common.XML;
 import com.storedobject.core.*;
-import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Function;
-import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 public class ODT<T> implements ContentProducer, Closeable {
