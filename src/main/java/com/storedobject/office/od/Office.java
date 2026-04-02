@@ -12,4 +12,7 @@ public final class Office {
 
     public static void convertToPDF(InputStream in, OutputStream out, PDFProperties pdfProperties) throws Exception {
     }
+
+    public static  void shutdown() {
+    }
 }
