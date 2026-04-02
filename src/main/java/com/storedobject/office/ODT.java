@@ -266,6 +266,9 @@ public class ODT<T> implements ContentProducer, Closeable {
             copy(0, Integer.MAX_VALUE);
         }
 
+        public void setData(List<StoredObject> data) {
+        }
+
         public void buildOutput() {
             buildOutput(headerRowCount, bodyRowCount, blankRowIfEmpty);
         }

@@ -25,10 +25,12 @@ public class Test extends DataForm {
         return true;
     }
 
-    public static class F extends Filler {
+    public static class F extends Filler<Object> {
 
         @Override
         public void customizeTable(ODT.Table table) {
+            System.err.println("Table: " + table.getName());
+            super.customizeTable(table);
         }
 
         @Override

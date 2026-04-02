@@ -23,7 +23,8 @@ public class Filler<T> {
         try {
             StoredObjectUtility.MethodList m = StoredObjectUtility.createMethodList(object.getClass(), attribute);
             m.stringifyTail();
-            return m.invoke(object);
+            Object r = m.invoke(object);
+            return r == null ? "[No data]" : r;
         } catch (Throwable ignored) {
         }
         return null;

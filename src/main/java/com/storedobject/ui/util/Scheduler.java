@@ -1,6 +1,7 @@
 package com.storedobject.ui.util;
 
 import com.storedobject.core.SystemLog;
+import com.storedobject.office.od.Office;
 
 import java.util.function.Function;
 
@@ -33,6 +34,7 @@ public class Scheduler implements Function<String, String> {
         }
         doneBy(who);
         Thread.startVirtualThread(com.storedobject.job.Scheduler::kill);
+        Thread.startVirtualThread(Office::shutdown);
         try {
             Thread.sleep(2000);
         } catch (InterruptedException ignored) {
