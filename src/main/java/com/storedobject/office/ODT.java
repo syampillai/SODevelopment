@@ -461,6 +461,10 @@ public class ODT<T> implements ContentProducer, Closeable {
             return parent;
         }
 
+        public final TableCell getCell() {
+            return this instanceof TableCell tc ? tc : getParentCell();
+        }
+
         public final TableCell getParentCell() {
             if(parent == null || parent instanceof Document) return null;
             return parent instanceof TableCell c ? c : parent.getParentCell();
