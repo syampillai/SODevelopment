@@ -23,6 +23,10 @@ public class SectionSelector extends DataForm {
         this("Select Sections", odt, null);
     }
 
+    public SectionSelector(String caption, ODT<?> odt) {
+        this(caption, odt, null);
+    }
+
     public SectionSelector(String caption, ODT<?> odt, Function<ODT.SectionName, String> nameFunction) {
         super(caption);
         this.odt = odt;
