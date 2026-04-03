@@ -4,6 +4,8 @@ import com.storedobject.common.Executable;
 import com.storedobject.core.StoredObjectUtility;
 import com.storedobject.core.TransactionManager;
 
+import java.util.function.BiConsumer;
+
 public class Filler<T> implements Executable {
 
     T reportingObject;
@@ -56,6 +58,18 @@ public class Filler<T> implements Executable {
     public void customizeTable(ODT.Table table) {
     }
 
+    public void populateLinkTable(ODT.Table table) {
+    }
+
     public void customizeImage(ODT.Image image) {
+    }
+
+    public void setImageCustomizer(BiConsumer<Filler<?>, ODT.Image> imageCustomizer) {
+    }
+
+    public void setTableCustomizer(BiConsumer<Filler<?>, ODT.Table> tableCustomizer) {
+    }
+
+    public void setSectionCustomizer(BiConsumer<Filler<?>, ODT.Section> sectionCustomizer) {
     }
 }

@@ -4,6 +4,7 @@ import com.storedobject.core.Id;
 import com.storedobject.office.Filler;
 import com.storedobject.office.ODT;
 import com.storedobject.office.ODTReport;
+import com.storedobject.ui.report.SectionSelector;
 import com.storedobject.vaadin.*;
 
 public class Test extends DataForm {
@@ -19,13 +20,20 @@ public class Test extends DataForm {
     protected boolean process() {
         close();
         ODTReport r = new ODTReport(getApplication(), new Id("3464"));
-        r.setFiller(new F());
+        SectionSelector ss = new SectionSelector(r);
+        r.setFiller(new F(ss));
         r.setRawOutput(raw.getValue());
-        r.execute();
+        ss.execute();
         return true;
     }
 
     public static class F extends Filler<Object> {
+
+        private final SectionSelector sectionSelector;
+
+        private F(SectionSelector sectionSelector) {
+            this.sectionSelector = sectionSelector;
+        }
 
         @Override
         public void customizeTable(ODT.Table table) {
@@ -35,6 +43,7 @@ public class Test extends DataForm {
 
         @Override
         public void customizeSection(ODT.Section section) {
+            sectionSelector.customizeSection(section);
         }
 
         @Override

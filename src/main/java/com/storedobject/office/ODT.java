@@ -12,6 +12,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.BiConsumer;
 import java.util.zip.ZipOutputStream;
 
 public class ODT<T> implements ContentProducer, Closeable {
@@ -85,6 +86,18 @@ public class ODT<T> implements ContentProducer, Closeable {
     }
 
     public final void setIterator(Iterator<T> iterator) {
+    }
+
+    public final void setReportingObject(T object) {
+    }
+
+    public final void setSectionCustomizer(BiConsumer<Filler<?>, Section> sectionCustomizer) {
+    }
+
+    public final void setTableCustomizer(BiConsumer<Filler<?>, ODT.Table> tableCustomizer) {
+    }
+
+    public final void setImageCustomizer(BiConsumer<Filler<?>, ODT.Image> imageCustomizer) {
     }
 
     public void reportingIteratorValue(T value) {
