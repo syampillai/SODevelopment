@@ -159,4 +159,8 @@ public class Percentage extends Quantity {
 	public Percentage absolute() {
         return (Percentage)super.absolute();
 	}
+
+	public BigDecimal getPercentage() {
+		return getUnit() == defaultUnit ? getValue() : convert(defaultUnit).getValue();
+	}
 }
