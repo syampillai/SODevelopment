@@ -630,6 +630,10 @@ public final class Money implements Storable, Comparable<Money> {
 		return new Money();
 	}
 
+	public Money percentage(Percentage percentage) {
+		return new Money();
+	}
+
 	public Money divide(double divisor) {
 		return new Money();
 	}
