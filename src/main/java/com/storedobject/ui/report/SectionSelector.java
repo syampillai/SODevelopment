@@ -61,7 +61,6 @@ public class SectionSelector extends DataForm {
                     }
                 }
             });
-            selectFixed(roots.getFirst());
         }
     }
 
