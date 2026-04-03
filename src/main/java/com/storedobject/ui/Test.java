@@ -21,7 +21,7 @@ public class Test extends DataForm {
         close();
         ODTReport r = new ODTReport(getApplication(), new Id("3464"));
         SectionSelector ss = new SectionSelector(r);
-        r.setFiller(new F(ss));
+        r.setFiller(new F());
         r.setRawOutput(raw.getValue());
         ss.execute();
         return true;
@@ -29,21 +29,13 @@ public class Test extends DataForm {
 
     public static class F extends Filler<Object> {
 
-        private final SectionSelector sectionSelector;
-
-        private F(SectionSelector sectionSelector) {
-            this.sectionSelector = sectionSelector;
+        private F() {
         }
 
         @Override
         public void customizeTable(ODT.Table table) {
             System.err.println("Table: " + table.getName());
             super.customizeTable(table);
-        }
-
-        @Override
-        public void customizeSection(ODT.Section section) {
-            sectionSelector.customizeSection(section);
         }
 
         @Override
