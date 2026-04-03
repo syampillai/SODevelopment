@@ -11,6 +11,7 @@ import com.vaadin.flow.data.selection.MultiSelectionEvent;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Function;
 
 public class SectionSelector extends DataForm {
 
@@ -19,19 +20,23 @@ public class SectionSelector extends DataForm {
     private final Set<ODT.SectionName> fixedSelections = new HashSet<>();
 
     public SectionSelector(ODT<?> odt) {
-        this("Select Sections", odt);
+        this("Select Sections", odt, null);
     }
 
-    public SectionSelector(String caption, ODT<?> odt) {
+    public SectionSelector(String caption, ODT<?> odt, Function<ODT.SectionName, String> nameFunction) {
         super(caption);
         this.odt = odt;
         List<ODT.SectionName> roots = odt.getSectionNames();
         if(roots.isEmpty()) {
             tree = null;
         } else {
+            if(nameFunction == null) {
+                nameFunction = sn -> StringUtility.makeLabel(sn.getName());
+            }
             odt.setSectionCustomizer((f, s) -> check(s));
             tree = new DataTreeGrid<>(ODT.SectionName.class, StringList.create(new String[]{"SectionName"}));
-            tree.createHierarchyColumn("SectionName", s -> StringUtility.makeLabel(s.getName()));
+            Function<ODT.SectionName, String> finalNameFunction = nameFunction;
+            tree.createHierarchyColumn("SectionName", finalNameFunction::apply);
             tree.setTreeData(new SectionData(roots));
             tree.setSelectionMode(DataTreeGrid.SelectionMode.MULTI);
             tree.setWidthFull();
