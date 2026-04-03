@@ -13,7 +13,6 @@ import com.vaadin.flow.component.icon.VaadinIcon;
 import org.jspecify.annotations.Nullable;
 
 import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -29,6 +28,9 @@ import java.util.stream.Stream;
  * the {@link com.storedobject.pdf.PDFObjectReport} or the {@link com.storedobject.office.ODTObjectReport} may be
  * extended. If the {@link com.storedobject.office.ODTObjectReport} is extended, the ODT template may be specified
  * in the {@link PrintLogicDefinition}.</p>
+ * <p>Rather than writing a custom {@link com.storedobject.office.ODTObjectReport}, you could extend the
+ * {@link com.storedobject.office.ObjectFiller} class and such an instance is also supported. It should have a
+ * default no-arguments constructor. This is the recommended approach when a template-based output is desired.</p>
  * <p>The "printing logic" that is defined in the {@link PrintLogicDefinition} should have a constructor that
  * takes a {@link com.storedobject.core.Device} and a {@link StoredObject} instance as its parameters. (Have a look at
  * the constructors - {@link PDFObjectReport#PDFObjectReport(Device, StoredObject)} and
@@ -178,7 +180,7 @@ public final class PrintButton<T extends StoredObject> extends Composite<Button>
                     + objectClass.getName());
         }
         @SuppressWarnings("unchecked") ObjectLogicButton<O> finalOb = (ObjectLogicButton<O>) ob;
-        ob.listem(e -> {
+        ob.listen(e -> {
             @SuppressWarnings("unchecked") O object = (O)objectSupplier.get();
             if(object != null) {
                 finalOb.accept(object, objectSource);
@@ -204,10 +206,7 @@ public final class PrintButton<T extends StoredObject> extends Composite<Button>
                 c = lc.getConstructor(oc);
                 ob = (ObjectLogicButton<?>) c.newInstance(oc);
                 break;
-            } catch (NoSuchMethodException
-                     | InstantiationException
-                     | IllegalAccessException
-                     | InvocationTargetException ignored) {
+            } catch (Exception ignored) {
             }
             if(oc == StoredObject.class) break;
             oc = oc.getSuperclass();
@@ -216,7 +215,7 @@ public final class PrintButton<T extends StoredObject> extends Composite<Button>
             try {
                 c = lc.getConstructor();
                 ob = (ObjectLogicButton<?>) c.newInstance();
-            } catch (NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException ignored) {
+            } catch (Exception ignored) {
             }
         }
         return ob;

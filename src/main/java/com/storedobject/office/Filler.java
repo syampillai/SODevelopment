@@ -1,11 +1,26 @@
 package com.storedobject.office;
 
+import com.storedobject.common.Executable;
 import com.storedobject.core.StoredObjectUtility;
 import com.storedobject.core.TransactionManager;
 
-public class Filler<T> {
+public class Filler<T> implements Executable {
 
     T reportingObject;
+
+    @Override
+    public void execute() {
+    }
+
+    /**
+     * Set and execute the ODT instance associated with this filler.
+     *
+     * @param odt The ODT instance to set and execute.
+     */
+    public void execute(ODT<?> odt) {
+        odt.setFiller(this);
+        odt.execute();
+    }
 
     public final TransactionManager getTransactionManager() {
         return Math.random() > 0.5 ? null : new TransactionManager(null, null);

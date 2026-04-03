@@ -1,13 +1,16 @@
 package com.storedobject.report;
 
-import com.storedobject.core.Device;
-import com.storedobject.core.Id;
-import com.storedobject.core.PrintLogicDefinition;
-import com.storedobject.core.StoredObject;
+import com.storedobject.core.*;
 import com.storedobject.office.ODTReport;
+import com.storedobject.office.ObjectFiller;
 
 import java.lang.reflect.Constructor;
 
+/**
+ * For internal use only.
+ *
+ * @author Syam
+ */
 public class ObjectReport {
 
     private final Runnable executable;
@@ -41,6 +44,22 @@ public class ObjectReport {
         if(cpClass == null) {
             device.log("Unable to create " + printLogicDefinition.getPrintLogicClassName());
             return null;
+        }
+        if(ObjectFiller.class.isAssignableFrom(cpClass)) { // ObjectFiller
+            try {
+                StreamData streamData = printLogicDefinition.getODTFormat();
+                if(streamData == null) {
+                    throw new Invalid_State("No ODT format found for: " + printLogicDefinition.getPrintLogicClassName());
+                }
+                ObjectFiller of = (ObjectFiller) cpClass.getConstructor().newInstance();
+                ODTReport r = new ODTReport(device, printLogicDefinition.getODTFormat(), of);
+                of.setReportingObject(object);
+                return r;
+            } catch (Throwable e) {
+                Throwable cause = e.getCause();
+                device.log(cause == null ? e : cause);
+                return null;
+            }
         }
         Constructor<?> constructor;
         Class<?> dClass = device.getClass();

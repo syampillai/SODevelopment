@@ -11,16 +11,18 @@ import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.shared.Registration;
 
+import java.util.function.BiConsumer;
+
 /**
- * A special button that can be used to execute a {@link StoredObject}'s instance related logic. The logic can be
+ * A special button that can be used to execute a {@link StoredObject}'s instance-related logic. The logic can be
  * stored in a {@link com.storedobject.core.PrintLogicDefinition} and the {@link PrintButton} could paint this button
- * in appropriate logic such as {@link ObjectEditor}, {@link ObjectBrowser}, etc..
+ * in an appropriate logic such as {@link ObjectEditor}, {@link ObjectBrowser}, etc.
  *
  * @param <T> Type of object with which this button is associated.
  *
  * @author Syam
  */
-public abstract class ObjectLogicButton<T extends StoredObject> extends Button {
+public abstract class ObjectLogicButton<T extends StoredObject> extends Button implements BiConsumer<T, Object> {
 
     PrintLogicDefinition definition; // This is set for internal use only
     private final Class<T> objectClass;
@@ -107,6 +109,7 @@ public abstract class ObjectLogicButton<T extends StoredObject> extends Button {
      * @param object Object instance.
      * @param source Source of the event.
      */
+    @Override
     public abstract void accept(T object, Object source);
 
     @Override
@@ -119,7 +122,7 @@ public abstract class ObjectLogicButton<T extends StoredObject> extends Button {
         return null;
     }
 
-    void listem(ComponentEventListener<ClickEvent<com.vaadin.flow.component.button.Button>> listener) {
+    void listen(ComponentEventListener<ClickEvent<com.vaadin.flow.component.button.Button>> listener) {
         super.addClickListener(listener);
     }
 }
