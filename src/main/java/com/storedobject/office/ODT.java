@@ -173,7 +173,7 @@ public class ODT<T> implements ContentProducer, Closeable {
         private Node referenceRow;
         private List<Node> input;
         private final ArrayList<TableRow> output = new ArrayList<>();
-        private int headerRowCount = 0, bodyRowCount = Integer.MAX_VALUE;
+        private int headerRowCount = -1, bodyRowCount = Integer.MAX_VALUE, footerRowCount = -1;
         private boolean blankRowIfEmpty;
 
         private Table(Document<?> document, String name, Node table, Element parent) {
@@ -182,8 +182,8 @@ public class ODT<T> implements ContentProducer, Closeable {
 
         @Override
         void build() {
-            if(built) return;
-            if(removed) {
+            if (built) return;
+            if (removed) {
                 input = Collections.emptyList();
                 output.clear();
                 return;
@@ -195,18 +195,18 @@ public class ODT<T> implements ContentProducer, Closeable {
                 input = Collections.emptyList();
             }
             referenceRow = input.isEmpty() ? null : input.getFirst();
-            if(referenceRow == null) {
+            if (referenceRow == null) {
                 remove();
                 return;
             }
-            for(int i = 1; i < input.size(); i++) {
+            for (int i = 1; i < input.size(); i++) {
                 element.removeChild(input.get(i));
             }
         }
 
         @Override
         boolean generate() {
-            if(removed || generated) {
+            if (removed || generated) {
                 generated = true;
                 return false;
             }
@@ -214,11 +214,15 @@ public class ODT<T> implements ContentProducer, Closeable {
         }
 
         public void setHeaderRowCount(int headerRowCount) {
-            this.headerRowCount = headerRowCount;
+            this.headerRowCount = Math.max(headerRowCount, 0);
         }
 
         public void setBodyRowCount(int bodyRowCount) {
             this.bodyRowCount = bodyRowCount;
+        }
+
+        public void setFooterRowCount(int footerRowCount) {
+            this.footerRowCount = Math.max(footerRowCount, 0);
         }
 
         public void setBlankRowIfEmpty(boolean blankRowIfEmpty) {
@@ -244,9 +248,9 @@ public class ODT<T> implements ContentProducer, Closeable {
         }
 
         public InputTableRow getRow(int n) {
-            if(generated || removed) return null;
+            if (generated || removed) return null;
             build();
-            if(n < 0 || n >= input.size()) {
+            if (n < 0 || n >= input.size()) {
                 return null;
             }
             return new InputTableRow(this, input.get(n).cloneNode(true));
@@ -262,6 +266,9 @@ public class ODT<T> implements ContentProducer, Closeable {
         public void add(InputTableRow row, int variableIndex) {
         }
 
+        public void add(InputTableRow row, int variableIndex, Object data) {
+        }
+
         public void copy(int index) {
             copy(index, 1);
         }
@@ -273,7 +280,7 @@ public class ODT<T> implements ContentProducer, Closeable {
             copy(0, Integer.MAX_VALUE);
         }
 
-        public void setData(List<StoredObject> data) {
+        public void setData(List<Object> data) {
         }
 
         public void buildOutput() {
@@ -281,6 +288,9 @@ public class ODT<T> implements ContentProducer, Closeable {
         }
 
         public void buildOutput(int headerRowCount, int bodyRowCount, boolean appendBlankIfNoOutput) {
+        }
+
+        public void buildOutput(int headerRowCount, int bodyRowCount, int footerRowCount, boolean appendBlankIfNoOutput) {
         }
     }
 
@@ -307,10 +317,20 @@ public class ODT<T> implements ContentProducer, Closeable {
 
         private ArrayList<TableCell> cells;
         private final int variableIndex;
+        private Object data;
 
-        private TableRow(Table table, Node row, int variableIndex) {
+        private TableRow(Table table, Node row, int variableIndex, Object data) {
             super(table.document, null, row, table);
             this.variableIndex = variableIndex;
+            this.data = data;
+        }
+
+        public Object getData() {
+            return data;
+        }
+
+        public void setData(Object data) {
+            this.data = data;
         }
 
         public int getVariableIndex() {
@@ -352,6 +372,10 @@ public class ODT<T> implements ContentProducer, Closeable {
         private TableCell(TableRow row, Node cell, int columnIndex) {
             super(row.document, null, cell, row);
             this.columnIndex = columnIndex;
+        }
+
+        public Object getData() {
+            return ((TableRow)parent).getData();
         }
 
         public int getColumnIndex() {
