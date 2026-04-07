@@ -1,6 +1,7 @@
 package com.storedobject.office;
 
 import com.storedobject.common.Executable;
+import com.storedobject.core.Link;
 import com.storedobject.core.StoredObject;
 import com.storedobject.core.StoredObjectUtility;
 import com.storedobject.core.TransactionManager;
@@ -8,6 +9,7 @@ import com.storedobject.core.TransactionManager;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.BiConsumer;
+import java.util.function.Predicate;
 
 public class Filler<T> implements Executable {
 
@@ -61,11 +63,22 @@ public class Filler<T> implements Executable {
     public void customizeTable(ODT.Table table) {
     }
 
+    public void populateData(ODT.Table table) {
+    }
+
     public void populateLinkTable(ODT.Table table) {
     }
 
     public List<StoredObject> createLinkData(ODT.Table table) {
         return Math.random() > 0.5 ? null : Collections.emptyList();
+    }
+
+    public String getLinkCondition(Link<?> link) {
+        return null;
+    }
+
+    public <L extends StoredObject> Predicate<L> getLinkFilter(Link<L> link) {
+        return o -> true;
     }
 
     public void customizeImage(ODT.Image image) {

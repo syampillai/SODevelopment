@@ -64,6 +64,6 @@ public class MinutesTime extends Time implements Displayable {
 
     @Override
     public String toString() {
-        return DateUtility.formatHHMM(this);
+        return Utility.isEmpty(this) ? "" : DateUtility.formatHHMM(this);
     }
 }

@@ -36,12 +36,12 @@ public class AssignStoresAndLocations extends ObjectEditor<SystemUser> {
     }
 
     @Override
-    public Stream<StoredObjectUtility.Link<?>> extraLinks() {
-        StoredObjectUtility.Link<InventoryStore> link1 = new StoredObjectUtility.Link<>(SystemUser.class);
+    public Stream<Link<?>> extraLinks() {
+        Link<InventoryStore> link1 = new Link<>(SystemUser.class);
         link1.setName("Stores");
         link1.setObjectClass(InventoryStore.class);
         link1.setAny();
-        StoredObjectUtility.Link<InventoryVirtualLocation> link2 = new StoredObjectUtility.Link<>(SystemUser.class);
+        Link<InventoryVirtualLocation> link2 = new Link<>(SystemUser.class);
         link2.setName("Locations");
         link2.setObjectClass(InventoryVirtualLocation.class);
         return Stream.of(link1, link2);

@@ -45,7 +45,7 @@ public class MinutesTimestamp extends Timestamp implements Displayable {
 
     @Override
     public String toString() {
-        return DateUtility.formatWithTimeHHMM(this);
+        return Utility.isEmpty(this) ? "" : DateUtility.formatWithTimeHHMM(this);
     }
 
     @Override

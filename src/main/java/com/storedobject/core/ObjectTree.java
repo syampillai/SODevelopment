@@ -13,22 +13,22 @@ import java.util.stream.Stream;
 public class ObjectTree<T extends StoredObject> implements Filtered<T>, ObjectLoader<T>, AutoCloseable {
 
     private final Function<Class<T>, ObjectList<T>> listSupplier;
-    private ObjectList<T> list;
+    private ObjectList<T> roots;
     private final WeakHashMap<Id, ObjectList<T>> childMap = new WeakHashMap<>();
     private final WeakHashMap<Id, Boolean> childExistsMap = new WeakHashMap<>();
     private final Class<T> objectClass;
-    private final int linkType;
     private Comparator<? super T> comparator;
     private final ObjectLoadFilter<T> filter = new ObjectLoadFilter<>();
     private Builder<T> builder;
 
     public ObjectTree(boolean large, int linkType, Class<T> objectClass, boolean any) {
-        this(linkType, objectClass, any, large ? ObjectCacheList::new : ObjectMemoryList::new);
+        this(linkType, objectClass, any,
+                large ? c -> new ObjectCacheList<>(c, any) : c -> new ObjectMemoryList<>(c, any));
     }
 
     public ObjectTree(int linkType, Class<T> objectClass, boolean any, Function<Class<T>, ObjectList<T>> listSupplier) {
         this.objectClass = objectClass;
-        this.linkType = linkType;
+        this.filter.setLinkType(linkType);
         this.filter.setAny(any);
         this.listSupplier = listSupplier;
     }
@@ -36,15 +36,15 @@ public class ObjectTree<T extends StoredObject> implements Filtered<T>, ObjectLo
     @Override
     public void setLoadFilter(Predicate<T> loadFilter) {
         this.filter.setLoadingPredicate(loadFilter);
-        if(list != null) {
-            list.setLoadFilter(loadFilter);
+        if(roots != null) {
+            roots.setLoadFilter(loadFilter);
         }
     }
 
     @Override
     public void applyFilterPredicate() {
-        if(list != null) {
-            list.filter(filter.getViewFilter());
+        if(roots != null) {
+            roots.filter(filter.getViewFilter());
         }
     }
 
@@ -55,16 +55,16 @@ public class ObjectTree<T extends StoredObject> implements Filtered<T>, ObjectLo
     }
 
     private ObjectList<T> list() {
-        if(list == null) {
-            list = listSupplier.apply(objectClass);
-            list.setLoadFilter(filter.getLoadingPredicate());
-            list.filter(filter.getViewFilter(), comparator);
+        if(roots == null) {
+            roots = listSupplier.apply(objectClass);
+            roots.setLoadFilter(filter.getLoadingPredicate());
+            roots.filter(filter.getViewFilter(), comparator);
         }
-        return list;
+        return roots;
     }
 
     public List<T> getRoots() {
-        return list == null ? Collections.emptyList() : list;
+        return roots == null ? Collections.emptyList() : roots;
     }
 
     @Override
@@ -97,18 +97,18 @@ public class ObjectTree<T extends StoredObject> implements Filtered<T>, ObjectLo
     }
 
     public final T getParent(T child) {
-        if(list != null && list.contains(child)) {
+        if(roots != null && roots.contains(child)) {
             return null;
         }
         if(builder == null) {
-            return child.getMaster(linkType, objectClass, isAllowAny());
+            return child.getMaster(filter.getLinkType(), objectClass, isAllowAny());
         }
         return builder.getParent(this, child);
     }
 
     private ObjectList<T> list(T parent) {
         if(parent == null) {
-            return list;
+            return roots;
         }
         ObjectList<T> list = childMap.get(parent.getId());
         if(list == null) {
@@ -118,7 +118,7 @@ public class ObjectTree<T extends StoredObject> implements Filtered<T>, ObjectLo
             }
             list = listSupplier.apply(objectClass);
             if(builder == null) {
-                list.load(linkType, parent, isAllowAny());
+                list.load(filter.getLinkType(), parent, isAllowAny());
             } else {
                 list.load(builder.listChildren(this, parent));
             }
@@ -140,7 +140,7 @@ public class ObjectTree<T extends StoredObject> implements Filtered<T>, ObjectLo
 
     @Override
     public int size() {
-        return size(list);
+        return size(roots);
     }
 
     public int size(T parent) {
@@ -153,7 +153,7 @@ public class ObjectTree<T extends StoredObject> implements Filtered<T>, ObjectLo
 
     @Override
     public int size(int startingIndex, int endingIndex) {
-        return size(list, startingIndex, endingIndex);
+        return size(roots, startingIndex, endingIndex);
     }
 
     public int size(T parent, int startingIndex, int endingIndex) {
@@ -166,7 +166,7 @@ public class ObjectTree<T extends StoredObject> implements Filtered<T>, ObjectLo
 
     @Override
     public int sizeAll() {
-        return sizeAll(list);
+        return sizeAll(roots);
     }
 
     public int sizeAll(T parent) {
@@ -179,7 +179,7 @@ public class ObjectTree<T extends StoredObject> implements Filtered<T>, ObjectLo
 
     @Override
     public Stream<T> stream(int startingIndex, int endingIndex) {
-        return stream(list, startingIndex, endingIndex);
+        return stream(roots, startingIndex, endingIndex);
     }
 
     public Stream<T> stream(T parent, int startingIndex, int endingIndex) {
@@ -192,7 +192,7 @@ public class ObjectTree<T extends StoredObject> implements Filtered<T>, ObjectLo
 
     @Override
     public Stream<T> streamAll(int startingIndex, int endingIndex) {
-        return streamAll(list, startingIndex, endingIndex);
+        return streamAll(roots, startingIndex, endingIndex);
     }
 
     public Stream<T> streamAll(T parent, int startingIndex, int endingIndex) {
@@ -234,20 +234,10 @@ public class ObjectTree<T extends StoredObject> implements Filtered<T>, ObjectLo
         return objectClass;
     }
 
-    @Override
-    public final boolean isAllowAny() {
-        return ObjectLoader.super.isAllowAny();
-    }
-
-    @Override
-    public int getLinkType() {
-        return linkType;
-    }
-
     private void visitNodes(Consumer<ObjectList<T>> consumer, boolean skipRoot) {
-        if(list != null) {
+        if(roots != null) {
             if(!skipRoot) {
-                consumer.accept(list);
+                consumer.accept(roots);
             }
             for(ObjectList<T> child: childMap.values()) {
                 if(child != null) {
@@ -272,14 +262,14 @@ public class ObjectTree<T extends StoredObject> implements Filtered<T>, ObjectLo
         childMap.clear();
         childExistsMap.clear();
         visitNodes(ObjectList::close, true);
-        if(list != null) {
-            list.refresh();
+        if(roots != null) {
+            roots.refresh();
         }
     }
 
     public void refresh(T item) {
-        if(list != null) {
-            list.refresh(item);
+        if(roots != null) {
+            roots.refresh(item);
         }
     }
 

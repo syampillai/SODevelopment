@@ -106,7 +106,7 @@ public class ReferenceLinkGrid<T extends StoredObject> extends AbstractLinkGrid<
     }
 
     @Override
-    public StoredObjectUtility.Link<T> getLink() {
+    public Link<T> getLink() {
         return link;
     }
 
@@ -268,7 +268,7 @@ public class ReferenceLinkGrid<T extends StoredObject> extends AbstractLinkGrid<
     private class RList extends EList implements LinkValue<T> {
 
         @Override
-        public StoredObjectUtility.Link<T> getLink() {
+        public Link<T> getLink() {
             return link;
         }
 

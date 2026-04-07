@@ -105,7 +105,7 @@ public interface StoredObjectLink<T extends StoredObject> extends EditableList<T
         }
     };
 
-    static <O extends StoredObject> StoredObjectLink<O> create(StoredObjectUtility.Link<O> link, StoredObject master) {
+    static <O extends StoredObject> StoredObjectLink<O> create(Link<O> link, StoredObject master) {
         //noinspection unchecked
         return (StoredObjectLink<O>) EMPTY;
     }

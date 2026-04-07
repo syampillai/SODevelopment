@@ -1,5 +1,6 @@
 package com.storedobject.office;
 
+import com.storedobject.common.SORuntimeException;
 import com.storedobject.common.XML;
 import com.storedobject.core.*;
 import org.w3c.dom.Node;
@@ -273,14 +274,28 @@ public class ODT<T> implements ContentProducer, Closeable {
             copy(index, 1);
         }
 
+        public void copy(int index, Object data) {
+            copy(index, 1);
+        }
+
         public void copy(int index, int count) {
+        }
+
+        public void copy(int index, int count, Object data) {
         }
 
         public void copy() {
             copy(0, Integer.MAX_VALUE);
         }
 
+        public void copy(Object data) {
+            copy(0, Integer.MAX_VALUE);
+        }
+
         public void setData(List<Object> data) {
+        }
+
+        public void setData(Object data) {
         }
 
         public void buildOutput() {

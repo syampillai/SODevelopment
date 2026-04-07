@@ -2388,7 +2388,7 @@ public abstract class StoredObject implements Displayable, HasId, StringFiller {
         return null;
     }
 
-    public final StoredObjectLink<?> objectLink(StoredObjectUtility.Link<?> sLink) {
+    public final StoredObjectLink<?> objectLink(Link<?> sLink) {
         return objectLink(sLink.getName(), true);
     }
 

@@ -36,7 +36,7 @@ public class FileViewer extends ObjectForestViewer<FileFolder> implements Closea
     }
 
     public FileViewer(Application application, String path, String caption) {
-        this(path, application.getLogicTitle(caption));
+        this(path, application.getLogicTitle(() -> caption));
     }
 
     public FileViewer(String path) {
@@ -242,7 +242,7 @@ public class FileViewer extends ObjectForestViewer<FileFolder> implements Closea
         }
     }
 
-    public static ObjectIterator<? extends StoredObject> list(StoredObjectUtility.Link<?> link, StoredObject master) {
+    public static ObjectIterator<? extends StoredObject> list(Link<?> link, StoredObject master) {
         if(master instanceof FileFolder) {
             if(FileFolder.class.isAssignableFrom(link.getObjectClass())) {
                 return ((FileFolder) master).listFolders();

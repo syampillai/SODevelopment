@@ -29,7 +29,7 @@ public class SOFieldCreator<T> implements ObjectFieldCreator<T> {
     private StoredObject master;
     private Id objectId;
     private Map<String, UIFieldMetadata> mds;
-    private ArrayList<StoredObjectUtility.Link<?>> links;
+    private List<Link<?>> links;
     private ArrayList<ContactType> contactTypes;
     private ContactData contactData;
     private boolean extraInfoLoaded = false;
@@ -167,7 +167,7 @@ public class SOFieldCreator<T> implements ObjectFieldCreator<T> {
     @Override
     public Stream<String> getFieldNames() {
         if(ca != null && form != null) {
-            links = StoredObjectUtility.linkDetails(ca.getObjectClass());
+            links = Link.createList(ca.getObjectClass());
             ObjectEditor<?> oe = oe();
             if(oe != null) {
                 oe.extraLinks().forEach(link -> links.add(link));
@@ -190,7 +190,7 @@ public class SOFieldCreator<T> implements ObjectFieldCreator<T> {
                     names = Stream.concat(names, Stream.of(ExtraInfo.getName() + ".e"));
                 }
             }
-            Optional<StoredObjectUtility.Link<?>> child = links.stream().filter(link -> link.getType() == 0 &&
+            Optional<Link<?>> child = links.stream().filter(link -> link.getType() == 0 &&
                     link.getObjectClass() == ca.getObjectClass()).findAny();
             if(child.isPresent()) {
                 names = Stream.concat(names, Stream.of(".p"));
@@ -338,7 +338,7 @@ public class SOFieldCreator<T> implements ObjectFieldCreator<T> {
         if(ca == null || !fieldName.endsWith(".l")) {
             return null;
         }
-        StoredObjectUtility.Link<?> link = link(fieldName);
+        Link<?> link = link(fieldName);
         if(link == null) {
             return null;
         }
@@ -385,7 +385,7 @@ public class SOFieldCreator<T> implements ObjectFieldCreator<T> {
         if(ca == null || !fieldName.endsWith(".l")) {
             return null;
         }
-        StoredObjectUtility.Link<?> link = link(fieldName);
+        Link<?> link = link(fieldName);
         if(link == null) {
             return null;
         }
@@ -393,7 +393,7 @@ public class SOFieldCreator<T> implements ObjectFieldCreator<T> {
         };
     }
 
-    private StoredObjectUtility.Link<?> link(String fieldName) {
+    private Link<?> link(String fieldName) {
         return links.stream().filter(l -> fieldName.equals(l.getName() + ".l")).findAny().orElse(null);
     }
 
@@ -514,7 +514,7 @@ public class SOFieldCreator<T> implements ObjectFieldCreator<T> {
                 }
             }
             if(fieldName.endsWith(".l")) {
-                StoredObjectUtility.Link<?> link = link(fieldName);
+                Link<?> link = link(fieldName);
                 if(link != null) {
                     links.remove(link);
                 }

@@ -1,14 +1,14 @@
 package com.storedobject.ui;
 
+import com.storedobject.core.Link;
 import com.storedobject.core.StoredObject;
 import com.storedobject.core.StoredObjectLink;
-import com.storedobject.core.StoredObjectUtility;
 
 import java.util.stream.Stream;
 
 public interface LinkValue<T extends StoredObject> extends StoredObjectLink<T> {
 
-    StoredObjectUtility.Link<T> getLink();
+    Link<T> getLink();
 
     @Override
     default int getType() {

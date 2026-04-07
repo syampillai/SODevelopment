@@ -329,7 +329,7 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
         }
     }
 
-    public Stream<StoredObjectUtility.Link<?>> extraLinks() {
+    public Stream<Link<?>> extraLinks() {
         return Stream.empty();
     }
 

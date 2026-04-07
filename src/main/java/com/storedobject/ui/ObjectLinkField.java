@@ -21,7 +21,7 @@ public final class ObjectLinkField<T extends StoredObject>
         implements HasValue<HasValue.ValueChangeEvent<StoredObjectLink<T>>, StoredObjectLink<T>>, ViewDependent,
         HasVisibility, ObjectsSetter<T> {
 
-    private final StoredObjectUtility.Link<T> link;
+    private final Link<T> link;
     private String label;
     private boolean readOnly;
     private LinkGrid<T> grid;
@@ -33,7 +33,7 @@ public final class ObjectLinkField<T extends StoredObject>
     private ArrayList<TrackerRegistration> registrations;
     private boolean visible = true;
 
-    public ObjectLinkField(String label, StoredObjectUtility.Link<T> link) {
+    public ObjectLinkField(String label, Link<T> link) {
         this.link = link;
         label = label.replace(" | ", "|").replace(" |", "|").replace("| ", "|");
         while (label.contains(" |")) {
@@ -114,7 +114,7 @@ public final class ObjectLinkField<T extends StoredObject>
         }
     }
 
-    public StoredObjectUtility.Link<T> getLink() {
+    public Link<T> getLink() {
         return link;
     }
 

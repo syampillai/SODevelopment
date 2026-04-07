@@ -11,7 +11,7 @@ import com.vaadin.flow.component.grid.Grid;
 public abstract class AbstractLinkGrid<T extends StoredObject> extends EditableObjectGrid<T> implements LinkGrid<T> {
 
     final LinkGridButtons<T> buttonPanel = new LinkGridButtons<>(this);
-    final StoredObjectUtility.Link<T> link;
+    final Link<T> link;
     final ObjectLinkField<T> linkField;
 
     public AbstractLinkGrid(ObjectLinkField<T> linkField, Iterable<String> columns, boolean any) {

@@ -2,7 +2,6 @@ package com.storedobject.ui;
 
 import com.storedobject.common.StringList;
 import com.storedobject.core.*;
-import com.storedobject.core.StoredObjectUtility.Link;
 import com.storedobject.vaadin.Button;
 import com.storedobject.vaadin.ButtonLayout;
 import com.storedobject.vaadin.CloseableView;
@@ -11,7 +10,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.icon.VaadinIcon;
 
 import java.sql.Timestamp;
-import java.util.ArrayList;
+import java.util.List;
 import java.util.function.BiPredicate;
 
 public class ObjectHistoryGrid<T extends StoredObject> extends DataGrid<T> implements CloseableView {
@@ -146,7 +145,7 @@ public class ObjectHistoryGrid<T extends StoredObject> extends DataGrid<T> imple
         }
         getATC();
         if(atc == null || atc.getLinks() == 0) {
-            ArrayList<Link<?>> links = StoredObjectUtility.linkDetails(object.getClass());
+            List<Link<?>> links = Link.createList(object.getClass());
             for(Link<?> link: links) {
                 if(!link.isDetail()) {
                     continue;

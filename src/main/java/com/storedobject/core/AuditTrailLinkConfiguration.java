@@ -2,7 +2,6 @@ package com.storedobject.core;
 
 import java.math.BigDecimal;
 
-import com.storedobject.core.StoredObjectUtility.Link;
 import com.storedobject.core.annotation.Column;
 
 public class AuditTrailLinkConfiguration extends StoredObject implements Detail {

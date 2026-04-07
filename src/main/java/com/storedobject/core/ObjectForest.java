@@ -10,14 +10,14 @@ import java.util.stream.Stream;
 public class ObjectForest<T extends StoredObject> implements Filtered<T>, ObjectLoader<T>, AutoCloseable {
 
     private final Function<Class<T>, ObjectList<T>> listSupplier;
-    private ObjectList<T> list;
+    private ObjectList<T> roots;
     private final Class<T> objectClass;
     private Comparator<? super T> comparator;
     private final ObjectLoadFilter<T> filter = new ObjectLoadFilter<>();
-    private Map<Class<? extends StoredObject>, List<StoredObjectUtility.Link<?>>> linkMaps;
-    private final Map<StoredObjectUtility.Link<?>, Map<Id, LinkNode>> linkNodeMap = new HashMap<>();
-    private BiFunction<StoredObjectUtility.Link<?>, StoredObject, ObjectIterator<? extends StoredObject>> listLinks;
-    private Predicate<StoredObjectUtility.Link<?>> linkVisibility;
+    private Map<Class<? extends StoredObject>, List<Link<?>>> linkMaps;
+    private final Map<Link<?>, Map<Id, LinkNode>> linkNodeMap = new HashMap<>();
+    private BiFunction<Link<?>, StoredObject, ObjectIterator<? extends StoredObject>> listLinks;
+    private Predicate<Link<?>> linkVisibility;
     private boolean hideLinkLabels;
 
     public ObjectForest(boolean large, int linkType, Class<T> objectClass, boolean any) {
@@ -36,38 +36,40 @@ public class ObjectForest<T extends StoredObject> implements Filtered<T>, Object
         this.hideLinkLabels = true;
     }
 
-    public void setLinkVisibility(Predicate<StoredObjectUtility.Link<?>> linkVisibility) {
+    public void setLinkVisibility(Predicate<Link<?>> linkVisibility) {
         this.linkVisibility = linkVisibility;
     }
 
-    public Predicate<StoredObjectUtility.Link<?>> getLinkVisibility() {
+    public Predicate<Link<?>> getLinkVisibility() {
         return linkVisibility;
     }
 
-    public void setListLinks(BiFunction<StoredObjectUtility.Link<?>, StoredObject, ObjectIterator<? extends StoredObject>> listLinks) {
+    public void setListLinks(BiFunction<Link<?>, StoredObject,
+            ObjectIterator<? extends StoredObject>> listLinks) {
         this.listLinks = listLinks;
     }
 
-    public BiFunction<StoredObjectUtility.Link<?>, StoredObject, ObjectIterator<? extends StoredObject>> getListLinks() {
+    public BiFunction<Link<?>, StoredObject,
+            ObjectIterator<? extends StoredObject>> getListLinks() {
         return listLinks;
     }
 
-    private List<StoredObjectUtility.Link<?>> linkDetails(Class<? extends StoredObject> masterClass) {
-        List<StoredObjectUtility.Link<?>> links = StoredObjectUtility.linkDetails(masterClass);
+    private List<Link<?>> linkDetails(Class<? extends StoredObject> masterClass) {
+        List<Link<?>> links = Link.createList(masterClass);
         if(linkVisibility != null) {
             links.removeIf(linkVisibility.negate());
         }
         return links;
     }
 
-    private List<StoredObjectUtility.Link<?>> links(boolean create, Class<? extends StoredObject> klass) {
+    private List<Link<?>> links(boolean create, Class<? extends StoredObject> klass) {
         if(linkMaps == null && !create) {
             return Collections.emptyList();
         }
         if(linkMaps == null) {
             linkMaps = new HashMap<>();
             Class<? extends StoredObject> ks = getObjectClass();
-            List<StoredObjectUtility.Link<?>> links = linkDetails(ks);
+            List<Link<?>> links = linkDetails(ks);
             linkMaps.put(ks, links);
             if(klass == ks) {
                 return links;
@@ -79,15 +81,15 @@ public class ObjectForest<T extends StoredObject> implements Filtered<T>, Object
     @Override
     public void setLoadFilter(Predicate<T> loadFilter) {
         this.filter.setLoadingPredicate(loadFilter);
-        if(list != null) {
-            list.setLoadFilter(loadFilter);
+        if(roots != null) {
+            roots.setLoadFilter(loadFilter);
         }
     }
 
     @Override
     public void applyFilterPredicate() {
-        if(list != null) {
-            list.filter(filter.getViewFilter());
+        if(roots != null) {
+            roots.filter(filter.getViewFilter());
         }
     }
 
@@ -98,31 +100,31 @@ public class ObjectForest<T extends StoredObject> implements Filtered<T>, Object
     }
 
     private ObjectList<T> list() {
-        if(list == null) {
-            list = listSupplier.apply(objectClass);
-            list.setLoadFilter(filter.getLoadingPredicate());
-            list.filter(filter.getViewFilter(), comparator);
+        if(roots == null) {
+            roots = listSupplier.apply(objectClass);
+            roots.setLoadFilter(filter.getLoadingPredicate());
+            roots.filter(filter.getViewFilter(), comparator);
         }
-        return list;
+        return roots;
     }
 
     public List<T> getRoots() {
-        return list == null ? Collections.emptyList() : list;
+        return roots == null ? Collections.emptyList() : roots;
     }
 
     @Override
     public void order(Comparator<? super T> comparator) {
         this.comparator = comparator;
-        if(list != null) {
-            list.order(comparator);
+        if(roots != null) {
+            roots.order(comparator);
         }
     }
 
     @Override
     public void filter(Predicate<? super T> filter) {
         this.filter.setViewFilter(filter);
-        if(list != null) {
-            list.filter(filter);
+        if(roots != null) {
+            roots.filter(filter);
         }
     }
 
@@ -130,8 +132,8 @@ public class ObjectForest<T extends StoredObject> implements Filtered<T>, Object
     public void filter(Predicate<? super T> filter, Comparator<? super T> comparator) {
         this.comparator = comparator;
         this.filter.setViewFilter(filter);
-        if(list != null) {
-            list.filter(filter, comparator);
+        if(roots != null) {
+            roots.filter(filter, comparator);
         }
     }
 
@@ -151,15 +153,15 @@ public class ObjectForest<T extends StoredObject> implements Filtered<T>, Object
 
     private List<?> list(boolean create, Object parent) {
         if(parent == null) {
-            return list;
+            return roots;
         }
         if(parent instanceof LinkObject p) {
             if(hideLinkLabels) {
                 parent = p.getObject();
             } else {
                 if(p.linkNode.link.isDetail()) {
-                    return links(create, p.object.getClass()).stream().map(link -> getLinkNode(link, p.object, listLinks))
-                            .toList();
+                    return links(create, p.object.getClass()).stream()
+                            .map(link -> getLinkNode(link, p.object, listLinks)).toList();
                 }
             }
         }
@@ -188,7 +190,7 @@ public class ObjectForest<T extends StoredObject> implements Filtered<T>, Object
 
     @Override
     public int size() {
-        return size(list);
+        return size(roots);
     }
 
     public int size(Object parent) {
@@ -203,7 +205,7 @@ public class ObjectForest<T extends StoredObject> implements Filtered<T>, Object
         if(list == null) {
             return 0;
         }
-        if(list instanceof ObjectList o) {
+        if(list instanceof ObjectList<?> o) {
             return o.size(startingIndex, endingIndex);
         }
         return Utility.size(list, startingIndex, endingIndex);
@@ -211,7 +213,7 @@ public class ObjectForest<T extends StoredObject> implements Filtered<T>, Object
 
     @Override
     public int size(int startingIndex, int endingIndex) {
-        return size(list, startingIndex, endingIndex);
+        return size(roots, startingIndex, endingIndex);
     }
 
     public int size(Object parent, int startingIndex, int endingIndex) {
@@ -230,7 +232,7 @@ public class ObjectForest<T extends StoredObject> implements Filtered<T>, Object
 
     @Override
     public int sizeAll() {
-        return sizeAll(list);
+        return sizeAll(roots);
     }
 
     public int sizeAll(Object parent) {
@@ -249,10 +251,10 @@ public class ObjectForest<T extends StoredObject> implements Filtered<T>, Object
 
     @Override
     public Stream<T> stream(int startingIndex, int endingIndex) {
-        if(list == null) {
+        if(roots == null) {
             return Stream.empty();
         }
-        return list.stream(startingIndex, endingIndex);
+        return roots.stream(startingIndex, endingIndex);
     }
 
     public Stream<Object> stream(Object parent, int startingIndex, int endingIndex) {
@@ -274,7 +276,7 @@ public class ObjectForest<T extends StoredObject> implements Filtered<T>, Object
 
     @Override
     public Stream<T> streamAll(int startingIndex, int endingIndex) {
-        return list == null ? Stream.empty() : list.streamAll(startingIndex, endingIndex);
+        return roots == null ? Stream.empty() : roots.streamAll(startingIndex, endingIndex);
     }
 
     public Stream<Object> streamAll(Object parent, int startingIndex, int endingIndex) {
@@ -327,8 +329,8 @@ public class ObjectForest<T extends StoredObject> implements Filtered<T>, Object
             linkMaps.clear();
         }
         linkNodeMap.clear();
-        if(list != null) {
-            list.close();
+        if(roots != null) {
+            roots.close();
         }
     }
 
@@ -337,18 +339,18 @@ public class ObjectForest<T extends StoredObject> implements Filtered<T>, Object
             linkMaps.clear();
         }
         linkNodeMap.clear();
-        if(list != null) {
-            list.refresh();
+        if(roots != null) {
+            roots.refresh();
         }
     }
 
     public void refresh(Object item) {
-        if(list == null || item == null) {
+        if(roots == null || item == null) {
             return;
         }
         if(getObjectClass().isAssignableFrom(item.getClass())) {
             //noinspection unchecked
-            list.refresh((T)item);
+            roots.refresh((T)item);
             return;
         }
         if(item instanceof LinkNode i) {
@@ -361,7 +363,7 @@ public class ObjectForest<T extends StoredObject> implements Filtered<T>, Object
     }
 
     public void refresh(Object item, boolean refreshChildren) {
-        if(list == null || item == null) {
+        if(roots == null || item == null) {
             return;
         }
         refresh(item);
@@ -377,8 +379,9 @@ public class ObjectForest<T extends StoredObject> implements Filtered<T>, Object
         return false;
     }
 
-    private LinkNode getLinkNode(StoredObjectUtility.Link<?> link, StoredObject parent,
-                                 BiFunction<StoredObjectUtility.Link<?>, StoredObject, ObjectIterator<? extends StoredObject>> listLinks) {
+    private LinkNode getLinkNode(Link<?> link, StoredObject parent,
+                                 BiFunction<Link<?>, StoredObject,
+                                         ObjectIterator<? extends StoredObject>> listLinks) {
         LinkNode node;
         Map<Id, LinkNode> nodes = linkNodeMap.get(link);
         if(nodes == null) {
@@ -398,13 +401,15 @@ public class ObjectForest<T extends StoredObject> implements Filtered<T>, Object
     public static class LinkNode implements HasId {
 
         private final Id id = new Id();
-        private final StoredObjectUtility.Link<?> link;
+        private final Link<?> link;
         private final StoredObject parent;
         private List<LinkObject> links;
-        private final BiFunction<StoredObjectUtility.Link<?>, StoredObject, ObjectIterator<? extends StoredObject>> listLinks;
+        private final BiFunction<Link<?>, StoredObject,
+                ObjectIterator<? extends StoredObject>> listLinks;
 
-        private LinkNode(StoredObjectUtility.Link<?> link, StoredObject parent,
-                         BiFunction<StoredObjectUtility.Link<?>, StoredObject, ObjectIterator<? extends StoredObject>> listLinks) {
+        private LinkNode(Link<?> link, StoredObject parent,
+                         BiFunction<Link<?>, StoredObject,
+                                 ObjectIterator<? extends StoredObject>> listLinks) {
             this.link = link;
             this.parent = parent;
             this.listLinks = listLinks;
@@ -414,7 +419,7 @@ public class ObjectForest<T extends StoredObject> implements Filtered<T>, Object
             return parent;
         }
 
-        public StoredObjectUtility.Link<?> getLink() {
+        public Link<?> getLink() {
             return link;
         }
 

@@ -54,6 +54,8 @@ public class RightClickMenu<T> extends GridContextMenu<T> {
 
     private void init() {
         super.setDynamicContentHandler(i -> {
+            //noinspection unchecked
+            ((Grid<T>)getTarget()).select(i);
             boolean any = false;
             for(Button<T> button: buttons) {
                 String label = button.menuItem.getText();

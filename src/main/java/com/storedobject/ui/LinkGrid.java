@@ -1,8 +1,8 @@
 package com.storedobject.ui;
 
+import com.storedobject.core.Link;
 import com.storedobject.core.StoredObject;
 import com.storedobject.core.StoredObjectLink;
-import com.storedobject.core.StoredObjectUtility;
 import com.storedobject.ui.util.LinkGridButtons;
 import com.storedobject.vaadin.View;
 import com.vaadin.flow.component.grid.Grid;
@@ -79,7 +79,7 @@ public interface LinkGrid<T extends StoredObject> extends NewInstanceConsumer {
 
     LinkGridButtons<T> getButtonPanel();
 
-    StoredObjectUtility.Link<T> getLink();
+    Link<T> getLink();
 
     void clear();
 

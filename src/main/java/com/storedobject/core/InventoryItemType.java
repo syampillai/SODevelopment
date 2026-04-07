@@ -1196,8 +1196,8 @@ public class InventoryItemType extends StoredObject implements HasChildren, HasI
             a.makeNew();
             a.setPartNumber(apn);
             a.save(t);
-            List<StoredObjectUtility.Link<?>> links = StoredObjectUtility.linkDetails(getClass());
-            for(StoredObjectUtility.Link<?> link: links) {
+            List<Link<?>> links = Link.createList(getClass());
+            for(Link<?> link: links) {
                 for(StoredObject child: link.list(this)) {
                     child.makeNew();
                     child.save(t);

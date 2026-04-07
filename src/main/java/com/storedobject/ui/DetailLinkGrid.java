@@ -140,7 +140,7 @@ public class DetailLinkGrid<T extends StoredObject> extends AbstractLinkGrid<T> 
     }
 
     @Override
-    public StoredObjectUtility.Link<T> getLink() {
+    public Link<T> getLink() {
         return link;
     }
 
@@ -208,7 +208,7 @@ public class DetailLinkGrid<T extends StoredObject> extends AbstractLinkGrid<T> 
     class DList extends EList implements LinkValue<T> {
 
         @Override
-        public StoredObjectUtility.Link<T> getLink() {
+        public Link<T> getLink() {
             return link;
         }
 
