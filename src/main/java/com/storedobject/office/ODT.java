@@ -1,6 +1,5 @@
 package com.storedobject.office;
 
-import com.storedobject.common.SORuntimeException;
 import com.storedobject.common.XML;
 import com.storedobject.core.*;
 import org.w3c.dom.Node;

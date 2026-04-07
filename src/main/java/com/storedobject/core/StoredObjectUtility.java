@@ -8,11 +8,9 @@ import java.io.File;
 import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.sql.Timestamp;
-import java.util.ArrayList;
 import java.util.Properties;
 import java.util.Random;
 import java.util.function.Function;
-import java.util.function.Predicate;
 
 public final class StoredObjectUtility {
 
