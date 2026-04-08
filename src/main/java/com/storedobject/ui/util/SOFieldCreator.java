@@ -191,7 +191,7 @@ public class SOFieldCreator<T> implements ObjectFieldCreator<T> {
                 }
             }
             Optional<Link<?>> child = links.stream().filter(link -> link.getType() == 0 &&
-                    link.getObjectClass() == ca.getObjectClass()).findAny();
+                    link.getLinkClass() == ca.getObjectClass()).findAny();
             if(child.isPresent()) {
                 names = Stream.concat(names, Stream.of(".p"));
             }

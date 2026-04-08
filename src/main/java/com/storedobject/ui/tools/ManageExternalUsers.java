@@ -29,7 +29,7 @@ public class ManageExternalUsers extends ObjectEditor<SystemUser> {
     @Override
     public Stream<Link<?>> extraLinks() {
         Link<ExternalSystemUser> ess = new Link<>(SystemUser.class);
-        ess.setObjectClass(ExternalSystemUser.class);
+        ess.setLinkClass(ExternalSystemUser.class);
         ess.setName(EU.substring(0, EU.lastIndexOf('.')));
         return Stream.of(ess);
     }

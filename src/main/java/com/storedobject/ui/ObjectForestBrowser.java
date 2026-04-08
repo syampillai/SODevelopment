@@ -321,7 +321,7 @@ public class ObjectForestBrowser<T extends StoredObject> extends ObjectForest<T>
             }
             if(o instanceof com.storedobject.core.ObjectForest.LinkNode) {
                 if(currentLinkNode.getLink().isDetail()) {
-                    ObjectEditor<?> oe = getObjectEditor(currentLinkNode.getLink().getObjectClass());
+                    ObjectEditor<?> oe = getObjectEditor(currentLinkNode.getLink().getLinkClass());
                     StoredObject parent = currentLinkNode.getParent();
                     if(!canAdd(parent)) {
                         return false;
@@ -333,7 +333,7 @@ public class ObjectForestBrowser<T extends StoredObject> extends ObjectForest<T>
                     if(!canAdd(parent)) {
                         return false;
                     }
-                    ObjectSearcher<?> osx = getObjectSearcher(currentLinkNode.getLink().getObjectClass());
+                    ObjectSearcher<?> osx = getObjectSearcher(currentLinkNode.getLink().getLinkClass());
                     @SuppressWarnings("unchecked") ObjectSearcher<StoredObject> os = (ObjectSearcher<StoredObject>)osx;
                     ObjectsSetter<StoredObject> setter = new ObjectsSetter<>() {
 

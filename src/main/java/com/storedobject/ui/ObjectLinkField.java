@@ -298,7 +298,7 @@ public final class ObjectLinkField<T extends StoredObject>
 
     @Override
     public Class<T> getObjectClass() {
-        return link.getObjectClass();
+        return link.getLinkClass();
     }
 
     @Override

@@ -244,7 +244,7 @@ public class FileViewer extends ObjectForestViewer<FileFolder> implements Closea
 
     public static ObjectIterator<? extends StoredObject> list(Link<?> link, StoredObject master) {
         if(master instanceof FileFolder) {
-            if(FileFolder.class.isAssignableFrom(link.getObjectClass())) {
+            if(FileFolder.class.isAssignableFrom(link.getLinkClass())) {
                 return ((FileFolder) master).listFolders();
             }
             return ((FileFolder) master).listFiles();

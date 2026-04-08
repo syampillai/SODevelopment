@@ -2514,7 +2514,7 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
         //noinspection unchecked
         return linkFields.stream().filter(f -> {
             var link = f.getLink();
-            return link.getType() == linkType && link.getObjectClass() == linkClass;
+            return link.getType() == linkType && link.getLinkClass() == linkClass;
         }).map(f -> (ObjectLinkField<L>)f).findAny().orElse(null);
     }
 
