@@ -11,7 +11,6 @@ import com.storedobject.core.*;
  */
 public class AbstractODTReport<T> extends ODT<T> {
 
-    private final Device device;
     private boolean executed = false;
     private Entity entity;
 
@@ -80,8 +79,7 @@ public class AbstractODTReport<T> extends ODT<T> {
      *               for generating the report.
      */
     public AbstractODTReport(Device device, StreamData streamData, Object filler) {
-        super(streamData, filler);
-        this.device = device;
+        super(device, streamData, filler);
     }
 
     @Override
@@ -145,10 +143,5 @@ public class AbstractODTReport<T> extends ODT<T> {
             return ReportFormat.get(tm);
         }
         return ReportFormat.get(entity);
-    }
-
-    @Override
-    public Device getDevice() {
-        return device;
     }
 }

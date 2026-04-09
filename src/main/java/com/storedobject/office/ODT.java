@@ -17,6 +17,8 @@ import java.util.zip.ZipOutputStream;
 
 public class ODT<T> implements ContentProducer, Closeable {
 
+    private final Device device;
+
     public ODT() {
         this((StreamData)null, null);
     }
@@ -35,10 +37,15 @@ public class ODT<T> implements ContentProducer, Closeable {
     }
 
     public ODT(StreamData streamData, Object filler) {
+        this(null, streamData, filler);
     }
 
-    public Device getDevice() {
-        return null;
+    public ODT(Device device, StreamData streamData, Object filler) {
+        this.device = device;
+    }
+
+    public final Device getDevice() {
+        return device;
     }
 
     public void setTemplate(StreamData template) {
