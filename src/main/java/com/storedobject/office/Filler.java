@@ -1,13 +1,8 @@
 package com.storedobject.office;
 
 import com.storedobject.common.Executable;
-import com.storedobject.core.Link;
-import com.storedobject.core.StoredObject;
-import com.storedobject.core.StoredObjectUtility;
-import com.storedobject.core.TransactionManager;
+import com.storedobject.core.*;
 
-import java.util.Collections;
-import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Predicate;
 
@@ -69,8 +64,8 @@ public class Filler<T> implements Executable {
     public void populateLinkTable(ODT.Table table) {
     }
 
-    public List<StoredObject> createLinkData(ODT.Table table) {
-        return Math.random() > 0.5 ? null : Collections.emptyList();
+    public <L extends StoredObject> ObjectIterator<L> createLinkData(ODT.Table table) {
+        return ObjectIterator.create();
     }
 
     public String getLinkCondition(Link<?> link) {

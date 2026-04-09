@@ -7,6 +7,7 @@ import java.io.Closeable;
 import java.util.*;
 import java.util.function.*;
 import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 /**
  * Helper class that allows you to iterate through objects retrieved from the DB. Several methods of
@@ -109,6 +110,10 @@ public abstract class ObjectIterator<O extends StoredObject> implements Iterator
     public <TO extends StoredObject> ObjectIterator<TO> map(Function<O, TO> function) {
         //noinspection unchecked
         return (ObjectIterator<TO>) this;
+    }
+
+    public <TO> Iterable<TO> iterable(Function<O, TO> function) {
+        return () -> StreamSupport.stream(spliterator(), false).map(function).iterator();
     }
 
     /**
