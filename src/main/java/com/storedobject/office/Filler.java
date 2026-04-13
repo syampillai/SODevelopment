@@ -61,9 +61,6 @@ public class Filler<T> implements Executable {
     public void populateData(ODT.Table table) {
     }
 
-    public void populateLinkTable(ODT.Table table) {
-    }
-
     public <L extends StoredObject> ObjectIterator<L> createLinkData(ODT.Table table) {
         return ObjectIterator.create();
     }
