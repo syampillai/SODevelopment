@@ -188,10 +188,25 @@ public class SOServlet extends VaadinServlet {
         JSON mf;
         TextContent tc = getTextContent("webmanifest");
         if(tc == null) {
-            mf = new JSON("{\"background_color\":\"#f2f2f2\",\"theme_color\":\"#ffffff\"," +
-                    "\"icons\":[{\"src\":\"icons/icon-144x144.png\",\"sizes\":\"144x144\",\"type\":\"image/png\"}," +
-                    "{\"src\":\"icons/icon-192x192.png\",\"sizes\":\"192x192\",\"type\":\"image/png\"}," +
-                    "{\"src\":\"icons/icon-512x512.png\",\"sizes\":\"512x512\",\"type\":\"image/png\"}]}");
+            mf = new JSON("""
+                    {
+                      "background_color": "#f2f2f2",
+                      "theme_color": "#ffffff",
+                      "icons": [{
+                        "src":"icons/icon-144x144.png",
+                        "sizes":"144x144",
+                        "type":"image/png"
+                      }, {
+                        "src":"icons/icon-192x192.png",
+                        "sizes":"192x192",
+                        "type":"image/png"
+                      }, {
+                        "src":"icons/icon-512x512.png",
+                        "sizes":"512x512",
+                        "type":"image/png"
+                      }]
+                    }
+                    """);
         } else {
             mf = new JSON(tc.getContent());
         }
@@ -206,6 +221,7 @@ public class SOServlet extends VaadinServlet {
     }
 
     private void sendResource(String what, Resource resource, HttpServletResponse response) throws IOException {
+        //noinspection JvmTaintAnalysis
         respond(response, null,
                 IO.getReader(resource.resourceClass.getResourceAsStream(resource.prefix + what)), resource.mimeType,
                 false, null);

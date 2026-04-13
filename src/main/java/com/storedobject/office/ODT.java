@@ -298,12 +298,6 @@ public class ODT<T> implements ContentProducer, Closeable {
             copy(0, Integer.MAX_VALUE);
         }
 
-        public <O extends StoredObject> void setData(ObjectIterator<O> data) {
-        }
-
-        public void setData(Iterable<Object> data) {
-        }
-
         public void setData(Object data) {
         }
 
