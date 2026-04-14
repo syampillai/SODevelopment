@@ -1,6 +1,6 @@
 package com.storedobject.core.converter;
 
-public class SecondsValueConverter extends ValueConverter<Integer> {
+public class SecondsValueConverter extends ValueConverter<Long> {
 
 	private SecondsValueConverter(String emptyValue) {
 	}
@@ -14,13 +14,13 @@ public class SecondsValueConverter extends ValueConverter<Integer> {
 	}
 
 	@Override
-	public Class<Integer> getValueType() {
-		return Integer.class;
+	public Class<Long> getValueType() {
+		return Long.class;
 	}
 
 	@Override
-	public Integer convert(Object value) {
-		return 0;
+	public Long convert(Object value) {
+		return 0L;
 	}
 
 	public static String format(int seconds) {

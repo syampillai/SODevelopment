@@ -280,6 +280,10 @@ public class Quantity implements Storable, Comparable<Quantity> {
         return false;
     }
 
+	public Percentage percentageOf(Quantity total) {
+		return new Percentage(this.getValue(), "%");
+	}
+
 	public String toString(boolean showSymbol) {
 		return "";
 	}

@@ -163,7 +163,7 @@ public class ReportDefinition extends Name {
      * Gender/EQ AS Gender equal to
      * Age/GT AS Age greater than
      * </pre>
-     * <p>Sub-fields may be accessed using the platform-specific "dot" notation.</p>
+     * <p>Subfields may be accessed using the platform-specific "dot" notation.</p>
      * <pre>
      * Example: (Assuming SystemUser as the data class)
      * Person.Gender/EQ AS Gender equal to

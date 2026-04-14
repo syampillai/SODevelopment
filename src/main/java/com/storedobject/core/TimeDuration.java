@@ -1,6 +1,9 @@
 package com.storedobject.core;
 
+import com.storedobject.common.SORuntimeException;
+
 import java.math.BigDecimal;
+import java.util.concurrent.TimeUnit;
 
 public class TimeDuration extends Quantity {
 
@@ -25,7 +28,25 @@ public class TimeDuration extends Quantity {
 	public TimeDuration(BigDecimal value, MeasurementUnit unit) {
 		super(value, unit);
 	}
-	
+
+	public TimeDuration(double value, TimeUnit unit) {
+		this(BigDecimal.valueOf(value), unit(unit));
+	}
+
+	public TimeDuration(BigDecimal value, TimeUnit unit) {
+		this(value, unit(unit));
+	}
+
+	private static MeasurementUnit unit(TimeUnit unit) {
+		return switch (unit) {
+			case SECONDS -> defaultUnit;
+			case DAYS -> MeasurementUnit.get("days", TimeDuration.class);
+			case HOURS -> MeasurementUnit.get("hou", TimeDuration.class);
+			case MINUTES -> MeasurementUnit.get("min", TimeDuration.class);
+			default -> throw new SORuntimeException("Unsupported unit: " + unit);
+		};
+	}
+
 	/**
 	 * Create a quantity of this type with zero value.
 	 * @return Result
@@ -158,5 +179,34 @@ public class TimeDuration extends Quantity {
 	@Override
 	public TimeDuration absolute() {
         return (TimeDuration)super.absolute();
+	}
+
+	/**
+	 * Format the duration as a string of the form "D days HH:MM:SS".
+	 * @return Formatted string
+	 */
+	public String format() {
+		return format(true);
+	}
+
+	/**
+	 * Format the duration as a string of the form "D days HH:MM:SS" or "HH:MM:SS".
+	 * @param allowDays Allow days?
+	 * @return Formatted string
+	 */
+	public String format(boolean allowDays) {
+		String s = toString();
+		return s.startsWith("0D ") ? s.substring(3) : s;
+	}
+
+	/**
+	 * Format the duration as a string of the form "D days HH:MM:SS" or "HH:MM:SS".
+	 * @param allowDays Allow days?
+	 * @param stripSeconds Strip seconds?
+	 * @return Formatted string
+	 */
+	public String format(boolean allowDays, boolean stripSeconds) {
+		String s = format(allowDays);
+		return stripSeconds ? s.substring(0, s.length() - 3) : s;
 	}
 }

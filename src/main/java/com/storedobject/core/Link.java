@@ -136,6 +136,7 @@ public class Link<L extends StoredObject> {
      * @return the {@code Class} representing the type of the link
      * @deprecated Use {@link #getLinkClass()} instead.
      */
+    @Deprecated
     public Class<L> getObjectClass() {
         return linkClass;
     }
@@ -165,6 +166,7 @@ public class Link<L extends StoredObject> {
      *                  must be compatible with the generic type parameter {@code L}
      * @deprecated Use {@link #setLinkClass(Class)} instead.
      */
+    @Deprecated
     public void setObjectClass(Class<L> linkClass) {
         this.linkClass = linkClass;
     }
@@ -189,6 +191,7 @@ public class Link<L extends StoredObject> {
      * @throws SORuntimeException if any unexpected error occurs during class resolution
      * @deprecated Use {@link #setLinkClass(String)} instead.
      */
+    @Deprecated
     public void setObjectClass(String className) {
         setLinkClass(className);
     }
