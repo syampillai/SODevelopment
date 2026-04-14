@@ -36,7 +36,7 @@ public class SecondsField extends CustomTextField<Integer> {
 
     @Override
     protected Integer getModelValue(String string) {
-        int v = SecondsValueConverter.parse(string);
+        int v = (int)SecondsValueConverter.parse(string);
         if(trimToDay) {
             v %= (24 * 60 * 60);
         }

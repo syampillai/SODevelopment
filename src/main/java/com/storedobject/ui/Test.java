@@ -1,11 +1,15 @@
 package com.storedobject.ui;
 
 import com.storedobject.core.Id;
+import com.storedobject.core.TimeDuration;
 import com.storedobject.office.Filler;
 import com.storedobject.office.ODT;
 import com.storedobject.office.ODTReport;
 import com.storedobject.ui.report.SectionSelector;
-import com.storedobject.vaadin.*;
+import com.storedobject.vaadin.BooleanField;
+import com.storedobject.vaadin.DataForm;
+
+import java.util.concurrent.TimeUnit;
 
 public class Test extends DataForm {
 
@@ -14,6 +18,11 @@ public class Test extends DataForm {
     public Test() {
         super("Test");
         addField(raw);
+        addField(new TimeDurationField("Time Duration"));
+        TimeDurationField x = new TimeDurationField("Another Time Duration");
+        addField(x);
+        x.setValue(new TimeDuration(100, TimeUnit.SECONDS));
+        setFieldReadOnly(x);
     }
 
     @Override
