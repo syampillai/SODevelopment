@@ -940,6 +940,7 @@ public class Application extends com.storedobject.vaadin.Application implements 
     }
 
     private record CP(String caption, ContentProducer producer, Consumer<Long> timeTracker, boolean windowMode,
+                      Runnable onViewClose,
                       Component[] extraHeaderButtons) {
     }
 
@@ -965,11 +966,23 @@ public class Application extends com.storedobject.vaadin.Application implements 
      *
      * @param caption The title or caption to be displayed for the view.
      * @param producer The ContentProducer responsible for generating content to be displayed.
-     * @param windowMode A boolean indicating whether the view should be displayed in window mode.
      * @param extraHeaderButtons Optional additional header buttons to be displayed in the view.
      */
-    public void view(String caption, ContentProducer producer, boolean windowMode, Component... extraHeaderButtons) {
-        view(caption, producer, null, windowMode, extraHeaderButtons);
+    public void view(String caption, ContentProducer producer, Component... extraHeaderButtons) {
+        view(caption, producer, null, true, null, extraHeaderButtons);
+    }
+
+    /**
+     * Displays content produced by the given ContentProducer in a specific view.
+     * Manages the display lifecycle, including the addition of header buttons and
+     * tracking view time. Supports windowed mode and asynchronous content generation.
+     *
+     * @param caption The title or caption to be displayed for the view.
+     * @param producer The ContentProducer responsible for generating content to be displayed.
+     * @param extraHeaderButtons Optional additional header buttons to be displayed in the view.
+     */
+    public void view(String caption, ContentProducer producer, Runnable onViewCLose, Component... extraHeaderButtons) {
+        view(caption, producer, null, true, onViewCLose, extraHeaderButtons);
     }
 
     /**
@@ -985,12 +998,29 @@ public class Application extends com.storedobject.vaadin.Application implements 
      */
     public void view(String caption, ContentProducer producer, Consumer<Long> timeTracker, boolean windowMode,
                      Component... extraHeaderButtons) {
+        view(caption, producer, timeTracker, windowMode, null, extraHeaderButtons);
+    }
+
+    /**
+     * Displays content produced by the given ContentProducer in a specific view.
+     * Manages the display lifecycle, including the addition of header buttons and
+     * tracking view time. Supports windowed mode and asynchronous content generation.
+     *
+     * @param caption The title or caption to be displayed for the view.
+     * @param producer The ContentProducer responsible for generating content to be displayed.
+     * @param timeTracker A Consumer that accepts a Long value representing the time spent in the view.
+     * @param windowMode A boolean indicating whether the view should be displayed in window mode.
+     * @param extraHeaderButtons Optional additional header buttons to be displayed in the view.
+     */
+    public void view(String caption, ContentProducer producer, Consumer<Long> timeTracker, boolean windowMode,
+                     Runnable onViewClose,
+                     Component... extraHeaderButtons) {
         if(server == null) {
             return;
         }
         if(!windowMode) openMenu();
         synchronized(contentProducers) {
-            CP cp = new CP(caption, producer, timeTracker, windowMode, extraHeaderButtons);
+            CP cp = new CP(caption, producer, timeTracker, windowMode, onViewClose, extraHeaderButtons);
             contentProducers.add(cp);
             if(contentProducers.size() > 1) {
                 startPolling(contentProducers);
@@ -998,7 +1028,7 @@ public class Application extends com.storedobject.vaadin.Application implements 
             }
         }
         new ContentGenerator(this, producer, caption, this::remove, timeTracker, waitMessage::open,
-                windowMode, extraHeaderButtons).kick();
+                windowMode, onViewClose, extraHeaderButtons).kick();
     }
 
     /**
@@ -1019,7 +1049,7 @@ public class Application extends com.storedobject.vaadin.Application implements 
                 } else {
                     CP cp = contentProducers.getFirst();
                     new ContentGenerator(this, cp.producer, cp.caption, this::remove, cp.timeTracker,
-                            waitMessage::open, cp.windowMode, cp.extraHeaderButtons).kick();
+                            waitMessage::open, cp.windowMode, cp.onViewClose, cp.extraHeaderButtons).kick();
                 }
             }
         }
@@ -1028,7 +1058,7 @@ public class Application extends com.storedobject.vaadin.Application implements 
     @Override
     public void download(ContentProducer producer, Consumer<Long> informMe) {
         new ContentGenerator(this, producer, true, null, this::remove, informMe,
-                waitMessage::open, false).kick();
+                waitMessage::open, false, null).kick();
     }
 
     /**

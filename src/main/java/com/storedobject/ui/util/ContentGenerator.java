@@ -28,19 +28,21 @@ public class ContentGenerator extends AbstractContentGenerator {
     private final boolean windowMode;
     private final Component[] extraHeaderButtons;
     private DownloadStream downloadStream;
+    private final Runnable obViewClose;
 
     public ContentGenerator(Application application, ContentProducer producer, String caption,
                             Consumer<AbstractContentGenerator> inform, Consumer<Long> timeTracker,
-                            Runnable preRun, boolean windowMode, Component... extraHeaderButtons) {
+                            Runnable preRun, boolean windowMode, Runnable obViewClose, Component... extraHeaderButtons) {
         this(application, producer, false, caption, inform, timeTracker, preRun, windowMode,
-                extraHeaderButtons);
+                obViewClose, extraHeaderButtons);
     }
 
     public ContentGenerator(Application application, ContentProducer producer, boolean download, String caption,
                             Consumer<AbstractContentGenerator>  inform, Consumer<Long> timeTracker,
-                            Runnable preRun, boolean windowMode, Component... extraHeaderButtons) {
+                            Runnable preRun, boolean windowMode, Runnable obViewClose, Component... extraHeaderButtons) {
         super(application, producer, inform, timeTracker, preRun);
         this.windowMode = windowMode;
+        this.obViewClose = obViewClose;
         this.extraHeaderButtons = extraHeaderButtons;
         this.download = download;
         this.caption = caption;
@@ -104,6 +106,7 @@ public class ContentGenerator extends AbstractContentGenerator {
             viewer.contentType = producer;
         }
         viewer.setWindowMode(windowMode);
+        viewer.setOnViewClose(obViewClose);
         viewer.setExtraButtons(extraHeaderButtons);
         if(canView()) {
             InputStream contentStream = getContentStream();

@@ -26,6 +26,7 @@ public class DocumentViewer extends PDFViewer {
     private final Runnable listener;
     private boolean windowMode = false;
     private Component[] extraButtons;
+    private Runnable onViewClose;
 
     public DocumentViewer(Runnable listener) {
         this.listener = listener;
@@ -38,6 +39,11 @@ public class DocumentViewer extends PDFViewer {
     }
 
     public static void view(String caption, MediaFile mediaFile, boolean windowMode, Component[] extraButtons) {
+        view(caption, mediaFile, windowMode, null, extraButtons);
+    }
+
+    public static void view(String caption, MediaFile mediaFile, boolean windowMode, Runnable onViewClose,
+                            Component[] extraButtons) {
         if(mediaFile == null) {
             return;
         }
@@ -48,6 +54,7 @@ public class DocumentViewer extends PDFViewer {
         dv.setWindowMode(windowMode);
         dv.setExtraButtons(extraButtons);
         dv.contentType = mediaFile;
+        dv.onViewClose = onViewClose;
         dv.view("media/" + mediaFile.getFileName(), mediaFile.getFile(), caption);
     }
 
@@ -65,6 +72,10 @@ public class DocumentViewer extends PDFViewer {
 
     public void setExtraButtons(Component... extraButtons) {
         this.extraButtons = extraButtons;
+    }
+
+    public void setOnViewClose(Runnable onViewClose) {
+        this.onViewClose = onViewClose;
     }
 
     public void setDocument(Id streamDataId) {
@@ -147,6 +158,9 @@ public class DocumentViewer extends PDFViewer {
             }
             view.setCaption(caption);
         }
+        if(onViewClose != null) {
+            view.addClosedListener(e -> onViewClose.run());
+        }
         if(listener == null) {
             view.execute();
         } else {
@@ -219,7 +233,7 @@ public class DocumentViewer extends PDFViewer {
 
         protected Content(ContentProducer producer) {
             super(Application.get(), producer, "_", null, null, null,
-                    view != null && view.isWindowMode(), extraButtons);
+                    view != null && view.isWindowMode(), onViewClose, extraButtons);
             setViewer(DocumentViewer.this);
         }
 
