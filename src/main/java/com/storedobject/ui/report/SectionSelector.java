@@ -46,7 +46,6 @@ public class SectionSelector extends DataForm {
             tree.setWidthFull();
             tree.expandRecursively(roots.stream(), 5);
             tree.setMinHeight("35vh");
-            add(tree);
             tree.addSelectionListener(e -> {
                 if (e.isFromClient() && e instanceof MultiSelectionEvent<?, ?>) {
                     MultiSelectionEvent<?, ODT.SectionName> event = (MultiSelectionEvent<?, ODT.SectionName>) e;
@@ -62,6 +61,11 @@ public class SectionSelector extends DataForm {
                 }
             });
         }
+    }
+
+    @Override
+    protected void buildFields() {
+        add(tree);
     }
 
     @Override
