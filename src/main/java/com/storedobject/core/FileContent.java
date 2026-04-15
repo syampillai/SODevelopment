@@ -82,4 +82,13 @@ public class FileContent implements ContentProducer {
     public Throwable getError() {
         return error;
     }
+
+    /**
+     * Retrieves the file associated with this instance.
+     *
+     * @return the file object that this instance represents
+     */
+    public File getFile() {
+        return file;
+    }
 }
