@@ -12,6 +12,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasSize;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.server.StreamResource;
+import com.vaadin.flow.shared.Registration;
 
 import java.io.InputStream;
 
@@ -27,6 +28,17 @@ public class DocumentViewer extends PDFViewer {
     private boolean windowMode = false;
     private Component[] extraButtons;
     private Runnable onViewClose;
+    private Registration viewClosedRegister;
+    private final Runnable onClose = () -> {
+        if(onViewClose != null) {
+            onViewClose.run();
+            onViewClose = null; // Make sure that the onViewClose is not executed again
+        }
+        if(viewClosedRegister != null) {
+            viewClosedRegister.remove();
+            viewClosedRegister = null;
+        }
+    };
 
     public DocumentViewer(Runnable listener) {
         this.listener = listener;
@@ -158,14 +170,7 @@ public class DocumentViewer extends PDFViewer {
             }
             view.setCaption(caption);
         }
-        if(onViewClose != null) {
-            view.addClosedListener(e -> onViewClose.run());
-        }
-        if(listener == null) {
-            view.execute();
-        } else {
-            listener.run();
-        }
+        run();
     }
 
     void view(StreamResource resource, InputStream input, String caption) {
@@ -208,6 +213,18 @@ public class DocumentViewer extends PDFViewer {
             }
         }
         view.setCaption(this.caption);
+        run();
+    }
+
+    private void run() {
+        if(viewClosedRegister != null) {
+            viewClosedRegister.remove(); // Old registration, if any, removed
+            viewClosedRegister = null;
+        }
+        if(onViewClose != null) {
+            // Add close listener
+            viewClosedRegister = view.addClosedListener(e -> onClose.run());
+        }
         if(listener == null) {
             view.execute();
         } else {

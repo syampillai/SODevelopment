@@ -17,7 +17,7 @@ public class SectionSelector extends DataForm {
 
     private final ODT<?> odt;
     private final DataTreeGrid<ODT.SectionName> tree;
-    private final Set<ODT.SectionName> fixedSelections = new HashSet<>();
+    private final Set<ODT.SectionName> fixedSelections = new HashSet<>(), fixedDeselections = new HashSet<>();
 
     public SectionSelector(ODT<?> odt) {
         this("Select Sections", odt, null);
@@ -57,6 +57,9 @@ public class SectionSelector extends DataForm {
                         if (fixedSelections.contains(s)) {
                             select(s);
                         }
+                        if (fixedDeselections.contains(s)) {
+                            deselect(s);
+                        }
                     }
                 }
             });
@@ -92,8 +95,15 @@ public class SectionSelector extends DataForm {
     }
 
     public void selectFixed(ODT.SectionName sectionName) {
+        fixedDeselections.remove(sectionName);
         tree.select(sectionName);
         fixedSelections.add(sectionName);
+    }
+
+    public void deselectFixed(ODT.SectionName sectionName) {
+        fixedSelections.remove(sectionName);
+        tree.deselect(sectionName);
+        fixedDeselections.add(sectionName);
     }
 
     public void select(ODT.SectionName sectionName) {
