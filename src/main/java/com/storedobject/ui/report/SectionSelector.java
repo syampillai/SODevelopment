@@ -51,14 +51,16 @@ public class SectionSelector extends DataForm {
                     MultiSelectionEvent<?, ODT.SectionName> event = (MultiSelectionEvent<?, ODT.SectionName>) e;
                     Set<ODT.SectionName> oldSelection = event.getOldSelection();
                     Set<ODT.SectionName> newSelection = event.getAllSelectedItems();
+                    for( ODT.SectionName s : newSelection) {
+                        if (fixedDeselections.contains(s)) {
+                            deselect(s);
+                        }
+                    }
                     Set<ODT.SectionName> removedItems = new HashSet<>(oldSelection);
                     removedItems.removeAll(newSelection);
                     for (ODT.SectionName s : removedItems) {
                         if (fixedSelections.contains(s)) {
                             select(s);
-                        }
-                        if (fixedDeselections.contains(s)) {
-                            deselect(s);
                         }
                     }
                 }

@@ -69,11 +69,11 @@ public class MailForm extends DataForm implements Transactional {
         setRequired(senderField, addressField, subjectField, contentField);
     }
 
-    public void setAllowAttachments(boolean allow) {
+    private void setAllowAttachments(String label, boolean allow) {
         allowAttachments = allow;
         if(allow) {
             if(attachments == null) {
-                attachments = new Attachments();
+                attachments = new Attachments(label);
                 addField(attachments);
             }
         } else {
@@ -82,6 +82,14 @@ public class MailForm extends DataForm implements Transactional {
                 attachments = null;
             }
         }
+    }
+
+    public void setAllowAttachments(boolean allow) {
+        setAllowAttachments("Attachments", allow);
+    }
+
+    public void setAllowAttachments(String label) {
+        setAllowAttachments(label, true);
     }
 
     @Override
@@ -424,8 +432,8 @@ public class MailForm extends DataForm implements Transactional {
         private final VerticalLayout layout;
         private final ImageButton add;
 
-        private Attachments() {
-            super("Attachments");
+        private Attachments(String label) {
+            super(label);
             layout = new VerticalLayout();
             add = new ImageButton("Add", VaadinIcon.PLUS_CIRCLE, this);
             layout.add(add);

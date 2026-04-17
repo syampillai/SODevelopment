@@ -180,7 +180,7 @@ public class Mail extends Message {
 	}
 
 	/**
-	 * Set "to address". Comma delimited email addresses.
+	 * Set "to address". Comma-delimited email addresses.
 	 *
 	 * @param toAddress Addresses.
 	 */
@@ -225,7 +225,7 @@ public class Mail extends Message {
 	}
 
 	/**
-	 * Set "CC address". Comma delimited email addresses.
+	 * Set "CC address". Comma-delimited email addresses.
 	 *
 	 * @param ccAddress Addresses.
 	 */
@@ -345,7 +345,7 @@ public class Mail extends Message {
 				return;
 			}
 		}
-		logger.info("EMail Error Value: " + errorValue);
+		logger.info("Email Error Value: " + errorValue);
 		error = 1;
 	}
 
@@ -612,7 +612,7 @@ public class Mail extends Message {
 	}
 
 	/**
-	 * Creates and prepares an alert mail based on the provided TransactionManager instance.
+	 * Creates and prepares alert mail based on the provided TransactionManager instance.
 	 * If no sender group with the name "Alert" exists, it attempts to create and save one
 	 * using the transaction manager. The sender group ID is then assigned to the mail.
 	 * If no TransactionManager is provided or the sender group creation fails,
