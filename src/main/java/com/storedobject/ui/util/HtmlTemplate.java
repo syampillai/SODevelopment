@@ -101,7 +101,7 @@ public abstract class HtmlTemplate extends Component {
      *            result
      * @param streamSupplier
      *            an input stream supplier that will be used if caching isn't
-     *            used or if there is a cache miss, not <code>null</code>
+     *            used or if there is a cache miss not <code>null</code>
      */
 
     protected HtmlTemplate(String cacheKey, StreamSupplier streamSupplier) {
@@ -117,7 +117,7 @@ public abstract class HtmlTemplate extends Component {
      *            result
      * @param streamSupplier
      *            an input stream supplier that will be used if caching isn't
-     *            used or if there is a cache miss, not <code>null</code>
+     *            used or if there is a cache miss not <code>null</code>
      */
     protected HtmlTemplate(String cacheKey, StreamSupplier streamSupplier, StyleSupplier styleSupplier) {
         this(new TemplateDetails(cacheKey, streamSupplier, styleSupplier));
@@ -217,7 +217,7 @@ public abstract class HtmlTemplate extends Component {
         } else {
             /*
              * Read without caching in dev mode so that changes are available
-             * without redeploy (as long as the application is run in a way that
+             * without redeployment (as long as the application is run in a way that
              * reads resources straight from their original file system
              * location).
              */
@@ -452,7 +452,7 @@ public abstract class HtmlTemplate extends Component {
     private static class HTMLSupplier implements StreamSupplier, StyleSupplier {
 
         private final Supplier<String> contentSupplier;
-        private String[] htmlcss;
+        private String[] html_css;
 
         private HTMLSupplier(Supplier<String> contentSupplier) {
             this.contentSupplier = contentSupplier;
@@ -460,30 +460,30 @@ public abstract class HtmlTemplate extends Component {
 
         @Override
         public InputStream createStream() {
-            if(htmlcss == null) {
+            if(html_css == null) {
                 parse();
             }
-            return new LinesStream(htmlcss[0]);
+            return new LinesStream(html_css[0]);
         }
 
         @Override
         public String getStyle() {
-            if(htmlcss == null) {
+            if(html_css == null) {
                 parse();
             }
-            return htmlcss[1];
+            return html_css[1];
         }
 
         private void parse() {
-            htmlcss = new String[2];
+            html_css = new String[2];
             String c = contentSupplier.get().strip();
             int p1 = c.indexOf("<style"), p2 = c.indexOf("</style>");
             if(p1 >= 0 && p2 >= 0) {
                 p2 += 8;
-                htmlcss[1] = MediaCSS.parse(c.substring(p1, p2));
-                htmlcss[0] = c.substring(0, p1) + c.substring(p2);
+                html_css[1] = MediaCSS.parse(c.substring(p1, p2));
+                html_css[0] = c.substring(0, p1) + c.substring(p2);
             } else {
-                htmlcss[0] = c;
+                html_css[0] = c;
             }
             /*
             if(c.startsWith("<style")) {

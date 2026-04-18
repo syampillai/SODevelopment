@@ -61,6 +61,15 @@ public class ODT<T> implements ContentProducer, Closeable {
         return false;
     }
 
+    public final void setOutputAsHTML() {
+    }
+
+    public final void setOutputAsPDF() {
+    }
+
+    public void setExcludeImages(boolean excludeImages) {
+    }
+
     @Override
     public final InputStream getContent() throws IOException {
         return null;

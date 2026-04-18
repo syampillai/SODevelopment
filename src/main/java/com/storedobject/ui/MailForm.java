@@ -75,6 +75,8 @@ public class MailForm extends DataForm implements Transactional {
             if(attachments == null) {
                 attachments = new Attachments(label);
                 addField(attachments);
+            } else {
+                attachments.setLabel(label);
             }
         } else {
             if(attachments != null) {
@@ -333,6 +335,7 @@ public class MailForm extends DataForm implements Transactional {
 
     public void setSenderGroup(SenderGroup senderGroup) {
         senderField.setVisible(senderGroup == null);
+        senderField.setValue(senderGroup);
         this.senderGroup = senderGroup;
     }
 
