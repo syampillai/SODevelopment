@@ -15,6 +15,7 @@ import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.shared.Registration;
 
 import java.io.InputStream;
+import java.io.Reader;
 
 public class DocumentViewer extends PDFViewer {
 
@@ -190,7 +191,7 @@ public class DocumentViewer extends PDFViewer {
             } else if(contentType.isImage()) {
                 view = new ContentView(viewerComponent = new Image(resource));
             } else if(contentType.isHTML()) {
-                view = new HTMLView(IO.getReader(input), isWindow());
+                view = new HTMLViewer(IO.getReader(input), isWindow());
                 viewerComponent = ((HTMLView)view).getViewerComponent();
             } else {
                 viewerComponent = null;
@@ -256,6 +257,18 @@ public class DocumentViewer extends PDFViewer {
 
         @Override
         protected void started() {
+        }
+    }
+
+    private class HTMLViewer extends HTMLView implements InformationView {
+
+        HTMLViewer(Reader htmlContent, boolean windowMode) {
+            super(htmlContent, windowMode);
+        }
+
+        @Override
+        protected WindowDecorator createWindowDecorator() {
+            return new WindowDecorator(this, extraButtons);
         }
     }
 

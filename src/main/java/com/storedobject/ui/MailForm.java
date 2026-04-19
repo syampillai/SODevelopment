@@ -27,6 +27,8 @@ public class MailForm extends DataForm implements Transactional {
     private final TokensField<Address> addressField, ccField;
     private final TextField subjectField;
     private final TextArea contentField;
+    private final IFrame htmlContent = new IFrame();
+    private final CompoundField htmlContentField = new CompoundField("Content", htmlContent);
     private Attachments attachments;
     private boolean allowAttachments = true;
     private SenderGroup senderGroup;
@@ -65,7 +67,8 @@ public class MailForm extends DataForm implements Transactional {
         addField(subjectField);
         setAllowAttachments(allowAttachments);
         contentField = new TextArea("Content");
-        addField(contentField);
+        addField(contentField, htmlContentField);
+        htmlContentField.setVisible(false);
         setRequired(senderField, addressField, subjectField, contentField);
     }
 
@@ -327,6 +330,12 @@ public class MailForm extends DataForm implements Transactional {
 
     public void setContent(String content) {
         contentField.setValue(content);
+    }
+
+    public void setHTMLContent(String html) {
+        contentField.setVisible(false);
+        htmlContentField.setVisible(true);
+        htmlContent.setSourceDocument(html);
     }
 
     public SenderGroup getSenderGroup() {
