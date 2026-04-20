@@ -28,7 +28,19 @@ public class SectionSelector extends DataForm {
     }
 
     public SectionSelector(String caption, ODT<?> odt, Function<ODT.SectionName, String> nameFunction) {
-        super(caption);
+        this(caption, odt, nameFunction, true);
+    }
+
+    public SectionSelector(ODT<?> odt, boolean windowMode) {
+        this("Select Sections", odt, null, windowMode);
+    }
+
+    public SectionSelector(String caption, ODT<?> odt, boolean windowMode) {
+        this(caption, odt, null, windowMode);
+    }
+
+    public SectionSelector(String caption, ODT<?> odt, Function<ODT.SectionName, String> nameFunction, boolean windowMode) {
+        super(caption, windowMode);
         this.odt = odt;
         List<ODT.SectionName> roots = odt.getSectionNames();
         if(roots.isEmpty()) {

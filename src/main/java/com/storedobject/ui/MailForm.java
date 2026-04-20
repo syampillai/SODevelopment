@@ -136,6 +136,9 @@ public class MailForm extends DataForm implements Transactional {
         }
         m.setSubject(subjectField.getValue());
         m.setMessage(contentField.getValue());
+        if(htmlContentField.isVisible()) {
+            m.setMessageType("text/html");
+        }
         FileData[] a = null;
         if(attachments != null) {
             try {
@@ -334,8 +337,11 @@ public class MailForm extends DataForm implements Transactional {
 
     public void setHTMLContent(String html) {
         contentField.setVisible(false);
+        contentField.setValue(html);
         htmlContentField.setVisible(true);
         htmlContent.setSourceDocument(html);
+        htmlContent.setSizeFull();
+        htmlContent.setMinHeight("50vh");
     }
 
     public SenderGroup getSenderGroup() {

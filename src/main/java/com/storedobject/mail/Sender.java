@@ -4,6 +4,7 @@ import com.storedobject.common.Email;
 import com.storedobject.core.*;
 import com.storedobject.core.annotation.Column;
 import jakarta.activation.DataHandler;
+import jakarta.activation.DataSource;
 import jakarta.mail.Message;
 import jakarta.mail.MessagingException;
 import jakarta.mail.Session;
@@ -15,10 +16,7 @@ import jakarta.mail.internet.MimeMultipart;
 
 import java.io.*;
 import java.math.BigDecimal;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Properties;
-import java.util.Set;
+import java.util.*;
 
 public abstract class Sender extends StoredObject implements Closeable {
 
@@ -279,6 +277,105 @@ public abstract class Sender extends StoredObject implements Closeable {
     
     protected abstract void createTransport(Debugger debugger) throws MessagingException;
 
+	private static String type(String type) {
+		if(type == null || type.isBlank()) return Mail.PLAIN_TEXT;
+		type = type.trim().toLowerCase();
+		if(!type.contains(";")) {
+			return type + Mail.CHAR_SET_TAG;
+		}
+		return type;
+	}
+
+	private static boolean isText(String type) {
+		return type == null || type.isBlank() || type.toLowerCase().startsWith("text/plain");
+	}
+
+	private static boolean isHtml(String type) {
+		return type != null && type.trim().toLowerCase().startsWith("text/html");
+	}
+
+	private String[] body(String body, String bodyType) {
+		if(StringUtility.isWhite(footer) || (!isText(footerType) && !isHtml(footerType))) {
+			return new String[] { body, type(bodyType) };
+		}
+        if(isText(bodyType) && isText(footerType)) { // Adding footer to body directly only if both are text
+			return new String[] { body + "\n\n-- \n" + footer, Mail.PLAIN_TEXT };
+		}
+		if(isHtml(bodyType)) {
+			String b = body.toLowerCase();
+			int p = b.indexOf("</body>");
+			if(p >= 0) {
+				if(isText(footerType)) {
+					footer = "<p>" + footer + "</p>";
+				}
+				b = body.substring(0, p);
+				b += "\n<hr>" + footer + body.substring(p);
+				return new String[] { b, type(bodyType) };
+			}
+		}
+		if(isText(bodyType)) {
+			body = "<p>" + body.replace("\n", "</p><p>") + "</p><hr>" + footer;
+			return new String[] { body + "\n\n-- \n" + footer, type(bodyType) };
+		}
+		return new String[] { body, type(bodyType) };
+	}
+
+	private record Image(String contentID, String mime, byte[] image) implements DataSource {
+
+		@Override
+		public InputStream getInputStream() {
+			return new ByteArrayInputStream(image);
+		}
+
+		@Override
+		public OutputStream getOutputStream() throws IOException {
+			throw new IOException("Not supported");
+		}
+
+		@Override
+		public String getContentType() {
+			return mime;
+		}
+
+		@Override
+		public String getName() {
+			return null;
+		}
+	}
+
+	// Extract base64 encoded images from an HTML body and replace with content IDs
+	// Only process images with the 'src' attributes having 'data:' as the source.
+	// It should be of the form "src:data:mime/type;base64,..."
+	// Warning: For simplicity, white spaces and single quotes are not handled.
+	private static Object[] extractImages(String body) {
+		Random random = new Random();
+		Map<String, Image> images = new HashMap<>();
+		int p, q, from = 0;
+		String cid, b, mime;
+		byte[] image;
+		while((p = body.indexOf("src=\"data:", from)) >= 0) {
+			from = p + 1;
+			b = body.substring(p + 10);
+			q = b.indexOf('\"');
+			if(q < 0) {
+				continue;
+			}
+			b = b.substring(0, q);
+			q = b.indexOf(";base64,");
+			if(q < 0) {
+				continue;
+			}
+			mime = b.substring(0, q);
+			b = b.substring(q + 8);
+			System.err.println("Mime: " + mime + "\nBase64: " + b);
+			image = Base64.getMimeDecoder().decode(b);
+			cid = "SOI" + System.currentTimeMillis() + random.nextInt();
+			images.put(cid, new Image(cid, mime, image));
+			body = body.replace("src=\"data:" + mime + ";base64," + b, "src=\"cid:" + cid);
+		}
+		return new Object[] { body, images };
+	}
+
     private void sendMessage(Mail mail) throws MessagingException {
     	MimeMessage m = mimeMessage();
     	m.addRecipients(Message.RecipientType.TO, InternetAddress.parse(mail.getToAddress()));
@@ -309,48 +406,46 @@ public abstract class Sender extends StoredObject implements Closeable {
     		t = getSubject();
     	}
     	m.setSubject(t, "UTF-8");
-    	MimeMultipart mp = new MimeMultipart();
-    	MimeBodyPart bp = new MimeBodyPart();
-    	t = mail.getMessage();
-    	String ct;
-    	if(StringUtility.isWhite(t)) {
-    		t = getBody();
-    		ct = getBodyType();
-    	} else {
-    		ct = mail.getMessageType();
-    	}
-    	if(StringUtility.isWhite(ct)) {
-    		ct = Mail.PLAIN_TEXT;
-    	}
-		if(!ct.contains(";")) {
-			ct += Mail.CHAR_SET_TAG;
+		String[] b;
+		t = mail.getMessage();
+		if(StringUtility.isWhite(t)) {
+			b = body(getBody(), getBodyType());
+		} else {
+			b = body(t, mail.getMessageType());
 		}
-    	bp.setContent(t, ct);
-    	mp.addBodyPart(bp);
-    	t = getFooter();
-    	if(!StringUtility.isWhite(t)) {
-    		ct = getFooterType();
-    		if(StringUtility.isWhite(ct)) {
-    			ct = Mail.PLAIN_TEXT;
-    		}
-    		if(!ct.contains(";")) {
-    			ct += Mail.CHAR_SET_TAG;
-			}
-    		bp = new MimeBodyPart();
-    		bp.setContent(t, ct);
-    		mp.addBodyPart(bp);
-    	}
+		MimeMultipart mixed = new MimeMultipart("mixed"), related = new MimeMultipart("related");
+    	MimeBodyPart bodyPart = new MimeBodyPart();
+		Object[] o = extractImages(b[0]);
+		bodyPart.setContent((String)o[0], b[1]);
+		if(isHtml(b[1])) {
+			bodyPart.setHeader("Content-Transfer-Encoding", "7bit");
+		}
+    	related.addBodyPart(bodyPart);
+        //noinspection unchecked
+        for(Map.Entry<String, Image> image: ((Map<String, Image>)o[1]).entrySet()) {
+			bodyPart = new MimeBodyPart();
+			bodyPart.setDataHandler(new DataHandler(image.getValue()));
+			bodyPart.setContentID("<" + image.getKey() + ">");
+			bodyPart.setDisposition(MimeBodyPart.INLINE);
+			related.addBodyPart(bodyPart);
+		}
+		MimeBodyPart innerWrapper = new MimeBodyPart();
+		innerWrapper.setContent(related);
+		mixed.addBodyPart(innerWrapper);
     	for(Attachment ma: mail.listLinks(Attachment.class)) {
-    		bp = new MimeBodyPart();
-    		bp.setDataHandler(new DataHandler(ma));
+    		bodyPart = new MimeBodyPart();
+			if(isHtml(ma.getContentType())) {
+				bodyPart.setHeader("Content-Transfer-Encoding", "7bit");
+			}
+    		bodyPart.setDataHandler(new DataHandler(ma));
     		t = ma.getFileName();
         	if(!StringUtility.isWhite(t)) {
-        		bp.setFileName(t);
+        		bodyPart.setFileName(t);
         	}
-    		mp.addBodyPart(bp);
-			bp.setHeader("Content-ID", "<" + ma.getContentID() + ">");
+    		mixed.addBodyPart(bodyPart);
+			bodyPart.setHeader("Content-ID", "<" + ma.getContentID() + ">");
     	}
-    	m.setContent(mp);
+    	m.setContent(mixed);
     	m.saveChanges();
     	transport.sendMessage(m, m.getAllRecipients());
     }
