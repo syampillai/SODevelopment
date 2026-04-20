@@ -1,6 +1,7 @@
 package com.storedobject.ui;
 
 import com.storedobject.core.Id;
+import com.storedobject.core.Temperature;
 import com.storedobject.core.TimeDuration;
 import com.storedobject.office.Filler;
 import com.storedobject.office.ODT;
@@ -23,10 +24,12 @@ public class Test extends DataForm {
         addField(x);
         x.setValue(new TimeDuration(100, TimeUnit.SECONDS));
         setFieldReadOnly(x);
+        addField(new TemperatureField("Temperature"));
     }
 
     @Override
     protected boolean process() {
+        message("Temperature: " + new Temperature());
         close();
         ODTReport r = new ODTReport(getApplication(), new Id("3464"));
         SectionSelector ss = new SectionSelector(r);

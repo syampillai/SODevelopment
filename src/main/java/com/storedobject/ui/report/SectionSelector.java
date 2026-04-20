@@ -41,6 +41,8 @@ public class SectionSelector extends DataForm {
 
     public SectionSelector(String caption, ODT<?> odt, Function<ODT.SectionName, String> nameFunction, boolean windowMode) {
         super(caption, windowMode);
+        setButtonsAtTop(!windowMode);
+        setColumns(1);
         this.odt = odt;
         List<ODT.SectionName> roots = odt.getSectionNames();
         if(roots.isEmpty()) {
