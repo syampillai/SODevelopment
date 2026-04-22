@@ -8,6 +8,8 @@ import com.storedobject.ui.*;
 import com.storedobject.ui.Application;
 import com.storedobject.vaadin.*;
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.HasHelper;
+import com.vaadin.flow.component.HasValue;
 import com.vaadin.flow.component.UI;
 
 import java.net.URLEncoder;
@@ -36,7 +38,7 @@ public class ManageMailSenders extends ObjectEditor<MailSender> implements Trans
                 "FromAddress",
                 "ReplyToAddress",
                 "EncryptionType",
-                "UserName",
+                "Username",
                 "Password",
                 "Status",
                 "SenderGroup");
@@ -45,6 +47,14 @@ public class ManageMailSenders extends ObjectEditor<MailSender> implements Trans
     @Override
     protected void createExtraButtons() {
         gmailSenders = new Button("Manage GMail Senders", "mail", this);
+    }
+
+    @Override
+    protected void formConstructed() {
+        HasValue<?, ?> usernameField = getField("Username");
+        if(usernameField instanceof HasHelper f) {
+            f.setHelperText("Leave blank to use SMTP server's default");
+        }
     }
 
     @Override

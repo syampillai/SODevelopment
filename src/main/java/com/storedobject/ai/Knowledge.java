@@ -1,5 +1,6 @@
 package com.storedobject.ai;
 
+import com.storedobject.common.SORuntimeException;
 import com.storedobject.common.StringList;
 import com.storedobject.core.*;
 
@@ -77,6 +78,15 @@ public class Knowledge implements DataRetriever {
     }
 
     /**
+     * Checks if a chat session is currently active.
+     *
+     * @return true if a chat session exists and is not closed, false otherwise.
+     */
+    public boolean isChatting() {
+        return chat != null && !chat.isClosed();
+    }
+
+    /**
      * Adds one or more knowledge modules to the knowledge. Modules provide additional
      * functionality or capabilities to enhance the knowledge interaction.
      *
@@ -84,6 +94,9 @@ public class Knowledge implements DataRetriever {
      *              If any module is null, it is ignored.
      */
     public final void addModules(KnowledgeModule... modules) {
+        if(isChatting()) {
+            throw new SORuntimeException("Cannot add knowledge modules when a chat is active");
+        }
         if(modules != null) {
             for(KnowledgeModule module : modules) {
                 if(module != null) {
@@ -98,11 +111,18 @@ public class Knowledge implements DataRetriever {
      * The data class is associated with a friendly name for easier identification.
      * Optionally, attributes can be specified to define additional metadata.
      *
-     * @param friendlyName The user-friendly name to associate with the data class.
+     * @param friendlyName The user-friendly name to associate with the data class. If null or empty,
+     *                     a default label based on the class name will be used.
      * @param c The class type that extends {@code StoredObject} to add to the knowledge base.
      * @param attributes Optional attributes to associate with the data class.
      */
     public final void addDataClass(String friendlyName, Class<? extends StoredObject> c, String... attributes) {
+        if(isChatting()) {
+            throw new SORuntimeException("Cannot add data class when a chat is active");
+        }
+        if(friendlyName == null || friendlyName.isEmpty()) {
+            friendlyName = StringUtility.makeLabel(c).toLowerCase();
+        }
         entities.put(friendlyName.toLowerCase(), c);
         if(attributes != null) {
             StringList s = StringList.create(attributes);
@@ -114,14 +134,47 @@ public class Knowledge implements DataRetriever {
 
     /**
      * Adds a data class to the internal configuration using the specified class type and optional attributes.
-     * This method automatically generates a friendly name for the class by converting its name to a label format
-     * without spaces.
      *
      * @param c         The class type to be added, extending {@link StoredObject}.
      * @param attributes Optional attributes associated with the class, represented as an array of strings.
      */
     public final void addDataClass(Class<? extends StoredObject> c, String... attributes) {
-        addDataClass(StringUtility.makeLabel(c).toLowerCase(), c, attributes);
+        addDataClass(null, c, attributes);
+    }
+
+    /**
+     * Adds a data class to the knowledge base with an optional list of attributes.
+     * The data class is associated with a friendly name for easier identification.
+     * Optionally, attributes can be specified to define additional metadata.
+     *
+     * @param friendlyName The user-friendly name to associate with the data class. If null or empty,
+     *                     a default label based on the class name will be used.
+     * @param dataClassName The name of the data class to add to the knowledge base.
+     * @param attributes Optional attributes to associate with the data class.
+     */
+    public final void addDataClass(String friendlyName, String dataClassName, String... attributes) {
+        dataClassName = ApplicationServer.guessClass(dataClassName);
+        Class<?> clazz;
+        try {
+            clazz = JavaClassLoader.getLogic(dataClassName);
+        } catch (ClassNotFoundException e) {
+            throw new SORuntimeException("Class not found: " + dataClassName, e);
+        }
+        if(StoredObject.class.isAssignableFrom(clazz)) {
+            //noinspection unchecked
+            addDataClass(friendlyName, (Class<? extends StoredObject>) clazz);
+        } else {
+            throw new SORuntimeException("Class is not a data class: " + dataClassName);
+        }
+    }
+
+    /**
+     * Adds a data class to the knowledge base.
+     *
+     * @param dataClassName The name of the data class to add to the knowledge base.
+     */
+    public final void addDataClass(String dataClassName) {
+        addDataClass((String) null, dataClassName);
     }
 
     /**

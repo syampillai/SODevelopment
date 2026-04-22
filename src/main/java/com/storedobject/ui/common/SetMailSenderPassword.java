@@ -103,7 +103,7 @@ public class SetMailSenderPassword extends DataForm implements Transactional {
             t = getTransactionManager().createTransaction();
             for(MailSender ms: senders) {
                 ms.setPassword(p);
-                ms.setUserName(email);
+                ms.setUsername(email);
                 ms.save(t);
             }
             t.commit();

@@ -16,7 +16,7 @@ public class MailSender extends Sender {
     };
     private String smtpServer;
     private int port;
-    private String userName;
+    private String username;
     private String password;
     private int encryptionType;
 
@@ -27,7 +27,7 @@ public class MailSender extends Sender {
         columns.add("SMTPServer", "text");
         columns.add("Port", "int");
         columns.add("EncryptionType", "int");
-        columns.add("UserName", "text");
+        columns.add("Username", "text");
         columns.add("Password", "text");
     }
 
@@ -84,13 +84,13 @@ public class MailSender extends Sender {
         return encryptionTypeValues;
     }
 
-    public void setUserName(String userName) {
-        this.userName = userName;
+    public void setUsername(String username) {
+        this.username = username;
     }
 
     @Column(required = false, order = 1500)
-    public String getUserName() {
-        return userName;
+    public String getUsername() {
+        return username;
     }
 
     public void setPassword(String password) {
@@ -121,7 +121,7 @@ public class MailSender extends Sender {
 		if(port > 0) {
 			p.put("mail.smtp.port", String.valueOf(port));
 		}
-		final String un = StringUtility.isWhite(userName) ? getFromAddress() : userName, pw = password;
+		final String un = StringUtility.isWhite(username) ? getFromAddress() : username, pw = password;
 		Authenticator authenticator = null;
 		if(!pw.isEmpty()) {
 			authenticator = new Authenticator() {
