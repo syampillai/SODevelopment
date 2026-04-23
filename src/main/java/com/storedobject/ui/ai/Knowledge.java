@@ -7,15 +7,30 @@ import com.storedobject.core.JavaClassLoader;
 import com.storedobject.core.StoredObject;
 import com.storedobject.ui.Application;
 
+/**
+ * The Knowledge class is an extension of the com.storedobject.ai.Knowledge class 
+ * and implements the Executable interface. This class provides functionality to 
+ * manage knowledge topics and interact with a chat view for execution and display purposes.
+ * 
+ * @author Syam
+ */
 public class Knowledge extends com.storedobject.ai.Knowledge implements Executable {
 
     private String topic;
     private ChatView chatView;
 
+    /**
+     * Default constructor.
+     */
     public Knowledge() {
         this(null);
     }
 
+    /**
+     * Constructor with a topic.
+     *
+     * @param topic Topic (It could be a topic name or topic name followed by | and then class details).
+     */
     public Knowledge(String topic) {
         super(Application.get());
         if(topic == null) {
@@ -30,6 +45,11 @@ public class Knowledge extends com.storedobject.ai.Knowledge implements Executab
         Application.get().closeMenu();
     }
 
+    /**
+     * Add class details to the knowledge base.
+     *
+     * @param classDetails Class details (Format: className1|className2|... or friendlyName,className1,param1,param2|...)
+     */
     public void add(String classDetails) {
         if(classDetails == null || classDetails.isBlank()) {
             return;
@@ -99,15 +119,28 @@ public class Knowledge extends com.storedobject.ai.Knowledge implements Executab
         return null;
     }
 
+    /**
+     * Set the topic.
+     *
+     * @param topic Topic.
+     */
     public void setTopic(String topic) {
         this.topic = topic == null || topic.isBlank() ? "None" : topic;
         if(chatView != null) chatView.setTopic(topic);
     }
 
+    /**
+     * Get the topic.
+     *
+     * @return Topic.
+     */
     public String getTopic() {
         return topic;
     }
 
+    /**
+     * Execute the knowledge (opens the chat view).
+     */
     @Override
     public void execute() {
         if(chatView != null) chatView.close();

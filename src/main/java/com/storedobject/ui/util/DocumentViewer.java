@@ -41,20 +41,45 @@ public class DocumentViewer extends PDFViewer {
         }
     };
 
+    /**
+     * Constructor.
+     * @param listener Listener to be notified when the source is set.
+     */
     public DocumentViewer(Runnable listener) {
         this.listener = listener;
         application = Application.get();
         viewerComponent = this;
     }
 
+    /**
+     * View a media file.
+     * @param caption Caption.
+     * @param mediaFile Media file.
+     * @param windowMode Whether to open in a window or not.
+     */
     public static void view(String caption, MediaFile mediaFile, boolean windowMode) {
         view(caption, mediaFile, windowMode, null);
     }
 
+    /**
+     * View a media file.
+     * @param caption Caption.
+     * @param mediaFile Media file.
+     * @param windowMode Whether to open in a window or not.
+     * @param extraButtons Extra buttons to be added to the view.
+     */
     public static void view(String caption, MediaFile mediaFile, boolean windowMode, Component[] extraButtons) {
         view(caption, mediaFile, windowMode, null, extraButtons);
     }
 
+    /**
+     * View a media file.
+     * @param caption Caption.
+     * @param mediaFile Media file.
+     * @param windowMode Whether to open in a window or not.
+     * @param onViewClose Runnable to be executed when the view is closed.
+     * @param extraButtons Extra buttons to be added to the view.
+     */
     public static void view(String caption, MediaFile mediaFile, boolean windowMode, Runnable onViewClose,
                             Component[] extraButtons) {
         if(mediaFile == null) {
@@ -79,22 +104,42 @@ public class DocumentViewer extends PDFViewer {
         }
     }
 
+    /**
+     * Set the window mode.
+     * @param windowMode True for window mode.
+     */
     public void setWindowMode(boolean windowMode) {
         this.windowMode = windowMode;
     }
 
+    /**
+     * Set extra buttons to be added to the view.
+     * @param extraButtons Extra buttons.
+     */
     public void setExtraButtons(Component... extraButtons) {
         this.extraButtons = extraButtons;
     }
 
+    /**
+     * Set a runnable to be executed when the view is closed.
+     * @param onViewClose Runnable.
+     */
     public void setOnViewClose(Runnable onViewClose) {
         this.onViewClose = onViewClose;
     }
 
+    /**
+     * Set the document to be viewed.
+     * @param streamDataId ID of the stream data.
+     */
     public void setDocument(Id streamDataId) {
         setDocument(StoredObject.get(StreamData.class, streamDataId));
     }
 
+    /**
+     * Set the document to be viewed.
+     * @param streamData Stream data.
+     */
     public void setDocument(StreamData streamData) {
         if (streamData == null) {
             setSource((String) null);
@@ -103,6 +148,10 @@ public class DocumentViewer extends PDFViewer {
         setDocument(new StreamDataContent(streamData));
     }
 
+    /**
+     * View the document.
+     * @param caption Caption.
+     */
     public void view(String caption) {
         this.caption = caption;
         if(view != null) {
@@ -233,6 +282,10 @@ public class DocumentViewer extends PDFViewer {
         }
     }
 
+    /**
+     * Set the document to be viewed.
+     * @param contentProducer Content producer.
+     */
     public void setDocument(ContentProducer contentProducer) {
         this.contentType = contentProducer;
         if (contentProducer == null) {
@@ -243,6 +296,10 @@ public class DocumentViewer extends PDFViewer {
         generator.kick();
     }
 
+    /**
+     * Get the viewer component.
+     * @return Viewer component.
+     */
     public Component getViewerComponent() {
         return viewerComponent == null ? this : viewerComponent;
     }

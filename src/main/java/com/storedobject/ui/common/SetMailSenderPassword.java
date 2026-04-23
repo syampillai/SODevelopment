@@ -20,6 +20,9 @@ public class SetMailSenderPassword extends DataForm implements Transactional {
     private final Person person;
     private int attempts = 0;
 
+    /**
+     * Constructor.
+     */
     public SetMailSenderPassword() {
         super("Set Mail Sender Password");
         person = getTransactionManager().getUser().getPerson();

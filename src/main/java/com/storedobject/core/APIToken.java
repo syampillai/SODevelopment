@@ -173,34 +173,31 @@ public class APIToken extends StoredObject {
     }
 
     /**
-     * Retrieves an {@code APIToken} that matches the given purpose and is associated with
-     * the specified {@code SystemUser} or their groups.
+     * Checks if the given user has access to this API token.
      *
-     * @param purpose the purpose for which the token is required. This will be converted to
-     *                a lower-case code internally.
-     * @param user the system user requesting the token. The method checks if the token
-     *             is linked to this user or any of their associated groups.
-     * @return the {@code APIToken} matching the given purpose and linked to the user or
-     *         their groups, or {@code null} if no matching token is found.
+     * @param user The user to check for access.
+     * @return True if the user has access, false otherwise.
      */
-    public static APIToken get(String purpose, SystemUser user) {
-        purpose = toCode(purpose).toLowerCase();
-        List<SystemUserGroup> groups = null;
-        try(ObjectIterator<APIToken> tokens = list(APIToken.class, "lower(Purpose)='" + purpose + "'")) {
-            for(APIToken token : tokens) {
-                if(token.existsLink(user) || token.existsLink(SystemUserGroup.getDefault())) {
-                    return token;
-                }
-                if(groups == null) {
-                    groups = user.listGroups().toList();
-                }
-                for(SystemUserGroup group : groups) {
-                    if(token.existsLink(group)) {
-                        return token;
-                    }
-                }
+    public boolean canAccess(SystemUser user) {
+        if(existsLink(user) || existsLink(SystemUserGroup.getDefault())) {
+            return true;
+        }
+        List<SystemUserGroup> groups = user.listGroups().toList();
+        for(SystemUserGroup group : groups) {
+            if(existsLink(group)) {
+                return true;
             }
         }
-        return null;
+        return false;
+    }
+
+    @Override
+    public String toString() {
+        return purpose;
+    }
+
+    @Override
+    public String toDisplay() {
+        return purpose;
     }
 }

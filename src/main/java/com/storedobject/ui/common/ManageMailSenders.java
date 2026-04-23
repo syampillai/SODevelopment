@@ -26,6 +26,9 @@ public class ManageMailSenders extends ObjectEditor<MailSender> implements Trans
     private final Button test = new Button("Test", e -> test());
     private Tester tester;
 
+    /**
+     * Constructor.
+     */
     public ManageMailSenders() {
         super(MailSender.class);
     }
