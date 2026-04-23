@@ -114,8 +114,10 @@ public class StockMovementReport extends PDFReport {
         String s;
 		InventoryItem item;
 		Text text;
+		String pnDisplay;
 		for(InventoryItemType partNumber: partNumbers) {
-			setError("Printing " + partNumber.toDisplay());
+			pnDisplay = "Printing: " + partNumber.toDisplay() + ", P/N Id: " + partNumber.getId();
+			setError("Printing: " + pnDisplay);
 			if(separateCategories) {
 				type = partNumber.getClass();
 				if(currentType == null || type != currentType) {
@@ -140,6 +142,7 @@ public class StockMovementReport extends PDFReport {
 			for(InventoryLedger movement:
 					StoredObject.list(InventoryLedger.class, "ItemType=" + partNumber.getId() + " AND Date "
 							+ period.getDBCondition(), "ItemType,Date,TranId")) {
+				setError(pnDisplay + ", Movement ID: " + movement.getId());
 				locFrom = movement.getLocationFrom();
 				locTo = movement.getLocationTo();
 				if(storeId != null) {

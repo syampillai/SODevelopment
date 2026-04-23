@@ -19,6 +19,12 @@ public interface Chat {
     Future<String> ask(String message);
 
     /**
+     * Aborts the current chat session, interrupting any ongoing interactions with the AI system.
+     * This method should be called when the user wants to stop the current conversation prematurely.
+     */
+    void abort();
+
+    /**
      * Closes the chat interface, releasing any associated resources or connections.
      * This method should be called when the chat instance is no longer needed to ensure proper cleanup.
      */
@@ -39,4 +45,66 @@ public interface Chat {
      * @param listener the {@code Runnable} to be executed when the chat is closed.
      */
     void setChatClosedListener(Runnable listener);
+
+    /**
+     * Returns the number of tokens in the input message that was last sent to the chat system.
+     * This can be useful for monitoring the token usage in the chat session.
+     *
+     * @return the number of tokens in the last input message.
+     */
+    int getInputTokenCount();
+
+    /**
+     * Returns the number of tokens in the output message that was last received from the chat system.
+     * This can be useful for monitoring the token usage in the chat session.
+     *
+     * @return the number of tokens in the last output message.
+     */
+    int getOutputTokenCount();
+
+    /**
+     * Returns the total number of tokens used by the chat system in the current conversation.
+     *
+     * @return the total number of tokens used in the current conversation.
+     */
+    int getTotalInputTokenCount();
+
+    /**
+     * Returns the total number of tokens used by the chat system in the current conversation.
+     *
+     * @return the total number of tokens used in the current conversation.
+     */
+    int getTotalOutputTokenCount();
+
+    /**
+     * Returns the total number of tokens used by the chat system in the current conversation.
+     *
+     * @return the total number of tokens used in the current conversation.
+     */
+    default int getTokensUsed() {
+        return getInputTokenCount() + getOutputTokenCount();
+    }
+
+    /**
+     * Returns the total number of tokens used by the chat system in the current conversation.
+     *
+     * @return the total number of tokens used in the current conversation.
+     */
+    default int getTotalTokensUsed() {
+        return getTotalInputTokenCount() + getTotalOutputTokenCount();
+    }
+
+    /**
+     * Enable/Disable logging.
+     *
+     * @param logging true to enable logging, false to disable logging.
+     */
+    void setLogging(boolean logging);
+
+    /**
+     * Check if logging is enabled.
+     *
+     * @return true if logging is enabled, false otherwise.
+     */
+    boolean isLogging();
 }

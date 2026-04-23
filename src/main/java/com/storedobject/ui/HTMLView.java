@@ -127,8 +127,7 @@ public class HTMLView extends Viewer {
             c = createWindow(component);
         } else {
             if(showHeader()) {
-                c = new ContentWithHeader(new WindowDecorator(this), component);
-                c.getElement().getStyle().set("height", "92%");
+                c = new ScrollingContent(new WindowDecorator(this), component);
             } else {
                 c = component;
             }
@@ -143,7 +142,7 @@ public class HTMLView extends Viewer {
      * @return True/false.
      */
     protected boolean showHeader() {
-        return !isHomeView();
+        return !(this instanceof HomeView);
     }
 
     @Override

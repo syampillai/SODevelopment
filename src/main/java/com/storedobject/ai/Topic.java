@@ -6,17 +6,15 @@ import com.storedobject.core.annotation.*;
 import java.lang.reflect.Modifier;
 
 /**
- * Represents a specific topic characterized by its name and associated logic.
- * This class extends the functionality of the {@link Name} class and provides additional behavior
- * for managing and validating knowledge logic associated with the topic.
- * It is immutable and provides static utility methods for working with topic-related data.
+ * Represents a specific topic and associated knowledge logic. This is used by the {@link ChatConnector} to provide
+ * AI chat capabilities via SO Connector API.
  *
  * @author Syam
  */
 public final class Topic extends Name {
 
     private String logic;
-    private Class<?> knowledgeClass;
+    private Class<? extends Knowledge> knowledgeClass;
     private Id userId = Id.ZERO;
     private boolean canAccess;
 
@@ -83,6 +81,7 @@ public final class Topic extends Name {
      */
     public void setLogic(String logic) {
         this.logic = logic;
+        knowledgeClass = null;
     }
 
     /**
@@ -107,6 +106,7 @@ public final class Topic extends Name {
         if (getKnowledgeLogicClass() == null) {
             throw new Invalid_Value("Knowledge Logic");
         }
+        logic = knowledgeClass.getName();
         super.validateData(tm);
     }
 
@@ -118,18 +118,19 @@ public final class Topic extends Name {
      * @return the {@code Class<?>} representing the knowledge logic class, or {@code null} if the logic class
      *         cannot be resolved or is abstract.
      */
-    public Class<?> getKnowledgeLogicClass() {
+    public Class<? extends Knowledge> getKnowledgeLogicClass() {
         if (this.knowledgeClass != null) {
             return this.knowledgeClass;
         } else {
             try {
-                knowledgeClass = JavaClassLoader.getLogic(this.logic);
-                if (Modifier.isAbstract(knowledgeClass.getModifiers())) {
-                    knowledgeClass = null;
+                Class<?> kc = JavaClassLoader.getLogic(ApplicationServer.guessClass(this.logic));
+                if (Modifier.isAbstract(kc.getModifiers()) || !Knowledge.class.isAssignableFrom(kc)) {
                     return null;
                 }
+                //noinspection unchecked
+                knowledgeClass = (Class<? extends Knowledge>) kc;
                 return knowledgeClass;
-            } catch (Throwable var2) {
+            } catch (Throwable ignored) {
                 return null;
             }
         }

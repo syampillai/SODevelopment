@@ -5,12 +5,9 @@ import com.storedobject.ai.Knowledge;
 import com.storedobject.ai.Topic;
 import com.storedobject.core.StoredObject;
 import com.storedobject.core.SystemUser;
+import com.storedobject.ui.*;
 import com.storedobject.ui.Application;
-import com.storedobject.ui.ObjectComboField;
-import com.storedobject.ui.SpeechRecognition;
-import com.storedobject.ui.Transactional;
 import com.storedobject.vaadin.*;
-import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.messages.MessageList;
 import com.vaadin.flow.component.messages.MessageListItem;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -35,7 +32,6 @@ public class ChatView extends View implements CloseableView, Transactional {
     private final Button send = new Button("Send", e -> process());
     private Knowledge knowledge;
     private Chat chat;
-    private final H2 topicDisplay;
 
     /**
      * Default constructor for the ChatView class.
@@ -62,17 +58,12 @@ public class ChatView extends View implements CloseableView, Transactional {
         VerticalLayout v = new VerticalLayout();
         messageList.setMarkdown(true);
         messageList.setWidthFull();
-        topicDisplay = new H2();
-        topicDisplay.setWidthFull();
-        topicDisplay.getStyle().set("background-color", "var(--so-header-background-50pct)")
-                .set("color", "var(--so-header-color)").set("text-overflow", "ellipsis")
-                .set("padding", "5px").set("box-sizing", "border-box");
-        v.add(topicDisplay, messageList, input);
+        v.add(messageList, input);
         setTopic(topic);
         input.setWidthFull();
         send.setDisableOnClick(true);
         v.add(send);
-        setComponent(v);
+        setComponent(new ScrollingContent(new WindowDecorator(this), v));
         SpeechRecognition sr = new SpeechRecognition(input);
         Consumer<String> sendCommand = text -> send.click();
         sr.addCommand("send", sendCommand);
@@ -88,7 +79,7 @@ public class ChatView extends View implements CloseableView, Transactional {
         if(topic == null || topic.isBlank()) {
             topic = "No topic set";
         }
-        topicDisplay.setText("Topic: " + topic);
+        setCaption("Topic: " + topic);
     }
 
     /**
@@ -228,7 +219,9 @@ public class ChatView extends View implements CloseableView, Transactional {
             Topic topic = topicField.getValue();
             ChatView.this.setTopic(topic.getName());
             Object kl = Application.get().getServer().execute(topic.getKnowledgeLogicClass());
-            if(kl instanceof Knowledge k) {
+            if(kl instanceof com.storedobject.ui.ai.Knowledge) {
+                ChatView.this.close(); // UI Knowledge has its onw chat view
+            } else if(kl instanceof Knowledge k) {
                 ChatView.this.setKnowledge(k);
                 ChatView.this.execute();
             }

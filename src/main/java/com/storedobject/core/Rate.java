@@ -116,6 +116,11 @@ public final class Rate extends DecimalNumber {
 	}
 
 	public static Rate create(Object value, int decimals) {
+		if(value instanceof ExchangeRate er) {
+			return er.getRate();
+		} else if(value instanceof CurrencyRate cr) {
+			return cr.getRate();
+		}
         try {
             return new Rate(value.toString(), decimals);
         } catch(Throwable ignored) {
