@@ -8,12 +8,12 @@ import com.vaadin.flow.component.HasSize;
 import java.util.function.Supplier;
 
 /**
- * A layout {@link com.vaadin.flow.component.Component} based on a template stored in the DB as an HTML like file -
- * It should be stored as {@link com.storedobject.core.TextContent}. The template can contain HTML tags (and thus,
+ * A layout {@link com.vaadin.flow.component.Component} based on a template stored in the DB as an HTML like content.
+ * The content should be stored as {@link com.storedobject.core.TextContent}. The template can contain HTML tags (and thus,
  * Vaadin component tags too) and if any image resources are referenced, respective
  * {@link com.storedobject.core.MediaFile}s must be used just like in {@link HTMLView}. For CSS styling the content,
- * style tag should be used and if used, it should be used only once. If style tags are specified more than once,
- *  * only the first one is considered and the rest are ignored.
+ * the style tag should be used, and if used, it should be used only once in the content. If style tags are specified
+ * more than once, only the first one is considered and the rest are ignored.
  * <p>A separate constructor is available if you want to provide the content directly. See
  * {@link #TemplateLayout(Supplier)}.</p>
  *

@@ -8,7 +8,7 @@ import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
 
 /**
- * Template component can be used to define generic HTML-template based elements via HTML text-content. Use the
+ * Template component can be used to define generic HTML-template-based elements via HTML text-content. Use the
  * "so-template" tag and specify your text-content name as the "template" attribute in it!
  *
  * @author Syam

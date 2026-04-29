@@ -5,11 +5,11 @@ import com.storedobject.core.*;
 import com.storedobject.ui.util.LogicParser;
 import com.storedobject.ui.util.ObjectListLoader;
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.HasOrderedComponents;
+import com.vaadin.flow.component.HasComponents;
 import com.vaadin.flow.component.html.Div;
 
 import java.util.List;
-import java.util.function.Function;
+import java.util.function.Supplier;
 
 /**
  * A specialized dashboard for managing and displaying cards representing objects of a specific type.
@@ -23,7 +23,7 @@ import java.util.function.Function;
 public class ObjectCardDashboard<T extends StoredObject> extends CardDashboard<T> implements ObjectLoader<T> {
 
     private final ObjectListLoader<T> loader;
-    private Function<T, ObjectCard<T>> cardCreator = null;
+    private Supplier<ObjectCard<T>> cardCreator;
 
     /**
      * Constructs an ObjectCardDashboard instance to manage and display object cards.
@@ -48,17 +48,7 @@ public class ObjectCardDashboard<T extends StoredObject> extends CardDashboard<T
      */
     public ObjectCardDashboard(Class<T> objectClass, boolean allowAny) {
         super(Application.getLogicCaption(() -> StringUtility.makeLabel(objectClass)), grid(objectClass));
-        Class<?> c = LogicParser.createLogicClass(objectClass, "Card");
-        if(c != null && ObjectCard.class.isAssignableFrom(c) && c != ObjectCard.class) {
-            cardCreator = o -> {
-                try {
-                    //noinspection unchecked
-                    return (ObjectCard<T>) c.getConstructor().newInstance();
-                } catch (Exception e) {
-                    return null;
-                }
-            };
-        }
+        cardCreator = ObjectCard.creator(objectClass);
         loader = new ObjectListLoader<>(objectClass, this::newCard, this::clearInt, this::cardsLoadedInt, allowAny);
     }
 
@@ -135,35 +125,36 @@ public class ObjectCardDashboard<T extends StoredObject> extends CardDashboard<T
      * based on objects of type {@code T}. The dashboard uses the provided function internally
      * to create and manage object-specific cards.
      *
-     * @param cardCreator A {@code Function} that takes an object of type {@code T} as input and returns
-     *                    an {@code ObjectCard<T>} instance. This function facilitates the custom generation
+     * @param cardCreator A card creator that returns
+     *                    a new {@code ObjectCard<T>} instance. This function facilitates the custom generation
      *                    of cards for objects managed in the dashboard.
      */
-    public void setCardCreator(Function<T, ObjectCard<T>> cardCreator) {
+    public void setCardCreator(Supplier<ObjectCard<T>> cardCreator) {
         this.cardCreator = cardCreator;
     }
 
     private void newCard(T o) {
-        ObjectCard<T> card = cardCreator == null ? createCard(o) : cardCreator.apply(o);
+        ObjectCard<T> card = cardCreator == null ? createCard(o) : cardCreator.get();
         if(card == null) {
             card = createCard(o);
         }
         card.setObject(o);
         getGrid().add(card);
+        card.dashboard = this;
     }
 
     /**
      * Creates an {@code ObjectCard} instance for the specified object, adds a visual representation
      * of the object to the card, and returns the created card.
+     * <p>Note: This method is invoked only if no custom card creator is set and no card creator is available in
+     * the class path.</p>
      *
      * @param object the object of type {@code T} for which the card is to be created. The object is
      *               used to generate a displayable representation within the card.
      * @return an instance of {@code ObjectCard<T>} containing the visual representation of the provided object.
      */
     protected ObjectCard<T> createCard(T object) {
-        ObjectCard<T> c = new ObjectCard<>();
-        c.add(new Div(object.toDisplay()));
-        return c;
+        return new ObjectCard<>(new Div(object.toDisplay()));
     }
 
     @Override
@@ -260,8 +251,8 @@ public class ObjectCardDashboard<T extends StoredObject> extends CardDashboard<T
                 ((ObjectCard<O>) oc).setObject(object);
                 return true;
             }
-            case HasOrderedComponents hoc -> {
-                return hoc.getChildren().anyMatch(cc -> updateCard(cc, object));
+            case HasComponents hc -> {
+                return hc.getChildren().anyMatch(cc -> updateCard(cc, object));
             }
             default -> {
                 return false;

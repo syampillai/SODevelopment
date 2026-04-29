@@ -2,6 +2,7 @@ package com.storedobject.ui;
 
 import com.storedobject.core.StringUtility;
 import com.storedobject.core.TextContent;
+import com.storedobject.vaadin.CloseableView;
 import com.storedobject.vaadin.ExecutableView;
 import com.storedobject.vaadin.View;
 import com.storedobject.vaadin.WrappedView;
@@ -14,7 +15,7 @@ import java.util.function.Supplier;
  *
  * @author Syam
  */
-public class TemplateView extends TemplateLayout implements ExecutableView {
+public class TemplateView extends TemplateLayout implements ExecutableView, CloseableView {
 
     private String caption;
     View view;
@@ -25,6 +26,16 @@ public class TemplateView extends TemplateLayout implements ExecutableView {
     public TemplateView() {
         super();
         setCaption(Application.getLogicCaption(() -> StringUtility.makeLabel(getClass())));
+    }
+
+    /**
+     * Constructor.
+     *
+     * @param caption Caption to set. The caption may include a pipe ('|') character
+     *                to separate the main caption from an optional text content name.
+     */
+    public TemplateView(String caption) {
+        this(split(caption)[0], split(caption)[1]);
     }
 
     /**
@@ -49,7 +60,6 @@ public class TemplateView extends TemplateLayout implements ExecutableView {
         setCaption(caption);
     }
 
-
     /**
      * Constructor.
      *
@@ -68,6 +78,14 @@ public class TemplateView extends TemplateLayout implements ExecutableView {
     public TemplateView(String caption, Supplier<String> contentSupplier) {
         super(contentSupplier);
         setCaption(caption);
+    }
+
+    private static String[] split(String caption) {
+        int p = caption.indexOf('|');
+        if(p < 0) {
+            return new String[] { caption, null };
+        }
+        return new String[] { caption.substring(0, p), caption.substring(p + 1) };
     }
 
     @Override

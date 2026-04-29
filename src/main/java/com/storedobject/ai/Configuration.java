@@ -9,6 +9,11 @@ import java.util.Map;
 public class Configuration extends StoredObject {
 
     private static final Map<Id, Configuration> instances = new HashMap<>();
+    private static final String[] modelProviderValues =
+            new String[] {
+                    "Deep Seek", "Open AI", "Google",
+            };
+    private int modelProvider = 0;
     private String name;
     private Id tokenId = Id.ZERO;
     private String baseURL;
@@ -19,6 +24,7 @@ public class Configuration extends StoredObject {
     public Configuration() {}
 
     public static void columns(Columns columns) {
+        columns.add("ModelProvider", "int");
         columns.add("Name", "text");
         columns.add("Token", "id");
         columns.add("BaseURL", "text");
@@ -45,6 +51,28 @@ public class Configuration extends StoredObject {
 
     public static int hints() {
         return ObjectHint.SMALL | ObjectHint.SMALL_LIST;
+    }
+
+    public void setModelProvider(int modelProvider) {
+        this.modelProvider = modelProvider;
+    }
+
+    @Column(order = 50)
+    public int getModelProvider() {
+        return modelProvider;
+    }
+
+    public static String[] getModelProviderValues() {
+        return modelProviderValues;
+    }
+
+    public static String getModelProviderValue(int value) {
+        String[] s = getModelProviderValues();
+        return s[value % s.length];
+    }
+
+    public String getModelProviderValue() {
+        return getModelProviderValue(modelProvider);
     }
 
     public void setName(String name) {

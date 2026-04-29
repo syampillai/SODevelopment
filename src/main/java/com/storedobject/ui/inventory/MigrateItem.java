@@ -37,6 +37,7 @@ public class MigrateItem extends DataForm implements Transactional {
         } else {
             s.append(" from: ").append(pnOriginal.toDisplay()).append("\nMigrate to: ").append(pn.toDisplay());
         }
+        s.append("\nThe DB must be restarted to complete the migration process.");
         new ActionForm(s + "\nAre you sure?",
                 () -> migrate(item, pn)).execute();
         return true;
@@ -46,6 +47,7 @@ public class MigrateItem extends DataForm implements Transactional {
         try {
             item.migrate(getTransactionManager(), newPN, ii -> convert(ii, newPN));
             message("Migrated successfully");
+            error("DB must be restarted to complete the migration process!");
         } catch(Exception e) {
             error(e);
         }
@@ -54,6 +56,7 @@ public class MigrateItem extends DataForm implements Transactional {
     private InventoryItem convert(InventoryItem item, InventoryItemType newPN) {
         InventoryItem newItem = newPN.createItem();
         JSONMap map = new JSONMap();
+        map.setRawMode(true);
         try {
             item.save(map);
             map.remove("PartNumber");

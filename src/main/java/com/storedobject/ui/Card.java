@@ -16,13 +16,14 @@ import com.vaadin.flow.component.icon.VaadinIcon;
  *
  * @author Syam
  */
-public class Card<T> extends Composite<Component> implements HasComponents {
+public class Card<T> extends Composite<Component> implements HasComponents, SupportsConcurrentClick {
 
     private final Component content;
     private CardGrid<T> grid;
     private T object;
     private final Icon checkIcon = VaadinIcon.CHECK_CIRCLE.create();
     private boolean selected;
+    private final ConcurrentClick concurrentClick;
 
     /**
      * Default constructor for the Card component.
@@ -39,7 +40,7 @@ public class Card<T> extends Composite<Component> implements HasComponents {
      * </pre>
      */
     public Card() {
-        this(new Div());
+        this(null);
     }
 
     /**
@@ -61,6 +62,9 @@ public class Card<T> extends Composite<Component> implements HasComponents {
      * @param root The root component to be displayed within the card.
      */
     public Card(Component root) {
+        if(root == null) {
+            root = new Div();
+        }
         this.content = root instanceof HasComponents ? root : new Div(root);
         getStyle()
                 .set("border-radius", "12px")
@@ -82,13 +86,26 @@ public class Card<T> extends Composite<Component> implements HasComponents {
                 .set("display", "none");
         add(checkIcon);
         if(this.content instanceof ClickNotifier<?>) {
-            ((ClickNotifier<?>) root).addClickListener(e -> dispatchClick());
+            ((ClickNotifier<?>) this.content).addClickListener(e -> dispatchClick());
+        }
+        if(this.content instanceof CardContent cc) {
+            cc.setCard(this);
+        }
+        if(this.content instanceof SupportsConcurrentClick scl) {
+            this.concurrentClick = scl.getConcurrentClick();
+        } else {
+            this.concurrentClick = new ConcurrentClick();
         }
     }
 
     @Override
     protected final Component initContent() {
         return content;
+    }
+
+    @Override
+    public final ConcurrentClick getConcurrentClick() {
+        return concurrentClick;
     }
 
     /**

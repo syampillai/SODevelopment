@@ -2,6 +2,7 @@ package com.storedobject.ui.inventory;
 
 import com.storedobject.common.SORuntimeException;
 import com.storedobject.core.*;
+import com.storedobject.ui.ELabelField;
 import com.storedobject.ui.Transactional;
 import com.storedobject.vaadin.ActionForm;
 import com.storedobject.vaadin.DataForm;
@@ -14,6 +15,7 @@ public class MigratePartNumber extends DataForm implements Transactional {
 
     private final ItemTypeGetField<InventoryItemType> pnField = new ItemTypeGetField<>("P/N to Migrate",
             InventoryItemType.class, true);
+    private final ELabelField pnType = new ELabelField("P/N Type");
     private final MapComboField<Class<?>> newTypeField;
 
     public MigratePartNumber() {
@@ -26,8 +28,12 @@ public class MigratePartNumber extends DataForm implements Transactional {
                 map.put(k, StringUtility.makeLabel(k));
             }
         }
+        pnField.addValueChangeListener(e -> {
+            InventoryItemType pn = pnField.getObject();
+            pnType.clearContent().append(StringUtility.makeLabel(pn.getClass())).update();
+        });
         newTypeField = new MapComboField<>("Migrate to", map);
-        addField(pnField, newTypeField);
+        addField(pnField, pnType, newTypeField);
         setRequired(pnField);
         setRequired(newTypeField);
     }
@@ -48,7 +54,9 @@ public class MigratePartNumber extends DataForm implements Transactional {
         }
         new ActionForm("Part Number: " + pn.toDisplay() + "\nP/N Type: " + StringUtility.makeLabel(pn.getClass())
                 + "\nMigrate to: " + StringUtility.makeLabel(to)
-                + "\nAll items having the above P/N will be migrated!\nAre you sure?",
+                + "\nAll items having the above P/N will be migrated!"
+                + "\nThe DB must be restarted if this operation is successful."
+                + "\nAre you sure?",
                 () -> convert(pn, newPN)).execute();
         return true;
     }
@@ -57,6 +65,7 @@ public class MigratePartNumber extends DataForm implements Transactional {
         try {
             pn.migrate(getTransactionManager(), newPN, item -> convert(item, newPN));
             message("Migrated successfully");
+            error("DB must be restarted to complete the migration process!");
         } catch(Exception e) {
             error(e);
         }
@@ -66,6 +75,7 @@ public class MigratePartNumber extends DataForm implements Transactional {
         try {
             InventoryItemType newPN = (InventoryItemType) to.getConstructor().newInstance();
             JSONMap map = new JSONMap();
+            map.setRawMode(true);
             pn.save(map, ClassAttribute.get(pn).getAttributes());
             newPN.load(map);
             migrate(pn, newPN);

@@ -7,10 +7,7 @@ import com.storedobject.core.TextContent;
 import com.storedobject.ui.Image;
 import com.storedobject.ui.MediaCSS;
 import com.storedobject.vaadin.Button;
-import com.vaadin.flow.component.AttachEvent;
-import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.Html;
-import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.component.*;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.html.Span;
@@ -227,8 +224,11 @@ public abstract class HtmlTemplate extends Component {
 
     private static Document readTemplate(StreamSupplier streamSupplier) {
         try (InputStream resourceAsStream = streamSupplier.createStream()) {
-            return Jsoup.parseBodyFragment(
+            Document d = Jsoup.parseBodyFragment(
                     StandardCharsets.UTF_8.decode(DataUtil.readToByteBuffer(resourceAsStream, 0)).toString());
+            // Replace all children of <svg> tags
+            d.select("svg").forEach(org.jsoup.nodes.Element::empty);
+            return d;
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
@@ -346,6 +346,7 @@ public abstract class HtmlTemplate extends Component {
             case "p" -> new Paragraph();
             case "img" -> new Image();
             case "button" -> new Button("", null);
+            case "svg" -> new Svg();
             default -> null;
         };
     }
@@ -406,7 +407,6 @@ public abstract class HtmlTemplate extends Component {
         if(c != null) {
             return c;
         }
-        //return new Span("[Tag = " + tag + ", Id = " + id + "]");
         return new Html("<" + tag + " id=\"" + id + "\"></" + tag + ">");
     }
 
@@ -485,18 +485,6 @@ public abstract class HtmlTemplate extends Component {
             } else {
                 html_css[0] = c;
             }
-            /*
-            if(c.startsWith("<style")) {
-                int p = c.indexOf("</style>");
-                if(p > 0) {
-                    htmlcss[1] = MediaCSS.parse(c.substring(c.indexOf('>') + 1, p));
-                    htmlcss[0] = c.substring(p + 8);
-                }
-            } else {
-                htmlcss[0] = c;
-            }
-
-             */
         }
     }
 

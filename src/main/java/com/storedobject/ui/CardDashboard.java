@@ -129,7 +129,7 @@ public class CardDashboard<T> extends ScrollingContent implements ExecutableView
      *
      * @param listener a {@code Consumer} that processes the {@code Card} selected by the user.
      *                 This listener is invoked with the selected card as its input.
-     * @return a {@code Registration} object that can be used to remove the listener if it is no longer needed.
+     * @return a {@code Registration} object that can be used to remove the listener if it is no longer necessary.
      */
     public final Registration addCardSelectedListener(Consumer<Card<T>> listener) {
         return getGrid().addCardSelectedListener(listener);
