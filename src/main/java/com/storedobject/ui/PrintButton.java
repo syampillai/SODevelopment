@@ -10,6 +10,7 @@ import com.storedobject.vaadin.PopupButton;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Composite;
 import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.popover.Popover;
 import org.jspecify.annotations.Nullable;
 
 import java.lang.reflect.Constructor;
@@ -104,9 +105,21 @@ public final class PrintButton<T extends StoredObject> extends Composite<Button>
         return create(objectClass, null, objectSupplier, null);
     }
 
+    /**
+     * Create a "print button" for the object supplier.
+     *
+     * @param objectClass Object class of the object supplier.
+     * @param objectSource Object source for which the button to be created.
+     * @param objectSupplier Object supplier for which the button to be created.
+     * @return Print button.
+     */
+    public static <O extends StoredObject> PrintButton<O> create(Class<O> objectClass, Object objectSource, Supplier<O> objectSupplier) {
+        return create(objectClass, objectSource, objectSupplier, null);
+    }
+
     private static <O extends StoredObject> PrintButton<O> create(Class<O> objectClass, Object objectSource, Supplier<O> objectSupplier,
                                       String dataLogicName) {
-        List<Component> extras = objectSupplier instanceof ObjectBrowser<?> b ? b.listMoreButtons() : null;
+        List<Component> extras = objectSource instanceof HasPrintButton b ? b.listMorePrintButtons() : null;
         if(extras != null && extras.isEmpty()) {
             extras = null;
         }
@@ -238,5 +251,21 @@ public final class PrintButton<T extends StoredObject> extends Composite<Button>
         buttons.put(label, b);
         b.definition = printLogicDefinition;
         return b;
+    }
+
+    public void execute(Component anchor) {
+        if(button instanceof PopupButton p) {
+            Popover po = p.getPopover();
+            po.setTarget(anchor);
+            po.open();
+            return;
+        }
+        button.click();
+    }
+
+    public interface HasPrintButton {
+        default List<Component> listMorePrintButtons() {
+            return null;
+        }
     }
 }

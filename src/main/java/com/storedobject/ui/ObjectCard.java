@@ -4,8 +4,12 @@ import com.storedobject.core.ObjectSetter;
 import com.storedobject.core.StoredObject;
 import com.storedobject.core.TextContent;
 import com.storedobject.ui.util.LogicParser;
+import com.storedobject.vaadin.Button;
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.icon.VaadinIcon;
 
+import java.util.List;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 /**
@@ -16,11 +20,13 @@ import java.util.function.Supplier;
  *
  * @author Syam
  */
-public class ObjectCard<T extends StoredObject> extends Card<T> {
+public class ObjectCard<T extends StoredObject> extends Card<T> implements PrintButton.HasPrintButton {
 
     private ObjectSetter<T> objectConsumer;
     ObjectCardDashboard<T> dashboard;
-    private boolean showMenu = true;
+    private Consumer<Component> printButton;
+    private boolean showMenu = true, viewDetailsOnClick = true;
+    private Component menuAnchor = this;
 
     /**
      * Constructs an instance of ObjectCard with no initial configuration or root component.
@@ -46,6 +52,7 @@ public class ObjectCard<T extends StoredObject> extends Card<T> {
             objectConsumer = (ObjectSetter<T>) root;
         }
         registerClick(this, this::showMenu);
+        setMenuAnchor(root);
     }
 
     /**
@@ -131,7 +138,63 @@ public class ObjectCard<T extends StoredObject> extends Card<T> {
         if(showMenu) {
             T object = getObject();
             if (object == null) return;
-            Application.message("Object: " + object.toDisplay());
+            if(printButton == null) {
+                //noinspection unchecked
+                PrintButton<T> b = PrintButton.create((Class<T>) object.getClass(), this, this::getObject);
+                if(b == null) {
+                    printButton = c -> {};
+                } else {
+                    printButton = b::execute;
+                }
+            }
+            printButton.accept(menuAnchor);
+        }
+    }
+
+    /**
+     * Sets whether detailed information should be displayed when the ObjectCard is clicked.
+     *
+     * @param viewDetailsOnClick a boolean indicating whether to enable the display of
+     *                            detailed information on click. If true, the detail view
+     *                            will be displayed when the card is clicked; if false,
+     *                            this behavior is disabled.
+     */
+    public void setViewDetailsOnClick(boolean viewDetailsOnClick) {
+        if(viewDetailsOnClick != this.viewDetailsOnClick) {
+            this.viewDetailsOnClick = viewDetailsOnClick;
+            printButton = null;
+        }
+    }
+
+    @Override
+    public List<Component> listMorePrintButtons() {
+        if(!viewDetailsOnClick) {
+            return null;
+        }
+        return List.of(new Button("View Details", VaadinIcon.EYE, e -> viewObject()));
+    }
+
+    /**
+     * Sets the anchor component for the menu associated with the ObjectCard.
+     * The menu will use this component as its reference point for positioning.
+     * If the provided menuAnchor is null, the current ObjectCard instance will
+     * be used as the default anchor.
+     *
+     * @param menuAnchor the component to be used as the menu anchor. If null,
+     *                   the ObjectCard itself will be set as the anchor.
+     */
+    public void setMenuAnchor(Component menuAnchor) {
+        this.menuAnchor = menuAnchor == null ? this : menuAnchor;
+    }
+
+    /**
+     * Invokes the dashboard to display the object associated with this ObjectCard.
+     * If the dashboard is not null, the object retrieved from {@code getObject()}
+     * is passed to the dashboard's {@code viewObject} method for viewing.
+     */
+    public void viewObject() {
+        if(dashboard != null) {
+            dashboard.viewObject(getObject());
         }
     }
 }

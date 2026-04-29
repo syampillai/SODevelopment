@@ -24,6 +24,7 @@ public class ObjectCardDashboard<T extends StoredObject> extends CardDashboard<T
 
     private final ObjectListLoader<T> loader;
     private Supplier<ObjectCard<T>> cardCreator;
+    private ObjectEditor<T> objectViewer;
 
     /**
      * Constructs an ObjectCardDashboard instance to manage and display object cards.
@@ -263,5 +264,33 @@ public class ObjectCardDashboard<T extends StoredObject> extends CardDashboard<T
     @Override
     public final ObjectLoader<T> getDelegatedLoader() {
         return loader;
+    }
+
+    /**
+     * Displays the object associated with the currently selected object card on the dashboard.
+     * This method retrieves the selected card, extracts the object represented by the card,
+     * and passes it to the object viewer for display purposes.
+     * If no card is currently selected, no action is performed.
+     */
+    public void viewObject() {
+        ObjectCard<T> card = (ObjectCard<T>) getSelectedCard();
+        if(card != null) {
+            viewObject(card.getObject());
+        }
+    }
+
+    /**
+     * Displays the specified object using an internal object viewer. If the object viewer is not already initialized,
+     * it is created based on the class type of the provided object.
+     *
+     * @param object The object of type {@code T} to be viewed. The object is passed to the viewer for display purposes.
+     */
+    public void viewObject(T object) {
+        if(object == null) return;
+        if(objectViewer == null) {
+            //noinspection unchecked
+            objectViewer = ObjectEditor.create((Class<T>)object.getClass(), EditorAction.VIEW);
+        }
+        objectViewer.viewObject(object);
     }
 }

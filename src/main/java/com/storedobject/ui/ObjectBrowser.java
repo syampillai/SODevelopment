@@ -19,7 +19,6 @@ import com.vaadin.flow.shared.Registration;
 
 import java.lang.reflect.Constructor;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -36,7 +35,7 @@ import static com.storedobject.core.EditorAction.*;
  * @author Syam
  */
 public class ObjectBrowser<T extends StoredObject> extends ObjectGrid<T>
-        implements EditableDataGrid<T>, ObjectEditorListener, NewInstanceConsumer {
+        implements EditableDataGrid<T>, ObjectEditorListener, NewInstanceConsumer, PrintButton.HasPrintButton {
 
     private LoadFilterButtons<T> loadFilterButtons;
     /**
@@ -757,15 +756,6 @@ public class ObjectBrowser<T extends StoredObject> extends ObjectGrid<T>
      * implementation does not add any buttons.
      */
     protected void addExtraButtons() {
-    }
-
-    /**
-     * List of more buttons to be added to the {@link PrintButton}, in addition to the configured buttons.
-     *
-     * @return List of more buttons to be added. The list could contain any type of components.
-     */
-    protected List<Component> listMoreButtons() {
-        return null;
     }
 
     /**

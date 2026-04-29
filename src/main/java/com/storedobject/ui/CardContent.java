@@ -3,9 +3,10 @@ package com.storedobject.ui;
 /**
  * An interface for content that can be displayed in a card.
  *
+ * @param <T> Type of the content.
  * @author Syam
  */
-public interface CardContent {
+public interface CardContent<T> {
 
     /**
      * Sets the card that this content is associated with.
@@ -14,5 +15,5 @@ public interface CardContent {
      *
      * @param card Card to be set
      */
-    void setCard(Card<?> card);
+    void setCard(Card<T> card);
 }

@@ -4,7 +4,7 @@ import com.storedobject.vaadin.Clickable;
 import com.vaadin.flow.component.ClickNotifier;
 import com.vaadin.flow.component.Component;
 
-import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.Semaphore;
 
 /**
  * A thread-safe utility class for managing click events with concurrent control.
@@ -15,7 +15,7 @@ import java.util.concurrent.locks.ReentrantLock;
  */
 public final class ConcurrentClick {
 
-    private final ReentrantLock lock = new ReentrantLock();
+    private final Semaphore lock = new Semaphore(1);
 
     /**
      * Registers a click event listener for the given component. If the component is an instance
@@ -36,14 +36,13 @@ public final class ConcurrentClick {
     }
 
     private void clicked(Runnable runnable) {
-        if(!lock.tryLock()) {
+        if(!lock.tryAcquire()) {
             return; // Only one click at a time. So, ignore this one.
         }
-        try {
-            Application a = Application.get();
-            a.access(runnable::run); // Run it after acquiring the application lock.
-        } finally {
-            lock.unlock();
-        }
+        Application a = Application.get();
+        a.access(() -> {
+            runnable.run();
+            lock.release();
+        });
     }
 }

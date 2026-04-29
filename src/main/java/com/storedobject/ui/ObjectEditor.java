@@ -42,7 +42,7 @@ import java.util.stream.Stream;
  * @author Syam
  */
 public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
-        implements Transactional, ObjectSetter<T>,
+        implements Transactional, ObjectSetter<T>, PrintButton.HasPrintButton,
         ObjectChangedListener<T>, ObjectEditorListener, ObjectProvider<T>, AlertHandler, TransactionCreator {
 
     /**
