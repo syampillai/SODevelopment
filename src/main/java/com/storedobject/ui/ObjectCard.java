@@ -8,6 +8,7 @@ import com.storedobject.vaadin.Button;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.icon.VaadinIcon;
 
+import java.lang.reflect.Constructor;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -93,26 +94,33 @@ public class ObjectCard<T extends StoredObject> extends Card<T> implements Print
                 }
             };
         }
-        String t = objectClass.getName() + "CardTemplate";
+        String t = objectClass.getName();
+        int p = t.lastIndexOf('.');
+        String name = t.substring(p + 1);
+        t = t.substring(0, p);
+        t += ".logic." + name + "CardTemplate";
         TextContent textContent = TextContent.get(t);
         if(textContent != null && textContent.getName().equals(t)) {
             t = textContent.getContent();
             Class<?> tc = LogicParser.createLogicClass(objectClass, "CardTemplate");
-            if(tc == null || !ObjectCardTemplate.class.isAssignableFrom(tc)) {
-                tc = ObjectCardTemplate.class;
+            if(tc != null && !ObjectCardTemplate.class.isAssignableFrom(tc)) {
+                tc = null;
             }
-            try {
-                tc.getConstructor(String.class);
-            } catch (Exception ignored) {
-                tc = ObjectCardTemplate.class;
+            Constructor<?> constructor = null;
+            if(tc != null) {
+                try {
+                    constructor = tc.getConstructor(String.class);
+                } catch (Exception ignored) {
+                }
             }
-            Class<?> finalTc = tc;
             String finalT = t;
+            Constructor<?> finalConstructor = constructor;
             return () -> {
                 try {
-                    @SuppressWarnings("unchecked") var template = (ObjectCardTemplate<O>) finalTc
-                            .getConstructor(String.class).newInstance(finalT);
-                    return new ObjectCard<>(template);
+                    var template = finalConstructor == null ? new ObjectCardTemplate<>(finalT)
+                            : finalConstructor.newInstance(finalT);
+                    //noinspection unchecked
+                    return new ObjectCard<>((ObjectCardTemplate<O>)template);
                 } catch (Exception e) {
                     return null;
                 }

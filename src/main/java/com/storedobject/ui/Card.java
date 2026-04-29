@@ -62,10 +62,7 @@ public class Card<T> extends Composite<Component> implements HasComponents, Supp
      * @param root The root component to be displayed within the card.
      */
     public Card(Component root) {
-        if(root == null) {
-            root = new Div();
-        }
-        this.content = root instanceof HasComponents ? root : new Div(root);
+        this.content = root == null ? new Div() : root;
         getStyle()
                 .set("border-radius", "12px")
                 .set("padding", "16px")
@@ -88,8 +85,9 @@ public class Card<T> extends Composite<Component> implements HasComponents, Supp
         if(this.content instanceof ClickNotifier<?>) {
             ((ClickNotifier<?>) this.content).addClickListener(e -> dispatchClick());
         }
-        if(this.content instanceof CardContent cc) {
-            cc.setCard(this);
+        if(this.content instanceof CardContent<?> cc) {
+            //noinspection unchecked
+            ((CardContent<T>)cc).setCard(this);
         }
         if(this.content instanceof SupportsConcurrentClick scl) {
             this.concurrentClick = scl.getConcurrentClick();

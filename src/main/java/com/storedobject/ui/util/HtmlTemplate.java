@@ -31,6 +31,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiConsumer;
 import java.util.function.Supplier;
 
@@ -130,6 +131,10 @@ public abstract class HtmlTemplate extends Component {
         super.onAttach(attachEvent);
     }
 
+    /**
+     * Build the template. This method is called automatically when the template
+     * is attached to the UI.
+     */
     public void build() {
         if(templateDetails != null) {
             populate(templateDetails.cacheKey, templateDetails.streamSupplier, templateDetails.styleSupplier);
@@ -138,6 +143,11 @@ public abstract class HtmlTemplate extends Component {
         }
     }
 
+    /**
+     * Checks whether the HTML template has been successfully created.
+     *
+     * @return true if the template has been created, false otherwise
+     */
     public boolean isCreated() {
         return created;
     }
@@ -152,19 +162,32 @@ public abstract class HtmlTemplate extends Component {
         return new TemplateDetails(null, hs, hs);
     }
 
+    /**
+     * Sets the view object for the current template.
+     *
+     * @param view the view object to be associated with this template
+     */
     public void setView(Object view) {
         this.view = view;
     }
 
+    /**
+     * Sets the {@code ComponentCreator} that will be used to create components
+     * for specific IDs within the HTML template.
+     *
+     * @param componentCreator the {@code ComponentCreator} instance responsible
+     *                         for creating components for specified IDs
+     */
     public void setComponentCreator(ComponentCreator componentCreator) {
         this.componentCreator = componentCreator;
     }
 
     private void populate(String cacheKey, StreamSupplier streamSupplier, StyleSupplier styleSupplier) {
-        Document document = getTemplate(cacheKey, streamSupplier);
+        Map<String, Svg> svgMap = new HashMap<>();
+        Document document = getTemplate(cacheKey, streamSupplier, svgMap);
         Map<String, Element> idElementMap = new HashMap<>();
         Map<String, Component> idComponentMap = new HashMap<>();
-        convertAndAppend(document.body(), getElement().attachShadow(), idElementMap::put, idComponentMap::put, styleSupplier);
+        convertAndAppend(document.body(), getElement().attachShadow(), idElementMap::put, idComponentMap::put, styleSupplier, svgMap);
         if(view == null) {
             view = this;
         }
@@ -197,7 +220,7 @@ public abstract class HtmlTemplate extends Component {
         }
     }
 
-    private static Document getTemplate(String cacheKey, StreamSupplier streamSupplier) {
+    private static Document getTemplate(String cacheKey, StreamSupplier streamSupplier, Map<String, Svg> svgMap) {
         boolean useCache;
         if (cacheKey == null) {
             useCache = false;
@@ -210,7 +233,7 @@ public abstract class HtmlTemplate extends Component {
             }
         }
         if (useCache) {
-            return parserCache.computeIfAbsent(cacheKey, ignore -> readTemplate(streamSupplier));
+            return parserCache.computeIfAbsent(cacheKey, ignore -> readTemplate(streamSupplier, svgMap));
         } else {
             /*
              * Read without caching in dev mode so that changes are available
@@ -218,16 +241,26 @@ public abstract class HtmlTemplate extends Component {
              * reads resources straight from their original file system
              * location).
              */
-            return readTemplate(streamSupplier);
+            return readTemplate(streamSupplier, svgMap);
         }
     }
 
-    private static Document readTemplate(StreamSupplier streamSupplier) {
+    private static Document readTemplate(StreamSupplier streamSupplier, Map<String, Svg> svgMap) {
         try (InputStream resourceAsStream = streamSupplier.createStream()) {
             Document d = Jsoup.parseBodyFragment(
                     StandardCharsets.UTF_8.decode(DataUtil.readToByteBuffer(resourceAsStream, 0)).toString());
+            AtomicInteger svgCount = new AtomicInteger();
             // Replace all children of <svg> tags
-            d.select("svg").forEach(org.jsoup.nodes.Element::empty);
+            d.select("svg").forEach(svg -> {
+                String id = svg.attr("id");
+                if(id.isBlank()) {
+                    id = "svg." + svgCount.incrementAndGet();
+                    svg.attr("id", id);
+                    String svgText = "<svg>" + svg.html() + "</svg>";
+                    svgMap.put(id, new Svg(svgText));
+                }
+                svg.empty();
+            });
             return d;
         } catch (IOException e) {
             throw new UncheckedIOException(e);
@@ -237,29 +270,41 @@ public abstract class HtmlTemplate extends Component {
     private void convertAndAppend(org.jsoup.nodes.Element jsoupElement, com.vaadin.flow.dom.Node<?> flowNode,
                                   BiConsumer<String, Element> idElementConsumer,
                                   BiConsumer<String, Component> idComponentConsumer,
-                                  StyleSupplier styleSupplier) {
+                                  StyleSupplier styleSupplier, Map<String, Svg> svgMap) {
         String style = styleSupplier == null ? null : styleSupplier.getStyle();
         if(style != null && !style.isBlank()) {
             Element styleElement = new Element("style");
             styleElement.setText(style);
             flowNode.appendChild(styleElement);
         }
-        jsoupElement.childNodes().stream().map(child -> jsoupToFlow(child, idElementConsumer, idComponentConsumer)).
+        jsoupElement.childNodes().stream().map(child -> jsoupToFlow(child, idElementConsumer, idComponentConsumer, svgMap)).
                 filter(Objects::nonNull).
                 forEach(flowNode::appendChild);
     }
 
     private Element jsoupToFlow(Node node, BiConsumer<String, Element> idElementConsumer,
-                                BiConsumer<String, Component> idComponentConsumer) {
+                                BiConsumer<String, Component> idComponentConsumer, Map<String, Svg> svgMap) {
         switch (node) {
             case org.jsoup.nodes.Element jsoupElement -> {
+                String tag = jsoupElement.tagName();
                 Component c = null;
                 String id = jsoupElement.attributes().get("id");
                 if (!id.isEmpty()) {
-                    c = createComponentForId(id, jsoupElement.tagName());
-                    if (!c.getElement().getTag().equals(jsoupElement.tagName())) {
-                        throw new IllegalArgumentException("Incompatible component " + c.getClass().getName() +
-                                " for tag " + jsoupElement.tagName() + ", Id = " + id);
+                    if("svg".equals(tag)) {
+                        if(id.startsWith("svg.")) {
+                            c = svgMap.get(id);
+                        } else {
+                            c = createSvgForId(id);
+                            if(c == null) {
+                                c = new Svg();
+                            }
+                        }
+                    } else {
+                        c = createComponentForId(id, tag);
+                        if (!c.getElement().getTag().equals(tag)) {
+                            throw new IllegalArgumentException("Incompatible component " + c.getClass().getName() +
+                                    " for tag " + tag + ", Id = " + id);
+                        }
                     }
                     c.setId(id);
                 }
@@ -267,7 +312,7 @@ public abstract class HtmlTemplate extends Component {
                     c = createComponent(id, node.nodeName());
                 }
                 Component component = c;
-                Element flowElement = component == null ? new Element(jsoupElement.tagName()) : component.getElement();
+                Element flowElement = component == null ? new Element(tag) : component.getElement();
                 jsoupElement.attributes().forEach(attr -> {
                     String value = attr.getValue();
                     String key = attr.getKey();
@@ -298,7 +343,7 @@ public abstract class HtmlTemplate extends Component {
                         }
                     }
                 });
-                convertAndAppend(jsoupElement, flowElement, idElementConsumer, idComponentConsumer, null);
+                convertAndAppend(jsoupElement, flowElement, idElementConsumer, idComponentConsumer, null, svgMap);
                 return flowElement;
             }
             case TextNode textNode -> {
@@ -346,7 +391,6 @@ public abstract class HtmlTemplate extends Component {
             case "p" -> new Paragraph();
             case "img" -> new Image();
             case "button" -> new Button("", null);
-            case "svg" -> new Svg();
             default -> null;
         };
     }
@@ -378,6 +422,15 @@ public abstract class HtmlTemplate extends Component {
         return component;
     }
 
+    /**
+     * Creates a {@code Component} for the given identifier. If a {@code ComponentCreator}
+     * is set, the creation is delegated to it. Otherwise, a default {@code ISpan}
+     * instance is created with the ID embedded in its text.
+     *
+     * @param id The identifier for which the {@code Component} is to be created.
+     * @return The created {@code Component}, either provided by the {@code ComponentCreator}
+     *         or an instance of {@code ISpan} with the given ID.
+     */
     protected Component createComponentForId(String id) {
         if(componentCreator != null) {
             return componentCreator.createComponentForId(id);
@@ -392,6 +445,29 @@ public abstract class HtmlTemplate extends Component {
         }
     }
 
+    /**
+     * Creates an SVG element for the given identifier. If a {@code ComponentCreator}
+     * is set, the creation is delegated to it. Otherwise, {@code null} is returned.
+     *
+     * @param id The identifier for which to create the {@code Svg} element.
+     * @return The created {@code Svg} element if a {@code ComponentCreator} is present,
+     *         or {@code null} if no {@code ComponentCreator} is set or unable to handle the request.
+     */
+    protected Svg createSvgForId(String id) {
+        return componentCreator == null ? null : componentCreator.createSvgForId(id);
+    }
+
+    /**
+     * Creates a {@code Component} for the given identifier and tag. If a {@code ComponentCreator}
+     * is available, it delegates the creation process. If no component is created by the
+     * {@code ComponentCreator} or if the result is {@code null} or an {@code ISpan}, additional
+     * logic is applied to create an appropriate component.
+     *
+     * @param id The identifier for which the {@code Component} is to be created.
+     * @param tag The HTML tag used to infer the type of {@code Component} to create.
+     * @return The created {@code Component}. If no specific component can be created,
+     *         an {@code Html} object based on the given tag and identifier is returned.
+     */
     protected Component createComponentForId(String id, String tag) {
         Component c;
         if(componentCreator != null) {
@@ -412,6 +488,8 @@ public abstract class HtmlTemplate extends Component {
 
     /**
      * Callback for creating an input stream on demand.
+     *
+     * @author Syam
      */
     @FunctionalInterface
     public interface StreamSupplier {
@@ -426,18 +504,69 @@ public abstract class HtmlTemplate extends Component {
         InputStream createStream() throws IOException;
     }
 
+    /**
+     * Represents a supplier functional interface for providing style information.
+     * This interface is primarily designed to encapsulate the retrieval of style
+     * details, allowing flexibility and reusability in components or templates
+     * where style information needs to be dynamically supplied.
+     * <p></p>
+     * This interface is typically used in conjunction with HTML or other template-based
+     * systems that incorporate style information during rendering or processing stages.
+     * Implementations should provide a concrete mechanism to supply the style as a string.
+     *
+     * @author Syam
+     */
     @FunctionalInterface
     public interface StyleSupplier {
+
+        /**
+         * Retrieves the style information as a string.
+         * This method is intended to provide dynamic style content for use in rendering
+         * or processing styles in templating systems or similar use cases.
+         *
+         * @return the style information as a string
+         */
         String getStyle();
     }
 
+    /**
+     * Represents a functional interface that provides methods for creating components
+     * and SVG elements based on unique identifiers or tags. It is primarily used
+     * within the context of HTML templates to dynamically generate components.
+     *
+     * @author Syam
+     */
     @FunctionalInterface
     public interface ComponentCreator {
 
+        /**
+         * Creates a component based on the given unique identifier.
+         *
+         * @param id the unique identifier used to create the component
+         * @return the created component associated with the provided identifier
+         */
         Component createComponentForId(String id);
 
+        /**
+         * Creates a component based on the given unique identifier and optionally a tag.
+         *
+         * @param id the unique identifier used to create the component
+         * @param tag the tag used for additional customization or specification (currently unused in the implementation)
+         * @return the created component associated with the provided identifier
+         */
         default Component createComponentForId(String id, String tag) {
             return createComponentForId(id);
+        }
+
+        /**
+         * Creates an SVG element based on the given unique identifier.
+         *
+         * @param id the unique identifier used to create the SVG element
+         * @return the created SVG element associated with the provided identifier,
+         *         or null if no SVG element could be created
+         */
+        default Svg createSvgForId(String id) {
+            return null;
         }
     }
 
@@ -523,6 +652,13 @@ public abstract class HtmlTemplate extends Component {
     private record TemplateDetails(String cacheKey, StreamSupplier streamSupplier, StyleSupplier styleSupplier) {
     }
 
+    /**
+     * Clears the cache used by the HTML template parser.
+     * This method removes all cached entries within the `parserCache`,
+     * ensuring that subsequent parsing operations start with an empty cache.
+     * It is typically invoked to force the system to reparse and refresh
+     * template data without relying on previously cached results.
+     */
     public static void clearCache() {
         parserCache.clear();
     }

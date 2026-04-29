@@ -2,8 +2,28 @@ package com.storedobject.ui;
 
 import com.storedobject.core.ObjectSetter;
 import com.storedobject.core.StoredObject;
+import com.storedobject.core.StoredObjectUtility;
+import com.storedobject.core.StringUtility;
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.Span;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Consumer;
+
+/**
+ * A template-based component for displaying and managing object cards in a UI.
+ * This class provides functionality to manage a card's object, set menu anchors,
+ * and handle concurrent click events. It extends {@code TemplateComponent} for
+ * HTML and CSS-based templated designs and implements {@code ObjectSetter},
+ * {@code SupportsConcurrentClick}, and {@code CardContent} for integration with object data,
+ * thread-safe click handling, and card management, respectively.
+ *
+ * @param <T> The type of {@code StoredObject} this template can manage.
+ *
+ * @author Syam
+ */
 public class ObjectCardTemplate<T extends StoredObject> extends TemplateComponent
         implements ObjectSetter<T>, SupportsConcurrentClick, CardContent<T> {
 
@@ -11,6 +31,7 @@ public class ObjectCardTemplate<T extends StoredObject> extends TemplateComponen
     private T object;
     private Component menuAnchor;
     private ObjectCard<T> card;
+    private final List<Consumer<T>> painters = new ArrayList<>();
 
     /**
      * Constructor.
@@ -28,8 +49,20 @@ public class ObjectCardTemplate<T extends StoredObject> extends TemplateComponen
      * @param object the object to be stored may be null.
      */
     @Override
-    public void setObject(T object) {
+    public final void setObject(T object) {
         this.object = object;
+        if(!isCreated()) build();
+        painters.forEach(p -> p.accept(object));
+        paint(object);
+    }
+
+    /**
+     * This method is called by the card grid to paint the object values on the card. Typically, this
+     * method is overridden by subclasses to provide custom painting logic.
+     *
+     * @param object Object to be painted.
+     */
+    public void paint(T object) {
     }
 
     /**
@@ -55,7 +88,7 @@ public class ObjectCardTemplate<T extends StoredObject> extends TemplateComponen
      * @param menuAnchor the component to be used as the menu anchor. If null,
      *                   the ObjectCard itself will be set as the anchor.
      */
-    public void setMenuAnchor(Component menuAnchor) {
+    public final void setMenuAnchor(Component menuAnchor) {
         this.menuAnchor = menuAnchor == null ? this : menuAnchor;
         if(card != null) {
             card.setMenuAnchor(menuAnchor);
@@ -63,10 +96,40 @@ public class ObjectCardTemplate<T extends StoredObject> extends TemplateComponen
     }
 
     @Override
-    public void setCard(Card<T> card) {
+    public final void setCard(Card<T> card) {
         this.card = (ObjectCard<T>) card;
         if(menuAnchor != null) {
             this.card.setMenuAnchor(menuAnchor);
         }
+    }
+
+    @Override
+    protected Component createComponentForId(String id, String tag) {
+        return switch(tag) {
+            case "div", "span" -> createPainter(id, tag);
+            default -> super.createComponentForId(id, tag);
+        };
+    }
+
+    private Component createPainter(String id, String tag) {
+        try {
+            StoredObjectUtility.MethodList m = StoredObjectUtility.createMethodList(object.getClass(), id);
+            m.stringifyTail();
+            return switch (tag) {
+                case "div" -> {
+                    Div div = new Div();
+                    painters.add(o -> div.setText(StringUtility.toString(m.invoke(o))));
+                    yield div;
+                }
+                case "span" -> {
+                    Span span = new Span();
+                    painters.add(o -> span.setText(StringUtility.toString(m.invoke(o))));
+                    yield span;
+                }
+                default -> null;
+            };
+        } catch (Throwable ignored) {
+        }
+        return super.createComponentForId(id, tag);
     }
 }
