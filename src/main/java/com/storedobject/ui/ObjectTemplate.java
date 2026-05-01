@@ -1,7 +1,5 @@
 package com.storedobject.ui;
 
-import com.storedobject.core.ObjectSetter;
-import com.storedobject.core.StoredObject;
 import com.storedobject.core.StoredObjectUtility;
 import com.storedobject.core.StringUtility;
 import com.vaadin.flow.component.Component;
@@ -15,14 +13,14 @@ import java.util.function.Consumer;
 /**
  * A template-based component for displaying and managing an object and its associated objects in a UI.
  *
- * @param <T> The type of {@code StoredObject} this template can manage.
+ * @param <T> The type of data this template can manage.
  *
  * @author Syam
  */
-public class ObjectTemplate<T extends StoredObject> extends TemplateComponent implements ObjectSetter<T> {
+public class ObjectTemplate<T> extends TemplateComponent {
 
     /**
-     * The type of {@code StoredObject} this template is managing.
+     * The type of data this template is managing.
      */
     protected final Class<T> objectClass;
     /**
@@ -47,7 +45,6 @@ public class ObjectTemplate<T extends StoredObject> extends TemplateComponent im
      *
      * @param object the object to be stored may be null.
      */
-    @Override
     public final void setObject(T object) {
         this.object = object;
         painters.forEach(p -> p.accept(object));
@@ -72,8 +69,12 @@ public class ObjectTemplate<T extends StoredObject> extends TemplateComponent im
         return object;
     }
 
-    @Override
-    public Class<T> getObjectClass() {
+    /**
+     * Retrieves the class type of the object managed by this template.
+     *
+     * @return the {@code Class} instance representing the type parameter {@code T}.
+     */
+    public final Class<T> getObjectClass() {
         return objectClass;
     }
 

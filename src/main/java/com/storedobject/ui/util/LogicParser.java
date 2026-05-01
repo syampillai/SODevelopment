@@ -83,8 +83,7 @@ public class LogicParser {
                     Class<?> lc = JavaClassLoader.getLogic(cn);
                     if(lc.getName().equals(cn) && StoredObject.class.isAssignableFrom(lc)) {
                         ClassAttribute<?> ca = ClassAttribute.get((Class<? extends StoredObject>) lc);
-                        if((StoredObjectUtility.hints(ca.getObjectClass()) & ObjectHint.SMALL_LIST) ==
-                                ObjectHint.SMALL_LIST) {
+                        if((ca.hints() & ObjectHint.SMALL_LIST) == ObjectHint.SMALL_LIST) {
                             logic.setClassName("B:" + cn);
                         } else {
                             logic.setClassName("E:" + cn);
@@ -123,6 +122,7 @@ public class LogicParser {
         }
         switch(action) {
             case "C" -> fillLogic(s, "CardDashboard", null);
+            case "D" -> fillLogic(s, "Dashboard", null);
             case "E" -> fillLogic(s, "Editor", null);
             case "B" -> fillLogic(s, "Browser", null);
             case "BE" -> fillLogic(s, "BrowserEditor", null);

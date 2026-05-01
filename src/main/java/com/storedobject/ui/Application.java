@@ -663,8 +663,12 @@ public class Application extends com.storedobject.vaadin.Application implements 
      */
     public String getLogicTitle(Supplier<String> defaultTitle) {
         Logic r = runningLogic;
+        String t = r == null ? null : r.getTitle();
+        if(t != null && t.isBlank()) {
+            t = null;
+        }
         runningLogic = null;
-        return r == null ? defaultTitle.get() : r.getTitle();
+        return t == null ? defaultTitle.get() : t;
     }
 
     /**

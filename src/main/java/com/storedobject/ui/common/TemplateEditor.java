@@ -7,15 +7,16 @@ import com.storedobject.vaadin.Button;
 import com.storedobject.vaadin.CloseableView;
 import com.storedobject.vaadin.TextArea;
 import com.vaadin.flow.component.HasValue;
+import com.vaadin.flow.component.icon.VaadinIcon;
 
 import java.io.InputStream;
 import java.util.function.Consumer;
 
 public class TemplateEditor extends TextContentEditor {
 
-    private final Button loadHTML = new Button("Paste HTML File", "", e -> loadHTML()),
-            loadCSS = new Button("Paste CSS File", "", e -> loadHCSS()),
-            testView = new Button("Test", "", e -> test());
+    private final Button loadHTML = new Button("Paste HTML/CSS File", VaadinIcon.CODE, e -> loadHTML()),
+            loadCSS = new Button("Paste CSS File", VaadinIcon.CSS, e -> loadHCSS()),
+            testView = new Button("Test", e -> test());
     private TextArea content;
 
     @Override
@@ -53,6 +54,12 @@ public class TemplateEditor extends TextContentEditor {
     }
 
     private void processHTML(String html) {
+        int p1, p2;
+        p1 = html.indexOf("<style>");
+        p2 = html.lastIndexOf("</style>");
+        if(p1 >= 0 && p2 > p1) {
+            processCSS(html.substring(p1 + 7, p2).strip());
+        }
         int headStart = html.indexOf("<head>");
         int headEnd = html.indexOf("</head>");
         if (headStart >= 0 && headEnd > headStart) {
@@ -68,7 +75,8 @@ public class TemplateEditor extends TextContentEditor {
             }
         }
         String s = content.getValue().strip();
-        int p1 = s.indexOf("<style>"), p2 = s.lastIndexOf("</style>");
+        p1 = s.indexOf("<style>");
+        p2 = s.lastIndexOf("</style>");
         String style = (p1 >= 0 && p2 >= 0) ? s.substring(p1, p2 + 8) : "";
         content.setValue(style + "\n" + html);
     }

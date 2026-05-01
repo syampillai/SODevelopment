@@ -1,5 +1,6 @@
 package com.storedobject.ui;
 
+import com.storedobject.core.ObjectSetter;
 import com.storedobject.core.StoredObject;
 import com.storedobject.ui.util.LogicParser;
 import com.vaadin.flow.component.Component;
@@ -19,7 +20,7 @@ import java.util.function.Supplier;
  * @author Syam
  */
 public class ObjectCardTemplate<T extends StoredObject> extends ObjectTemplate<T>
-        implements SupportsConcurrentClick, CardContent<T> {
+        implements SupportsConcurrentClick, CardContent<T>, ObjectSetter<T> {
 
     private final ConcurrentClick concurrentClick = new ConcurrentClick();
     private Component menuAnchor;
@@ -41,7 +42,7 @@ public class ObjectCardTemplate<T extends StoredObject> extends ObjectTemplate<T
      * @param objectClass The class type of the objects that will be represented and managed.
      */
     public ObjectCardTemplate(Class<T> objectClass) {
-        super(objectClass, ObjectDashboard.tc(objectClass, "CardTemplate"));
+        super(objectClass, ObjectDashboard.cardTemplate(objectClass));
     }
 
     /**
@@ -79,7 +80,7 @@ public class ObjectCardTemplate<T extends StoredObject> extends ObjectTemplate<T
                 }
             };
         }
-        String templateCode = ObjectDashboard.tc(objectClass, "CardTemplate");
+        String templateCode = ObjectDashboard.cardTemplate(objectClass);
         return () -> new ObjectCardTemplate<>(objectClass, templateCode);
     }
 

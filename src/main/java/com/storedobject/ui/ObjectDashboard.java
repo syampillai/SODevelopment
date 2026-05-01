@@ -1,31 +1,28 @@
 package com.storedobject.ui;
 
 import com.storedobject.common.SORuntimeException;
-import com.storedobject.core.StoredObject;
-import com.storedobject.core.StringUtility;
-import com.storedobject.core.TextContent;
+import com.storedobject.core.*;
 import com.storedobject.ui.util.LogicParser;
-import com.storedobject.vaadin.CloseableView;
-import com.storedobject.vaadin.ExecutableView;
-import com.storedobject.vaadin.View;
-import com.storedobject.vaadin.WrappedView;
-import com.vaadin.flow.component.Component;
 
-public class ObjectDashboard<T extends StoredObject> extends ObjectTemplate<T>
-        implements ExecutableView, CloseableView {
+/**
+ * UI of a dashboard that uses a structured template-based UI. The data object's "get" methods that return
+ * values that are used to populate the dashboard layout are defined in the template as "id" attributes of the HTML tags.
+ *
+ * @param <T> The type of {@code StoredObject} that this dashboard manages.
+ *
+ * @author Syam
+ */
+public class ObjectDashboard<T extends StoredObject> extends Dashboard<T> implements ObjectSetter<T> {
 
-    private String caption;
-    View view;
-
-    public ObjectDashboard(T object) {
-        //noinspection unchecked
-        this((Class<T>) object.getClass());
-        setObject(object);
-    }
-
-    public ObjectDashboard(Class<T> objectClass, String templateCode) {
-        super(objectClass, templateCode);
-        setCaption(Application.getLogicCaption(() -> StringUtility.makeLabel(getClass())));
+    /**
+     * Constructor to create an ObjectDashboard instance based on the given object class type and template code.
+     *
+     * @param objectClass The class type of the objects that will be represented and managed.
+     * @param template The template to use for the dashboard layout.
+     */
+    public ObjectDashboard(Class<T> objectClass, TextContent template) {
+        super(null, objectClass, template);
+        setCaption(Application.getLogicCaption(() -> StringUtility.makeLabel(objectClass)));
     }
 
     /**
@@ -34,10 +31,20 @@ public class ObjectDashboard<T extends StoredObject> extends ObjectTemplate<T>
      * @param objectClass The class type of the objects that will be represented and managed.
      */
     public ObjectDashboard(Class<T> objectClass) {
-        this(objectClass, tc(objectClass, "Dashboard"));
+        this(objectClass, textContent(objectClass, "Dashboard"));
     }
 
-    static String tc(Class<?> objectClass, String type) {
+    /**
+     * Constructor to create an ObjectDashboard instance based on the fully qualified name of a class.
+     *
+     * @param className The fully qualified name of the class whose objects will be represented and managed.
+     * @throws Exception If the specified class name cannot be loaded or cast to the required type.
+     */
+    public ObjectDashboard(String className) throws Exception {
+        super(className);
+    }
+
+    static TextContent textContent(Class<?> objectClass, String type) {
         String name = objectClass.getName();
         int p = name.lastIndexOf('.');
         if(p > 0) {
@@ -47,13 +54,27 @@ public class ObjectDashboard<T extends StoredObject> extends ObjectTemplate<T>
         if(tc == null || !tc.getName().equals(name)) {
             throw new SORuntimeException("No dashboard template found for: " + name);
         }
-        return tc.getContent();
+        return tc;
     }
 
+    static String cardTemplate(Class<?> objectClass) {
+        return textContent(objectClass, "CardTemplate").getContent();
+    }
+
+    /**
+     * Creates an instance of {@code ObjectDashboard} for the specified object class. This method
+     * attempts to dynamically load or create a dashboard class based on the naming convention
+     * and associated logic. If the process fails at any step, an error message will be embedded
+     * in the resulting dashboard instance.
+     *
+     * @param objectClass The class of objects for which the dashboard is being created.
+     * @param <O>         The type of the objects that extend {@code StoredObject}.
+     * @return            An instance of {@code ObjectDashboard} for the specified object class.
+     */
     public static <O extends StoredObject> ObjectDashboard<O> create(Class<O> objectClass) {
         Class<?> tc = LogicParser.createLogicClass(objectClass, "Dashboard");
         if (tc != null && !ObjectDashboard.class.isAssignableFrom(tc)) {
-            return new ObjectDashboard<>(objectClass, "<span>Invalid dashboard class: " + tc.getName() + "</span>");
+            return new ObjectDashboard<>(objectClass, textContent("Invalid dashboard class: " + tc.getName()));
         }
         if(tc != null && tc != ObjectDashboard.class) {
             try {
@@ -61,63 +82,19 @@ public class ObjectDashboard<T extends StoredObject> extends ObjectTemplate<T>
                 return (ObjectDashboard<O>) tc.getConstructor().newInstance();
             } catch (Exception e) {
                 Application.get().log(e);
-                return new ObjectDashboard<>(objectClass, "<span>Error creating dashboard: " + tc.getName() + "</span>");
+                return new ObjectDashboard<>(objectClass, textContent("Error creating dashboard: " + tc.getName()));
             }
         }
         try {
-            return new ObjectDashboard<>(objectClass, tc(objectClass, "Dashboard"));
+            return new ObjectDashboard<>(objectClass, textContent(objectClass, "Dashboard"));
         } catch (Exception e) {
-            return new ObjectDashboard<>(objectClass, "<span>" + e.getMessage() + "</span>");
+            return new ObjectDashboard<>(objectClass, textContent(e.getMessage()));
         }
     }
 
-    @Override
-    public View getView(boolean create) {
-        if(view == null && create) {
-            view = new WrappedView(this, caption) {
-                @Override
-                public void decorateComponent() {
-                    super.decorateComponent();
-                    ObjectDashboard.this.decorateComponent();
-                }
-            };
-            build();
-            viewConstructed(view);
-        }
-        return view;
-    }
-
-    @Override
-    public void setCaption(String caption) {
-        if(view == null) {
-            this.caption = caption;
-        } else {
-            view.setCaption(caption);
-        }
-    }
-
-    /**
-     * This will be invoked when the {@link View} is constructed for the first time.
-     *
-     * @param view View that is constructed now.
-     */
-    public void viewConstructed(View view) {
-    }
-
-    /**
-     * Decorate the outermost component if required. This will be invoked after applying the
-     * {@link View#decorateComponent()}.
-     */
-    public void decorateComponent() {
-    }
-
-    /**
-     * Get the component that represents this template view. (This will be the outermost component).
-     * This is an equivalent to {@link View#getComponent()}.
-     *
-     * @return The outermost component.
-     */
-    public Component getComponent() {
-        return getView(true).getComponent();
+    private static TextContent textContent(String content) {
+        TextContent tc = new TextContent();
+        tc.setContent("<span>" + content + "</span>");
+        return tc;
     }
 }
