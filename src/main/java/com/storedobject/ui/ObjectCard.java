@@ -2,13 +2,11 @@ package com.storedobject.ui;
 
 import com.storedobject.core.ObjectSetter;
 import com.storedobject.core.StoredObject;
-import com.storedobject.core.TextContent;
 import com.storedobject.ui.util.LogicParser;
 import com.storedobject.vaadin.Button;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.icon.VaadinIcon;
 
-import java.lang.reflect.Constructor;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -90,41 +88,15 @@ public class ObjectCard<T extends StoredObject> extends Card<T> implements Print
                     //noinspection unchecked
                     return (ObjectCard<O>) c.getConstructor().newInstance();
                 } catch (Exception e) {
+                    Application.get().log(e);
                     return null;
                 }
             };
         }
-        String t = objectClass.getName();
-        int p = t.lastIndexOf('.');
-        String name = t.substring(p + 1);
-        t = t.substring(0, p);
-        t += ".logic." + name + "CardTemplate";
-        TextContent textContent = TextContent.get(t);
-        if(textContent != null && textContent.getName().equals(t)) {
-            t = textContent.getContent();
-            Class<?> tc = LogicParser.createLogicClass(objectClass, "CardTemplate");
-            if(tc != null && !ObjectCardTemplate.class.isAssignableFrom(tc)) {
-                tc = null;
-            }
-            Constructor<?> constructor = null;
-            if(tc != null) {
-                try {
-                    constructor = tc.getConstructor(String.class);
-                } catch (Exception ignored) {
-                }
-            }
-            String finalT = t;
-            Constructor<?> finalConstructor = constructor;
-            return () -> {
-                try {
-                    var template = finalConstructor == null ? new ObjectCardTemplate<>(finalT)
-                            : finalConstructor.newInstance(finalT);
-                    //noinspection unchecked
-                    return new ObjectCard<>((ObjectCardTemplate<O>)template);
-                } catch (Exception e) {
-                    return null;
-                }
-            };
+        try {
+            Supplier<ObjectCardTemplate<O>> templateSupplier = ObjectCardTemplate.createSupplier(objectClass);
+            return () -> new ObjectCard<>(templateSupplier.get());
+        } catch (Throwable ignored) {
         }
         return null;
     }

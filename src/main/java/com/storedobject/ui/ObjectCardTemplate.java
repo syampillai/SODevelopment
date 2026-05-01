@@ -1,16 +1,10 @@
 package com.storedobject.ui;
 
-import com.storedobject.core.ObjectSetter;
 import com.storedobject.core.StoredObject;
-import com.storedobject.core.StoredObjectUtility;
-import com.storedobject.core.StringUtility;
+import com.storedobject.ui.util.LogicParser;
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.html.Span;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 /**
  * A template-based component for displaying and managing object cards in a UI.
@@ -24,54 +18,69 @@ import java.util.function.Consumer;
  *
  * @author Syam
  */
-public class ObjectCardTemplate<T extends StoredObject> extends TemplateComponent
-        implements ObjectSetter<T>, SupportsConcurrentClick, CardContent<T> {
+public class ObjectCardTemplate<T extends StoredObject> extends ObjectTemplate<T>
+        implements SupportsConcurrentClick, CardContent<T> {
 
     private final ConcurrentClick concurrentClick = new ConcurrentClick();
-    private T object;
     private Component menuAnchor;
     private ObjectCard<T> card;
-    private final List<Consumer<T>> painters = new ArrayList<>();
 
     /**
      * Constructor.
      *
+     * @param objectClass The class type of the objects that will be represented and managed.
      * @param templateCode Template containing HTML and CSS (within style tag).
      */
-    public ObjectCardTemplate(String templateCode) {
-        super(templateCode);
+    public ObjectCardTemplate(Class<T> objectClass, String templateCode) {
+        super(objectClass, templateCode);
     }
 
     /**
-     * Sets the object of type T for this instance.
-     * <p>Note: This is set automatically by the card grid.</p>
+     * Constructor.
      *
-     * @param object the object to be stored may be null.
+     * @param objectClass The class type of the objects that will be represented and managed.
      */
-    @Override
-    public final void setObject(T object) {
-        this.object = object;
-        if(!isCreated()) build();
-        painters.forEach(p -> p.accept(object));
-        paint(object);
+    public ObjectCardTemplate(Class<T> objectClass) {
+        super(objectClass, ObjectDashboard.tc(objectClass, "CardTemplate"));
     }
 
     /**
-     * This method is called by the card grid to paint the object values on the card. Typically, this
-     * method is overridden by subclasses to provide custom painting logic.
+     * Creates a supplier for an {@code ObjectCardTemplate} instance of the specified type.
+     * This method determines the template class dynamically based on the provided object type
+     * and generates the appropriate {@code ObjectCardTemplate} with an associated template code or
+     * error message if the instantiation fails.
      *
-     * @param object Object to be painted.
+     * @param objectClass The class object representing the type that the {@code ObjectCardTemplate}
+     *                    will manage and represent.
+     * @return A supplier that provides instances of {@code ObjectCardTemplate} for the given type.
+     *         The supplier may return an instance containing an error message in case of an invalid
+     *         template class or instantiation error.
+     * @param <O> The type of the objects managed by the {@code ObjectCardTemplate}.
      */
-    public void paint(T object) {
-    }
-
-    /**
-     * Retrieves the stored object of type T.
-     *
-     * @return the object of type T contained in this instance, or null if no object is set.
-     */
-    public final T getObject() {
-        return object;
+    public static <O extends StoredObject> Supplier<ObjectCardTemplate<O>> createSupplier(Class<O> objectClass) {
+        Class<?> tc = LogicParser.createLogicClass(objectClass, "CardTemplate");
+        if (tc != null && !ObjectCardTemplate.class.isAssignableFrom(tc)) {
+            return () -> new ObjectCardTemplate<>(objectClass, "<span>Invalid template class: " + tc.getName() + "</span>");
+        }
+        if(tc != null && tc != ObjectCardTemplate.class) {
+            try {
+                tc.getConstructor().newInstance();
+            } catch (Throwable e) {
+                Application.get().log(e);
+                String error = "<span>Error creating template: " + tc.getName() + "</span>";
+                return () -> new ObjectCardTemplate<>(objectClass, error);
+            }
+            return () -> {
+                try {
+                    //noinspection unchecked
+                    return  (ObjectCardTemplate<O>) tc.getConstructor().newInstance();
+                } catch (Exception e) {
+                    return null;
+                }
+            };
+        }
+        String templateCode = ObjectDashboard.tc(objectClass, "CardTemplate");
+        return () -> new ObjectCardTemplate<>(objectClass, templateCode);
     }
 
     @Override
@@ -101,35 +110,5 @@ public class ObjectCardTemplate<T extends StoredObject> extends TemplateComponen
         if(menuAnchor != null) {
             this.card.setMenuAnchor(menuAnchor);
         }
-    }
-
-    @Override
-    protected Component createComponentForId(String id, String tag) {
-        return switch(tag) {
-            case "div", "span" -> createPainter(id, tag);
-            default -> super.createComponentForId(id, tag);
-        };
-    }
-
-    private Component createPainter(String id, String tag) {
-        try {
-            StoredObjectUtility.MethodList m = StoredObjectUtility.createMethodList(object.getClass(), id);
-            m.stringifyTail();
-            return switch (tag) {
-                case "div" -> {
-                    Div div = new Div();
-                    painters.add(o -> div.setText(StringUtility.toString(m.invoke(o))));
-                    yield div;
-                }
-                case "span" -> {
-                    Span span = new Span();
-                    painters.add(o -> span.setText(StringUtility.toString(m.invoke(o))));
-                    yield span;
-                }
-                default -> null;
-            };
-        } catch (Throwable ignored) {
-        }
-        return super.createComponentForId(id, tag);
     }
 }

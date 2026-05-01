@@ -605,7 +605,11 @@ public abstract class HtmlTemplate extends Component {
 
         private void parse() {
             html_css = new String[2];
-            String c = contentSupplier.get().strip();
+            String c = contentSupplier.get();
+            if(c == null) {
+                c = "<span></span>";
+            }
+            c = c.strip();
             int p1 = c.indexOf("<style"), p2 = c.indexOf("</style>");
             if(p1 >= 0 && p2 >= 0) {
                 p2 += 8;
