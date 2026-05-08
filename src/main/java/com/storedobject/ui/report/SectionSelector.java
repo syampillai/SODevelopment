@@ -5,6 +5,7 @@ import com.storedobject.core.StringUtility;
 import com.storedobject.office.ODT;
 import com.storedobject.vaadin.DataForm;
 import com.storedobject.vaadin.DataTreeGrid;
+import com.storedobject.vaadin.View;
 import com.vaadin.flow.data.provider.hierarchy.TreeData;
 import com.vaadin.flow.data.selection.MultiSelectionEvent;
 
@@ -84,7 +85,9 @@ public class SectionSelector extends DataForm {
 
     @Override
     protected void buildFields() {
-        add(tree);
+        if(tree != null) {
+            add(tree);
+        }
     }
 
     @Override
@@ -94,6 +97,15 @@ public class SectionSelector extends DataForm {
 
     public final ODT<?> getODT() {
         return odt;
+    }
+
+    @Override
+    protected void execute(View parent, boolean doNotLock) {
+        if(tree == null) {
+            process();
+            return;
+        }
+        super.execute(parent, doNotLock);
     }
 
     @Override

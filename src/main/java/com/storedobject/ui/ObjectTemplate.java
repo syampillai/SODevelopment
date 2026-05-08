@@ -94,15 +94,15 @@ public class ObjectTemplate<T> extends TemplateComponent {
     }
 
     private HasText getPainter(String tag) {
-        return switch(tag) {
+        return switch(tag.toLowerCase()) {
             case "div" -> new Div();
             case "span" -> new Span();
             case "p" -> new Paragraph();
             case "h1" -> new H1();
-            case "H2" -> new H2();
-            case "H3" -> new H3();
-            case "H4" -> new H4();
-            case "H5" -> new H5();
+            case "h2" -> new H2();
+            case "h3" -> new H3();
+            case "h4" -> new H4();
+            case "h5" -> new H5();
             default -> null;
         };
     }

@@ -10,7 +10,7 @@ import java.lang.reflect.Method;
 
 public class StreamData extends StoredObject implements ContentType, HasStreamData {
 
-    private String contentType;
+    private String contentType = "application/octet-stream";
     private StreamDataProvider streamProvider;
 
     public StreamData(String contentType) {
@@ -49,6 +49,9 @@ public class StreamData extends StoredObject implements ContentType, HasStreamDa
 
     @SuppressWarnings("ConstantConditions")
     public InputStream getContent() {
+        if(created()) {
+            return null;
+        }
         if(contentType.startsWith("l:")) {
             InputStream in = null;
             try {
