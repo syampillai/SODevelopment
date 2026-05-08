@@ -5,7 +5,6 @@ import com.storedobject.office.Filler;
 import com.storedobject.office.ODT;
 import com.storedobject.office.ODTReport;
 import com.storedobject.pdf.PDFReport;
-import com.storedobject.report.ObjectList;
 import com.storedobject.svg.chart.Chart;
 import com.storedobject.ui.report.SectionSelector;
 import com.storedobject.vaadin.BooleanField;
