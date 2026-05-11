@@ -3,7 +3,7 @@ package com.storedobject.pdf;
 import com.storedobject.common.*;
 import com.storedobject.core.StringUtility;
 import com.storedobject.core.*;
-import com.storedobject.svg.chart.Chart;
+import com.storedobject.svg.Svg;
 
 import java.awt.*;
 import java.io.IOException;
@@ -1319,7 +1319,7 @@ public abstract class PDF implements java.io.Closeable, com.storedobject.core.Co
         return null;
     }
 
-    public static PDFImage createImage(Chart chart) {
+    public static PDFImage createImage(Svg svg) {
         return null;
     }
 
