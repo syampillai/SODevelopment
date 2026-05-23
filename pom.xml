@@ -7,11 +7,11 @@
     <parent>
         <groupId>com.storedobject</groupId>
         <artifactId>so-uipom</artifactId>
-        <version>24.10.0-1</version>
+        <version>24.10.0-2</version>
     </parent>
 
     <artifactId>so-development</artifactId>
-    <version>16.4.6</version>
+    <version>16.5.0</version>
 
     <name>${project.groupId}:${project.artifactId}</name>
     <description>SO Development skeleton classes</description>
@@ -83,13 +83,6 @@
             <artifactId>jackson-datatype-jsr310</artifactId>
             <version>2.21.1</version>
             <scope>compile</scope>
-        </dependency>
-
-        <!-- SO SVG Chart -->
-        <dependency>
-            <groupId>com.storedobject</groupId>
-            <artifactId>so-svg</artifactId>
-            <version>0.0.1</version>
         </dependency>
 
         <!-- SO Client -->

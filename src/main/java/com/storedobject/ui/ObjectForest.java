@@ -1,7 +1,6 @@
 package com.storedobject.ui;
 
 import com.storedobject.core.StoredObject;
-
 import java.util.List;
 
 public class ObjectForest<T extends StoredObject> extends BaseObjectForest<T> {
@@ -124,9 +123,9 @@ public class ObjectForest<T extends StoredObject> extends BaseObjectForest<T> {
 
     /**
      * Refresh all items under the current node and select the object that is passed.
-     * <p>Note: If no object was selected earlier nothing happens.</p>
+     * <p>Note: If no object was selected earlier, nothing happens.</p>
      *
-     * @param select Object to be selected after refreshing. If this object is null or, it is not under the
+     * @param select Object to be selected after refreshing. If this object is null or it is not under the
      *               current node, it will be ignored.
      */
     public void refreshCurrentNode(StoredObject select) {
@@ -134,8 +133,9 @@ public class ObjectForest<T extends StoredObject> extends BaseObjectForest<T> {
             refresh(currentLinkNode, true);
             expand(currentLinkNode);
             if(select != null) {
-                currentLinkNode.links(true).stream().filter(lo -> select.getId().equals(lo.getObject().getId()))
-                        .findAny().ifPresent(this::select);
+                currentLinkNode.links(true).stream()
+                        .filter(lo -> select.getId().equals(lo.getObject().getId())).findAny()
+                        .ifPresent(lo -> select(select));
             }
         }
     }

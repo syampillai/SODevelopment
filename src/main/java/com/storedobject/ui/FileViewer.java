@@ -9,6 +9,7 @@ import com.storedobject.vaadin.Button;
 import com.storedobject.vaadin.ButtonLayout;
 import com.storedobject.vaadin.CloseableView;
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.VaadinIcon;
 
@@ -153,7 +154,7 @@ public class FileViewer extends ObjectForestViewer<FileFolder> implements Closea
             } else {
                 return null;
             }
-            return new Button(view, icon, e -> opened(item)).asSmall();
+            return b(new Button(view, icon, e -> opened(item)));
         }
         return null;
     }
@@ -170,22 +171,34 @@ public class FileViewer extends ObjectForestViewer<FileFolder> implements Closea
 
     private void opened(FileData fileData) {
         FileCirculation fc = circ(fileData);
+        boolean refresh = false;
         if(fc != null && fc.getStatus() == 0) {
             fc.setStatus(1);
             transact(fc::save);
             circs.remove(fileData.getId());
+            refresh = true;
         }
         getApplication().view(fileData.getName(), fileData.getFile());
-        refreshCurrentNode(fileData);
+        if(refresh) {
+            refresh();
+        }
     }
 
     private Component createDownloadMenu(Object item) {
         if(item instanceof ObjectForest.LinkObject lo) {
             if(lo.getObject() instanceof FileData fileData) {
-                return new Button("Download", e -> getApplication().download(fileData.getFile())).asSmall();
+                return b(new Button("Download", e -> {
+                    select(item);
+                    getApplication().download(fileData.getFile());
+                }));
             }
         }
         return new Span();
+    }
+
+    static Button b(Button b) {
+        b.addThemeVariants(ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_SUCCESS);
+        return b.asSmall();
     }
 
     private Component createReadStamp(Object item) {
@@ -193,19 +206,25 @@ public class FileViewer extends ObjectForestViewer<FileFolder> implements Closea
             if(lo.getObject() instanceof FileData fileData) {
                 String rs = fileData.getReadStamp();
                 if(rs != null) {
-                    return new Span(rs);
+                    return hilite(rs, Application.COLOR_SUCCESS);
                 }
             }
         }
         return new Span();
     }
 
+    private Span hilite(String s, String color) {
+        Span span = new Span(s);
+        span.getStyle().set("font-size", "14px").set("font-weight", "bold").set("color", color)
+                .set("background", "white").set("padding", "4px");
+        return span;
+    }
+
     private Component createReadMenu(Object item) {
         FileCirculation fc = circ(item);
         if(fc != null) {
-            return fc.getStatus() == 1 ? new Button("Confirm & Sign", VaadinIcon.SIGN_IN, e -> markAsRead(item)) :
-                    new ELabel(fc.getStatusValue(), fc.getStatus() == 0
-                            ? Application.COLOR_ERROR : Application.COLOR_SUCCESS);
+            return fc.getStatus() == 1 ? b(new Button("Confirm & Sign", VaadinIcon.SIGN_IN, e -> markAsRead(item))) :
+                    hilite(fc.getStatusValue(), fc.getStatus() == 0 ? Application.COLOR_ERROR : Application.COLOR_SUCCESS);
         }
         return new Span();
     }
@@ -234,7 +253,8 @@ public class FileViewer extends ObjectForestViewer<FileFolder> implements Closea
                     if(fc != null) {
                         fc.setStatus(2);
                         if(transact(fc::save)) {
-                            refreshCurrentNode(lo.getObject());
+                            circs.remove(fileData.getId());
+                            refresh();
                         }
                     }
                 }, null, "Confirm", "Cancel").execute();

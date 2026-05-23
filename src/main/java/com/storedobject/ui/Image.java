@@ -3,6 +3,8 @@ package com.storedobject.ui;
 import com.storedobject.common.IO;
 import com.storedobject.common.SVG;
 import com.storedobject.core.*;
+import com.storedobject.svg.Document;
+import com.storedobject.svg.Node;
 import com.storedobject.ui.util.SOServlet;
 import com.storedobject.vaadin.PaintedImageResource;
 import com.storedobject.vaadin.View;
@@ -31,6 +33,14 @@ public class Image extends com.storedobject.vaadin.Image {
 
     public Image(Id streamDataId) {
         this(new DBResource(streamDataId));
+    }
+
+    public Image(Node node) {
+        this(new SVGResource(node));
+    }
+
+    public Image(Document document) {
+        this(new SVGResource(document));
     }
 
     public Image(SVG svg) {

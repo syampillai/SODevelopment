@@ -47,11 +47,11 @@ public class FileViewerGrid extends ObjectGrid<FileData> implements CloseableVie
         } else {
             return null;
         }
-        return new Button(view, icon, e -> view(file)).asSmall();
+        return FileViewer.b(new Button(view, icon, e -> view(file)));
     }
 
     private Component createDownloadMenu(FileData file) {
-        return new Button("Download", e -> getApplication().download(file.getFile())).asSmall();
+        return FileViewer.b(new Button("Download", e -> getApplication().download(file.getFile())));
     }
 
     public void add(String name, StreamData streamData) {

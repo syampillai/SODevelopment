@@ -37,6 +37,7 @@ public class Test extends DataForm {
         r.setFiller(new F());
         r.setRawOutput(raw.getValue());
         ss.execute();
+        //noinspection resource
         new R().execute();
         return true;
     }
@@ -89,7 +90,7 @@ public class Test extends DataForm {
         }
 
         @Override
-        public void generateContent() throws Exception {
+        public void generateContent() {
             add(chart());
         }
     }

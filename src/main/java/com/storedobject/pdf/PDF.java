@@ -3,7 +3,7 @@ package com.storedobject.pdf;
 import com.storedobject.common.*;
 import com.storedobject.core.StringUtility;
 import com.storedobject.core.*;
-import com.storedobject.svg.Svg;
+import com.storedobject.svg.Node;
 
 import java.awt.*;
 import java.io.IOException;
@@ -1319,24 +1319,31 @@ public abstract class PDF implements java.io.Closeable, com.storedobject.core.Co
         return null;
     }
 
-    public static PDFImage createImage(Svg svg) {
+
+    /**
+     * Create an image from an SVG document.
+     *
+     * @param svgDocument SVG document
+     * @return Image
+     */
+    public static PDFImage createImage(com.storedobject.svg.Document svgDocument) {
         return null;
     }
 
     /**
-     * Create image from an input stream (stream will be closed)
-     * @param stream Input stream
+     * Create an image from an SVG node.
+     *
+     * @param svgNode SVG node
      * @return Image
      */
+    public static PDFImage createImage(Node svgNode) {
+        return createImage(svgNode.createDocument());
+    }
+
     public static PDFImage createImage(InputStream stream) {
         return null;
     }
 
-    /**
-     * Create image from Java AWT image
-     * @param image AWT image
-     * @return Image
-     */
     public static PDFImage createImage(java.awt.Image image) {
         return null;
     }

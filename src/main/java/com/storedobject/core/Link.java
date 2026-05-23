@@ -58,6 +58,7 @@ public class Link<L extends StoredObject> {
             link.name = linkDetails;
             link.setLinkClass(masterClass.getName());
         } else {
+            if(linkDetails.contains("_DESC")) linkDetails = linkDetails.replace("_DESC", " DESC");
             if(!linkDetails.contains("|")) linkDetails = "-|" + linkDetails;
             cols = StringUtility.trim(linkDetails.split("\\|"));
             link.name = cols[0].replace('_', '|');
