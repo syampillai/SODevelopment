@@ -10,6 +10,7 @@ import com.storedobject.ui.report.SectionSelector;
 import com.storedobject.vaadin.BooleanField;
 import com.storedobject.vaadin.DataForm;
 import com.storedobject.svg.chart.Bars;
+import com.storedobject.vaadin.Svg;
 
 import java.util.concurrent.TimeUnit;
 
@@ -26,6 +27,7 @@ public class Test extends DataForm {
         x.setValue(new TimeDuration(100, TimeUnit.SECONDS));
         setFieldReadOnly(x);
         addField(new TemperatureField("Temperature"));
+        add(new Svg(chart()));
     }
 
     @Override
