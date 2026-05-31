@@ -1,7 +1,10 @@
 package com.storedobject.core;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+import java.util.function.BiPredicate;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
@@ -47,7 +50,7 @@ public interface EditableList<T> {
     boolean isEdited(T item);
 
     /**
-     * Get a stream of all items (including original, added, deleted and edited items).
+     * Get a stream of all items (including original, added, deleted, and edited items).
      *
      * @return Stream of items.
      */
@@ -157,7 +160,7 @@ public interface EditableList<T> {
     boolean update(T item);
 
     /**
-     * Is save pending? (Some entry has "edited" or "deleted" status).
+     * Not yet saved? (Some entries have "edited" or "deleted" status).
      *
      * @return True/false.
      */
@@ -167,8 +170,8 @@ public interface EditableList<T> {
 
     /**
      * Get a duplicate entry. A function to extract the duplicate value must be passed as the parameter.
-     * <p>E.g., from a list of persons, we want to find out a an entry with duplicate "First Name" (to be compared
-     * ignoring case):</p>
+     * <p>E.g., from a list of persons, we want to find out an entry with duplicate "First Name" (to be compared
+     * ignoring the case):</p>
      * <p>
      * <code>
      *     getDuplicate(p -> p.getFirstName().toUpperCase());
@@ -188,5 +191,20 @@ public interface EditableList<T> {
             R v = value.apply(item);
             return v != null && !valuesSet.add(v);
         }).findAny().orElse(null);
+    }
+
+    default T getDuplicate(BiPredicate<T, T> duplicateChecker) {
+        if(duplicateChecker == null) {
+            return null;
+        }
+        List<T> seen = new ArrayList<>();
+        return stream().filter(item -> {
+                    // Check if duplicate exists
+                    boolean isDuplicate = seen.stream().anyMatch(seenItem -> duplicateChecker.test(item, seenItem));
+                    if (!isDuplicate) {
+                        seen.add(item);
+                    }
+                    return isDuplicate;
+                }).findFirst().orElse(null);
     }
 }

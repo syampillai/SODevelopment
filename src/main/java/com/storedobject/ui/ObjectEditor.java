@@ -26,6 +26,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.BiPredicate;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -1254,10 +1255,14 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
         StoredObject duplicate;
         for(ObjectLinkField<?> linkField: linkFields) {
             if(linkField.getLink().isDetail()) {
-                @SuppressWarnings("unchecked") EditableList<Detail> value = (EditableList<Detail>) linkField.getValue();
-                duplicate = (StoredObject) value.getDuplicate(Detail::getUniqueId);
+                @SuppressWarnings("unchecked") EditableList<Detail> valueList = (EditableList<Detail>) linkField.getValue();
+                duplicate = (StoredObject) valueList.getDuplicate(Detail::getUniqueId);
                 if(duplicate == null) {
-                    duplicate = (StoredObject) value.getDuplicate(Detail::getUniqueValue);
+                    duplicate = (StoredObject) valueList.getDuplicate(Detail::getUniqueValue);
+                }
+                if(duplicate == null) {
+                    //noinspection unchecked
+                    duplicate = (StoredObject) valueList.getDuplicate((BiPredicate<Detail, Detail>) linkField.getDuplicateChecker());
                 }
             } else {
                 duplicate = linkField.getValue().getDuplicate(StoredObject::getId);

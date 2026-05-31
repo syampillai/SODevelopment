@@ -12,8 +12,11 @@ import com.vaadin.flow.component.tabs.TabSheet;
 import com.vaadin.flow.component.tabs.TabSheetVariant;
 import com.vaadin.flow.shared.Registration;
 
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.*;
 import java.util.function.BiConsumer;
+import java.util.function.BiPredicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -32,6 +35,8 @@ public final class ObjectLinkField<T extends StoredObject>
     private StoredObjectLink<T> value = (StoredObjectLink<T>) StoredObjectLink.EMPTY;
     private ArrayList<TrackerRegistration> registrations;
     private boolean visible = true;
+    private boolean duplicateCheckerCreated = false;
+    private BiPredicate<T, T> duplicateChecker = null;
 
     public ObjectLinkField(String label, Link<T> link) {
         this.link = link;
@@ -471,6 +476,27 @@ public final class ObjectLinkField<T extends StoredObject>
     @Override
     public boolean isVisible() {
         return visible;
+    }
+
+    public BiPredicate<T, T> getDuplicateChecker() {
+        if(duplicateCheckerCreated) {
+            return duplicateChecker;
+        }
+        duplicateCheckerCreated = true;
+        try {
+            Method m = getObjectClass().getMethod("isDuplicate", getObjectClass(), getObjectClass());
+            if(Modifier.isPublic(m.getModifiers()) && Modifier.isStatic(m.getModifiers()) && m.getReturnType() == boolean.class) {
+                duplicateChecker = (a, b) -> {
+                    try {
+                        return (boolean) m.invoke(null, a, b);
+                    } catch (Exception ignored) {
+                        return false;
+                    }
+                };
+            }
+        } catch (NoSuchMethodException ignored) {
+        }
+        return duplicateChecker;
     }
 
     public static class Tabs extends TabSheet {
