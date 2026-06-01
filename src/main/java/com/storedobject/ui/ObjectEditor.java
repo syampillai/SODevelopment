@@ -132,6 +132,7 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
     private JournalVoucherView voucherView;
     private boolean embeddedMode = false;
     private int columns = 2;
+    private Predicate<ObjectEditor<T>> adder;
 
     /**
      * Constructor.
@@ -1377,10 +1378,23 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
     }
 
     /**
+     * Set the adder for this editor. If the adder returns true, the add operation will be skipped (assuming that
+     * the add operation is processed by the adder).
+     *
+     * @param adder The adder predicate
+     */
+    public void setAdder(Predicate<ObjectEditor<T>> adder) {
+        this.adder = adder;
+    }
+
+    /**
      * This is equivalent to pressing the "Add" button.
      */
     public void doAdd() {
         if(!canAdd()) {
+            return;
+        }
+        if(adder != null && adder.test(this)) {
             return;
         }
         if(anchorForm != null && anchorAction) {
@@ -2487,6 +2501,7 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
      * @return Field if found, otherwise null.
      */
     public ObjectLinkField<?> getLinkField(String fieldName) {
+        getComponent();
         if(!fieldName.endsWith(".l")) {
             fieldName = fieldName + ".l";
         }
@@ -2516,6 +2531,7 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
      *         or null if no matching field is found
      */
     public <L extends StoredObject> ObjectLinkField<L> getLinkField(Class<L> linkClass, int linkType) {
+        getComponent();
         //noinspection unchecked
         return linkFields.stream().filter(f -> {
             var link = f.getLink();
@@ -2529,6 +2545,7 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
      * @return an unmodifiable list of ObjectLinkField objects representing the link fields.
      */
     public List<ObjectLinkField<?>> linkFields() {
+        getComponent();
         return Collections.unmodifiableList(linkFields);
     }
 

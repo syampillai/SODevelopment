@@ -9,6 +9,8 @@ import com.storedobject.vaadin.ButtonLayout;
 import com.storedobject.vaadin.View;
 import com.vaadin.flow.component.grid.editor.Editor;
 
+import java.util.function.Predicate;
+
 public final class LinkGridButtons<T extends StoredObject> extends ButtonLayout {
 
     private final Button add, edit, delete, reload, reloadAll, view;
@@ -16,10 +18,15 @@ public final class LinkGridButtons<T extends StoredObject> extends ButtonLayout 
     private View masterView;
     private final LinkGrid<T> link;
     private ObjectEditor<T> editor;
+    private Predicate<LinkGrid<T>> adder;
 
     public LinkGridButtons(LinkGrid<T> link) {
         this.link = link;
-        add = new Button("Add", e -> link.add()).asSmall();
+        add = new Button("Add", e -> {
+            if(adder == null || !adder.test(link)) {
+                link.add();
+            }
+        }).asSmall();
         edit = new Button("Edit", e -> link.edit()).asSmall();
         delete = new Button("Delete", e -> link.delete()).asSmall();
         reload = new Button(link.isDetail() ? "Undo" : "Undelete", e -> this.link.reload()).asSmall();
@@ -151,5 +158,15 @@ public final class LinkGridButtons<T extends StoredObject> extends ButtonLayout 
 
     public View getMasterView() {
         return masterView;
+    }
+
+    /**
+     * Set the adder for this editor. If the adder returns true, the add operation will be skipped (assuming that
+     * the add operation is processed by the adder).
+     *
+     * @param adder The adder predicate
+     */
+    public void setAdder(Predicate<LinkGrid<T>> adder) {
+        this.adder = adder;
     }
 }
