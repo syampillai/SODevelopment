@@ -459,6 +459,10 @@ public final class ObjectLinkField<T extends StoredObject>
         return (DataGrid<T>) grid;
     }
 
+    public LinkGrid<T> getLinkGrid() {
+        return grid;
+    }
+
     @Override
     public void setVisible(boolean visible) {
         if(this.visible == visible) {
