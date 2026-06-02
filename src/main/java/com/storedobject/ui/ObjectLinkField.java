@@ -2,6 +2,7 @@ package com.storedobject.ui;
 
 import com.storedobject.common.ArrayListSet;
 import com.storedobject.core.*;
+import com.storedobject.ui.util.LinkGridButtons;
 import com.storedobject.vaadin.*;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasValue;
@@ -17,6 +18,7 @@ import java.lang.reflect.Modifier;
 import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.BiPredicate;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -257,6 +259,9 @@ public final class ObjectLinkField<T extends StoredObject>
     }
 
     public void add(T object) {
+        if(object.created()) {
+            object.makeVirtual();
+        }
         add(ObjectIterator.create(object));
     }
 
@@ -461,6 +466,21 @@ public final class ObjectLinkField<T extends StoredObject>
 
     public LinkGrid<T> getLinkGrid() {
         return grid;
+    }
+
+    public LinkGridButtons<T> getButtonPanel() {
+        return getLinkGrid().getButtonPanel();
+    }
+
+
+    /**
+     * Set the adder for the link-editor. If the adder returns true, the add operation will be skipped (assuming that
+     * the add operation is processed by the adder).
+     *
+     * @param adder The adder predicate
+     */
+    public void setAdder(Predicate<LinkGrid<T>> adder) {
+        getButtonPanel().setAdder(adder);
     }
 
     @Override

@@ -1055,7 +1055,7 @@ public class ObjectBrowser<T extends StoredObject> extends ObjectGrid<T>
     /**
      * Edits the specified object if it is editable.
      *
-     * @param object the object to be edited, must not be null and must be editable
+     * @param object the object to be edited must not be null and must be editable
      */
     public void doEdit(T object) {
         if(object != null && canEdit(object) && !getObjectEditor().ledgerPosted(object)) {

@@ -204,6 +204,29 @@ public class ReferenceLinkGrid<T extends StoredObject> extends AbstractLinkGrid<
         return searcher;
     }
 
+    /**
+     * Set a master so that this reference-grid will allow only links of that master.
+     *
+     * @param master The master object of which links should be used as the values for this reference-grid.
+     */
+    public void setAsLinkOf(StoredObject master) {
+        setAsLinkOf(master, 0);
+    }
+
+    /**
+     * Set a master so that this reference-grid will allow only links of that master.
+     *
+     * @param master The master object of which links should be used as the values for this reference-grid.
+     * @param linkType The type of the link.
+     */
+    public void setAsLinkOf(StoredObject master, int linkType) {
+        ObjectSearcher<T> s = getSearcher();
+        if(s instanceof ObjectBrowser<?> b) {
+            b.setLinkType(linkType, false);
+            b.setMaster(master, false);
+        }
+    }
+
     @Override
     public void setReadOnly(boolean readOnly) {
         super.setReadOnly(readOnly);

@@ -74,6 +74,11 @@ public class ObjectListProvider<T extends StoredObject> extends AbstractListProv
     }
 
     private void loadInt(String condition, String orderBy, boolean any) {
+        StoredObject master = getMaster();
+        if(master != null) {
+            loadInt(getLinkType(), master, condition, orderBy, any);
+            return;
+        }
         setOrderBy(orderBy, false);
         setMaster(null, false);
         try {

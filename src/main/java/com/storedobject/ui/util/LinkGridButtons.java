@@ -161,7 +161,7 @@ public final class LinkGridButtons<T extends StoredObject> extends ButtonLayout 
     }
 
     /**
-     * Set the adder for this editor. If the adder returns true, the add operation will be skipped (assuming that
+     * Set the adder for the link-editor. If the adder returns true, the add operation will be skipped (assuming that
      * the add operation is processed by the adder).
      *
      * @param adder The adder predicate
