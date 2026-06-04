@@ -223,7 +223,7 @@ public class ReferenceLinkGrid<T extends StoredObject> extends AbstractLinkGrid<
         ObjectSearcher<T> s = getSearcher();
         if(s instanceof ObjectBrowser<?> b) {
             b.setLinkType(linkType, false);
-            b.setMaster(master, false);
+            b.setMaster(master, true);
         }
     }
 
