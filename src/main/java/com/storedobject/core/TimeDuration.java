@@ -37,7 +37,7 @@ public class TimeDuration extends Quantity {
 		this(value, unit(unit));
 	}
 
-	private static MeasurementUnit unit(TimeUnit unit) {
+	public static MeasurementUnit unit(TimeUnit unit) {
 		return switch (unit) {
 			case SECONDS -> defaultUnit;
 			case DAYS -> MeasurementUnit.get("days", TimeDuration.class);
@@ -208,5 +208,41 @@ public class TimeDuration extends Quantity {
 	public String format(boolean allowDays, boolean stripSeconds) {
 		String s = format(allowDays);
 		return stripSeconds ? s.substring(0, s.length() - 3) : s;
+	}
+
+	/**
+	 * Retrieves the duration in seconds as a long value.
+	 *
+	 * @return The duration of this TimeDuration instance expressed in seconds.
+	 */
+	public long seconds() {
+		return convert(defaultUnit).getValue().longValue();
+	}
+
+	/**
+	 * Retrieves the duration in minutes as a long value.
+	 *
+	 * @return The duration of this TimeDuration instance expressed in minutes.
+	 */
+	public long minutes() {
+		return convert(unit(TimeUnit.MINUTES)).getValue().longValue();
+	}
+
+	/**
+	 * Retrieves the duration in hours as a long value.
+	 *
+	 * @return The duration of this TimeDuration instance expressed in the past hours.
+	 */
+	public long hours() {
+		return convert(unit(TimeUnit.HOURS)).getValue().longValue();
+	}
+
+	/**
+	 * Retrieves the duration in days as a long value.
+	 *
+	 * @return The duration of this TimeDuration instance expressed in the past days.
+	 */
+	public long days() {
+		return convert(unit(TimeUnit.DAYS)).getValue().longValue();
 	}
 }
