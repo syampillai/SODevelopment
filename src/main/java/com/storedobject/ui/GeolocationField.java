@@ -1,6 +1,10 @@
 package com.storedobject.ui;
 
+import com.flowingcode.vaadin.addons.googlemaps.GoogleMap;
+import com.flowingcode.vaadin.addons.googlemaps.GoogleMapMarker;
+import com.flowingcode.vaadin.addons.googlemaps.LatLon;
 import com.storedobject.common.Geolocation;
+import com.storedobject.core.APIToken;
 import com.storedobject.vaadin.*;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.icon.VaadinIcon;
@@ -66,61 +70,60 @@ public class GeolocationField extends CustomTextField<Geolocation> {
 
     private void GoogleMapClick() {
         if(mapView == null) {
-            mapView = new MapView();
+            APIToken token = APIToken.get("Google-Map", Application.get().getTransactionManager().getUser());
+            if(token == null) {
+                Application.warning("No access configured for Google Map");
+                return;
+            }
+            mapView = new MapView(getLabel(), token.getToken());
         }
+        mapView.save.setVisible(!isReadOnly());
+        mapView.setValue(getValue());
         mapView.execute();
     }
 
-    private static class MapView extends View {
-
-        private MapView() {
-            setComponent(new Div());
-        }
-    }
-
-    /*
     private class MapView extends View {
 
-        private static final String clickMessage = "Click on the anchor to set new location";
-        private final GoogleMap.Marker marker;
-        private final ELabel message = new ELabel();
+        private final GoogleMap map;
+        private final Button save = new Button("Save", e -> saveValue());
+        private final GoogleMapMarker marker = new GoogleMapMarker();
+        private final Geolocation value = new Geolocation();
 
-        private MapView() {
-            setCaption(getLabel());
-            ButtonLayout b = new ButtonLayout(new ImageButton("Close", VaadinIcon.CLOSE_SMALL, e -> abort()), message);
-            GoogleMap map = new GoogleMap();
-            map.setFitToMarkers(true);
-            marker = map.new Marker(true);
+        private MapView(String label, String key) {
+            map = new GoogleMap(key, null, null);
+            marker.setDraggable(true);
+            setCaption(label);
+            ButtonLayout b = new ButtonLayout(save, new Button("Close", e -> close()));
             Div div = new Div(b, map);
-            map.setWidth(800);
-            map.setHeight(600);
-            setComponent(new Window(div));
-            map.addMarkerClickedListener(m -> {
-                if(!GeolocationField.this.isReadOnly() && GeolocationField.this.isEnabled()) {
-                    Geolocation value = marker.getLocation();
-                    GeolocationField.this.setValue(value);
-                    GeolocationField.this.setPresentationValue(value);
-                    close();
-                }
+            setComponent(div);
+            map.setWidth("80vw");
+            map.setHeight("80vh");
+            map.addMarker(marker);
+            setWindowMode(true);
+            marker.addDragEndEventListener(e -> {
+                value.setLongitudeDegree(e.getLongitude());
+                value.setLatitudeDegree(e.getLatitude());
             });
         }
 
         @Override
         public void setCaption(String caption) {
-            super.setCaption((caption == null || caption.isEmpty()) ? "Select Location" : caption);
+            super.setCaption(caption);
+            if(marker != null) {
+                marker.setCaption(caption);
+            }
         }
 
-        @Override
-        protected void execute(View parent, boolean doNotLock) {
-            message.clear();
-            if(!GeolocationField.this.isReadOnly() && GeolocationField.this.isEnabled()) {
-                message.append(clickMessage, Application.COLOR_SUCCESS);
-            }
-            message.update();
-            super.execute(parent, doNotLock);
-            marker.setLocation(GeolocationField.this.getValue());
+        void setValue(Geolocation value) {
+            this.value.set(value);
+            LatLon pos = new LatLon(value.getLatitudeDegree(), value.getLongitudeDegree());
+            marker.setPosition(pos);
+            map.setCenter(pos);
+        }
+
+        private void saveValue() {
+            GeolocationField.this.setValue(this.value);
+            close();
         }
     }
-
-     */
 }

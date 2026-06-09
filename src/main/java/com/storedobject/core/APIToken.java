@@ -200,4 +200,18 @@ public class APIToken extends StoredObject {
     public String toDisplay() {
         return purpose;
     }
+
+    /**
+     * Retrieves the first API token that matches a given purpose and is accessible by the specified user.
+     *
+     * @param purpose The purpose filter for the API token. Tokens with a purpose starting
+     *                with this value will be considered for retrieval.
+     * @param user    The user whose access permissions will be validated against the filtered tokens.
+     * @return The first {@code APIToken} instance that matches the purpose and can be accessed by the user.
+     *         If no such token exists, returns {@code null}.
+     */
+    public static APIToken get(String purpose, SystemUser user) {
+        return list(APIToken.class, "Purpose LIKE '" + toCode(purpose) + "%'")
+                .filter(t -> t.canAccess(user)).findFirst();
+    }
 }
