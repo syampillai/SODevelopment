@@ -78,6 +78,7 @@ public class GeolocationField extends CustomTextField<Geolocation> {
             mapView = new MapView(getLabel(), token.getToken());
         }
         mapView.save.setVisible(!isReadOnly());
+        mapView.marker.setDraggable(!isReadOnly());
         mapView.setValue(getValue());
         mapView.execute();
     }
@@ -91,7 +92,6 @@ public class GeolocationField extends CustomTextField<Geolocation> {
 
         private MapView(String label, String key) {
             map = new GoogleMap(key, null, null);
-            marker.setDraggable(true);
             setCaption(label);
             ButtonLayout b = new ButtonLayout(save, new Button("Close", e -> close()));
             Div div = new Div(b, map);

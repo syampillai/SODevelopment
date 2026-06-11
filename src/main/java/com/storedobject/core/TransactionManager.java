@@ -1,9 +1,6 @@
 package com.storedobject.core;
 
-import java.util.Currency;
-import java.util.Date;
-import java.util.Properties;
-import java.util.Random;
+import java.util.*;
 import java.util.function.Consumer;
 
 @SuppressWarnings("RedundantThrows")
@@ -11,6 +8,7 @@ public final class TransactionManager {
 
     static boolean accounting = StoredObject.exists(Account.class, "True", true);
     private final Device device;
+    private Map<String, Object> attributes;
 
     public TransactionManager(Device device, String login) {
         this.device = device;
@@ -275,5 +273,39 @@ public final class TransactionManager {
             accounting = StoredObject.exists(Account.class, "True", true);
         }
         return accounting;
+    }
+
+    /**
+     * Retrieves the value of an attribute associated with the specified key.
+     *
+     * @param key the key for which the attribute value is to be retrieved; can be null.
+     * @return the value of the attribute associated with the given key,
+     *         or null if the key is null, the attribute map is null,
+     *         or no value is associated with the key.
+     */
+    public Object getAttribute(String key) {
+        return key == null || attributes == null ? null : attributes.get(key);
+    }
+
+    /**
+     * Sets or updates the value of a given attribute. If the value is null,
+     * the attribute is removed from the collection. Initializes the attribute
+     * collection if it is not already initialized.
+     *
+     * @param key the attribute key to set or update; must not be null.
+     * @param value the value to associate with the specified key; if null, the key is removed from the collection.
+     */
+    public void setAttribute(String key, Object value) {
+        if(key == null) {
+            return;
+        }
+        if(attributes == null) {
+            attributes = new HashMap<>();
+        }
+        if(value == null) {
+            attributes.remove(key);
+        } else {
+            attributes.put(key, value);
+        }
     }
 }
