@@ -315,5 +315,10 @@ public class ReferenceLinkGrid<T extends StoredObject> extends AbstractLinkGrid<
         public StoredObject getMaster() {
             return ReferenceLinkGrid.this.getMaster();
         }
+
+        @Override
+        public Class<T> getLinkClass() {
+            return link.getLinkClass();
+        }
     }
 }

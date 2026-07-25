@@ -45,6 +45,7 @@ public class ExtraInfoValue<T extends StoredObject> implements StoredObjectLink<
                 ObjectEditor<?> oe = (ObjectEditor<?>)extraInfo.field.getDependentView();
                 oe.extraInfoCreated(info);
                 Grid<?> grid = oe.getGrid();
+                //noinspection rawtypes
                 if(grid instanceof ObjectBrowser ob) {
                     //noinspection unchecked
                     ob.extraInfoCreated(master, info);
@@ -60,6 +61,7 @@ public class ExtraInfoValue<T extends StoredObject> implements StoredObjectLink<
                 ObjectEditor<?> oe = (ObjectEditor<?>)extraInfo.field.getDependentView();
                 oe.extraInfoLoaded(info);
                 Grid<?> grid = oe.getGrid();
+                //noinspection rawtypes
                 if(grid instanceof ObjectBrowser ob) {
                     //noinspection unchecked
                     ob.extraInfoLoaded(master, info);
@@ -88,6 +90,11 @@ public class ExtraInfoValue<T extends StoredObject> implements StoredObjectLink<
     @Override
     public StoredObject getMaster() {
         return master;
+    }
+
+    @Override
+    public Class<T> getLinkClass() {
+        return extraInfo.infoClass;
     }
 
     @Override
@@ -171,11 +178,6 @@ public class ExtraInfoValue<T extends StoredObject> implements StoredObjectLink<
         }
         status = 1;
         return true;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        return o == this;
     }
 
     @Override

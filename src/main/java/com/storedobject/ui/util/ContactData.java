@@ -80,6 +80,11 @@ public class ContactData implements StoredObjectLink<Contact> {
         return ownerId == null ? master : (ownerId.equals(master.getId()) ? master : StoredObject.get(ownerId));
     }
 
+    @Override
+    public Class<Contact> getLinkClass() {
+        return Contact.class;
+    }
+
     public boolean ownedByMaster() {
         return master == getMaster();
     }

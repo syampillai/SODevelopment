@@ -915,4 +915,34 @@ public final class InventoryGRN extends StoredObject implements OfEntity, HasChi
         internal = true;
         save(transaction);
     }
+
+    public void correctDate(TransactionManager tm, Date newDate) throws Exception {
+        // WIP
+        if(DateUtility.isSameDate(date, newDate)) {
+            return;
+        }
+        List<InventoryItem> items = listLinks(InventoryGRNItem.class).map(InventoryGRNItem::getItem).toList();
+        InventoryItem item = items.stream().filter(i -> !DateUtility.isSameDate(i.getPurchaseDate(), date))
+                .findAny().orElse(null);
+        if(item != null) {
+            throw new SOException("Purchase date mismatch for item - " + item.toDisplay() + ". "
+                    + DateUtility.format(item.getPurchaseDate()) + " instead of " + DateUtility.format(date));
+        }
+        item = items.stream().filter(i -> !i.getGRNId().equals(getId())).findAny().orElse(null);
+        if(item != null) {
+            throw new SOException("Item " + item.toDisplay() + " now belongs to another GRN");
+        }
+        List<InventoryLedger> ledgers;
+        for(InventoryItem i: items) {
+            ledgers = list(InventoryLedger.class, "Item=" + i.getId(), "Date").toList();
+            if(ledgers.size() <= 1) {
+                continue;
+            }
+            InventoryLedger l = ledgers.get(1);
+            if(l.getDate().before(newDate)) {
+                throw new SOException(i.toDisplay() + " - Item was already transferred to "
+                        + l.getLocationTo().toDisplay() + " on " + DateUtility.format(l.getDate()));
+            }
+        }
+    }
 }

@@ -6,6 +6,10 @@ public interface StoredObjectLink<T extends StoredObject> extends EditableList<T
 
     StoredObject getMaster();
 
+    default Class<T> getLinkClass() {
+        return null;
+    }
+
     default int getType() {
         return 0;
     }

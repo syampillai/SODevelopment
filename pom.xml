@@ -7,7 +7,7 @@
     <parent>
         <groupId>com.storedobject</groupId>
         <artifactId>so-uipom</artifactId>
-        <version>24.10.0-6</version>
+        <version>24.10.0-9</version>
     </parent>
 
     <artifactId>so-development</artifactId>

@@ -43,6 +43,11 @@ public class StreamAttachmentData implements StoredObjectLink<FileData> {
     }
 
     @Override
+    public Class<FileData> getLinkClass() {
+        return FileData.class;
+    }
+
+    @Override
     public int getType() {
         return 9;
     }

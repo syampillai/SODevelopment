@@ -232,5 +232,10 @@ public class DetailLinkGrid<T extends StoredObject> extends AbstractLinkGrid<T> 
         public StoredObject getMaster() {
             return DetailLinkGrid.this.getMaster();
         }
+
+        @Override
+        public Class<T> getLinkClass() {
+            return link.getLinkClass();
+        }
     }
 }
