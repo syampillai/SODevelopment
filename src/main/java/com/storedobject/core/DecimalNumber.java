@@ -106,11 +106,28 @@ public class DecimalNumber implements Storable, Comparable<DecimalNumber> {
 		}
 		return zerosDN[decimals];
 	}
-	
+
+	/**
+	 * Creates a new instance of DecimalNumber based on the provided value.
+	 *
+	 * @param value the input object to be converted or used for creating a DecimalNumber
+	 * @return a DecimalNumber instance based on the input value
+	 */
 	public static DecimalNumber create(Object value) {
 		return create(value, -1);
 	}
 
+	/**
+	 * Creates a new instance of DecimalNumber based on the provided value and decimals.
+	 *
+	 * @param value the input value used to create the DecimalNumber. It can be an instance of
+	 *              BigDecimal, BigInteger, or other types that can be converted to a valid number.
+	 * @param decimals the number of decimal places for the DecimalNumber. This value determines
+	 *                 the precision of the resulting number.
+	 * @return a new instance of DecimalNumber based on the provided value and decimals if
+	 *         the input is valid and processed successfully.
+	 * @throws SORuntimeException if the input value cannot be converted into a valid DecimalNumber.
+	 */
 	public static DecimalNumber create(Object value, int decimals) {
         try {
         	if(value instanceof BigDecimal) {
@@ -132,6 +149,14 @@ public class DecimalNumber implements Storable, Comparable<DecimalNumber> {
         throw new SORuntimeException("Invalid Decimal Number - '" + value + "'");
     }
 
+	/**
+	 * Creates and returns a DecimalNumber instance representing the value zero
+	 * with the specified number of decimal places.
+	 *
+	 * @param decimals The number of decimal places for the returned DecimalNumber.
+	 *                 Must be a non-negative integer.
+	 * @return A DecimalNumber instance with a value of zero and the specified number of decimal places.
+	 */
     public static DecimalNumber zero(int decimals) {
 		return create(BigInteger.ZERO, decimals);
 	}
@@ -202,19 +227,45 @@ public class DecimalNumber implements Storable, Comparable<DecimalNumber> {
 		return value.toPlainString();
 	}
 
+	/**
+	 * Compares the value of the current DecimalNumber with the value of the specified DecimalNumber.
+	 *
+	 * @param number The DecimalNumber to compare against.
+	 * @return A negative integer, zero, or a positive integer as the current DecimalNumber
+	 *         is less than, equal to, or greater than the specified DecimalNumber.
+	 */
 	@Override
 	public int compareTo(DecimalNumber number) {
 		return value.compareTo(number.value);
 	}
-	
+
+	/**
+	 * Checks whether the current value of the DecimalNumber is equal to zero.
+	 *
+	 * @return {@code true} if the current value is equal to zero, {@code false} otherwise.
+	 */
 	public boolean isZero() {
 		return value.compareTo(BigDecimal.ZERO) == 0;
 	}
-	
+
+	/**
+	 * Retrieves the number of decimal places (scale) defined in the value of this DecimalNumber.
+	 *
+	 * @return The number of decimal places as an integer.
+	 */
 	public int getDecimals() {
 		return value.scale();
 	}
-	
+
+	/**
+	 * Creates and returns a DecimalNumber instance representing the value zero.
+	 * The number of decimal places is determined by the current instance's decimal scale.
+	 * If the number of decimals is invalid (less than 0 or greater than or equal to 10),
+	 * a new DecimalNumber is constructed with a value of zero and the specified decimal places.
+	 * Otherwise, a cached zero value with the appropriate decimal scale is returned.
+	 *
+	 * @return A DecimalNumber instance representing zero, with the appropriate decimal scale.
+	 */
 	public DecimalNumber zero() {
 		int d = getDecimals();
 		if(d < 0 || d >= 10) {
@@ -223,6 +274,15 @@ public class DecimalNumber implements Storable, Comparable<DecimalNumber> {
 		return dn(d);
 	}
 
+	/**
+	 * Checks whether the length of the storable value of the current DecimalNumber instance
+	 * exceeds the specified width. If the length exceeds the width, an {@link Invalid_Value}
+	 * exception is thrown with an appropriate error message indicating the limit exceeded.
+	 *
+	 * @param name A name or identifier for the value being checked, used in error reporting.
+	 * @param width The maximum allowable width (number of characters) for the storable value.
+	 * @throws Invalid_Value If the storable value's length exceeds the specified width.
+	 */
 	public void checkLimit(String name, int width) throws Invalid_Value {
 		String s = getStorableValue();
 		if(s.length() <= width) {
@@ -239,24 +299,58 @@ public class DecimalNumber implements Storable, Comparable<DecimalNumber> {
 		throw new Invalid_Value(name + " = " + s + " Limit exceeded. Maximum allowed value is " + m);
 	}
 
+	/**
+	 * Calculates the average value of the current DecimalNumber and the specified DecimalNumber.
+	 *
+	 * @param second The DecimalNumber to be averaged with the current DecimalNumber.
+	 * @return The average value as a BigDecimal.
+	 */
 	public BigDecimal getAverageValue(DecimalNumber second) {
 		return getAverageValue(second.getValue());
 	}
-	
+
+	/**
+	 * Calculates the average value of the current value and the specified BigDecimal value.
+	 *
+	 * @param second The BigDecimal value to be averaged with the current value.
+	 * @return The average value as a BigDecimal, calculated using rounding mode {@code RoundingMode.HALF_UP}.
+	 */
 	public BigDecimal getAverageValue(BigDecimal second) {
 		return value.add(second).divide(TWO, RoundingMode.HALF_UP);
 	}
 
+	/**
+	 * Compares the value of the current DecimalNumber with another BigInteger value
+	 * to determine whether they are the same. The comparison considers values
+	 * with equivalent numerical representations, regardless of insignificant trailing zeros.
+	 *
+	 * @param another The {@code BigInteger} to compare against.
+	 * @return {@code true} if the values are numerically the same, {@code false} otherwise.
+	 */
 	public boolean isSameValue(BigInteger another) {
 		return isSameValue(new BigDecimal(another));
 	}
 
+	/**
+	 * Compares the value of the current DecimalNumber with another BigDecimal value
+	 * to determine whether they are the same. The comparison considers values
+	 * with equivalent numerical representations, regardless of insignificant trailing zeros.
+	 *
+	 * @param another The {@code BigDecimal} to compare against.
+	 * @return {@code true} if the values are numerically the same, {@code false} otherwise.
+	 */
 	public boolean isSameValue(BigDecimal another) {
 		String v1 = trim(value.toPlainString());
 		String v2 = trim(another.toPlainString());
 		return v1.equals(v2);
 	}
 
+	/**
+	 * Compares the value of the current DecimalNumber with the value of another DecimalNumber.
+	 *
+	 * @param another The DecimalNumber to compare against.
+	 * @return {@code true} if the values of the two DecimalNumbers are the same, {@code false} otherwise.
+	 */
 	public boolean isSameValue(DecimalNumber another) {
 		return isSameValue(another.getValue());
 	}
@@ -271,5 +365,30 @@ public class DecimalNumber implements Storable, Comparable<DecimalNumber> {
 			v = v.substring(0, v.length() - 1);
 		}
 		return v;
+	}
+
+	/**
+	 * Checks if the difference between the current decimal number's value and the value of the specified
+	 * decimal number is within the given tolerance level.
+	 *
+	 * @param another The decimal number to compare against.
+	 * @param tolerance The tolerance level, represented as a {@link Percentage}.
+	 * @return {@code true} if the absolute difference between the values is within the calculated tolerance,
+	 *         {@code false} otherwise.
+	 */
+	public boolean checkTolerance(DecimalNumber another, Percentage tolerance) {
+		return checkTolerance(another.value, tolerance);
+	}
+
+	/**
+	 * Checks if the difference between the current value and the specified value is within the specified tolerance level.
+	 *
+	 * @param another The value to compare against, represented as a {@link BigDecimal}.
+	 * @param tolerance The tolerance level, represented as a {@link Percentage}.
+	 * @return {@code true} if the absolute difference between the values is within the calculated tolerance, {@code false} otherwise.
+	 */
+	public boolean checkTolerance(BigDecimal another, Percentage tolerance) {
+		BigDecimal delta = value.multiply(tolerance.getPercentageBy100());
+		return value.subtract(another).abs().compareTo(delta) <= 0;
 	}
 }
