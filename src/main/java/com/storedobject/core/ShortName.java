@@ -4,7 +4,7 @@ import com.storedobject.core.annotation.*;
 
 public abstract class ShortName extends Name implements HasShortName {
 
-    private String shortName;
+    protected String shortName;
 
     public ShortName() {
     }
@@ -25,8 +25,7 @@ public abstract class ShortName extends Name implements HasShortName {
         this.shortName = shortName;
     }
 
-    @Override
-    @Column(order = 200)
+    @Column(order = 50)
     public String getShortName() {
         return shortName;
     }
@@ -45,5 +44,19 @@ public abstract class ShortName extends Name implements HasShortName {
 
     protected boolean isCode() {
         return false;
+    }
+
+    @Override
+    public String toString() {
+        return shortName;
+    }
+
+    public static <SN extends ShortName> SN getFor(Class<SN> snClass, String name) {
+        if(StringUtility.isWhite(name)) return null;
+        name = name.toLowerCase().trim();
+        var _instance1 = get(snClass, "lower(ShortName)='" + name + "'", false);
+        var _instance2 = get(snClass, "lower(Name)='" + name + "'", false);
+        if (_instance1 != null && _instance2 == null) return _instance1;
+        return (_instance2 != null && _instance1 == null) ? _instance2 : null;
     }
 }

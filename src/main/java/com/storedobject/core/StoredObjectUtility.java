@@ -164,11 +164,6 @@ public final class StoredObjectUtility {
         public void add(MethodList list) {
         }
 
-        @Override
-        public String getAttributeName() {
-            return null;
-        }
-
         public String getName() {
             return null;
         }
@@ -182,11 +177,6 @@ public final class StoredObjectUtility {
         }
 
         public MethodList getNext() {
-            return null;
-        }
-
-        @Override
-        public Method getTail() {
             return null;
         }
 
@@ -253,11 +243,11 @@ public final class StoredObjectUtility {
     }
 
     public static <T extends StoredObject> ObjectIterator<T> list(Class<T> objectClass, String nameField, String nameValue) {
-        return null;
+        return ObjectIterator.create();
     }
 
     public static <T extends StoredObject> ObjectIterator<T> list(Class<T> objectClass, String nameField, String nameValue, String extraCondition) {
-        return null;
+        return ObjectIterator.create();
     }
 
     public static <T extends StoredObject> T get(Class<T> objectClass, String nameField, String nameValue, boolean any) {
@@ -269,11 +259,11 @@ public final class StoredObjectUtility {
     }
 
     public static <T extends StoredObject> ObjectIterator<T> list(Class<T> objectClass, String nameField, String nameValue, boolean any) {
-        return null;
+        return ObjectIterator.create();
     }
 
     public static <T extends StoredObject> ObjectIterator<T> list(Class<T> objectClass, String nameField, String nameValue, String extraCondition, boolean any) {
-        return null;
+        return ObjectIterator.create();
     }
 
     public static String stackTrace() {

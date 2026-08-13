@@ -20,7 +20,7 @@ public interface LedgerEntry {
 
     /**
      * Value-date of this entry. Normally, value-date is the same as the{@link #getDate()}. However, for
-     * the purpose of interest calculations, the effective date of any entry may have a different date.
+     * interest calculations, the effective date of any entry may have a different date.
      *
      * @return Value-date of the entry.
      */
@@ -29,14 +29,14 @@ public interface LedgerEntry {
     }
 
     /**
-     * Foreign currency amount of this entry.
+     * Foreign currency amount.
      *
      * @return Foreign currency amount.
      */
     Money getAmount();
 
     /**
-     * Local currency amount of this entry.
+     * Local currency amount.
      *
      * @return Local currency amount.
      */
@@ -188,7 +188,7 @@ public interface LedgerEntry {
 
     /**
      * Check if this entry is not yet posted on the ledger in the DB. This is always false in the case of SO platform.
-     * However, if you are abstracting away entries from external systems, it may contain un-posted entries.
+     * However, if you are abstracting away entries from external systems, they may contain un-posted entries.
      *
      * @return The default implementation always returns <code>false</code>.
      */
@@ -199,7 +199,7 @@ public interface LedgerEntry {
     /**
      * Return a short-string representing the type of the entry. In SO platform, this is available only if a
      * {@link TransactionType} is set while posting the entry.
-     * <p>In some external system, it could be numeric value but the String representation will be returned by this
+     * <p>In some external system, it could be a numeric value, but the String representation will be returned by this
      * method even though it is a bit inefficient.</p>
      *
      * @return A short-string representing the transaction. Otherwise, <code>null</code> is returned.
@@ -209,9 +209,9 @@ public interface LedgerEntry {
     }
 
     /**
-     * Certain external systems still follows batch processing and the entry may have a batch number. This method
+     * Certain external systems still follow batch processing, and the entry may have a batch number. This method
      * returns that number.
-     * <p>SO platform is not batch-based and returns -1 from this method. </p>
+     * <p>The SO platform is not batch-based and returns -1 from this method. </p>
      *
      * @return Batch number for batch-based systems and -1 if not batch-based or not available.
      */

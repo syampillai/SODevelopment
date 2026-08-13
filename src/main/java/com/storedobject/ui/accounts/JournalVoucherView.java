@@ -27,7 +27,7 @@ public class JournalVoucherView extends ListGrid<JournalVoucher.Entry> implement
     }
 
     public JournalVoucherView(List<JournalVoucher> vouchers) {
-        super(JournalVoucher.Entry.class, StringList.create("Reference AS JV No.", "Account", "Particulars", "Debit", "Credit"));
+        super(JournalVoucher.Entry.class, StringList.create("Reference AS JV No.", "Account", "Particulars", "Type", "Debit", "Credit"));
         setCaption("Journal Voucher");
         new Box(count);
         setVouchers(vouchers);
@@ -129,7 +129,7 @@ public class JournalVoucherView extends ListGrid<JournalVoucher.Entry> implement
                 }
             }
             count.append("" + size(), Application.COLOR_SUCCESS);
-            setCaption("Voucher: " + vouchers.get(0).getReference());
+            setCaption("Voucher: " + vouchers.getFirst().getReference());
         }
         count.update();
         transaction.update();

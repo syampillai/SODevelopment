@@ -159,7 +159,7 @@ public abstract class StoredObject implements Displayable, HasId, StringFiller {
     }
 
     public final boolean undeleted() {
-        return loading;
+        return loading && transacting();
     }
 
     public final boolean transacting() {

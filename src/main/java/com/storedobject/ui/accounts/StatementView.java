@@ -28,7 +28,7 @@ public class StatementView extends ListGrid<LedgerEntry> implements CloseableVie
     private JournalVoucherView voucherView;
 
     public StatementView() {
-        super(LedgerEntry.class, StringList.create("Date", "Particulars", "Debit", "Credit", "Balance"));
+        super(LedgerEntry.class, StringList.create("Date", "Particulars", "Type", "Debit", "Credit", "Balance"));
         ledger.setErrorLogger((m, e) -> {
             error(m);
             error(e);

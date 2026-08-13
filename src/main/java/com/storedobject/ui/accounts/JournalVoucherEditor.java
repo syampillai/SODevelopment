@@ -3,11 +3,10 @@ package com.storedobject.ui.accounts;
 import com.storedobject.common.StringList;
 import com.storedobject.core.*;
 import com.storedobject.helper.ID;
-import com.storedobject.ui.MoneyField;
-import com.storedobject.ui.ObjectEditor;
-import com.storedobject.ui.RateField;
+import com.storedobject.ui.*;
 import com.storedobject.vaadin.*;
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.HasValue;
 import com.vaadin.flow.component.grid.ColumnTextAlign;
 
 import java.util.ArrayList;
@@ -17,15 +16,31 @@ import java.util.Objects;
 
 public class JournalVoucherEditor extends ObjectEditor<JournalVoucher> {
 
+    private final boolean multiEntity;
+    private HasValue<?, Id> systemEntityField;
     private final Entries entries = new Entries();
     private final EntryForm entryForm = new EntryForm();
 
     public JournalVoucherEditor() {
+        this(false);
+    }
+
+    public JournalVoucherEditor(boolean multiEntity) {
         super(JournalVoucher.class, EditorAction.NEW);
+        this.multiEntity = multiEntity;
         addConstructedListener(e -> {
             add(entries);
             setColumnSpan(entries, 2);
         });
+    }
+
+    @Override
+    protected void customizeField(String fieldName, HasValue<?, ?> field) {
+        if("SystemEntity".equals(fieldName)) {
+            //noinspection unchecked
+            systemEntityField = (HasValue<?, Id>) field;
+        }
+        super.customizeField(fieldName, field);
     }
 
     @Override
@@ -45,25 +60,32 @@ public class JournalVoucherEditor extends ObjectEditor<JournalVoucher> {
             throw new SOException("Total of debit and credit amounts must be zero");
         }
         if(entries.size() == 2 && entries.get(0).account.equals(entries.get(1).account)) {
-            throw new SOException("Same account is repeatedly");
+            throw new SOException("Same account is repeated");
         }
     }
 
     @Override
     protected void saveObject(Transaction t, JournalVoucher object) throws Exception {
+        String type;
         for(Entry e : entries) {
-            object.credit(e.account, e.fcAmount, e.lcAmount,null, e.particulars);
+            type = e.type == null ? null : e.type.getShortName();
+            object.credit(e.account, e.fcAmount, e.lcAmount, type, e.particulars);
         }
         super.saveObject(t, object);
+        if(getGrid() instanceof JournalVoucherBrowser b) {
+            b.load();
+            b.select(object);
+        }
+        entries.clear();
     }
 
     private class Entries extends ListGrid<Entry> {
 
-        private final Button add, edit, delete;
+        private final Button add, edit, delete, deleteAll;
         private GridRow.Cell total;
 
         public Entries() {
-            super(Entry.class, StringList.create("Account", "Particulars", "FCAmount AS Amount", "LCAmount AS Amount in "
+            super(Entry.class, StringList.create("Account", "Particulars", "Type", "FCAmount AS Amount", "LCAmount AS Amount in "
                     + getTransactionManager().getCurrency().getCurrencyCode()));
             setWidthFull();
             setMinHeight("200px");
@@ -71,6 +93,7 @@ public class JournalVoucherEditor extends ObjectEditor<JournalVoucher> {
             add = new Button("Add", e -> doAdd()).asSmall();
             edit = new Button("Edit", e -> doEdit()).asSmall();
             delete = new Button("Delete", e -> doDelete()).asSmall();
+            deleteAll = new Button("Delete All", e -> clear()).asSmall();
         }
 
         @Override
@@ -93,7 +116,7 @@ public class JournalVoucherEditor extends ObjectEditor<JournalVoucher> {
 
         @Override
         public Component createHeader() {
-            return new ButtonLayout(add, edit, delete);
+            return new ButtonLayout(add, edit, delete, deleteAll);
         }
 
         @Override
@@ -117,6 +140,7 @@ public class JournalVoucherEditor extends ObjectEditor<JournalVoucher> {
                 entryForm.lcAmount.setValue(m);
                 entryForm.rate.setValue(Rate.ONE);
             }
+            entryForm.systemEntityId = systemEntityField.getValue();
             entryForm.execute();
         }
 
@@ -126,6 +150,7 @@ public class JournalVoucherEditor extends ObjectEditor<JournalVoucher> {
                 return;
             }
             entryForm.setEntry(e);
+            entryForm.systemEntityId = systemEntityField.getValue();
             entryForm.execute();
         }
 
@@ -162,6 +187,12 @@ public class JournalVoucherEditor extends ObjectEditor<JournalVoucher> {
             }
             return m;
         }
+
+        @Override
+        public void clear() {
+            super.clear();
+            updateTotal();
+        }
     }
 
     static final class Entry {
@@ -169,11 +200,13 @@ public class JournalVoucherEditor extends ObjectEditor<JournalVoucher> {
         private final long id = ID.newID();
         private final Account account;
         private final String particulars;
+        private final TransactionType type;
         private final Money lcAmount, fcAmount;
 
-        Entry(Account account, String particulars, Money lcAmount, Money fcAmount) {
+        Entry(Account account, String particulars, TransactionType type, Money lcAmount, Money fcAmount) {
             this.account = account;
             this.particulars = particulars;
+            this.type = type;
             this.lcAmount = lcAmount;
             this.fcAmount = fcAmount;
         }
@@ -184,6 +217,10 @@ public class JournalVoucherEditor extends ObjectEditor<JournalVoucher> {
 
         public String getParticulars() {
             return particulars;
+        }
+
+        public TransactionType getType() {
+            return type;
         }
 
         public Money getLCAmount() {
@@ -207,9 +244,11 @@ public class JournalVoucherEditor extends ObjectEditor<JournalVoucher> {
 
     private class EntryForm extends DataForm {
 
+        private Id systemEntityId = Id.ZERO;
         private final Currency localCurrency;
         private final AccountField<Account> account = new AccountField<>("Account");
         private final TextArea particulars = new TextArea("Particulars");
+        private final ObjectField<TransactionType> type = new ObjectField<>("Transaction Type", TransactionType.class);
         private final ChoiceField debitCredit = new ChoiceField("Debit/Credit", "Debit, Credit");
         private final MoneyField fcAmount = new MoneyField("Amount");
         private final RateField rate = new RateField("Exchange Rate");
@@ -218,8 +257,20 @@ public class JournalVoucherEditor extends ObjectEditor<JournalVoucher> {
 
         public EntryForm() {
             super("Journal Entry");
+            if(!multiEntity) {
+                account.setFilter(() -> "SystemEntity=" + systemEntityId, false);
+            }
+            type.setFilter("NOT Inactive", false);
+            if(multiEntity) {
+                type.setLoadFilter(t -> {
+                    Account a = account.getAccount();
+                    return t.isApplicableTo(a == null ? systemEntityId : a.getSystemEntityId());
+                }, false);
+            } else {
+                type.setLoadFilter(t -> t.isApplicableTo(systemEntityId), false);
+            }
             localCurrency = getTransactionManager().getCurrency();
-            addField(account, particulars, debitCredit, fcAmount, rate, lcAmount);
+            addField(account, particulars, type, debitCredit, fcAmount, rate, lcAmount);
             setRequired(account);
             setRequired(particulars);
             setRequired(rate);
@@ -291,7 +342,7 @@ public class JournalVoucherEditor extends ObjectEditor<JournalVoucher> {
                 mFC = mFC.negate();
                 mLC = mLC.negate();
             }
-            return new Entry(account.getAccount(), particulars.getValue(), mLC, mFC);
+            return new Entry(account.getAccount(), particulars.getValue(), type.getObject(), mLC, mFC);
         }
 
         void setEntry(Entry entry) {
@@ -301,6 +352,7 @@ public class JournalVoucherEditor extends ObjectEditor<JournalVoucher> {
             }
             account.setValue(entry.account);
             particulars.setValue(entry.particulars);
+            type.setValue(entry.type);
             debitCredit.setValue(entry.lcAmount.isNegative() ? 0 : 1);
             fcAmount.setAllowedCurrencies(entry.account.getCurrency());
             fcAmount.setValue(entry.fcAmount.absolute());

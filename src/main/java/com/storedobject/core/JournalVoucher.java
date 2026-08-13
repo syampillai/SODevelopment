@@ -30,7 +30,6 @@ import java.util.stream.Stream;
 public class JournalVoucher extends StoredObject implements Financial, OfEntity, HasReference {
 
     private static final ReferencePattern<JournalVoucher> ref = new ReferencePattern<>();
-    private static final Map<String, Id> types = new HashMap<>();
     private Id ownerId = Id.ZERO;
     private StoredObject owner;
     private Date date;
@@ -727,7 +726,7 @@ public class JournalVoucher extends StoredObject implements Financial, OfEntity,
         if(entrySerial >= 1000000000) { // Conflict with IB transactions (Check in DBTransaction class)
             throw new SOException("Entry serial should be less than 1000000000" + ",\nAccount: " + account.toDisplay());
         }
-        creditInt(account, amount, localCurrencyAmount, entrySerial, typeId(type), particulars, valueDate);
+        creditInt(account, amount, localCurrencyAmount, entrySerial, typeId(type, account.getSystemEntityId()), particulars, valueDate);
     }
 
     private void creditInt(Account account, Money amount, Money localCurrencyAmount, int entrySerial, Id type,
@@ -1115,28 +1114,27 @@ public class JournalVoucher extends StoredObject implements Financial, OfEntity,
         credit(account, amount, localCurrencyAmount, 0, type, particulars, valueDate);
     }
 
-    private Id typeId(String type) throws Invalid_State {
-        if(type == null || type.isBlank()) {
+    private Id typeId(String type, Id systemEntityId) throws Invalid_State {
+        if (type == null || type.isBlank()) {
             return Id.ZERO;
         }
         type = StoredObject.toCode(type);
-        Id tid = types.get(type);
-        if(tid == null) {
-            TransactionType tt = TransactionType.getFor(type);
-            if(tt == null) {
-                Transaction t = getTransaction();
-                if(t != null) {
-                    try {
-                        tt = TransactionType.create(t.getManager(), type);
-                    } catch (Exception ignored) {
-                    }
+        TransactionType tt = TransactionType.getFor(type);
+        if (tt == null) {
+            Transaction t = getTransaction();
+            if (t != null) {
+                try {
+                    tt = TransactionType.create(t.getManager(), type);
+                } catch (Exception ignored) {
                 }
-                if( tt == null) throw new Invalid_State("Unknown transaction type: " + type);
             }
-            tid = tt.getId();
-            types.put(type, tid);
+            if (tt == null) throw new Invalid_State("Unknown transaction type: " + type);
         }
-        return tid;
+        if (tt.getInactive()) {
+            throw new Invalid_State("Inactive transaction type: " + type);
+        }
+        tt.checkEntity(systemEntityId);
+        return tt.getId();
     }
 
     /**
@@ -1308,7 +1306,7 @@ public class JournalVoucher extends StoredObject implements Financial, OfEntity,
          * @return Transaction type.
          */
         public TransactionType getType() {
-            return Id.isNull(type) ? null : get(TransactionType.class, type);
+            return TransactionType.getFor(type);
         }
 
         @Override

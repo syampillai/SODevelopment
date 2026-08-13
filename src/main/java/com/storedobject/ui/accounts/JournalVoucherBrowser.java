@@ -6,6 +6,7 @@ import com.storedobject.ui.ObjectBrowser;
 import com.storedobject.ui.ObjectField;
 import com.storedobject.ui.ObjectSearchForm;
 
+import java.sql.Date;
 import java.util.function.Predicate;
 
 public class JournalVoucherBrowser extends ObjectBrowser<JournalVoucher> {
@@ -49,6 +50,13 @@ public class JournalVoucherBrowser extends ObjectBrowser<JournalVoucher> {
         Searcher() {
             super(JournalVoucher.class);
             add(systemEntity, period);
+            systemEntity.addValueChangeListener(e -> {
+                SystemEntity se = systemEntity.getObject();
+                if(se != null) {
+                    Date d = se.getWorkingDate();
+                    period.setValue(new DatePeriod(d, d));
+                }
+            });
         }
 
         @Override

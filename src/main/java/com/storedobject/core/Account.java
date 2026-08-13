@@ -1011,7 +1011,9 @@ public class Account extends StoredObject implements OfEntity, HasName {
 
         @Override
         public String getType() {
-            return type.equals(BigInteger.ZERO) ? null : get(TransactionType.class, new Id(type)).getShortName();
+            if(type.equals(BigInteger.ZERO)) return null;
+            TransactionType tt = TransactionType.getFor(new Id(type));
+            return tt == null ? null : tt.getShortName();
         }
     }
 

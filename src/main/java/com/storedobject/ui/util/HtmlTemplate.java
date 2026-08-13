@@ -3,6 +3,7 @@ package com.storedobject.ui.util;
 import com.storedobject.chart.SOChart;
 import com.storedobject.common.IO;
 import com.storedobject.common.SORuntimeException;
+import com.storedobject.core.JavaClassLoader;
 import com.storedobject.core.TextContent;
 import com.storedobject.ui.Image;
 import com.storedobject.ui.MediaCSS;
@@ -49,7 +50,8 @@ import java.util.function.Supplier;
 @Tag("div")
 public abstract class HtmlTemplate extends Component {
 
-    private static final ConcurrentHashMap<String, Document> parserCache = new ConcurrentHashMap<>();
+    private record Doc(Document document, Map<String, Svg> svgMap) {}
+    private static final ConcurrentHashMap<String, Doc> parserCache = new ConcurrentHashMap<>();
     private TemplateDetails templateDetails;
     private Object view;
     private ComponentCreator componentCreator;
@@ -183,11 +185,10 @@ public abstract class HtmlTemplate extends Component {
     }
 
     private void populate(String cacheKey, StreamSupplier streamSupplier, StyleSupplier styleSupplier) {
-        Map<String, Svg> svgMap = new HashMap<>();
-        Document document = getTemplate(cacheKey, streamSupplier, svgMap);
+        Doc doc = getTemplate(cacheKey, streamSupplier);
         Map<String, Element> idElementMap = new HashMap<>();
         Map<String, Component> idComponentMap = new HashMap<>();
-        convertAndAppend(document.body(), getElement().attachShadow(), idElementMap::put, idComponentMap::put, styleSupplier, svgMap);
+        convertAndAppend(doc.document.body(), getElement().attachShadow(), idElementMap::put, idComponentMap::put, styleSupplier, doc.svgMap);
         if(view == null) {
             view = this;
         }
@@ -220,7 +221,8 @@ public abstract class HtmlTemplate extends Component {
         }
     }
 
-    private static Document getTemplate(String cacheKey, StreamSupplier streamSupplier, Map<String, Svg> svgMap) {
+    private static Doc getTemplate(String cacheKey, StreamSupplier streamSupplier) {
+        Map<String, Svg> svgMap;
         boolean useCache;
         if (cacheKey == null) {
             useCache = false;
@@ -232,17 +234,18 @@ public abstract class HtmlTemplate extends Component {
                 useCache = true;
             }
         }
-        if (useCache) {
-            return parserCache.computeIfAbsent(cacheKey, ignore -> readTemplate(streamSupplier, svgMap));
-        } else {
-            /*
-             * Read without caching in dev mode so that changes are available
-             * without redeployment (as long as the application is run in a way that
-             * reads resources straight from their original file system
-             * location).
-             */
-            return readTemplate(streamSupplier, svgMap);
+        Doc doc = null;
+        if(useCache) {
+            doc = parserCache.get(cacheKey);
         }
+        if (doc == null) {
+            svgMap = new HashMap<>();
+            doc = new Doc(readTemplate(streamSupplier, svgMap), svgMap);
+            if(useCache) {
+                parserCache.put(cacheKey, doc);
+            }
+        }
+        return doc;
     }
 
     private static Document readTemplate(StreamSupplier streamSupplier, Map<String, Svg> svgMap) {
@@ -305,6 +308,9 @@ public abstract class HtmlTemplate extends Component {
                             throw new IllegalArgumentException("Incompatible component " + c.getClass().getName() +
                                     " for tag " + tag + ", Id = " + id);
                         }
+                    }
+                    if(c == null) {
+                        throw new IllegalArgumentException("Component not created for id " + id);
                     }
                     c.setId(id);
                 }
@@ -571,6 +577,10 @@ public abstract class HtmlTemplate extends Component {
     }
 
     private static TextContent tc(String textContentName) {
+        int p = textContentName.indexOf(JavaClassLoader.VERSION_SEPARATOR);
+        if(p > 0) {
+            textContentName = textContentName.substring(0, p);
+        }
         TextContent tc = SOServlet.getTextContent(textContentName);
         if(tc == null) {
             throw new SORuntimeException(textContentName + " - Template not found!");
@@ -659,7 +669,7 @@ public abstract class HtmlTemplate extends Component {
     /**
      * Clears the cache used by the HTML template parser.
      * This method removes all cached entries within the `parserCache`,
-     * ensuring that subsequent parsing operations start with an empty cache.
+     * ensuring that later parsing operations start with an empty cache.
      * It is typically invoked to force the system to reparse and refresh
      * template data without relying on previously cached results.
      */

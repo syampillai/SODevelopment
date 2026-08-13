@@ -36,6 +36,10 @@ public final class SystemEntity extends StoredObject implements RequiresApproval
 	public void setCurrency(String currency) {
 	}
 
+	public Currency getCurrencyValue() {
+		return Currency.getInstance(getCurrency());
+	}
+
 	public Id getEntityId() {
 		return new Id();
 	}
