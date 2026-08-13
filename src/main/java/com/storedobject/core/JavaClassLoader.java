@@ -2,7 +2,7 @@ package com.storedobject.core;
 
 public class JavaClassLoader extends ClassLoader {
 
-    static final char VERSION_SEPARATOR = '.';
+    public static final char VERSION_SEPARATOR = '.';
 
     protected JavaClassLoader() {
         super(Thread.currentThread().getContextClassLoader());

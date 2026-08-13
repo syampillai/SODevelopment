@@ -5,7 +5,6 @@ import java.sql.Date;
 import java.time.ZoneId;
 import java.util.Currency;
 import java.util.Locale;
-import java.util.TimeZone;
 
 /**
  * This class represents an entity whose accounting system exists in this server.
