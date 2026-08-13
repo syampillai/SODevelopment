@@ -1,6 +1,7 @@
 package com.storedobject.core;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 public class Percentage extends Quantity {
 
@@ -162,5 +163,9 @@ public class Percentage extends Quantity {
 
 	public BigDecimal getPercentage() {
 		return getUnit() == defaultUnit ? getValue() : convert(defaultUnit).getValue();
+	}
+
+	public BigDecimal getPercentageBy100() {
+		return getPercentage().divide(BigDecimal.TEN, RoundingMode.HALF_UP).divide(BigDecimal.TEN, RoundingMode.HALF_UP);
 	}
 }
