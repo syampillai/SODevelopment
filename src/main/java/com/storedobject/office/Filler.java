@@ -36,6 +36,10 @@ public class Filler<T> implements Executable {
         this.reportingObject = reportingObject;
     }
 
+    public void setReportingObject(T reportingObject, PrintLogicDefinition printLogicDefinition) {
+        setReportingObject(reportingObject);
+    }
+
     public Object evaluate(Object object, String attribute) {
         try {
             StoredObjectUtility.MethodList m = StoredObjectUtility.createMethodList(object.getClass(), attribute);
