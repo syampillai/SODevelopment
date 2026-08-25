@@ -55,6 +55,15 @@ public class ObjectCard<T extends StoredObject> extends Card<T> implements Print
     }
 
     /**
+     * Retrieves the dashboard associated with this ObjectCard.
+     *
+     * @return the ObjectCardDashboard instance associated with this ObjectCard.
+     */
+    public ObjectCardDashboard<T> getDashboard() {
+        return dashboard;
+    }
+
+    /**
      * Refreshes the content of the card.
      */
     public void refresh() {
