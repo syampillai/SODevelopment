@@ -2321,16 +2321,20 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
     }
 
     /**
-     * Retrieves a Tab instance associated with the specified tab name.
+     * Selects a tab with the specified name and sets it as the active tab.
      *
-     * @param tabName the name of the tab to retrieve; must not be null or blank
-     * @return the Tab instance if found, or null if the tab name is invalid or the tab does not exist
+     * @param tabName the name of the tab to select; must match the name of an existing tab
      */
-    public Tab getTab(String tabName) {
+    public void selectTab(String tabName) {
         if(tabName == null || tabName.isBlank()) {
-            return null;
+            return;
         }
-        return linkTabs == null ? null : linkTabs.getTab(tabName.trim());
+        Tab tab = linkTabs == null ? null : linkTabs.getTab(tabName.trim());
+        if(tab == null) {
+            warning("No such tab: " + tabName);
+        } else {
+            linkTabs.setSelectedTab(tab);
+        }
     }
 
     @Override
