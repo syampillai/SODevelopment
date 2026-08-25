@@ -53,7 +53,7 @@ public class ObjectReport {
                 }
                 ObjectFiller of = (ObjectFiller) cpClass.getConstructor().newInstance();
                 ODTReport r = new ODTReport(device, printLogicDefinition.getODTFormat(), of);
-                of.setReportingObject(object);
+                of.setReportingObject(object, printLogicDefinition);
                 return r;
             } catch (Throwable e) {
                 Throwable cause = e.getCause();
@@ -61,6 +61,7 @@ public class ObjectReport {
                 return null;
             }
         }
+        String parameter = printLogicDefinition.getParameter();
         Constructor<?> constructor;
         Class<?> dClass = device.getClass();
         Class<?> oClass;
@@ -72,24 +73,40 @@ public class ObjectReport {
                 if(source != null) {
                     sourceAvailable = true;
                     try {
-                        constructor = cpClass.getConstructor(dClass, Object.class, oClass);
+                        if(parameter == null) {
+                            constructor = cpClass.getConstructor(dClass, Object.class, oClass);
+                        } else {
+                            constructor = cpClass.getConstructor(dClass, Object.class, oClass, String.class);
+                        }
                         break;
                     } catch(NoSuchMethodException ignored) {
                     }
                     try {
-                        constructor = cpClass.getConstructor(Device.class, Object.class, oClass);
+                        if(parameter == null) {
+                            constructor = cpClass.getConstructor(Device.class, Object.class, oClass);
+                        } else {
+                            constructor = cpClass.getConstructor(Device.class, Object.class, oClass, String.class);
+                        }
                         break;
                     } catch(NoSuchMethodException ignored) {
                     }
                 }
                 sourceAvailable = false;
                 try {
-                    constructor = cpClass.getConstructor(dClass, oClass);
+                    if(parameter == null) {
+                        constructor = cpClass.getConstructor(dClass, oClass);
+                    } else {
+                        constructor = cpClass.getConstructor(dClass, oClass, String.class);
+                    }
                     break;
                 } catch(NoSuchMethodException ignored) {
                 }
                 try {
-                    constructor = cpClass.getConstructor(Device.class, oClass);
+                    if(parameter == null) {
+                        constructor = cpClass.getConstructor(Device.class, oClass);
+                    } else {
+                        constructor = cpClass.getConstructor(Device.class, oClass, String.class);
+                    }
                     break;
                 } catch(NoSuchMethodException ignored) {
                 }
@@ -97,8 +114,9 @@ public class ObjectReport {
             }
             if(constructor != null) {
                 try {
-                    Runnable ex = (Runnable) (sourceAvailable ? constructor.newInstance(device, source,  object)
-                            : constructor.newInstance(device, object));
+                    var ex = (Runnable) (sourceAvailable ?
+                            (parameter == null ? constructor.newInstance(device, source,  object) : constructor.newInstance(device, object, parameter))
+                            : (parameter == null ? constructor.newInstance(device, object) : constructor.newInstance(device, object, parameter)));
                     if(!Id.isNull(printLogicDefinition.getODTFormatId()) &&
                             ODTReport.class.isAssignableFrom(cpClass)) {
                         ((ODTReport)ex).setTemplate(printLogicDefinition.getODTFormatId());

@@ -104,7 +104,8 @@ public abstract class ObjectLogicButton<T extends StoredObject> extends Button i
     }
 
     /**
-     * This will be invoked when the button is clicked.
+     * This will be invoked when the button is clicked. If a parameter is available via its associated
+     * {@link PrintLogicDefinition}, it can be obtained by invoking {@link #getParameter()}.
      *
      * @param object Object instance.
      * @param source Source of the event.
@@ -112,11 +113,32 @@ public abstract class ObjectLogicButton<T extends StoredObject> extends Button i
     @Override
     public abstract void accept(T object, Object source);
 
+    /**
+     * Retrieves the parameter associated with this.
+     *
+     * @return The parameter as a string, or null if the definition is not set.
+     */
+    public String getParameter() {
+        return definition == null ? null : definition.getParameter();
+    }
+
+    /**
+     * This doesn't have any effect.
+     * @param clickHandler
+     *            the listener to add, not <code>null</code>
+     * @return Always <code>null</code>
+     */
     @Override
     public final Registration addClickHandler(ClickHandler clickHandler) {
         return null;
     }
 
+    /**
+     * This doesn't have any effect.
+     * @param listener
+     *            the listener to add, not <code>null</code>
+     * @return Always <code>null</code>
+     */
     @Override
     public final Registration addClickListener(ComponentEventListener<ClickEvent<com.vaadin.flow.component.button.Button>> listener) {
         return null;

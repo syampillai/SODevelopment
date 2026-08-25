@@ -59,6 +59,7 @@ public class ConfigureAccount extends DataForm implements Transactional {
         number.setHelperText("");
         openingBalance.setHelperText("");
         openingBalanceLC.setHelperText("");
+        setFieldReadOnly(a == null || a.getCurrency().equals(currency), openingBalanceLC);
     }
 
     private void numberChanged() {
@@ -101,6 +102,12 @@ public class ConfigureAccount extends DataForm implements Transactional {
             same = false;
         }
         setFieldReadOnly(!same, number);
+        if(openingBalance.getCurrency().equals(currency)) {
+            openingBalanceLC.setValue(openingBalance.getValue());
+            setFieldReadOnly(openingBalanceLC);
+        } else {
+            setFieldReadOnly(false, openingBalanceLC);
+        }
     }
 
     @Override

@@ -117,9 +117,17 @@ public class PrintLogicDefinition extends StoredObject {
         if (StringUtility.isWhite(label)) {
             throw new Invalid_Value("Label");
         }
-        printLogicClassName = StringUtility.pack(printLogicClassName);
         if (StringUtility.isWhite(printLogicClassName)) {
             throw new Invalid_Value("Logic Class Name");
+        }
+        int p = printLogicClassName.indexOf('|');
+        if(p >= 0) {
+            if(p == 0) {
+                throw new Invalid_Value("Logic Class Name");
+            }
+            printLogicClassName = StringUtility.pack(printLogicClassName.substring(0, p)) + printLogicClassName.substring(p);
+        } else {
+            printLogicClassName = StringUtility.pack(printLogicClassName);
         }
         checkForDuplicate("DataClassName", "Label");
         formatId = tm.checkType(this, formatId, StreamData.class, true);
@@ -136,10 +144,23 @@ public class PrintLogicDefinition extends StoredObject {
     }
 
     public final Class<? extends Executable> getLogicClass() {
+        String logicClassName = printLogicClassName;
+        int p;
+        if((p = logicClassName.indexOf('|')) > 0) {
+            logicClassName = logicClassName.substring(0, p);
+        }
         try {
             //noinspection unchecked
-            return (Class<Executable>) JavaClassLoader.getLogic(printLogicClassName);
+            return (Class<Executable>) JavaClassLoader.getLogic(logicClassName);
         } catch(Throwable ignored) {
+        }
+        return null;
+    }
+
+    public final String getParameter() {
+        int p;
+        if((p = printLogicClassName.indexOf('|')) > 0) {
+            return printLogicClassName.substring(p + 1);
         }
         return null;
     }

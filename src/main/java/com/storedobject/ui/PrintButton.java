@@ -155,6 +155,12 @@ public final class PrintButton<T extends StoredObject> extends Composite<Button>
         return buttons.get(label);
     }
 
+    /**
+     * Provides a stream of {@link PrintLogicDefinition} objects by mapping the buttons
+     * stored in the class to their corresponding definitions.
+     *
+     * @return A stream of {@link PrintLogicDefinition} objects.
+     */
     public Stream<PrintLogicDefinition> definitions() {
         return buttons.values().stream().map(this::def);
     }
@@ -253,6 +259,13 @@ public final class PrintButton<T extends StoredObject> extends Composite<Button>
         return b;
     }
 
+    /**
+     * Executes an action tied to the button. If the button is a {@code PopupButton},
+     * it opens the associated {@code Popover} with the specified {@code anchor} as the target.
+     * Otherwise, it triggers a click action on the button.
+     *
+     * @param anchor The component to be used as the target if the button is a {@code PopupButton}.
+     */
     public void execute(Component anchor) {
         if(button instanceof PopupButton p) {
             Popover po = p.getPopover();
@@ -263,6 +276,12 @@ public final class PrintButton<T extends StoredObject> extends Composite<Button>
         button.click();
     }
 
+    /**
+     * Represents a contract for UI components that may include a print button
+     * or additional associated print-related buttons.
+     * Classes implementing this interface can provide further customization
+     * to expose additional print buttons, if applicable.
+     */
     public interface HasPrintButton {
         default List<Component> listMorePrintButtons() {
             return null;
