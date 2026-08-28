@@ -169,7 +169,7 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
      *
      * @param className Fully qualified name of the {@link StoredObject} class. The class name may be decorated to
      *                  specify the allowed actions. <p>For example, if you specify the class name like this
-     *                  - "(ADD,EDIT)com.storedobject.core.Person" -, it will allow only ADD and EDIT operations.</p>
+     *                  - "(<code>ADD,EDIT</code>)com.storedobject.core.Person" -, it will allow only ADD and EDIT operations.</p>
      */
     @SuppressWarnings("unchecked")
     public ObjectEditor(String className) throws Exception {
@@ -1208,7 +1208,7 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
 
     /**
      * Save the given object. This is invoked from the {@link #save(Transaction)} method to just save the object if no
-     * customr saver is used.
+     * custom-saver is used.
      * The default implementation just saves the object by invoking {@link StoredObject#save(Transaction)}.
      *
      * @param t Transaction.
@@ -1517,7 +1517,7 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
             if(s == null) { // Searching deliberately switched off
                 return null;
             }
-            if(s != searcher) { // Custom search, need to be configured
+            if(s != searcher) { // Custom-search needs to be configured
                 searcher = s;
                 configureSearch();
             }
@@ -2329,8 +2329,32 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
         Tab tab = getTab(tabName);
         if(tab == null) {
             warning("No such tab: " + tabName);
-        } else {
+            return;
+        }
+        int p;
+        if((p = tabName.indexOf('|')) == -1) {
             linkTabs.setSelectedTab(tab);
+            return;
+        }
+        ObjectLinkField.Tabs tabs = linkTabs;
+        while(true) {
+            tab = tabs.getTab(tabName.substring(0, p));
+            if(tab == null) {
+                warning("No such tab: " + tabName);
+                return;
+            }
+            tabs.setSelectedTab(tab);
+            if(p == tabName.length()) break;
+            tabName = tabName.substring(p + 1);
+            p = tabName.indexOf('|');
+            if(p < 0) {
+                p = tabName.length();
+            }
+            tabs = tabs.tabs(tab);
+            if(tabs == null) {
+                warning("No such tab: " + tabName);
+                return;
+            }
         }
     }
 
@@ -3248,10 +3272,5 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
                 return true;
             }
         }
-    }
-
-    @Override
-    protected HasValue<?, ?> createField(String fieldName) {
-        return null; // TODO Made it final - Debug (Check Port field creation in Skarp's EnquiryEditor code)
     }
 }

@@ -566,7 +566,7 @@ public final class ObjectLinkField<T extends StoredObject>
             return tabs.getTab(sub);
         }
 
-        private Tabs tabs(Tab tab) {
+        Tabs tabs(Tab tab) {
             return components.get(tab).getChildren().filter(t -> t instanceof Tabs)
                     .map(t -> (Tabs)t).findFirst().orElse(null);
         }
