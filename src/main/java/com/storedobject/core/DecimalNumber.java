@@ -388,7 +388,19 @@ public class DecimalNumber implements Storable, Comparable<DecimalNumber> {
 	 * @return {@code true} if the absolute difference between the values is within the calculated tolerance, {@code false} otherwise.
 	 */
 	public boolean checkTolerance(BigDecimal another, Percentage tolerance) {
-		BigDecimal delta = value.multiply(tolerance.getPercentageBy100());
-		return value.subtract(another).abs().compareTo(delta) <= 0;
+		return checkTolerance(value, another, tolerance);
+	}
+
+	/**
+	 * Checks whether the difference between two BigDecimal values is within a specified tolerance percentage.
+	 *
+	 * @param value1 the first value to compare
+	 * @param value2 the second value to compare
+	 * @param tolerance the allowable tolerance as a percentage
+	 * @return true if the absolute difference between value1 and value2 is within the tolerance, false otherwise
+	 */
+	public static boolean checkTolerance(BigDecimal value1, BigDecimal value2, Percentage tolerance) {
+		BigDecimal delta = value1.multiply(tolerance.getPercentageBy100());
+		return value2.subtract(value1).abs().compareTo(delta) <= 0;
 	}
 }

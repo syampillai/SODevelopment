@@ -875,4 +875,8 @@ public final class Money implements Storable, Comparable<Money> {
 	public static int getFractionDigits(Currency currency) {
 		return Math.max(currency.getDefaultFractionDigits(), 0);
 	}
+
+	public boolean checkTolerance(Money another, Percentage tolerance) {
+		return DecimalNumber.checkTolerance(getValue(), another.getValue(), tolerance);
+	}
 }
