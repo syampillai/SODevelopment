@@ -2408,4 +2408,11 @@ public abstract class StoredObject implements Displayable, HasId, StringFiller {
     public SystemUser getActor(String action) {
         return UserAction.getActor(this, action);
     }
+
+    public void log(Object anything) {
+        log(anything, null);
+    }
+
+    public void log(Object anything, Throwable error) {
+    }
 }

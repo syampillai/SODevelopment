@@ -36,6 +36,9 @@ public class Knowledge extends com.storedobject.ai.Knowledge implements Executab
         if(topic == null) {
             return;
         }
+        if(topic.startsWith("LOG-")) {
+            setLogging(true);
+        }
         int p = topic.indexOf('|');
         if(p > 0) {
             add(topic.substring(p + 1));

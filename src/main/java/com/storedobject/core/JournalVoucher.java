@@ -635,7 +635,7 @@ public class JournalVoucher extends StoredObject implements Financial, OfEntity,
      */
     public final void credit(Account account, Money amount, int entrySerial, String type, String particulars)
             throws Exception {
-        credit(account, amount, amount, entrySerial, type, particulars);
+        credit(account, amount, null, entrySerial, type, particulars);
     }
 
     /**
@@ -650,7 +650,7 @@ public class JournalVoucher extends StoredObject implements Financial, OfEntity,
      */
     public final void credit(Account account, BigDecimal amount, int entrySerial, String type, String particulars)
             throws Exception {
-        credit(account, amount, amount, entrySerial, type, particulars);
+        credit(account, amount, null, entrySerial, type, particulars);
     }
 
     /**
@@ -699,7 +699,11 @@ public class JournalVoucher extends StoredObject implements Financial, OfEntity,
             throw new SOException("Branch Account - " + account.toDisplay());
         }
         if(localCurrencyAmount == null) {
-            localCurrencyAmount = amount;
+            if (account.getCurrency() == account.getLocalCurrency()) {
+                localCurrencyAmount = amount;
+            } else {
+                localCurrencyAmount = amount.convert(account.getLocalCurrency());
+            }
         }
         if(amount == null || localCurrencyAmount.isZero()) {
             throw new SOException("Amount is zero" + ", Account: " + account.toDisplay());
@@ -754,8 +758,8 @@ public class JournalVoucher extends StoredObject implements Financial, OfEntity,
      */
     public final void credit(Account account, BigDecimal amount, BigDecimal localCurrencyAmount, int entrySerial,
                              String type, String particulars) throws Exception {
-        credit(account, account.createAmount(amount), account.createLocalCurrencyAmount(localCurrencyAmount),
-                entrySerial, type, particulars);
+        credit(account, account.createAmount(amount), localCurrencyAmount == null ? null :
+                        account.createLocalCurrencyAmount(localCurrencyAmount), entrySerial, type, particulars);
     }
 
     /**
@@ -837,7 +841,7 @@ public class JournalVoucher extends StoredObject implements Financial, OfEntity,
      * @throws Exception Any exception.
      */
     public final void credit(Account account, BigDecimal amount, String type, String particulars) throws Exception {
-        credit(account, amount, amount, 0, type, particulars);
+        credit(account, amount, null, 0, type, particulars);
     }
 
     /**
@@ -885,7 +889,7 @@ public class JournalVoucher extends StoredObject implements Financial, OfEntity,
                             Date valueDate)
             throws Exception {
         Money r = amount.negate();
-        credit(account, r, r, entrySerial, type, particulars, valueDate);
+        credit(account, r, entrySerial, type, particulars, valueDate);
     }
 
     /**
@@ -902,7 +906,7 @@ public class JournalVoucher extends StoredObject implements Financial, OfEntity,
     public final void debit(Account account, BigDecimal amount, int entrySerial, String type, String particulars,
                             Date valueDate) throws Exception {
         BigDecimal r = amount.negate();
-        credit(account, r, r, entrySerial, type, particulars, valueDate);
+        credit(account, r, null, entrySerial, type, particulars, valueDate);
     }
 
     /**
@@ -919,7 +923,8 @@ public class JournalVoucher extends StoredObject implements Financial, OfEntity,
      */
     public final void debit(Account account, Money amount, Money localCurrencyAmount, int entrySerial,
                             String type, String particulars, Date valueDate) throws Exception {
-        credit(account, amount.negate(), localCurrencyAmount.negate(), entrySerial, type, particulars, valueDate);
+        credit(account, amount.negate(), localCurrencyAmount == null ? null : localCurrencyAmount.negate(),
+                entrySerial, type, particulars, valueDate);
     }
 
     /**
@@ -936,7 +941,8 @@ public class JournalVoucher extends StoredObject implements Financial, OfEntity,
      */
     public final void debit(Account account, BigDecimal amount, BigDecimal localCurrencyAmount, int entrySerial,
                             String type, String particulars, Date valueDate) throws Exception {
-        credit(account, amount.negate(), localCurrencyAmount.negate(), entrySerial, type, particulars, valueDate);
+        credit(account, amount.negate(), localCurrencyAmount == null ? null : localCurrencyAmount.negate(),
+                entrySerial, type, particulars, valueDate);
     }
 
     /**
@@ -952,7 +958,7 @@ public class JournalVoucher extends StoredObject implements Financial, OfEntity,
      */
     public final void credit(Account account, Money amount, int entrySerial, String type, String particulars,
                              Date valueDate) throws Exception {
-        credit(account, amount, amount, entrySerial, type, particulars, valueDate);
+        credit(account, amount, null, entrySerial, type, particulars, valueDate);
     }
 
     /**
@@ -968,7 +974,7 @@ public class JournalVoucher extends StoredObject implements Financial, OfEntity,
      */
     public final void credit(Account account, BigDecimal amount, int entrySerial, String type, String particulars,
                              Date valueDate) throws Exception {
-        credit(account, amount, amount, entrySerial, type, particulars, valueDate);
+        credit(account, amount, null, entrySerial, type, particulars, valueDate);
     }
 
 
@@ -986,7 +992,8 @@ public class JournalVoucher extends StoredObject implements Financial, OfEntity,
      */
     public final void credit(Account account, BigDecimal amount, BigDecimal localCurrencyAmount, int entrySerial,
                              String type, String particulars, Date valueDate) throws Exception {
-        credit(account, account.createAmount(amount), account.createLocalCurrencyAmount(localCurrencyAmount),
+        credit(account, account.createAmount(amount),
+                localCurrencyAmount == null ? null : account.createLocalCurrencyAmount(localCurrencyAmount),
                 entrySerial, type, particulars, valueDate);
     }
 

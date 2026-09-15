@@ -73,6 +73,7 @@ public abstract class AbstractUnit extends Name {
      * @return the consumption value as a Double, or null if unable to calculate
      */
     Double consumption(int resource, long from, long to) {
+        logger.info("Calculating consumption for resource " + resource + " from " + from + " to " + to + ", Unit - " + getName());
         return computeConsumption(resource, from, to);
     }
 

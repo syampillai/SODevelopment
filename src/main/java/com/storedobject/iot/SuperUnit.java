@@ -8,6 +8,19 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Abstract class representing a special type of unit with hierarchical child management capabilities
+ * and advanced statistical tracking in a domain-specific IoT system.
+ <p></p>
+ * This class provides methods for managing child units, ensuring data integrity by enforcing
+ * constraints such as preventing circular dependencies, maintaining block association,
+ * and hierarchical traversal of child units.
+ <p></p>
+ * It also facilitates statistical tracking and retrieval mechanisms while delegating the
+ * actual statistical computations to derived classes.
+ *
+ * @author Syam
+ */
 public abstract class SuperUnit extends Unit implements HasChildren {
 
     private Map<String, Id> statistics;

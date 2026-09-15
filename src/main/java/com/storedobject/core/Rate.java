@@ -12,7 +12,7 @@ import java.math.RoundingMode;
  *
  * @author Syam
  */
-public final class Rate extends DecimalNumber {
+public final class Rate extends DecimalNumber implements CurrencyRateProvider {
 
 	/**
 	 * A constant representing a rate of value 1.
@@ -201,5 +201,20 @@ public final class Rate extends DecimalNumber {
 	 */
 	public Rate reverse() {
 		return new Rate(BigDecimal.ONE.divide(getValue(), 6, RoundingMode.HALF_UP));
+	}
+
+	@Override
+	public Rate getBuyingRate() {
+		return this;
+	}
+
+	@Override
+	public Rate getSellingRate() {
+		return this;
+	}
+
+	@Override
+	public Rate getRate() {
+		return this;
 	}
 }
