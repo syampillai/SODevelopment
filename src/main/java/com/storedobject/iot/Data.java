@@ -151,7 +151,7 @@ public abstract class Data extends StoredObject implements DBTransaction.NoHisto
      * @return Latest data record or null if not available.
      */
     public static <IOT extends Data> IOT getLatest(Class<IOT> objectClass, Id unitId) {
-        Query q = query(objectClass, "Max(Id)", Id.isNull(unitId) ? null : ("Unit=" + unitId));
+        Query q = query(objectClass, "Max(Id)", Id.isNull(unitId) ? null : ("Unit=" + unitId), true);
         BigDecimal id = null;
         try {
             ResultSet rs = q.getResultSet();
@@ -200,7 +200,7 @@ public abstract class Data extends StoredObject implements DBTransaction.NoHisto
      *
      * @param dataClass Data class.
      * @param unitId Unit Id.
-     * @param collectedAt Time of collection.
+     * @param collectedAt Collection time.
      * @param timeSpan Time span. (Collected at +/- this time span is searched).
      * @param <D> Data type.
      * @return Data value if found.
@@ -210,7 +210,7 @@ public abstract class Data extends StoredObject implements DBTransaction.NoHisto
         Double data = null;
         long ts = timeSpan == null ? 0 : timeSpan.toMillis(), at, pat = 0;
         try (Query list = query(dataClass, "CollectedAt," + variable, "Unit=" + unitId
-                + " AND CollectedAt BETWEEN " + (collectedAt - ts) + " AND " + (collectedAt + ts), "CollectedAt")) {
+                + " AND CollectedAt BETWEEN " + (collectedAt - ts) + " AND " + (collectedAt + ts), "CollectedAt", true)) {
             for(ResultSet d: list) {
                 try {
                     at = d.getLong(1);
@@ -348,7 +348,7 @@ public abstract class Data extends StoredObject implements DBTransaction.NoHisto
         boolean previous = toTrue, current;
         // Note: If the state was changed exactly at "from", it will be ignored because it was counted previously.
         try (Query list = query(dataClass, variable, "Unit=" + unitId
-                + " AND CollectedAt BETWEEN " + (from + 1) + " AND " + to, "CollectedAt")) {
+                + " AND CollectedAt BETWEEN " + (from + 1) + " AND " + to, "CollectedAt", true)) {
             for(ResultSet d: list) {
                 try {
                     current = d.getBoolean(1);

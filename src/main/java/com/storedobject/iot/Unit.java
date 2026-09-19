@@ -445,7 +445,7 @@ public abstract class Unit extends AbstractUnit {
         }
         if(y == -1) { // Never computed
             long first;
-            try (Query q = query(dataClass, "/Min(CollectedAt)", "Unit=" + getId())) {
+            try (Query q = query(dataClass, "/Min(CollectedAt)", "Unit=" + getId(), true)) {
                 rs = q.getResultSet();
                 first = rs.getLong(1);
                 if(rs.wasNull()) {
@@ -482,7 +482,7 @@ public abstract class Unit extends AbstractUnit {
             return -1;
         }
         Query query = query(dataClass, name, "Unit=" + getId() + " AND CollectedAt BETWEEN "
-                + dataPeriod.from() + " AND " + dataPeriod.to());
+                + dataPeriod.from() + " AND " + dataPeriod.to(), true);
         try(query) {
             for (ResultSet rs : query) {
                 hs.add(rs.getDouble(1));

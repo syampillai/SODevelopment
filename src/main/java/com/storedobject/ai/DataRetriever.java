@@ -1,6 +1,7 @@
 package com.storedobject.ai;
 
 import com.storedobject.core.ObjectIterator;
+import com.storedobject.core.SOException;
 import com.storedobject.core.StoredObject;
 
 /**
@@ -40,9 +41,10 @@ public interface DataRetriever {
      * @param <T>     The type of the stored object to retrieve, extending {@code StoredObject}.
      * @param c       The class object representing the type of the stored object to retrieve.
      * @param purpose The purpose or reason for retrieving the stored object, represented as a string.
+     * @throws SOException if an error occurs while retrieving the stored object or unable to provide the requested object.
      * @return The stored object of the specified type.
      */
-    default <T extends StoredObject> T get(Class<T> c, String purpose) {
+    default <T extends StoredObject> T get(Class<T> c, String purpose) throws SOException {
         return StoredObject.get(c);
     }
 }

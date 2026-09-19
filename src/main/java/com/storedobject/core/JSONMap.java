@@ -81,7 +81,14 @@ public class JSONMap implements Map<String, Object>, Serializable {
      */
     public JSON toJSON() {
         normalize();
-        return new JSON(this);
+        try {
+            return new JSON(this);
+        } catch (Throwable e) {
+            ApplicationServer.log(e);
+            return new JSON("""
+                    {"error": "JSON Serialization Error"}
+                    """);
+        }
     }
 
     @Override
@@ -157,6 +164,9 @@ public class JSONMap implements Map<String, Object>, Serializable {
             m.put("available", cv.consider());
             m.put("value", value(key, cv.getValueObject(), contentToString));
             return m;
+        }
+        if(value instanceof DecimalNumber dn) {
+            return dn.getValue();
         }
         if (value instanceof HasStreamData hsd) {
             value = new StreamDataContent(hsd.getStreamData());
