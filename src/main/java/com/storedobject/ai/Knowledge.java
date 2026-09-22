@@ -5,6 +5,7 @@ import com.storedobject.common.StringList;
 import com.storedobject.core.*;
 
 import java.math.BigInteger;
+import java.sql.Date;
 import java.util.*;
 
 /**
@@ -16,6 +17,7 @@ import java.util.*;
 public class Knowledge implements DataRetriever {
 
     private final TransactionManager tm;
+    private final Map<Class<?>, Map<String, Object>> memory = new HashMap<>();
     final Map<String, Class<? extends StoredObject>> entities = new HashMap<>();
     final Map<Class<? extends StoredObject>, StringList> attributes = new HashMap<>();
     final Collection<Object> modules = new ArrayList<>();
@@ -340,5 +342,151 @@ public class Knowledge implements DataRetriever {
     @Override
     public <T extends StoredObject> T get(Class<T> c, String purpose) throws SOException {
         return dr().get(c, purpose);
+    }
+    /**
+     * Retrieves the current date based on the provided purpose.
+     *
+     * @param purpose A description or context for the date retrieval, used to determine the specific logic if applicable.
+     * @return The current date as a {@code Date} object.
+     * @throws SOException If an error occurs during date retrieval.
+     */
+    public Date getDate(String purpose) throws SOException {
+        return DateUtility.today();
+    }
+
+    /**
+     * Retrieves the date period based on the specified purpose.
+     *
+     * @param purpose the purpose for which the date period is being requested
+     * @return a {@code DatePeriod} object representing the calculated date range
+     * @throws SOException if an error occurs while determining the date period
+     */
+    public DatePeriod getDatePeriod(String purpose) throws SOException {
+        return new DatePeriod(DateUtility.startOfMonth(), DateUtility.today());
+    }
+
+    /**
+     * Stores a given value into memory with optional settings for keys and metadata.
+     *
+     * @param value the object to be stored in memory. This parameter must not be null.
+     */
+    public final void putToMemory(Object value) {
+        putToMemory(value, null, null);
+    }
+
+    /**
+     * Stores the given value in memory with an optional context and associated name.
+     *
+     * @param value the object to be stored in memory
+     * @param name the identifier name associated with the stored object
+     */
+    public final void putToMemory(Object value, String name) {
+        putToMemory(value, null, name);
+    }
+
+    /**
+     * Stores the given value in memory under the specified type and name.
+     * If the name is null, an empty string will be used as the name.
+     * If the type is null, the runtime class of the value will be used as the type.
+     * If the type is not assignable from the value's class, the operation is ignored.
+     *
+     * @param value the object to store in memory; must not be null
+     * @param type the class under which the value will be stored; if null, the runtime class of the value will be used
+     * @param name the identifier for the value; if null, an empty string will be used
+     */
+    public final void putToMemory(Object value, Class<?> type, String name) {
+        if(value == null) {
+            return;
+        }
+        if(name == null) {
+            name = "";
+        }
+        if(type == null) {
+            type = value.getClass();
+        } else if(!type.isAssignableFrom(value.getClass())) {
+            return;
+        }
+        memory.computeIfAbsent(type, k -> new HashMap<>()).put(name, value);
+    }
+
+    /**
+     * Removes all instances of the specified type from memory. Optionally, this method
+     * can be extended to support specific conditions or filters depending on the
+     * implementation of the overloaded method being called.
+     *
+     * @param type the class type of the objects to be removed from memory; must not be null
+     */
+    public final void removeFromMemory(Class<?> type) {
+        removeFromMemory(type, null);
+    }
+
+    /**
+     * Removes an entry associated with the specified class type and name from memory.
+     *
+     * @param type The class type for which the memory entry should be removed. Cannot be null.
+     * @param name The name of the entry to remove. If null, an empty string will be used.
+     */
+    public final void removeFromMemory(Class<?> type, String name) {
+        if(type == null) {
+            return;
+        }
+        if(name == null) {
+            name = "";
+        }
+        Map<String, Object> m = memory.get(type);
+        if(m == null) {
+            return;
+        }
+        m.remove(name);
+        if(m.isEmpty()) {
+            memory.remove(type);
+        }
+    }
+
+    /**
+     * Retrieves an object of the specified type from memory.
+     * If the object is not found, it may return null or a default value depending on the implementation.
+     *
+     * @param <O> the type of the object to retrieve
+     * @param type the class representation of the type to retrieve from memory
+     * @return the object of the specified type from memory, or null if not found
+     */
+    public final <O> O getFromMemory(Class<O> type) {
+        return getFromMemory(type, null);
+    }
+
+    /**
+     * Retrieves an object of the specified type and name from memory.
+     *
+     * @param <O> the type of the object to retrieve
+     * @param type the class type of the object to retrieve; must not be null
+     * @param name the name associated with the object in memory; if null, an empty string is used
+     * @return the object from memory if found, or null if no matching entry exists
+     */
+    public final <O> O getFromMemory(Class<O> type, String name) {
+        if(type == null) {
+            return null;
+        }
+        if(name == null) {
+            name = "";
+        }
+        Map<String, Object> m = memory.get(type);
+        if(m == null) {
+            return null;
+        }
+        //noinspection unchecked
+        return (O)m.get(name);
+    }
+
+    /**
+     * Clears the memory by removing all stored data.
+     * This method provides a mechanism to reset or free up memory resources
+     * by clearing the contents of the memory storage. Call this method when
+     * memory cleanup is required to release resources or prevent memory-related issues.
+     * Note that after invoking this method, all previously stored data
+     * will be lost and cannot be retrieved.
+     */
+    public final void clearMemory() {
+        memory.clear();
     }
 }
