@@ -33,7 +33,7 @@ public class Knowledge extends com.storedobject.ai.Knowledge implements Executab
      */
     public Knowledge(String topic) {
         super(Application.get());
-        setDataRetriever(new DataRetriever());
+        setDataRetriever(new DataRetriever(Application.get()));
         if(topic == null) {
             return;
         }

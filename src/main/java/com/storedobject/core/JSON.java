@@ -338,10 +338,26 @@ public class JSON extends com.storedobject.common.JSON {
         return DatePeriod.create(d1, d2);
     }
 
+    public TimePeriod getTimePeriod() {
+        Time d1 = getTime("timeFrom"), d2 = getTime("timeTo");
+        if(d1 == null || d2 == null) {
+            return null;
+        }
+        return TimePeriod.create(d1, d2);
+    }
+
+    public TimestampPeriod getTimestampPeriod() {
+        Timestamp d1 = getTimestamp("timeFrom"), d2 = getTimestamp("timeTo");
+        if(d1 == null || d2 == null) {
+            return null;
+        }
+        return TimestampPeriod.create(d1, d2);
+    }
+
     /**
      * Helper method to retrieve a {@link StoredObject} class value from the JSON request.
      * @return {@link StoredObject} class value if found, otherwise an exception is raised.
-     * @exception Exception is thrown if class name can't be extracted or the name is invalid.
+     * @exception Exception is thrown if the class name can't be extracted or the name is invalid.
      */
     public Class<? extends StoredObject> getDataClass(String attribute) throws Exception {
         String className = getString(attribute);

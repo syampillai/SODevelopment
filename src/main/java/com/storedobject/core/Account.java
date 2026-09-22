@@ -509,8 +509,20 @@ public class Account extends StoredObject implements OfEntity, HasName {
         if(!ac.getAccountsAllowed()) {
             throw new Invalid_State("Account Chart '" + ac.getName() + "' doesn't allow accounts");
         }
+        checkCash(ac);
         accountStatus = ac.getStatus() | (accountStatus & 0b111);
         super.validateData(tm);
+    }
+
+    private void checkCash(AccountChart chart) throws Invalid_State {
+        if(getClass() == Account.class && (contains(chart.getName(), "cash") || contains(name, "cash"))) {
+            throw new Invalid_State("Invalid cash account type");
+        }
+    }
+
+    private boolean contains(String in, String e) {
+        in = " " + in.toLowerCase() + " ";
+        return in.contains(" " + e + " ");
     }
 
     /**

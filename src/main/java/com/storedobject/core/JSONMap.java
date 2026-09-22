@@ -177,6 +177,21 @@ public class JSONMap implements Map<String, Object>, Serializable {
             return JSON.DateTimeConverter.format(t);
         } else if(value instanceof java.util.Date d) {
             return JSON.DateTimeConverter.format(d);
+        } else if(value instanceof DatePeriod p) {
+            Map<String, Object> m = new HashMap<>();
+            m.put("dateFrom", JSON.DateTimeConverter.format(p.getFrom()));
+            m.put("dateTo", JSON.DateTimeConverter.format(p.getTo()));
+            return m;
+        } else if(value instanceof TimePeriod p) {
+            Map<String, Object> m = new HashMap<>();
+            m.put("timeFrom", JSON.DateTimeConverter.format(p.getFrom()));
+            m.put("timeTo", JSON.DateTimeConverter.format(p.getTo()));
+            return m;
+        } else if(value instanceof TimestampPeriod p) {
+            Map<String, Object> m = new HashMap<>();
+            m.put("timeFrom", JSON.DateTimeConverter.format(p.getFrom()));
+            m.put("timeTo", JSON.DateTimeConverter.format(p.getTo()));
+            return m;
         } else if(value instanceof Address a) {
             Map<String, Object> m = new HashMap<>();
             m.put("country", a.getCountry().getShortName());
