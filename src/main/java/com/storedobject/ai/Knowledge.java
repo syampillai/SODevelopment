@@ -338,7 +338,7 @@ public class Knowledge implements DataRetriever {
     }
 
     @Override
-    public <T extends StoredObject> T get(Class<T> c, String purpose) {
+    public <T extends StoredObject> T get(Class<T> c, String purpose) throws SOException {
         return dr().get(c, purpose);
     }
 }
