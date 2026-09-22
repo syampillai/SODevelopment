@@ -5,33 +5,29 @@ public class ColumnDefinition extends com.storedobject.core.StoredObject impleme
     public ColumnDefinition() {
     }
 
-    public java.lang.String toString() {
+    public String toString() {
         return null;
     }
 
-    public java.lang.String getName() {
+    public String getName() {
         return null;
     }
 
-    public void setName(java.lang.String name) {
+    public void setName(String name) {
     }
 
     public int getType() {
         return 0;
     }
 
-    public static java.lang.String getDefaultValue(java.lang.String attribute) {
-        return null;
-    }
-
-    public java.lang.String getParameters() {
+    public static String getDefaultValue(String attribute) {
         return null;
     }
 
     public static void columns(com.storedobject.core.Columns columns) {
     }
 
-    public static java.lang.String[] displayColumns() {
+    public static String[] displayColumns() {
         return null;
     }
 
@@ -52,37 +48,44 @@ public class ColumnDefinition extends com.storedobject.core.StoredObject impleme
     public void setType(int type) {
     }
 
-    public static java.lang.String[] getTypeValues() {
+    public static String[] getTypeValues() {
         return null;
     }
 
-    public static java.lang.String getTypeValue(int type) {
+    public static String getTypeValue(int type) {
         return null;
     }
 
-    public java.lang.String getTypeValue() {
+    public String getTypeValue() {
         return null;
     }
 
-    public void setCaption(java.lang.String caption) {
+    public void setCaption(String caption) {
     }
 
-    public java.lang.String getCaption() {
+    public String getCaption() {
         return null;
     }
 
-    public static java.lang.String browseOrder() {
+    public static String browseOrder() {
         return null;
     }
 
-    public void setParameters(java.lang.String parameters) {
+    public String getParameters() {
+        return "";
     }
 
-    public com.storedobject.core.Id getUniqueId() {
-        return null;
+    public void setParameters(String parameters) {
     }
 
-    public java.lang.String getColumnType() {
+    public void setStyles(String styles) {
+    }
+
+    public String getStyles() {
+        return "";
+    }
+
+    public String getColumnType() {
         return null;
     }
 
@@ -90,11 +93,11 @@ public class ColumnDefinition extends com.storedobject.core.StoredObject impleme
         return false;
     }
 
-    public java.lang.String getInitString() {
+    public String getInitString() {
         return null;
     }
 
-    public java.lang.String getColumnParam() {
+    public String getColumnParam() {
         return null;
     }
 
@@ -117,5 +120,11 @@ public class ColumnDefinition extends com.storedobject.core.StoredObject impleme
     }
 
     public void setDisplayOnly(boolean displayOnly) {
+    }
+    public void setTabName(String tabName) {
+    }
+
+    public String getTabName() {
+        return "";
     }
 }

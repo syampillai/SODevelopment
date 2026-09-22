@@ -2,10 +2,10 @@ package com.storedobject.ui.ai;
 
 import com.storedobject.ai.KnowledgeModule;
 import com.storedobject.common.Executable;
-import com.storedobject.core.ApplicationServer;
-import com.storedobject.core.JavaClassLoader;
-import com.storedobject.core.StoredObject;
+import com.storedobject.core.*;
 import com.storedobject.ui.Application;
+
+import java.util.concurrent.Semaphore;
 
 /**
  * The Knowledge class is an extension of the com.storedobject.ai.Knowledge class 
@@ -16,6 +16,8 @@ import com.storedobject.ui.Application;
  */
 public class Knowledge extends com.storedobject.ai.Knowledge implements Executable {
 
+    final Application application;
+    final Semaphore semaphore = new Semaphore(1, true);
     private String topic;
     private ChatView chatView;
 
@@ -32,21 +34,24 @@ public class Knowledge extends com.storedobject.ai.Knowledge implements Executab
      * @param topic Topic (It could be a topic name or topic name followed by | and then class details).
      */
     public Knowledge(String topic) {
-        super(Application.get());
-        setDataRetriever(new DataRetriever(Application.get()));
-        if(topic == null) {
-            return;
+        this(Application.get(), topic);
+    }
+
+    private Knowledge(Application application, String topic) {
+        super(application);
+        this.application = application;
+        if(topic != null) {
+            if (topic.startsWith("LOG-")) {
+                setLogging(true);
+            }
+            int p = topic.indexOf('|');
+            if (p > 0) {
+                add(topic.substring(p + 1));
+                topic = topic.substring(0, p);
+            }
+            setTopic(topic);
         }
-        if(topic.startsWith("LOG-")) {
-            setLogging(true);
-        }
-        int p = topic.indexOf('|');
-        if(p > 0) {
-            add(topic.substring(p + 1));
-            topic = topic.substring(0, p);
-        }
-        setTopic(topic);
-        Application.get().closeMenu();
+        application.closeMenu();
     }
 
     /**
@@ -150,5 +155,26 @@ public class Knowledge extends com.storedobject.ai.Knowledge implements Executab
         if(chatView != null) chatView.close();
         chatView = new ChatView(this, getTopic());
         chatView.execute();
+    }
+
+    /**
+     * Retrieves the application instance associated with this knowledge object.
+     *
+     * @return The application instance.
+     */
+    public final Application getApplication() {
+        return application;
+    }
+
+    @Override
+    public <T extends StoredObject> T get(Class<T> objectClass, String purpose) throws SOException {
+        AcceptObject<T> ao = new AcceptObject<>(this, objectClass, purpose);
+        T object = ao.getObject();
+        if(object == null) {
+            JSONMap m = ao.getMap();
+            Object e = m.get("error");
+            throw new SOException(e == null ? m.toString() : e.toString());
+        }
+        return object;
     }
 }
