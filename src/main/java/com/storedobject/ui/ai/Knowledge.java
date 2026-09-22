@@ -5,6 +5,7 @@ import com.storedobject.common.Executable;
 import com.storedobject.core.*;
 import com.storedobject.ui.Application;
 
+import java.sql.Date;
 import java.util.concurrent.Semaphore;
 
 /**
@@ -169,6 +170,7 @@ public class Knowledge extends com.storedobject.ai.Knowledge implements Executab
     @Override
     public <T extends StoredObject> T get(Class<T> objectClass, String purpose) throws SOException {
         AcceptObject<T> ao = new AcceptObject<>(this, objectClass, purpose);
+        customize(objectClass, ao, purpose);
         T object = ao.getObject();
         if(object == null) {
             JSONMap m = ao.getMap();
@@ -176,5 +178,64 @@ public class Knowledge extends com.storedobject.ai.Knowledge implements Executab
             throw new SOException(e == null ? m.toString() : e.toString());
         }
         return object;
+    }
+
+    /**
+     * Customizes a {@link StoredObject} class for a specific purpose using the provided {@link AcceptObject}.
+     *
+     * @param <T> The type of object being customized, which must extend {@link StoredObject}.
+     * @param objectClass The class type of the object to be customized. This must be a class that extends {@link StoredObject}.
+     * @param acceptObject An instance of {@link AcceptObject} used to process the object of type {@code T}.
+     * @param purpose A string indicating the purpose of customization. This is typically used to provide descriptive context about the customization operation.
+     */
+    public <T extends StoredObject> void customize(Class<T> objectClass, AcceptObject<T> acceptObject, String purpose) {
+    }
+
+    @Override
+    public Date getDate(String purpose) throws SOException {
+        AcceptDate acceptDate = new AcceptDate(this, purpose);
+        customize(acceptDate, purpose);
+        Date date = acceptDate.getDate();
+        if(date == null) {
+            JSONMap m = acceptDate.getMap();
+            Object e = m.get("error");
+            throw new SOException(e == null ? m.toString() : e.toString());
+        }
+        return date;
+    }
+
+    /**
+     * Customizes the provided {@link AcceptDate} instance for a specific purpose.
+     *
+     * @param acceptDate The {@link AcceptDate} instance to be customized. This object facilitates the handling
+     *                   of date-related interactions within the system and maintains the selected date.
+     * @param purpose    A string describing the purpose of the customization. This is typically used to
+     *                   provide context or descriptive information about the operation being performed.
+     */
+    public void customize(AcceptDate acceptDate, String purpose) {
+    }
+
+    @Override
+    public DatePeriod getDatePeriod(String purpose) throws SOException {
+        AcceptDatePeriod acceptDatePeriod = new AcceptDatePeriod(this, purpose);
+        customize(acceptDatePeriod, purpose);
+        DatePeriod p = acceptDatePeriod.getDatePeriod();
+        if(p == null) {
+            JSONMap m = acceptDatePeriod.getMap();
+            Object e = m.get("error");
+            throw new SOException(e == null ? m.toString() : e.toString());
+        }
+        return p;
+    }
+
+    /**
+     * Customizes the provided {@link AcceptDatePeriod} instance for a specific purpose.
+     *
+     * @param acceptDatePeriod The {@link AcceptDatePeriod} instance to be customized. This object is used
+     *                         for handling a specific date-period-related operation within the system.
+     * @param purpose          A string that provides a descriptive context or purpose for the customization.
+     *                         It typically represents the reason or intent behind the operation.
+     */
+    public void customize(AcceptDatePeriod acceptDatePeriod, String purpose) {
     }
 }
