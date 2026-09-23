@@ -343,6 +343,16 @@ public class Knowledge implements DataRetriever {
     public <T extends StoredObject> T get(Class<T> c, String purpose) throws SOException {
         return dr().get(c, purpose);
     }
+
+    private String nameOf(Class<? extends StoredObject> c) {
+        String name = StringUtility.makeLabel(c);
+        if(c == entities.get(name.toLowerCase())) return name;
+        for(String k: entities.keySet()) {
+            if(c == entities.get(k)) return k;
+        }
+        return name;
+    }
+
     /**
      * Retrieves the current date based on the provided purpose.
      *
@@ -398,13 +408,14 @@ public class Knowledge implements DataRetriever {
         if(value == null) {
             return;
         }
-        if(name == null) {
-            name = "";
-        }
         if(type == null) {
             type = value.getClass();
         } else if(!type.isAssignableFrom(value.getClass())) {
             return;
+        }
+        if(name == null) {
+            //noinspection unchecked
+            name = StoredObject.class.isAssignableFrom(type) ? nameOf((Class<? extends StoredObject>) type) : "";
         }
         memory.computeIfAbsent(type, k -> new HashMap<>()).put(name, value);
     }
@@ -430,12 +441,13 @@ public class Knowledge implements DataRetriever {
         if(type == null) {
             return;
         }
-        if(name == null) {
-            name = "";
-        }
         Map<String, Object> m = memory.get(type);
         if(m == null) {
             return;
+        }
+        if(name == null) {
+            //noinspection unchecked
+            name = StoredObject.class.isAssignableFrom(type) ? nameOf((Class<? extends StoredObject>) type) : "";
         }
         m.remove(name);
         if(m.isEmpty()) {
@@ -467,12 +479,13 @@ public class Knowledge implements DataRetriever {
         if(type == null) {
             return null;
         }
-        if(name == null) {
-            name = "";
-        }
         Map<String, Object> m = memory.get(type);
         if(m == null) {
             return null;
+        }
+        if(name == null) {
+            //noinspection unchecked
+            name = StoredObject.class.isAssignableFrom(type) ? nameOf((Class<? extends StoredObject>) type) : "";
         }
         //noinspection unchecked
         return (O)m.get(name);
@@ -488,5 +501,80 @@ public class Knowledge implements DataRetriever {
      */
     public final void clearMemory() {
         memory.clear();
+    }
+
+    /**
+     * Retrieves the selected date. If no date is currently stored in memory,
+     * the method prompts the user to select a date. If the user fails to
+     * select a date or an error occurs during the selection process,
+     * the current date is used as the fallback.
+     *
+     * @return The selected date, either retrieved from memory, chosen by
+     *         the user, or the current date as a default if other options fail.
+     */
+    public final Date getSelectedDate() {
+        Date d = getFromMemory(Date.class, "date");
+        if(d == null) {
+            try {
+                d = getDate("Select a date");
+                putToMemory(d, "date");
+            } catch (SOException ignored) {
+            }
+        }
+        if(d == null) {
+            d = DateUtility.today();
+            putToMemory(d, "date");
+        }
+        return d;
+    }
+
+    /**
+     * Retrieves the selected date period. If no date period is available in memory,
+     * attempts to fetch a new date period. If this also fails, defaults to a date
+     * period ranging from the start of the current month to today's date.
+     *
+     * @return the selected date period, either retrieved from memory, fetched
+     *         dynamically, or defaulted to the start of the current month to today.
+     */
+    public final DatePeriod getSelectedDatePeriod() {
+        DatePeriod p = getFromMemory(DatePeriod.class, "datePeriod");
+        if(p == null) {
+            try {
+                p = getDatePeriod("Select a period");
+                putToMemory(p, "datePeriod");
+            } catch (SOException ignored) {
+            }
+        }
+        if(p == null) {
+            p = new DatePeriod(DateUtility.startOfMonth(), DateUtility.today());
+            putToMemory(p, "datePeriod");
+        }
+        return p;
+    }
+
+    /**
+     * Retrieves a selected object of the specified class type. If the object is not found
+     * in memory, it attempts to retrieve it using predefined logic and stores it in memory
+     * for future reference.
+     *
+     * @param <O> the type of the object extending StoredObject
+     * @param objectClass the class type of the object to retrieve
+     * @return the retrieved object of the specified type
+     */
+    public final <O extends StoredObject> O getSelected(Class<O> objectClass) {
+        String name = nameOf(objectClass);
+        O so = getFromMemory(objectClass, name);
+        if(so == null) {
+            try {
+                so = get(objectClass, "Choose");
+                putToMemory(so, name);
+            } catch (SOException ignored) {
+            }
+        }
+        if(so == null) {
+            so = StoredObject.get(objectClass);
+            putToMemory(so, name);
+        }
+        return so;
     }
 }
