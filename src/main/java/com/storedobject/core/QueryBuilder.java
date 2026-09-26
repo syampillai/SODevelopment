@@ -60,7 +60,7 @@ public class QueryBuilder<T extends StoredObject> {
     }
 
     private String where() {
-        if(datePeriod == null || !HasDate.class.isAssignableFrom(objectClass)) {
+        if(noDate()) {
             return whereClause;
         }
         Method m = ClassAttribute.get(objectClass).getMethod("DateAttribute");
@@ -77,6 +77,17 @@ public class QueryBuilder<T extends StoredObject> {
         }
         date = date + datePeriod.getDBCondition();
         return whereClause == null ? date : ("(" + whereClause + ") AND " + date);
+    }
+
+    private boolean noDate() {
+        if(datePeriod == null) {
+            return true;
+        }
+        if(HasDate.class.isAssignableFrom(objectClass)) {
+            return false;
+        }
+        ClassAttribute<T> ca = ClassAttribute.get(objectClass);
+        return !ca.getAttributes().contains("Date") || ca.getMethod("Date") == null;
     }
 
     /**
