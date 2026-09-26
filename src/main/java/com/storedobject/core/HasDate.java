@@ -1,6 +1,6 @@
 package com.storedobject.core;
 
-import java.sql.Date;
+import java.util.Date;
 
 /**
  * Functional interface representing an entity capable of providing a {@link Date}.

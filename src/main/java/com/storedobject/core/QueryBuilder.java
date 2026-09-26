@@ -2,8 +2,8 @@ package com.storedobject.core;
 
 import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
-import java.sql.Date;
 import java.util.Base64;
+import java.util.Date;
 
 /**
  * A builder class for constructing queries and retrieving {@link StoredObject} instances based on various criteria.
