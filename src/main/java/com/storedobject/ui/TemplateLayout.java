@@ -8,7 +8,7 @@ import com.vaadin.flow.component.HasSize;
 import java.util.function.Supplier;
 
 /**
- * A layout {@link com.vaadin.flow.component.Component} based on a template stored in the DB as an HTML like content.
+ * A layout {@link com.vaadin.flow.component.Component} based on a template stored in the DB as an HTML-like content.
  * The content should be stored as {@link com.storedobject.core.TextContent}. The template can contain HTML tags (and thus,
  * Vaadin component tags too) and if any image resources are referenced, respective
  * {@link com.storedobject.core.MediaFile}s must be used just like in {@link HTMLView}. For CSS styling the content,

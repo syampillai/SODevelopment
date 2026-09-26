@@ -1,6 +1,5 @@
 package com.storedobject.ui.ai;
 
-import com.storedobject.core.JSONMap;
 import com.storedobject.ui.Application;
 import com.storedobject.vaadin.DataForm;
 import com.storedobject.vaadin.View;
@@ -20,54 +19,36 @@ import java.util.concurrent.Semaphore;
  *     Note: Please make sure that the map values are set in the {@link #process()} method.
  * </p>
  *
+ * @param <T> The type of data to be accepted and processed.
+ *
  * @author Syam
  */
-public abstract class AcceptData extends DataForm {
+public abstract class AcceptData<T> extends DataForm {
 
     private final Semaphore semaphore = new Semaphore(1, true);
     private final Knowledge knowledge;
-    /**
-     * A JSONMap instance used to store and manage key-value pairs representing additional data
-     * in the AcceptData class. This variable is initialized during the construction of an
-     * AcceptData object, either as a user-provided JSONMap or as an empty JSONMap when not specified.
-     * <p>
-     * This map is designed to hold supplementary information that complements the data
-     * managed within the AcceptData instance, ensuring extensibility and flexibility for diverse
-     * data-handling scenarios.
-     * </p><p>
-     * It is declared as {@code final} to ensure that the reference cannot be reassigned after
-     * initialization and as {@code protected} to allow access within subclasses
-     * of the AcceptData class.
-     * </p>
-     */
-    protected final JSONMap map;
     private boolean dataCollected = false;
-
     /**
-     * Constructs an instance of the AcceptData class with the specified knowledge and caption.
-     * This constructor utilizes an empty JSONMap as the default map.
-     *
-     * @param knowledge the Knowledge object that provides functionality to manage knowledge topics
-     *                  and interact with chat views.
-     * @param caption   the caption to be displayed in the data form; typically used as a title or label.
+     * The class of the data to be accepted.
      */
-    public AcceptData(Knowledge knowledge, String caption) {
-        this(knowledge, caption, null);
-    }
+    protected final Class<T> dataClass;
+    /**
+     * The data that is accepted. Make sure that this is set in the {@link #process()} method.
+     */
+    protected T data;
 
     /**
      * Constructs an instance of the AcceptData class with the specified knowledge, caption, and JSONMap parameters.
      *
+     * @param dataClass the class of the data to be accepted.
      * @param knowledge the Knowledge object that provides functionality to manage knowledge topics
      *                  and interact with chat views.
      * @param caption   the caption to be displayed in the data form; typically used as a title or label.
-     * @param map       the JSONMap object containing key-value pairs for additional data;
-     *                  if null, an empty JSONMap is used by default.
      */
-    public AcceptData(Knowledge knowledge, String caption, JSONMap map) {
+    public AcceptData(Class<T> dataClass, Knowledge knowledge, String caption) {
         super(caption);
+        this.dataClass = dataClass;
         this.knowledge = knowledge;
-        this.map = map == null ? new JSONMap() : map;
     }
 
     /**
@@ -95,70 +76,48 @@ public abstract class AcceptData extends DataForm {
     }
 
     /**
-     * Retrieves the JSONMap object associated with the AcceptData instance.
-     * The method ensures thread-safe access to the map and executes necessary
-     * operations if data has not yet been collected. If an error occurs during
-     * execution, the map is updated with an error message.
+     * Retrieves the data object associated with the AcceptData instance.
+     * The method ensures thread-safe access to the data and executes necessary
+     * operations if data has not yet been collected.
      *
-     * @return the JSONMap object containing key-value pairs that represent the
-     *         data managed by this instance.
+     * @return the data object that is accepted. This should be set in the {@link #process()} method.
      */
-    public final JSONMap getMap() {
+    public final T retrieveData() {
         if(!dataCollected) {
             if(!executing()) {
-                try {
-                    knowledge.semaphore.acquire();
-                } catch (InterruptedException e) {
-                    err();
-                    return map;
-                }
+                knowledge.semaphore.acquireUninterruptibly();
+                semaphore.acquireUninterruptibly();
                 execute();
-                try {
-                    semaphore.acquire();
-                } catch (InterruptedException e) {
-                    err();
-                }
-                knowledge.semaphore.release();
-                semaphore.release();
-            } else {
-                try {
-                    semaphore.acquire();
-                    semaphore.release();
-                } catch (InterruptedException e) {
-                    err();
-                }
             }
+            semaphore.acquireUninterruptibly();
+            semaphore.release();
         }
-        return map;
+        return data;
     }
 
     @Override
     protected void execute(View parent, boolean doNotLock) {
-        map.remove("error");
-        if(dataCollected) {
-            dataCollected = false;
-        }
+        data = null;
+        dataCollected = true;
         knowledge.application.access(() -> super.execute(parent, doNotLock));
-        try {
-            semaphore.acquire();
-        } catch (InterruptedException ignored) {
-        }
-    }
-
-    private void err() {
-        map.put("error", "Unable to provide - system busy");
     }
 
     @Override
     protected void cancel() {
         super.cancel();
-        map.put("error", "Unable to provide - user cancelled the operation");
+        dataCollected = false;
     }
 
     @Override
     public void clean() {
-        dataCollected = true;
+        knowledge.semaphore.release();
         semaphore.release();
         super.clean();
     }
+
+    /**
+     * Get the label of the data that is accepted.
+     * @return Label of the data.
+     */
+    public abstract String getDataLabel();
 }

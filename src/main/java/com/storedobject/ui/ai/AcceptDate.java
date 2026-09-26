@@ -1,8 +1,6 @@
 package com.storedobject.ui.ai;
 
-import com.storedobject.core.JSONMap;
 import com.storedobject.vaadin.DateField;
-import com.storedobject.vaadin.View;
 
 import java.sql.Date;
 
@@ -19,9 +17,8 @@ import java.sql.Date;
  *
  * @author Syam
  */
-public class AcceptDate extends AcceptData {
+public class AcceptDate extends AcceptData<Date> {
 
-    private Date date;
     private final DateField dateField;
 
     /**
@@ -34,45 +31,16 @@ public class AcceptDate extends AcceptData {
      * @param purpose the descriptive purpose for the date input, used to set up the date field.
      */
     public AcceptDate(Knowledge knowledge, String purpose) {
-        this(knowledge, purpose, null);
-    }
-
-    /**
-     * Constructs an instance of the AcceptDate class used to handle date input through a {@link DateField}.
-     * Initializes the date field with the specified purpose and associates it with the provided JSON map.
-     *
-     * @param knowledge An instance of {@link Knowledge} providing context and shared information for the workflow.
-     * @param purpose A descriptive purpose string used to initialize and configure the {@link DateField}.
-     * @param map A {@link JSONMap} to store the selected date and related data; can be null if not needed.
-     */
-    public AcceptDate(Knowledge knowledge, String purpose, JSONMap map) {
-        super(knowledge, "Select", map);
+        super(Date.class, knowledge, "Select");
         dateField = new DateField(purpose);
         addField(dateField);
         setRequired(dateField);
     }
 
     @Override
-    protected void execute(View parent, boolean doNotLock) {
-        date = null;
-        super.execute(parent, doNotLock);
-    }
-
-    @Override
     protected boolean process() {
-        date = dateField.getValue();
-        map.put("date", date);
+        data = dateField.getValue();
         return true;
-    }
-
-    /**
-     * Retrieves the date associated with this instance.
-     *
-     * @return the date object representing the date. If the date is not set, it may return null.
-     */
-    public Date getDate() {
-        getMap();
-        return date;
     }
 
     /**
@@ -84,5 +52,10 @@ public class AcceptDate extends AcceptData {
      */
     public DateField getDateField() {
         return dateField;
+    }
+
+    @Override
+    public String getDataLabel() {
+        return "date";
     }
 }

@@ -2,11 +2,16 @@ package com.storedobject.ui.ai;
 
 import com.storedobject.ai.KnowledgeModule;
 import com.storedobject.common.Executable;
+import com.storedobject.common.TriFunction;
 import com.storedobject.core.*;
 import com.storedobject.ui.Application;
+import com.storedobject.ui.TemplateView;
+import dev.langchain4j.agent.tool.P;
+import dev.langchain4j.agent.tool.Tool;
 
 import java.sql.Date;
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * The Knowledge class is an extension of the com.storedobject.ai.Knowledge class 
@@ -53,6 +58,7 @@ public class Knowledge extends com.storedobject.ai.Knowledge implements Executab
             setTopic(topic);
         }
         application.closeMenu();
+        addModules(new UITools());
     }
 
     /**
@@ -169,73 +175,81 @@ public class Knowledge extends com.storedobject.ai.Knowledge implements Executab
 
     @Override
     public <T extends StoredObject> T get(Class<T> objectClass, String purpose) throws SOException {
-        AcceptObject<T> ao = new AcceptObject<>(this, objectClass, purpose);
-        customize(objectClass, ao, purpose);
-        T object = ao.getObject();
-        if(object == null) {
-            JSONMap m = ao.getMap();
-            Object e = m.get("error");
-            throw new SOException(e == null ? m.toString() : e.toString());
+        return get(objectClass, purpose, AcceptObject::new);
+    }
+
+    public <T> T get(Class<T> dataClass, String purpose, TriFunction<Class<T>, Knowledge, String, AcceptData<T>> formCreator) throws SOException {
+        Semaphore semaphore = new Semaphore(1, true);
+        semaphore.acquireUninterruptibly();
+        AtomicReference<AcceptData<T>> adRef = new AtomicReference<>();
+        application.access(() -> {
+            AcceptData<T> ad = formCreator.accept(dataClass, this, purpose);
+            customize(dataClass, ad, purpose);
+            adRef.set(ad);
+            semaphore.release();
+        });
+        semaphore.acquireUninterruptibly();
+        semaphore.release();
+        AcceptData<T> ad = adRef.get();
+        T data = ad.retrieveData();
+        if(data == null) {
+            throw new SOException("Unable to provide the required information - user cancelled the operation");
+        } else {
+            String label = ad.getDataLabel();
+            if(label != null) {
+                putToMemory(data, label);
+            }
         }
-        return object;
+        return data;
     }
 
     /**
-     * Customizes a {@link StoredObject} class for a specific purpose using the provided {@link AcceptObject}.
+     * Customizes the data form for a specific purpose.
      *
-     * @param <T> The type of object being customized, which must extend {@link StoredObject}.
-     * @param objectClass The class type of the object to be customized. This must be a class that extends {@link StoredObject}.
-     * @param acceptObject An instance of {@link AcceptObject} used to process the object of type {@code T}.
+     * @param <T> The type of data being accepted via the form.
+     * @param dataClass The data class.
+     * @param acceptData The form that accept data from the user.
      * @param purpose A string indicating the purpose of customization. This is typically used to provide descriptive context about the customization operation.
      */
-    public <T extends StoredObject> void customize(Class<T> objectClass, AcceptObject<T> acceptObject, String purpose) {
+    public <T> void customize(Class<T> dataClass, AcceptData<T> acceptData, String purpose) {
     }
 
     @Override
     public Date getDate(String purpose) throws SOException {
-        AcceptDate acceptDate = new AcceptDate(this, purpose);
-        customize(acceptDate, purpose);
-        Date date = acceptDate.getDate();
-        if(date == null) {
-            JSONMap m = acceptDate.getMap();
-            Object e = m.get("error");
-            throw new SOException(e == null ? m.toString() : e.toString());
-        }
-        return date;
-    }
-
-    /**
-     * Customizes the provided {@link AcceptDate} instance for a specific purpose.
-     *
-     * @param acceptDate The {@link AcceptDate} instance to be customized. This object facilitates the handling
-     *                   of date-related interactions within the system and maintains the selected date.
-     * @param purpose    A string describing the purpose of the customization. This is typically used to
-     *                   provide context or descriptive information about the operation being performed.
-     */
-    public void customize(AcceptDate acceptDate, String purpose) {
+        return get(Date.class, purpose, (c, k, p) -> new AcceptDate(k, p));
     }
 
     @Override
     public DatePeriod getDatePeriod(String purpose) throws SOException {
-        AcceptDatePeriod acceptDatePeriod = new AcceptDatePeriod(this, purpose);
-        customize(acceptDatePeriod, purpose);
-        DatePeriod p = acceptDatePeriod.getDatePeriod();
-        if(p == null) {
-            JSONMap m = acceptDatePeriod.getMap();
-            Object e = m.get("error");
-            throw new SOException(e == null ? m.toString() : e.toString());
-        }
-        return p;
+        return get(DatePeriod.class, purpose, (c, k, p) -> new AcceptDatePeriod(k, p));
     }
 
     /**
-     * Customizes the provided {@link AcceptDatePeriod} instance for a specific purpose.
+     * Show a dashboard to the user who is currently chatting.
      *
-     * @param acceptDatePeriod The {@link AcceptDatePeriod} instance to be customized. This object is used
-     *                         for handling a specific date-period-related operation within the system.
-     * @param purpose          A string that provides a descriptive context or purpose for the customization.
-     *                         It typically represents the reason or intent behind the operation.
+     * @param name             The name of the dashboard to be displayed.
+     * @param dashboardContent    The HTML5/CSS text content of the dashboard to be displayed.
      */
-    public void customize(AcceptDatePeriod acceptDatePeriod, String purpose) {
+    public void showDashboard(String name, String dashboardContent) {
+        application.access(() -> {
+            TemplateView dashboard = new TemplateView(name, () -> dashboardContent);
+            TemplateView.clearCache();
+            dashboard.execute();
+        });
+    }
+
+    private class UITools implements KnowledgeModule {
+
+        @SuppressWarnings("unused")
+        @Tool("Show a dashboard to the user")
+        public void showDashboard(
+                @P("Name of the dashboard") String name,
+                @P("""
+                      HTML5/CSS content of the dashboard.
+                      It should be self-containing HTML/CSS text containing only at most one <style> tag and no JavaScript.
+                      Images should be inline SVGs.
+                 """) String dashboardContent) {
+            Knowledge.this.showDashboard(name, dashboardContent);
+        }
     }
 }

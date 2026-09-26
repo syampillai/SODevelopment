@@ -102,6 +102,7 @@ public class SectionSelector extends DataForm {
     @Override
     protected void execute(View parent, boolean doNotLock) {
         if(tree == null) {
+            getComponent();
             process();
             return;
         }

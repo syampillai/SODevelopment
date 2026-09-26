@@ -84,7 +84,7 @@ public class JSONMap implements Map<String, Object>, Serializable {
         try {
             return new JSON(this);
         } catch (Throwable e) {
-            ApplicationServer.log(e);
+            ApplicationServer.log(map.toString(), e);
             return new JSON("""
                     {"error": "JSON Serialization Error"}
                     """);
