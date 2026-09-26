@@ -55,6 +55,6 @@ public class AcceptObject<O extends StoredObject> extends AcceptData<O> {
 
     @Override
     public String getDataLabel() {
-        return "object";
+        return getKnowledge().getNameOf(dataClass);
     }
 }

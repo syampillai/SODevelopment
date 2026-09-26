@@ -178,6 +178,17 @@ public class Knowledge extends com.storedobject.ai.Knowledge implements Executab
         return get(objectClass, purpose, AcceptObject::new);
     }
 
+    /**
+     * Retrieves an instance of the specified data class, configured and customized based on the provided purpose.
+     * This method performs operations asynchronously and ensures thread-safety through semaphore synchronization.
+     *
+     * @param <T>         the type of data to be retrieved
+     * @param dataClass   the `Class` object representing the type of data to be retrieved
+     * @param purpose     a `String` describing the purpose or context for retrieving the data
+     * @param formCreator a `TriFunction` that produces an `AcceptData` instance based on the provided arguments
+     * @return an instance of type `T` representing the retrieved data
+     * @throws SOException if the data retrieval is canceled, or no data is provided by the user
+     */
     public <T> T get(Class<T> dataClass, String purpose, TriFunction<Class<T>, Knowledge, String, AcceptData<T>> formCreator) throws SOException {
         Semaphore semaphore = new Semaphore(1, true);
         semaphore.acquireUninterruptibly();
@@ -208,7 +219,7 @@ public class Knowledge extends com.storedobject.ai.Knowledge implements Executab
      *
      * @param <T> The type of data being accepted via the form.
      * @param dataClass The data class.
-     * @param acceptData The form that accept data from the user.
+     * @param acceptData The form that accepts data from the user.
      * @param purpose A string indicating the purpose of customization. This is typically used to provide descriptive context about the customization operation.
      */
     public <T> void customize(Class<T> dataClass, AcceptData<T> acceptData, String purpose) {

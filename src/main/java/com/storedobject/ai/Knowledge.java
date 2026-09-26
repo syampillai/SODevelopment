@@ -370,7 +370,7 @@ public class Knowledge {
     public <T extends StoredObject> void customize(QueryBuilder<T> queryBuilder) {
     }
 
-    private String nameOf(Class<? extends StoredObject> c) {
+    public String getNameOf(Class<? extends StoredObject> c) {
         String name = StringUtility.makeLabel(c);
         if(c == entities.get(name.toLowerCase())) return name;
         for(String k: entities.keySet()) {
@@ -441,7 +441,7 @@ public class Knowledge {
         }
         if(name == null) {
             //noinspection unchecked
-            name = StoredObject.class.isAssignableFrom(type) ? nameOf((Class<? extends StoredObject>) type) : "";
+            name = StoredObject.class.isAssignableFrom(type) ? getNameOf((Class<? extends StoredObject>) type) : "";
         }
         memory.computeIfAbsent(type, k -> new HashMap<>()).put(name, value);
     }
@@ -473,7 +473,7 @@ public class Knowledge {
         }
         if(name == null) {
             //noinspection unchecked
-            name = StoredObject.class.isAssignableFrom(type) ? nameOf((Class<? extends StoredObject>) type) : "";
+            name = StoredObject.class.isAssignableFrom(type) ? getNameOf((Class<? extends StoredObject>) type) : "";
         }
         m.remove(name);
         if(m.isEmpty()) {
@@ -511,7 +511,7 @@ public class Knowledge {
         }
         if(name == null) {
             //noinspection unchecked
-            name = StoredObject.class.isAssignableFrom(type) ? nameOf((Class<? extends StoredObject>) type) : "";
+            name = StoredObject.class.isAssignableFrom(type) ? getNameOf((Class<? extends StoredObject>) type) : "";
         }
         //noinspection unchecked
         return (O)m.get(name);
@@ -588,7 +588,7 @@ public class Knowledge {
      * @return the retrieved object of the specified type
      */
     public final <O extends StoredObject> O getSelected(Class<O> objectClass) {
-        String name = nameOf(objectClass);
+        String name = getNameOf(objectClass);
         O so = getFromMemory(objectClass, name);
         if(so == null) {
             try {
