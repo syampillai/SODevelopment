@@ -3,6 +3,7 @@ package com.storedobject.core;
 import com.storedobject.common.StringList;
 
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -28,6 +29,11 @@ public final class ClassAttribute<T extends StoredObject> {
 
     public Method getMethod(String attributeName) {
         return null;
+    }
+
+    public Method getStaticMethod(String attributeName) {
+        Method m = getMethod(attributeName);
+        return m == null || !Modifier.isStatic(m.getModifiers()) ? null : m;
     }
 
     public Method setMethod(String attributeName) {

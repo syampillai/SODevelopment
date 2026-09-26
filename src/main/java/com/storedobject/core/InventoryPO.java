@@ -19,7 +19,7 @@ import java.util.Map;
  * @author Syam
  */
 @Table(anchors = "Store")
-public class InventoryPO extends StoredObject implements HasChildren, HasReference, TradeType {
+public class InventoryPO extends StoredObject implements HasChildren, HasReference, TradeType, HasDate {
 
     private static final ReferencePattern<InventoryPO> ref = new ReferencePattern<>();
     private final static String[] statusValues = {

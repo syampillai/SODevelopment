@@ -6,7 +6,7 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.List;
 
-public class MaterialRequest extends StoredObject implements OfEntity, HasReference {
+public class MaterialRequest extends StoredObject implements OfEntity, HasReference, HasDate {
 
     private static final ReferencePattern<MaterialRequest> ref = new ReferencePattern<>();
     private static final String[] statusValues =

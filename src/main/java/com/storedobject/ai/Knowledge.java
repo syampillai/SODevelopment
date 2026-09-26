@@ -14,14 +14,13 @@ import java.util.*;
  *
  * @author Syam
  */
-public class Knowledge implements DataRetriever {
+public class Knowledge {
 
     private final TransactionManager tm;
     private final Map<Class<?>, Map<String, Object>> memory = new HashMap<>();
     final Map<String, Class<? extends StoredObject>> entities = new HashMap<>();
     final Map<Class<? extends StoredObject>, StringList> attributes = new HashMap<>();
     final Collection<Object> modules = new ArrayList<>();
-    private DataRetriever dataRetriever;
     private Chat chat;
     private boolean logging = false;
 
@@ -44,10 +43,6 @@ public class Knowledge implements DataRetriever {
      */
     public Knowledge(TransactionManager tm) {
         this.tm = tm;
-    }
-
-    public void setDataRetriever(DataRetriever dataRetriever) {
-        this.dataRetriever = dataRetriever;
     }
 
     /**
@@ -293,6 +288,7 @@ public class Knowledge implements DataRetriever {
      * @param <T>     The type of the {@code StoredObject}.
      */
     public final  <T extends StoredObject> void save(JSONMap map, String name, ObjectIterator<T> objects) {
+        map.put("datePeriod", getSelectedDatePeriod());
         JSONMap.Array a = map.array(name);
         for(T o: objects) {
             try {
@@ -322,26 +318,56 @@ public class Knowledge implements DataRetriever {
         }
     }
 
-    private DataRetriever dr() {
-        if(dataRetriever == null) {
-            dataRetriever = new DataRetriever() {};
-        }
-        return dataRetriever;
-    }
-
-    @Override
+    /**
+     * Lists all stored objects of the specified type.
+     * <p>Note: For classes that implement {@link HasDate}, it will apply date filtering.</p>
+     *
+     * @param <T> the type of stored objects to be listed; it must extend {@code StoredObject}.
+     * @param c the {@code Class} object representing the type of stored objects to be listed.
+     * @return an {@code ObjectIterator<T>} containing all stored objects of the specified type.
+     */
     public <T extends StoredObject> ObjectIterator<T> list(Class<T> c) {
-        return dr().list(c);
+        QueryBuilder<T> queryBuilder = QueryBuilder.from(c);
+        customize(queryBuilder);
+        return queryBuilder.where(getSelectedDatePeriod()).list();
     }
 
-    @Override
+    /**
+     * Counts the number of instances of the specified class that exist in storage.
+     * <p>Note: For classes that implement {@link HasDate}, it will apply date filtering.</p>
+     *
+     * @param <T> the type of the class extending {@code StoredObject}.
+     * @param c the class whose instances need to be counted.
+     * @return the number of instances of the specified class in storage.
+     */
     public <T extends StoredObject> int count(Class<T> c) {
-        return dr().count(c);
+        QueryBuilder<T> queryBuilder = QueryBuilder.from(c);
+        customize(queryBuilder);
+        return queryBuilder.where(getSelectedDatePeriod()).count();
     }
 
-    @Override
+    /**
+     * Retrieves a stored object of the specified type and purpose.
+     *
+     * @param <T>     The type of the stored object to retrieve, extending {@code StoredObject}.
+     * @param c       The class object representing the type of the stored object to retrieve.
+     * @param purpose The purpose or reason for retrieving the stored object, represented as a string.
+     * @throws SOException if an error occurs while retrieving the stored object or unable to provide the requested object.
+     * @return The stored object of the specified type.
+     */
     public <T extends StoredObject> T get(Class<T> c, String purpose) throws SOException {
-        return dr().get(c, purpose);
+        QueryBuilder<T> queryBuilder = QueryBuilder.from(c);
+        customize(queryBuilder);
+        return queryBuilder.get();
+    }
+
+    /**
+     * Customizes the given QueryBuilder instance with specific conditions or modifications
+     * for querying objects of type T, where T extends StoredObject.
+     *
+     * @param queryBuilder the QueryBuilder instance to be customized
+     */
+    public <T extends StoredObject> void customize(QueryBuilder<T> queryBuilder) {
     }
 
     private String nameOf(Class<? extends StoredObject> c) {

@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public final class MaterialIssued extends StoredObject implements OfEntity, HasReference {
+public final class MaterialIssued extends StoredObject implements OfEntity, HasReference, HasDate {
 
     private static final ReferencePattern<MaterialIssued> ref = new ReferencePattern<>();
     private static final String[] statusValues =

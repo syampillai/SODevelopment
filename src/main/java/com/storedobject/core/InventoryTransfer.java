@@ -10,7 +10,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-public abstract class InventoryTransfer extends StoredObject implements OfEntity, HasReference {
+public abstract class InventoryTransfer extends StoredObject implements OfEntity, HasReference, HasDate {
 
     private static final ReferencePattern<InventoryTransfer> ref = new ReferencePattern<>();
     private static final String[] statusValues =
