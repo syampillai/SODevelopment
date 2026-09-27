@@ -147,7 +147,18 @@ public class ChatView extends View implements CloseableView, Transactional {
         super.clean();
     }
 
+    void setStartingPrompt(String startingPrompt) {
+        if(startingPrompt != null && !startingPrompt.isBlank()) {
+            input.setValue(startingPrompt);
+            process(true);
+        }
+    }
+
     private void process() {
+        process(false);
+    }
+
+    private void process(boolean starting) {
         String text = input.getValue();
         if(text.isBlank()) {
             send.setEnabled(true);
@@ -155,8 +166,8 @@ public class ChatView extends View implements CloseableView, Transactional {
             return;
         }
         text = text.trim().replace("\n", "  \n");
-        MessageListItem item = new MessageListItem(text, you);
-        item.setUserColorIndex(1);
+        MessageListItem item = new MessageListItem(text, starting ? "System" : you);
+        item.setUserColorIndex(starting ? 3 : 1);
         messages.add(item);
         while (messages.size() > 50) {
             messages.removeFirst();

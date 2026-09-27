@@ -4,6 +4,7 @@ import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.Date;
+import java.util.function.Supplier;
 
 /**
  * A builder class for constructing queries and retrieving {@link StoredObject} instances based on various criteria.
@@ -323,18 +324,11 @@ public class QueryBuilder<T extends StoredObject> {
         }
     }
 
-    /**
-     * Counts the number of records that match the specified query.
-     *
-     * @param query The {@code Query} object representing the query criteria used to filter
-     *              the records to be counted.
-     * @return The number of records that match the specified query criteria.
-     */
-    private int count(Query query) {
+    private int count(Supplier<Query> query) {
         String columns = this.columns;
         this.columns = StoredObject.COUNT_STAR;
         try {
-            return Id.count(query);
+            return Id.count(query.get());
         } finally {
             this.columns = columns;
         }
@@ -378,7 +372,7 @@ public class QueryBuilder<T extends StoredObject> {
      * @return The number of records that match the specified query criteria.
      */
     public int count() {
-        return count(query());
+        return count(this::query);
     }
 
     /**
@@ -552,7 +546,7 @@ public class QueryBuilder<T extends StoredObject> {
      * @return the count of links of the specified type for the given parent object
      */
     public int countLinks(Id parentId, int linkType) {
-        return count(queryLinks(parentId, linkType));
+        return count(() -> queryLinks(parentId, linkType));
     }
 
     /**
@@ -723,7 +717,7 @@ public class QueryBuilder<T extends StoredObject> {
      * @return the count of master objects associated with the specified link and link type.
      */
     public int countMasters(StoredObject link, int linkType) {
-        return count(queryMasters(link, linkType));
+        return count(() -> queryMasters(link, linkType));
     }
 
     /**
@@ -734,7 +728,7 @@ public class QueryBuilder<T extends StoredObject> {
      * @return the count of master objects associated with the specified link and link type.
      */
     public int countMasters(Id linkId, int linkType) {
-        return count(queryMasters(linkId, linkType));
+        return count(() -> queryMasters(linkId, linkType));
     }
 
     /**

@@ -162,6 +162,16 @@ public class Knowledge extends com.storedobject.ai.Knowledge implements Executab
         if(chatView != null) chatView.close();
         chatView = new ChatView(this, getTopic());
         chatView.execute();
+        chatView.setStartingPrompt(getStartingPrompt());
+    }
+
+    /**
+     * Retrieves the starting prompt for the knowledge session.
+     *
+     * @return The starting prompt as a string. If no starting prompt is defined, returns {@code null}.
+     */
+    public String getStartingPrompt() {
+        return "set this year as the period";
     }
 
     /**
@@ -257,7 +267,7 @@ public class Knowledge extends com.storedobject.ai.Knowledge implements Executab
                 @P("Name of the dashboard") String name,
                 @P("""
                       HTML5/CSS content of the dashboard.
-                      It should be self-containing HTML/CSS text containing only at most one <style> tag and no JavaScript.
+                      It should be self-containing HTML5/CSS text containing only at most one <style> tag and no JavaScript.
                       Images should be inline SVGs.
                  """) String dashboardContent) {
             Knowledge.this.showDashboard(name, dashboardContent);
