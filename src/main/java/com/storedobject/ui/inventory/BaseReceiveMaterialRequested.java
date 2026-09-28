@@ -431,7 +431,7 @@ public class BaseReceiveMaterialRequested<MR extends MaterialRequest, MRI extend
     }
 
     @Override
-    protected String getActionPrefix() {
+    public String getActionPrefix() {
         return "RMR";
     }
 }

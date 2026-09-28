@@ -44,7 +44,7 @@ import java.util.stream.Stream;
  */
 public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
         implements Transactional, ObjectSetter<T>, PrintButton.HasPrintButton,
-        ObjectChangedListener<T>, ObjectEditorListener, ObjectProvider<T>, AlertHandler, TransactionCreator {
+        ObjectChangedListener<T>, ObjectEditorListener, ObjectProvider<T>, AlertHandler, TransactionCreator, UIActionAccess {
 
     /**
      * The layout where buttons are displayed.
@@ -296,6 +296,11 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
             anchorForm = null;
         }
         setLinkTabColumns(columns);
+    }
+
+    @Override
+    public TransactionManager getTransactionManager() {
+        return Transactional.super.getTransactionManager();
     }
 
     @Override
@@ -3158,9 +3163,9 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
      * @param action Action string.
      * @return True/false.
      */
+    @Override
     public boolean actionAllowed(String action) {
-        return (allowedActions == null || allowedActions.contains(action))
-                && DataGrid.actionAllowed(getTransactionManager(), action, ClassAttribute.get(getDataClass()).getActionPrefix());
+        return (allowedActions == null || allowedActions.contains(action)) && UIActionAccess.super.actionAllowed(action);
     }
 
     /**

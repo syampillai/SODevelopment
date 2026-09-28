@@ -15,7 +15,7 @@ import java.util.function.BiFunction;
 import java.util.stream.Stream;
 
 public class ObjectTree<T extends StoredObject> extends DataTreeGrid<T>
-        implements ObjectGridData<T, T>, ChildVisitor<T, T> {
+        implements ObjectGridData<T, T>, ChildVisitor<T, T>, UIActionAccess {
 
     private final List<DataLoadedListener> dataLoadedListeners = new ArrayList<>();
     private ObjectEditor<T> editor;
@@ -87,6 +87,11 @@ public class ObjectTree<T extends StoredObject> extends DataTreeGrid<T>
 
     public void setItemLabelGenerator(ItemLabelGenerator<T> itemLabelGenerator) {
         getDataProvider().setItemLabelGenerator(itemLabelGenerator);
+    }
+
+    @Override
+    public TransactionManager getTransactionManager() {
+        return super.getTransactionManager();
     }
 
     void protect() {
@@ -315,35 +320,6 @@ public class ObjectTree<T extends StoredObject> extends DataTreeGrid<T>
      */
     public void deselectChildren(T parent, boolean includeGrandChildren) {
         visitChildren(parent, this::deselect, includeGrandChildren);
-    }
-
-    /**
-     * Prefix string added to the "action" string to determine the actual {@link UIAction} to be checked. See
-     * {@link #actionAllowed(String)}. For example, {@link com.storedobject.ui.inventory.POBrowser} returns the value
-     * "PO" for this method.
-     *
-     * @return Prefix string. The default implementation returns null. That means that all the actions are allowed.
-     */
-    protected String getActionPrefix() {
-        return null;
-    }
-
-    /**
-     * Check whether a specific action is allowed or not. An action is defined in the UI logic as a keyword like
-     * "SEND-ITEMS", "PLACE-ORDER", "RECEIVE-ITEMS", "PRINT-VOUCHER", etc. and there could be corresponding access
-     * control applicable within the logic. The user's groups determine whether that user can carry out that action or
-     * not. This method returns <code>true/false</code> to denote that the user can carry out the action or not.
-     * However, it is up to the logic to decide the course of action.
-     * <p>The user's groups can be configured to allow various UI actions ({@link com.storedobject.core.UIAction}.
-     * Each {@link com.storedobject.core.UIAction} represents a unique "action" string ({@link UIAction#getAction()})
-     * and that value should be equal to {@link #getActionPrefix()} + "-" + action to allow that action.</p>
-     *
-     * @param action Action string.
-     * @return True/false. Please note that it will always return <code>true</code> if {@link #getActionPrefix()}
-     * returns <code>null</code>.
-     */
-    public boolean actionAllowed(String action) {
-        return DataGrid.actionAllowed(getTransactionManager(), action, getActionPrefix());
     }
 
     /**

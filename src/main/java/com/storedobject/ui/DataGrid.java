@@ -18,7 +18,7 @@ import java.util.List;
 
 @SuppressWarnings("RedundantThrows")
 public class DataGrid<T> extends com.storedobject.vaadin.ListGrid<T>
-        implements ViewFilterSupport<T>, Transactional {
+        implements ViewFilterSupport<T>, Transactional, UIActionAccess {
 
     static final String NOTHING_SELECTED = "Nothing selected";
     static final String NOTHING_TO_SELECT = "No item available to select!";
@@ -161,7 +161,7 @@ public class DataGrid<T> extends com.storedobject.vaadin.ListGrid<T>
 
     /**
      * Get the currently selected instance. If nothing is selected, a warning message is displayed and
-     * <code>null</code> is returned. (If you simply want to a find the selected instance without displaying
+     * <code>null</code> is returned. (If you simply want to find the selected instance without displaying
      * a warning message, you may use {@link #getSelected()}).
      *
      * @return Selected instance or <code>null</code>.
@@ -502,7 +502,7 @@ public class DataGrid<T> extends com.storedobject.vaadin.ListGrid<T>
     }
 
     /**
-     * Prefix string that is added to the "action" string to determine the actual {@link UIAction} to be checked. See
+     * A prefix-string that is added to the "action" string to determine the actual {@link UIAction} to be checked. See
      * {@link #actionAllowed(String)}. For example, {@link com.storedobject.ui.inventory.POBrowser} returns the value
      * "PO" for this method.
      *
@@ -510,12 +510,13 @@ public class DataGrid<T> extends com.storedobject.vaadin.ListGrid<T>
      * "actionPrefixForUI" exists in the object class. If the method exists, its return value is returned. Returning
      * a null means that all the actions are allowed.
      */
-    protected <O extends StoredObject> String getActionPrefix() {
+    @Override
+    public String getActionPrefix() {
         if(actionPrefix == null) {
             Class<?> c = getObjectClass();
             if(StoredObject.class.isAssignableFrom(c)) {
-                @SuppressWarnings("unchecked") Class<O> oc = (Class<O>) c;
-                actionPrefix = ClassAttribute.get(oc).getActionPrefix();
+                //noinspection unchecked
+                actionPrefix = ClassAttribute.get((Class<? extends StoredObject>) c).getActionPrefix();
             }
             if(actionPrefix == null) {
                 actionPrefix = "";
@@ -524,22 +525,9 @@ public class DataGrid<T> extends com.storedobject.vaadin.ListGrid<T>
         return actionPrefix.isBlank() ? null : actionPrefix;
     }
 
-    /**
-     * Check whether a specific action is allowed or not. An action is defined in the UI logic as a keyword like
-     * "SEND-ITEMS", "PLACE-ORDER", "RECEIVE-ITEMS", "PRINT-VOUCHER", etc. and there could be corresponding access
-     * control applicable within the logic. The user's groups determine whether that user can carry out that action or
-     * not. This method returns <code>true/false</code> to denote that the user can carry out the action or not.
-     * However, it is up to the logic to decide the course of action.
-     * <p>The user's groups can be configured to allow various UI actions ({@link com.storedobject.core.UIAction}.
-     * Each {@link com.storedobject.core.UIAction} represents a unique "action" string ({@link UIAction#getAction()})
-     * and that value should be equal to {@link #getActionPrefix()} + "-" + action to allow that action.</p>
-     *
-     * @param action Action string.
-     * @return True/false. Please note that it will always return <code>true</code> if {@link #getActionPrefix()}
-     * returns <code>null</code>.
-     */
-    public boolean actionAllowed(String action) {
-        return actionAllowed(getTransactionManager(), action, getActionPrefix());
+    @Override
+    public TransactionManager getTransactionManager() {
+        return Transactional.super.getTransactionManager();
     }
 
     /**
@@ -589,20 +577,5 @@ public class DataGrid<T> extends com.storedobject.vaadin.ListGrid<T>
             rightClickMenu.setTarget(this);
         }
         this.rightClickMenu = rightClickMenu;
-    }
-
-    static boolean actionAllowed(TransactionManager tm, String action, String prefix) {
-        prefix = StoredObject.toCode(prefix);
-        if(prefix.isEmpty()) {
-            return true;
-        }
-        action = StoredObject.toCode(action);
-        if(!action.startsWith(prefix + "-")) {
-            action = prefix + "-" + action;
-            while(action.contains("--")) {
-                action = action.replace("--", "-");
-            }
-        }
-        return tm.actionAllowed(action);
     }
 }
