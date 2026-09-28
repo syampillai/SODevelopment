@@ -1,5 +1,6 @@
 package com.storedobject.ui.ai;
 
+import com.storedobject.core.QueryBuilder;
 import com.storedobject.core.StoredObject;
 import com.storedobject.ui.ObjectField;
 
@@ -31,7 +32,13 @@ public class AcceptObject<O extends StoredObject> extends AcceptData<O> {
      */
     public AcceptObject(Class<O> objectClass, Knowledge knowledge, String purpose) {
         super(objectClass, knowledge, "Select");
-        this.objectField = new ObjectField<>(purpose, objectClass);
+        QueryBuilder<O> queryBuilder = QueryBuilder.from(objectClass);
+        getKnowledge().customize(queryBuilder);
+        this.objectField = new ObjectField<>(purpose, objectClass, queryBuilder.getAny());
+        String s = queryBuilder.getWhereClause();
+        if(s != null) {
+            this.objectField.setFilter(s);
+        }
         addField(objectField);
         setRequired(objectField);
     }

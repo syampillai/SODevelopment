@@ -171,7 +171,7 @@ public class Knowledge extends com.storedobject.ai.Knowledge implements Executab
      * @return The starting prompt as a string. If no starting prompt is defined, returns {@code null}.
      */
     public String getStartingPrompt() {
-        return "set this year as the period";
+        return null;
     }
 
     /**

@@ -60,7 +60,25 @@ public class QueryBuilder<T extends StoredObject> {
         return this;
     }
 
-    private String where() {
+    /**
+     * Retrieves the current WHERE clause of a query.
+     *
+     * @return the WHERE clause as a String
+     */
+    public String getWhere() {
+        return whereClause;
+    }
+
+    /**
+     * Constructs and returns a SQL WHERE clause based on the current object's state and parameters.
+     * If there is no date condition, the existing whereClause is returned. Otherwise, the method dynamically
+     * retrieves a date-related attribute from the objectClass (if available) and appends it to the WHERE clause.
+     *
+     * @return A string representing the final SQL WHERE clause. This clause includes any pre-existing filters
+     *         combined with a date condition if applicable. If no pre-existing filters or date conditions are
+     *         available, just the date condition (or a default value) will be returned.
+     */
+    public String getWhereClause() {
         if(noDate()) {
             return whereClause;
         }
@@ -78,6 +96,60 @@ public class QueryBuilder<T extends StoredObject> {
         }
         date = date + datePeriod.getDBCondition();
         return whereClause == null ? date : ("(" + whereClause + ") AND " + date);
+    }
+
+    /**
+     * Retrieves the value of the orderBy field, which specifies the sorting order.
+     *
+     * @return the current value of the orderBy field, indicating the sorting criteria.
+     */
+    public String getOrderBy() {
+        return orderBy;
+    }
+
+    /**
+     * Retrieves the limit value.
+     *
+     * @return the value of the limit.
+     */
+    public int getLimit() {
+        return limit;
+    }
+
+    /**
+     * Retrieves the value of the columns field.
+     *
+     * @return a String representing the value of the columns field.
+     */
+    public String getColumns() {
+        return columns;
+    }
+
+    /**
+     * Retrieves the date period associated with this instance.
+     *
+     * @return the DatePeriod object representing the start and end dates.
+     */
+    public DatePeriod getDatePeriod() {
+        return datePeriod;
+    }
+
+    /**
+     * Retrieves the value of the skip attribute.
+     *
+     * @return the integer value representing the skip attribute.
+     */
+    public int getSkip() {
+        return skip;
+    }
+
+    /**
+     * Retrieves the value of the 'any' field.
+     *
+     * @return the current boolean value of the 'any' field
+     */
+    public boolean getAny() {
+        return any;
     }
 
     private boolean noDate() {
@@ -340,7 +412,7 @@ public class QueryBuilder<T extends StoredObject> {
      * @return True/false
      */
     public boolean exists() {
-        return StoredObject.exists(transaction, objectClass, where(), any);
+        return StoredObject.exists(transaction, objectClass, getWhereClause(), any);
     }
 
     /**
@@ -350,7 +422,7 @@ public class QueryBuilder<T extends StoredObject> {
      *         object class, columns, where clause, order by clause, distinct columns, transaction, and limits.
      */
     public Query query() {
-        return StoredObject.query(transaction, objectClass, columns, where(), orderBy, any, skip, limit, distinctColumns);
+        return StoredObject.query(transaction, objectClass, columns, getWhereClause(), orderBy, any, skip, limit, distinctColumns);
     }
 
     /**
@@ -362,7 +434,7 @@ public class QueryBuilder<T extends StoredObject> {
      *         other specified parameters.
      */
     public ObjectIterator<T> list() {
-        return StoredObject.list(transaction, objectClass, where(), orderBy, any, skip, limit, distinctColumns);
+        return StoredObject.list(transaction, objectClass, getWhereClause(), orderBy, any, skip, limit, distinctColumns);
     }
 
     /**
@@ -416,7 +488,7 @@ public class QueryBuilder<T extends StoredObject> {
      * @return A {@code Query} object representing the links of the given type associated with the specified parent object.
      */
     public Query queryLinks(Id parentId, int linkType) {
-        return parentId.queryLinks(transaction, StoredObject.TYPE_EQUALS + linkType, objectClass, columns, where(),
+        return parentId.queryLinks(transaction, StoredObject.TYPE_EQUALS + linkType, objectClass, columns, getWhereClause(),
                 orderBy, any, skip, limit, distinctColumns);
     }
 
@@ -503,7 +575,7 @@ public class QueryBuilder<T extends StoredObject> {
      * @return an iterator over the linked objects of the specified type
      */
     public ObjectIterator<T> listLinks(Id parentId, int linkType) {
-        return parentId.listLinks(transaction, StoredObject.TYPE_EQUALS + linkType, objectClass, where(), orderBy,
+        return parentId.listLinks(transaction, StoredObject.TYPE_EQUALS + linkType, objectClass, getWhereClause(), orderBy,
                 any, skip, limit, distinctColumns);
     }
 
@@ -630,7 +702,7 @@ public class QueryBuilder<T extends StoredObject> {
      * @return a Query object containing the results of the master objects query
      */
     public Query queryMasters(Id linkId, int linkType) {
-        return linkId.queryMasters(transaction, StoredObject.TYPE_EQUALS + linkType, objectClass, columns, where(),
+        return linkId.queryMasters(transaction, StoredObject.TYPE_EQUALS + linkType, objectClass, columns, getWhereClause(),
                 orderBy, any, skip, limit, distinctColumns);
     }
 
@@ -673,7 +745,7 @@ public class QueryBuilder<T extends StoredObject> {
      * @return An iterator over the master objects linked to the specified stored object.
      */
     public ObjectIterator<T> listMasters(Id linkId, int linkType) {
-        return linkId.listMasters(transaction, StoredObject.TYPE_EQUALS + linkType, objectClass, where(), orderBy,
+        return linkId.listMasters(transaction, StoredObject.TYPE_EQUALS + linkType, objectClass, getWhereClause(), orderBy,
                 any, skip, limit, distinctColumns);
     }
 
@@ -686,7 +758,7 @@ public class QueryBuilder<T extends StoredObject> {
      */
     public String querySQL() {
         return StoredObjectUtility.createSQL(ClassAttribute
-                .get(objectClass), columns, where(), orderBy, any, true, skip, limit, distinctColumns);
+                .get(objectClass), columns, getWhereClause(), orderBy, any, true, skip, limit, distinctColumns);
     }
 
     /**
