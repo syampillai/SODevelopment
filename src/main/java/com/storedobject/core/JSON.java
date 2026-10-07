@@ -326,6 +326,19 @@ public class JSON extends com.storedobject.common.JSON {
     }
 
     /**
+     * Retrieves a {@link DatePeriod} value from the JSON object for the specified attribute.
+     * The method fetches the JSON value mapped to the provided attribute and extracts
+     * the {@link DatePeriod} representation if available.
+     *
+     * @param attribute the name of the attribute to retrieve the {@link DatePeriod} value for
+     * @return the {@link DatePeriod} value if found, otherwise null
+     */
+    public DatePeriod getDatePeriod(String attribute) {
+        JSON j = get(attribute);
+        return j == null ? null : j.getDatePeriod();
+    }
+
+    /**
      * Helper method to retrieve a {@link DatePeriod} value from the JSON request assuming that "dateFrom" and
      * "dateTo" are the names of the attributes.
      * @return {@link BigDecimal} value if found, otherwise null.
@@ -338,6 +351,26 @@ public class JSON extends com.storedobject.common.JSON {
         return DatePeriod.create(d1, d2);
     }
 
+    /**
+     * Retrieves a TimePeriod object associated with the given attribute.
+     *
+     * @param attribute the key used to fetch the corresponding JSON object
+     * @return the TimePeriod object if the JSON object exists and contains it; otherwise, null
+     */
+    public TimePeriod getTimePeriod(String attribute) {
+        JSON j = get(attribute);
+        return j == null ? null : j.getTimePeriod();
+    }
+
+    /**
+     * Retrieves a {@link TimePeriod} value based on the "timeFrom" and "timeTo" attributes.
+     * The method extracts the time values for "timeFrom" and "timeTo" attributes,
+     * if both are available and valid, a {@link TimePeriod} object is created and returned.
+     * If either of the attributes is missing or invalid, the method returns null.
+     *
+     * @return A {@link TimePeriod} object created from "timeFrom" and "timeTo" attributes,
+     *         or null if either the "timeFrom" or "timeTo" value is not available or invalid.
+     */
     public TimePeriod getTimePeriod() {
         Time d1 = getTime("timeFrom"), d2 = getTime("timeTo");
         if(d1 == null || d2 == null) {
@@ -346,6 +379,26 @@ public class JSON extends com.storedobject.common.JSON {
         return TimePeriod.create(d1, d2);
     }
 
+    /**
+     * Retrieves a {@link TimestampPeriod} value from the JSON object for the specified attribute.
+     * The method fetches the JSON value mapped to the provided attribute and extracts
+     * the {@link TimestampPeriod} representation if available.
+     *
+     * @param attribute the name of the attribute to retrieve the {@link TimestampPeriod} value for
+     * @return the {@link TimestampPeriod} value if found, otherwise null
+     */
+    public TimestampPeriod getTimestampPeriod(String attribute) {
+        JSON j = get(attribute);
+        return j == null ? null : j.getTimestampPeriod();
+    }
+
+    /**
+     * Retrieves a {@link TimestampPeriod} constructed using the "timeFrom" and "timeTo" attributes of the JSON object.
+     * If either "timeFrom" or "timeTo" is not available or cannot be parsed into a {@link Timestamp}, the method returns null.
+     *
+     * @return a {@link TimestampPeriod} if both "timeFrom" and "timeTo" attributes are present and valid;
+     *         otherwise, null.
+     */
     public TimestampPeriod getTimestampPeriod() {
         Timestamp d1 = getTimestamp("timeFrom"), d2 = getTimestamp("timeTo");
         if(d1 == null || d2 == null) {

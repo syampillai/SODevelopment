@@ -35,11 +35,13 @@ public class AcceptDate extends AcceptData<Date> {
         dateField = new DateField(purpose);
         addField(dateField);
         setRequired(dateField);
+        dateField.setValue(knowledge.getSelectedDate());
     }
 
     @Override
     protected boolean process() {
         data = dateField.getValue();
+        getKnowledge().setDate(data);
         return true;
     }
 
@@ -56,6 +58,6 @@ public class AcceptDate extends AcceptData<Date> {
 
     @Override
     public String getDataLabel() {
-        return "date";
+        return null;
     }
 }

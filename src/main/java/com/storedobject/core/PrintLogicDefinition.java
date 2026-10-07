@@ -14,9 +14,11 @@ import java.util.List;
 public class PrintLogicDefinition extends StoredObject {
 
     private String dataClassName;
+    private Class<? extends StoredObject> dataClass;
     private String label = "Print";
     private String iconName;
     private String printLogicClassName;
+    private Class<? extends Executable> printLogicClass;
     private Id formatId;
     private boolean special;
 
@@ -135,15 +137,17 @@ public class PrintLogicDefinition extends StoredObject {
     }
 
     public final Class<? extends StoredObject> getDataClass() {
+        if(dataClass != null) return dataClass;
         try {
             //noinspection unchecked
-            return (Class<? extends StoredObject>) JavaClassLoader.getLogic(dataClassName);
+            dataClass = (Class<? extends StoredObject>) JavaClassLoader.getLogic(dataClassName);
         } catch(Throwable ignored) {
         }
-        return null;
+        return dataClass;
     }
 
     public final Class<? extends Executable> getLogicClass() {
+        if(printLogicClass != null) return printLogicClass;
         String logicClassName = printLogicClassName;
         int p;
         if((p = logicClassName.indexOf('|')) > 0) {
@@ -151,10 +155,18 @@ public class PrintLogicDefinition extends StoredObject {
         }
         try {
             //noinspection unchecked
-            return (Class<Executable>) JavaClassLoader.getLogic(logicClassName);
-        } catch(Throwable ignored) {
+            printLogicClass = (Class<Executable>) JavaClassLoader.getLogic(logicClassName);
+        } catch(Throwable notAnExecutable) {
+            log(notAnExecutable);
         }
-        return null;
+        return printLogicClass;
+    }
+
+    @Override
+    public void saved() throws Exception {
+        super.saved();
+        dataClass = null;
+        printLogicClass = null;
     }
 
     public final String getParameter() {

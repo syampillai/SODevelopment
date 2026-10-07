@@ -3,6 +3,7 @@ package com.storedobject.core;
 import com.storedobject.common.Address;
 import com.storedobject.common.ComputedValue;
 import com.storedobject.common.Fault;
+import com.storedobject.common.Geolocation;
 
 import javax.annotation.Nonnull;
 import java.io.Serializable;
@@ -219,6 +220,8 @@ public class JSONMap implements Map<String, Object>, Serializable {
             m.put("unit", q.getUnit().getUnit());
             m.put("quantity", q.getValue());
             return m;
+        } else if(value instanceof Geolocation geo) {
+            return geo.toString();
         } else if(value instanceof Id id) {
             return id.toString();
         }

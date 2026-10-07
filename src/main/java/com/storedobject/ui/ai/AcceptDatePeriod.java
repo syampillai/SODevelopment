@@ -31,11 +31,13 @@ public class AcceptDatePeriod extends AcceptData<DatePeriod> {
         datePeriodField = new DatePeriodField(purpose);
         addField(datePeriodField);
         setRequired(datePeriodField);
+        datePeriodField.setValue(knowledge.getSelectedDatePeriod());
     }
 
     @Override
     protected boolean process() {
         data = datePeriodField.getValue();
+        getKnowledge().setDatePeriod(data);
         return true;
     }
 
@@ -51,6 +53,6 @@ public class AcceptDatePeriod extends AcceptData<DatePeriod> {
 
     @Override
     public String getDataLabel() {
-        return "datePeriod";
+        return null;
     }
 }

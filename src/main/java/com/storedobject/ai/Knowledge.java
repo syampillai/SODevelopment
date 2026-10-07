@@ -7,6 +7,7 @@ import com.storedobject.core.*;
 import java.math.BigInteger;
 import java.sql.Date;
 import java.util.*;
+import java.util.concurrent.Future;
 
 /**
  * The Knowledge class serves as a repository to manage entities and related attributes within the scope of a transactional context.
@@ -22,6 +23,8 @@ public class Knowledge {
     final Map<Class<? extends StoredObject>, StringList> attributes = new HashMap<>();
     final Collection<Object> modules = new ArrayList<>();
     private Chat chat;
+    Date date;
+    DatePeriod datePeriod;
     private boolean logging = false;
 
     /**
@@ -200,6 +203,58 @@ public class Knowledge {
         if(chat != null && !chat.isClosed()) {
             throw new Exception("Chat already exists");
         }
+        chat = new Chat() {
+            @Override
+            public Future<String> ask(String message) {
+                return null;
+            }
+
+            @Override
+            public void abort() {
+            }
+
+            @Override
+            public void close() {
+            }
+
+            @Override
+            public boolean isClosed() {
+                return false;
+            }
+
+            @Override
+            public void setChatClosedListener(Runnable listener) {
+            }
+
+            @Override
+            public int getInputTokenCount() {
+                return 0;
+            }
+
+            @Override
+            public int getOutputTokenCount() {
+                return 0;
+            }
+
+            @Override
+            public int getTotalInputTokenCount() {
+                return 0;
+            }
+
+            @Override
+            public int getTotalOutputTokenCount() {
+                return 0;
+            }
+
+            @Override
+            public void setLogging(boolean logging) {
+            }
+
+            @Override
+            public boolean isLogging() {
+                return false;
+            }
+        };
         return chat;
     }
 
@@ -387,7 +442,7 @@ public class Knowledge {
      * @throws SOException If an error occurs during date retrieval.
      */
     public Date getDate(String purpose) throws SOException {
-        return DateUtility.today();
+        return date;
     }
 
     /**
@@ -398,7 +453,25 @@ public class Knowledge {
      * @throws SOException if an error occurs while determining the date period
      */
     public DatePeriod getDatePeriod(String purpose) throws SOException {
-        return new DatePeriod(DateUtility.startOfMonth(), DateUtility.today());
+        return datePeriod;
+    }
+
+    /**
+     * Sets the current date.
+     *
+     * @param date The date to be assigned. If null, the date is not updated.
+     */
+    public void setDate(Date date) {
+        if(date != null) this.date = date;
+    }
+
+    /**
+     * Sets the current date period.
+     *
+     * @param datePeriod the DatePeriod instance to set; if null, the datePeriod will not be updated
+     */
+    public void setDatePeriod(DatePeriod datePeriod) {
+        if(datePeriod != null) this.datePeriod = datePeriod;
     }
 
     /**
@@ -527,6 +600,8 @@ public class Knowledge {
      */
     public final void clearMemory() {
         memory.clear();
+        date = DateUtility.today();
+        datePeriod = new DatePeriod(DateUtility.startOfMonth(DateUtility.addMonth(date, -12)), date);
     }
 
     /**
@@ -539,19 +614,7 @@ public class Knowledge {
      *         the user, or the current date as a default if other options fail.
      */
     public final Date getSelectedDate() {
-        Date d = getFromMemory(Date.class, "date");
-        if(d == null) {
-            try {
-                d = getDate("Select a date");
-                putToMemory(d, "date");
-            } catch (SOException ignored) {
-            }
-        }
-        if(d == null) {
-            d = DateUtility.today();
-            putToMemory(d, "date");
-        }
-        return d;
+        return date;
     }
 
     /**
@@ -563,19 +626,7 @@ public class Knowledge {
      *         dynamically, or defaulted to the start of the current month to today.
      */
     public final DatePeriod getSelectedDatePeriod() {
-        DatePeriod p = getFromMemory(DatePeriod.class, "datePeriod");
-        if(p == null) {
-            try {
-                p = getDatePeriod("Select a period");
-                putToMemory(p, "datePeriod");
-            } catch (SOException ignored) {
-            }
-        }
-        if(p == null) {
-            p = new DatePeriod(DateUtility.startOfMonth(), DateUtility.today());
-            putToMemory(p, "datePeriod");
-        }
-        return p;
+        return datePeriod;
     }
 
     /**
