@@ -3,9 +3,27 @@ package com.storedobject.core;
 import com.storedobject.core.annotation.Column;
 
 import java.math.BigInteger;
+import java.util.HashMap;
+import java.util.Map;
 
+/**
+ * Represents a specific type of contact information, such as Phone, Email, Address, etc.
+ * This class is finalized and extends the functionality of StoredObject.
+ * It handles creation, validation, and retrieval of contact types.
+ * The class also manages display order, grouping codes, and type-specific constraints.
+ * <pre>
+ * Key functionalities include:
+ * - Validation of contact type data with custom rules.
+ * - Retrieval of unique conditions for database operations.
+ * - Static utilities for managing and creating predefined contact types.
+ * - Support for grouping and contact data categorization through grouping codes.
+ * </pre>
+ *
+ * @author Syam
+ */
 public final class ContactType extends StoredObject {
 
+	private static final Map<Id, ContactType> types = new HashMap<>();
 	private static final String[] typeValues = new String[] {
 			"Phone",
 			"Email",
@@ -185,5 +203,30 @@ public final class ContactType extends StoredObject {
 		} catch (Exception ignored) {
 		}
 		return null;
+	}
+
+	@Override
+	public void saved() throws Exception {
+		types.remove(getId());
+	}
+
+	/**
+	 * Retrieves a ContactType object for the specified ID.
+	 * If the object is not found in the existing cache, it is loaded from the database
+	 * and then cached for future use.
+	 *
+	 * @param id The unique identifier of the ContactType to be retrieved.
+	 * @return The ContactType associated with the given ID, or null if no such object exists.
+	 */
+	public static ContactType getFor(Id id) {
+		ContactType t = types.get(id);
+		if(t != null) {
+			return t;
+		}
+		t = StoredObject.get(ContactType.class, id);
+		if(t != null) {
+			types.put(id, t);
+		}
+		return t;
 	}
 }

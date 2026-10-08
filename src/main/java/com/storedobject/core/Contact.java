@@ -11,7 +11,6 @@ import java.util.List;
 public final class Contact extends StoredObject implements Detail {
 
 	private Id typeId;
-	private ContactType type;
 	private String contact;
 
 	public Contact(Id typeId, String contact) {
@@ -42,7 +41,7 @@ public final class Contact extends StoredObject implements Detail {
     @Override
 	public void validateData(TransactionManager tm) throws Exception {
 		if(!deleted()) {
-			getType();
+			ContactType type = getType();
 			if (StringUtility.isWhite(contact)) {
 				if(type.getType() == 4) {
 					contact = "Telegram";
@@ -65,7 +64,6 @@ public final class Contact extends StoredObject implements Detail {
             throw new Set_Not_Allowed("Type");
         }
         this.typeId = typeId;
-		this.type = null;
     }
 
     public void setType(BigDecimal idValue) {
@@ -82,10 +80,7 @@ public final class Contact extends StoredObject implements Detail {
     }
 
     public ContactType getType() {
-        if(type == null || !type.getId().equals(typeId)) {
-        	type = get(getTransaction(), ContactType.class, typeId);
-		}
-        return type;
+        return ContactType.getFor(typeId);
     }
 
 	public void setContact(String contact) {

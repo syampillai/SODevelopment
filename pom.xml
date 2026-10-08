@@ -7,11 +7,11 @@
     <parent>
         <groupId>com.storedobject</groupId>
         <artifactId>so-uipom</artifactId>
-        <version>24.10.0-9</version>
+        <version>24.10.7</version>
     </parent>
 
     <artifactId>so-development</artifactId>
-    <version>16.6.4</version>
+    <version>16.6.5</version>
 
     <name>${project.groupId}:${project.artifactId}</name>
     <description>SO Development skeleton classes</description>
@@ -50,7 +50,7 @@
             <dependency>
                 <groupId>dev.langchain4j</groupId>
                 <artifactId>langchain4j-bom</artifactId>
-                <version>1.13.0</version>
+                <version>1.14.0</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -63,25 +63,31 @@
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-core</artifactId>
-            <version>2.21.1</version>
+            <version>2.22.3</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
-            <version>2.21.1</version>
+            <version>2.22.3</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-annotations</artifactId>
-            <version>2.21</version>
+            <version>2.22</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.datatype</groupId>
             <artifactId>jackson-datatype-jsr310</artifactId>
-            <version>2.21.1</version>
+            <version>2.22.3</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>tools.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>3.2.3</version>
             <scope>compile</scope>
         </dependency>
 
@@ -89,7 +95,7 @@
         <dependency>
             <groupId>com.storedobject</groupId>
             <artifactId>so-client</artifactId>
-            <version>3.2.7</version>
+            <version>3.2.9</version>
         </dependency>
 
         <!-- Java Servlet -->
@@ -123,7 +129,7 @@
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
-            <version>42.7.8</version>
+            <version>42.7.13</version>
         </dependency>
 
         <!-- Java mail -->
@@ -133,6 +139,13 @@
             <version>2.0.2</version>
         </dependency>
 
+        <!-- Forcing latest version for POI -->
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-api</artifactId>
+            <version>2.26.1</version>
+            <scope>compile</scope>
+        </dependency>
         <!-- POI APIs for Excel interface -->
         <dependency>
             <groupId>org.apache.poi</groupId>
@@ -159,6 +172,12 @@
             <version>1.5.5</version>
         </dependency>
 
+        <!-- Forcing latest for AI -->
+        <dependency>
+            <groupId>org.apache.opennlp</groupId>
+            <artifactId>opennlp-tools</artifactId>
+            <version>2.5.12</version>
+        </dependency>
         <!-- AI Integration -->
         <dependency>
             <groupId>dev.langchain4j</groupId>
