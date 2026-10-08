@@ -15,7 +15,7 @@ import com.storedobject.ui.DatePeriodField;
  */
 public class AcceptDatePeriod extends AcceptData<DatePeriod> {
 
-    private final DatePeriodField datePeriodField;
+    private DatePeriodField datePeriodField;
 
     /**
      * Constructs an {@code AcceptDatePeriod} instance to handle the selection and processing
@@ -27,7 +27,11 @@ public class AcceptDatePeriod extends AcceptData<DatePeriod> {
      *                  typically used to provide context or identify the intent of the date period selection
      */
     public AcceptDatePeriod(Knowledge knowledge, String purpose) {
-        super(DatePeriod.class, knowledge, "Select");
+        super(DatePeriod.class, knowledge, "Select", purpose);
+    }
+
+    @Override
+    protected void createFields() {
         datePeriodField = new DatePeriodField(purpose);
         addField(datePeriodField);
         setRequired(datePeriodField);
@@ -37,7 +41,7 @@ public class AcceptDatePeriod extends AcceptData<DatePeriod> {
     @Override
     protected boolean process() {
         data = datePeriodField.getValue();
-        getKnowledge().setDatePeriod(data);
+        knowledge.setDatePeriod(data);
         return true;
     }
 

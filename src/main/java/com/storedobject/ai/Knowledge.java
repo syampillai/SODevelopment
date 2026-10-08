@@ -413,7 +413,23 @@ public class Knowledge {
     public <T extends StoredObject> T get(Class<T> c, String purpose) throws SOException {
         QueryBuilder<T> queryBuilder = QueryBuilder.from(c);
         customize(queryBuilder);
-        return queryBuilder.get();
+        T o = queryBuilder.get();
+        if(o != null) {
+            putToMemory(o);
+            set(o, purpose);
+        }
+        return o;
+    }
+
+    /**
+     * Sets the specified object with the given purpose. This method is invoked whenever an object is received/selected
+     * via {@link #get(Class, String)}. Before setting the object, it is put into memory.
+     *
+     * @param <T>      the type of the object extending StoredObject
+     * @param object   the object to be set
+     * @param purpose  the purpose associated with the object
+     */
+    public <T extends StoredObject> void set(T object, String purpose) {
     }
 
     /**

@@ -168,7 +168,7 @@ public class Knowledge extends com.storedobject.ai.Knowledge implements Executab
     /**
      * Retrieves the starting prompt for the knowledge session.
      *
-     * @return The starting prompt as a string. If no starting prompt is defined, returns {@code null}.
+     * @return The starting prompt as a string. If no starting prompt is defined, it returns {@code null}.
      */
     public String getStartingPrompt() {
         return null;
@@ -185,7 +185,11 @@ public class Knowledge extends com.storedobject.ai.Knowledge implements Executab
 
     @Override
     public <T extends StoredObject> T get(Class<T> objectClass, String purpose) throws SOException {
-        return get(objectClass, purpose, AcceptObject::new);
+        T object = get(objectClass, purpose, AcceptObject::new);
+        if(object != null) {
+            set(object, purpose);
+        }
+        return object;
     }
 
     /**
@@ -212,6 +216,7 @@ public class Knowledge extends com.storedobject.ai.Knowledge implements Executab
         semaphore.acquireUninterruptibly();
         semaphore.release();
         AcceptData<T> ad = adRef.get();
+        ad.createFields();
         T data = ad.retrieveData();
         if(data == null) {
             throw new SOException("Unable to provide the required information - user cancelled the operation");

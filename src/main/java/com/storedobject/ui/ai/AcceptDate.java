@@ -19,7 +19,7 @@ import java.sql.Date;
  */
 public class AcceptDate extends AcceptData<Date> {
 
-    private final DateField dateField;
+    private DateField dateField;
 
     /**
      * Constructs an instance of AcceptDate, which facilitates the processing of a selected date
@@ -31,7 +31,10 @@ public class AcceptDate extends AcceptData<Date> {
      * @param purpose the descriptive purpose for the date input, used to set up the date field.
      */
     public AcceptDate(Knowledge knowledge, String purpose) {
-        super(Date.class, knowledge, "Select");
+        super(Date.class, knowledge, "Select", purpose);
+    }
+
+    protected void createFields() {
         dateField = new DateField(purpose);
         addField(dateField);
         setRequired(dateField);
@@ -41,7 +44,7 @@ public class AcceptDate extends AcceptData<Date> {
     @Override
     protected boolean process() {
         data = dateField.getValue();
-        getKnowledge().setDate(data);
+        knowledge.setDate(data);
         return true;
     }
 

@@ -16,7 +16,7 @@ import com.storedobject.ui.ObjectField;
  */
 public class AcceptObject<O extends StoredObject> extends AcceptData<O> {
 
-    private final ObjectField<O> objectField;
+    private ObjectField<O> objectField;
 
     /**
      * Creates an instance of AcceptObject, which is a specialized implementation
@@ -31,10 +31,14 @@ public class AcceptObject<O extends StoredObject> extends AcceptData<O> {
      *                This is typically displayed to the user.
      */
     public AcceptObject(Class<O> objectClass, Knowledge knowledge, String purpose) {
-        super(objectClass, knowledge, "Select");
-        QueryBuilder<O> queryBuilder = QueryBuilder.from(objectClass);
-        getKnowledge().customize(queryBuilder);
-        this.objectField = new ObjectField<>(purpose, objectClass, queryBuilder.getAny());
+        super(objectClass, knowledge, "Select", purpose);
+    }
+
+    @Override
+    protected void createFields() {
+        QueryBuilder<O> queryBuilder = QueryBuilder.from(dataClass);
+        knowledge.customize(queryBuilder);
+        this.objectField = new ObjectField<>(purpose, dataClass, queryBuilder.getAny());
         String s = queryBuilder.getWhereClause();
         if(s != null) {
             this.objectField.setFilter(s);
@@ -62,6 +66,6 @@ public class AcceptObject<O extends StoredObject> extends AcceptData<O> {
 
     @Override
     public String getDataLabel() {
-        return getKnowledge().getNameOf(dataClass);
+        return knowledge.getNameOf(dataClass);
     }
 }

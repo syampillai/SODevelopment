@@ -26,12 +26,19 @@ import java.util.concurrent.Semaphore;
 public abstract class AcceptData<T> extends DataForm {
 
     private final Semaphore semaphore = new Semaphore(1, true);
-    private final Knowledge knowledge;
     private boolean dataCollected = false;
+    /**
+     * The {@link Knowledge} instance that provides functionality to manage knowledge topics.
+     */
+    protected final Knowledge knowledge;
     /**
      * The class of the data to be accepted.
      */
     protected final Class<T> dataClass;
+    /**
+     * The purpose of the data to be accepted.
+     */
+    protected final String purpose;
     /**
      * The data that is accepted. Make sure that this is set in the {@link #process()} method.
      */
@@ -45,11 +52,28 @@ public abstract class AcceptData<T> extends DataForm {
      *                  and interact with chat views.
      * @param caption   the caption to be displayed in the data form; typically used as a title or label.
      */
-    public AcceptData(Class<T> dataClass, Knowledge knowledge, String caption) {
+    public AcceptData(Class<T> dataClass, Knowledge knowledge, String caption, String purpose) {
         super(caption);
         this.dataClass = dataClass;
         this.knowledge = knowledge;
+        this.purpose = purpose;
     }
+
+    /**
+     * Defines the abstract method required to initialize or create fields
+     * associated with the data form represented by this class.
+     * <p>
+     * Implementations of this method should be responsible for creating
+     * and configuring the necessary input fields or components used for
+     * accepting data. The fields created are typically dependent on the
+     * data type represented by the associated {@code dataClass} and may
+     * involve custom logic based on the {@code purpose} or other contextual
+     * parameters of the form.
+     * <p>
+     * This method is invoked during the lifecycle of the data form
+     * and ensures that all required fields are set up appropriately.
+     */
+    protected abstract void createFields();
 
     /**
      * Retrieves the Application instance associated with the current context.
@@ -66,16 +90,6 @@ public abstract class AcceptData<T> extends DataForm {
     }
 
     /**
-     * Retrieves the Knowledge instance associated with this object.
-     *
-     * @return the Knowledge instance that provides functionality for managing
-     *         knowledge topics and interacting with a chat view.
-     */
-    public final Knowledge getKnowledge() {
-        return knowledge;
-    }
-
-    /**
      * Retrieves the data object associated with the AcceptData instance.
      * The method ensures thread-safe access to the data and executes necessary
      * operations if data has not yet been collected.
@@ -85,7 +99,6 @@ public abstract class AcceptData<T> extends DataForm {
     public final T retrieveData() {
         if(!dataCollected) {
             if(!executing()) {
-                knowledge.semaphore.acquireUninterruptibly();
                 semaphore.acquireUninterruptibly();
                 execute();
             }
@@ -99,7 +112,10 @@ public abstract class AcceptData<T> extends DataForm {
     protected void execute(View parent, boolean doNotLock) {
         data = null;
         dataCollected = true;
-        knowledge.application.access(() -> super.execute(parent, doNotLock));
+        knowledge.application.access(() -> {
+            knowledge.semaphore.acquireUninterruptibly();
+            super.execute(parent, doNotLock);
+        });
     }
 
     @Override
