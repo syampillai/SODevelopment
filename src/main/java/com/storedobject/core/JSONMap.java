@@ -294,7 +294,7 @@ public class JSONMap implements Map<String, Object>, Serializable {
 
     @Override
     public String toString() {
-        return new JSON(this).toPrettyString();
+        return toJSON().toPrettyString();
     }
 
     public static class Array {

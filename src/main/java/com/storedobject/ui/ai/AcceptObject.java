@@ -38,10 +38,14 @@ public class AcceptObject<O extends StoredObject> extends AcceptData<O> {
     protected void createFields() {
         QueryBuilder<O> queryBuilder = QueryBuilder.from(dataClass);
         knowledge.customize(queryBuilder);
-        this.objectField = new ObjectField<>(purpose, dataClass, queryBuilder.getAny());
+        objectField = new ObjectField<>(purpose, dataClass, queryBuilder.getAny());
         String s = queryBuilder.getWhereClause();
         if(s != null) {
-            this.objectField.setFilter(s);
+            objectField.setFilter(s);
+        }
+        O current = knowledge.getFromMemory(dataClass);
+        if(current != null) {
+            objectField.setObject(current);
         }
         addField(objectField);
         setRequired(objectField);

@@ -49,6 +49,16 @@ public class Knowledge {
     }
 
     /**
+     * Retrieves additional knowledge or metadata in the form of a JSONMap object.
+     * This information, if available, will be sent to the AI service each time a request is made.
+     *
+     * @return a JSONMap containing extra knowledge or metadata, or null if no data is available.
+     */
+    public JSONMap getExtraKnowledge() {
+        return null;
+    }
+
+    /**
      * Retrieves a list of attributes associated with the specified class of type {@code StoredObject}.
      * The attributes are determined based on user roles and access permissions.
      *
