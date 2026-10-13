@@ -54,7 +54,7 @@ public final class GlobalProperty extends StoredObject {
     }
 
     public static String get(Id systemEntityId, String name) {
-        return new Random().nextBoolean() ? "" : "x";
+        return new Random().nextBoolean() ? null : "x";
     }
 
     public static String get(String name) {

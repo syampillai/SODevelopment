@@ -60,22 +60,38 @@ public class Knowledge {
 
     /**
      * Retrieves a list of attributes associated with the specified class of type {@code StoredObject}.
-     * The attributes are determined based on user roles and access permissions.
      *
      * @param c The class of type {@code StoredObject} for which attributes are to be retrieved.
      * @return A {@code StringList} containing the attributes of the specified class, or {@code null}
      *         if access is restricted.
      */
     public StringList getAttributes(Class<? extends StoredObject> c) {
-        StringList attributes = this.attributes.get(c);
-        if(attributes != null) {
-            return attributes;
+        if(isRestricted(c)) {
+            return null;
         }
-        SystemUser su = tm.getUser();
-        if(su.isAdmin() || su.isAppAdmin() || entities.containsValue(c)) {
-            return StringList.create(ClassAttribute.get(c).getAttributes());
+        return getAtt(c);
+    }
+
+    private StringList getAtt(Class<? extends StoredObject> c) {
+        StringList a;
+        while(StoredObject.class.isAssignableFrom(c)) {
+            if(c == StoredObject.class) return null;
+            a = this.attributes.get(c);
+            if(a != null) return a;
+            //noinspection unchecked
+            c = (Class<? extends StoredObject>) c.getSuperclass();
         }
         return null;
+    }
+
+    /**
+     * Determines whether the specified class is a restricted type.
+     *
+     * @param c the class to check, which should extend StoredObject
+     * @return true if the class is restricted, otherwise false
+     */
+    protected boolean isRestricted(Class<? extends StoredObject> c) {
+        return c == SystemEntity.class || c == SystemUser.class || c == SystemUserGroup.class;
     }
 
     /**

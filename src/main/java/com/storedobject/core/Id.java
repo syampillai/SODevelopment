@@ -818,157 +818,157 @@ public class Id {
 	}
 
 	public final <T extends StoredObject> T getMaster(Class<T> objectClass) {
-        return (T)(isNull() ? new Person() : new Entity());
+        return StoredObject.get(objectClass);
 	}
 
 	public final <T extends StoredObject> T getMaster(Transaction transaction, Class<T> objectClass) {
-        return (T)(isNull() ? new Person() : new Entity());
+		return StoredObject.get(objectClass);
 	}
 
 	public final <T extends StoredObject> T getMaster(Class<T> objectClass, String condition) {
-        return (T)(isNull() ? new Person() : new Entity());
+		return StoredObject.get(objectClass);
 	}
 
 	public final <T extends StoredObject> T getMaster(Transaction transaction, Class<T> objectClass, String condition) {
-        return (T)(isNull() ? new Person() : new Entity());
+		return StoredObject.get(objectClass);
 	}
 
 	public final <T extends StoredObject> T getMaster(Class<T> objectClass, String condition, String order) {
-        return (T)(isNull() ? new Person() : new Entity());
+		return StoredObject.get(objectClass);
 	}
 
 	public final <T extends StoredObject> T getMaster(Transaction transaction, Class<T> objectClass, String condition, String order) {
-        return (T)(isNull() ? new Person() : new Entity());
+		return StoredObject.get(objectClass);
 	}
 
 	public final <T extends StoredObject> T getMaster(int linkType, Class<T> objectClass) {
-        return (T)(isNull() ? new Person() : new Entity());
+		return StoredObject.get(objectClass);
 	}
 
 	public final <T extends StoredObject> T getMaster(Transaction transaction, int linkType, Class<T> objectClass) {
-        return (T)(isNull() ? new Person() : new Entity());
+		return StoredObject.get(objectClass);
 	}
 
 	public final <T extends StoredObject> T getMaster(int linkType, Class<T> objectClass, String condition) {
-        return (T)(isNull() ? new Person() : new Entity());
+		return StoredObject.get(objectClass);
 	}
 
 	public final <T extends StoredObject> T getMaster(Transaction transaction, int linkType, Class<T> objectClass, String condition) {
-        return (T)(isNull() ? new Person() : new Entity());
+		return StoredObject.get(objectClass);
 	}
 
 	public final <T extends StoredObject> T getMaster(int linkType, Class<T> objectClass, String condition, String order) {
-        return (T)(isNull() ? new Person() : new Entity());
+		return StoredObject.get(objectClass);
 	}
 
 	public final <T extends StoredObject> T getMaster(Transaction transaction, int linkType, Class<T> objectClass,
 			String condition, String order) {
-        return (T)(isNull() ? new Person() : new Entity());
+		return StoredObject.get(objectClass);
 	}
 
 	public final <T extends StoredObject> T getMaster(String linkType, Class<T> objectClass) {
-        return (T)(isNull() ? new Person() : new Entity());
+		return StoredObject.get(objectClass);
 	}
 
 	public final <T extends StoredObject> T getMaster(Transaction transaction, String linkType, Class<T> objectClass) {
-        return (T)(isNull() ? new Person() : new Entity());
+		return StoredObject.get(objectClass);
 	}
 
 	public final <T extends StoredObject> T getMaster(String linkType, Class<T> objectClass, String condition) {
-        return (T)(isNull() ? new Person() : new Entity());
+		return StoredObject.get(objectClass);
 	}
 
 	public final <T extends StoredObject> T getMaster(Transaction transaction, String linkType, Class<T> objectClass,
 			String condition) {
-        return (T)(isNull() ? new Person() : new Entity());
+		return StoredObject.get(objectClass);
 	}
 
 	public final <T extends StoredObject> T getMaster(String linkType, Class<T> objectClass, String condition, String order) {
-        return (T)(isNull() ? new Person() : new Entity());
+		return StoredObject.get(objectClass);
 	}
 
 	public final <T extends StoredObject> T getMaster(Transaction transaction, String linkType, Class<T> objectClass,
 			String condition, String order) {
-        return (T)(isNull() ? new Person() : new Entity());
+		return StoredObject.get(objectClass);
 	}
 
 	public final <T extends StoredObject> T getMaster(Class<T> objectClass, boolean any) {
-        return (T)(isNull() ? new Person() : new Entity());
+		return StoredObject.get(objectClass);
 	}
 
 	public final <T extends StoredObject> T getMaster(Transaction transaction, Class<T> objectClass, boolean any) {
-        return (T)(isNull() ? new Person() : new Entity());
+		return StoredObject.get(objectClass);
 	}
 
 	public final <T extends StoredObject> T getMaster(Class<T> objectClass, String condition, boolean any) {
-        return (T)(isNull() ? new Person() : new Entity());
+		return StoredObject.get(objectClass);
 	}
 
 	public final <T extends StoredObject> T getMaster(Transaction transaction, Class<T> objectClass, String condition, boolean any) {
-        return (T)(isNull() ? new Person() : new Entity());
+		return StoredObject.get(objectClass);
 	}
 
 	public final <T extends StoredObject> T getMaster(Class<T> objectClass, String condition, String order, boolean any) {
-        return (T)(isNull() ? new Person() : new Entity());
+		return StoredObject.get(objectClass);
 	}
 
 	public final <T extends StoredObject> T getMaster(Transaction transaction, Class<T> objectClass, String condition,
 			String order, boolean any) {
-        return (T)(isNull() ? new Person() : new Entity());
+		return StoredObject.get(objectClass);
 	}
 
 	public final <T extends StoredObject> T getMaster(int linkType, Class<T> objectClass, boolean any) {
-        return (T)(isNull() ? new Person() : new Entity());
+		return StoredObject.get(objectClass);
 	}
 
 	public final <T extends StoredObject> T getMaster(Transaction transaction, int linkType, Class<T> objectClass, boolean any) {
-        return (T)(isNull() ? new Person() : new Entity());
+		return StoredObject.get(objectClass);
 	}
 
 	public final <T extends StoredObject> T getMaster(int linkType, Class<T> objectClass, String condition, boolean any) {
-        return (T)(isNull() ? new Person() : new Entity());
+		return StoredObject.get(objectClass);
 	}
 
 	public final <T extends StoredObject> T getMaster(Transaction transaction, int linkType, Class<T> objectClass,
 			String condition, boolean any) {
-        return (T)(isNull() ? new Person() : new Entity());
+		return StoredObject.get(objectClass);
 	}
 
 	public final <T extends StoredObject> T getMaster(int linkType, Class<T> objectClass, String condition, String order,
 			boolean any) {
-        return (T)(isNull() ? new Person() : new Entity());
+		return StoredObject.get(objectClass);
 	}
 
 	public final <T extends StoredObject> T getMaster(Transaction transaction, int linkType, Class<T> objectClass,
 			String condition, String order, boolean any) {
-        return (T)(isNull() ? new Person() : new Entity());
+		return StoredObject.get(objectClass);
 	}
 
 	public final <T extends StoredObject> T getMaster(String linkType, Class<T> objectClass, boolean any) {
-        return (T)(isNull() ? new Person() : new Entity());
+		return StoredObject.get(objectClass);
 	}
 
 	public final <T extends StoredObject> T getMaster(Transaction transaction, String linkType, Class<T> objectClass, boolean any) {
-        return (T)(isNull() ? new Person() : new Entity());
+		return StoredObject.get(objectClass);
 	}
 
 	public final <T extends StoredObject> T getMaster(String linkType, Class<T> objectClass, String condition, boolean any) {
-        return (T)(isNull() ? new Person() : new Entity());
+		return StoredObject.get(objectClass);
 	}
 
 	public final <T extends StoredObject> T getMaster(Transaction transaction, String linkType, Class<T> objectClass,
 			String condition, boolean any) {
-        return (T)(isNull() ? new Person() : new Entity());
+		return StoredObject.get(objectClass);
 	}
 
 	public final <T extends StoredObject> T getMaster(String linkType, Class<T> objectClass, String condition, String order,
 			boolean any) {
-        return (T)(isNull() ? new Person() : new Entity());
+		return StoredObject.get(objectClass);
 	}
 
 	public final <T extends StoredObject> T getMaster(Transaction transaction, String linkType, Class<T> objectClass,
 			String condition, String order, boolean any) {
-        return (T)(isNull() ? new Person() : new Entity());
+		return StoredObject.get(objectClass);
 	}
 
 	public final boolean existsMaster(StoredObject master) {
@@ -1326,9 +1326,5 @@ public class Id {
 	
 	public final ObjectIterator<? extends FileData> listFileData(Transaction transaction) {
 		return ObjectIterator.create();
-	}
-
-	static int compare(Id id1, Id id2) {
-		return id1.get().compareTo(id2.get());
 	}
 }
