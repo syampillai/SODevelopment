@@ -10,13 +10,12 @@ import java.io.Serializable;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.util.*;
-import java.util.List;
 import java.util.function.BiFunction;
 import java.util.stream.Stream;
 
 public class JSONMap implements Map<String, Object>, Serializable {
 
-    private final HashMap<String, Object> map = new HashMap<>();
+    private final Map<String, Object> map = new TreeMap<>();
     private boolean rawMode = false;
 
     public JSONMap() {
@@ -85,7 +84,7 @@ public class JSONMap implements Map<String, Object>, Serializable {
         try {
             return new JSON(this);
         } catch (Throwable e) {
-            ApplicationServer.log(map.toString(), e);
+            ApplicationServer.log("\n--- Invalid JSON ---\n" + map + "\n--- End of JSON ---", e);
             return new JSON("""
                     {"error": "JSON Serialization Error"}
                     """);
@@ -161,8 +160,11 @@ public class JSONMap implements Map<String, Object>, Serializable {
 
     private static Object value(String key, Object value, BiFunction<String, ContentProducer, String> contentToString) {
         if(value instanceof ComputedValue<?> cv) {
-            Map<String, Object> m = new HashMap<>();
+            Map<String, Object> m = new TreeMap<>();
             m.put("available", cv.consider());
+            if(cv instanceof ComputedMinute cm) {
+                m.put("valueAsText", cm.toString());
+            }
             m.put("value", value(key, cv.getValueObject(), contentToString));
             return m;
         }
@@ -173,34 +175,41 @@ public class JSONMap implements Map<String, Object>, Serializable {
             value = new StreamDataContent(hsd.getStreamData());
         }
         if(value instanceof Timestamp ts) {
-            return JSON.DateTimeConverter.format(ts);
-        } else if(value instanceof Time t) {
-            return JSON.DateTimeConverter.format(t);
-        } else if(value instanceof java.util.Date d) {
-            return JSON.DateTimeConverter.format(d);
-        } else if(value instanceof DatePeriod p) {
-            Map<String, Object> m = new HashMap<>();
+            return Utility.isEmpty(ts) ? null : JSON.DateTimeConverter.format(ts);
+        }
+        if(value instanceof Time t) {
+            return Utility.isEmpty(t) ? null : JSON.DateTimeConverter.format(t);
+        }
+        if(value instanceof java.util.Date d) {
+            return Utility.isEmpty(d) ? null : JSON.DateTimeConverter.format(d);
+        }
+        if(value instanceof DatePeriod p) {
+            Map<String, Object> m = new TreeMap<>();
             m.put("dateFrom", JSON.DateTimeConverter.format(p.getFrom()));
             m.put("dateTo", JSON.DateTimeConverter.format(p.getTo()));
             return m;
-        } else if(value instanceof TimePeriod p) {
-            Map<String, Object> m = new HashMap<>();
+        }
+        if(value instanceof TimePeriod p) {
+            Map<String, Object> m = new TreeMap<>();
             m.put("timeFrom", JSON.DateTimeConverter.format(p.getFrom()));
             m.put("timeTo", JSON.DateTimeConverter.format(p.getTo()));
             return m;
-        } else if(value instanceof TimestampPeriod p) {
-            Map<String, Object> m = new HashMap<>();
+        }
+        if(value instanceof TimestampPeriod p) {
+            Map<String, Object> m = new TreeMap<>();
             m.put("timeFrom", JSON.DateTimeConverter.format(p.getFrom()));
             m.put("timeTo", JSON.DateTimeConverter.format(p.getTo()));
             return m;
-        } else if(value instanceof Address a) {
-            Map<String, Object> m = new HashMap<>();
+        }
+        if(value instanceof Address a) {
+            Map<String, Object> m = new TreeMap<>();
             m.put("country", a.getCountry().getShortName());
             m.put("encoded", a.encode());
             m.put("text", a.toString());
             return m;
-        } else  if(value instanceof ContentProducer cp) {
-            Map<String , Object> m = new HashMap<>();
+        }
+        if(value instanceof ContentProducer cp) {
+            Map<String , Object> m = new TreeMap<>();
             m.put("contentType", cp.getContentType());
             if(contentToString == null) {
                 m.put("content", "");
@@ -208,21 +217,26 @@ public class JSONMap implements Map<String, Object>, Serializable {
                 m.put("content", contentToString.apply(key, cp));
             }
             return m;
-        } else if(value instanceof StoredObject so) {
+        }
+        if(value instanceof StoredObject so) {
             return so.toDisplay();
-        } else if(value instanceof Money money) {
-            Map<String, Object> m = new HashMap<>();
+        }
+        if(value instanceof Money money) {
+            Map<String, Object> m = new TreeMap<>();
             m.put("currency", money.getCurrency().getCurrencyCode());
             m.put("amount", money.getValue());
             return m;
-        } else if(value instanceof Quantity q) {
-            Map<String, Object> m = new HashMap<>();
+        }
+        if(value instanceof Quantity q) {
+            Map<String, Object> m = new TreeMap<>();
             m.put("unit", q.getUnit().getUnit());
             m.put("quantity", q.getValue());
             return m;
-        } else if(value instanceof Geolocation geo) {
+        }
+        if(value instanceof Geolocation geo) {
             return geo.toString();
-        } else if(value instanceof Id id) {
+        }
+        if(value instanceof Id id) {
             return id.toString();
         }
         return value;

@@ -32,6 +32,7 @@ public class ChatView extends View implements CloseableView, Transactional {
     private final Button send = new Button("Send", e -> process());
     private Knowledge knowledge;
     private Chat chat;
+    private String systemMessage;
 
     /**
      * Default constructor for the ChatView class.
@@ -188,13 +189,25 @@ public class ChatView extends View implements CloseableView, Transactional {
     }
 
     private void response(String text, boolean enable) {
-        MessageListItem item = new MessageListItem(text, CHAT);
+        MessageListItem item;
+        String s = systemMessage;
+        if(s != null) {
+            systemMessage = null;
+            item = new MessageListItem(s, "System");
+            item.setUserColorIndex(3);
+            messages.add(item);
+        }
+        item = new MessageListItem(text, CHAT);
         item.setUserAbbreviation(CHAT);
         item.setUserColorIndex(2);
         messages.add(item);
         messageList.setItems(messages);
         send.setEnabled(enable);
         input.focus();
+    }
+
+    public void setSystemMessage(String systemMessage) {
+        this.systemMessage = systemMessage;
     }
 
     private class TopicSelector extends DataForm {

@@ -99,6 +99,7 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
     private boolean closeOnSave, editing = false;
     List<ObjectChangedListener<T>> objectChangedListeners = new ArrayList<>();
     private final List<ObjectEditorListener> objectEditorListeners = new ArrayList<>();
+    private List<RequiresMaster> requiresMaster;
     private List<Predicate<T>> validators;
     private ObjectSearcher<T> searcher;
     private ObjectLoadFilter<T> searchFilter;
@@ -1748,6 +1749,14 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
         drawButtons();
     }
 
+    @Override
+    public void setObject(T object, boolean load) {
+        super.setObject(object, load);
+        if(requiresMaster != null) {
+            requiresMaster.forEach(rm -> rm.setMaster(object));
+        }
+    }
+
     /**
      * This method is invoked whenever a new object is inserted in the database.
      *
@@ -2402,6 +2411,12 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
 
     @Override
     protected void attachField(String fieldName, HasValue<?, ?> field) {
+        if(field instanceof RequiresMaster rm) {
+            if(requiresMaster == null) {
+                requiresMaster = new ArrayList<>();
+            }
+            requiresMaster.add(rm);
+        }
         if(field instanceof NoDisplayField nd && !nd.canDisplay()) {
             return;
         }

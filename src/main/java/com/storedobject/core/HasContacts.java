@@ -17,7 +17,7 @@ import java.util.List;
  *
  * @author Syam
  */
-public interface HasContacts {
+public interface HasContacts extends ContactOwner {
 
     /**
      * Get the Id.
@@ -50,11 +50,24 @@ public interface HasContacts {
      * @return Stream of contact instances.
      */
     default ObjectIterator<Contact> listContacts() {
+        return listContacts(null);
+    }
+
+    /**
+     * List all contact instances of this class instance.
+     *
+     * @return Stream of contact instances.
+     */
+    default ObjectIterator<Contact> listContacts(String filter) {
         Id id = getContactOwnerId();
         if (id == null) {
             return ObjectIterator.create();
         }
-        return id.listLinks(Contact.class, "Type.GroupingCode=" + getContactGroupingCode(), "Type.DisplayOrder");
+        String f = "Type.GroupingCode=" + getContactGroupingCode();
+        if (filter != null) {
+            f += " AND (" + filter + ")";
+        }
+        return id.listLinks(Contact.class, f, "Type.DisplayOrder");
     }
 
     /**
@@ -159,7 +172,7 @@ public interface HasContacts {
 
     /**
      * Get the {@link Id} of the object that owns the contact. (It is possible that some other related object
-     * may be owing the contact information).
+     * may owe the contact information).
      *
      * @return By default, the same instance of the class owns the contact and thus, it returns
      * {@link StoredObject#getId()}.
@@ -171,7 +184,7 @@ public interface HasContacts {
     /**
      * Get the contact grouping code of this class. This method should return a constant value.
      *
-     * @return Default value is 0.
+     * @return The default value is 0.
      */
     default int getContactGroupingCode() {
         return 0;
@@ -220,7 +233,7 @@ public interface HasContacts {
             c = new Contact();
             c.setType(ct);
         } else {
-            c = cs.get(0);
+            c = cs.getFirst();
             if(contactValue == null || contactValue.isBlank()) {
                 tm.transact(t -> ((StoredObject) this).removeLink(t, c));
                 return;
@@ -319,5 +332,10 @@ public interface HasContacts {
     default String getTelegram() {
         String s = getContact("Telegram");
         return s == null || s.isBlank() || s.equals("Telegram") ? null : s;
+    }
+
+    @Override
+    default HasContacts getContactOwner() {
+        return this;
     }
 }

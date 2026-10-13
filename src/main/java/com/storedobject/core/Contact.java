@@ -106,6 +106,11 @@ public final class Contact extends StoredObject implements Detail {
 		return getType() + ": " + getContactValue();
 	}
 
+	@Override
+	public String toDisplay() {
+		return getContactValue();
+	}
+
 	public String getContactValue() {
 		ContactType t = getType();
 		if(t.getType() == 2) { // Address

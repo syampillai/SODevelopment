@@ -135,11 +135,16 @@ public class ObjectComboField<T extends StoredObject> extends ComboField<T>
         this.objectProvider = new ObjectListProvider<>(objectCache);
         setItems(objectProvider);
         setItemLabelGenerator(StoredObject::toDisplay);
-        if(allowAdd && !isAllowAny()) {
-            ObjectField.checkDetailClass(this.objectProvider.getObjectClass(), label);
-            addButton = new ImageButton("Add new", VaadinIcon.PLUS, e -> addNew());
-            addButton.getElement().setAttribute("slot", "prefix");
-            getElement().appendChild(addButton.getElement());
+        if(allowAdd) {
+            objectAdder = getObjectAdder();
+            if(objectAdder != null || !isAllowAny()) {
+                if(objectAdder == null) {
+                    ObjectField.checkDetailClass(objectProvider.getObjectClass(), label);
+                }
+                addButton = new ImageButton("Add new", VaadinIcon.PLUS, e -> addNew());
+                addButton.getElement().setAttribute("slot", "prefix");
+                getElement().appendChild(addButton.getElement());
+            }
         }
         ResourceDisposal.register(this);
         setSpellCheck(false);
@@ -153,6 +158,10 @@ public class ObjectComboField<T extends StoredObject> extends ComboField<T>
             },this);
         }
         getElement().callJsFunction("close").then(r -> objectAdder.add());
+    }
+
+    protected ObjectAdder<T> getObjectAdder() {
+        return objectAdder;
     }
 
     @Override
@@ -298,8 +307,8 @@ public class ObjectComboField<T extends StoredObject> extends ComboField<T>
     }
 
     public static <C extends StoredObject> boolean lessRows(Class<C> objectClass, boolean allowAny) {
-        return (StoredObjectUtility.hints(objectClass) & 2) == 2
-                && StoredObjectUtility.howBig(objectClass, allowAny) < 30;
+        ClassAttribute<?> ca = ClassAttribute.get(objectClass);
+        return (ca.hints() & 2) == 2 && ca.howBig(allowAny) < 30;
     }
 
     @Override

@@ -109,7 +109,7 @@ public class GUI implements Executable {
      * <ul>
      * - Clears the existing list of units.
      * - Retrieves the active units linked to the current block from storage.
-     * - Populates the units list with the retrieved data.
+     * - Populates the unit list with the retrieved data.
      */
     private void loadUnits() {
         units.clear();

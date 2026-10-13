@@ -631,6 +631,10 @@ public class SOFieldCreator<T> implements ObjectFieldCreator<T> {
                 return new ObjectField<>(label, fileField);
             } else if(realObjectType == SystemUser.class) {
                 return new UserField(label);
+            } else if(realObjectType == Contact.class) {
+                ContactField cf = new ContactField(label);
+                cf.setAllowedTypes(md.getStyle());
+                return cf;
             }
             ObjectEditor<FT> oe = (ObjectEditor<FT>) oe();
             Class<FT> fieldClass = (Class<FT>) realObjectType;

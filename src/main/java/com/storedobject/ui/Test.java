@@ -1,25 +1,24 @@
 package com.storedobject.ui;
 
-import com.storedobject.core.*;
-import com.storedobject.office.Filler;
-import com.storedobject.office.ODT;
-import com.storedobject.office.ODTReport;
-import com.storedobject.pdf.PDFReport;
+import com.storedobject.core.Id;
+import com.storedobject.core.Person;
+import com.storedobject.core.StoredObject;
+import com.storedobject.core.TimeDuration;
+import com.storedobject.svg.chart.Bars;
 import com.storedobject.svg.chart.Chart;
-import com.storedobject.ui.report.SectionSelector;
 import com.storedobject.vaadin.BooleanField;
 import com.storedobject.vaadin.DataForm;
-import com.storedobject.svg.chart.Bars;
 import com.storedobject.vaadin.Svg;
 
 import java.util.concurrent.TimeUnit;
 
 public class Test extends DataForm {
 
-    private final BooleanField raw = new BooleanField("Raw");
+    private final ContactField cf = new ContactField("Contact");
 
     public Test() {
         super("Test");
+        BooleanField raw = new BooleanField("Raw");
         addField(raw);
         addField(new TimeDurationField("Time Duration"));
         TimeDurationField x = new TimeDurationField("Another Time Duration");
@@ -27,20 +26,16 @@ public class Test extends DataForm {
         x.setValue(new TimeDuration(100, TimeUnit.SECONDS));
         setFieldReadOnly(x);
         addField(new TemperatureField("Temperature"));
+        addField(cf);
         add(new Svg(chart()));
+        cf.setMaster(StoredObject.get(Person.class, "FirstName='Collinz'"));
+        cf.setAllowedTypes(new Id("8009"));
     }
 
     @Override
     protected boolean process() {
-        message("Temperature: " + new Temperature());
+        message(cf.getObject());
         close();
-        ODTReport r = new ODTReport(getApplication(), new Id("4415"));
-        SectionSelector ss = new SectionSelector(r);
-        r.setFiller(new F());
-        r.setRawOutput(raw.getValue());
-        ss.execute();
-        //noinspection resource
-        new R().execute();
         return true;
     }
 
@@ -58,42 +53,5 @@ public class Test extends DataForm {
         c.addValue("Category G", 15);
         c.addValue("Category H", 100);
         return c;
-    }
-
-    public static class F extends Filler<Object> {
-
-        private F() {
-        }
-
-        @Override
-        public void customizeTable(ODT.Table table) {
-            System.err.println("Table: " + table.getName());
-            super.customizeTable(table);
-        }
-
-        @Override
-        public void customizeImage(ODT.Image image) {
-            System.err.println("Image: " + image.getName());
-        }
-
-        @Override
-        public Object evaluate(ODT.Element element, String variableName) {
-            if(element instanceof ODT.Image) {
-                return chart();
-            }
-            return super.evaluate(element, variableName);
-        }
-    }
-
-    private static class R extends PDFReport {
-
-        public R() {
-            super(Application.get());
-        }
-
-        @Override
-        public void generateContent() {
-            add(chart());
-        }
     }
 }

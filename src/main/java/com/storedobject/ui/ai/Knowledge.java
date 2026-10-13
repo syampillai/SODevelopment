@@ -2,14 +2,19 @@ package com.storedobject.ui.ai;
 
 import com.storedobject.ai.KnowledgeModule;
 import com.storedobject.common.Executable;
+import com.storedobject.common.SORuntimeException;
+import com.storedobject.common.StringList;
 import com.storedobject.common.TriFunction;
 import com.storedobject.core.*;
 import com.storedobject.ui.Application;
 import com.storedobject.ui.TemplateView;
+import com.storedobject.ui.util.SOServlet;
 import dev.langchain4j.agent.tool.P;
 import dev.langchain4j.agent.tool.Tool;
 
 import java.sql.Date;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -26,6 +31,7 @@ public class Knowledge extends com.storedobject.ai.Knowledge implements Executab
     final Semaphore semaphore = new Semaphore(1, true);
     private String topic;
     private ChatView chatView;
+    private Set<Class<? extends StoredObject>> blockedDataClasses;
 
     /**
      * Default constructor.
@@ -47,6 +53,21 @@ public class Knowledge extends com.storedobject.ai.Knowledge implements Executab
         super(application);
         this.application = application;
         if(topic != null) {
+            if(topic.startsWith("GP=")) {
+                String p = topic.substring(3).trim();
+                topic = GlobalProperty.get(getTransactionManager(), p);
+                if(topic == null) {
+                    throw new SORuntimeException("Global property not defined: " + p);
+                }
+            } else if(topic.startsWith("TC=")) {
+                topic = topic.substring(3).trim();
+                TextContent tc = SOServlet.getTextContent(topic);
+                if(tc == null) {
+                    throw new SORuntimeException("Text content not found: " + topic);
+                }
+                topic = tc.getContent();
+            }
+            topic = topic.trim().replace('\n', '|');
             if (topic.startsWith("LOG-")) {
                 setLogging(true);
             }
@@ -61,6 +82,22 @@ public class Knowledge extends com.storedobject.ai.Knowledge implements Executab
         addModules(new UITools());
     }
 
+    @Override
+    public StringList getAttributes(Class<? extends StoredObject> c) {
+        if(blockedDataClasses == null && isLogging()) {
+            blockedDataClasses = new HashSet<>();
+        }
+        StringList list = super.getAttributes(c);
+        if(list == null && isLogging() && !isRestricted(c)) {
+            if(blockedDataClasses.add(c)) {
+                StringBuilder s = new StringBuilder("Blocked Data Classes:  ");
+                blockedDataClasses.forEach(dc -> s.append('\n').append(dc.getName()).append("  "));
+                chatView.setSystemMessage(s.toString());
+            }
+        }
+        return list;
+    }
+
     /**
      * Add class details to the knowledge base.
      *
@@ -72,7 +109,10 @@ public class Knowledge extends com.storedobject.ai.Knowledge implements Executab
         }
         String[] parts = classDetails.split("\\|");
         for(String part: parts) {
-            parsePart(part);
+            part = part.trim();
+            if(!part.isEmpty()) {
+                parsePart(part);
+            }
         }
     }
 
@@ -83,11 +123,10 @@ public class Knowledge extends com.storedobject.ai.Knowledge implements Executab
             return;
         }
         String first = part.substring(0, p);
-        part = part.substring(p + 1);
         if(!first.contains(".")) { // First part is not a class name, it must be a friendly name
-            multiPart(part, first);
+            multiPart(part.substring(p + 1), first);
         } else {
-            singlePart(first, null);
+            multiPart(part, null);
         }
     }
 
@@ -104,7 +143,7 @@ public class Knowledge extends com.storedobject.ai.Knowledge implements Executab
             //noinspection unchecked
             addDataClass(friendlyName, (Class<? extends StoredObject>) c, params);
         } else {
-            Application.get().log("Data class not found: " + first);
+            error("Data class not found: " + first);
         }
     }
 
@@ -124,7 +163,12 @@ public class Knowledge extends com.storedobject.ai.Knowledge implements Executab
                 }
             }
         }
-        Application.get().log("Class not found or can't be initiated: " + part);
+        error("Class not found or can't be initiated: " + part);
+    }
+
+    private void error(String message) {
+        application.access(() -> Application.error(message));
+        application.log(message);
     }
 
     private Class<?> kclass(String name) {
@@ -274,7 +318,10 @@ public class Knowledge extends com.storedobject.ai.Knowledge implements Executab
                       HTML5/CSS content of the dashboard.
                       It should be self-containing HTML5/CSS text containing only at most one <style> tag and no JavaScript.
                       Images should be inline SVGs.
-                 """) String dashboardContent) {
+                      Do not use dark mode unless requested.
+                      Make sure that texts are readable by providing sufficient contrast with the background color.
+                      Use a color palette that is easy on the eyes.
+                  """) String dashboardContent) {
             Knowledge.this.showDashboard(name, dashboardContent);
         }
     }
