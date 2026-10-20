@@ -358,7 +358,7 @@ public class ValueChart extends View implements CloseableView, Transactional {
 
         @Override
         public Stream<Double> stream() {
-            return stream(timeStep);
+            return stream(timeStep).map(DataSet.DataPoint::value);
         }
 
         @Override

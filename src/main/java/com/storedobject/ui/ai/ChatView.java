@@ -8,6 +8,7 @@ import com.storedobject.core.SystemUser;
 import com.storedobject.ui.*;
 import com.storedobject.ui.Application;
 import com.storedobject.vaadin.*;
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.messages.MessageList;
 import com.vaadin.flow.component.messages.MessageListItem;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -39,9 +40,11 @@ public class ChatView extends View implements CloseableView, Transactional {
      * Initializes a ChatView instance with no specified knowledge base
      * and an empty topic. This setup provides a basic chat interface
      * without pre-defined context or configuration.
+     *
+     * @param extraComponents additional components to be added to the header part
      */
-    public ChatView() {
-        this(null, "");
+    public ChatView(Component... extraComponents) {
+        this(null, "", extraComponents);
     }
 
     /**
@@ -51,8 +54,9 @@ public class ChatView extends View implements CloseableView, Transactional {
      *
      * @param knowledge the knowledge base to be used within the chat
      * @param topic the initial topic of discussion displayed in the view
+     * @param extraComponents additional components to be added to the header part
      */
-    public ChatView(Knowledge knowledge, String topic) {
+    public ChatView(Knowledge knowledge, String topic, Component... extraComponents) {
         super("AI Chat");
         this.knowledge = knowledge;
         you = getTransactionManager().getUser().getName();
@@ -64,7 +68,7 @@ public class ChatView extends View implements CloseableView, Transactional {
         input.setWidthFull();
         send.setDisableOnClick(true);
         v.add(send);
-        setComponent(new ScrollingContent(new WindowDecorator(this), v));
+        setComponent(new ScrollingContent(new WindowDecorator(this, extraComponents), v));
         SpeechRecognition sr = new SpeechRecognition(input);
         Consumer<String> sendCommand = text -> send.click();
         sr.addCommand("send", sendCommand);

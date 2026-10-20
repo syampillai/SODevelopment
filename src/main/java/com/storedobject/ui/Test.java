@@ -1,6 +1,5 @@
 package com.storedobject.ui;
 
-import com.storedobject.core.Id;
 import com.storedobject.core.Person;
 import com.storedobject.core.StoredObject;
 import com.storedobject.core.TimeDuration;
@@ -29,7 +28,6 @@ public class Test extends DataForm {
         addField(cf);
         add(new Svg(chart()));
         cf.setMaster(StoredObject.get(Person.class, "FirstName='Collinz'"));
-        cf.setAllowedTypes(new Id("8009"));
     }
 
     @Override

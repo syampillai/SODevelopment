@@ -150,16 +150,35 @@ public class ObjectComboField<T extends StoredObject> extends ComboField<T>
         setSpellCheck(false);
     }
 
-    private void addNew() {
+    /**
+     * Adds a new object to the data provider underlying this field. If the object adder is not
+     * already initialized, it is created and linked to allow dynamic addition of objects. The
+     * method then closes the drop-down and triggers the addition process.
+     * This method ensures that the newly added object gets reflected in the data provider and
+     * that the associated components are updated accordingly.
+     */
+    void addNew() {
         if(objectAdder == null) {
             objectAdder = ObjectAdder.create(o -> {
                 objectProvider.getData().add(o);
                 objectProvider.refreshAll();
             },this);
         }
-        getElement().callJsFunction("close").then(r -> objectAdder.add());
+        closeDropDown(() -> objectAdder.add());
     }
 
+    /**
+     * Close the drop-down.
+     * @param runnable Runnable to be executed after the drop-down is closed.
+     */
+    protected void closeDropDown(Runnable runnable) {
+        getElement().callJsFunction("close").then(r -> runnable.run());
+    }
+
+    /**
+     * Get the object adder if you have a custom object adder.
+     * @return Object adder.
+     */
     protected ObjectAdder<T> getObjectAdder() {
         return objectAdder;
     }

@@ -9,6 +9,7 @@ import com.storedobject.core.*;
 import com.storedobject.ui.Application;
 import com.storedobject.ui.TemplateView;
 import com.storedobject.ui.util.SOServlet;
+import com.vaadin.flow.component.Component;
 import dev.langchain4j.agent.tool.P;
 import dev.langchain4j.agent.tool.Tool;
 
@@ -78,7 +79,6 @@ public class Knowledge extends com.storedobject.ai.Knowledge implements Executab
             }
             setTopic(topic);
         }
-        application.closeMenu();
         addModules(new UITools());
     }
 
@@ -203,10 +203,24 @@ public class Knowledge extends com.storedobject.ai.Knowledge implements Executab
      */
     @Override
     public void execute() {
-        if(chatView != null) chatView.close();
-        chatView = new ChatView(this, getTopic());
-        chatView.execute();
-        chatView.setStartingPrompt(getStartingPrompt());
+        application.access(() -> {
+            if (chatView != null) chatView.close();
+            chatView = new ChatView(this, getTopic(), getExtraComponents());
+            chatView.execute();
+            chatView.setStartingPrompt(getStartingPrompt());
+            application.closeMenu();
+        });
+    }
+
+    /**
+     * Retrieves an array of additional UI or functional components associated with this knowledge object.
+     * This may include supplementary elements for enhanced interactivity or visual representation.
+     *
+     * @return An array of {@link Component} objects representing the extra components.
+     *         If no extra components are available, an empty array is returned.
+     */
+    public Component[] getExtraComponents() {
+        return new Component[0];
     }
 
     /**

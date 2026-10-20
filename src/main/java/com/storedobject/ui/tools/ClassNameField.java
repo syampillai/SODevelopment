@@ -72,11 +72,11 @@ public class ClassNameField extends CustomTextField<String> {
 
     public static int getObjectFamily(String className) {
         Class<? extends StoredObject> c = getObjectClass(className);
-        return c == null ? 0 : StoredObjectUtility.family(c);
+        return c == null ? 0 : ClassAttribute.get(c).getFamily();
     }
 
     public static String getObjectClassName(int family) {
-        ClassAttribute<?> ca = StoredObjectUtility.classAttribute(family);
+        ClassAttribute<?> ca = ClassAttribute.get(family);
         return ca == null ? "" : ca.getObjectClass().getName();
     }
 

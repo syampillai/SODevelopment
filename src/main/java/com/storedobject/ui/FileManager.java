@@ -30,7 +30,7 @@ public class FileManager extends ObjectForestBrowser<FileFolder> implements Tran
     }
 
     public FileManager(Application application, String path, String caption) {
-        this(path, application.getLogicTitle(caption));
+        this(path, application.getLogicTitle(() -> caption));
     }
 
     public FileManager(String path) {

@@ -189,7 +189,7 @@ public class SystemTableDeployer extends View implements Transactional {
         if(!StoredObject.class.isAssignableFrom(objectClass) || objectClass == StoredObject.class) {
             throw new Exception("Not a Data Class: " + currClassName + " (If it is really a Data Class, try after restarting the application)");
         }
-        ca = StoredObjectUtility.classAttribute(objectClass);
+        ca = ClassAttribute.get(objectClass);
         if(ca == null) {
             throw new Exception("Invalid Data Class: " + currClassName);
         }
@@ -349,6 +349,7 @@ public class SystemTableDeployer extends View implements Transactional {
         String command = "DROP TABLE " + ca.getModuleName() + ".", table = ca.getTableName();
         commands.add(command + table);
         commands.add(command + "H_" + table);
+        commands.add("DELETE FROM core.Link WHERE FromFamily=" + ca.getFamily() + " OR ToFamily=" + ca.getFamily());
         execCommands(commands, password);
         message("Data class dropped: " + ca.getObjectClass().getName());
         currentClassName = null;

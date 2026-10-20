@@ -2409,6 +2409,13 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
         }
     }
 
+    private void masterReloaded(RequiresMaster rm) {
+        if(requiresMaster != null) {
+            requiresMaster.stream().filter(r -> r != rm && Objects
+                    .equals(r.getMasterId(), rm.getMasterId())).forEach(RequiresMaster::reloadMaster);
+        }
+    }
+
     @Override
     protected void attachField(String fieldName, HasValue<?, ?> field) {
         if(field instanceof RequiresMaster rm) {
@@ -2416,6 +2423,7 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
                 requiresMaster = new ArrayList<>();
             }
             requiresMaster.add(rm);
+            rm.setReloadListener(this::masterReloaded);
         }
         if(field instanceof NoDisplayField nd && !nd.canDisplay()) {
             return;
@@ -3113,6 +3121,7 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
 
     @Override
     public HasValue<?, ?> getField(String fieldName) {
+        getComponent();
         HasValue<?, ?> field = super.getField(fieldName);
         if(field != null) {
             return field;

@@ -48,6 +48,13 @@ public abstract class BlockSelector extends DataForm implements Transactional {
         }
         if(block != null) {
             blockField.setValue(block);
+        } else {
+            if(site != null) {
+                Block b = site.listActiveBlocks().single(false);
+                if(b != null) {
+                    blockField.setValue(b);
+                }
+            }
         }
     }
 

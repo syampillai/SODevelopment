@@ -65,6 +65,9 @@ public final class SystemUser extends StoredObject implements HasName, Notifye {
     public void setPerson(Id id) {
     }
 
+    public void setPerson(Person person) {
+    }
+
     public void setPerson(BigDecimal idValue) {
     }
 

@@ -7,11 +7,13 @@ import com.storedobject.ui.util.RequiresMaster;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
 public class ContactField extends ObjectField<Contact> implements RequiresMaster {
 
     private Person master;
     private String allowedTypes;
+    private Consumer<RequiresMaster> reloadMaster;
 
     public ContactField() {
         this((String) null);
@@ -35,6 +37,7 @@ public class ContactField extends ObjectField<Contact> implements RequiresMaster
 
     public ContactField(String label, Iterable<Contact> list) {
         super(label, new CField());
+        ((CField) getField()).contactField = this;
         if (list != null) {
             getField().load(ObjectIterator.create(list.iterator()));
         }
@@ -57,28 +60,53 @@ public class ContactField extends ObjectField<Contact> implements RequiresMaster
         }
     }
 
-    public void setAllowedTypes(Id... typeIds) {
-        if (typeIds == null || typeIds.length == 0) {
+    public void setAllowedTypes(List<ContactType> types) {
+        String allowed = null;
+        if (types == null || types.isEmpty()) {
             if (allowedTypes == null) return;
             allowedTypes = null;
         } else {
-            StringBuilder s = new StringBuilder();
-            for (Id id : typeIds) {
-                if (s.isEmpty()) {
-                    s.append(id);
+            StringBuilder ids = new StringBuilder(), ts = new StringBuilder();
+            for (ContactType ct : types) {
+                if (ids.isEmpty()) {
+                    ids.append(ct.getId());
+                    ts.append(ct.getType());
                 } else {
-                    s.append(',').append(id);
+                    ids.append(',').append(ct.getId());
+                    ts.append(',').append(ct.getType());
                 }
             }
-            allowedTypes = "T.Type IN(" + s + ")";
+            allowedTypes = "T.Type IN(" + ids + ")";
+            allowed = "T.Type IN(" + ts + ")";
         }
+        reloadMaster();
+        ObjectEditor<Contact> oe = ((CField)getField()).getContactEditor();
+        //noinspection unchecked
+        ((ObjectField<ContactType>)oe.getField("Type")).setFilter(allowed);
+    }
+
+    @Override
+    public void setReloadListener(Consumer<RequiresMaster> reloadMaster) {
+        this.reloadMaster = reloadMaster;
+    }
+
+    @Override
+    public Person getMaster() {
+        return master;
+    }
+
+    @Override
+    public void reloadMaster() {
         HasContacts m = master;
-        setMaster((HasContacts) null);
+        master = null;
         setMaster(m);
     }
 
-    public void setAllowedTypes(List<ContactType> types) {
-        setAllowedTypes(types == null ? null : types.stream().map(ContactType::getId).toArray(Id[]::new));
+    void doMasterReload() {
+        reloadMaster();
+        if(reloadMaster != null) {
+            reloadMaster.accept(this);
+        }
     }
 
     @Override
@@ -108,6 +136,8 @@ public class ContactField extends ObjectField<Contact> implements RequiresMaster
             } else {
                 throw new SORuntimeException("Contact should be attached to a person only - Invalid - " + StringUtility.makeLabel(master.getClass()));
             }
+        } else {
+            this.master = null;
         }
         ObjectIterator<Contact> contacts = master == null ? ObjectIterator.create() : master.listContacts(allowedTypes);
         getField().load(contacts);
@@ -130,18 +160,37 @@ public class ContactField extends ObjectField<Contact> implements RequiresMaster
 
     private static class CField extends ObjectComboField<Contact> {
 
+        private ContactField contactField;
+        private ObjectAdder<Contact> objectAdder;
+
         CField() {
-            super(Contact.class, new ArrayList<>(), false);
+            super(Contact.class, new ArrayList<>(), true);
         }
 
         @Override
         protected ObjectAdder<Contact> getObjectAdder() {
-            return null;
+            if(objectAdder == null) {
+                getContactEditor();
+            }
+            return objectAdder;
+        }
+
+        @Override
+        void addNew() {
+            closeDropDown(() -> objectAdder.addToMaster(() -> contactField.master, 0));
         }
 
         @Override
         public boolean isAllowAny() {
             return false;
+        }
+
+        ObjectEditor<Contact> getContactEditor() {
+            if(objectAdder == null) {
+                objectAdder = ObjectAdder.create(c -> contactField.doMasterReload(), this);
+                objectAdder.getObjectEditor().setWindowMode(true);
+            }
+            return objectAdder.getObjectEditor();
         }
     }
 }

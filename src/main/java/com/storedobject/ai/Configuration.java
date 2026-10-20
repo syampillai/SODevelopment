@@ -157,6 +157,7 @@ public class Configuration extends StoredObject {
     public void saved() {
         token = null;
         instances.put(getId(), this);
+        AI.instances.clear();
     }
 
     String token(SystemUser su) {

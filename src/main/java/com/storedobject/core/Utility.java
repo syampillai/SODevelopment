@@ -30,6 +30,9 @@ public class Utility {
      */
     public static final java.sql.Date BLANK_DATE = new java.sql.Date(BLANK_TIME);
 
+    private Utility() {
+    }
+
     /**
      * Get the size of a sub-list. Index values will be re-adjusted to the valid range automatically to eliminate
      * any exceptions.
@@ -402,18 +405,44 @@ public class Utility {
         return array;
     }
 
+    /**
+     * Retrieves the short display name of the specified {@link TimeZone} according to the default locale.
+     *
+     * @param tz The {@link TimeZone} for which the short name is to be retrieved.
+     * @return The short display name of the specified time zone.
+     */
     public static String shortName(TimeZone tz) {
         return tz.getDisplayName(false, TimeZone.SHORT, Locale.getDefault());
     }
 
+    /**
+     * Converts the provided time zone ID string into its GMT-based name.
+     *
+     * @param zoneId The string-based time zone identifier. For example, "America/New_York".
+     * @return The GMT-based name of the time zone. If the zone ID is invalid, the returned value may depend
+     *         on the fallback behavior of underlying APIs.
+     */
     public static String nameGMT(String zoneId) {
         return nameGMT(ZoneId.of(zoneId));
     }
 
+    /**
+     * Converts the provided {@link ZoneId} into its GMT-based name.
+     * This method delegates to the {@link TimeZone} representation of the specified {@link ZoneId}.
+     *
+     * @param zoneId The {@link ZoneId} representing the time zone.
+     * @return The GMT-based name of the time zone.
+     */
     public static String nameGMT(ZoneId zoneId) {
         return nameGMT(TimeZone.getTimeZone(zoneId));
     }
 
+    /**
+     * Converts the provided {@link TimeZone} into its GMT-based name.
+     *
+     * @param tz The {@link TimeZone} for which the GMT-based name is to be retrieved.
+     * @return The GMT-based name of the time zone, formatted as "GMT+HH:mm" or "GMT-HH:mm".
+     */
     public static String nameGMT(TimeZone tz) {
         int offset = tz.getRawOffset();
         int hours = offset / 3600000;

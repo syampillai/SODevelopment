@@ -103,6 +103,14 @@ public final class JavaClass extends JavaInnerClass {
 		return JavaClass.class.getClassLoader().getDefinedPackage("X");
 	}
 
+	public static List<String> listChildClasses(Class<? extends StoredObject> parentClass) {
+		return new ArrayList<>();
+	}
+
+	public static List<String> listClasses() {
+		return new ArrayList<>();
+	}
+
 	public static List<String> listApplicationClasses() {
 		return new ArrayList<>();
 	}

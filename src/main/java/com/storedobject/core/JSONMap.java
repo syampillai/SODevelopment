@@ -4,6 +4,7 @@ import com.storedobject.common.Address;
 import com.storedobject.common.ComputedValue;
 import com.storedobject.common.Fault;
 import com.storedobject.common.Geolocation;
+import org.jspecify.annotations.NonNull;
 
 import javax.annotation.Nonnull;
 import java.io.Serializable;
@@ -11,6 +12,7 @@ import java.sql.Time;
 import java.sql.Timestamp;
 import java.util.*;
 import java.util.function.BiFunction;
+import java.util.function.Function;
 import java.util.stream.Stream;
 
 public class JSONMap implements Map<String, Object>, Serializable {
@@ -58,17 +60,22 @@ public class JSONMap implements Map<String, Object>, Serializable {
     }
 
     @Override
-    public Object put(String key, Object object) {
+    public Object put(@Nonnull String key, Object object) {
         return map.put(key, rawMode ? object : value(key, object, null));
     }
 
     /**
      * Creates a new sub-map associated with a given key, stores it in the current map, and returns the newly created sub-map.
+     * <p>Note: If a map already exists, it will be returned instead of creating a new one.</p>
      *
      * @param key The key under which the sub-map will be stored.
      * @return A new instance of JSONMap associated with the specified key.
      */
     public JSONMap map(String key) {
+        Object o = get(key);
+        if(o instanceof JSONMap) {
+            return (JSONMap)o;
+        }
         JSONMap map = new JSONMap(false);
         put(key, map);
         return map;
@@ -80,7 +87,6 @@ public class JSONMap implements Map<String, Object>, Serializable {
      * @return A JSON object constructed from the current JSONMap instance.
      */
     public JSON toJSON() {
-        normalize();
         try {
             return new JSON(this);
         } catch (Throwable e) {
@@ -98,7 +104,49 @@ public class JSONMap implements Map<String, Object>, Serializable {
 
     @Override
     public void putAll(@Nonnull Map<? extends String, ?> map) {
-        this.map.putAll(map);
+        map.forEach(this::put);
+    }
+
+    @Override
+    public Object putIfAbsent(@Nonnull String key, Object value) {
+        return map.putIfAbsent(key, rawMode ? value : value(key, value, null));
+    }
+
+    @Override
+    public Object computeIfAbsent(@Nonnull String key, @NonNull Function<? super String, ?> mappingFunction) {
+        return map.computeIfAbsent(key, k -> {
+            Object computed = mappingFunction.apply(k);
+            return rawMode ? computed : value(k, computed, null);
+        });
+    }
+
+    @Override
+    public Object computeIfPresent(@Nonnull String key, @NonNull BiFunction<? super String, ? super Object, ?> remappingFunction) {
+        return map.computeIfPresent(key, (k, v) -> {
+            Object computed = remappingFunction.apply(k, v);
+            return rawMode ? computed : value(k, computed, null);
+        });
+    }
+
+    @Override
+    public Object compute(@Nonnull String key, @NonNull BiFunction<? super String, ? super Object, ?> remappingFunction) {
+        return map.compute(key, (k, v) -> {
+            Object computed = remappingFunction.apply(k, v);
+            return rawMode ? computed : value(k, computed, null);
+        });
+    }
+
+    @Override
+    public Object replace(@Nonnull String key, Object value) {
+        return map.replace(key, rawMode ? value : value(key, value, null));
+    }
+
+    @Override
+    public void replaceAll(BiFunction<? super String, ? super Object, ?> function) {
+        map.replaceAll((k, v) -> {
+            Object computed = function.apply(k, v);
+            return rawMode ? computed : value(k, computed, null);
+        });
     }
 
     @Override
@@ -140,7 +188,9 @@ public class JSONMap implements Map<String, Object>, Serializable {
      * @param error Error message to be added.
      */
     public void error(int errorCode, String error) {
-        if(errorCode > 0) {
+        if(errorCode == 0) {
+            remove("errorCode");
+        } else {
             put("errorCode", errorCode);
         }
         put("status", "ERROR");
@@ -159,87 +209,73 @@ public class JSONMap implements Map<String, Object>, Serializable {
     }
 
     private static Object value(String key, Object value, BiFunction<String, ContentProducer, String> contentToString) {
-        if(value instanceof ComputedValue<?> cv) {
-            Map<String, Object> m = new TreeMap<>();
-            m.put("available", cv.consider());
-            if(cv instanceof ComputedMinute cm) {
-                m.put("valueAsText", cm.toString());
+        return switch (value) {
+            case ComputedValue<?> cv -> {
+                Map<String, Object> m = new TreeMap<>();
+                m.put("available", cv.consider());
+                if (cv instanceof ComputedMinute cm) {
+                    m.put("valueAsText", cm.toString());
+                }
+                m.put("value", value(key, cv.getValueObject(), contentToString));
+                yield m;
             }
-            m.put("value", value(key, cv.getValueObject(), contentToString));
-            return m;
-        }
-        if(value instanceof DecimalNumber dn) {
-            return dn.getValue();
-        }
-        if (value instanceof HasStreamData hsd) {
-            value = new StreamDataContent(hsd.getStreamData());
-        }
-        if(value instanceof Timestamp ts) {
-            return Utility.isEmpty(ts) ? null : JSON.DateTimeConverter.format(ts);
-        }
-        if(value instanceof Time t) {
-            return Utility.isEmpty(t) ? null : JSON.DateTimeConverter.format(t);
-        }
-        if(value instanceof java.util.Date d) {
-            return Utility.isEmpty(d) ? null : JSON.DateTimeConverter.format(d);
-        }
-        if(value instanceof DatePeriod p) {
-            Map<String, Object> m = new TreeMap<>();
-            m.put("dateFrom", JSON.DateTimeConverter.format(p.getFrom()));
-            m.put("dateTo", JSON.DateTimeConverter.format(p.getTo()));
-            return m;
-        }
-        if(value instanceof TimePeriod p) {
-            Map<String, Object> m = new TreeMap<>();
-            m.put("timeFrom", JSON.DateTimeConverter.format(p.getFrom()));
-            m.put("timeTo", JSON.DateTimeConverter.format(p.getTo()));
-            return m;
-        }
-        if(value instanceof TimestampPeriod p) {
-            Map<String, Object> m = new TreeMap<>();
-            m.put("timeFrom", JSON.DateTimeConverter.format(p.getFrom()));
-            m.put("timeTo", JSON.DateTimeConverter.format(p.getTo()));
-            return m;
-        }
-        if(value instanceof Address a) {
-            Map<String, Object> m = new TreeMap<>();
-            m.put("country", a.getCountry().getShortName());
-            m.put("encoded", a.encode());
-            m.put("text", a.toString());
-            return m;
-        }
-        if(value instanceof ContentProducer cp) {
-            Map<String , Object> m = new TreeMap<>();
-            m.put("contentType", cp.getContentType());
-            if(contentToString == null) {
-                m.put("content", "");
-            } else {
-                m.put("content", contentToString.apply(key, cp));
+            case DecimalNumber dn -> dn.getValue();
+            case HasStreamData hsd -> value(key, new StreamDataContent(hsd.getStreamData()), contentToString);
+            case Timestamp ts -> Utility.isEmpty(ts) ? null : JSON.DateTimeConverter.format(ts);
+            case Time t -> Utility.isEmpty(t) ? null : JSON.DateTimeConverter.format(t);
+            case java.util.Date d -> Utility.isEmpty(d) ? null : JSON.DateTimeConverter.format(d);
+            case DatePeriod p -> {
+                Map<String, Object> m = new TreeMap<>();
+                m.put("dateFrom", JSON.DateTimeConverter.format(p.getFrom()));
+                m.put("dateTo", JSON.DateTimeConverter.format(p.getTo()));
+                yield m;
             }
-            return m;
-        }
-        if(value instanceof StoredObject so) {
-            return so.toDisplay();
-        }
-        if(value instanceof Money money) {
-            Map<String, Object> m = new TreeMap<>();
-            m.put("currency", money.getCurrency().getCurrencyCode());
-            m.put("amount", money.getValue());
-            return m;
-        }
-        if(value instanceof Quantity q) {
-            Map<String, Object> m = new TreeMap<>();
-            m.put("unit", q.getUnit().getUnit());
-            m.put("quantity", q.getValue());
-            return m;
-        }
-        if(value instanceof Geolocation geo) {
-            return geo.toString();
-        }
-        if(value instanceof Id id) {
-            return id.toString();
-        }
-        return value;
+            case TimePeriod p -> {
+                Map<String, Object> m = new TreeMap<>();
+                m.put("timeFrom", JSON.DateTimeConverter.format(p.getFrom()));
+                m.put("timeTo", JSON.DateTimeConverter.format(p.getTo()));
+                yield m;
+            }
+            case TimestampPeriod p -> {
+                Map<String, Object> m = new TreeMap<>();
+                m.put("timeFrom", JSON.DateTimeConverter.format(p.getFrom()));
+                m.put("timeTo", JSON.DateTimeConverter.format(p.getTo()));
+                yield m;
+            }
+            case Address a -> {
+                Map<String, Object> m = new TreeMap<>();
+                m.put("country", a.getCountry().getShortName());
+                m.put("encoded", a.encode());
+                m.put("text", a.toString());
+                yield m;
+            }
+            case ContentProducer cp -> {
+                Map<String, Object> m = new TreeMap<>();
+                m.put("contentType", cp.getContentType());
+                if (contentToString == null) {
+                    m.put("content", "");
+                } else {
+                    m.put("content", contentToString.apply(key, cp));
+                }
+                yield m;
+            }
+            case StoredObject so -> so.toDisplay();
+            case Money money -> {
+                Map<String, Object> m = new TreeMap<>();
+                m.put("currency", money.getCurrency().getCurrencyCode());
+                m.put("amount", money.getValue());
+                yield m;
+            }
+            case Quantity q -> {
+                Map<String, Object> m = new TreeMap<>();
+                m.put("unit", q.getUnit().getUnit());
+                m.put("quantity", q.getValue());
+                yield m;
+            }
+            case Geolocation geo -> geo.toString();
+            case Id id -> id.toString();
+            case null, default -> value;
+        };
     }
 
     /**
@@ -271,15 +307,14 @@ public class JSONMap implements Map<String, Object>, Serializable {
     @SuppressWarnings("unchecked")
     static void normalize(Map<String, Object> result, BiFunction<String, ContentProducer, String> contentToString) {
         Object value;
-        Set<String> keys = new HashSet<>(result.keySet());
-        for(String key: keys) {
-            value = result.get(key);
-            if(value instanceof Map<?, ?> m) {
-                normalize((Map<String, Object>) m, contentToString);
-            } else if(value instanceof Iterable<?> list) {
-                result.put(key, normalize(key, list, contentToString));
-            } else {
-                result.put(key, value(key, value, contentToString));
+        for (Entry<String, Object> entry : result.entrySet()) {
+            String key = entry.getKey();
+            value = entry.getValue();
+            switch (value) {
+                case Map<?, ?> m -> normalize((Map<String, Object>) m, contentToString);
+                case Array a -> entry.setValue(normalize(key, a.list, contentToString));
+                case Iterable<?> list -> entry.setValue(normalize(key, list, contentToString));
+                case null, default -> entry.setValue(value(key, value, contentToString));
             }
         }
     }
@@ -288,21 +323,25 @@ public class JSONMap implements Map<String, Object>, Serializable {
     private static List<Object> normalize(String key, Iterable<?> list, BiFunction<String, ContentProducer, String> contentToString) {
         List<Object> objects = new ArrayList<>();
         for(Object value: list) {
-            if(value instanceof Map<?, ?> m) {
-                normalize((Map<String, Object>) m, contentToString);
-                objects.add(m);
-            } else if(value instanceof List<?> l) {
-                objects.add(normalize(key, l, contentToString));
-            } else {
-                objects.add(value(key, value, contentToString));
+            switch (value) {
+                case Map<?, ?> m -> {
+                    normalize((Map<String, Object>) m, contentToString);
+                    objects.add(m);
+                }
+                case List<?> l -> objects.add(normalize(key, l, contentToString));
+                case null, default -> objects.add(value(key, value, contentToString));
             }
         }
         return objects;
     }
 
     public Array array(String key) {
+        Object o = get(key);
+        if(o instanceof Array) {
+            return (Array)o;
+        }
         Array a = new Array();
-        put(key, a.list);
+        put(key, a);
         return a;
     }
 

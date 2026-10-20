@@ -16,7 +16,7 @@ public class StockMovementReport extends StockReportForm {
     }
 
     public StockMovementReport(Application a) {
-        super(a.getLogicTitle("Stock Movement"));
+        super(a.getLogicTitle(() -> "Stock Movement"));
     }
 
     @Override

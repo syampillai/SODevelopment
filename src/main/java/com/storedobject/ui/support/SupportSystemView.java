@@ -36,7 +36,7 @@ public class SupportSystemView extends MemoSystem {
     }
 
     public SupportSystemView(MemoType type) {
-        super(type, StringList.concat(StoredObjectUtility.browseColumns(MemoComment.class), StringList.create("Product", "Organization")), false);
+        super(type, StringList.concat(ClassAttribute.get(MemoComment.class).browseColumns(), StringList.create("Product", "Organization")), false);
         productFilterField.setMinWidth("300px");
         productFilterField.setClearButtonVisible(true);
         productFilterField.addValueChangeListener(e -> productChanged());

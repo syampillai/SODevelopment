@@ -49,9 +49,7 @@ public class ScrollingContent extends Div {
      */
     public ScrollingContent(Component header, Component content) {
         setMargin(12);
-        container.getStyle()
-                .set("flex", "1")
-                .set("overflow", "auto");
+        container.getStyle().set("flex", "1").set("overflow", "auto");
         headerContainer.getStyle().set("display", "flex");
         headerContainer.setWidthFull();
         setHeaderHeight(16);

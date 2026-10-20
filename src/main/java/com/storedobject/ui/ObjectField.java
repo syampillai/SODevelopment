@@ -588,7 +588,8 @@ public class ObjectField<T extends StoredObject> extends CustomField<Id>
         if(InventoryItem.class.isAssignableFrom(objectClass)) {
             return Type.AUTO;
         }
-        if((StoredObjectUtility.hints(objectClass) & 2) == 2 && StoredObjectUtility.howBig(objectClass, any) < 16) {
+        ClassAttribute<?> ca = ClassAttribute.get(objectClass);
+        if((ca.hints() & 2) == 2 && ca.howBig(any) < 16) {
             return Type.CHOICE;
         }
         boolean tryGet = true;

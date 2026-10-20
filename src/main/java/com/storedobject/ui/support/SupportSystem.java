@@ -48,7 +48,7 @@ public class SupportSystem extends MemoSystem {
     }
 
     public SupportSystem(MemoType type, boolean load) {
-        super(type, StringList.concat(StoredObjectUtility.browseColumns(MemoComment.class),
+        super(type, StringList.concat(ClassAttribute.get(MemoComment.class).browseColumns(),
                 StringList.create("From", "Product AS Product/Service")), load);
         addConstructedListener(e -> setColumnVisible("From", !user));
     }

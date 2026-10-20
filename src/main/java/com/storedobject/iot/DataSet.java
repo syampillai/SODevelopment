@@ -6,10 +6,13 @@ import com.storedobject.common.StyledBuilder;
 import com.storedobject.core.*;
 
 import java.lang.reflect.Method;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.LongStream;
@@ -502,6 +505,28 @@ public class DataSet {
         public long getAlarmAt() {
             return alarmAt;
         }
+
+        public <D extends Data> void collectHistory(long periodInMilliseconds, int stepInMinutes, BiConsumer<Long, V> consumer) {
+            @SuppressWarnings("unchecked") Class<D> dClass = (Class<D>) getValueDefinition().getDataClass();
+            long now = DateUtility.now().getTime();
+            Query q = QueryBuilder.from(dClass).columns("CollectedAt," + getValueDefinition().getName())
+                    .where("Unit=" + getUnit().getId() + " AND CollectedAt BETWEEN " + (now - periodInMilliseconds) + " AND " + now).
+                    orderBy("CollectedAt DESC").query();
+            long at;
+            for(ResultSet rs: q) {
+                try {
+                    at = rs.getLong(1);
+                    if(at <= now) {
+                        consumer.accept(at, valueFromRS(rs));
+                        now -= (long) stepInMinutes * 60000L;
+                    }
+                } catch (SQLException ignored) {
+                }
+            }
+            q.close();
+        }
+
+        abstract V valueFromRS(ResultSet rs);
     }
 
     public static class LimitStatus extends DataStatus<Double> {
@@ -526,20 +551,7 @@ public class DataSet {
                 if(alarmAt == 0 || alarmBefore != alarm()) {
                     alarmAt = System.currentTimeMillis();
                 }
-            } catch (Throwable throwable) {
-                /*
-                Device device = null;
-                MQTT mqtt = MQTT.get();
-                if(mqtt != null) {
-                    TransactionManager tm = mqtt.getTransactionManager();
-                    if(tm != null) {
-                        device = tm.getDevice();
-                    }
-                }
-                ApplicationServer.log(device,"Unable to set IoT value for " + valueDefinition.getName()
-                        + ", Unit: " + unit.getId());
-                ApplicationServer.log(device, throwable);
-                */
+            } catch (Throwable ignored) {
             }
         }
 
@@ -702,11 +714,17 @@ public class DataSet {
             return func.apply(o);
         }
 
-        /**
-         *
-         */
         public String unit() {
             return getValueDefinition().getUnitSuffix();
+        }
+
+        @Override
+        Double valueFromRS(ResultSet rs) {
+            try {
+                return rs.getDouble(2);
+            } catch (SQLException ignored) {
+            }
+            return null;
         }
     }
 
@@ -794,6 +812,15 @@ public class DataSet {
         @Override
         public String value() {
             return value ? "On" : "Off";
+        }
+
+        @Override
+        Boolean valueFromRS(ResultSet rs) {
+            try {
+                return rs.getBoolean(2);
+            } catch (SQLException ignored) {
+            }
+            return null;
         }
     }
 
@@ -1144,13 +1171,15 @@ public class DataSet {
         }
     }
 
+    public record DataPoint(long time, double value) {}
+
     public static class DataValue {
 
         private final long id = statusId.next();
         private AbstractData data;
         final DataStatus<?> dataStatus;
         Class<Data> ioTClass;
-        final List<ValueAndTime> values = new ArrayList<>();
+        final List<DataPoint> values = new ArrayList<>();
         DataValues dataValues;
 
         public DataValue(AbstractData data, DataStatus<?> dataStatus) {
@@ -1214,54 +1243,33 @@ public class DataSet {
         void add(long time, double value) {
             time = (time / 60000) * 60000;
             if(!values.isEmpty()) {
-                ValueAndTime v = values.getLast();
+                DataPoint v = values.getLast();
                 if(v.time == time) {
                     value = (v.value + value) / 2;
                     values.removeLast();
                 }
             }
-            values.add(new ValueAndTime(time, value));
+            values.add(new DataPoint(time, value));
         }
 
-        private record ValueAndTime(long time, double value) {}
-
-        public Stream<Double> stream(int step) {
+        public Stream<DataPoint> stream(int step) {
             if(dataValues == null || values.isEmpty()) {
                 return Stream.empty();
             }
-            return Utility.stream(new VTIterator(step)).map(vt -> vt.value);
-        }
-
-        public Stream<Object[]> rawStream(int step) {
-            if(dataValues == null || values.isEmpty()) {
-                return Stream.empty();
-            }
-            AtomicLong time = new AtomicLong(dataValues.startTime);
-            return Utility.stream(new VTIterator(step)).map(vt -> {
-                Object[] v =  new Object[] { vt.time(), vt.value(), time.get() };
-                time.set(time.get() + step);
-                return v;
-            });
-        }
-
-        public Stream<Object[]> rawStream() {
-            if(dataValues == null || values.isEmpty()) {
-                return Stream.empty();
-            }
-            return values.stream().map(vt -> new Object[] { vt.time(), vt.value() });
+            return Utility.stream(new DataPointIterator(step));
         }
 
         public int size() {
             return values.size();
         }
 
-        private class VTIterator implements Iterator<ValueAndTime> {
+        private class DataPointIterator implements Iterator<DataPoint> {
 
             private int index = 0;
             private long time;
             private final long step;
 
-            private VTIterator(long step) {
+            private DataPointIterator(long step) {
                 this.step = step <= 0 ? (5 * 60000L) : step;
                 this.time = dataValues.startTime;
             }
@@ -1271,7 +1279,7 @@ public class DataSet {
                 return time <= dataValues.endTime;
             }
 
-            private ValueAndTime v() {
+            private DataPoint v() {
                 time += step;
                 return values.get(index);
             }
@@ -1300,7 +1308,7 @@ public class DataSet {
             }
 
             @Override
-            public ValueAndTime next() {
+            public DataPoint next() {
                 if(time > dataValues.endTime) {
                     throw new NoSuchElementException();
                 }
