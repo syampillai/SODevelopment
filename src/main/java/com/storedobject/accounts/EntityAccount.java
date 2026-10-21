@@ -1,9 +1,11 @@
 package com.storedobject.accounts;
 
+import com.storedobject.common.SORuntimeException;
 import com.storedobject.core.*;
 import com.storedobject.core.annotation.*;
 import java.math.BigDecimal;
-import java.util.Currency;
+import java.sql.Date;
+import java.util.*;
 
 /**
  * EntityAccount is a subclass of com.storedobject.core.Account that represents an account associated with an entity.
@@ -12,7 +14,7 @@ import java.util.Currency;
  */
 public class EntityAccount extends Account {
 
-    private Id entityId, taxRegionId;
+    private Id entityId;
     private AccountEntity<?> entity;
 
     /**
@@ -28,7 +30,6 @@ public class EntityAccount extends Account {
      */
     public static void columns(Columns columns) {
         columns.add("Entity", "id");
-        columns.add("TaxRegion", "id");
     }
 
     /**
@@ -97,58 +98,6 @@ public class EntityAccount extends Account {
     }
 
     /**
-     * Sets the Tax Region id.
-     *
-     * @param taxRegionId The id of the Tax Region to set.
-     * @throws Set_Not_Allowed If the method is called while loading.
-     */
-    public void setTaxRegion(Id taxRegionId) {
-        if (!loading()) {
-            throw new Set_Not_Allowed("Tax Region");
-        }
-        this.taxRegionId = taxRegionId;
-    }
-
-    /**
-     * Sets the Tax Region object with the provided id value.
-     *
-     * @param idValue the ID value of the Tax Region
-     */
-    public void setTaxRegion(BigDecimal idValue) {
-        setTaxRegion(new Id(idValue));
-    }
-
-    /**
-     * Sets the associated Tax Region for the EntityAccount.
-     * If the given Tax Region is null, sets the Tax Region ID to null.
-     *
-     * @param taxRegion The AccountEntity to associate with the EntityAccount.
-     */
-    public void setTaxRegion(TaxRegion taxRegion) {
-        setTaxRegion(taxRegion == null ? null : taxRegion.getId());
-    }
-
-    /**
-     * Returns the Tax Region Id.
-     *
-     * @return The Tax Region Id.
-     */
-    @SetNotAllowed
-    @Column(order = 100)
-    public Id getTaxRegionId() {
-        return taxRegionId;
-    }
-
-    /**
-     * Retrieves the associated Tax Region for this EntityAccount.
-     *
-     * @return The Tax Region associated with this EntityAccount.
-     */
-    public TaxRegion getTaxRegion() {
-        return TaxRegion.getFor(taxRegionId);
-    }
-
-    /**
      * Retrieves an instance of {@link EntityAccount} based on the given {@link SystemEntity} and name.
      *
      * @param systemEntity The system entity associated with the account.
@@ -193,21 +142,6 @@ public class EntityAccount extends Account {
                 throw new Invalid_Value("Entity");
             }
         }
-        if(Id.isNull(taxRegionId)) {
-            TaxRegion tr = TaxRegion.getDefault();
-            if(tr == null) {
-                tr = new TaxRegion();
-                tr.setName("Default");
-                tm.transact(tr::save);
-                tr = TaxRegion.getDefault();
-            }
-            if(tr == null) {
-                throw new Invalid_Value("Tax Region");
-            }
-            taxRegionId = tr.getId();
-        } else {
-            taxRegionId = tm.checkType(this, taxRegionId, TaxRegion.class, false);
-        }
     }
 
     @Override
@@ -241,18 +175,22 @@ public class EntityAccount extends Account {
      * @param tm            The TransactionManager to be used for database transactions.
      * @param accountEntity The {@link AccountEntity} for which the {@link EntityAccount} needs to be created.
      * @return The created EntityAccount object.
+     * @throws Exception if any error occurs.
      */
     public static EntityAccount createFor(TransactionManager tm, AccountEntity<?> accountEntity) throws Exception {
         return createFor(tm, accountEntity, EntityAccount.class);
     }
 
     /**
-     * Creates an EntityAccount for the provided {@link AccountEntity}, category and type of invoice.
+     * Creates an EntityAccount for the provided {@link AccountEntity}, category, and type of invoice.
      * <p>Note: Category is typically 0 for suppliers and 1 for customers.</p>
      *
      * @param tm            The TransactionManager to be used for database transactions.
      * @param accountEntity The {@link AccountEntity} for which the {@link EntityAccount} needs to be created.
+     * @param category Category.
+     * @param type Type.
      * @return The created EntityAccount object.
+     * @throws Exception if any error occurs.
      */
     public static EntityAccount createFor(TransactionManager tm, AccountEntity<?> accountEntity, int category,
                                           int type) throws Exception {
@@ -271,6 +209,7 @@ public class EntityAccount extends Account {
      * @param accountEntity The {@link AccountEntity} for which the {@link EntityAccount} needs to be created.
      * @param accountClass  Class of the {@link EntityAccount}.
      * @return The created EntityAccount object.
+     * @throws Exception if any error occurs.
      */
     public static EntityAccount createFor(TransactionManager tm, AccountEntity<?> accountEntity,
                                           Class<? extends EntityAccount> accountClass) throws Exception {
@@ -285,6 +224,7 @@ public class EntityAccount extends Account {
      * @param currency Currency of the account.
      * @param accountClass Class of the {@link EntityAccount}.
      * @return The created EntityAccount object.
+     * @throws Exception if any error occurs.
      */
     public static EntityAccount createFor(TransactionManager tm, AccountEntity<?> accountEntity, Currency currency,
                                                           Class<? extends EntityAccount> accountClass) throws Exception {
@@ -323,5 +263,197 @@ public class EntityAccount extends Account {
         ea.setCurrency(currency);
         tm.transact(ea::save);
         return ea;
+    }
+
+    private static Date[] bucketDates(int bucketDays) {
+        if(bucketDays <= 0) {
+            bucketDays = 30;
+        }
+        Date[] dates = new Date[4];
+        Date d = DateUtility.today();
+        dates[3] = d;
+        dates[2] = DateUtility.addDay(d, -bucketDays);
+        dates[1] = DateUtility.addDay(d, -(bucketDays << 1));
+        dates[0] = DateUtility.addDay(d, -bucketDays * 3);
+        return dates;
+    }
+
+    private Date[] bucketDates(Date[] dates) {
+        if(this instanceof InstantaneousAccount) {
+            throw new SORuntimeException("Ageing analysis is not applicable for instantaneous accounts");
+        }
+        if(dates == null || dates.length == 0) {
+            dates = bucketDates(0);
+        }
+        Arrays.sort(dates);
+        return dates;
+    }
+
+    private Ledger ledger(Date[] dates, Money[] balances) {
+        Ledger ledger = getLedger(dates[0], dates[dates.length - 1]);
+        Money m = ledger.getOpeningBalance();
+        balances[0] = m;
+        m = m.zero();
+        for(int i = 1; i < dates.length; i++) {
+            balances[i] = m;
+        }
+        return ledger;
+    }
+
+    /**
+     * Retrieves the ageing balance of accounts based on the specified bucket interval in the past days.
+     *
+     * @param bucketDays the number of days per bucket to categorize the ageing balance
+     * @return an array of Money objects representing the ageing balance for each bucket
+     */
+    public Money[] getAgeingBalances(int bucketDays) {
+        return getAgeingBalances(bucketDates(bucketDays));
+    }
+
+    /**
+     * Calculates and returns the ageing balance for an account based on the provided array of dates.
+     * The ageing balance represents the balance of a financial account divided across time periods
+     * as defined by the input dates. If the account is of type InstantaneousAccount, this method will
+     * throw an exception as ageing balance is not applicable.
+     *
+     * @param dates an array of dates used as cut-off points for dividing the account balance
+     *              into ageing buckets. Dates should be in descending order (most recent first).
+     *              If null or empty, default bucket dates will be used.
+     * @return an array of Money objects representing the balance for each ageing period defined
+     *         by the input dates. The size of the array matches the length of the provided dates array.
+     *         If no transactions are present, the balances will correspond to zero or the account's
+     *         opening balance conditions.
+     */
+    public Money[] getAgeingBalances(Date[] dates) {
+        dates = bucketDates(dates);
+        int i;
+        Money[] balances = new Money[dates.length];
+        Money m = getBalance();
+        if(!m.isDebit()) {
+            balances[dates.length - 1] = m;
+            m = m.zero();
+            for(i = 0; i < (dates.length - 1); i++) {
+                balances[i] = m;
+            }
+            return balances;
+        }
+        Ledger ledger = ledger(dates, balances);
+        Date d;
+        for(LedgerEntry le: ledger) {
+            d = le.getDate();
+            m = le.getAmount();
+            if(m.isDebit()) {
+                processLE(dates, balances, m, d);
+            } else {
+                balances[0] = balances[0].add(m);
+            }
+        }
+        m = m.zero();
+        for(i = 0; i < dates.length; i++) {
+            if(m.isCredit()) {
+                balances[i] = balances[i].add(m);
+            }
+            if(!balances[i].isDebit()) {
+                m = balances[i];
+                balances[i] = m.zero();
+            } else {
+                m = m.zero();
+            }
+        }
+        return balances;
+    }
+
+    /**
+     * Calculates and retrieves an array of ageing payments based on the specified bucket duration.
+     *
+     * @param bucketDays the number of days to determine the ageing bucket for categorizing payments
+     * @return an array of {@code Money} objects representing the ageing payments for the specified bucket duration
+     */
+    public Money[] getAgeingPayments(int bucketDays) {
+        return getAgeingPayments(bucketDates(bucketDays));
+    }
+
+    /**
+     * Calculates the ageing payments for a given array of dates. The method processes ledger entries
+     * and assigns payment balances to appropriate date buckets based on their credit or debit status.
+     *
+     * @param dates an array of {@code Date} objects representing the bucket dates for payments; these dates
+     *              should be ordered in ascending order of time.
+     * @return an array of {@code Money} objects representing the payment balances corresponding to each
+     *         date bucket. The index of the array corresponds to the date ranges defined by the input dates.
+     */
+    public Money[] getAgeingPayments(Date[] dates) {
+        dates = bucketDates(dates);
+        int i;
+        Money[] balances = new Money[dates.length];
+        Money m = getBalance();
+        if(!m.isCredit()) {
+            balances[dates.length - 1] = m;
+            m = m.zero();
+            for(i = 0; i < (dates.length - 1); i++) {
+                balances[i] = m;
+            }
+            return balances;
+        }
+        Ledger ledger = ledger(dates, balances);
+        Date d;
+        for(LedgerEntry le: ledger) {
+            d = le.getDate();
+            m = le.getAmount();
+            if(m.isCredit()) {
+                processLE(dates, balances, m, d);
+            } else {
+                balances[0] = balances[0].add(m);
+            }
+        }
+        m = m.zero();
+        for(i = 0; i < dates.length; i++) {
+            if(m.isDebit()) {
+                balances[i] = balances[i].add(m);
+            }
+            if(!balances[i].isCredit()) {
+                m = balances[i];
+                balances[i] = m.zero();
+            } else {
+                m = m.zero();
+            }
+        }
+        return balances;
+    }
+
+    private void processLE(Date[] dates, Money[] balances, Money m, Date d) {
+        int i;
+        boolean added = false;
+        for(i = 1; i < dates.length; i++) {
+            if(d.before(dates[i])) {
+                balances[i] = balances[i].add(m);
+                added = true;
+                break;
+            }
+        }
+        if(!added) {
+            balances[dates.length - 1] = balances[dates.length - 1].add(m);
+        }
+    }
+
+    /**
+     * Determines whether the account is identified as a customer account.
+     *
+     * @return {@code true} if the account is neither an instance of {@link InstantaneousAccount}
+     *         nor identified as a supplier by the {@code isSupplier} method, {@code false} otherwise.
+     */
+    public boolean isCustomer() {
+        return !(this instanceof InstantaneousAccount) && Financial.isAsset(this);
+    }
+
+    /**
+     * Determines whether the account is identified as a supplier account.
+     *
+     * @return {@code true} if the account is not an instance of {@link InstantaneousAccount}
+     *         and is identified as a liability by the {@link Financial#isLiability} method,
+     *         {@code false} otherwise.
+     */
+    public boolean isSupplier() {
+        return !(this instanceof InstantaneousAccount) && Financial.isLiability(this);
     }
 }
