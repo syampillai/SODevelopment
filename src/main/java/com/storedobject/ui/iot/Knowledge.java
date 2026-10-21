@@ -9,7 +9,6 @@ import com.vaadin.flow.component.button.ButtonVariant;
 import dev.langchain4j.agent.tool.P;
 import dev.langchain4j.agent.tool.Tool;
 
-import java.math.BigInteger;
 import java.sql.Timestamp;
 import java.util.Map;
 import java.util.TreeMap;
@@ -132,7 +131,7 @@ public class Knowledge extends com.storedobject.ui.ai.Knowledge {
                                  @P("Time period in minutes") long timePeriod,
                                  @P("Time step in minutes") int timeStep) {
             JSONMap map = new JSONMap();
-            DataSet.DataStatus<?> ds = DataSet.getDataStatus(sensorId);
+            DataSet.DataStatus<?> ds = DataSet.DataStatus.get(getSelected(Site.class).getId(), sensorId);
             if(ds == null) {
                 map.put("error", "Sensor not found - " + sensorId);
                 return map.toJSON().toString();

@@ -527,6 +527,22 @@ public class DataSet {
         }
 
         abstract V valueFromRS(ResultSet rs);
+
+        public static DataStatus<?> get(Id siteId, long sensorId) {
+            for(SiteData sd: DataSet.sites) {
+                if(sd.site.getId().equals(siteId)) {
+                    for(AbstractData ad: sd.children()) {
+                        for(AbstractData uhd: ad.children()) {
+                            if(uhd instanceof UnitHeaderData d) {
+                                for(ValueLimit v: d.limits) {
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            return null;
+        }
     }
 
     public static class LimitStatus extends DataStatus<Double> {

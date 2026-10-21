@@ -1,38 +1,32 @@
 package com.storedobject.ui;
 
-import com.storedobject.core.Person;
-import com.storedobject.core.StoredObject;
-import com.storedobject.core.TimeDuration;
 import com.storedobject.svg.chart.Bars;
 import com.storedobject.svg.chart.Chart;
 import com.storedobject.vaadin.BooleanField;
 import com.storedobject.vaadin.DataForm;
-import com.storedobject.vaadin.Svg;
-
-import java.util.concurrent.TimeUnit;
 
 public class Test extends DataForm {
 
-    private final ContactField cf = new ContactField("Contact");
+    private final RichTextEditor r = new RichTextEditor("Rich Text");
 
     public Test() {
         super("Test");
         BooleanField raw = new BooleanField("Raw");
         addField(raw);
-        addField(new TimeDurationField("Time Duration"));
-        TimeDurationField x = new TimeDurationField("Another Time Duration");
-        addField(x);
-        x.setValue(new TimeDuration(100, TimeUnit.SECONDS));
-        setFieldReadOnly(x);
         addField(new TemperatureField("Temperature"));
-        addField(cf);
-        add(new Svg(chart()));
-        cf.setMaster(StoredObject.get(Person.class, "FirstName='Collinz'"));
+        r.setValue("<h1>Hello World!</h1>");
+        addField(r);
+        //add(new Svg(chart()));
     }
 
     @Override
     protected boolean process() {
-        message(cf.getObject());
+        message(r.getValue());
+        if(!r.isReadOnly()) {
+            r.setReadOnly(true);
+            message("RO: " + r.isReadOnly());
+            return false;
+        }
         close();
         return true;
     }

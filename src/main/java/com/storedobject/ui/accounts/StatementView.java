@@ -1,9 +1,12 @@
 package com.storedobject.ui.accounts;
 
+import com.storedobject.accounts.EntityAccount;
 import com.storedobject.common.StringList;
 import com.storedobject.core.*;
 import com.storedobject.ui.Application;
 import com.storedobject.ui.ELabel;
+import com.storedobject.ui.ELabelField;
+import com.storedobject.ui.Transactional;
 import com.storedobject.vaadin.*;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.grid.ColumnTextAlign;
@@ -16,7 +19,7 @@ public class StatementView extends ListGrid<LedgerEntry> implements CloseableVie
 
     private final AccountField<Account> accountField;
     private final DateField dateField = new DateField();
-    private final Button forward, backward, begin, end, voucher;
+    private final Button forward, backward, begin, end, voucher, ageingBalance;
     private final LedgerWindow ledger = new LedgerWindow(20, this) {
         @Override
         protected List<LedgerEntry> getUnposted() {
@@ -41,11 +44,13 @@ public class StatementView extends ListGrid<LedgerEntry> implements CloseableVie
         begin = new Button("First Page", VaadinIcon.SIGN_IN_ALT, this);
         end = new Button("Last Page", VaadinIcon.SIGN_OUT_ALT, this);
         voucher = new Button("Voucher", VaadinIcon.FILE_TEXT_O, this);
+        ageingBalance = new Button("Ageing Balances", VaadinIcon.DOLLAR, this);
         forward.setEnabled(false);
         backward.setEnabled(false);
         begin.setEnabled(false);
         end.setEnabled(false);
         voucher.setEnabled(false);
+        ageingBalance.setVisible(false);
         trackValueChange(dateField);
         trackValueChange(accountField);
         new Box(openingBalance);
@@ -85,7 +90,7 @@ public class StatementView extends ListGrid<LedgerEntry> implements CloseableVie
         b.add(new ELabel("Account:"), accountField, accountTitle);
         h.add(b);
         b = new ButtonLayout();
-        b.add(new ELabel("From Date:"), dateField, forward, backward, begin, end, voucher);
+        b.add(new ELabel("From Date:"), dateField, forward, backward, begin, end, voucher, ageingBalance);
         addExtraButtons(b);
         b.add(new Button("Exit", e -> close()));
         b.addFiller();
@@ -211,6 +216,10 @@ public class StatementView extends ListGrid<LedgerEntry> implements CloseableVie
             voucherView.execute();
             return;
         }
+        if(c == ageingBalance && account instanceof EntityAccount ea) {
+            new AgeingBalanceForm(ea).execute();
+            return;
+        }
         super.clicked(c);
     }
 
@@ -262,9 +271,11 @@ public class StatementView extends ListGrid<LedgerEntry> implements CloseableVie
             begin.setEnabled(false);
             end.setEnabled(false);
             voucher.setEnabled(false);
+            ageingBalance.setVisible(false);
             return;
         }
         voucher.setEnabled(true);
+        ageingBalance.setVisible(account instanceof EntityAccount && account.getBalance().isDebit());
         boolean can = ledger.canMoveBackward();
         begin.setEnabled(can);
         backward.setEnabled(can);
@@ -279,5 +290,61 @@ public class StatementView extends ListGrid<LedgerEntry> implements CloseableVie
 
     protected LedgerWindow getLedger() {
         return ledger;
+    }
+
+    private static class AgeingBalanceForm extends DataForm implements Transactional {
+
+        private final EntityAccount account;
+        private final IntegerField bucketDays = new IntegerField("Ageing Bucket Days");
+        private final ELabelField[] balances = new ELabelField[4];
+
+        public AgeingBalanceForm(EntityAccount account) {
+            super("Ageing Balances");
+            addField(bucketDays);
+            this.account = account;
+            addField(new ELabelField("Account", account.toDisplay()));
+            String sn = account.getEntity().getShortName();
+            if(!sn.isBlank()) {
+                addField(new ELabelField("Short Name", sn));
+            }
+            ELabelField b;
+            for(int i = 0; i < 4; i++) {
+                b = new ELabelField();
+                balances[i] = b;
+                addField(b);
+            }
+            int d = GlobalProperty.getInteger("AGEING-BUCKET-DAYS");
+            if(d <= 0) d = 30;
+            bucketDays.setValue(d);
+            bucketDays.addValueChangeListener(e -> compute());
+            compute();
+        }
+
+        @Override
+        protected void buildButtons() {
+            super.buildButtons();
+            ok.setVisible(false);
+            cancel.setText("Quit");
+        }
+
+        @Override
+        protected boolean process() {
+            return false;
+        }
+
+        private void compute() {
+            int days = bucketDays.getValue();
+            if(days <= 0) days = 30;
+            Money[] bs = account.getAgeingBalances(days);
+            for(int i = 0; i < 4; i++) {
+                balances[i].clearContent();
+                switch (i) {
+                    case 0 -> balances[i].setLabel((3 * days) + "+ Days");
+                    case 1, 2 -> balances[i].setLabel(((3 - i) * days + 1) + " to " + ((3 - i) + 1) * days + " Days");
+                    case 3 -> balances[i].setLabel("0 to " + days + " Days");
+                }
+                balances[i].append(bs[i]).update();
+            }
+        }
     }
 }
