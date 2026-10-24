@@ -1,19 +1,24 @@
 package com.storedobject.core;
 
+import com.storedobject.core.annotation.Column;
+
+import java.math.BigDecimal;
+import java.sql.Date;
 import java.sql.ResultSet;
+import java.util.function.Function;
 
-public final class AccountChart extends StoredObject implements HasParents, HasChildren {
+public final class AccountChart extends StoredObject implements HasParents, HasChildren, HasName, HasShortName, ShortNameFunction {
 
-	private static final String[] categoryValues = new String[] {
+	private static final String[] categoryValues = new String[]{
 			"Balance Sheet", "Profit & Loss", "Stock", "Contingent"
 	};
-	private static final String[] balanceTypeValues = new String[] {
+	private static final String[] balanceTypeValues = new String[]{
 			"Debit", "Credit"
 	};
-	private static final String[] transactionTypeValues = new String[] {
+	private static final String[] transactionTypeValues = new String[]{
 			"All Types Allowed", "Generally Debited", "Generally Credited", "Temporarily Frozen"
 	};
-	private String name;
+	private String name, shortName;
 	private int category, balanceType, transactionType;
 	private boolean strictBalanceControl, deepFrozen, limitCheck, accountsAllowed = true;
 	private int status = -1;
@@ -30,18 +35,20 @@ public final class AccountChart extends StoredObject implements HasParents, HasC
 		columns.add("DeepFrozen", "boolean");
 		columns.add("LimitCheck", "boolean");
 		columns.add("AccountsAllowed", "boolean");
+		columns.add("ShortName", "text");
 	}
 
 	public static void indices(Indices indices) {
+		indices.add("ShortName", "ShortName<>''", true);
 		indices.add("lower(name)", true);
 	}
 
 	public static String[] displayColumns() {
-		return new String[] { "Name" };
+		return new String[]{"Name"};
 	}
 
 	public static String[] browseColumns() {
-		return new String[] { "Name", "Category", "BalanceType", "LimitCheck", "AccountsAllowed" };
+		return new String[]{"Name", "Category", "BalanceType", "LimitCheck", "AccountsAllowed"};
 	}
 
 	public static int hints() {
@@ -49,7 +56,7 @@ public final class AccountChart extends StoredObject implements HasParents, HasC
 	}
 
 	public static String[] links() {
-		return new String[] { "Children" };
+		return new String[]{"Children"};
 	}
 
 	public int getBalanceType() {
@@ -96,6 +103,7 @@ public final class AccountChart extends StoredObject implements HasParents, HasC
 		this.name = name;
 	}
 
+	@Override
 	public String getName() {
 		return name;
 	}
@@ -148,6 +156,16 @@ public final class AccountChart extends StoredObject implements HasParents, HasC
 		return transactionTypeValues[transactionType % transactionTypeValues.length];
 	}
 
+	@Override
+	@Column(required = false, style = "(code)")
+	public String getShortName() {
+		return shortName;
+	}
+
+	public void setShortName(String shortName) {
+		this.shortName = shortName;
+	}
+
 	public String toString() {
 		return name;
 	}
@@ -155,19 +173,19 @@ public final class AccountChart extends StoredObject implements HasParents, HasC
 	@Override
 	public void validateData(TransactionManager tm) throws Exception {
 		super.validateData(tm);
-		if(accountsAllowed) {
+		if (accountsAllowed) {
 			return;
 		}
 		Query q = query(getTransaction(), Account.class, "Number", "Chart=" + getId(), null, true);
 		StringBuilder sb = new StringBuilder();
 		int n = 0;
 		try {
-			for(ResultSet rs: q) {
-				if(sb.length() > 35) {
+			for (ResultSet rs : q) {
+				if (sb.length() > 35) {
 					sb.append(", ...");
 					break;
 				}
-				if(n == 0) {
+				if (n == 0) {
 					sb.append("This chart is already in use: Account Number = ");
 				} else {
 					sb.append(", ");
@@ -178,18 +196,19 @@ public final class AccountChart extends StoredObject implements HasParents, HasC
 		} finally {
 			q.close();
 		}
-		if(!sb.isEmpty()) {
+		if (!sb.isEmpty()) {
 			throw new Invalid_State(sb.toString());
 		}
+		shortName = toShortName(shortName);
 	}
 
 	@Override
 	public void validateChildAttach(StoredObject child, int type) throws Exception {
-		if(type != 0) {
+		if (type != 0) {
 			return;
 		}
-		if(child instanceof AccountChart c) {
-			if(c.category != category) {
+		if (child instanceof AccountChart c) {
+			if (c.category != category) {
 				throw new Invalid_State("Children must belong to '" + getCategoryValue() + "' category");
 			}
 		}
@@ -197,11 +216,11 @@ public final class AccountChart extends StoredObject implements HasParents, HasC
 
 	@Override
 	public void validateParentAttach(StoredObject parent, int type) throws Exception {
-		if(type != 0) {
+		if (type != 0) {
 			return;
 		}
-		if(parent instanceof AccountChart p) {
-			if(p.category != category) {
+		if (parent instanceof AccountChart p) {
+			if (p.category != category) {
 				throw new Invalid_State("Parent must belong to '" + getCategoryValue() + "' category");
 			}
 		}
@@ -235,6 +254,20 @@ public final class AccountChart extends StoredObject implements HasParents, HasC
 		status();
 	}
 
+	@Override
+	public void saved() throws Exception {
+		if (status == -1) {
+			return;
+		}
+		int oldStatus = status;
+		status();
+		if (status == oldStatus) {
+			return;
+		}
+		((DBTransaction) getTransaction()).executeSQL("UPDATE core.Account SET AccountStatus = (AccountStatus & 7) | "
+				+ status + " WHERE Chart=" + getId());
+	}
+
 	public void setAccountsAllowed(boolean accountsAllowed) {
 		this.accountsAllowed = accountsAllowed;
 	}
@@ -248,18 +281,18 @@ public final class AccountChart extends StoredObject implements HasParents, HasC
 	}
 
 	public static void set(Account account, String chartName, TransactionManager tm) {
-		AccountChartMap acm =get(AccountChartMap.class, "lower(AccountClassName)='"
+		AccountChartMap acm = get(AccountChartMap.class, "lower(AccountClassName)='"
 				+ account.getClass().getName().toLowerCase() + "'");
-		if(acm != null) {
+		if (acm != null) {
 			account.setChart(acm.getChartId());
 		} else {
 			acm = new AccountChartMap();
 			acm.setAccountClassName(account.getClass().getName());
 			AccountChart ac = get(AccountChart.class, "lower(Name)='" + chartName.toLowerCase() + "'");
-			if(ac == null) {
+			if (ac == null) {
 				ac = new AccountChart();
 				ac.setName(chartName);
-				if(chartName.toLowerCase().contains("cash") || account.getClass().getName().contains("Cash")) {
+				if (chartName.toLowerCase().contains("cash") || account.getClass().getName().contains("Cash")) {
 					ac.setStrictBalanceControl(true);
 				}
 				try {
@@ -274,6 +307,74 @@ public final class AccountChart extends StoredObject implements HasParents, HasC
 				tm.transact(acm::save);
 			} catch (Exception ignored) {
 			}
+		}
+	}
+
+	public static AccountChart getFor(String shortName) {
+		return get(AccountChart.class, "ShortName='" + toShortName(shortName) + "'");
+	}
+
+	@Override
+	public Balance getFunction(Formula formula) {
+		return new Balance(formula);
+	}
+
+	public record Balance(Formula formula) implements Function<String, Object> {
+
+		public Money get(String shortName) {
+			shortName = toShortName(shortName);
+			Reporter r = formula.getReporter();
+			Date d = r == null ? null : r.getDate();
+			TransactionManager tm = r == null ? null : r.getTransactionManager();
+			String tail;
+			int p = shortName.lastIndexOf('_');
+			if (p < 0) {
+				tail = "";
+			} else {
+				tail = shortName.substring(p + 1);
+				shortName = shortName.substring(0, p);
+			}
+			if (tm == null && tail.contains("LC")) {
+				return null;
+			}
+			AccountChart ac = AccountChart.getFor( shortName);
+			if (ac == null) {
+				return null;
+			}
+			Function<Account, Money> f = switch (tail) {
+				case "LCOB" -> Account::getLocalCurrencyOpeningBalance;
+				case "OB" -> Account::getOpeningBalance;
+				case "LCB" -> a -> a.getLocalCurrencyBalance(d);
+				default -> a -> a.getBalance(d);
+			};
+			Money m;
+			if (tm == null) {
+				m = null;
+			} else {
+				m = new Money(tm.getCurrency());
+			}
+			for (Account a : list(Account.class, "Chart=" + ac.getId(), true)) {
+				if (m == null) {
+					m = f.apply(a);
+				} else {
+					m = m.add(f.apply(a));
+				}
+			}
+			return m;
+		}
+
+		@Override
+		public Object apply(String shortName) {
+			if(shortName.endsWith("_C")) { // Count
+				shortName = shortName.substring(0, shortName.length() - 2);
+				AccountChart ac = AccountChart.getFor( shortName);
+				if (ac == null) {
+					return 0;
+				}
+				return AccountChart.count(Account.class, "Chart=" + ac.getId(), true);
+			}
+			Money m = get(shortName);
+			return m == null ? BigDecimal.ZERO : m.getValue();
 		}
 	}
 }

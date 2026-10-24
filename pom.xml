@@ -11,7 +11,7 @@
     </parent>
 
     <artifactId>so-development</artifactId>
-    <version>16.7.0</version>
+    <version>16.7.1</version>
 
     <name>${project.groupId}:${project.artifactId}</name>
     <description>SO Development skeleton classes</description>
@@ -137,6 +137,14 @@
             <groupId>com.sun.mail</groupId>
             <artifactId>jakarta.mail</artifactId>
             <version>2.0.2</version>
+        </dependency>
+
+        <!-- Expression evaluation library -->
+        <dependency>
+            <groupId>com.ezylang</groupId>
+            <artifactId>EvalEx</artifactId>
+            <version>3.8.0</version>
+            <scope>compile</scope>
         </dependency>
 
         <!-- Forcing latest version for POI -->

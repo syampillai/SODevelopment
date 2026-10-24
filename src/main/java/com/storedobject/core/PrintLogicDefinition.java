@@ -75,7 +75,7 @@ public class PrintLogicDefinition extends StoredObject {
         this.printLogicClassName = printLogicClassName;
     }
 
-    @Column(order = 400, caption = "Logic(Device, Object) OR Logic(Device, Source, Object) OR ObjectLogicButton")
+    @Column(order = 400, caption = "Logic(Device, Object) OR Logic(Device, Source, Object) OR ObjectLogicButton", style = "(large)")
     public String getPrintLogicClassName() {
         return printLogicClassName;
     }
@@ -172,7 +172,7 @@ public class PrintLogicDefinition extends StoredObject {
     public final String getParameter() {
         int p;
         if((p = printLogicClassName.indexOf('|')) > 0) {
-            return printLogicClassName.substring(p + 1);
+            return printLogicClassName.substring(p + 1).trim();
         }
         return null;
     }

@@ -265,6 +265,48 @@ public class EntityAccount extends Account {
         return ea;
     }
 
+    /**
+     * Calculates the ageing bucket days based on the provided value or retrieves it
+     * from the system configuration if the provided value is invalid or not specified.
+     *
+     * @param systemEntity The system entity used to retrieve the configuration properties.
+     * @param bucketDays The initial value of bucket days. If 0 or a negative value is provided,
+     *                   the method retrieves the value from the system configuration. If the
+     *                   configuration value is also invalid, a default value of 30 is used.
+     * @return The determined ageing bucket days. If a valid bucketDays value is provided, it
+     *         will be returned directly; otherwise, it defaults to the value fetched from the
+     *         configuration or 30.
+     */
+    public static int getAgeingBucketDays(SystemEntity systemEntity, int bucketDays) {
+        return bucketDays <= 0 ? GlobalProperty.getInteger(systemEntity, "AGEING-BUCKET-DAYS", 30) : bucketDays;
+    }
+
+    /**
+     * Calculates the ageing bucket days for a given system entity.
+     *
+     * @param systemEntity The system entity for which ageing bucket days are calculated.
+     * @return The number of ageing bucket days as an integer.
+     */
+    public static int getAgeingBucketDays(SystemEntity systemEntity) {
+        return getAgeingBucketDays(systemEntity, 0);
+    }
+
+    /**
+     * Generates a label describing the range of days associated with an ageing bucket
+     * based on the provided bucket size and index value.
+     *
+     * @param bucketDays The size of each bucket in terms of days.
+     * @param index The index of the ageing bucket for which the label is required.
+     * @return A string representing the range of days for the specified ageing bucket.
+     */
+    public static String getAgeingBucketDaysLabel(int bucketDays, int index) {
+        return switch (index) {
+            case 0 -> (3 * bucketDays) + "+ Days";
+            case 3 -> "0 to " + bucketDays + " Days";
+            default -> ((3 - index) * bucketDays + 1) + " to " + ((3 - index) + 1) * bucketDays + " Days";
+        };
+    }
+
     private static Date[] bucketDates(int bucketDays) {
         if(bucketDays <= 0) {
             bucketDays = 30;

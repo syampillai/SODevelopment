@@ -800,8 +800,108 @@ public final class Money implements Storable, Comparable<Money> {
 		return getCurrency("");
 	}
 
+	/**
+	 * Calculates the sum of the given Money objects.
+	 *
+	 * @param values an array of Money objects to be summed
+	 * @return a Money object representing the total sum of the input values
+	 */
+	public static Money sum(Money... values) {
+		return new Money.List(values).sum();
+	}
+
+	/**
+	 * Calculates the sum of multiple Money values in a specified currency.
+	 *
+	 * @param currency the target currency in which the sum will be calculated
+	 * @param values   an array of Money objects to be summed
+	 * @return a Money object representing the total sum in the specified currency
+	 */
+	public static Money sum(Currency currency, Money... values) {
+		return new Money.List(values).sum(currency);
+	}
+
+	/**
+	 * Calculates the sum of a collection of Money objects.
+	 *
+	 * @param values an iterable collection of Money objects to be summed
+	 * @return a Money object representing the total sum of the provided Money objects
+	 */
+	public static Money sum(Iterable<Money> values) {
+		return new Money.List(values).sum();
+	}
+
+	/**
+	 * Calculates the total sum of monetary values provided in the specified currency.
+	 *
+	 * @param currency the currency in which the sum will be calculated
+	 * @param values an iterable collection of Money objects to be summed
+	 * @return a Money object representing the total sum in the specified currency
+	 */
+	public static Money sum(Currency currency, Iterable<Money> values) {
+		return new Money.List(values).sum(currency);
+	}
+
 	public static class List extends Hashtable<Currency, Money> {
-		
+
+		/**
+		 * Constructs an empty list.
+		 * This default constructor initializes an instance of the list
+		 * with no elements. The specific implementation details of the
+		 * list (e.g., size, capacity, type of storage) depend on the
+		 * underlying implementation of this class.
+		 */
+		public List() {
+		}
+
+		/**
+		 * Constructs a monetary list by initializing it with the provided monetary values.
+		 * Each monetary value is added to the list.
+		 *
+		 * @param values An array of Money objects to initialize the list. If the array is null, the list remains empty.
+		 */
+		public List(Money... values) {
+			add(values);
+		}
+
+		/**
+		 * Constructs a new list and initializes it with the monetary values contained in the given iterable.
+		 * If the iterable is null, the list will remain empty.
+		 *
+		 * @param list An iterable containing monetary values to initialize the list with.
+		 *             Each monetary value from the iterable will be added to the list.
+		 */
+		public List(Iterable<Money> list) {
+			add(list);
+		}
+
+		/**
+		 * Adds one or more Money objects to the current context.
+		 *
+		 * @param values an array of Money objects to be added; if null, the method does nothing
+		 */
+		public void add(Money... values) {
+			if(values != null) {
+				for (Money m : values) {
+					add(m);
+				}
+			}
+		}
+
+		/**
+		 * Adds all elements in the provided iterable of Money objects to the current collection.
+		 *
+		 * @param list an iterable collection of Money objects to be added.
+		 *             If the iterable is null, this method does nothing.
+		 */
+		public void add(Iterable<Money> list) {
+			if(list != null) {
+				for(Money m: list) {
+					add(m);
+				}
+			}
+		}
+
 		public List add(Money money) {
 			put(getDefaultCurrency(), new Money());
 			return this;
@@ -850,6 +950,42 @@ public final class Money implements Storable, Comparable<Money> {
 
 		public Money toLocal(SystemEntity systemEntity) {
 			return new Money();
+		}
+
+		/**
+		 * Calculates the total monetary value in the specified currency.
+		 * If the provided currency is null, the sum is calculated without considering currency conversion.
+		 *
+		 * @param currency The currency in which the total monetary value should be calculated.
+		 *                 If null, the sum is returned as is without any specific currency conversion.
+		 * @return The total monetary value in the specified currency.
+		 */
+		public Money sum(Currency currency) {
+			return sum(currency == null ? null : new Money(currency));
+		}
+
+		/**
+		 * Computes the sum of the monetary values in this list. If the list is empty,
+		 * the result will be equivalent to summing with a null Money value.
+		 *
+		 * @return A Money object representing the total sum of all monetary values
+		 *         in the list. If the list is empty, the returned sum may be null
+		 *         or equivalent to a zero-value Money object, depending on the
+		 *         implementation of the sum operation.
+		 */
+		public Money sum() {
+			return sum((Money) null);
+		}
+
+		private Money sum(Money sum) {
+			for(Money m: values()) {
+				if(sum == null) {
+					sum = m;
+				} else {
+					sum = sum.add(m);
+				}
+			}
+			return sum == null ? new Money() : sum;
 		}
 	}
 

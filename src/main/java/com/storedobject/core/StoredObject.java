@@ -2400,6 +2400,10 @@ public abstract class StoredObject implements Displayable, HasId, StringFiller {
         return code;
     }
 
+    public static String toShortName(String name) {
+        return name;
+    }
+
     static String createSQL(ClassAttribute<?> ca, String columns, String condition, String order, boolean only,
                             boolean header, int skip, int limit, int[] distinct) {
         return "";

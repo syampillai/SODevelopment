@@ -275,7 +275,7 @@ public class StatementView extends ListGrid<LedgerEntry> implements CloseableVie
             return;
         }
         voucher.setEnabled(true);
-        ageingBalance.setVisible(account instanceof EntityAccount && account.getBalance().isDebit());
+        ageingBalance.setVisible(account instanceof EntityAccount && !account.getBalance().isZero());
         boolean can = ledger.canMoveBackward();
         begin.setEnabled(can);
         backward.setEnabled(can);
@@ -295,11 +295,14 @@ public class StatementView extends ListGrid<LedgerEntry> implements CloseableVie
     private static class AgeingBalanceForm extends DataForm implements Transactional {
 
         private final EntityAccount account;
-        private final IntegerField bucketDays = new IntegerField("Ageing Bucket Days");
-        private final ELabelField[] balances = new ELabelField[4];
+        private final IntegerField bucketDays = new IntegerField("Ageing Bucket in Days");
+        private final ELabelField[] balances = new ELabelField[5];
+        private final boolean receivable;
 
         public AgeingBalanceForm(EntityAccount account) {
             super("Ageing Balances");
+            receivable = account.getBalance().isDebit();
+            addField(new ELabelField("Type", receivable ? "Receivables" : "Payables"));
             addField(bucketDays);
             this.account = account;
             addField(new ELabelField("Account", account.toDisplay()));
@@ -308,14 +311,13 @@ public class StatementView extends ListGrid<LedgerEntry> implements CloseableVie
                 addField(new ELabelField("Short Name", sn));
             }
             ELabelField b;
-            for(int i = 0; i < 4; i++) {
+            for(int i = 0; i < 5; i++) {
                 b = new ELabelField();
                 balances[i] = b;
                 addField(b);
             }
-            int d = GlobalProperty.getInteger("AGEING-BUCKET-DAYS");
-            if(d <= 0) d = 30;
-            bucketDays.setValue(d);
+            balances[4].setLabel("Total " + (receivable ? "Receivable" : "Payable"));
+            bucketDays.setValue(EntityAccount.getAgeingBucketDays(getTransactionManager().getEntity()));
             bucketDays.addValueChangeListener(e -> compute());
             compute();
         }
@@ -335,16 +337,12 @@ public class StatementView extends ListGrid<LedgerEntry> implements CloseableVie
         private void compute() {
             int days = bucketDays.getValue();
             if(days <= 0) days = 30;
-            Money[] bs = account.getAgeingBalances(days);
+            Money[] bs = receivable ? account.getAgeingBalances(days) : account.getAgeingPayments(days);
             for(int i = 0; i < 4; i++) {
-                balances[i].clearContent();
-                switch (i) {
-                    case 0 -> balances[i].setLabel((3 * days) + "+ Days");
-                    case 1, 2 -> balances[i].setLabel(((3 - i) * days + 1) + " to " + ((3 - i) + 1) * days + " Days");
-                    case 3 -> balances[i].setLabel("0 to " + days + " Days");
-                }
-                balances[i].append(bs[i]).update();
+                balances[i].setLabel(EntityAccount.getAgeingBucketDaysLabel(days, i));
+                balances[i].clearContent().append(bs[i]).update();
             }
+            balances[4].clearContent().append(Money.sum(bs)).update();
         }
     }
 }

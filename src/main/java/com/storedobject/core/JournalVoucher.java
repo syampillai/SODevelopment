@@ -280,7 +280,7 @@ public class JournalVoucher extends StoredObject implements Financial, OfEntity,
      */
     public StoredObject getOwner() {
         if(owner == null) {
-            owner = Objects.equals(getId(), ownerId) ? this : get(StoredObject.class, ownerId, true);
+            owner = Objects.equals(getId(), ownerId) ? this : get(ownerId);
         }
         return owner;
     }
