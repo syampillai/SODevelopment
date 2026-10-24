@@ -6,8 +6,9 @@ import com.storedobject.core.*;
 import java.util.function.BiConsumer;
 import java.util.function.Predicate;
 
-public class Filler<T> implements Executable {
+public class Filler<T> implements Executable, Reporter {
 
+    private Formula formula;
     T reportingObject;
 
     @Override
@@ -22,6 +23,14 @@ public class Filler<T> implements Executable {
     public void execute(ODT<?> odt) {
         odt.setFiller(this);
         odt.execute();
+    }
+
+    public Formula getFormula() {
+        return formula;
+    }
+
+    public void setFormula(Formula formula) {
+        this.formula = formula;
     }
 
     public final TransactionManager getTransactionManager() {

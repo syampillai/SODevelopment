@@ -254,20 +254,6 @@ public final class AccountChart extends StoredObject implements HasParents, HasC
 		status();
 	}
 
-	@Override
-	public void saved() throws Exception {
-		if (status == -1) {
-			return;
-		}
-		int oldStatus = status;
-		status();
-		if (status == oldStatus) {
-			return;
-		}
-		((DBTransaction) getTransaction()).executeSQL("UPDATE core.Account SET AccountStatus = (AccountStatus & 7) | "
-				+ status + " WHERE Chart=" + getId());
-	}
-
 	public void setAccountsAllowed(boolean accountsAllowed) {
 		this.accountsAllowed = accountsAllowed;
 	}
