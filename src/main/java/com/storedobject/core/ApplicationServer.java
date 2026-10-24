@@ -69,6 +69,16 @@ public final class ApplicationServer {
         return new Random().nextBoolean();
     }
 
+    static boolean toBoolean(String value) {
+        if(value == null) {
+            return false;
+        }
+        return switch(value.toLowerCase().trim()) {
+            case "yes", "y", "true", "t", "1" -> true;
+            default -> false;
+        };
+    }
+
     public static String getPackageName() {
         return "";
     }
