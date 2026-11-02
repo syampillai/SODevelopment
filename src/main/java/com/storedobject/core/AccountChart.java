@@ -2,13 +2,14 @@ package com.storedobject.core;
 
 import com.storedobject.core.annotation.Column;
 
-import java.math.BigDecimal;
 import java.sql.Date;
 import java.sql.ResultSet;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 
-public final class AccountChart extends StoredObject implements HasParents, HasChildren, HasName, HasShortName, ShortNameFunction {
+public final class AccountChart extends StoredObject implements HasParents, HasChildren, HasName, HasShortName {
 
+	private static Balance balance;
 	private static final String[] categoryValues = new String[]{
 			"Balance Sheet", "Profit & Loss", "Stock", "Contingent"
 	};
@@ -300,18 +301,23 @@ public final class AccountChart extends StoredObject implements HasParents, HasC
 		return get(AccountChart.class, "ShortName='" + toShortName(shortName) + "'");
 	}
 
-	@Override
-	public Balance getFunction(Formula formula) {
-		return new Balance(formula);
+
+	public static Balance balance() {
+		if(balance == null) {
+			balance = new Balance();
+		}
+		return balance;
 	}
 
-	public record Balance(Formula formula) implements Function<String, Object> {
+	public static class Balance implements BiFunction<String, Formula, Object> {
 
-		public Money get(String shortName) {
+		private Balance() {
+		}
+
+		public Money get(String shortName, Reporter reporter) {
 			shortName = toShortName(shortName);
-			Reporter r = formula.getReporter();
-			Date d = r == null ? null : r.getDate();
-			TransactionManager tm = r == null ? null : r.getTransactionManager();
+			Date d = reporter == null ? null : reporter.getDate();
+			TransactionManager tm = reporter == null ? null : reporter.getTransactionManager();
 			String tail;
 			int p = shortName.lastIndexOf('_');
 			if (p < 0) {
@@ -350,7 +356,7 @@ public final class AccountChart extends StoredObject implements HasParents, HasC
 		}
 
 		@Override
-		public Object apply(String shortName) {
+		public Object apply(String shortName, Formula formula) {
 			if(shortName.endsWith("_C")) { // Count
 				shortName = shortName.substring(0, shortName.length() - 2);
 				AccountChart ac = AccountChart.getFor( shortName);
@@ -359,8 +365,10 @@ public final class AccountChart extends StoredObject implements HasParents, HasC
 				}
 				return AccountChart.count(Account.class, "Chart=" + ac.getId(), true);
 			}
-			Money m = get(shortName);
-			return m == null ? BigDecimal.ZERO : m.getValue();
+			Money m = get(shortName, formula.getReporter());
+			if(m == null) m = new Money();
+			formula.setType(shortName, m);
+			return m.getValue();
 		}
 	}
 }

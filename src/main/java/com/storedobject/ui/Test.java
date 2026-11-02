@@ -2,31 +2,23 @@ package com.storedobject.ui;
 
 import com.storedobject.svg.chart.Bars;
 import com.storedobject.svg.chart.Chart;
-import com.storedobject.vaadin.BooleanField;
+import com.storedobject.vaadin.CloseableView;
 import com.storedobject.vaadin.DataForm;
+import com.storedobject.vaadin.Svg;
+import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.html.H2;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 
-public class Test extends DataForm {
-
-    private final RichTextEditor r = new RichTextEditor("Rich Text");
+public class Test extends DataForm implements CloseableView {
 
     public Test() {
-        super("Test");
-        BooleanField raw = new BooleanField("Raw");
-        addField(raw);
-        addField(new TemperatureField("Temperature"));
-        r.setValue("<h1>Hello World!</h1>");
-        addField(r);
-        //add(new Svg(chart()));
+        super("Test", false);
+        add(new InteractiveLessonView());
+        add(new Svg(chart()));
     }
 
     @Override
     protected boolean process() {
-        message(r.getValue());
-        if(!r.isReadOnly()) {
-            r.setReadOnly(true);
-            message("RO: " + r.isReadOnly());
-            return false;
-        }
         close();
         return true;
     }
@@ -45,5 +37,26 @@ public class Test extends DataForm {
         c.addValue("Category G", 15);
         c.addValue("Category H", 100);
         return c;
+    }
+
+    private static class InteractiveLessonView extends VerticalLayout {
+
+        private InteractiveLessonView() {
+            setSizeFull();
+
+            // Rive Component for Biology (Visual / Vector State Machine)
+            RiveCanvas cellDiagram = new RiveCanvas("/Rave Files/Electron-Shells.riv", "Main");
+            cellDiagram.setHeight("400px");
+            cellDiagram.setWidth("100%");
+            cellDiagram.addLoadErrorListener(e -> Application.error(e.getMessage()));
+
+            Button triggerMitosis = new Button("Trigger Mitosis", e -> cellDiagram.firePropertyTrigger("startMitosis"));
+            // Add to Layout
+            add(
+                new H2("Biology Module: Cell Division"),
+                cellDiagram,
+                triggerMitosis
+            );
+        }
     }
 }

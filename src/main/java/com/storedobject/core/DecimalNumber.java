@@ -1,5 +1,6 @@
 package com.storedobject.core;
 
+import com.storedobject.common.BigValue;
 import com.storedobject.common.SORuntimeException;
 import com.storedobject.common.Storable;
 
@@ -8,12 +9,12 @@ import java.math.BigInteger;
 import java.math.RoundingMode;
 
 /**
- * Class that represents a decimal number value with a defined number of decimals digits.
+ * Class that represents a decimal number value with a defined number of decimal digits.
  * This class is immutable.
  *
  * @author Syam
  */
-public class DecimalNumber implements Storable, Comparable<DecimalNumber> {
+public class DecimalNumber implements Storable, Comparable<DecimalNumber>, BigValue {
 
 	private final static BigDecimal TWO = BigDecimal.valueOf(2);
 	private final static DecimalNumber[] zerosDN = new DecimalNumber[10];
@@ -38,7 +39,7 @@ public class DecimalNumber implements Storable, Comparable<DecimalNumber> {
 	}
 	
 	/**
-	 * Create a decimal number. Number of decimal places will be taken from what is defined in the value.
+	 * Create a decimal number. A number of decimal places will be taken from what is defined in the value.
 	 * 
 	 * @param value The value
 	 */
@@ -67,7 +68,7 @@ public class DecimalNumber implements Storable, Comparable<DecimalNumber> {
 	
 
 	/**
-	 * Construct a decimal number from a BigDecimal. Number of decimal places will be taken from what is defined in the value.
+	 * Construct a decimal number from a BigDecimal. A number of decimal places will be taken from what is defined in the value.
 	 *
 	 * @param value The BigDecimal value.
 	 */
@@ -166,6 +167,7 @@ public class DecimalNumber implements Storable, Comparable<DecimalNumber> {
 	 *
 	 * @return The value.
 	 */
+	@Override
 	public BigDecimal getValue() {
 		return value;
 	}
@@ -190,10 +192,10 @@ public class DecimalNumber implements Storable, Comparable<DecimalNumber> {
 
 	/**
 	 * Convert it into a String with at least minimum decimals places specified.
-	 * <p>Example: Value: 4123.4500, Output: "4123.4500" (if decimals is les than zero, no conversion),
-	 * "4123.450000" (for 6 decimals), "4123.45" (for 2 decimals or less)</p>
-	 * <p>Example: Value: 4123.0000, Output: "4123.0000" (if decimals is les than zero, no conversion),
-	 * "4123.000000" (for 6 decimals), "4123.00" (for 2 decimals), "4123" (if decimals is zero)</p>
+	 * <p>Example: Value: 4123.4500, Output: "4123.4500" (if decimals are less than zero, no conversion),
+	 * "4123.450000" (for 6 decimals), "4123.45" (for 2 decimals or fewer)</p>
+	 * <p>Example: Value: 4123.0000, Output: "4123.0000" (if decimals are less than zero, no conversion),
+	 * "4123.000000" (for 6 decimals), "4123.00" (for 2 decimals), "4123" (if decimals are zero)</p>
 	 * @param decimals Number of minimum decimals required in the output.
 	 * @return String value.
 	 */

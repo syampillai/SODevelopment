@@ -1,5 +1,6 @@
 package com.storedobject.ui;
 
+import com.storedobject.common.Executable;
 import com.storedobject.common.SORuntimeException;
 import com.storedobject.common.StringList;
 import com.storedobject.core.ObjectForest;
@@ -53,8 +54,12 @@ public class FileManager extends ObjectForestBrowser<FileFolder> implements Tran
             path = "/" + path;
         }
         FileFolder root;
-        if(path == null || path.isEmpty() || (root = FileFolder.get(path)) == null) {
+        if(path == null || path.isEmpty()) {
             throw new SORuntimeException("Folder not found - " + path);
+        }
+        root = FileFolder.get(path);
+        if(root == null) {
+            throw new LogicRedirected(new CreateFolder(path));
         }
         setRoot(root);
         if(caption == null) {
@@ -394,6 +399,31 @@ public class FileManager extends ObjectForestBrowser<FileFolder> implements Tran
             for(SystemUserGroup child: toAdd) {
                 parent.addLink(t, child);
             }
+        }
+    }
+
+    private static class CreateFolder extends DataForm implements Executable, Transactional {
+
+        private final String folderName;
+
+        CreateFolder(String folderName) {
+            super("Create Folder");
+            this.folderName = folderName;
+            add(new ELabel("Folder does not exist - " + folderName, Application.COLOR_ERROR));
+            addField(new ELabelField("Create Folder?", folderName));
+        }
+
+        @Override
+        public void run() {
+            super.run();
+        }
+
+        @Override
+        protected boolean process() {
+            close();
+            transact(t -> FileFolder.createFolders(t, folderName));
+            message("Folder created now, please try to open File Manager again");
+            return true;
         }
     }
 }

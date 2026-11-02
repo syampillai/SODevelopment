@@ -8,7 +8,12 @@ import com.storedobject.common.JSON;
 import com.storedobject.common.MathUtility;
 import com.storedobject.common.SORuntimeException;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.*;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 
 /**
@@ -18,12 +23,20 @@ import java.util.function.Function;
  *
  * @author Syam
  */
-public class Formula {
+public final class Formula {
 
+    private static final Map<Class<?>, TypeConverter<?>> typeConverters = new HashMap<>();
+    static {
+        typeConverters.put(Money.class, new TypeConverter<>(Money::getValue, (o, m) -> new Money(toBigDecimal(o), m.getCurrency())));
+        typeConverters.put(Quantity.class, new TypeConverter<>(Quantity::getValue, (o, q) -> Quantity.create(toBigDecimal(o), q.getUnit())));
+        typeConverters.put(String.class, new TypeConverter<>(o -> "" + o, (o, s) -> "" + o));
+        typeConverters.put(Number.class, new TypeConverter<>(o -> o, (o, n) -> toNumber(toBigDecimal(o), (Number)n)));
+    }
     private Reporter reporter;
     private final Map<String, Expression> expressions = new TreeMap<>();
     private final Map<String, Function<String, Object>> functions = new TreeMap<>();
     private final Map<String, Object> values = new TreeMap<>();
+    private final Map<String, Object> valueTypes = new TreeMap<>();
 
     /**
      * Default constructor for the Formula class.
@@ -31,6 +44,7 @@ public class Formula {
      * without setting any initial properties or performing any operations.
      */
     public Formula() {
+        this(null);
     }
 
     /**
@@ -42,6 +56,7 @@ public class Formula {
      */
     public Formula(String formula) {
         setFormula(formula);
+
     }
 
     public Reporter getReporter() {
@@ -135,14 +150,14 @@ public class Formula {
     }
 
     /**
-     * Associates a specified variable name with a {@link ShortNameFunction}.
+     * Associates a given variable name with a specified function.
+     * The function maps a variable name and a Formula instance to an output object.
      *
-     * @param variableName the name of the variable to be associated with the function
-     * @param shortNameFunction the ShortNameFunction to be set for the specified variable name
+     * @param variableName the name of the variable to associate the function with
+     * @param function the BiFunction that defines the operation to be associated with the variable
      */
-    public void setFunction(String variableName, ShortNameFunction shortNameFunction) {
-        checkVar(variableName);
-        functions.put(variableName, sn -> shortNameFunction.getFunction(this));
+    public void setFunction(String variableName, BiFunction<String, Formula, Object> function) {
+        setFunction(variableName, (vn) -> function.apply(vn, this));
     }
 
     /**
@@ -160,14 +175,32 @@ public class Formula {
      */
     public void setValue(String variableName, Object value) {
         checkVar(variableName);
-        values.put(variableName, val(value));
+        values.put(variableName, val(variableName, value));
     }
 
-    private static Object val(Object o) {
-        if(o instanceof Number n) {
-            return MathUtility.toBigDecimal(n);
+    private Object val(String variableName, Object o) {
+        if(o == null) {
+            o = BigDecimal.ZERO;
         }
-        return o;
+        valueTypes.put(variableName, o);
+        Object v = MathUtility.toBigDecimal(o);
+        return v == null ? o : v;
+    }
+
+    /**
+     * Associates a sample value with a variable name to define its type.
+     * This method adds the specified variable name and the corresponding sample value
+     * to the internal mapping of value types for the Formula instance.
+     *
+     * @param variableName the name of the variable to be associated with the sample value.
+     *                     The name must not be null or empty and must follow valid naming conventions,
+     *                     such as containing only letters, digits, and underscores, and not starting
+     *                     with a digit.
+     * @param sampleValue  the sample value to associate with the variable name. This value
+     *                     is used to determine the type for the variable. It must not be null.
+     */
+    public void setType(String variableName, Object sampleValue) {
+        valueTypes.put(variableName, sampleValue);
     }
 
     /**
@@ -183,11 +216,55 @@ public class Formula {
      * @throws SORuntimeException if there is a circular reference, or if a value for a required
      *                             variable cannot be determined.
      */
-    public Object getValue(String variableName) {
-        return getValue(variableName, new ArrayList<>());
+    public <T> Object getValue(String variableName) {
+        Object o = getVal(variableName);
+        if(o == null) {
+            return null;
+        }
+        @SuppressWarnings("unchecked") T t = (T) valueTypes.get(variableName);
+        if(t == null) {
+            return o;
+        }
+        @SuppressWarnings("unchecked") TypeConverter<T> tc = (TypeConverter<T>) typeConverters.get(toClass(t));
+        return tc == null ? t.getClass().cast(o) : tc.toExternal.apply(o, t);
     }
 
-    private Object getValue(String variableName, List<Set<String>> varsList) {
+    /**
+     * Retrieves the value associated with the specified variable name and casts it to the expected type.
+     * This method fetches the value corresponding to the provided {@code variableName} and ensures
+     * that it is of the specified {@code expectedType}. If the value cannot be cast to the expected
+     * type, a {@code ClassCastException} will be thrown.
+     *
+     * @param <T>          the generic type to which the value is cast.
+     * @param variableName the name of the variable whose value is to be retrieved. It must not be null
+     *                     or empty and must follow valid naming conventions (letters, digits, and underscores).
+     * @param expectedType the {@code Class} object representing the type to which the value should be cast.
+     *                     It must not be null.
+     * @return the value associated with the given variable name, cast to the specified type {@code T}.
+     * @throws SORuntimeException   if the variable name is invalid, or if the value cannot be determined.
+     * @throws ClassCastException   if the retrieved value cannot be cast to the expected type.
+     * @throws NullPointerException if {@code expectedType} is null.
+     */
+    public <T> T getValue(String variableName, Class<T> expectedType) {
+        return expectedType.cast(getValue(variableName));
+    }
+
+    private Class<?> toClass(Object o) {
+        Class<?> c = o.getClass();
+        if(Quantity.class.isAssignableFrom(c)) {
+            return Quantity.class;
+        }
+        if(Number.class.isAssignableFrom(c)) {
+            return Number.class;
+        }
+        return c;
+    }
+
+    private Object getVal(String variableName) {
+        return getVal(variableName, new ArrayList<>());
+    }
+
+    private Object getVal(String variableName, List<Set<String>> varsList) {
         Object o = values.get(variableName);
         if(o != null) return o;
         Function<String, Object> function = functions.get(variableName);
@@ -208,7 +285,7 @@ public class Formula {
             }
             varsList.add(vars);
             for (String v: vars) {
-                o = getValue(v, varsList);
+                o = getVal(v, varsList);
                 if(o == null) {
                     throw new SORuntimeException("Can't determine value of variable - " + v);
                 }
@@ -216,28 +293,6 @@ public class Formula {
             }
             return val(e.withValues(values).evaluate());
         } catch (ParseException | EvaluationException ex) {
-            throw new SORuntimeException(ex);
-        }
-    }
-
-    /**
-     * Retrieves the value associated with the specified variable name and casts it to the specified type.
-     * The method attempts to retrieve the value for the given variable name and casts it to the provided class type.
-     * If the value cannot be cast to the specified type, a {@code ClassCastException} is caught, and a runtime exception is thrown.
-     *
-     * @param <T>           the type of the value to be returned.
-     * @param variableClass the class representing the type to which the value should be cast.
-     *                      It must not be null.
-     * @param variableName  the name of the variable to retrieve the value for.
-     *                      Must not be null or empty and must adhere to valid naming conventions
-     *                      (letters, digits, and underscores).
-     * @return the value associated with the given variable name, cast to the specified type.
-     * @throws SORuntimeException if a type cast fails or if the underlying retrieval encounters an error.
-     */
-    public <T> T getValue(Class<T> variableClass, String variableName) {
-        try {
-            return variableClass.cast(getValue(variableName));
-        } catch (ClassCastException ex) {
             throw new SORuntimeException(ex);
         }
     }
@@ -281,5 +336,49 @@ public class Formula {
             case "PI", "E", "NULL", "TRUE", "FALSE", "DT_FORMAT_ISO_DATE_TIME", "DT_FORMAT_LOCAL_DATE_TIME", "DT_FORMAT_LOCAL_DATE" -> true;
             default -> false;
         };
+    }
+
+    private record TypeConverter<T>(Function<T, Object> toInternal, BiFunction<Object, T, T> toExternal) {
+    }
+
+    private static BigDecimal toBigDecimal(Object value) {
+        if(value instanceof Boolean b) {
+            return b ? BigDecimal.ONE : BigDecimal.ZERO;
+        }
+        if(value instanceof Instant i) {
+            value = i.toEpochMilli();
+        } else if(value instanceof Duration d) {
+            value = d.toMillis();
+        }
+        BigDecimal v = MathUtility.toBigDecimal(value);
+        return v == null ? BigDecimal.ZERO : v;
+    }
+
+    private static Number toNumber(BigDecimal value, Number sample) {
+        if(sample instanceof BigDecimal) {
+            return value;
+        }
+        if(sample instanceof BigInteger) {
+            return value.toBigInteger();
+        }
+        if(sample instanceof Double) {
+            return value.doubleValue();
+        }
+        if(sample instanceof Integer) {
+            return value.intValue();
+        }
+        if(sample instanceof Long) {
+            return value.longValue();
+        }
+        if(sample instanceof Float) {
+            return value.floatValue();
+        }
+        if(sample instanceof Short) {
+            return value.shortValue();
+        }
+        if(sample instanceof Byte) {
+            return value.byteValue();
+        }
+        return value;
     }
 }

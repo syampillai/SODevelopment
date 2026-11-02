@@ -1,5 +1,6 @@
 package com.storedobject.ui;
 
+import com.storedobject.core.ApplicationServer;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.html.Span;
@@ -14,12 +15,15 @@ public final class ErrorEater extends Component implements HasErrorParameter<Exc
 
     @Override
     public int setErrorParameter(BeforeEnterEvent beforeEnterEvent, ErrorParameter<Exception> errorParameter) {
+        Application a = null;
         try {
-            Application a = Application.get();
-            if(a != null) {
-                a.log(errorParameter.getException());
-            }
+            a = Application.get();
         } catch(Throwable ignored) {
+        }
+        if(a != null) {
+            a.log(errorParameter.getException());
+        } else {
+            ApplicationServer.log(errorParameter.getException());
         }
         Span message = new Span("Service is not available now, please contact support!");
         getElement().appendChild(message.getElement());
