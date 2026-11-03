@@ -151,7 +151,7 @@ public abstract class StoredObject implements Displayable, HasId, StringFiller {
     }
 
     public final boolean updated() {
-        return loading;
+        return loading && r > 11;
     }
 
     public final boolean deleted() {
