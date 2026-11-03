@@ -1,30 +1,30 @@
 package com.storedobject.ui.common;
 
-import com.storedobject.core.ProcessingLanguage;
-import com.storedobject.ui.P5;
+import com.storedobject.core.P5;
+import com.storedobject.ui.P5Canvas;
 import com.storedobject.vaadin.Button;
 import com.storedobject.vaadin.TextArea;
 import com.storedobject.vaadin.View;
 import com.vaadin.flow.component.HasValue;
 
-public class ProcessingLanguageEditor extends AbstractTextContentEditor<ProcessingLanguage> {
+public class P5Editor extends AbstractTextContentEditor<P5> {
 
     private Button run;
     private TextArea content;
 
-    public ProcessingLanguageEditor() {
-        super(ProcessingLanguage.class);
+    public P5Editor() {
+        super(P5.class);
     }
 
-    public ProcessingLanguageEditor(int actions) {
-        super(ProcessingLanguage.class, actions);
+    public P5Editor(int actions) {
+        super(P5.class, actions);
     }
 
-    public ProcessingLanguageEditor(int actions, String caption) {
-        super(ProcessingLanguage.class, actions, caption);
+    public P5Editor(int actions, String caption) {
+        super(P5.class, actions, caption);
     }
 
-    public ProcessingLanguageEditor(String className) throws Exception {
+    public P5Editor(String className) throws Exception {
         super(className);
     }
 
@@ -34,15 +34,15 @@ public class ProcessingLanguageEditor extends AbstractTextContentEditor<Processi
     }
 
     private void play() {
-        ProcessingLanguage pl = getObject();
+        P5 pl = getObject();
         if(content != null) {
-            P5 p5 = new P5(content.getText());
-            p5.setFeedbackConsumer(this::message);
+            P5Canvas p5Canvas = new P5Canvas(content.getText());
+            p5Canvas.setFeedbackConsumer(this::message);
             String caption = pl == null ? null : pl.getName();
             if(caption == null || caption.isBlank()) {
                 caption = "P5 Test";
             }
-            View.createCloseableView(p5, caption).execute();
+            View.createCloseableView(p5Canvas, caption).execute();
         }
     }
 

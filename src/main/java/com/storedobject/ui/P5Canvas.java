@@ -1,6 +1,6 @@
 package com.storedobject.ui;
 
-import com.storedobject.core.ProcessingLanguage;
+import com.storedobject.core.P5;
 import com.vaadin.flow.component.ClientCallable;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasSize;
@@ -44,7 +44,7 @@ import java.util.regex.Pattern;
 @Tag("so-p5")
 @NpmPackage(value = "p5", version = "^2.3.4")
 @JsModule("./so/p5/so-p5.js")
-public class P5 extends Component implements HasSize {
+public class P5Canvas extends Component implements HasSize {
 
     private static final Pattern INSTANCE_HOOKS = Pattern.compile(
             "\\b([a-zA-Z_$][\\w$]*)\\s*\\.\\s*(setup|draw)\\s*=",
@@ -57,7 +57,7 @@ public class P5 extends Component implements HasSize {
      * Initializes the P5 instance with no predefined sketch code.
      * Delegates the initialization to the overloaded constructor with a null parameter.
      */
-    public P5() {
+    public P5Canvas() {
         this((String)null);
     }
 
@@ -67,7 +67,7 @@ public class P5 extends Component implements HasSize {
      *
      * @param sketchCode the sketch code to be initialized, which must not be null or blank to set the sketch.
      */
-    public P5(String sketchCode) {
+    public P5Canvas(String sketchCode) {
         if (sketchCode != null && !sketchCode.isBlank()) {
             setSketch(sketchCode);
         }
@@ -79,7 +79,7 @@ public class P5 extends Component implements HasSize {
      *
      * @param language the ProcessingLanguage instance providing the sketch code content
      */
-    public P5(ProcessingLanguage language) {
+    public P5Canvas(P5 language) {
         this(language.getContent());
     }
 
