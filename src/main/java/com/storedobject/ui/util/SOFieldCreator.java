@@ -904,7 +904,7 @@ public class SOFieldCreator<T> implements ObjectFieldCreator<T> {
             }
         }
         TextField field = new TextField(label);
-        if(md.isCode() || md.isStyle("upper") || md.isStyle("uppercase")) {
+        if(md.isCode() || md.isShortName() || md.isStyle("upper") || md.isStyle("uppercase")) {
             field.uppercase();
         } else if(md.isStyle("lower") || md.isStyle("lowercase")) {
             field.lowercase();

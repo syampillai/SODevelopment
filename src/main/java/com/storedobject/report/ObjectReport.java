@@ -1,5 +1,6 @@
 package com.storedobject.report;
 
+import com.storedobject.common.Executable;
 import com.storedobject.core.*;
 import com.storedobject.office.ODTReport;
 import com.storedobject.office.ObjectFiller;
@@ -11,7 +12,7 @@ import java.lang.reflect.Constructor;
  *
  * @author Syam
  */
-public class ObjectReport {
+public class ObjectReport implements Executable {
 
     private final Runnable executable;
 
@@ -138,6 +139,7 @@ public class ObjectReport {
         return executable;
     }
 
+    @Override
     public void execute() {
         if(executable != null) {
             executable.run();

@@ -350,6 +350,7 @@ public final class InventoryGRNItem extends StoredObject implements Detail, HasI
         quantity = quantity.subtract(quantityToSplit);
         save(transaction);
         newGrnItem.save(transaction);
+        UserAction.save(newGrnItem, "SPLIT");
         getMaster(InventoryGRN.class).addLink(transaction, newGrnItem);
     }
 

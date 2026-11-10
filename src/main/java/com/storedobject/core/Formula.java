@@ -268,6 +268,14 @@ public final class Formula {
         Object o = values.get(variableName);
         if(o != null) return o;
         Function<String, Object> function = functions.get(variableName);
+        if(function == null && variableName.startsWith("_AC_")) {
+            String sn = variableName.substring(4).trim();
+            if(!sn.isEmpty()) {
+                AccountChart.Balance b = AccountChart.balance();
+                function = (vn) -> b.apply(vn, this);
+                functions.put(variableName, function);
+            }
+        }
         if(function != null) return function.apply(variableName);
         Expression e = expressions.get(variableName);
         if(e == null) return null;
