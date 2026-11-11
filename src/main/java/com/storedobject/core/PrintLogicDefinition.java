@@ -4,6 +4,7 @@ import com.storedobject.common.Executable;
 import com.storedobject.core.annotation.*;
 
 import java.math.BigDecimal;
+import java.sql.Date;
 import java.util.List;
 
 /**
@@ -11,7 +12,7 @@ import java.util.List;
  *
  * @author Syam
  */
-public class PrintLogicDefinition extends StoredObject {
+public class PrintLogicDefinition extends StoredObject implements Reporter {
 
     private String dataClassName;
     private Class<? extends StoredObject> dataClass;
@@ -21,6 +22,8 @@ public class PrintLogicDefinition extends StoredObject {
     private Class<? extends Executable> printLogicClass;
     private Id formatId;
     private boolean special;
+    private Date date;
+    private DatePeriod datePeriod;
 
     public PrintLogicDefinition() {
     }
@@ -207,5 +210,28 @@ public class PrintLogicDefinition extends StoredObject {
             condition += " AND NOT Special";
         }
         return list(PrintLogicDefinition.class, condition);
+    }
+
+    public void setDate(Date date) {
+        this.date = date;
+    }
+
+    @Override
+    public Date getDate() {
+        return date;
+    }
+
+    public void setDatePeriod(DatePeriod datePeriod) {
+        this.datePeriod = datePeriod;
+    }
+
+    @Override
+    public DatePeriod getDatePeriod() {
+        return datePeriod;
+    }
+
+    @Override
+    public TransactionManager getTransactionManager() {
+        return null;
     }
 }

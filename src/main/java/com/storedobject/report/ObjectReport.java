@@ -6,6 +6,7 @@ import com.storedobject.office.ODTReport;
 import com.storedobject.office.ObjectFiller;
 
 import java.lang.reflect.Constructor;
+import java.sql.Date;
 
 /**
  * For internal use only.
@@ -52,7 +53,20 @@ public class ObjectReport implements Executable {
                 if(streamData == null) {
                     throw new Invalid_State("No ODT format found for: " + printLogicDefinition.getPrintLogicClassName());
                 }
-                ObjectFiller of = (ObjectFiller) cpClass.getConstructor().newInstance();
+                ObjectFiller of;
+                try {
+                    of = (ObjectFiller) cpClass.getConstructor(String.class).newInstance(printLogicDefinition.getParameter());
+                } catch (Throwable e) {
+                    of = (ObjectFiller) cpClass.getConstructor().newInstance();
+                }
+                Date d = printLogicDefinition.getDate();
+                if(d != null) {
+                    of.setDate(d);
+                }
+                DatePeriod dp = printLogicDefinition.getDatePeriod();
+                if(dp != null) {
+                    of.setDatePeriod(dp);
+                }
                 ODTReport r = new ODTReport(device, printLogicDefinition.getODTFormat(), of);
                 of.setReportingObject(object, printLogicDefinition);
                 return r;

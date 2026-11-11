@@ -123,8 +123,8 @@ public class ODT<T> implements ContentProducer, Closeable {
     public void produce() {
     }
 
-    public Object getFiller() {
-        return null;
+    public final Filler<?> getFiller() {
+        return new Filler<>();
     }
 
     public void setFiller(Object filler) {
