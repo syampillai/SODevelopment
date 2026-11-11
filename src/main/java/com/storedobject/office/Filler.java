@@ -3,6 +3,7 @@ package com.storedobject.office;
 import com.storedobject.common.Executable;
 import com.storedobject.core.*;
 
+import java.sql.Date;
 import java.util.function.BiConsumer;
 import java.util.function.Predicate;
 
@@ -10,6 +11,34 @@ public class Filler<T> implements Executable, Reporter {
 
     private Formula formula;
     T reportingObject;
+    private Date date;
+    private DatePeriod datePeriod;
+
+    /**
+     * Set the reporting date.
+     * @param date the reporting date
+     */
+    public void setDate(Date date) {
+        this.date = date;
+    }
+
+    @Override
+    public Date getDate() {
+        return date;
+    }
+
+    /**
+     * Set the reporting date period.
+     * @param datePeriod the reporting date period
+     */
+    public void setDatePeriod(DatePeriod datePeriod) {
+        this.datePeriod = datePeriod;
+    }
+
+    @Override
+    public DatePeriod getDatePeriod() {
+        return datePeriod;
+    }
 
     @Override
     public void execute() {
