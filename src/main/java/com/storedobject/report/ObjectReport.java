@@ -67,6 +67,10 @@ public class ObjectReport implements Executable {
                 if(dp != null) {
                     of.setDatePeriod(dp);
                 }
+                SystemEntity se = printLogicDefinition.getSystemEntity();
+                if(se != null) {
+                    of.setSystemEntity(se);
+                }
                 ODTReport r = new ODTReport(device, printLogicDefinition.getODTFormat(), of);
                 of.setReportingObject(object, printLogicDefinition);
                 return r;

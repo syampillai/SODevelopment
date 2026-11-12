@@ -134,6 +134,7 @@ public class EntityReport implements Executable {
         }
         def.setDate(date);
         def.setDatePeriod(datePeriod);
+        def.setSystemEntity(systemEntity);
         runnable = new ObjectReport(device, def, systemEntity, false).getRunnable();
     }
 

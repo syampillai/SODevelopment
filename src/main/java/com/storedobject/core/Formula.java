@@ -269,10 +269,9 @@ public final class Formula {
         if(o != null) return o;
         Function<String, Object> function = functions.get(variableName);
         if(function == null && variableName.startsWith("_AC_")) {
-            String sn = variableName.substring(4).trim();
-            if(!sn.isEmpty()) {
+            if(!variableName.substring(4).trim().isEmpty()) {
                 AccountChart.Balance b = AccountChart.balance();
-                function = (vn) -> b.apply(vn, this);
+                function = (vn) -> b.apply(vn.substring(4).trim(), this);
                 functions.put(variableName, function);
             }
         }

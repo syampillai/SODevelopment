@@ -40,4 +40,15 @@ public interface Reporter {
      * @return an instance of {@link TransactionManager}
      */
     TransactionManager getTransactionManager();
+
+    /**
+     * Retrieves the {@link SystemEntity} instance.
+     *
+     * @return the system entity associated with the transaction manager, or {@code null} if the transaction manager is
+     * unavailable and the system entity is not set.
+     */
+    default SystemEntity getSystemEntity() {
+        TransactionManager tm = getTransactionManager();
+        return tm == null ? null : tm.getEntity();
+    }
 }

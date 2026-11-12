@@ -40,6 +40,9 @@ public class Filler<T> implements Executable, Reporter {
         return datePeriod;
     }
 
+    public void setSystemEntity(SystemEntity systemEntity) {
+    }
+
     @Override
     public void execute() {
     }

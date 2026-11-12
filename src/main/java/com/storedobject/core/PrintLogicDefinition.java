@@ -24,6 +24,7 @@ public class PrintLogicDefinition extends StoredObject implements Reporter {
     private boolean special;
     private Date date;
     private DatePeriod datePeriod;
+    private SystemEntity systemEntity;
 
     public PrintLogicDefinition() {
     }
@@ -233,5 +234,14 @@ public class PrintLogicDefinition extends StoredObject implements Reporter {
     @Override
     public TransactionManager getTransactionManager() {
         return null;
+    }
+
+    public void setSystemEntity(SystemEntity systemEntity) {
+        this.systemEntity = systemEntity;
+    }
+
+    @Override
+    public SystemEntity getSystemEntity() {
+        return systemEntity;
     }
 }
