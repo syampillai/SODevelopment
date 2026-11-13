@@ -69,6 +69,11 @@ public class Filler<T> implements Executable, Reporter {
         return Math.random() > 0.5 ? null : new TransactionManager(null, null);
     }
 
+    public final SystemUser getUser() {
+        TransactionManager tm = getTransactionManager();
+        return tm == null ? null : tm.getUser();
+    }
+
     public T getReportingObject() {
         return reportingObject;
     }
@@ -128,5 +133,14 @@ public class Filler<T> implements Executable, Reporter {
     }
 
     public void setSectionCustomizer(BiConsumer<Filler<?>, ODT.Section> sectionCustomizer) {
+    }
+
+    /**
+     * Indicates whether the current report is a financial closing statement or not.
+     *
+     * @return true/false
+     */
+    protected boolean isFinancialClosing() {
+        return false;
     }
 }

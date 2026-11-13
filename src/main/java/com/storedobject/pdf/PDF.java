@@ -1,6 +1,7 @@
 package com.storedobject.pdf;
 
 import com.storedobject.common.*;
+import com.storedobject.core.DateUtility;
 import com.storedobject.core.StringUtility;
 import com.storedobject.core.*;
 import com.storedobject.svg.Node;
@@ -9,8 +10,11 @@ import java.awt.*;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.sql.Timestamp;
+import java.util.Date;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.stream.Stream;
 
@@ -122,6 +126,36 @@ public abstract class PDF implements java.io.Closeable, com.storedobject.core.Co
      * Open the PDF for creating the content. This is automatically invoked by the framework.
      */
     public void open() {
+    }
+
+    protected final String toText(Object t) {
+        return toText(t, this::getUser, isFinancialClosing());
+    }
+
+    public static String toText(Object t, Supplier<SystemUser> user, boolean financialClosing) {
+        return switch (t) {
+            case null -> "";
+            case Date d -> {
+                if (Utility.isEmpty(d)) {
+                    yield "N/A";
+                }
+                if (d instanceof Timestamp) {
+                    yield DateUtility.formatWithTimeHHMM(d);
+                }
+                yield DateUtility.format(d);
+            }
+            case Money money -> money.toString(!financialClosing, !financialClosing, user.get());
+            default -> StringUtility.toString(t);
+        };
+    }
+
+    /**
+     * Indicates whether the current report is a financial closing statement or not.
+     *
+     * @return true/false
+     */
+    protected boolean isFinancialClosing() {
+        return false;
     }
 
     /**

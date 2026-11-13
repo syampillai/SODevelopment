@@ -89,6 +89,24 @@ public final class Formula {
         }
         String[] formulas = formula.split(";");
         for(String f: formulas) {
+            f = f.trim();
+            if(f.startsWith("Type")) {
+                String[] parts = f.split(" ");
+                if(parts[0].equals("Type")) {
+                    if (parts.length < 3) {
+                        throw new SORuntimeException("Invalid type declaration - " + f);
+                    }
+                    int i;
+                    for(i = 1; i < parts.length; i++) {
+                        checkVar(parts[i]);
+                    }
+                    Object sampleValue = getValue(parts[parts.length - 1]);
+                    for(i = 1; i < parts.length - 1; i++) {
+                        setType(parts[i], sampleValue);
+                    }
+                    continue;
+                }
+            }
             setSingleFormula(f);
         }
     }
@@ -270,8 +288,7 @@ public final class Formula {
         Function<String, Object> function = functions.get(variableName);
         if(function == null && variableName.startsWith("_AC_")) {
             if(!variableName.substring(4).trim().isEmpty()) {
-                AccountChart.Balance b = AccountChart.balance();
-                function = (vn) -> b.apply(vn.substring(4).trim(), this);
+                function = (vn) -> AccountChart.balance().apply(vn.substring(4).trim(), this);
                 functions.put(variableName, function);
             }
         }

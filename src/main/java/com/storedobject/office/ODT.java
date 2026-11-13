@@ -48,6 +48,15 @@ public class ODT<T> implements ContentProducer, Closeable {
         return device;
     }
 
+    /**
+     * Indicates whether the current report is a financial closing statement or not.
+     *
+     * @return true/false
+     */
+    protected boolean isFinancialClosing() {
+        return false;
+    }
+
     public void setTemplate(StreamData template) {
     }
 
