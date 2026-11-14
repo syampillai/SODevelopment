@@ -37,6 +37,7 @@ public final class Formula {
     private final Map<String, Function<String, Object>> functions = new TreeMap<>();
     private final Map<String, Object> values = new TreeMap<>();
     private final Map<String, Object> valueTypes = new TreeMap<>();
+    private final Map<String, String> typeDefs = new TreeMap<>();
 
     /**
      * Default constructor for the Formula class.
@@ -91,7 +92,7 @@ public final class Formula {
         for(String f: formulas) {
             f = f.trim();
             if(f.startsWith("Type")) {
-                String[] parts = f.split(" ");
+                String[] parts = f.split("(?U)\\s+");
                 if(parts[0].equals("Type")) {
                     if (parts.length < 3) {
                         throw new SORuntimeException("Invalid type declaration - " + f);
@@ -100,9 +101,8 @@ public final class Formula {
                     for(i = 1; i < parts.length; i++) {
                         checkVar(parts[i]);
                     }
-                    Object sampleValue = getValue(parts[parts.length - 1]);
                     for(i = 1; i < parts.length - 1; i++) {
-                        setType(parts[i], sampleValue);
+                        setTypeDef(parts[i], parts[parts.length - 1]);
                     }
                     continue;
                 }
@@ -222,6 +222,17 @@ public final class Formula {
     }
 
     /**
+     * Associates the specified variable name with its typed variable name definition so that the type of the
+     * variable can be determined based on the typed variable name when the value is computed.
+     *
+     * @param variableName the name of the variable to define
+     * @param typedVariableName the typed variable name associated with the variable
+     */
+    public void setTypeDef(String variableName, String typedVariableName) {
+        typeDefs.put(variableName, typedVariableName);
+    }
+
+    /**
      * Retrieves the value associated with the specified variable name.
      * If the variable does not have a directly assigned value,
      * the method determines the value using associated functions or expressions.
@@ -238,6 +249,10 @@ public final class Formula {
         Object o = getVal(variableName);
         if(o == null) {
             return null;
+        }
+        String def = typeDefs.get(variableName);
+        if(def != null) {
+            variableName = def;
         }
         @SuppressWarnings("unchecked") T t = (T) valueTypes.get(variableName);
         if(t == null) {
@@ -289,16 +304,24 @@ public final class Formula {
         if(function == null && variableName.startsWith("_AC_")) {
             if(!variableName.substring(4).trim().isEmpty()) {
                 function = (vn) -> AccountChart.balance().apply(vn.substring(4).trim(), this);
-                functions.put(variableName, function);
+                return function.apply(variableName);
             }
         }
-        if(function != null) return function.apply(variableName);
+        if(function != null) {
+            o = function.apply(variableName);
+            functions.remove(variableName);
+            setValue(variableName, o);
+            return o;
+        }
         Expression e = expressions.get(variableName);
         if(e == null) return null;
         try {
             Map<String, Object> values = new HashMap<>();
             Set<String> vars = vars(e);
             for (String v: vars) {
+                if(v.startsWith("_AC_") && !this.values.containsKey(v)) {
+                    getVal(v);
+                }
                 if(this.values.containsKey(v)) {
                     values.put(v, this.values.get(v));
                     continue;
@@ -315,7 +338,9 @@ public final class Formula {
                 }
                 values.put(v, o);
             }
-            return val(e.withValues(values).evaluate());
+            o = val(e.withValues(values).evaluate());
+            this.values.put(variableName, o);
+            return o;
         } catch (ParseException | EvaluationException ex) {
             throw new SORuntimeException(ex);
         }

@@ -38,6 +38,8 @@ public class TrialBalance extends DataForm implements Transactional {
         if(systemEntity != null) {
             entityField.setValue(systemEntity);
             entityField.setReadOnly(true);
+        } else {
+            entityField.setValue(getTransactionManager().getEntity());
         }
         addField(dateField = new DateField("As on"));
         setRequired(dateField);

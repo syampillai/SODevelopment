@@ -70,36 +70,60 @@ public class TrialBalance extends PDFReport implements JSONParameter {
         table.addCell(createCell(createTitleText("Debit Balance"), true));
         table.addCell(createCell(createTitleText("Credit Balance"), true));
         table.setHeaderRows(1);
-        Money b, dTotal = new Money(entity.getCurrency()), cTotal = new Money(entity.getCurrency());
-        ObjectIterator<Account> list =
-                Account.list(Account.class, "SystemEntity=" + entity.getId(), "T_Family", true)
-                        .filter(a -> !(a instanceof AccountTitle));
-        int rows = 0;
+        Money b, dTotal = new Money(entity.getCurrency()), cTotal = dTotal, dChart = dTotal, cChart = cTotal;
+        ObjectIterator<Account> list;
+        int count, rows = 0, totalCount = 0;
         String as;
         int bracket;
-        for(Account a: list) {
-            as = a.toString();
-            if((bracket = as.indexOf(") ")) > 0) {
-                as = as.substring(0, bracket + 1) + "\n" + as.substring(bracket + 2);
+        for(AccountChart ac: StoredObject.list(AccountChart.class, null, "")) {
+            count = 0;
+            dChart = dChart.zero();
+            cChart = cChart.zero();
+            list = Account.list(Account.class, "SystemEntity=" + entity.getId() + " AND Chart=" + ac.getId(),
+                            "T_Family", true).filter(a -> !(a instanceof AccountTitle));
+            for (Account a : list) {
+                as = a.toString();
+                if ((bracket = as.indexOf(") ")) > 0) {
+                    as = as.substring(0, bracket + 1) + "\n" + as.substring(bracket + 2);
+                }
+                b = a.getLocalCurrencyBalance(date);
+                if (b.isZero() && a instanceof OffsetAccount) {
+                    continue;
+                }
+                ++count;
+                if(count == 1) {
+                    table.addCell(createCell(ac.toDisplay()));
+                    table.addBlankCell(2);
+                    ++rows;
+                }
+                table.addCell(createCell(as));
+                if (b.isDebit()) {
+                    b = b.negate();
+                    dTotal = dTotal.add(b);
+                    dChart = dChart.add(b);
+                    table.addCell(createCell(b.toString(false), true));
+                    table.addBlankCell();
+                } else {
+                    cTotal = cTotal.add(b);
+                    cChart = cChart.add(b);
+                    table.addBlankCell();
+                    table.addCell(createCell(b.toString(false), true));
+                }
+                if (++rows >= 80) {
+                    add(table);
+                    rows = 0;
+                }
             }
-            b = a.getLocalCurrencyBalance(date);
-            table.addCell(createCell(as));
-            if(b.isDebit()) {
-                b = b.negate();
-                dTotal = dTotal.add(b);
-                table.addCell(createCell(b.toString(false), true));
-                table.addBlankCell();
-            } else {
-                cTotal = cTotal.add(b);
-                table.addBlankCell();
-                table.addCell(createCell(b.toString(false), true));
-            }
-            if(++rows >= 80) {
-                add(table);
-                rows = 0;
+            if(count > 0) {
+                totalCount += count;
+                table.addCell(createCell("Accounts: " + count + ", Net balance: "
+                        + cChart.subtract(dChart).toString(false, true)));
+                table.addCell(createCell(dChart.toString(false), true));
+                table.addCell(createCell(cChart.toString(false), true));
+                table.addBlankRow();
             }
         }
-        table.addCell(createCenteredCell("* * * Total"));
+        table.addCell(createCenteredCell("* * * Total (Accounts : " + totalCount + ")"));
         table.addCell(createCell(dTotal, true));
         table.addCell(createCell(cTotal, true));
         add(table);
