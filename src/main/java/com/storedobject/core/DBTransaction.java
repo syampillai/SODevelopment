@@ -1,6 +1,7 @@
 package com.storedobject.core;
 
 import java.util.*;
+import java.util.function.Function;
 
 /**
  * Transaction. All protected methods of this class are for internal purpose only.
@@ -82,6 +83,10 @@ public final class DBTransaction extends AbstractTransaction {
      */
     @Override
     public boolean isActive() {
+        return false;
+    }
+
+    public <A extends Account> boolean containsTran(Class<A> accountClass, Money amount, Function<A, Boolean> check) {
         return false;
     }
 
