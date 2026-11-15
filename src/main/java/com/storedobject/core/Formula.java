@@ -90,7 +90,7 @@ public final class Formula {
         }
         String[] formulas = formula.split(";");
         for(String f: formulas) {
-            f = f.trim();
+            f = f.replace(',', ' ').replace(':', ' ').trim();
             if(f.startsWith("Type")) {
                 String[] parts = f.split("(?U)\\s+");
                 if(parts[0].equals("Type")) {

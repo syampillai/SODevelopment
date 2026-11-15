@@ -23,7 +23,7 @@ public final class CashAccount extends InstantaneousAccount {
 
     public static String[] protectedColumns() {
         return new String[] {
-                "Entity",
+                "Entity", "Person"
         };
     }
 
@@ -52,15 +52,28 @@ public final class CashAccount extends InstantaneousAccount {
     }
 
     @Override
-    public void validateData(TransactionManager tm) throws Exception {
-        personId = tm.checkType(this, personId, Person.class);
-        if(!exists(SystemUser.class, "Person=" + personId)) {
-            throw new Invalid_State(getPerson() + " does not have access to the system");
+    protected void checkPosting(DBTransaction tran, Money amount, Money localCurrencyAmount) throws Exception {
+        Id pid = tran.getManager().getUser().getPersonId();
+        if(amount.isZero() || pid.equals(personId)) {
+            return;
         }
+        if(amount.isCredit() && tran.containsTran(CashAccount.class, amount.negate(), a -> a.personId.equals(pid))) {
+            return;
+        }
+        throw new Invalid_State("Changes to cash can only be made by the custodian - " + getPerson());
+    }
+
+    @Override
+    public void validateData(TransactionManager tm) throws Exception {
+        personId = tm.getUser().getPersonId();
         if (!getName().toLowerCase().contains("cash")) {
             setName("Cash - " + getName());
         }
         super.validateData(tm);
+        AccountChart ac = getChart();
+        if(ac.getCategory() != 0 || ac.getBalanceType() != 0 || !ac.getStrictBalanceControl()) {
+            throw new Invalid_State("Invalid chart - " + ac.toDisplay() + ", Category - " + ac.getCategoryValue());
+        }
     }
 
     @Override

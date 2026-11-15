@@ -655,6 +655,9 @@ public class Account extends StoredObject implements OfEntity, HasName {
         return name;
     }
 
+    protected void checkPosting(DBTransaction tran, Money amount, Money localCurrencyAmount) throws Exception {
+    }
+
     public final Money createAmount(BigDecimal amount) {
         return new Money(amount, balance.getCurrency());
     }
@@ -737,6 +740,7 @@ public class Account extends StoredObject implements OfEntity, HasName {
         String x2 = v.startsWith("-") ? v : ("+" + v);
         String x3 = vLC.startsWith("-") ? ("+" + vLC.substring(1)) : ("-" + vLC);
         tm.transact(t -> {
+            checkPosting((DBTransaction) t, amount, localCurrencyAmount);
             save(t);
             oa.save(t);
             RawSQL sql = ((DBTransaction)t).getSQL();
