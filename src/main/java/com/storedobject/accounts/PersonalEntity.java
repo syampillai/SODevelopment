@@ -142,6 +142,12 @@ public final class PersonalEntity extends AccountEntity<Person> {
         return 10191;
     }
 
+    /**
+     * Get the personal entity associated with the given person ID.
+     *
+     * @param personId The unique identifier of the person.
+     * @return The PersonalEntity associated with the given person ID.
+     */
     public static PersonalEntity getFor(Id personId) {
         return get(PersonalEntity.class, "Person=" + personId);
     }

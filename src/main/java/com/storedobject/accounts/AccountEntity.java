@@ -7,6 +7,7 @@ import com.storedobject.common.Address;
 import com.storedobject.common.PhoneNumber;
 
 import java.math.BigDecimal;
+import java.util.Currency;
 import java.util.Objects;
 
 /**
@@ -15,8 +16,8 @@ import java.util.Objects;
  * @param <T> Underlying party type.
  * @author Syam
  */
-public abstract class AccountEntity<T extends StoredObject> extends StoredObject
-        implements HasContacts, HasName, HasShortName {
+public abstract sealed class AccountEntity<T extends StoredObject> extends StoredObject
+        implements HasContacts, HasName, HasShortName permits PersonalEntity, BusinessEntity {
 
     private T party;
     private String shortName;
@@ -25,6 +26,7 @@ public abstract class AccountEntity<T extends StoredObject> extends StoredObject
     private String primaryPhone;
     private String taxCode;
     private Id taxRegionId;
+    private String currency = "USD";
 
     /**
      * Represents an account entity.
@@ -70,6 +72,7 @@ public abstract class AccountEntity<T extends StoredObject> extends StoredObject
         columns.add("PrimaryPhone", "phone");
         columns.add("TaxCode", "text");
         columns.add("TaxRegion", "id");
+        columns.add("Currency", "text");
     }
 
     /**
@@ -303,6 +306,19 @@ public abstract class AccountEntity<T extends StoredObject> extends StoredObject
         return TaxRegion.getFor(taxRegionId);
     }
 
+    public void setCurrency(String currency) {
+        this.currency = currency == null || currency.isBlank() ? "USD" : currency;
+    }
+
+    @Column(style = "(currency)", order = 800)
+    public String getCurrency() {
+        return currency;
+    }
+
+    public Currency getCurrencyValue() {
+        return Currency.getInstance(currency);
+    }
+
     @Override
     public void validateData(TransactionManager tm) throws Exception {
         setPartyId(tm.checkType(this, getPartyId(), getPartyClass(), false));
@@ -338,6 +354,11 @@ public abstract class AccountEntity<T extends StoredObject> extends StoredObject
             primaryEmail = Email.check(primaryEmail);
         }
         taxCode = toCode(taxCode);
+        currency = StringUtility.pack(currency);
+        if (currency.isEmpty()) {
+            currency = tm.getEntity().getCurrency();
+        }
+        currency = checkCurrency(currency);
         super.validateData(tm);
     }
 
