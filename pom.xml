@@ -89,7 +89,7 @@
         <dependency>
             <groupId>com.storedobject</groupId>
             <artifactId>so-client</artifactId>
-            <version>3.2.10</version>
+            <version>3.2.11</version>
         </dependency>
 
         <!-- Java Servlet -->

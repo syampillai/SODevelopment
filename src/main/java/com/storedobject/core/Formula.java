@@ -57,13 +57,22 @@ public final class Formula {
      */
     public Formula(String formula) {
         setFormula(formula);
-
     }
 
+    /**
+     * Retrieves the {@link Reporter} associated with this formula.
+     *
+     * @return the {@link Reporter} instance, or {@code null} if none is set.
+     */
     public Reporter getReporter() {
         return reporter;
     }
 
+    /**
+     * Sets the {@link Reporter} to be associated with this formula.
+     *
+     * @param reporter the {@link Reporter} instance to associate with this formula.
+     */
     public void setReporter(Reporter reporter) {
         this.reporter = reporter;
     }
@@ -314,7 +323,9 @@ public final class Formula {
             return o;
         }
         Expression e = expressions.get(variableName);
-        if(e == null) return null;
+        if(e == null) {
+            throw new SORuntimeException("No expression found for " + variableName);
+        }
         try {
             Map<String, Object> values = new HashMap<>();
             Set<String> vars = vars(e);

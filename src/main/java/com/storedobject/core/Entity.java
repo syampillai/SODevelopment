@@ -102,6 +102,10 @@ public final class Entity extends StoredObject implements HasContacts, HasName {
         return country;
     }
 
+	public Country getCountryValue() {
+		return Country.get(country);
+	}
+
 	@Override
 	public void validateData(TransactionManager tm) throws Exception {
 		if(StringUtility.isWhite(name)) {

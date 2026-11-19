@@ -20,7 +20,7 @@ public abstract class AddressForm extends DataForm {
     final ChoiceField typeField = new ChoiceField("Type", Address.getTypeValues());
     final TextField apartmentField = new TextField(Address.getTypeValue('0') + " Number/Name");
     final TextField buildingField = new TextField(B_NAME);
-    final TextField streetField = new TextField("Street Number & Name");
+    final TextField streetField = new TextField("");
     final TextField areaField = new TextField(AREA_LABEL);
     final IntegerField poBoxField = new IntegerField("");
     final TextField postalCodeField = new TextField("");
@@ -133,6 +133,7 @@ public abstract class AddressForm extends DataForm {
         apartmentField.setValue(address.getApartmentName());
         buildingField.setValue(address.getBuildingName());
         streetField.setValue(address.getStreetName());
+        streetField.setLabel(address.getStreetNameCaption());
         areaField.setValue(address.getAreaName());
         areaField.setLabel(address.getAreaCaption());
         poBoxField.setLabel(address.getPOBoxName());

@@ -5,22 +5,27 @@ import com.storedobject.svg.chart.Chart;
 import com.storedobject.vaadin.CloseableView;
 import com.storedobject.vaadin.DataForm;
 import com.storedobject.vaadin.Svg;
-import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.html.H2;
-import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class Test extends DataForm implements CloseableView {
 
+    private final P5 p5;
+
     public Test() {
         super("Test", false);
-        add(new InteractiveLessonView());
+        add(p5 = new P5());
         add(new Svg(chart()));
     }
 
     @Override
     protected boolean process() {
-        close();
-        return true;
+        Map<String, Object> data = new HashMap<>();
+        data.put("x", 150);
+        data.put("y", 0);
+        p5.updateParameter("data", data);
+        return false;
     }
 
     private static Chart chart() {
@@ -39,24 +44,22 @@ public class Test extends DataForm implements CloseableView {
         return c;
     }
 
-    private static class InteractiveLessonView extends VerticalLayout {
+    private static class P5 extends P5Canvas {
 
-        private InteractiveLessonView() {
-            setSizeFull();
-
-            // Rive Component for Biology (Visual / Vector State Machine)
-            RiveCanvas cellDiagram = new RiveCanvas("/Rave Files/Electron-Shells.riv", "Main");
-            cellDiagram.setHeight("400px");
-            cellDiagram.setWidth("100%");
-            cellDiagram.addLoadErrorListener(e -> Application.error(e.getMessage()));
-
-            Button triggerMitosis = new Button("Trigger Mitosis", e -> cellDiagram.firePropertyTrigger("startMitosis"));
-            // Add to Layout
-            add(
-                new H2("Biology Module: Cell Division"),
-                cellDiagram,
-                triggerMitosis
-            );
+        P5() {
+            String sketch = """
+                    p.data = new Map();
+                    p.data.set("x", 100);
+                    p.data.set("y", 100);
+                    p.setup = () => {
+                        p.createCanvas(200, 200);
+                    };
+                    p.draw = () => {
+                        p.background(255);
+                        p.line(p.random(p.width), p.random(p.height), p.data.get("x"), p.data.get("y"));
+                    };
+                    """;
+            setSketch(sketch);
         }
     }
 }

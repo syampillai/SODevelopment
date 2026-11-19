@@ -3,6 +3,7 @@ package com.storedobject.ui.common;
 import com.storedobject.core.P5;
 import com.storedobject.ui.P5Canvas;
 import com.storedobject.vaadin.Button;
+import com.storedobject.vaadin.CenteredLayout;
 import com.storedobject.vaadin.TextArea;
 import com.storedobject.vaadin.View;
 import com.vaadin.flow.component.HasValue;
@@ -42,7 +43,7 @@ public class P5Editor extends AbstractTextContentEditor<P5> {
             if(caption == null || caption.isBlank()) {
                 caption = "P5 Test";
             }
-            View.createCloseableView(p5Canvas, caption).execute();
+            View.createCloseableView(new CenteredLayout(p5Canvas), caption).execute();
         }
     }
 

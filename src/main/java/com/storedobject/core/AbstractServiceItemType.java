@@ -26,6 +26,7 @@ public abstract class AbstractServiceItemType extends InventoryItemType {
                 "HandlingAndStorage",
                 "HSNCode",
                 "UNNumber",
+                "AverageLeadTime"
         };
     }
 

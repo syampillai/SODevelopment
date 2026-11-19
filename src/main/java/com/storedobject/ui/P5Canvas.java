@@ -1,6 +1,8 @@
 package com.storedobject.ui;
 
+import com.storedobject.common.JSON;
 import com.storedobject.core.P5;
+import com.storedobject.core.StringUtility;
 import com.vaadin.flow.component.ClientCallable;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasSize;
@@ -8,6 +10,8 @@ import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
 
+import java.io.Serializable;
+import java.util.Map;
 import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -105,8 +109,21 @@ public class P5Canvas extends Component implements HasSize {
      * @param paramName the name of the parameter to update
      * @param value the new value to assign to the parameter
      */
-    public void updateParameter(String paramName, double value) {
-        getElement().callJsFunction("updateParam", paramName, value);
+    public void updateParameter(String paramName, Object value) {
+        getElement().callJsFunction("updateParam", paramName, sv(value));
+    }
+
+    private Serializable sv(Object v) {
+        if(v instanceof Map<?,?> m) {
+            v = new JSON(m);
+        }
+        if(v instanceof JSON json) {
+            return json.toString();
+        }
+        if(v instanceof Serializable sv) {
+            return sv;
+        }
+        return StringUtility.toString(v);
     }
 
     private static String prefix(String code) {
