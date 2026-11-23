@@ -14,7 +14,7 @@ import java.util.List;
 
 public abstract class AbstractInvoiceEditor<I extends Invoice> extends ObjectEditor<I> {
 
-    final static boolean accountOnly = !StoredObject.exists(InventoryStore.class, "true", true);
+    boolean accountOnly = !getTransactionManager().getEntity().isInventoryEnabled();
     AccountConfiguration configuration;
     EntityAccount partyAccount;
 

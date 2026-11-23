@@ -50,8 +50,8 @@ public class ObjectForestEditor<T extends StoredObject> extends ObjectForestBrow
 
     @SuppressWarnings("unchecked")
     public ObjectForestEditor(String className) throws Exception {
-        this(false, false, (Class<T>) JavaClassLoader.getLogic(ObjectEditor.sanitize(className)),
-                null, ObjectBrowser.actions(className, Application.get().getServer().isDeveloper()),
+        this(false, false, (Class<T>) JavaClassLoader.getLogic(LogicParser.sanitizeClassName(className)),
+                null, LogicParser.editorActions(className, Application.get().getServer().isDeveloper(), true),
                 null, Application.get().getRunningLogic().getTitle(), ObjectEditor.allowedActions(className),
                 true);
     }

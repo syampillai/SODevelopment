@@ -58,8 +58,8 @@ public class ObjectBrowserEditor<T extends StoredObject> extends ObjectBrowser<T
 
     @SuppressWarnings("unchecked")
     public ObjectBrowserEditor(String className) throws Exception {
-        this((Class<T>) JavaClassLoader.getLogic(ObjectEditor.sanitize(className)), null,
-                actions(className, Application.get().getServer().isDeveloper()), null,
+        this((Class<T>) JavaClassLoader.getLogic(LogicParser.sanitizeClassName(className)), null,
+                LogicParser.editorActions(className, Application.get().getServer().isDeveloper(), true), null,
                 Application.get().getRunningLogic().getTitle(), ObjectEditor.allowedActions(className));
     }
 

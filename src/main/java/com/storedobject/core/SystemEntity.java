@@ -5,6 +5,7 @@ import java.sql.Date;
 import java.time.ZoneId;
 import java.util.Currency;
 import java.util.Locale;
+import java.util.Random;
 
 /**
  * This class represents an entity whose accounting system exists in this server.
@@ -184,5 +185,13 @@ public final class SystemEntity extends StoredObject implements RequiresApproval
 
 	public static SystemEntity getCached(Id id) {
 		return Math.random() > 0.5 ? new SystemEntity() : null;
+	}
+
+	public boolean isAccountingEnabled() {
+		return new Random().nextBoolean();
+	}
+
+	public boolean isInventoryEnabled() {
+		return new Random().nextBoolean();
 	}
 }

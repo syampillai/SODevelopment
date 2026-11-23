@@ -1,11 +1,16 @@
 package com.storedobject.ui.common;
 
+import com.storedobject.accounts.BusinessEntity;
+import com.storedobject.accounts.EntityAccount;
 import com.storedobject.common.StringList;
 import com.storedobject.core.*;
 import com.storedobject.ui.ELabel;
 import com.storedobject.ui.ELabelField;
 import com.storedobject.ui.ObjectEditor;
 import com.storedobject.ui.Application;
+import com.storedobject.ui.accounts.AccountField;
+import com.storedobject.ui.accounts.ConfigureAccount;
+import com.storedobject.ui.accounts.StatementView;
 import com.storedobject.vaadin.*;
 import com.vaadin.flow.component.HasComponents;
 import com.vaadin.flow.component.icon.VaadinIcon;
@@ -28,10 +33,11 @@ public class EntityEditor extends ObjectEditor<Entity> {
             "Provides services to us"
     };
     private final Map<Id, Integer> relCache, activeCache;
-    private PopupButton relMenu, supplierMenu, customerMenu, serviceProviderMenu;
+    private PopupButton accountsMenu, relMenu, supplierMenu, customerMenu, serviceProviderMenu;
     private RForm RFormEditor;
     private ObjectEditor<EntityRole> supplierEditor, customerEditor, serviceProviderEditor;
     private Class<EntityRole> serviceProviderClass;
+    private ObjectEditor<BusinessEntity> businessEntityEditor;
 
     public EntityEditor() {
         this(EditorAction.ALL);
@@ -47,7 +53,16 @@ public class EntityEditor extends ObjectEditor<Entity> {
 
     protected EntityEditor(int actions, String caption, String allowedActions) {
         super(Entity.class, actions, caption, allowedActions);
-        if(StoredObject.exists(InventoryStore.class, null, true)) {
+        SystemEntity se = getTransactionManager().getEntity();
+        if(se.isAccountingEnabled()) {
+            accountsMenu = new PopupButton("Accounts", VaadinIcon.MONEY);
+            accountsMenu.add(new Button("View Account Entity", (String)null, e -> viewAccountEntity()));
+            accountsMenu.add(new Button("Create/Edit Account Entity", (String)null, e -> editAccountEntity()));
+            accountsMenu.add(new Button("View Account", (String)null, e -> viewAccounts()));
+            accountsMenu.add(new Button("Account Set Up", (String)null, e -> setUpAccount()));
+            accountsMenu.add(new Button("View Ledger", (String)null, e -> viewTransactions()));
+        }
+        if(se.isInventoryEnabled()) {
             relCache = new HashMap<>();
             activeCache = new HashMap<>();
             addField(new TextArea("Relationships"), this::getRS);
@@ -64,7 +79,8 @@ public class EntityEditor extends ObjectEditor<Entity> {
                     supplierMenu = new PopupButton("Vendor/Supplier", VaadinIcon.INVOICE);
                     setUpEditor(supplierEditor, supplierMenu);
                 }
-            } catch(SOException ignored) {
+            } catch(SOException err) {
+                log(err);
             }
             try {
                 rClass = JavaClassLoader.createClassFromProperty("CUSTOMER-CLASS");
@@ -74,7 +90,8 @@ public class EntityEditor extends ObjectEditor<Entity> {
                     customerMenu = new PopupButton("Customer", VaadinIcon.USER);
                     setUpEditor(customerEditor, customerMenu);
                 }
-            } catch(SOException ignored) {
+            } catch(SOException err) {
+                log(err);
             }
             try {
                 rClass = JavaClassLoader.createClassFromProperty("SERVICE-PROVIDER-CLASS");
@@ -90,7 +107,8 @@ public class EntityEditor extends ObjectEditor<Entity> {
                         serviceProviderEditor = supplierEditor;
                     }
                 }
-            } catch(SOException ignored) {
+            } catch(SOException err) {
+                log(err);
             }
         } else {
             relCache = null;
@@ -99,6 +117,9 @@ public class EntityEditor extends ObjectEditor<Entity> {
     }
 
     private void setUpEditor(ObjectEditor<EntityRole> ed, PopupButton button) {
+        if(ed instanceof EntityRoleEditor<?> er) {
+            er.relationsButton.setVisible(false);
+        }
         ed.setFieldReadOnly("SystemEntity", "Organization");
         ed.setNewObjectGenerator(() -> createEntityRole(ed));
         button.add(new Button("View Details", e -> viewEntityRole(ed)));
@@ -108,9 +129,15 @@ public class EntityEditor extends ObjectEditor<Entity> {
     @Override
     protected void addExtraButtons() {
         super.addExtraButtons();
+        Entity e = getObject();
+        if(e == null) {
+            return;
+        }
+        if(accountsMenu != null) {
+            buttonPanel.add(accountsMenu);
+        }
         if(relMenu != null) {
-            Entity e = getObject();
-            if(e == null || us(e)) {
+            if(us(e)) {
                 return;
             }
             buttonPanel.add(relMenu);
@@ -246,6 +273,9 @@ public class EntityEditor extends ObjectEditor<Entity> {
                 er.setSystemEntity(getTransactionManager().getEntity());
                 er.setOrganization(getObject());
             }
+        }
+        if(re instanceof EntityRoleEditor<?> r) {
+            r.relationsButton.setVisible(false);
         }
         re.editObject(er, this);
     }
@@ -444,5 +474,84 @@ public class EntityEditor extends ObjectEditor<Entity> {
             ELabel e = new ELabel("Entity: ").append(entity.toDisplay(), Application.COLOR_SUCCESS).update();
             prependHeader().join().setComponent(e);
         }
+    }
+
+    private ObjectEditor<BusinessEntity> beEditor() {
+        if(businessEntityEditor == null) {
+            businessEntityEditor = new ObjectEditor<>(BusinessEntity.class);
+        }
+        return businessEntityEditor;
+    }
+
+    private BusinessEntity be() {
+        clearAlerts();
+        return BusinessEntity.getFor(getObject().getId());
+    }
+
+    private void viewAccountEntity() {
+        BusinessEntity be = be();
+        if(be == null) {
+            message("Business entity not found");
+            return;
+        }
+        beEditor().viewObject(be, this);
+    }
+
+    private void editAccountEntity() {
+        BusinessEntity be = be();
+        if(be == null) {
+            warning("Creating new entry...");
+            be = new BusinessEntity();
+            be.setEntity(getObject());
+            be.setCurrency(getTransactionManager().getCurrency().getCurrencyCode());
+        }
+        beEditor().editObject(be, this);
+    }
+
+    private List<Account> accounts() {
+        BusinessEntity be = be();
+        if(be == null) {
+            message("Business entity not found");
+            return null;
+        }
+        List<Account> list = StoredObject.list(EntityAccount.class,
+                "SystemEntity=" + getTransactionManager().getEntity().getId() + " AND Entity="
+                        + be.getId(), true).map(a -> (Account)a).toList();
+        if(list.isEmpty()) {
+            message("No accounts found");
+            return null;
+        }
+        return list;
+    }
+
+    private void viewAccounts() {
+        List<Account> list = accounts();
+        if(list == null) {
+            return;
+        }
+        Application a = Application.get();
+        for(Account ea: list) {
+            a.view(ea);
+        }
+    }
+
+    private void setUpAccount() {
+        List<Account> list = accounts();
+        if(list == null) {
+            return;
+        }
+        AccountField<Account> af = new AccountField<>("Account", Account.class, list);
+        new ConfigureAccount(af).execute(this);
+        af.setValue(list.getFirst());
+    }
+
+    private void viewTransactions() {
+        List<Account> list = accounts();
+        if(list == null) {
+            return;
+        }
+        AccountField<Account> af = new AccountField<>(Account.class, list);
+        new StatementView(af).execute(this);
+        af.setValue(list.getFirst());
     }
 }

@@ -215,6 +215,12 @@ public class DataSet {
         }
     }
 
+    /**
+     * Represents a data status associated with a specific unit.
+     *
+     * @param <V> the type of value associated with the data status.
+     * @author Syam
+     */
     public abstract static class DataStatus<V> {
 
         private final long id = statusId.next();
@@ -222,6 +228,12 @@ public class DataSet {
         final Unit unit;
         final ValueDefinition<V> valueDefinition;
 
+        /**
+         * Constructs a new instance of DataStatus with the specified unit and value definition.
+         *
+         * @param unit the unit of measurement.
+         * @param valueDefinition the value definition.
+         */
         protected DataStatus(Unit unit, ValueDefinition<V> valueDefinition) {
             this.unit = unit;
             this.valueDefinition = valueDefinition;
@@ -506,7 +518,14 @@ public class DataSet {
             return alarmAt;
         }
 
-        public <D extends Data> void collectHistory(long periodInMilliseconds, int stepInMinutes, BiConsumer<Long, V> consumer) {
+        /**
+         * Retrieve historical data
+         * @param periodInMilliseconds the period in milliseconds for which historical data is to be retrieved.
+         * @param stepInMinutes the step size in minutes for the historical data retrieval.
+         * @param consumer the consumer to accept the retrieved historical data.
+         * @param <D> the type of data to be retrieved.
+         */
+        public <D extends Data> void retrieveHistory(long periodInMilliseconds, int stepInMinutes, BiConsumer<Long, V> consumer) {
             @SuppressWarnings("unchecked") Class<D> dClass = (Class<D>) getValueDefinition().getDataClass();
             long now = DateUtility.now().getTime();
             Query q = QueryBuilder.from(dClass).columns("CollectedAt," + getValueDefinition().getName())
@@ -528,13 +547,22 @@ public class DataSet {
 
         abstract V valueFromRS(ResultSet rs);
 
+        /**
+         * Retrieve historical data for a specific data status.
+         * @param siteId the ID of the site.
+         * @param sensorId the ID of the sensor.
+         * @return the data status associated with the specified site and sensor.
+         */
         public static DataStatus<?> get(Id siteId, long sensorId) {
             for(SiteData sd: DataSet.sites) {
                 if(sd.site.getId().equals(siteId)) {
                     for(AbstractData ad: sd.children()) {
                         for(AbstractData uhd: ad.children()) {
                             if(uhd instanceof UnitHeaderData d) {
-                                for(ValueLimit v: d.limits) {
+                                for(DataStatus<?> ds: d.statusList) {
+                                    if(ds.getId() == sensorId) {
+                                        return ds;
+                                    }
                                 }
                             }
                         }
@@ -545,6 +573,11 @@ public class DataSet {
         }
     }
 
+    /**
+     * Represents a limit status associated with a specific unit.
+     *
+     * @author Syam
+     */
     public static class LimitStatus extends DataStatus<Double> {
 
         double value;
@@ -744,6 +777,11 @@ public class DataSet {
         }
     }
 
+    /**
+     * Represents a limit status associated with a specific unit.
+     *
+     * @author Syam
+     */
     public static class AlarmStatus extends DataStatus<Boolean> {
 
         boolean value;

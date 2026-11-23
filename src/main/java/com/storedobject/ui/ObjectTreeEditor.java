@@ -46,8 +46,8 @@ public class ObjectTreeEditor<T extends StoredObject> extends ObjectTreeBrowser<
 
     @SuppressWarnings("unchecked")
     public ObjectTreeEditor(String className) throws Exception {
-        this((Class<T>) JavaClassLoader.getLogic(ObjectEditor.sanitize(className)), null,
-                ObjectBrowser.actions(className, Application.get().getServer().isDeveloper()),
+        this((Class<T>) JavaClassLoader.getLogic(LogicParser.sanitizeClassName(className)), null,
+                LogicParser.editorActions(className, Application.get().getServer().isDeveloper(), true),
                 Application.get().getRunningLogic().getTitle(), ObjectEditor.allowedActions(className));
     }
 

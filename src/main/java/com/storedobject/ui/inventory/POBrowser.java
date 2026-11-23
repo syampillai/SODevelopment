@@ -4,6 +4,7 @@ import com.storedobject.common.StringList;
 import com.storedobject.core.*;
 import com.storedobject.ui.*;
 import com.storedobject.ui.Application;
+import com.storedobject.ui.util.LogicParser;
 import com.storedobject.vaadin.*;
 import com.storedobject.vaadin.ListGrid;
 import com.vaadin.flow.component.Component;
@@ -77,6 +78,13 @@ public class POBrowser<T extends InventoryPO> extends ObjectBrowser<T> implement
     public POBrowser(Class<T> objectClass, Iterable<String> browseColumns, int actions,
                      Iterable<String> filterColumns, String caption) {
         this(objectClass, browseColumns, actions, filterColumns, caption, null);
+    }
+
+    @SuppressWarnings("unchecked")
+    public POBrowser(String className) throws Exception {
+        this((Class<T>)JavaClassLoader.getLogic(LogicParser.sanitizeClassName(className)), null,
+                LogicParser.editorActions(className, Application.get().getServer().isDeveloper(), true), null,
+                Application.get().getRunningLogic().getTitle(), LogicParser.allowedActions(className));
     }
 
     POBrowser(Class<T> objectClass, Iterable<String> browseColumns, int actions, Iterable<String> filterColumns,
@@ -250,7 +258,7 @@ public class POBrowser<T extends InventoryPO> extends ObjectBrowser<T> implement
     private POEditor<T> editor() {
         if(editor == null) {
             ObjectEditor<T> oe = getObjectEditor();
-            if(!(oe instanceof POEditor)) {
+            if(!(oe instanceof POEditor) || oe.getObjectClass() != getObjectClass()) {
                 editor = new POEditor<>(getObjectClass());
                 setObjectEditor(editor);
             } else {

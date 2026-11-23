@@ -37,7 +37,7 @@ public class ObjectBrowserViewer<T extends StoredObject> extends ObjectBrowser<T
 
     public ObjectBrowserViewer(String className) throws Exception {
         //noinspection unchecked
-        this((Class<T>) JavaClassLoader.getLogic(ObjectEditor.sanitize(className)),
+        this((Class<T>) JavaClassLoader.getLogic(LogicParser.sanitizeClassName(className)),
                 Application.get().getRunningLogic().getTitle());
     }
 

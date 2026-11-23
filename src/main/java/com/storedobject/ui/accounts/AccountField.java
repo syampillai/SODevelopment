@@ -5,6 +5,8 @@ import com.storedobject.core.AccountTitle;
 import com.storedobject.core.Id;
 import com.storedobject.ui.ObjectField;
 
+import java.util.List;
+
 /**
  * A specialized field for handling account-related objects, extending the functionality
  * of the {@link ObjectField}. This field is designed to work with instances of the
@@ -116,6 +118,27 @@ public class AccountField<T extends Account> extends ObjectField<T> {
      */
     public AccountField(String label, Class<T> accountClass, boolean any, Type type) {
         super(label, accountClass, any, type);
+    }
+
+    /**
+     * Constructor.
+     *
+     * @param accountClass Class of the accounts that are valid.
+     * @param accounts List of accounts that are valid.
+     */
+    public AccountField(Class<T> accountClass, List<T> accounts) {
+        super(null, accountClass, accounts, true);
+    }
+
+    /**
+     * Constructor.
+     *
+     * @param label Label for the field.
+     * @param accountClass Class of the accounts that are valid.
+     * @param accounts List of accounts that are valid.
+     */
+    public AccountField(String label, Class<T> accountClass, List<T> accounts) {
+        super(label, accountClass, accounts, true);
     }
 
     /**

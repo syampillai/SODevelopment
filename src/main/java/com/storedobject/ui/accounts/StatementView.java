@@ -19,7 +19,7 @@ public class StatementView extends ListGrid<LedgerEntry> implements CloseableVie
 
     private final AccountField<Account> accountField;
     private final DateField dateField = new DateField();
-    private final Button forward, backward, begin, end, voucher, ageingBalance;
+    private final Button forward, backward, begin, end, voucher, ageingBalance, print;
     private final LedgerWindow ledger = new LedgerWindow(20, this) {
         @Override
         protected List<LedgerEntry> getUnposted() {
@@ -31,13 +31,20 @@ public class StatementView extends ListGrid<LedgerEntry> implements CloseableVie
     private JournalVoucherView voucherView;
 
     public StatementView() {
+        this((AccountField<Account>) null);
+    }
+
+    public StatementView(AccountField<Account> accountField) {
         super(LedgerEntry.class, StringList.create("Date", "Particulars", "Type", "Debit", "Credit", "Balance"));
         ledger.setErrorLogger((m, e) -> {
             error(m);
             error(e);
         });
-        accountField = createAccountField();
-        accountField.setDisplayDetail(t -> {});
+        if(accountField == null) {
+            accountField = createAccountField();
+        }
+        this.accountField = accountField;
+        this.accountField.setDisplayDetail(t -> {});
         setCaption("Statement View");
         forward = new Button("Next", this);
         backward = new Button("Previous", this);
@@ -45,14 +52,16 @@ public class StatementView extends ListGrid<LedgerEntry> implements CloseableVie
         end = new Button("Last Page", VaadinIcon.SIGN_OUT_ALT, this);
         voucher = new Button("Voucher", VaadinIcon.FILE_TEXT_O, this);
         ageingBalance = new Button("Ageing Balances", VaadinIcon.DOLLAR, this);
+        print = new Button("Print", "pdf", e -> new Statement(account).execute());
         forward.setEnabled(false);
         backward.setEnabled(false);
         begin.setEnabled(false);
         end.setEnabled(false);
         voucher.setEnabled(false);
         ageingBalance.setVisible(false);
+        print.setEnabled(false);
         trackValueChange(dateField);
-        trackValueChange(accountField);
+        trackValueChange(this.accountField);
         new Box(openingBalance);
     }
 
@@ -90,7 +99,7 @@ public class StatementView extends ListGrid<LedgerEntry> implements CloseableVie
         b.add(new ELabel("Account:"), accountField, accountTitle);
         h.add(b);
         b = new ButtonLayout();
-        b.add(new ELabel("From Date:"), dateField, forward, backward, begin, end, voucher, ageingBalance);
+        b.add(new ELabel("From Date:"), dateField, forward, backward, begin, end, voucher, ageingBalance, print);
         addExtraButtons(b);
         b.add(new Button("Exit", e -> close()));
         b.addFiller();
@@ -264,6 +273,7 @@ public class StatementView extends ListGrid<LedgerEntry> implements CloseableVie
     }
 
     private void enableButtons() {
+        print.setEnabled(account != null);
         setOB();
         if(isEmpty()) {
             forward.setEnabled(false);

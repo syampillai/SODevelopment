@@ -16,6 +16,8 @@ public class Test extends DataForm implements CloseableView {
     public Test() {
         super("Test", false);
         add(p5 = new P5());
+        p5.setWidth("200px");
+        p5.setHeight("200px");
         add(new Svg(chart()));
     }
 
@@ -25,6 +27,8 @@ public class Test extends DataForm implements CloseableView {
         data.put("x", 150);
         data.put("y", 0);
         p5.updateParameter("data", data);
+        p5.setWidth("600px");
+        p5.setHeight("600px");
         return false;
     }
 
@@ -52,7 +56,10 @@ public class Test extends DataForm implements CloseableView {
                     p.data.set("x", 100);
                     p.data.set("y", 100);
                     p.setup = () => {
-                        p.createCanvas(200, 200);
+                        const container = p.canvas?.parentElement || p;
+                        const w = container?.offsetWidth || 400;
+                        const h = container?.offsetHeight || 400;
+                        p.createCanvas(w > 0 ? w : 400, h > 0 ? h : 400);
                     };
                     p.draw = () => {
                         p.background(255);

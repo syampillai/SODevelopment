@@ -14,6 +14,11 @@ import com.storedobject.ui.inventory.*;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static com.storedobject.core.EditorAction.ALL;
+import static com.storedobject.core.EditorAction.PDF;
+import static com.storedobject.core.EditorAction.RELOAD;
+import static com.storedobject.core.EditorAction.VIEW;
+
 @SuppressWarnings("unchecked")
 public class LogicParser {
 
@@ -33,7 +38,7 @@ public class LogicParser {
     }
 
     private static String createLogicName(String objectName, String tag, Class<?> objectClass) {
-        if(objectName.indexOf(".logic.") > 0) {
+        if(objectName.contains(".logic.")) {
             return objectName;
         }
         int dot = objectName.lastIndexOf('.');
@@ -361,5 +366,58 @@ public class LogicParser {
                                                                                 int actions, String title) {
         ObjectEditor<O> editor = editor(objectClass, actions, title);
         return editor == null ? new ObjectEditor<>(objectClass, actions, title) : editor;
+    }
+
+    public static String sanitizeClassName(String className) {
+        if(!className.startsWith("(")) {
+            return className;
+        }
+        int p = className.indexOf(')');
+        return p < 0 ? className : className.substring(p + 2);
+    }
+
+    public static int editorActions(String className, boolean developer) {
+        return editorActions(className, developer, false);
+    }
+
+    public static int editorActions(String className, boolean developer, boolean browser) {
+        return browser ? editorActionsB(className, developer) : editorActionsE(className, developer);
+    }
+
+    private static int editorActionsB(String className, boolean developer) {
+        if(!className.startsWith("(")) {
+            return -(ALL | RELOAD | VIEW | (developer ? PDF : 0));
+        }
+        int p = className.indexOf(')');
+        if(p < 0) {
+            return -(ALL | RELOAD | VIEW | (developer ? PDF : 0));
+        }
+        return EditorAction.getActions(className.substring(1, p), developer);
+    }
+
+    private static int editorActionsE(String className, boolean developer) {
+        if(!className.startsWith("(")) {
+            return allActions(developer);
+        }
+        int p = className.indexOf(')');
+        if(p < 0) {
+            return allActions(developer);
+        }
+        return EditorAction.getActions(className.substring(1, p), developer);
+    }
+
+    private static int allActions(boolean developer) {
+        return EditorAction.ALL | (developer ? EditorAction.AUDIT : 0);
+    }
+
+    public static String allowedActions(String className) {
+        if(!className.startsWith("(")) {
+            return null;
+        }
+        int p = className.indexOf(')');
+        if(p < 0) {
+            return null;
+        }
+        return className.substring(1, p);
     }
 }

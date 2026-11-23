@@ -119,8 +119,8 @@ public class ObjectForestBrowser<T extends StoredObject> extends ObjectForest<T>
 
     @SuppressWarnings("unchecked")
     public ObjectForestBrowser(String className) throws Exception {
-        this(false, false, (Class<T>) JavaClassLoader.getLogic(ObjectEditor.sanitize(className)),
-                null, ObjectBrowser.actions(className, Application.get().getServer().isDeveloper()),
+        this(false, false, (Class<T>) JavaClassLoader.getLogic(LogicParser.sanitizeClassName(className)),
+                null, LogicParser.editorActions(className, Application.get().getServer().isDeveloper(), true),
                 null, null,  Application.get().getRunningLogic().getTitle(),
                 ObjectEditor.allowedActions(className));
     }

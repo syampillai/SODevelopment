@@ -74,7 +74,7 @@ public class ObjectForestViewer<T extends StoredObject> extends ObjectForestEdit
 
     public ObjectForestViewer(String className) throws Exception {
         //noinspection unchecked
-        this((Class<T>) JavaClassLoader.getLogic(ObjectEditor.sanitize(className)));
+        this((Class<T>) JavaClassLoader.getLogic(LogicParser.sanitizeClassName(className)));
     }
 
     public static <O extends StoredObject> ObjectForestViewer<O> create(Class<O> objectClass, boolean any,

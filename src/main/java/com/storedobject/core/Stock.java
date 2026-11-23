@@ -46,7 +46,7 @@ public final class Stock {
 
     public Stock(InventoryLocation location, Date date) {
         if(date != null && !date.before(DateUtility.today())) {
-            date= null;
+            date = null;
         }
         this.date = date;
         historyAvailable = date != null && StockHistoryDate.isComputed(date, Id.ZERO);
@@ -83,7 +83,11 @@ public final class Stock {
     }
 
     public List<StockHistory> getStocks() {
-        computeHistory();
+        if(date == null) {
+            compute();
+        } else {
+            computeHistory();
+        }
         return stocks;
     }
 
@@ -115,7 +119,7 @@ public final class Stock {
         }
     }
 
-    public void computeHistory() {
+    private void compute() {
         synchronized(stocks) {
             if(!computed) {
                 computeInt();
@@ -125,6 +129,53 @@ public final class Stock {
     }
 
     private void computeInt() {
+        stocks.clear();
+        if(pn == null) {
+            return;
+        }
+        Date d = DateUtility.today();
+        StockHistory h;
+        ObjectIterator<InventoryItem> items;
+        for(Location loc: locations) {
+            if(loc.location instanceof InventoryStoreBin sb) {
+                items = pn.listStock(sb.getStore());
+            } else {
+                items = pn.listStock(loc.location);
+            }
+            for(InventoryItem item: items) {
+                h = new StockHistory();
+                h.setPartNumber(pn);
+                h.setDate(d);
+                h.setSerialNumber(item.getSerialNumber());
+                h.setQuantity(item.getQuantity());
+                h.setCost(item.getCost());
+                if(loc.location instanceof InventoryBin b) {
+                    h.setStore(b.getStore());
+                }
+                h.setLocation(loc.location);
+                if(item.getInTransit()) {
+                    h.setPreviousLocation(item.getPreviousLocation());
+                }
+                h.makeVirtual();
+                stocks.add(h);
+            }
+        }
+    }
+
+    public void computeHistory() {
+        if(date == null) {
+            compute();
+            return;
+        }
+        synchronized(stocks) {
+            if(!computed) {
+                computeHistoryInt();
+                computed = true;
+            }
+        }
+    }
+
+    private void computeHistoryInt() {
         stocks.clear();
         if(pn == null) {
             return;

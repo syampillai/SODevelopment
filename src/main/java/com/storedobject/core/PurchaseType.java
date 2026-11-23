@@ -31,7 +31,7 @@ public final class PurchaseType extends AbstractTradeType {
     public static PurchaseType get(int type) {
         PurchaseType pt = cache.get(type);
         if(pt == null) {
-            pt = get(PurchaseType.class, "Type-" + type);
+            pt = get(PurchaseType.class, "Type=" + type);
             if(pt != null) {
                 cache.put(type, pt);
             }

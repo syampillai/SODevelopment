@@ -161,6 +161,9 @@ public class StockHistory extends StoredObject implements DBTransaction.NoHistor
     }
 
     public InventoryLocation getPreviousLocation() {
+        if(Id.isNull(previousLocationId)) {
+            return null;
+        }
         InventoryLocation location = getRelated(InventoryLocation.class, previousLocationId, true);
         return location == null ? getDeleted(InventoryLocation.class, previousLocationId) : location;
     }

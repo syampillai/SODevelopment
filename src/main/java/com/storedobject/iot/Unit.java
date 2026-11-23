@@ -55,6 +55,7 @@ public abstract class Unit extends AbstractUnit {
     private Id blockId;
     private Block block;
     private int code, ordinality;
+    private String shortName;
     private Site site;
     private Map<String, HourlyStatistics> hourlyStatistics;
     private Map<String, DailyStatistics> dailyStatistics;
@@ -73,12 +74,14 @@ public abstract class Unit extends AbstractUnit {
      * Configures the specified {@code Columns} instance by adding predefined column definitions.
      *
      * @param columns the {@code Columns} object to be configured; it will have additional column definitions added,
-     *                specifically "Block" with data type "id", "Code" with data type "int", and "Ordinality" with data type "int".
+     *                specifically "Block" with data type "id", "Code" with data type "int", "Ordinality" with data type "int",
+     *                and "ShortName" with data type "text".
      */
     public static void columns(Columns columns) {
         columns.add("Block", "id");
         columns.add("Code", "int");
         columns.add("Ordinality", "int");
+        columns.add("ShortName", "text");
     }
 
     /**
@@ -264,6 +267,19 @@ public abstract class Unit extends AbstractUnit {
         return ordinalityValues;
     }
 
+    public void setShortName(String shortName) {
+        this.shortName = shortName;
+    }
+
+    @Column(order = 500, style = "(short)")
+    public String getShortName() {
+        if(shortName != null && !shortName.isEmpty()) {
+            return shortName;
+        }
+        shortName = toShortName(StringUtility.makeLabel(getClass()));
+        return shortName;
+    }
+
     /**
      * Retrieves the layout style identifier for this unit's associated block.
      *
@@ -283,6 +299,10 @@ public abstract class Unit extends AbstractUnit {
     @Override
     public void validateData(TransactionManager tm) throws Exception {
         blockId = tm.checkType(this, blockId, Block.class, false);
+        shortName = toShortName(shortName);
+        if(shortName.isEmpty()) {
+            throw new Exception("Short name cannot be empty");
+        }
         super.validateData(tm);
     }
 

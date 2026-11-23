@@ -261,23 +261,4 @@ public interface Financial {
     static boolean isRevenue(Account account) {
         return getCategory(account) == 0 && getBalanceType(account) == 1;
     }
-
-    /**
-     * Is a financial system active for this entity?
-     *
-     * @return True/false.
-     */
-    static boolean isActive(SystemEntity systemEntity) {
-        return StoredObject.exists(Account.class, systemEntity == null ? null : ("SystemEntity=" + systemEntity.getId()),
-                true);
-    }
-
-    /**
-     * Is a financial system active for this transaction manager?
-     *
-     * @return True/false.
-     */
-    static boolean isActive(TransactionManager tm) {
-        return isActive(tm == null ? null : tm.getEntity());
-    }
 }

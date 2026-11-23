@@ -2,10 +2,12 @@ package com.storedobject.ui.common;
 
 import com.storedobject.core.*;
 import com.storedobject.ui.*;
+import com.storedobject.vaadin.Button;
 import com.storedobject.vaadin.DataForm;
 import com.storedobject.vaadin.RadioChoiceField;
 import com.storedobject.vaadin.View;
 import com.vaadin.flow.component.HasValue;
+import com.vaadin.flow.component.icon.VaadinIcon;
 
 import java.util.List;
 
@@ -22,6 +24,8 @@ public class EntityRoleEditor<T extends EntityRole> extends ObjectEditor<T> {
     private T entityRole;
     private DataForm adder;
     private boolean alwaysNewEntity;
+    final Button relationsButton = new Button("Relationships", VaadinIcon.LINK, e -> editRel());
+    private EntityEditor entityEditor;
 
     /**
      * Constructor.
@@ -95,6 +99,20 @@ public class EntityRoleEditor<T extends EntityRole> extends ObjectEditor<T> {
         return super.getObjectFieldType(fieldName);
     }
 
+    @Override
+    protected void addExtraButtons() {
+        super.addExtraButtons();
+        if(getObject() != null) {
+            buttonPanel.add(relationsButton);
+        }
+    }
+
+    @Override
+    protected void addExtraEditingButtons() {
+        super.addExtraEditingButtons();
+        buttonPanel.add(relationsButton);
+    }
+
     /**
      * Can new entities be created or existing entities can be edited?
      *
@@ -115,6 +133,13 @@ public class EntityRoleEditor<T extends EntityRole> extends ObjectEditor<T> {
         }
         if(!self() && !canEditEntity()) {
             setFieldReadOnly("Organization");
+        }
+        SystemEntity se = getTransactionManager().getEntity();
+        if(!se.isAccountingEnabled() && !se.isInventoryEnabled()) {
+            relationsButton.setVisible(false);
+        } else if(se.isAccountingEnabled() && !se.isInventoryEnabled()) {
+            relationsButton.setIcon(VaadinIcon.DOLLAR);
+            relationsButton.setText("Accounts");
         }
     }
 
@@ -275,5 +300,18 @@ public class EntityRoleEditor<T extends EntityRole> extends ObjectEditor<T> {
             doAdd2();
             return true;
         }
+    }
+
+    private void editRel() {
+        T r = getObject();
+        if(r == null) {
+            return;
+        }
+        getView().abort();
+        if(entityEditor == null) {
+            entityEditor = new EntityEditor();
+        }
+        entityEditor.setObject(r.getEntity());
+        entityEditor.execute();
     }
 }

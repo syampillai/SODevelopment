@@ -174,7 +174,8 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
      */
     @SuppressWarnings("unchecked")
     public ObjectEditor(String className) throws Exception {
-        this((Class<T>) JavaClassLoader.getLogic(sanitize(className)), actions(className, Application.get().getServer().isDeveloper()),
+        this((Class<T>) JavaClassLoader.getLogic(LogicParser.sanitizeClassName(className)),
+                LogicParser.editorActions(className, Application.get().getServer().isDeveloper()),
                 Application.get().getRunningLogic().getTitle(), allowedActions(className));
     }
 
@@ -256,6 +257,27 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
             }
             Constructor<?> c = null;
             try {
+                c = logic.getConstructor(Class.class, int.class, String.class);
+            } catch (NoSuchMethodException ignored) {
+            }
+            if (c != null) {
+                return (ObjectEditor<O>) c.newInstance(new Object[] { objectClass, actions, title });
+            }
+            try {
+                c = logic.getConstructor(Class.class, int.class);
+            } catch (NoSuchMethodException ignored) {
+            }
+            if (c != null) {
+                return (ObjectEditor<O>) c.newInstance(new Object[] { objectClass, actions });
+            }
+            try {
+                c = logic.getConstructor(Class.class);
+            } catch (NoSuchMethodException ignored) {
+            }
+            if (c != null) {
+                return (ObjectEditor<O>) c.newInstance(new Object[] { objectClass });
+            }
+            try {
                 c = logic.getConstructor(int.class, String.class);
             } catch(NoSuchMethodException ignored) {
             }
@@ -280,14 +302,6 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
             Application.get().log(t);
         }
         return LogicParser.createInternalEditor(objectClass, actions, title);
-    }
-
-    static String sanitize(String className) {
-        if(!className.startsWith("(")) {
-            return className;
-        }
-        int p = className.indexOf(')');
-        return p < 0 ? className : className.substring(p + 2);
     }
 
     private void fConstructed() {
@@ -458,29 +472,7 @@ public class ObjectEditor<T extends StoredObject> extends AbstractDataEditor<T>
      * @return Action names extracted.
      */
     protected static String allowedActions(String className) {
-        if(!className.startsWith("(")) {
-            return null;
-        }
-        int p = className.indexOf(')');
-        if(p < 0) {
-            return null;
-        }
-        return className.substring(1, p);
-    }
-
-    private static int actions(String className, boolean developer) {
-        if(!className.startsWith("(")) {
-            return allActions(developer);
-        }
-        int p = className.indexOf(')');
-        if(p < 0) {
-            return allActions(developer);
-        }
-        return EditorAction.getActions(className.substring(1, p), developer);
-    }
-
-    private static int allActions(boolean developer) {
-        return EditorAction.ALL | (developer ? EditorAction.AUDIT : 0);
+        return LogicParser.allowedActions(className);
     }
 
     @Override

@@ -450,8 +450,8 @@ public class ObjectBrowser<T extends StoredObject> extends ObjectGrid<T>
      */
     @SuppressWarnings("unchecked")
     public ObjectBrowser(String className) throws Exception {
-        this((Class<T>)JavaClassLoader.getLogic(ObjectEditor.sanitize(className)), null,
-                actions(className, Application.get().getServer().isDeveloper()), null, null,
+        this((Class<T>)JavaClassLoader.getLogic(LogicParser.sanitizeClassName(className)), null,
+                LogicParser.editorActions(className, Application.get().getServer().isDeveloper()), null, null,
                 Application.get().getRunningLogic().getTitle(), ObjectEditor.allowedActions(className));
     }
 
@@ -711,17 +711,6 @@ public class ObjectBrowser<T extends StoredObject> extends ObjectGrid<T>
         v.setMargin(false);
         v.setSpacing(false);
         return v;
-    }
-
-    static int actions(String className, boolean developer) {
-        if(!className.startsWith("(")) {
-            return -(ALL | RELOAD | VIEW | (developer ? PDF : 0));
-        }
-        int p = className.indexOf(')');
-        if(p < 0) {
-            return -(ALL | RELOAD | VIEW | (developer ? PDF : 0));
-        }
-        return EditorAction.getActions(className.substring(1, p), developer);
     }
 
     int filterActionsInternal(int actions) {

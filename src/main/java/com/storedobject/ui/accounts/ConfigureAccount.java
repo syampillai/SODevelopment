@@ -13,7 +13,7 @@ import java.util.Currency;
 
 public class ConfigureAccount extends DataForm implements Transactional {
 
-    private final AccountField<Account> account = new AccountField<>("Account");
+    private final AccountField<? extends Account> account;
     private final TextField number = new TextField("Account Number");
     private final MoneyField openingBalance = new MoneyField("Opening Balance");
     private final MoneyField openingBalanceLC;
@@ -23,7 +23,15 @@ public class ConfigureAccount extends DataForm implements Transactional {
     private Account a;
 
     public ConfigureAccount() {
+        this(null);
+    }
+
+    public ConfigureAccount(AccountField<? extends Account> account) {
         super("Account Configuration");
+        if(account == null) {
+            account = new AccountField<>("Account");
+        }
+        this.account = account;
         number.addValueChangeListener(e -> numberChanged());
         openingBalance.addValueChangeListener(e -> amountChanged());
         openingBalanceLC = new MoneyField("Opening Balance in " + currency.getCurrencyCode() + " (Accounting Currency)");

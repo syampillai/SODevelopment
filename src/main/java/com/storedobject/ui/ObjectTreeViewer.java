@@ -43,7 +43,7 @@ public class ObjectTreeViewer<T extends StoredObject> extends ObjectTreeBrowser<
 
     public ObjectTreeViewer(String className) throws Exception {
         //noinspection unchecked
-        this((Class<T>) JavaClassLoader.getLogic(ObjectEditor.sanitize(className)),
+        this((Class<T>) JavaClassLoader.getLogic(LogicParser.sanitizeClassName(className)),
                 Application.get().getRunningLogic().getTitle());
     }
 

@@ -1680,13 +1680,15 @@ public class Application extends com.storedobject.vaadin.Application implements 
     }
 
     public void information(StyledBuilder appDetails) {
+        String db = SQLConnector.getDatabaseName();
         String s;
         appDetails
                 .append("Build: ").append(getDriverIdentifier())
                 .newLine().append("Device Size: ").append(getDeviceWidth()).append('x').append(getDeviceHeight())
-                .newLine().append("URL: ").append(getURL())
+                .newLine().append("URL: ").append(SOServlet.getURL()).append('/').append(db)
                 .newLine().append("Biometric Available: ").append(isBiometricAvailable())
                 .newLine().append("Biometric Registered: ").append(isBiometricRegistered())
+                .newLine().append("Currency: ").append(Money.getDefaultCurrency())
                 .newLine().append("License Status: ").append(s = ApplicationServer.getLicenseStatus());
         if(!"Free".equals(s)) {
             String ld = Secret.log(getTransactionManager());
@@ -1694,8 +1696,7 @@ public class Application extends com.storedobject.vaadin.Application implements 
                 appDetails.newLine().append("License Detail:").newLine().append(ld.substring(ld.indexOf('\n') + 1));
             }
         }
-        String db;
-        appDetails.newLine().append("DB: ").append(db = SQLConnector.getDatabaseName());
+        appDetails.newLine().append("DB: ").append(db);
         s = SQLConnector.getDatabaseMasterName();
         if(s != null && !s.isBlank() && !db.equals(s)) {
             appDetails.append(", Logic from: ").append(s);
@@ -2192,7 +2193,7 @@ public class Application extends com.storedobject.vaadin.Application implements 
         SystemEntity se = getTransactionManager().getEntity();
         if(se != null) {
             Date wd = se.getWorkingDate();
-            if (wd.before(DateUtility.today()) && Financial.isActive(se)) {
+            if (wd.before(DateUtility.today()) && se.isAccountingEnabled()) {
                 error("Please note that financial transactions for " + DateUtility.formatDate(wd) + ", are still pending closure.");
             }
         }

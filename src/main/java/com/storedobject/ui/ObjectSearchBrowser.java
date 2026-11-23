@@ -118,7 +118,7 @@ public class ObjectSearchBrowser<T extends StoredObject> extends ObjectBrowser<T
      */
     @SuppressWarnings("unchecked")
     public ObjectSearchBrowser(String className) throws Exception {
-        this((Class<T>) JavaClassLoader.getLogic(ObjectEditor.sanitize(className)), null, null,
+        this((Class<T>) JavaClassLoader.getLogic(LogicParser.sanitizeClassName(className)), null, null,
                 Application.get().getRunningLogic().getTitle(), null);
     }
 
