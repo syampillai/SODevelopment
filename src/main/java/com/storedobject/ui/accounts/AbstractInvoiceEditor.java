@@ -38,6 +38,15 @@ public abstract class AbstractInvoiceEditor<I extends Invoice> extends ObjectEdi
         super(objectClass, actions, caption, allowedActions);
     }
 
+    @Override
+    public void setObject(I invoice, boolean load) {
+        super.setObject(invoice, load);
+        if(invoice != null) {
+            setFieldReadOnly(invoice.getTotal().getCurrency() == invoice.getSystemEntity().getCurrencyValue(),
+                    "ExchangeRate");
+        }
+    }
+
     protected void doAddSuper() {
         super.doAdd();
     }

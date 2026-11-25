@@ -314,20 +314,16 @@ public class ObjectForestBrowser<T extends StoredObject> extends ObjectForest<T>
                 if(!canAdd(null)) {
                     return false;
                 }
-                ObjectEditor<T> oe = getObjectEditor(getObjectClass());
-                oe.setParentObject(null, 0);
-                oe.addObject(getView(), true);
+                doAddRoot();
                 return true;
             }
             if(o instanceof com.storedobject.core.ObjectForest.LinkNode) {
                 if(currentLinkNode.getLink().isDetail()) {
-                    ObjectEditor<?> oe = getObjectEditor(currentLinkNode.getLink().getLinkClass());
                     StoredObject parent = currentLinkNode.getParent();
                     if(!canAdd(parent)) {
                         return false;
                     }
-                    oe.setParentObject(parent, currentLinkNode.getLink().getType());
-                    oe.addObject(getView(), true);
+                    doAdd(currentLinkNode.getLink().getLinkClass(), parent, currentLinkNode.getLink().getType());
                 } else {
                     StoredObject parent = currentLinkNode.getParent();
                     if(!canAdd(parent)) {
@@ -447,5 +443,17 @@ public class ObjectForestBrowser<T extends StoredObject> extends ObjectForest<T>
     @SuppressWarnings("unchecked")
     private <O extends StoredObject> void doView(O object) {
         getObjectEditor((Class<O>)object.getClass()).viewObject(object, getView(), true);
+    }
+
+    protected void doAddRoot() {
+        ObjectEditor<T> oe = getObjectEditor(getObjectClass());
+        oe.setParentObject(null, 0);
+        oe.addObject(getView(), true);
+    }
+
+    protected <D extends StoredObject> void doAdd(Class<D> detailClass, StoredObject parent, int linkType) {
+        ObjectEditor<?> oe = getObjectEditor(detailClass);
+        oe.setParentObject(parent, linkType);
+        oe.addObject(getView(), true);
     }
 }

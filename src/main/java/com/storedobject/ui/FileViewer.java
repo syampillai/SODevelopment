@@ -85,6 +85,7 @@ public class FileViewer extends ObjectForestViewer<FileFolder> implements Closea
         addComponentColumn(this::createDownloadMenu).setFlexGrow(0).setWidth("150px");
         addComponentColumn(this::createReadMenu).setFlexGrow(0).setWidth("200px");
         addComponentColumn(this::createReadStamp).setFlexGrow(0).setWidth("200px");
+        addComponentColumn(this::createDetailMenu).setFlexGrow(0).setWidth("200px");
         addColumn(v -> " ").setFlexGrow(0);
         expandRecursively(Stream.of(getRoot()), 2);
     }
@@ -98,7 +99,7 @@ public class FileViewer extends ObjectForestViewer<FileFolder> implements Closea
     @Override
     public Component createHeader() {
         return new ButtonLayout(new ELabel("Name Search:"), treeSearchField,
-                new Button("List View", e -> listView()),
+                new Button("List View", e -> listView().execute(getView())),
                 new Button("Exit", e -> close()));
     }
 
@@ -178,10 +179,10 @@ public class FileViewer extends ObjectForestViewer<FileFolder> implements Closea
             circs.remove(fileData.getId());
             refresh = true;
         }
-        getApplication().view(fileData.getName(), fileData.getFile());
         if(refresh) {
             refresh();
         }
+        getApplication().view(fileData.getName(), fileData.getFile());
     }
 
     private Component createDownloadMenu(Object item) {
@@ -199,6 +200,18 @@ public class FileViewer extends ObjectForestViewer<FileFolder> implements Closea
     static Button b(Button b) {
         b.addThemeVariants(ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_SUCCESS);
         return b.asSmall();
+    }
+
+    private Component createDetailMenu(Object item) {
+        if(item instanceof ObjectForest.LinkObject lo) {
+            if(lo.getObject() instanceof FileData fileData && fileData.getClass() != FileData.class) {
+                return b(new Button("Details", VaadinIcon.ELLIPSIS_H,e -> {
+                    select(item);
+                    listView().details(fileData);
+                }));
+            }
+        }
+        return new Span();
     }
 
     private Component createReadStamp(Object item) {
@@ -300,7 +313,7 @@ public class FileViewer extends ObjectForestViewer<FileFolder> implements Closea
         return fc;
     }
 
-    private void listView() {
+    private ListViewer listView() {
         if(listViewer == null) {
             listViewer = new ListViewer();
             listViewer.setCaption(getCaption());
@@ -310,7 +323,7 @@ public class FileViewer extends ObjectForestViewer<FileFolder> implements Closea
                 }
             });
         }
-        listViewer.execute(getView());
+        return listViewer;
     }
 
     private class ListViewer extends FileViewerGrid {

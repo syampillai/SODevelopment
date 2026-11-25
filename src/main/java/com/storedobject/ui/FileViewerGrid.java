@@ -8,8 +8,14 @@ import com.storedobject.vaadin.Button;
 import com.storedobject.vaadin.CloseableView;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.icon.VaadinIcon;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class FileViewerGrid extends ObjectGrid<FileData> implements CloseableView {
+
+    private final Map<Class<?>, ObjectEditor<?>> editors = new HashMap<>();
 
     public FileViewerGrid() {
         super(new ObjectMemoryList<>(FileData.class, true), StringList.create("Name"));
@@ -19,7 +25,8 @@ public class FileViewerGrid extends ObjectGrid<FileData> implements CloseableVie
 
     private void con() {
         addComponentColumn(this::createViewMenu).setFlexGrow(0).setWidth("120px");
-        addComponentColumn(this::createDownloadMenu).setFlexGrow(0).setWidth("150px");
+        addComponentColumn(this::createDownloadMenu).setFlexGrow(0).setWidth("120px");
+        addComponentColumn(this::createDetailsMenu).setFlexGrow(0).setWidth("120px");
         addColumn(v -> " ").setFlexGrow(0);
     }
 
@@ -54,6 +61,11 @@ public class FileViewerGrid extends ObjectGrid<FileData> implements CloseableVie
         return FileViewer.b(new Button("Download", e -> getApplication().download(file.getFile())));
     }
 
+    private Component createDetailsMenu(FileData file) {
+        if(file.getClass() == FileData.class) return new Span();
+        return FileViewer.b(new Button("Details", VaadinIcon.ELLIPSIS_H, e -> details(file)));
+    }
+
     public void add(String name, StreamData streamData) {
         FileData file = new FileData(name);
         file.setFile(streamData);
@@ -63,5 +75,18 @@ public class FileViewerGrid extends ObjectGrid<FileData> implements CloseableVie
 
     protected void view(FileData fileData) {
         getApplication().view(fileData.getName(), fileData.getFile());
+    }
+
+    <O extends FileData> void details(FileData fileData) {
+        if(fileData.getClass() == FileData.class) return;
+        ObjectEditor<?> editor = editors.get(fileData.getClass());
+        if (editor == null) {
+            editor = ObjectEditor.create(fileData.getClass());
+            editors.put(fileData.getClass(), editor);
+        }
+        @SuppressWarnings("unchecked") ObjectEditor<O> oe = (ObjectEditor<O>) editor;
+        @SuppressWarnings("unchecked") O o = (O) fileData;
+        oe.setCaption(o.getName());
+        oe.viewObject(o);
     }
 }

@@ -7,7 +7,6 @@ import com.storedobject.core.ObjectForest;
 import com.storedobject.core.*;
 import com.storedobject.report.FileCirculationStatus;
 import com.storedobject.vaadin.*;
-import com.vaadin.flow.component.grid.contextmenu.GridContextMenu;
 import com.vaadin.flow.component.grid.contextmenu.GridMenuItem;
 
 import java.util.ArrayList;
@@ -19,6 +18,7 @@ import java.util.stream.Stream;
 
 public class FileManager extends ObjectForestBrowser<FileFolder> implements Transactional, CloseableView {
 
+    private final RightClickMenu<Object> contextMenu = new RightClickMenu<>(this);
     private List<DocumentConfiguration> dcs;
     private CEditor cEditor;
 
@@ -71,7 +71,6 @@ public class FileManager extends ObjectForestBrowser<FileFolder> implements Tran
         }
         setCaption(caption);
         addConstructedListener(e -> expandRecursively(Stream.of(root), 2));
-        GridContextMenu<Object> contextMenu = new GridContextMenu<>(this);
         GridMenuItem<Object> circF = contextMenu.addItem("Circulate This File", e -> {
             if(o(e.getItem().orElse(null)) instanceof FileData f) {
                 circulate(f);
@@ -109,7 +108,7 @@ public class FileManager extends ObjectForestBrowser<FileFolder> implements Tran
                 allowedFileTypes(ff);
             }
         });
-        contextMenu.setDynamicContentHandler(o -> {
+        contextMenu.addCustomContentHandler(o -> {
             clearAlerts();
             if(o instanceof ObjectForest.LinkObject lo) {
                 select(o);
@@ -138,6 +137,10 @@ public class FileManager extends ObjectForestBrowser<FileFolder> implements Tran
             }
             return true;
         });
+    }
+
+    public RightClickMenu<Object> getRightClickMenu() {
+        return contextMenu;
     }
 
     private Object o(Object o) {
@@ -423,6 +426,45 @@ public class FileManager extends ObjectForestBrowser<FileFolder> implements Tran
             close();
             transact(t -> FileFolder.createFolders(t, folderName));
             message("Folder created now, please try to open File Manager again");
+            return true;
+        }
+    }
+
+    @Override
+    protected <D extends StoredObject> void doAdd(Class<D> detailClass, StoredObject parent, int linkType) {
+        List<DocumentConfiguration> dcs;
+        if (!(parent instanceof FileFolder ff) || detailClass != FileData.class || (dcs = ff.getConfiguration()).isEmpty()) {
+            doAddSuper(detailClass, parent, linkType);
+            return;
+        }
+        new AddDoc(dcs, parent, linkType).execute();
+    }
+
+    private <D extends StoredObject> void doAddSuper(Class<D> detailClass, StoredObject parent, int linkType) {
+        super.doAdd(detailClass, parent, linkType);
+    }
+
+    private class AddDoc extends DataForm {
+
+        private final ObjectComboField<DocumentConfiguration> documentTypeField;
+        private final StoredObject parent;
+        private final int linkType;
+
+        public AddDoc(List<DocumentConfiguration> documentTypes, StoredObject parent, int linkType) {
+            super("Choose Document Type");
+            documentTypeField = new ObjectComboField<>("Document Type", DocumentConfiguration.class, documentTypes);
+            this.parent = parent;
+            this.linkType = linkType;
+            addField(documentTypeField);
+            setRequired(documentTypeField);
+            documentTypeField.setValue(documentTypes.getFirst());
+        }
+
+        @Override
+        protected boolean process() {
+            close();
+            DocumentConfiguration dc = documentTypeField.getValue();
+            doAddSuper(dc.getFileDataClass(), parent, linkType);
             return true;
         }
     }

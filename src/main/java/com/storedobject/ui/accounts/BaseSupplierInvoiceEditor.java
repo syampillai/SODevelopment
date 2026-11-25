@@ -40,15 +40,11 @@ public class BaseSupplierInvoiceEditor<I extends SupplierInvoice> extends Abstra
     }
 
     @Override
-    public void doEdit() {
-        I invoice = getObject();
-        if(invoice == null) {
-            return;
+    public void setObject(I invoice, boolean load) {
+        super.setObject(invoice, load);
+        if(invoice != null) {
+            setFieldReadOnly(invoice.getFromInventory(), "Amount", "Total", "InvoiceNo", "Date", "Party");
         }
-        setFieldReadOnly(invoice.getTotal().getCurrency() == getTransactionManager().getCurrency(),
-                "ExchangeRate");
-        setFieldReadOnly(invoice.getFromInventory(), "Amount", "Total", "InvoiceNo", "Date", "Party");
-        super.doEdit();
     }
 
     @Override
@@ -165,7 +161,7 @@ public class BaseSupplierInvoiceEditor<I extends SupplierInvoice> extends Abstra
             }
             close();
             if(accounts.size() == 1) {
-                partyAccount = accounts.get(0);
+                partyAccount = accounts.getFirst();
                 doAddSuper();
                 return true;
             }
