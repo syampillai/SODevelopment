@@ -183,7 +183,19 @@ public class MoneyField extends CustomTextField<Money> implements RequiredField 
             string = "0";
         }
         Money m;
-        string = string.trim().replace(",", "");
+        string = string.trim().replace(",", "").toUpperCase();
+        if(string.endsWith("CR")) {
+            string = string.substring(0, string.length() - 2).trim();
+        }
+        if(string.endsWith("DB") || string.endsWith("DR")) {
+            string = string.substring(0, string.length() - 2).trim();
+            for(int i = 0; i < string.length(); i++) {
+                if(Character.isDigit(string.charAt(i))) {
+                    string = string.substring(0, i) + "-" + string.substring(i);
+                    break;
+                }
+            }
+        }
         try {
             Double.parseDouble(string);
             m = new Money(new BigDecimal(string), getCurrency());

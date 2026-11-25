@@ -366,6 +366,9 @@ public class MaterialRequest extends StoredObject implements OfEntity, HasRefere
         if(date.after(DateUtility.today())) {
             throw new Invalid_State("Date cannot be in the future");
         }
+        if(Utility.isEmpty(date)) {
+            throw new Invalid_State("Date cannot be empty");
+        }
         systemEntityId = check(tm, systemEntityId);
         fromLocationId = tm.checkTypeAny(this, fromLocationId, InventoryLocation.class, false);
         toLocationId = tm.checkTypeAny(this, toLocationId, InventoryLocation.class, false);

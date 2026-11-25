@@ -105,7 +105,12 @@ public class BaseSupplierInvoiceEditor<I extends SupplierInvoice> extends Abstra
 
         public CreateNew() {
             super("New Supplier Invoice - Select GRN");
-            storeField = new ObjectField<>("Store", InventoryStore.class, true);
+            List<InventoryStore> stores = StoredObject.list(InventoryStore.class,
+                    "SystemEntity=" + getTransactionManager().getEntity().getId(), true).toList();
+            storeField = new ObjectField<>("Store", InventoryStore.class, stores, true);
+            if(!stores.isEmpty()) {
+                storeField.setValue(stores.getFirst());
+            }
             addField(storeField);
             setRequired(storeField);
             InventoryGRN grn = StoredObject.get(InventoryGRN.class, "Type=0");

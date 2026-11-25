@@ -340,6 +340,9 @@ public final class InventoryGRN extends StoredObject implements OfEntity, HasChi
         if(date.after(DateUtility.today())) {
             throw new Invalid_State("Date cannot be in the future");
         }
+        if(Utility.isEmpty(date)) {
+            throw new Invalid_State("Date cannot be empty");
+        }
         storeId = tm.checkTypeAny(this, storeId, InventoryStore.class, false);
         supplierId = tm.checkType(this, supplierId, Entity.class, false);
         if(currency == null) {

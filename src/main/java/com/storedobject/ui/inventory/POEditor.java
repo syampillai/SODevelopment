@@ -122,6 +122,16 @@ public class POEditor<T extends InventoryPO> extends ObjectEditor<T> {
     }
 
     @Override
+    protected void customizeField(String fieldName, HasValue<?, ?> field) {
+        if("Store".equals(fieldName)) {
+            ObjectField<?> storeField = (ObjectField<?>)field;
+            Id sid = getTransactionManager().getEntity().getId();
+            storeField.setFilter("SystemEntity=" + sid);
+        }
+        super.customizeField(fieldName, field);
+    }
+
+    @Override
     public ObjectSearcher<T> getSearcher() {
         return super.getSearcher();
     }

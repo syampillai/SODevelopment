@@ -3,6 +3,7 @@ package com.storedobject.ui.inventory;
 import com.storedobject.core.EditorAction;
 import com.storedobject.core.Entity;
 import com.storedobject.core.InventoryGRN;
+import com.storedobject.core.TransactionManager;
 import com.storedobject.ui.ObjectField;
 import com.vaadin.flow.component.HasValue;
 
@@ -26,6 +27,11 @@ public class GRNEditor extends GRN.BasicGRNEditor {
         if("Supplier".equals(fieldName)) {
             //noinspection unchecked
             supplierField = (ObjectField<Entity>) field;
+        }
+        if("Store".equals(fieldName)) {
+            ObjectField<?> storeField = (ObjectField<?>)field;
+            TransactionManager tm = getTransactionManager();
+            storeField.setFilter("SystemEntity=" + tm.getEntity().getId());
         }
         super.customizeField(fieldName, field);
     }

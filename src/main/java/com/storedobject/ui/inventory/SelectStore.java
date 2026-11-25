@@ -38,10 +38,11 @@ public class SelectStore extends DataForm {
             utility = true;
         }
         this.utility = utility;
-        List<InventoryStore> stores = Application.get().getTransactionManager().getUser()
+        TransactionManager tm = Application.get().getTransactionManager();
+        List<InventoryStore> stores = tm.getUser()
                 .listLinks(InventoryStore.class, true).toList();
         if(stores.isEmpty()) {
-            stores = StoredObject.list(InventoryStore.class, true).toList();
+            stores = StoredObject.list(InventoryStore.class, "SystemEntity=" + tm.getEntity().getId(), true).toList();
         }
         storeField = new ObjectComboField<>("Store", InventoryStore.class, stores);
         addField(storeField);

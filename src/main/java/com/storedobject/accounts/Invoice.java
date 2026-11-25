@@ -247,7 +247,7 @@ public abstract class Invoice extends StoredObject implements OfEntity, Financia
     @Override
     public void validateData(TransactionManager tm) throws Exception {
         systemEntityId = check(tm, systemEntityId);
-        if (Utility.isEmpty(date)) {
+        if (Utility.isEmpty(date) || date.after(DateUtility.today())) {
             throw new Invalid_Value("Date");
         }
         partyId = tm.checkTypeAny(this, partyId, EntityAccount.class, false);

@@ -242,6 +242,9 @@ public final class MaterialIssued extends StoredObject implements OfEntity, HasR
         if(date.after(DateUtility.today())) {
             throw new Invalid_State("Date cannot be in the future");
         }
+        if(Utility.isEmpty(date)) {
+            throw new Invalid_State("Date cannot be empty");
+        }
         systemEntityId = check(tm, systemEntityId);
         referenceNumber = toCode(referenceNumber);
         locationId = tm.checkTypeAny(this, locationId, InventoryLocation.class, false);

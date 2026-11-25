@@ -274,7 +274,7 @@ public class ReceiveReturnedItems extends HandleReturnedItems {
         protected boolean validate() {
             clearAlerts();
             date = dateField.getValue();
-            if(date.after(DateUtility.endOfToday())) {
+            if(date.after(DateUtility.endOfToday()) || Utility.isEmpty(date)) {
                 warning("Please check the receipt date: " + DateUtility.format(date));
                 return false;
             }

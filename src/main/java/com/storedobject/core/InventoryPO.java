@@ -236,6 +236,9 @@ public class InventoryPO extends StoredObject implements HasChildren, HasReferen
         if(date.after(DateUtility.today())) {
             throw new Invalid_State("Date cannot be in the future");
         }
+        if(Utility.isEmpty(date)) {
+            throw new Invalid_State("Date cannot be empty");
+        }
         if(getType() >= 1000) {
             throw new Invalid_State("Invalid type");
         }

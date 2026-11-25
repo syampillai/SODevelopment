@@ -301,7 +301,6 @@ public final class AccountChart extends StoredObject implements HasParents, HasC
 		return get(AccountChart.class, "ShortName='" + toShortName(shortName) + "'");
 	}
 
-
 	public static Balance balance() {
 		if(balance == null) {
 			balance = new Balance();
@@ -370,5 +369,25 @@ public final class AccountChart extends StoredObject implements HasParents, HasC
 			formula.setType(shortName, m);
 			return m.getValue();
 		}
+	}
+
+	public Money getBalance(Reporter reporter) {
+		if(shortName.isEmpty()) return new Money();
+		return balance().get(shortName + "_B", reporter);
+	}
+
+	public Money getLocalCurrencyBalance(Reporter reporter) {
+		if(shortName.isEmpty()) return new Money();
+		return balance().get(shortName + "_LCB", reporter);
+	}
+
+	public Money getOpeningBalance(Reporter reporter) {
+		if(shortName.isEmpty()) return new Money();
+		return balance().get(shortName + "_OB", reporter);
+	}
+
+	public Money getLocalCurrencyOpeningBalance(Reporter reporter) {
+		if(shortName.isEmpty()) return new Money();
+		return balance().get(shortName + "_LCOB", reporter);
 	}
 }

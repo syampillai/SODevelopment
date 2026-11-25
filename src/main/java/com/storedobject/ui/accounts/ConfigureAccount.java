@@ -137,7 +137,7 @@ public class ConfigureAccount extends DataForm implements Transactional {
             return false;
         }
         Money m = openingBalance.getValue(), mLC = openingBalanceLC.getValue();
-        if(m.getCurrency() == a.getCurrency()) {
+        if(m.getCurrency() == a.getLocalCurrency()) {
             if(!m.equals(mLC)) {
                 error("Opening balance in local and foreign currency are not equal");
                 return false;

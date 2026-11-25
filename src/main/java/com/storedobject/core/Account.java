@@ -675,7 +675,8 @@ public class Account extends StoredObject implements OfEntity, HasName {
         if(getLocalCurrency() != localCurrencyAmount.getCurrency()) {
             throw new Invalid_State("Accounting currency mismatch");
         } else if(getLocalCurrency() == amount.getCurrency() && !amount.equals(localCurrencyAmount)) {
-            throw new Invalid_State("Opening balance in local and foreign currency are not equal");
+            throw new Invalid_State("Setting opening balance to " + amount + " (" + localCurrencyAmount + ") " +
+                    " - Opening balance in local and foreign currency are not equal. Account - " + toDisplay());
         }
         if(getCurrency() != amount.getCurrency()) {
             canChangeCurrency();
