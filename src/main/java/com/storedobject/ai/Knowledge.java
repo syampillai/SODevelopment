@@ -8,6 +8,7 @@ import java.math.BigInteger;
 import java.sql.Date;
 import java.util.*;
 import java.util.concurrent.Future;
+import java.util.function.Predicate;
 
 /**
  * The Knowledge class serves as a repository to manage entities and related attributes within the scope of a transactional context.
@@ -15,7 +16,7 @@ import java.util.concurrent.Future;
  *
  * @author Syam
  */
-public class Knowledge {
+public class Knowledge implements Reporter {
 
     private final TransactionManager tm;
     private final Map<Class<?>, Map<String, Object>> memory = new HashMap<>();
@@ -465,6 +466,16 @@ public class Knowledge {
      * @param queryBuilder the QueryBuilder instance to be customized
      */
     public <T extends StoredObject> void customize(QueryBuilder<T> queryBuilder) {
+    }
+
+    /**
+     * Get the load-filter to be applied when query is executed.
+     *
+     * @param queryBuilder the QueryBuilder instance to be customized
+     * @param <T>      the type of the object extending StoredObject
+     */
+    public <T extends StoredObject> Predicate<T> getFilter(QueryBuilder<T> queryBuilder) {
+        return null;
     }
 
     public String getNameOf(Class<? extends StoredObject> c) {

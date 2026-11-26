@@ -108,15 +108,14 @@ public class BaseSupplierInvoiceEditor<I extends SupplierInvoice> extends Abstra
             List<InventoryStore> stores = StoredObject.list(InventoryStore.class,
                     "SystemEntity=" + getTransactionManager().getEntity().getId(), true).toList();
             storeField = new ObjectField<>("Store", InventoryStore.class, stores, true);
+            addField(storeField);
             if(!stores.isEmpty()) {
                 storeField.setValue(stores.getFirst());
+                if(stores.size() == 1) {
+                    setFieldReadOnly(storeField);
+                }
             }
-            addField(storeField);
             setRequired(storeField);
-            InventoryGRN grn = StoredObject.get(InventoryGRN.class, "Type=0");
-            if(grn != null) {
-                storeField.setValue(grn.getStore());
-            }
             List<Entity> suppliers = GRN.suppliers(getGRNType());
             if(suppliers.isEmpty()) {
                 throw new SORuntimeException("No suppliers found!");

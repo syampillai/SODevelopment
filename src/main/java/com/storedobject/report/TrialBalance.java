@@ -101,9 +101,10 @@ public class TrialBalance extends PDFReport implements JSONParameter {
                 }
                 table.addCell(createCell(as));
                 if (b.isDebit()) {
-                    dTotal = dTotal.add(b.negate());
-                    dChart = dChart.add(b.negate());
-                    table.addCell(createCell(b.toString(false), true));
+                    Money m = b.negate();
+                    dTotal = dTotal.add(m);
+                    dChart = dChart.add(m);
+                    table.addCell(createCell(m.toString(false), true));
                     table.addBlankCell();
                 } else {
                     cTotal = cTotal.add(b);
